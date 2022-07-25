@@ -206,6 +206,23 @@ void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::V
     outPosition = (normalizedPosition - normalizedDelta) * queryResolution;
 }
 
+void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition) const
+{
+    // Given an input position, clamp the values to our terrain grid, where it will always go to the nearest terrain grid point
+    // whether positive or negative.  Ex: 3.3 -> 3, 3.6 -> 4, -3.3 -> -3, -3.6 -> -4
+
+    // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
+    // and fractional values are the amount in-between each grid point, in the range [0-1).
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / queryResolution;
+
+    // Round the fractional part, then scale back down into world space.
+    // Note that we use "floor(pos + 0.5f)" instead of round() because round() will round to the nearest even integer (banker's rounding)
+    // on the 0.5 points instead of to the nearest integer biased away from 0 (symmetric arithmetic rounding), which is what we want.
+    // "floor(pos + 0.5f)" will round 1.5 -> 2, 2.5 -> 3, -1.5 -> -2, -2.5 -> -3, etc. 
+    // (i.e. don't use: outPosition = normalizedPosition.GetRound() * queryResolution;)
+    outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
+}
+
 bool TerrainSystem::InWorldBounds(float x, float y) const
 {
     const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetZ();
@@ -256,9 +273,8 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
             {
-                AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(position.GetX(), position.GetY(), queryResolution, clampedPosition, normalizedDelta);
+                RoundPosition(position.GetX(), position.GetY(), queryResolution, clampedPosition);
                 outPositions.emplace_back(AZ::Vector3(clampedPosition.GetX(), clampedPosition.GetY(), minHeight));
             }
             break;
@@ -477,9 +493,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
         {
-            AZ::Vector2 normalizedDelta;
             AZ::Vector2 clampedPosition;
-            ClampPosition(x, y, queryResolution, clampedPosition, normalizedDelta);
+            RoundPosition(x, y, queryResolution, clampedPosition);
 
             height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
         }
@@ -900,7 +915,8 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& posi
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        if (SurfaceData::AabbContains2D(areaData.m_areaBounds, position))
+        // We use min-inclusive-max-exclusive so that two spawners with a shared edge will have a single owner for that edge.
+        if (SurfaceData::AabbContains2DMaxExclusive(areaData.m_areaBounds, position))
         {
             bounds = areaData.m_areaBounds;
             return areaId;
@@ -986,9 +1002,8 @@ void TerrainSystem::GetOrderedSurfaceWeights(
         [[fallthrough]];
     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
         {
-            AZ::Vector2 normalizedDelta;
             AZ::Vector2 clampedPosition;
-            ClampPosition(x, y, queryResolution, clampedPosition, normalizedDelta);
+            RoundPosition(x, y, queryResolution, clampedPosition);
             inPosition = AZ::Vector3(clampedPosition);
         }
         break;

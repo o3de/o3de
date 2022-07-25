@@ -216,6 +216,7 @@ namespace Terrain
             AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params = nullptr) const;
 
         void ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
+        void RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition) const;
         bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const;
