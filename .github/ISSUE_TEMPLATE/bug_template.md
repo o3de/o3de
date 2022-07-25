@@ -35,7 +35,7 @@ Name of or link to the branch where the issue occurs.
 **Desktop/Device (please complete the following information):**
  - Device: [e.g. PC, Mac, iPhone, Samsung] 
  - OS: [e.g. Windows, macOS, iOS, Android]
- - Version [e.g. 10, Bug Sur, Oreo]
+ - Version [e.g. 10, Monterey, Oreo]
  - CPU [e.g. Intel I9-9900k , Ryzen 5900x, ]
  - GPU [AMD 6800 XT, NVidia RTX 3090]
  - Memory [e.g. 16GB]

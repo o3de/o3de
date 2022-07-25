@@ -14,7 +14,7 @@
 
 namespace AWSMetrics
 {
-    static const char* DefaultMetricsSource = "AWSMetricGem";
+    static constexpr const char* DefaultMetricsSource = "AWSMetricGem";
 
     //! Metrics event is used to represent one event which contains a collection of metrics attributes.
     class MetricsEvent
