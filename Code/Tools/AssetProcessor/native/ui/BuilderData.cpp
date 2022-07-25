@@ -146,9 +146,9 @@ namespace AssetProcessor
 
             BuilderDataItem* item = nullptr;
             item = m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);
-            Q_SIGNAL DurationChanged(item);
+            Q_EMIT DurationChanged(item);
             item = m_allBuildersMetrics->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);
-            Q_SIGNAL DurationChanged(item);
+            Q_EMIT DurationChanged(item);
         }
     }
 }
