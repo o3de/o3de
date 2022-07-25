@@ -144,4 +144,23 @@ namespace SurfaceData
                box.GetMax().GetX() >= point.GetX() &&
                box.GetMax().GetY() >= point.GetY();
     }
+
+    // Utility method to compare an AABB and a point for overlapping XY coordinates while ignoring the Z coordinates.
+    // This method includes points that land on the min edge but excludes points that land on the max edge.
+    AZ_INLINE bool AabbContains2DMaxExclusive(const AZ::Aabb& box, const AZ::Vector2& point)
+    {
+        return box.GetMin().GetX() <= point.GetX() &&
+               box.GetMin().GetY() <= point.GetY() &&
+               box.GetMax().GetX() > point.GetX() &&
+               box.GetMax().GetY() > point.GetY();
+    }
+    // Utility method to compare an AABB and a point for overlapping XY coordinates while ignoring the Z coordinates.
+    // This method includes points that land on the min edge but excludes points that land on the max edge.
+    AZ_INLINE bool AabbContains2DMaxExclusive(const AZ::Aabb& box, const AZ::Vector3& point)
+    {
+        return box.GetMin().GetX() <= point.GetX() &&
+               box.GetMin().GetY() <= point.GetY() &&
+               box.GetMax().GetX() > point.GetX() &&
+               box.GetMax().GetY() > point.GetY();
+    }
 }
