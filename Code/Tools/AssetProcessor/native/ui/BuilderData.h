@@ -46,8 +46,10 @@ namespace AssetProcessor
         //! When it is -1, currently selects m_allBuildersMetrics.
         //! When it is -2, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
         int m_currentSelectedBuilderIndex = -1;
-
+    Q_SIGNALS:
+        void DurationChanged(BuilderInfoMetricsItem* itemChanged);
     public Q_SLOTS:
         void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
+        void OnCreateJobsDurationChanged(QString sourceName);
     };
 }

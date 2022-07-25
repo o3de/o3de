@@ -9,7 +9,6 @@
 #include <ui/BuilderInfoMetricsItem.h>
 #include <ui/BuilderData.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include <AzCore/StringFunc/StringFunc.h>
 #include <QTime>
 
 namespace AssetProcessor
@@ -54,6 +53,37 @@ namespace AssetProcessor
         : QAbstractItemModel(parent)
         , m_data(builderData)
     {
+    }
+
+    void BuilderInfoMetricsModel::Reset()
+    {
+        beginResetModel();
+        m_data->Reset();
+        endResetModel();
+    }
+
+    void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
+    {
+        // TODO: need to handle the "all builders" case
+        beginResetModel();
+        
+        if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
+        {
+            m_data->m_currentSelectedBuilderIndex = m_data->m_builderGuidToIndex[builder.m_busId];
+            m_data->m_root->SetChild(m_data->m_singleBuilderMetrics[m_data->m_currentSelectedBuilderIndex]);
+        }
+        else
+        {
+            AZ_Warning(
+                "Asset Processor",
+                false,
+                "BuilderInfoMetricsModel cannot find the GUID of the builder selected by the user (%s) in itself. No metrics will be "
+                "shown in the builder tab.",
+                builder.m_busId.ToString<AZStd::string>().c_str());
+            m_data->m_currentSelectedBuilderIndex = -2;
+        }
+        
+        endResetModel();
     }
 
     QModelIndex BuilderInfoMetricsModel::index(int row, int column, const QModelIndex& parent) const
@@ -212,81 +242,15 @@ namespace AssetProcessor
         return parentIndex;
     }
 
-    void BuilderInfoMetricsModel::Reset()
+    void BuilderInfoMetricsModel::OnDurationChanged(BuilderInfoMetricsItem* item)
     {
-        beginResetModel();
-        m_data->Reset();
-        endResetModel();
-    }
-    void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
-    {
-        // TODO: move it to BuilderData?
-        // TODO: need to handle the "all builders" case
-        
-        if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
+        while (item)
         {
-            m_data->m_currentSelectedBuilderIndex = m_data->m_builderGuidToIndex[builder.m_busId];
-            m_data->m_root->SetChild(m_data->m_singleBuilderMetrics[m_data->m_currentSelectedBuilderIndex]);
+            const int rowNum = item->GetRow();
+            dataChanged(
+                createIndex(rowNum, aznumeric_cast<int>(Column::JobCount), item),
+                createIndex(rowNum, aznumeric_cast<int>(Column::AverageDuration), item));
+            item = item->GetParent();
         }
-        else
-        {
-            AZ_Warning(
-                "Asset Processor",
-                false,
-                "BuilderInfoMetricsModel cannot find the GUID of the builder selected by the user (%s) in itself. No metrics will be "
-                "shown in the builder tab.",
-                builder.m_busId.ToString<AZStd::string>().c_str());
-            m_data->m_currentSelectedBuilderIndex = -2;
-        }
-        
-        beginResetModel();
-        endResetModel();
-    }
-
-    // void BuilderInfoMetricsModel::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
-    // {
-    //     // TODO: move it to BuilderData?
-    // 
-    //     if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
-    //     {
-    //         int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
-    //         
-    //         AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
-    //         entryName.append(",");
-    //         entryName.append(jobEntry.m_jobKey.toUtf8().constData());
-    //         entryName.append(",");
-    //         entryName.append(jobEntry.m_platformInfo.m_identifier);
-    //         m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
-    //         m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
-    //     }
-    // }
-
-    void BuilderInfoMetricsModel::OnCreateJobsDurationChanged(QString sourceName)
-    {
-        QString statKey = QString("CreateJobs,").append(sourceName).append("%");
-        m_data->m_dbConnection->QueryStatLikeStatName(
-            statKey.toUtf8().constData(),
-            [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
-            {
-                AZStd::vector<AZStd::string> tokens;
-                AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
-                if (tokens.size() == 3) // CreateJobs,filePath,builderName
-                {
-                    const auto& sourceName = tokens[1];
-                    const auto& builderName = tokens[2];
-                    if (m_data->m_builderNameToIndex.contains(builderName))
-                    {
-                        m_data->m_singleBuilderMetrics[m_data->m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::AnalysisJob, sourceName, 1, entry.m_statValue);
-                        m_data->m_allBuildersMetrics->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::AnalysisJob, builderName + "," + sourceName, 1, entry.m_statValue);
-                    }
-                    else
-                    {
-                        AZ_Warning("AssetProcessor", false, "No builder found for an analysis job stat!!!\n");
-                    }
-                }
-                return true;
-            });
     }
 }

@@ -9,6 +9,7 @@
 #include <utilities/AssetUtilEBusHelper.h>
 #include <native/ui/BuilderInfoMetricsItem.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AssetProcessor
 {
@@ -55,9 +56,9 @@ namespace AssetProcessor
                     if (m_builderNameToIndex.contains(builderName))
                     {
                         m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::AnalysisJob, sourceName, 1, entry.m_statValue);
+                            BuilderInfoMetricsItem::JobType::CreateJob, sourceName, 1, entry.m_statValue);
                         m_allBuildersMetrics->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::AnalysisJob, builderName + "," + sourceName, 1, entry.m_statValue);
+                            BuilderInfoMetricsItem::JobType::CreateJob, builderName + "," + sourceName, 1, entry.m_statValue);
                     }
                     else
                     {
@@ -86,9 +87,9 @@ namespace AssetProcessor
                         AZStd::string entryName;
                         AZ::StringFunc::Join(entryName, tokens.begin() + 1, tokens.begin() + 4, ',');
                         m_singleBuilderMetrics[m_builderGuidToIndex[builderGuid]]->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, stat.m_statValue);
+                            BuilderInfoMetricsItem::JobType::ProcessJob, entryName, 1, stat.m_statValue);
                         m_allBuildersMetrics->UpdateOrInsertEntry(
-                            BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, stat.m_statValue);
+                            BuilderInfoMetricsItem::JobType::ProcessJob, entryName, 1, stat.m_statValue);
                     }
                     else
                     {
@@ -99,8 +100,55 @@ namespace AssetProcessor
             });
     }
 
-    void BuilderData::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
+    void BuilderData::OnCreateJobsDurationChanged(QString sourceName)
     {
-        AZ_Printf("Asset Processor", "hi, OnProcessJobDurationChanged got called!\n");
+        QString statKey = QString("CreateJobs,").append(sourceName).append("%");
+        m_dbConnection->QueryStatLikeStatName(
+            statKey.toUtf8().constData(),
+            [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
+            {
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
+                if (tokens.size() == 3) // CreateJobs,filePath,builderName
+                {
+                    const auto& sourceName = tokens[1];
+                    const auto& builderName = tokens[2];
+                    if (m_builderNameToIndex.contains(builderName))
+                    {
+                        BuilderInfoMetricsItem* item = nullptr;
+                        item = m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
+                            BuilderInfoMetricsItem::JobType::CreateJob, sourceName, 1, entry.m_statValue);
+                        Q_EMIT DurationChanged(item);
+                        item = m_allBuildersMetrics->UpdateOrInsertEntry(
+                            BuilderInfoMetricsItem::JobType::CreateJob, builderName + "," + sourceName, 1, entry.m_statValue);
+                        Q_EMIT DurationChanged(item);
+                    }
+                    else
+                    {
+                        AZ_Warning("AssetProcessor", false, "No builder found for an analysis job stat!!!\n");
+                    }
+                }
+                return true;
+            });
+    }
+
+    void BuilderData::OnProcessJobDurationChanged(JobEntry jobEntry, int value)
+    {
+        if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
+        {
+            int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
+
+            AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
+            entryName.append(",");
+            entryName.append(jobEntry.m_jobKey.toUtf8().constData());
+            entryName.append(",");
+            entryName.append(jobEntry.m_platformInfo.m_identifier);
+
+            BuilderInfoMetricsItem* item = nullptr;
+            item = m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessJob, entryName, 1, value);
+            Q_SIGNAL DurationChanged(item);
+            item = m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessJob, entryName, 1, value);
+            Q_SIGNAL DurationChanged(item);
+        }
     }
 }

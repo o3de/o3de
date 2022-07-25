@@ -22,8 +22,8 @@ namespace AssetBuilderSDK
 namespace AssetProcessor
 {
     class BuilderInfoMetricsItem;
-    class JobEntry;
     class BuilderData;
+    class JobEntry;
 
     class BuilderInfoMetricsModel
         : public QAbstractItemModel
@@ -44,21 +44,19 @@ namespace AssetProcessor
         };
 
         BuilderInfoMetricsModel(BuilderData* builderData, QObject* parent = nullptr);
+        void Reset();
+        void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
 
         // QAbstractItemModel
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
-
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         int columnCount(const QModelIndex& parent = QModelIndex()) const override;
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
         QModelIndex parent(const QModelIndex& index) const override;
 
-        void Reset();
-        void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
     public Q_SLOTS:
-        // void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
-        void OnCreateJobsDurationChanged(QString sourceName);
+        void OnDurationChanged(BuilderInfoMetricsItem* item);
 
     private:
         BuilderData* m_data;

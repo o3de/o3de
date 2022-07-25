@@ -528,9 +528,15 @@ void MainWindow::Activate()
     });
     connect(
         m_guiApplicationManager->GetAssetProcessorManager(),
-        &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
+        &AssetProcessorManager::JobProcessDurationChanged,
         m_builderData,
-        &AssetProcessor::BuilderData::OnProcessJobDurationChanged);
+        &BuilderData::OnProcessJobDurationChanged);
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessorManager::CreateJobsDurationChanged,
+        m_builderData,
+        &BuilderData::OnCreateJobsDurationChanged);
+    connect(m_builderData, &BuilderData::DurationChanged, m_builderInfoMetrics, &BuilderInfoMetricsModel::OnDurationChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

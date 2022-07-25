@@ -75,20 +75,22 @@ namespace AssetProcessor
         return m_parent.get();
     }
 
-    bool BuilderInfoMetricsItem::UpdateOrInsertEntry(
+    BuilderInfoMetricsItem* BuilderInfoMetricsItem::UpdateOrInsertEntry(
         JobType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
     {
         //! only allowed to insert from builder, with a valid JobType
         if (m_itemType != ItemType::Builder || entryjobType >= JobType::Max)
         {
-            return false;
+            return nullptr;
         }
 
+        // jobType is either CreateJob or ProcessJob
         const auto& jobType = m_children[aznumeric_cast<int>(entryjobType)];
 
+        BuilderInfoMetricsItem* entry = nullptr;
         if (jobType->m_childNameToIndex.contains(entryName))
         {
-            const auto& entry = jobType->m_children[jobType->m_childNameToIndex[entryName]];
+            entry = jobType->m_children[jobType->m_childNameToIndex[entryName]].get();
             AZ::s64 jobCountDiff = entryJobCount - entry->m_jobCount;
             AZ::s64 totalDurationDiff = entryTotalDuration - entry->m_totalDuration;
             entry->m_jobCount = entryJobCount;
@@ -97,12 +99,14 @@ namespace AssetProcessor
         }
         else
         {
-            jobType->m_children.emplace_back(new BuilderInfoMetricsItem(ItemType::Entry, entryName, entryJobCount, entryTotalDuration, jobType));
+            entry = jobType->m_children
+                        .emplace_back(new BuilderInfoMetricsItem(ItemType::Entry, entryName, entryJobCount, entryTotalDuration, jobType))
+                        .get();
             jobType->m_childNameToIndex[entryName] = aznumeric_cast<int>(jobType->m_children.size() - 1);
             jobType->UpdateMetrics(entryJobCount, entryTotalDuration);
         }
 
-        return true;
+        return entry;
     }
     void BuilderInfoMetricsItem::UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff)
     {
