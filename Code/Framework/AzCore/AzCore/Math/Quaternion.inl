@@ -66,6 +66,20 @@ namespace AZ
         return Quaternion(Simd::Vec4::FromVec3(v.GetSimdValue()));
     }
 
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesXYZ(const Vector3& eulerRadians)
+    {
+        return CreateFromEulerRadiansXYZ(Vector3DegToRad(eulerRadians));
+    }
+
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesYXZ(const Vector3& eulerRadians)
+    {
+        return CreateFromEulerRadiansYXZ(Vector3DegToRad(eulerRadians));
+    }
+
+    AZ_MATH_INLINE Quaternion Quaternion::CreateFromEulerDegreesZYX(const Vector3& eulerRadians)
+    {
+        return CreateFromEulerRadiansZYX(Vector3DegToRad(eulerRadians));
+    }
 
     AZ_MATH_INLINE Quaternion Quaternion::CreateFromVector3AndValue(const Vector3& v, float w)
     {

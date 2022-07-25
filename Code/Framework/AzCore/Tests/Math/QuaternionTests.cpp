@@ -6,6 +6,7 @@
  *
  */
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix3x3.h>
@@ -523,4 +524,106 @@ namespace UnitTest
         const float angle = absQuat.GetEulerRadians().GetX();
         EXPECT_THAT(angle, testing::FloatEq(-AZ::Constants::HalfPi));
     }
+
+    struct EularTestArgs {
+        AZ::Vector3 eular;
+        AZ::Quaternion result;
+    };
+
+    using AngleRadianTestFixtureXYZ = ::testing::TestWithParam<EularTestArgs>;
+
+    TEST_P(AngleRadianTestFixtureXYZ, EularRadiansXYZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansXYZ(param.eular), IsClose(param.result));
+    }
+
+     TEST_P(AngleRadianTestFixtureXYZ, EularDegreesXYZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesXYZ(Vector3RadToDeg(param.eular)), IsClose(param.result));
+    }
+
+
+    INSTANTIATE_TEST_CASE_P(
+        MATH_Quaternion,
+        AngleRadianTestFixtureXYZ,
+        ::testing::Values(
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)}));
+
+    using AngleRadianTestFixtureYXZ = ::testing::TestWithParam<EularTestArgs>;
+
+    TEST_P(AngleRadianTestFixtureYXZ, EularRadiansYXZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansYXZ(param.eular), IsClose(param.result));
+    }
+
+    TEST_P(AngleRadianTestFixtureYXZ, EularDegreesYXZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesYXZ(Vector3RadToDeg(param.eular)), IsClose(param.result));
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        MATH_Quaternion,
+        AngleRadianTestFixtureYXZ,
+        ::testing::Values(
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationZ(Constants::QuarterPi)}
+        ));
+
+    using AngleRadianTestFixtureZYX = ::testing::TestWithParam<EularTestArgs>;
+
+    TEST_P(AngleRadianTestFixtureZYX, EularRadiansYXZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansZYX(param.eular), IsClose(param.result));
+    }
+
+    TEST_P(AngleRadianTestFixtureZYX, EularDegreesYXZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesZYX(Vector3RadToDeg(param.eular)), IsClose(param.result));
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        MATH_Quaternion,
+        AngleRadianTestFixtureZYX,
+        ::testing::Values(
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(-Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationZ(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, -Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, -Constants::QuarterPi), AZ::Quaternion::CreateRotationX(-Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, Constants::QuarterPi, Constants::QuarterPi), AZ::Quaternion::CreateRotationY(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(Constants::QuarterPi, 0, Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(Constants::QuarterPi)}
+        ));
+
 }
