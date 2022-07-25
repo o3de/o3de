@@ -12,7 +12,7 @@ import sys
 import pathlib
 import traceback
 import re
-from tiaf import TestImpact
+from test_impact import TestImpact
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)

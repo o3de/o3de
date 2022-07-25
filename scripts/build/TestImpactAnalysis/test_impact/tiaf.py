@@ -12,8 +12,7 @@ import re
 import uuid
 import pathlib
 from git_utils import Repo
-from persistent_storage import PersistentStorageLocal
-from persistent_storage import PersistentStorageS3
+from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
