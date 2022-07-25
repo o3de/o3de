@@ -61,7 +61,7 @@ set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT
 set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH}\"")
 
 # Path to file used to store data required by TIAF tests
-set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${LY_TEST_IMPACT_WORKING_DIR}")
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -472,15 +472,11 @@ function(ly_test_impact_write_pytest_file)
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
 
-    set(build ${CMAKE_BINARY_DIR})
-
-    set(root ${LY_ROOT_FOLDER})
-
     # Configure and write out our test data file
     ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
     string(CONFIGURE ${test_file} test_file)
     file(GENERATE
-        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/test_data.json"
+        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/ly_test_impact_test_data.json"
         CONTENT "${test_file}")
 
 endfunction()

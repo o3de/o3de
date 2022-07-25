@@ -11,11 +11,15 @@ from pathlib import Path
 import pytest
 import uuid
 
+BUILD_INFO_KEY = 'build_info'
+CONFIG_PATH_KEY = 'config'
+REPORT_PATH_KEY = 'report'
+BINARY_PATH_KEY = 'bin'
+
 
 @pytest.fixture
-def test_data_file():
-    path = Path(
-        "../o3de/scripts/build/TestImpactAnalysis/Testing/test_data.json")
+def test_data_file(build_directory):
+    path = Path(build_directory+"/ly_test_impact_test_data.json")
     with open(path) as file:
         return json.load(file)
 
@@ -27,17 +31,17 @@ def build_type(request):
 
 @pytest.fixture
 def config_path(build_type, test_data_file):
-    return test_data_file['configs'][build_type]
+    return test_data_file[BUILD_INFO_KEY][build_type][CONFIG_PATH_KEY]
 
 
 @pytest.fixture
 def binary_path(build_type, test_data_file):
-    return test_data_file['binary'][build_type]
+    return test_data_file[BUILD_INFO_KEY][build_type][BINARY_PATH_KEY]
 
 
 @pytest.fixture()
 def report_path(build_type, test_data_file, mock_uuid):
-    return test_data_file['report_dir'][build_type]+"\\report."+mock_uuid.hex+".json"
+    return test_data_file[BUILD_INFO_KEY][build_type][REPORT_PATH_KEY]+"\\report."+mock_uuid.hex+".json"
 
 
 @pytest.fixture
@@ -72,7 +76,7 @@ def mock_uuid(mocker):
 
 
 @pytest.fixture
-def default_runtime_args(mock_uuid, binary_path, report_path):
+def default_runtime_args(mock_uuid, report_path):
     runtime_args = {}
     runtime_args['sequence'] = "--sequence=seed"
     runtime_args['safemode'] = "--safemode=off"

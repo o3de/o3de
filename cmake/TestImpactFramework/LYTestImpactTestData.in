@@ -1,5 +1,3 @@
 { 
-  "root" : "${root}",
-  "build" : "${build}",
   "build_info" : { ${build_configs} }
 }
