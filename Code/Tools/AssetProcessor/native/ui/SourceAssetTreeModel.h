@@ -37,6 +37,9 @@ namespace AssetProcessor
             m_intermediateAssetFolderId = intermediateAssetFolderId;
         }
 
+    public Q_SLOTS:
+        void OnCreateJobsDurationChanged(QString sourceName);
+
     protected:
         void ResetModel() override;
 

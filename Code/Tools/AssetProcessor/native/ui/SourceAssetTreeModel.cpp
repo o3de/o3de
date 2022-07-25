@@ -138,7 +138,7 @@ namespace AssetProcessor
     void SourceAssetTreeModel::AddOrUpdateEntry(
         const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source,
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder,
-        bool modelIsResetting, AZ::s64 analysisJobDuration)
+        bool modelIsResetting, AZ::s64 createJobDuration)
     {
         const auto& existingEntry = m_sourceToTreeItem.find(source.m_sourceName);
         if (existingEntry != m_sourceToTreeItem.end())
@@ -148,7 +148,11 @@ namespace AssetProcessor
             // This item already exists, refresh the related data.
             sourceItemData->m_scanFolderInfo = scanFolder;
             sourceItemData->m_sourceInfo = source;
-            sourceItemData->m_analysisDuration = analysisJobDuration;
+            if (createJobDuration != -1)
+            {
+                // existing item: update duration only if it is provided
+                sourceItemData->m_analysisDuration = createJobDuration;
+            }
 
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
@@ -225,7 +229,7 @@ namespace AssetProcessor
         }
 
         m_sourceToTreeItem[source.m_sourceName] = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
-            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, analysisJobDuration));
+            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, createJobDuration));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {
@@ -243,21 +247,10 @@ namespace AssetProcessor
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
             {
-                // Get stat
-                AZ::s64 accumulateJobDuration = 0;
-                QString statKey = QString("CreateJobs,%1").arg(entry.m_sourceName.c_str()).append("%");
-                m_sharedDbConnection->QueryStatLikeStatName(
-                    statKey.toUtf8().data(),
-                    [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
-                    {
-                        accumulateJobDuration += statEntry.m_statValue;
-                        return true;
-                    });
-
                 m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
                     [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
-                        AddOrUpdateEntry(entry, scanFolder, false, accumulateJobDuration);
+                        AddOrUpdateEntry(entry, scanFolder, false);
                         return true;
                     });
             });
@@ -359,5 +352,31 @@ namespace AssetProcessor
             return QModelIndex();
         }
         return createIndex(sourceItem->second->GetRow(), 0, sourceItem->second);
+    }
+
+    void SourceAssetTreeModel::OnCreateJobsDurationChanged(QString sourceName)
+    {
+        // update the source asset's CreateJob duration, if such asset exists in the tree
+        const auto& existingEntry = m_sourceToTreeItem.find(sourceName.toUtf8().constData());
+        if (existingEntry != m_sourceToTreeItem.end())
+        {
+            AZStd::shared_ptr<SourceAssetTreeItemData> sourceItemData =
+                AZStd::rtti_pointer_cast<SourceAssetTreeItemData>(existingEntry->second->GetData());
+
+            AZ::s64 accumulateJobDuration = 0;
+            QString statKey = QString("CreateJobs,%1").arg(sourceName).append("%");
+            m_sharedDbConnection->QueryStatLikeStatName(
+                statKey.toUtf8().data(),
+                [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
+                {
+                    accumulateJobDuration += statEntry.m_statValue;
+                    return true;
+                });
+            sourceItemData->m_analysisDuration = accumulateJobDuration;
+
+            QModelIndex existingIndex = createIndex(
+                existingEntry->second->GetRow(), aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration), existingEntry->second);
+            dataChanged(existingIndex, existingIndex);
+        }
     }
 }
