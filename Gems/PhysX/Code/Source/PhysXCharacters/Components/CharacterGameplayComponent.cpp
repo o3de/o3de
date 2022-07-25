@@ -25,6 +25,7 @@ namespace PhysX
             serializeContext->Class<CharacterGameplayConfiguration>()
                 ->Version(1)
                 ->Field("GravityMultiplier", &CharacterGameplayConfiguration::m_gravityMultiplier)
+                ->Field("GroundDetectionBoxHeight", &CharacterGameplayConfiguration::m_groundDetectionBoxHeight)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -35,6 +36,10 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_gravityMultiplier,
                         "Gravity Multiplier", "Multiplier for global gravity value that applies only to this character entity.")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_groundDetectionBoxHeight,
+                        "Ground Detection Box Height", "Vertical size of box to use when testing for ground contact.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                     ;
             }
         }
@@ -62,6 +67,7 @@ namespace PhysX
 
     CharacterGameplayComponent::CharacterGameplayComponent(const CharacterGameplayConfiguration& config)
         : m_gravityMultiplier(config.m_gravityMultiplier)
+        , m_groundDetectionBoxHeight(config.m_groundDetectionBoxHeight)
     {
     }
 
@@ -74,6 +80,7 @@ namespace PhysX
             serializeContext->Class<CharacterGameplayComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("GravityMultiplier", &CharacterGameplayComponent::m_gravityMultiplier)
+                ->Field("GroundDetectionBoxHeight", &CharacterGameplayComponent::m_groundDetectionBoxHeight)
                 ;
         }
 
@@ -85,6 +92,14 @@ namespace PhysX
                 ->Event("IsOnGround", &CharacterGameplayRequests::IsOnGround, "Is On Ground")
                 ->Event("GetGravityMultiplier", &CharacterGameplayRequests::GetGravityMultiplier, "Get Gravity Multiplier")
                 ->Event("SetGravityMultiplier", &CharacterGameplayRequests::SetGravityMultiplier, "Set Gravity Multiplier")
+                ->Event(
+                    "GetGroundDetectionBoxHeight",
+                    &CharacterGameplayRequests::GetGroundDetectionBoxHeight,
+                    "Get Ground Detection Box Height")
+                ->Event(
+                    "SetGroundDetectionBoxHeight",
+                    &CharacterGameplayRequests::SetGroundDetectionBoxHeight,
+                    "Set Ground Detection Box Height")
                 ->Event("GetFallingVelocity", &CharacterGameplayRequests::GetFallingVelocity, "Get Falling Velocity")
                 ->Event("SetFallingVelocity", &CharacterGameplayRequests::SetFallingVelocity, "Set Falling Velocity")
                 ;
@@ -181,6 +196,16 @@ namespace PhysX
     void CharacterGameplayComponent::SetGravityMultiplier(float gravityMultiplier)
     {
         m_gravityMultiplier = gravityMultiplier;
+    }
+
+    float CharacterGameplayComponent::GetGroundDetectionBoxHeight() const
+    {
+        return m_groundDetectionBoxHeight;
+    }
+
+    void CharacterGameplayComponent::SetGroundDetectionBoxHeight(float groundDetectionBoxHeight)
+    {
+        m_groundDetectionBoxHeight = AZ::GetMax(0.0f, groundDetectionBoxHeight);
     }
 
     AZ::Vector3 CharacterGameplayComponent::GetFallingVelocity() const

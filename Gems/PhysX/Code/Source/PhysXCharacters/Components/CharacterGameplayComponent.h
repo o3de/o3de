@@ -31,6 +31,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         float m_gravityMultiplier = 1.0f; //!< Multiplier to be combined with world gravity setting when applying gravity to character.
+        float m_groundDetectionBoxHeight = 0.02f; //!< Vertical size of box to use when testing for ground contact.
     };
 
     //! Character Gameplay Component.
@@ -62,6 +63,8 @@ namespace PhysX
         bool IsOnGround() const override;
         float GetGravityMultiplier() const override;
         void SetGravityMultiplier(float gravityMultiplier) override;
+        float GetGroundDetectionBoxHeight() const override;
+        void SetGroundDetectionBoxHeight(float groundDetectionBoxHeight) override;
         AZ::Vector3 GetFallingVelocity() const override;
         void SetFallingVelocity(const AZ::Vector3& fallingVelocity) override;
 
