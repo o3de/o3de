@@ -19,8 +19,6 @@ namespace AssetProcessor
     {
     }
 
-    //! This method runs when this model is initialized. It gets the list of builders, gets existing stats about analysis jobs and
-    //! processing jobs, and matches stats with builders and save them appropriately for future use.
     void BuilderData::Reset()
     {
         BuilderInfoList builders;

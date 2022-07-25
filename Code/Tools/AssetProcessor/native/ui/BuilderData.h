@@ -29,11 +29,15 @@ namespace AssetProcessor
 {
     class BuilderDataItem;
 
+    //! BuilderData is a class that contains all jobs' metrics, categorized by builders. It is shared by BuilderInfoMetricsModel and
+    //! BuilderListModel as the source of data.
     class BuilderData : public QObject
     {
         Q_OBJECT
     public:
         BuilderData(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent = nullptr);
+        //! This method runs when this model is initialized. It gets the list of builders, gets existing stats about analysis jobs and
+        //! processing jobs, and matches stats with builders and save them appropriately for future use.
         void Reset();
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
