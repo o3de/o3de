@@ -156,7 +156,7 @@ private:
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
 
-    AZStd::shared_ptr<AssetProcessor::BuilderData> m_builderData;
+    AssetProcessor::BuilderData* m_builderData;
     BuilderListModel* m_builderList;
     BuilderListSortFilterProxy* m_builderListSortFilterProxy;
     AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns;

@@ -12,8 +12,9 @@
 
 namespace AssetProcessor
 {
-    BuilderData::BuilderData(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection)
+    BuilderData::BuilderData(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent)
         : m_dbConnection(dbConnection)
+        , QObject(parent)
     {
     }
 
@@ -96,5 +97,10 @@ namespace AssetProcessor
                 }
                 return true;
             });
+    }
+
+    void BuilderData::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
+    {
+        AZ_Printf("Asset Processor", "hi, OnProcessJobDurationChanged got called!\n");
     }
 }

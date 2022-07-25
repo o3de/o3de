@@ -7,8 +7,10 @@
  */
 #include <ui/BuilderInfoMetricsModel.h>
 #include <ui/BuilderInfoMetricsItem.h>
+#include <ui/BuilderData.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <QTime>
 
 namespace AssetProcessor
 {
@@ -48,8 +50,7 @@ namespace AssetProcessor
         }
     }
 
-    BuilderInfoMetricsModel::BuilderInfoMetricsModel(
-        AZStd::shared_ptr<BuilderData> builderData, QObject* parent)
+    BuilderInfoMetricsModel::BuilderInfoMetricsModel(BuilderData* builderData, QObject* parent)
         : QAbstractItemModel(parent)
         , m_data(builderData)
     {
@@ -242,23 +243,23 @@ namespace AssetProcessor
         endResetModel();
     }
 
-    void BuilderInfoMetricsModel::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
-    {
-        // TODO: move it to BuilderData?
-    
-        // if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
-        // {
-        //     int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
-        //     
-        //     AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
-        //     entryName.append(",");
-        //     entryName.append(jobEntry.m_jobKey.toUtf8().constData());
-        //     entryName.append(",");
-        //     entryName.append(jobEntry.m_platformInfo.m_identifier);
-        //     m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
-        //     m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
-        // }
-    }
+    // void BuilderInfoMetricsModel::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
+    // {
+    //     // TODO: move it to BuilderData?
+    // 
+    //     if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
+    //     {
+    //         int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
+    //         
+    //         AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
+    //         entryName.append(",");
+    //         entryName.append(jobEntry.m_jobKey.toUtf8().constData());
+    //         entryName.append(",");
+    //         entryName.append(jobEntry.m_platformInfo.m_identifier);
+    //         m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
+    //         m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
+    //     }
+    // }
 
     void BuilderInfoMetricsModel::OnCreateJobsDurationChanged(QString sourceName)
     {

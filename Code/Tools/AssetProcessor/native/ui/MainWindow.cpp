@@ -15,13 +15,14 @@
 #include "ProductDependencyTreeItemData.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
+#include <native/ui/BuilderData.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
 #include <native/ui/BuilderInfoMetricsSortModel.h>
-#include <ui/SourceAssetTreeFilterModel.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
 #include <native/ui/BuilderInfoMetricsSortModel.h>
+#include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -487,7 +488,7 @@ void MainWindow::Activate()
     m_jobsModel->PopulateJobsFromDatabase();
 
     // Builders Tab:
-    m_builderData = AZStd::make_shared<BuilderData>(m_sharedDbConnection);
+    m_builderData = new BuilderData(m_sharedDbConnection, this);
     m_builderListSortFilterProxy->setDynamicSortFilter(true);
     m_builderListSortFilterProxy->setSourceModel(m_builderList);
     m_builderListSortFilterProxy->sort(0);
@@ -523,8 +524,8 @@ void MainWindow::Activate()
     connect(
         m_guiApplicationManager->GetAssetProcessorManager(),
         &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
-        m_builderInfoMetrics,
-        &AssetProcessor::BuilderInfoMetricsModel::OnProcessJobDurationChanged);
+        m_builderData,
+        &AssetProcessor::BuilderData::OnProcessJobDurationChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

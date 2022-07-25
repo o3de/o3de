@@ -43,7 +43,7 @@ namespace AssetProcessor
             SortRole = Qt::UserRole
         };
 
-        BuilderInfoMetricsModel(AZStd::shared_ptr<BuilderData> builderData, QObject* parent = nullptr);
+        BuilderInfoMetricsModel(BuilderData* builderData, QObject* parent = nullptr);
 
         // QAbstractItemModel
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -57,10 +57,10 @@ namespace AssetProcessor
         void Reset();
         void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
     public Q_SLOTS:
-        void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
+        // void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
         void OnCreateJobsDurationChanged(QString sourceName);
 
     private:
-        AZStd::shared_ptr<BuilderData> m_data;
+        BuilderData* m_data;
     };
 } // namespace AssetProcessor
