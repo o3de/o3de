@@ -511,7 +511,7 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int duration)
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs)
     {
         QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
 
@@ -519,7 +519,7 @@ namespace AssetProcessor
         {
             unsigned int jobIndex = iter.value();
             CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
-            jobInfo->m_processDuration = QTime::fromMSecsSinceStartOfDay(duration);
+            jobInfo->m_processDuration = QTime::fromMSecsSinceStartOfDay(durationMs);
             Q_EMIT dataChanged(
                 index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
         }
