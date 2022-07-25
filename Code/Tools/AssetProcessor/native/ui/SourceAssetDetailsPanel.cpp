@@ -304,7 +304,7 @@ namespace AssetProcessor
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
 
-        m_ui->sourceAsssetTitleLabel->setVisible(m_isIntermediateAsset);
+        m_ui->sourceAssetTitleLabel->setVisible(m_isIntermediateAsset);
         m_ui->gotoAssetButton->setVisible(m_isIntermediateAsset);
         m_ui->sourceAssetValueLabel->setVisible(m_isIntermediateAsset);
 
