@@ -11,10 +11,7 @@ from logging import getLogger
 from typing import Counter
 from tiaf import TestImpact
 from tiaf_driver import main
-from tiaf_persistent_storage_local import PersistentStorageLocal
-from tiaf_persistent_storage_s3 import PersistentStorageS3
 import pytest
-import unittest.mock as mock
 logging = getLogger("tiaf")
 
 

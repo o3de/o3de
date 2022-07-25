@@ -6,17 +6,10 @@
 #
 #
 
-from logging import getLogger
-import os
-from tiaf_driver import main
 import json
 from pathlib import Path
 import pytest
-import subprocess
 import uuid
-from botocore.stub import Stubber
-from botocore import session
-from boto3 import client
 
 
 @pytest.fixture
