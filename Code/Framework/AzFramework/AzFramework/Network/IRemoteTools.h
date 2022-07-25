@@ -12,7 +12,9 @@
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
@@ -93,6 +95,10 @@ namespace AzFramework
         //! Sets the ID of this message's sender
         //! @param senderTargetId The ID to set for this message's sender
         void SetSenderTargetId(AZ::u32 senderTargetId);
+
+        //! Reflect RemoteToolsMessage
+        //! @param reflection Context to reflect to
+        static void ReflectRemoteToolsMessage(AZ::ReflectContext* reflection);
 
     protected:
         AZ::u64 m_msgId;

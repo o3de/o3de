@@ -65,6 +65,17 @@ namespace AzFramework
         m_senderTargetId = senderTargetId;
     }
 
+    inline void RemoteToolsMessage::ReflectRemoteToolsMessage(AZ::ReflectContext* reflection)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
+        if (serializeContext)
+        {
+            serializeContext->Class<RemoteToolsMessage>()
+                ->Field("MsgId", &RemoteToolsMessage::m_msgId)
+                ->Field("BinaryBlobSize", &RemoteToolsMessage::m_customBlobSize);
+        }
+    }
+
     inline bool RemoteToolsEndpointInfo::IsSelf() const
     {
         return m_networkId == s_selfNetworkId;

@@ -131,10 +131,6 @@ namespace RemoteTools
         m_entryRegistry[key].m_name = name;
         m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
 
-        AzFramework::RemoteToolsEndpointContainer::pair_iter_bool ret = m_entryRegistry[key].m_availableTargets.insert_key(key);
-        AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
-        ti.SetInfo("Self", key, SelfNetworkId);
-
         AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
             name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
         netInterface->SetTimeoutMs(AZ::TimeMs(0));
@@ -437,8 +433,6 @@ namespace RemoteTools
 
             if (GetDesiredEndpoint(key).GetPersistentId() != packet.GetPersistentId())
             {
-                AzFramework::RemoteToolsEndpointInfo& ti = m_entryRegistry[key].m_availableTargets[packet.GetPersistentId()];
-                ti.SetInfo(ti.GetDisplayName(), ti.GetPersistentId(), static_cast<uint32_t>(connection->GetConnectionId()));
                 SetDesiredEndpoint(key, packet.GetPersistentId());
             }
         }

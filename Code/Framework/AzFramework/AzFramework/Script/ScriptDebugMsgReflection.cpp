@@ -49,6 +49,8 @@ namespace AzFramework
                 ->Field("canQueue", &ScriptUserEBusInfo::m_canQueue)
                 ->Field("hasHandler", &ScriptUserEBusInfo::m_hasHandler);
 
+            AzFramework::RemoteToolsMessage::ReflectRemoteToolsMessage(reflection);
+
             serializeContext->Class<ScriptDebugRequest, RemoteToolsMessage>()
                 ->Field("request", &ScriptDebugRequest::m_request)
                 ->Field("context", &ScriptDebugRequest::m_context);
