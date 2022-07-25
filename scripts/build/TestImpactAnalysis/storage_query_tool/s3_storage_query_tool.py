@@ -37,19 +37,19 @@ class S3StorageQueryTool(StorageQueryTool):
                 if self._action == self.Action.CREATE:
                     logger.info('create')
                     self._put(bucket_name=self._bucket_name,
-                                file=self._file, storage_location=self._full_address)
+                              file=self._file, storage_location=self._full_address)
                 elif self._action == self.Action.READ:
                     logger.info('read')
                     self._access(bucket_name=self._bucket_name,
-                                    file=self._full_address, destination=self._file_out)
+                                 file=self._full_address, destination=self._file_out)
                 elif self._action == self.Action.UPDATE:
                     logger.info('update')
                     self._update(bucket_name=self._bucket_name,
-                                    file=self._file, storage_location=self._full_address)
+                                 file=self._file, storage_location=self._full_address)
                 elif self._action == self.Action.DELETE:
                     logger.info("update")
                     self._delete(bucket_name=self._bucket_name,
-                                    file=self._full_address)
+                                 file=self._full_address)
                 elif self._action == self.Action.QUERY:
                     self._display()
             else:
