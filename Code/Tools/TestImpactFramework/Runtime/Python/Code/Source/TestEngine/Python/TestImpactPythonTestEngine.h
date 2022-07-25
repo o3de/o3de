@@ -9,7 +9,6 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactClientTestRun.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>

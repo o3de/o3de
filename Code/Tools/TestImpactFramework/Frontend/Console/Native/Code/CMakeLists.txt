@@ -24,7 +24,6 @@ ly_add_target(
         PRIVATE
             ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
-        PRIVATE
         PUBLIC
             AZ::TestImpact.Runtime.Native.Static
 )
@@ -47,7 +46,7 @@ ly_add_target(
 # Tests
 ################################################################################
 
-# Disbled:SPEC-7246
+# Disbled for future PR
 #ly_add_target(
 #    NAME TestImpact.Frontend.Console.Native.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
 #    NAMESPACE AZ

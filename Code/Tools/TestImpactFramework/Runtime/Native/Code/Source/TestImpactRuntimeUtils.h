@@ -29,7 +29,7 @@ namespace TestImpact
     //! Construct a build target list from the build target descriptors and test target metas.
     AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
-        const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
+        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
