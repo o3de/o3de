@@ -292,13 +292,15 @@ void JobModelUnitTests::CreateDatabaseTestData()
     //! Insert valid stat entries, one per job
     for (const auto& jobEntry : m_data->m_jobEntries)
     {
-        statEntry = { "ProcessJob," + m_data->m_sourceName + "," + jobEntry.m_jobKey + "," + jobEntry.m_platform /* StatName */,
+        AZStd::string statName = "ProcessJob," + m_data->m_sourceName + "," + jobEntry.m_jobKey + "," + jobEntry.m_platform + "," +
+            jobEntry.m_builderGuid.ToString<AZStd::string>();
+        statEntry = { statName /* StatName */,
                       aznumeric_cast<AZ::s64>(jobEntry.m_fingerprint) /* StatValue */,
                       aznumeric_cast<AZ::s64>(jobEntry.m_jobRunKey) /* LastLogTime */ };
         ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
     }
 
-    //! Insert an invalid stat entry (5 tokens)
-    statEntry = { "ProcessJob,apple,banana,carrot,dog", 123, 456 };
+    //! Insert an invalid stat entry (6 tokens)
+    statEntry = { "ProcessJob,apple,banana,carrot,dog,{FDAF4363-C530-476C-B382-579A43B3E2FC}", 123, 456 };
     ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
 }
