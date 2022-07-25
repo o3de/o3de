@@ -27,7 +27,7 @@ class TestTiafInitialiseStorage():
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit']
         mock_local = mocker.patch(
-            "tiaf_persistent_storage_local.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
+            "persistent_storage.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -41,7 +41,7 @@ class TestTiafInitialiseStorage():
         tiaf_args['s3_bucket'] = bucket_name
         tiaf_args['s3_top_level_dir'] = top_level_dir
         mock_storage = mocker.patch(
-            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", side_effect=SystemError())
+            "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
@@ -56,7 +56,7 @@ class TestTiafInitialiseStorage():
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = None
         mock_storage = mocker.patch(
-            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
+            "persistent_storage.PersistentStorageS3.__init__", return_value=None)
 
         # when:
         tiaf = TestImpact(tiaf_args)
@@ -69,7 +69,7 @@ class TestTiafInitialiseStorage():
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = "test_dir"
         mock_storage = mocker.patch(
-            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
+            "persistent_storage.PersistentStorageS3.__init__", return_value=None)
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit'], None, None, tiaf_args['src_branch']
