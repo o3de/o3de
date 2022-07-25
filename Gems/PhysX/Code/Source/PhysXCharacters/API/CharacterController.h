@@ -238,7 +238,7 @@ namespace PhysX
         float m_minimumMovementDistance = 0.0f; ///< To avoid jittering, the controller will not attempt to move distances below this.
         AZ::Vector3 m_requestedVelocityForTick = AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests which last for a tick.
         AZ::Vector3 m_requestedVelocityForPhysicsTimestep =
-            AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests with last for a physics timestep.
+            AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests which last for a physics timestep.
         AZ::Vector3 m_observedVelocity = AZ::Vector3::CreateZero(); ///< Velocity observed in the simulation, may not match desired.
         PhysX::ActorData m_actorUserData; ///< Used to populate the user data on the PxActor associated with the controller.
         physx::PxFilterData m_filterData; ///< Controls filtering for collisions with other objects and scene queries.
