@@ -31,10 +31,10 @@ namespace Terrain
 {
     namespace AreaConstants
     {
-        static const AZ::u32 s_backgroundLayer = 0;
-        static const AZ::u32 s_foregroundLayer = 1;
-        static const int32_t s_priorityMin = std::numeric_limits<int32_t>::min();
-        static const int32_t s_priorityMax = std::numeric_limits<int32_t>::max();
+        static const uint32_t s_backgroundLayer = 0;
+        static const uint32_t s_foregroundLayer = 1;
+        static const int32_t s_priorityMin = -10000;
+        static const int32_t s_priorityMax = 10000;
         static const int32_t s_prioritySoftMin = -100; //design specified slider range
         static const int32_t s_prioritySoftMax = 100; //design specified slider range
     }
@@ -48,8 +48,8 @@ namespace Terrain
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetSelectableLayers() const;
-        AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
-        AZ::s32 m_priority = AreaConstants::s_priorityMin;
+        uint32_t m_layer = AreaConstants::s_foregroundLayer;
+        int32_t m_priority = 0;
         bool m_useGroundPlane = true;
     };
 
