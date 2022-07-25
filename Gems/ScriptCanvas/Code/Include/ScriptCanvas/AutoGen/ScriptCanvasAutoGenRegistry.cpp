@@ -37,7 +37,7 @@ namespace ScriptCanvas
             g_autogenRegistry = AZ::Environment::FindVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
         }
 
-        // Create the environment variable in this memory space if it has not been found
+        // Create the environment variable in O3DEKernel memory space if it has not been found
         if (!g_autogenRegistry)
         {
             g_autogenRegistry = AZ::Environment::CreateVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
