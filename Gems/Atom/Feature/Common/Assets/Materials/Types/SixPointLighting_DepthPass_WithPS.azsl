@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "./SixPointLighting_Common.azsli"
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/RPI/Math.azsli>
+
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float2 m_uv0 : UV0;
+};
+
+struct VSDepthOutput
+{
+    // "centroid" is needed for SV_Depth to compile
+    linear centroid float4 m_position : SV_Position;
+    float2 m_uv0 : UV0;
+};
+
+
+VSDepthOutput DepthPassVS(VSInput IN)
+{
+    VSDepthOutput OUT;
+ 
+    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+    OUT.m_uv0 = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
+
+    return OUT;
+}
+
+struct PSDepthOutput
+{
+    float m_depth : SV_Depth;
+};
+
+PSDepthOutput DepthPassPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    PSDepthOutput OUT;
+    OUT.m_depth = IN.m_position.z;
+    
+    float2 sixPointUv = GetUvForCurrentFrame(IN.m_uv0);
+    float alpha = MaterialSrg::m_opacityMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
+    //if(alpha < .001f)
+    //{
+    //    clip(-1);
+   // }
+    if(o_enableDepthTexture)
+    {
+        float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r;
+        
+        float m_n_f_n =  ViewSrg::GetNearZ() / ViewSrg::GetFarZMinusNearZ(); // n / (f - n)
+        float m_n_f = ViewSrg::GetNearZ() - ViewSrg::GetFarZ();   // n - f
+        float m_f = ViewSrg::GetFarZ();     // f
+
+        float3 coefficients = float3(m_n_f_n, m_n_f, m_f);
+
+        float linearDepth = 
+            ((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * OUT.m_depth - ViewSrg::GetFarZ()));
+        float tempSign = sign(linearDepth);
+        linearDepth = abs(linearDepth);
+        linearDepth *= tempSign;
+        //OUT.m_depth = ((1.0f / ((linearDepth) / ViewSrg::GetFarZTimesNearZ())) + ViewSrg::GetFarZ()) / ViewSrg::GetFarZMinusNearZ();
+        float linearDepth2 = PerspectiveDepthToLinear(OUT.m_depth, coefficients);
+        //    OUT.m_depth = LinearDepthToPerspective(linearDepth2, coefficients);
+        //OUT.m_depth += LinearDepthToPerspective(depthOffset, coefficients);
+        OUT.m_depth += depthOffset;
+    }
+
+    return OUT;
+}

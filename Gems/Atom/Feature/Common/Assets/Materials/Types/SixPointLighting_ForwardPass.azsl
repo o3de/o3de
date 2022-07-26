@@ -1,0 +1,398 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include "Atom/Features/ShaderQualityOptions.azsli"
+
+#include "SixPointLighting_Common.azsli"
+
+// SRGs
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+
+// Pass Output
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+
+// Utility
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+// Custom Surface & Lighting
+#include <Atom/Features/PBR/Lighting/SixPointLighting.azsli>
+
+// Decals
+#include <Atom/Features/PBR/Decals.azsli>
+
+
+// ---------- Material Parameters ----------
+
+COMMON_OPTIONS_BASE_COLOR()
+
+enum class SixPointTexturePackMode { TpLftRtBt_FrBck, LftRtTp_FrBckBt };
+option SixPointTexturePackMode o_sixPointTexutrePackMode = SixPointTexturePackMode::TpLftRtBt_FrBck;
+
+// Note COMMON_OPTIONS_PARALLAX is in SixPointLighting_Common.azsli because it's needed by all StandardPBR shaders.
+
+// Alpha
+#include "MaterialInputs/AlphaInput.azsli"
+
+// ---------- Vertex Shader ----------
+
+struct VSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+};
+
+struct VSOutput
+{
+    // Base fields (required by the template azsli file)...
+    // "centroid" is needed for SV_Depth to compile
+    linear centroid float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV3;
+
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv[UvSetCount] : UV1;
+};
+
+#include <Atom/Features/Vertex/VertexHelper.azsli>
+
+VSOutput StandardPbr_ForwardPassVS(VSInput IN)
+{
+    VSOutput OUT;
+
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+
+    // By design, only UV0 is allowed to apply transforms.
+    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
+    OUT.m_uv[1] = IN.m_uv1;
+
+    // Shadow coords will be calculated in the pixel shader in this case
+    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
+
+    VertexHelper(IN, OUT, worldPosition, skipShadowCoords);
+    OUT.m_normal = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_normal, 1.0)).xyz;
+    return OUT;
+}
+
+float4 ReconstructWorldPositionFromDepth(float2 screenCoords)
+{
+    float depth = PassSrg::m_linearDepthTexture.Load(int3(screenCoords,0)).r;
+
+    uint2 dimensions;
+    uint samples;
+    PassSrg::m_linearDepthTexture.GetDimensions(dimensions.x, dimensions.y);
+    float2 UV = saturate(screenCoords / dimensions.xy);
+
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float4 projectedPos = float4(x, y, depth, 1.0f);
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w;
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+    return positionWS;
+}
+
+
+// ---------- Pixel Shader ----------
+
+PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
+{
+
+    // ------- Tangents & Bitangets -------
+    float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+    float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+
+    if (ShouldHandleParallax())
+    {
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
+    }
+
+    // ------- Depth & Parallax -------
+
+    depthNDC = IN.m_position.z;
+    
+    bool displacementIsClipped = false;
+
+    if(ShouldHandleParallax())
+    {
+
+        float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
+        float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
+                         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+                         IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
+    }
+
+    Surface surface;
+    surface.clearCoat.InitializeToZero();
+    surface.transmission.InitializeToZero();
+    surface.position = IN.m_worldPosition.xyz;
+    surface.normal = normalize(IN.m_normal);
+    surface.vertexNormal = surface.normal;
+
+
+    // ------- Alpha & Clip -------
+
+    float2 baseColorUv = IN.m_uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 opacityUv = IN.m_uv[MaterialSrg::m_opacityMapUvIndex];
+    
+    float2 sixPointUv = GetUvForCurrentFrame(baseColorUv);
+
+    float alpha = GetAlphaInputAndClip(MaterialSrg::m_baseColorMap, MaterialSrg::m_opacityMap, sixPointUv, sixPointUv, MaterialSrg::m_sampler, MaterialSrg::m_opacityFactor, o_opacity_source);
+
+
+    // ------- Base Color -------
+
+    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, sixPointUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    
+    float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+    float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+    
+    // This is the result of a number of failed experiments to lerp the alpha when there is an opaque object
+    // near the plane that the six point lighting material is on. The opacity map for a six point lighting
+    // material is not sufficient, because that assumes that anything opaque is entirely behind or in front
+    // of the geometry, as is the case with typical standard surfaces. But because the six point lighting
+    // material can come with its own depth map, it is possible for an object to be in between the plane
+    // and the camera, but still be entirely or partially behind the six point effect.
+    // After my first attempt at reading from the depth buffer failed, I tried a number of hacks, none of which quite worked,
+    // so this bloated into a crazy combination of those attempts
+    /*float opaqueDepth = 0.0f;
+    if(o_enableDepthTexture)
+    {
+        float depthOffset = MaterialSrg::m_depthMap.Sample(MaterialSrg::m_sampler, sixPointUv).r * MaterialSrg::m_depthScale;
+
+        // Calculate new depth in world space, then transform it to normalized device coordinates
+        // This feels like overkill.
+        // Once we can assume that the flipbook is always oriented toward the camera.
+        // Should be able to figure out how to scale the depth offset value directly
+        float3 dirToCameraWS;
+        if(ViewSrg::m_projectionMatrix[0].w)
+        {
+            // orthographic projection (directional light)
+            // No view position, use light direction
+            dirToCameraWS = ViewSrg::m_viewMatrix[2].xyz;
+        }
+        else
+        {
+            dirToCameraWS = ViewSrg::m_worldPosition.xyz - IN.m_worldPosition.xyz;
+        }
+        
+        float3 dirToCameraWSNormalized = normalize(dirToCameraWS);
+        float3 worldOffset = dirToCameraWSNormalized * depthOffset;
+        float3 worldOffsetPosition = IN.m_worldPosition.xyz + worldOffset;
+        float4 clipOffsetPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
+        float originalDepthNDC = depthNDC;
+        depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
+        float2 linearDepthUv = ((float2(IN.m_position.x, IN.m_position.y) / IN.m_position.w) + float2(1.0f, 1.0f)) * 0.5f;
+        linearDepthUv = float2(IN.m_position.x, IN.m_position.y) / IN.m_position.w;
+        //linearDepthUv = float2(IN.m_position.x, IN.m_position.y);
+        // Now we want to ramp the alpha value if there is an object between the cutout and the newly re-projected depth.
+        float linearDepth = PassSrg::m_linearDepthTexture.Sample(MaterialSrg::m_sampler, linearDepthUv).r;
+        opaqueDepth = linearDepth;
+        opaqueDepth /= ViewSrg::GetFarZTimesNearZ();
+        opaqueDepth = 1.0 / opaqueDepth;
+        opaqueDepth += ViewSrg::GetFarZ();
+        opaqueDepth /= ViewSrg::GetFarZMinusNearZ();
+        float3 worldDepthBufferPosition = dirToCameraWSNormalized * linearDepth;
+
+        float3 coefficients = float3(ViewSrg::GetNearZ() / ViewSrg::GetFarZMinusNearZ(), ViewSrg::GetNearZ() - ViewSrg::GetFarZ(), ViewSrg::GetFarZ());
+        opaqueDepth = LinearDepthToPerspective(linearDepth, coefficients);
+        //opaqueDepth = depthNDC;
+        opaqueDepth = PassSrg::m_linearDepthTexture.Sample(MaterialSrg::m_sampler, float2(IN.m_position.x, IN.m_position.y)).r;
+        float3 depthPositionWS = ReconstructWorldPositionFromDepth(linearDepthUv).xyz;
+        float4 clipDepthPosition = mul(ViewSrg::m_viewProjectionMatrix, float4(depthPositionWS, 1.0));
+        float linearDepthNDC = clipDepthPosition.z / clipDepthPosition.w;
+        //opaqueDepth = linearDepthNDC;
+
+        //alpha = lerp(0.0f, alpha, saturate((opaqueDepth - originalDepthNDC) / (depthNDC - originalDepthNDC)));
+        alpha = lerp(0.0f, 1.0f, opaqueDepth);
+    }*/
+
+    // ------- Metallic -------
+    float metallic = MaterialSrg::m_metallicFactor;
+
+    // ------- Specular -------
+    float specularF0Factor = MaterialSrg::m_specularF0Factor;
+
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    if(o_sixPointTexutrePackMode == SixPointTexturePackMode::TpLftRtBt_FrBck)
+    {
+        surface.top = topLeftRightBottom.r;
+        surface.left = topLeftRightBottom.g;
+        surface.right = topLeftRightBottom.b;
+        surface.bottom = topLeftRightBottom.a;
+        surface.f = frontBack.r;
+        surface.b = frontBack.g;
+    }
+    else
+    {
+        surface.left = topLeftRightBottom.r;
+        surface.right = topLeftRightBottom.g;
+        surface.top = topLeftRightBottom.b;
+        surface.f = frontBack.r;
+        surface.b = frontBack.g;
+        surface.bottom = frontBack.b;
+    }
+    surface.tangent = tangents[0];
+    surface.bitangent = bitangents[0];
+    // ------- Roughness -------
+    surface.roughnessLinear = MaterialSrg::m_roughnessFactor;
+    surface.CalculateRoughnessA();
+
+    // ------- Lighting Data -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+
+    // ------- Emissive -------
+    lightingData.emissiveLighting = float3(0.0f, 0.0f, 0.0f);
+
+    // ------- Occlusion -------
+    
+    lightingData.diffuseAmbientOcclusion = 1.0f;
+    lightingData.specularOcclusion = 1.0f;
+    
+    // Diffuse and Specular response (used in IBL calculations)
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0 - lightingData.specularResponse;
+    // ------- Multiscatter -------
+    lightingData.multiScatterCompensation = 1.0f;
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Opacity -------
+
+    if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
+        // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
+        // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
+        // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
+        // not apply.
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
+    }
+
+    if (o_opacity_mode == OpacityMode::Blended)
+    {
+        // [GFX_TODO ATOM-13187] PbrLighting shouldn't be writing directly to render targets. It's confusing when
+        // specular is being added to diffuse just because we're calling render target 0 "diffuse".
+
+        // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
+        // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
+        // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+
+        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
+        
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_diffuseColor.w = alpha;
+    }
+    else if (o_opacity_mode == OpacityMode::TintedTransparent)
+    {
+        // See OpacityMode::Blended above for the basic method. TintedTransparent adds onto the above concept by supporting
+        // colored alpha. This is currently a very basic calculation that uses the baseColor as a multiplier with strength
+        // determined by the alpha. We'll modify this later to be more physically accurate and allow surface depth,
+        // absorption, and interior color to be specified.
+        //
+        // The technique uses dual source blending to allow two separate sources to be part of the blending equation
+        // even though ultimately only a single render target is being written to. m_diffuseColor is render target 0 and
+        // m_specularColor render target 1, and the blend mode is (dest * source1color) + (source * 1.0).
+        //
+        // This means that m_specularColor.rgb (source 1) is multiplied against the destination, then
+        // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
+
+        lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
+
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
+        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - alpha); 
+    }
+    else
+    {
+        lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
+    }
+
+    
+
+    return lightingOutput;
+}
+
+ForwardPassOutputWithDepth StandardPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutputWithDepth OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+    OUT.m_depth = depth;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+    OUT.m_depth = depth;
+#endif
+    return OUT;
+}
+
+[earlydepthstencil]
+ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    ForwardPassOutput OUT;
+    float depth;
+
+    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
+
+#ifdef UNIFIED_FORWARD_OUTPUT
+    OUT.m_color.rgb = lightingOutput.m_diffuseColor.rgb + lightingOutput.m_specularColor.rgb;
+    OUT.m_color.a = lightingOutput.m_diffuseColor.a;
+#else
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+#endif
+    return OUT;
+}
