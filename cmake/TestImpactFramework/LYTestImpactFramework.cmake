@@ -58,7 +58,7 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/${
 set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
 
 # Path to file used to store data required by TIAF tests
-set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_BINARY_DIR}")
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_OUTPUT_DIRECTORY}/$<CONFIG>")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -453,6 +453,7 @@ endfunction()
 
 #! ly_test_impact_write_pytest_file: writes out the test information utilised by our TIAF testing tools, using the data derived from the build generation process.
 # 
+# \arg:CONFIGURATION_FILE path to the test data template file
 function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
     # For each configuration type, compile the build info we need and add it to our array
