@@ -319,6 +319,11 @@ namespace PhysX
         return ids;
     }
 
+    AZStd::string JointsComponentMode::GetComponentModeName() const
+    {
+        return "Joint Edit Mode";
+    }
+
     void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
     {
         

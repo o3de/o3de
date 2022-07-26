@@ -29,6 +29,7 @@ namespace AzToolsFramework
 
             // EditorBaseComponentMode overrides ...
             void Refresh() override;
+            AZStd::string GetComponentModeName() const override;
 
         private:
             AZ::EntityComponentIdPair m_entityComponentIdPair;

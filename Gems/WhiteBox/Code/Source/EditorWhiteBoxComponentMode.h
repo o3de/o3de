@@ -59,6 +59,7 @@ namespace WhiteBox
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
+        AZStd::string GetComponentModeName() const override;
 
         // EditorWhiteBoxComponentModeRequestBus ...
         void MarkWhiteBoxIntersectionDataDirty() override;
