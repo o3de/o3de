@@ -26,6 +26,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 // Folder in which levels are stored
 static const char kNewLevelDialog_LevelsFolder[] = "Levels";
 
+
 class LevelFolderValidator : public QValidator
 {
 public:
@@ -206,7 +207,27 @@ void CNewLevelDialog::OnLevelNameChange()
     UpdateData(true);
 
     // QRegExpValidator means the string will always be valid as long as it's not empty:
-    const bool valid = !m_level.isEmpty() && ValidateLevel();
+    bool valid = !m_level.isEmpty() && ValidateLevel();
+    if (valid)
+    {
+        QDir levelDir(QString("%1/%2/").arg(m_levelFolders, m_level));
+        QString strLevelPath = levelDir.absoluteFilePath(m_level + EditorUtils::LevelFile::GetDefaultFileExtension());
+        int levelMaxLength = (AZ::IO::MaxPathLength - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+        if (strLevelPath.length() >= AZ::IO::MaxPathLength)
+        {
+            valid = false;
+            if (!ui->nameErrorTips->isVisible())
+            {
+                ui->nameErrorTips->setVisible(true);
+            }
+            ui->nameErrorTips->setText(QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength));
+        }
+        else if (ui->nameErrorTips->isVisible())
+        {
+            ui->nameErrorTips->setVisible(false);
+        }
+    }
+
 
     // Use the validity to dynamically change the Ok button's enabled state
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
