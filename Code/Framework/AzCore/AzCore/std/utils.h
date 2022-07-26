@@ -210,6 +210,10 @@ namespace AZStd
         T2 second;  // the second stored value
     };
 
+    // AZStd::pair deduction guides
+    template <class T1, class T2>
+    pair(T1, T2) -> pair<T1, T2>;
+
     // pair
     template<class T1, class T2>
     constexpr void swap(AZStd::pair<T1, T2>& left, AZStd::pair<T1, T2>& _Right)

@@ -67,6 +67,7 @@ ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
 {
     // GENERATED_INSTRUCTIONS_BEGIN
     float4 inBaseColor = float4(1.0, 1.0, 1.0, 1.0);
+    float4 inEmissive = float4(0.0, 0.0, 0.0, 0.0);
     float inMetallic = 1.0;
     float inRoughness = 0.5;
     float inSpecularF0Factor = 0.5;
@@ -90,6 +91,7 @@ ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+    lightingData.emissiveLighting = inEmissive;
 
     // ------- Lighting Calculation -------
 

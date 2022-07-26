@@ -1324,6 +1324,10 @@ namespace AZStd
 #endif
     };
 
+    // AZStd::vector deduction guides
+    template <class InputIt, class Alloc = allocator>
+    vector(InputIt, InputIt, Alloc = Alloc()) -> vector<typename iterator_traits<InputIt>::value_type, Alloc>;
+
     //#pragma region Vector equality/inequality
     template <class T, class Allocator>
     AZ_FORCE_INLINE bool operator==(const vector<T, Allocator>& a, const vector<T, Allocator>& b)
