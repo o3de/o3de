@@ -238,27 +238,38 @@ namespace AZ
                 m_isTargetEntityTransformKnown = true;
             }
 
-            AZ::Transform finalTransform;
+            AZ::EntityId parentId;
+            AZ::Transform parentWorldTransform;
+            AZ::TransformBus::EventResult(parentId, m_ownerId, &AZ::TransformBus::Events::GetParentId);
+            AZ::TransformBus::EventResult(parentWorldTransform, parentId, &AZ::TransformBus::Events::GetWorldTM);
+    
+            AZ::Transform finalTransform = m_targetEntityTransform * m_targetBoneTransform;
+            finalTransform = parentWorldTransform.GetInverse() * finalTransform;
+
+            AZ::Vector3 rotationEulerDegrees = finalTransform.GetRotation().GetEulerDegrees() + m_targetOffset.GetRotation().GetEulerDegrees();
+            AZ::Vector3 translation = finalTransform.GetTranslation() + m_targetOffset.GetTranslation();
+
+            finalTransform.SetFromEulerDegrees(rotationEulerDegrees);
+            finalTransform.SetTranslation(translation);
+            finalTransform = parentWorldTransform * finalTransform;
+
+            float uniformScale = 0.0f;
             if (m_scaleSource == AttachmentConfiguration::ScaleSource::WorldScale)
             {
                 // apply offset in world-space
-                finalTransform = m_targetEntityTransform * m_targetBoneTransform;
-                finalTransform.SetUniformScale(1.0f);
-                finalTransform *= m_targetOffset;
+                uniformScale = m_targetOffset.GetUniformScale();
             }
             else if (m_scaleSource == AttachmentConfiguration::ScaleSource::TargetEntityScale)
             {
                 // apply offset in target-entity-space (ignoring bone scale)
-                AZ::Transform boneNoScale = m_targetBoneTransform;
-                boneNoScale.SetUniformScale(1.0f);
-
-                finalTransform = m_targetEntityTransform * boneNoScale * m_targetOffset;
+                uniformScale = m_targetEntityTransform.GetUniformScale() * m_targetOffset.GetUniformScale();
             }
             else // AttachmentConfiguration::ScaleSource::TargetEntityScale
             {
                 // apply offset in target-bone-space
-                finalTransform = m_targetEntityTransform * m_targetBoneTransform * m_targetOffset;
+                uniformScale = m_targetEntityTransform.GetUniformScale() * m_targetBoneTransform.GetUniformScale() * m_targetOffset.GetUniformScale();
             }
+            finalTransform.SetUniformScale(uniformScale);
 
             if (m_cachedOwnerTransform != finalTransform)
             {
