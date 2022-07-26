@@ -6,12 +6,12 @@
  *
  */
 
-#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/Math/SimdMath.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/SimdMath.h>
 
 using namespace AZ;
 
