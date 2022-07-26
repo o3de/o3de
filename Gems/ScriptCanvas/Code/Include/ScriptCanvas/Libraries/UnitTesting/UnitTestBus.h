@@ -14,7 +14,6 @@
 #include <ScriptCanvas/Data/Data.h>
 
 #include "UnitTestBusMacros.h"
-#include "UnitTesting.h"
 
 namespace AZ
 {
@@ -25,6 +24,8 @@ namespace ScriptCanvas
 {
     namespace UnitTesting
     {
+        using Report = AZStd::string;
+
         class BusTraits : public AZ::EBusTraits
         {
         public:

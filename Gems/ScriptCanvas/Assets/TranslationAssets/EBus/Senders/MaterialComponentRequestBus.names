@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Material Component Request Bus"
+                "name": "Material Component Request Bus",
+                "category": "Render"
             },
             "methods": [
                 {

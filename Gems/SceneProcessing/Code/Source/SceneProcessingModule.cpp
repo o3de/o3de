@@ -95,7 +95,7 @@ namespace AZ
                         auto init = module->GetFunction<InitializeDynamicModuleFunction>(InitializeDynamicModuleFunctionName);
                         if (init)
                         {
-                            (*init)(AZ::Environment::GetInstance());
+                            (*init)();
                         }
                     }
                 }

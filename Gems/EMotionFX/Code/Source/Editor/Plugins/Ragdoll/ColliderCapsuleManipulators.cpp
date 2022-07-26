@@ -32,17 +32,6 @@ namespace EMotionFX
             GetCapsuleShapeConfiguration(const_cast<const PhysicsSetupManipulatorData&>(physicsSetupManipulatorData)));
     }
 
-    ColliderCapsuleManipulators::ColliderCapsuleManipulators()
-    {
-        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
-    }
-
-    ColliderCapsuleManipulators::~ColliderCapsuleManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
-    }
-
     void ColliderCapsuleManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
@@ -56,6 +45,8 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
     void ColliderCapsuleManipulators::Refresh()
@@ -73,8 +64,18 @@ namespace EMotionFX
             return;
         }
 
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
+        m_adjustColliderCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+        if (m_radiusManipulator)
+        {
+            m_radiusManipulator->Unregister();
+        }
+        if (m_heightManipulator)
+        {
+            m_heightManipulator->Unregister();
+        }
         TeardownCapsuleManipulators();
     }
 

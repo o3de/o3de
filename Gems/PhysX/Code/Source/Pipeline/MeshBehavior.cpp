@@ -86,7 +86,7 @@ namespace PhysX
                 AZStd::set<AZ::Crc32> types;
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::GraphMetaInfoBus::Events::GetVirtualTypes, types, scene, nodeIndex);
 
-                if (types.count(AZ_CRC("PhysicsMesh", 0xc75d4ff1)) == 1)
+                if (types.count(AZ_CRC_CE("PhysicsMesh")) == 1)
                 {
                     nodeSelectionList.AddSelectedNode(graph.GetNodeName(nodeIndex).GetPath());
                 }

@@ -8,9 +8,12 @@
 
 #include "Atom_RHI_Vulkan_Platform.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <RHI/Conversion.h>
@@ -99,21 +102,30 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             m_dimensions = descriptor.m_dimensions;
 
-            result = BuildSurface(descriptor);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
-            m_presentationQueue = &presentationQueue;
-
-            result = CreateSwapchain();
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            if (nativeDimensions)
+            if (descriptor.m_isXrSwapChain)
             {
-                // Fill out the real swapchain dimensions to return
-                *nativeDimensions = m_dimensions;
-                nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
+                if (nativeDimensions)
+                {
+                    *nativeDimensions = m_dimensions;
+                }
             }
+            else
+            {
+                result = BuildSurface(descriptor);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+                auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
+                m_presentationQueue = &presentationQueue;
+
+                result = CreateSwapchain();
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                if (nativeDimensions)
+                {
+                    // Fill out the real swapchain dimensions to return
+                    *nativeDimensions = m_dimensions;
+                    nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
+                }
+            }    
 
             SetName(GetName());
             return result;
@@ -121,9 +133,14 @@ namespace AZ
 
         void SwapChain::ShutdownInternal()
         {
+            //Nothing to clean as all the native objects for xr swapchain is handles by xr modules
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                return;
+            }
+
             InvalidateNativeSwapChainImmediately();
             InvalidateSurface();
-
             m_presentationQueue = nullptr;
 
             m_swapchainNativeImages.clear();
@@ -135,8 +152,27 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDesc = request.m_descriptor;
-            imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-            RHI::ResultCode result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+            RHI::ResultCode result = RHI::ResultCode::Success;
+
+            // XR swapchains will retrieve the native swapchain image from xr system where as non-xr
+            // swapchains will use the images created internally (i.e RHI::Vulkan)
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                XRSwapChainDescriptor xrSwapChainDescriptor;
+                xrSwapChainDescriptor.m_inputData.m_swapChainIndex = GetDescriptor().m_xrSwapChainIndex;
+                xrSwapChainDescriptor.m_inputData.m_swapChainImageIndex = request.m_imageIndex;
+
+                result = GetXRSystem()->GetSwapChainImage(&xrSwapChainDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+
+                result = image->Init(device, xrSwapChainDescriptor.m_outputData.m_nativeImage, imageDesc);
+            }
+            else
+            {
+                imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
+                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+            }
+
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Assert(false, "Failed to initialize swapchain image %d", request.m_imageIndex);
@@ -177,6 +213,12 @@ namespace AZ
 
         uint32_t SwapChain::PresentInternal()
         {
+            // No need to present a xr swapchain
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                return 0;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint32_t imageIndex = GetCurrentImageIndex();
@@ -241,10 +283,23 @@ namespace AZ
                 //     present to the surface successfully."
                 //
                 // These result values may occur after resizing or some window operation. We should update the surface info and recreate the swapchain.
-                // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
-                if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+                // VK_SUBOPTIMAL_KHR is treated as success, but on non-mobile platforms we better update the surface info as well.
+                if (result == VK_ERROR_OUT_OF_DATE_KHR)
                 {
                     m_pendingRecreation = true;
+                }
+                else if (result == VK_SUBOPTIMAL_KHR)
+                {
+                    // On mobile platforms the swapchain won't be recreated on VK_SUBOPTIMAL_KHR.
+                    // This is because on mobiles VK_SUBOPTIMAL_KHR is returned when the swapchain's "preTransform"
+                    // doesn't match the rotation of the device and that means its render engine internally will
+                    // perform the rotation and on certain devices that's not as optimal as being handled by O3DE.
+                    // Handling the rotation ourselves is not trivial to achieve, because the viewport dimensions have
+                    // to be flipped (which affects UI operations) and view/projection matrices of 3D and 2D systems
+                    // have to be manipulated in higher level code, which is very intrusive.
+#if AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL
+                    m_pendingRecreation = true;
+#endif
                 }
                 else
                 {

@@ -200,12 +200,6 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "PassSystem: ProcessQueuedChanges");
 
-            // Process render pipelines
-            for (RenderPipeline*& pipeline : m_renderPipelines)
-            {
-                pipeline->m_passTree.ProcessQueuedChanges();
-            }
-
             // Erase any passes with pipelines from the passes without pipeline container
             m_passesWithoutPipeline.EraseFromLists([](const RHI::Ptr<Pass>& currentPass)
                 {

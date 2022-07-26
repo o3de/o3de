@@ -12,8 +12,11 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
+AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal
 {
@@ -114,68 +117,98 @@ namespace GradientSignal
         const AZ::Vector3 pixelToBoundsScale(
             inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
-        for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
-        {
-            for (int x = 0; !m_shouldCancel && (x < imageResolutionX); ++x)
+        const AZ::Vector3 positionOffset = inputBoundsStart + scaledTexelOffset;
+
+        // Generate a set of input positions that are inside the bounds along with
+        // their corresponding x,y indices
+        AZStd::vector<AZ::Vector3> inputPositions;
+        inputPositions.reserve(imageResolutionX * imageResolutionY);
+        AZStd::vector<AZStd::pair<int, int>> indices;
+        indices.reserve(imageResolutionX * imageResolutionY);
+
+        // All the input position gathering logic occurs in this lambda passed to the
+        // ShapeComponentRequestsBus so that we only need one bus call
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            m_boundsEntityId,
+            [this, positionOffset, pixelToBoundsScale, imageResolutionX, imageResolutionY, &inputPositions, &indices](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
             {
-                // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
-                // imageBoundsY)
-                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
-
-                GradientSampleParams sampleParams;
-                sampleParams.m_position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
-
-                bool inBounds = true;
-                LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                    inBounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, sampleParams.m_position);
-
-                float sample = inBounds ? m_configuration.m_gradientSampler.GetValue(sampleParams) : 0.0f;
-
-                // Write out the sample value for the pixel based on output format
-                int index = ((y * imageResolutionX) + x) * channels;
-                switch (m_configuration.m_outputFormat)
+                for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
                 {
-                case OutputFormat::R8:
-                {
-                    AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
-                    pixels[index] = value; // R
-
-                    if (channels == 4)
+                    for (int x = 0; x < imageResolutionX; ++x)
                     {
-                        pixels[index + 1] = value; // G
-                        pixels[index + 2] = value; // B
-                        pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
-                    }
-                    break;
-                }
-                case OutputFormat::R16:
-                {
-                    auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                    AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
-                    actualMem[index] = value; // R
+                        // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
+                        // imageBoundsY)
+                        AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
 
-                    if (channels == 4)
-                    {
-                        actualMem[index + 1] = value; // G
-                        actualMem[index + 2] = value; // B
-                        actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
-                    }
-                    break;
-                }
-                case OutputFormat::R32:
-                {
-                    auto actualMem = reinterpret_cast<float*>(pixels.data());
-                    actualMem[index] = sample; // R
+                        AZ::Vector3 position = positionOffset + (uvw * pixelToBoundsScale);
 
-                    if (channels == 4)
-                    {
-                        actualMem[index + 1] = sample; // G
-                        actualMem[index + 2] = sample; // B
-                        actualMem[index + 3] = 1.0f; // A
+                        if (!shape->IsPointInside(position))
+                        {
+                            continue;
+                        }
+
+                        // Keep track of this input position + the x,y indices
+                        inputPositions.push_back(position);
+                        indices.push_back(AZStd::make_pair(x, y));
                     }
-                    break;
                 }
+            });
+
+        // Retrieve all the gradient values for the input positions
+        const size_t numPositions = inputPositions.size();
+        AZStd::vector<float> outputValues(numPositions);
+        m_configuration.m_gradientSampler.GetValues(inputPositions, outputValues);
+
+        // Write out all the gradient values to our output image
+        for (int i = 0; !m_shouldCancel && (i < numPositions); ++i)
+        {
+            const float& sample = outputValues[i];
+            const auto& [x, y] = indices[i];
+
+            // Write out the sample value for the pixel based on output format
+            int index = ((y * imageResolutionX) + x) * channels;
+            switch (m_configuration.m_outputFormat)
+            {
+            case OutputFormat::R8:
+            {
+                AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
+                pixels[index] = value; // R
+
+                if (channels == 4)
+                {
+                    pixels[index + 1] = value; // G
+                    pixels[index + 2] = value; // B
+                    pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
                 }
+                break;
+            }
+            case OutputFormat::R16:
+            {
+                auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
+                AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
+                actualMem[index] = value; // R
+
+                if (channels == 4)
+                {
+                    actualMem[index + 1] = value; // G
+                    actualMem[index + 2] = value; // B
+                    actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
+                }
+                break;
+            }
+            case OutputFormat::R32:
+            {
+                auto actualMem = reinterpret_cast<float*>(pixels.data());
+                actualMem[index] = sample; // R
+
+                if (channels == 4)
+                {
+                    actualMem[index + 1] = sample; // G
+                    actualMem[index + 2] = sample; // B
+                    actualMem[index + 3] = 1.0f; // A
+                }
+                break;
+            }
             }
         }
 
@@ -338,6 +371,16 @@ namespace GradientSignal
         }
     }
 
+    void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
+    void EditorGradientBakerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
     void EditorGradientBakerComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -357,13 +400,8 @@ namespace GradientSignal
             SetDirty();
         }
 
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-
-        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
-        // before listening for gradient queries.
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
+        // Setup the dependency monitor and listen for gradient requests
+        SetupDependencyMonitor();
 
         UpdatePreviewSettings();
 
@@ -440,6 +478,19 @@ namespace GradientSignal
         return entityIds;
     }
 
+    void EditorGradientBakerComponent::SetupDependencyMonitor()
+    {
+        GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
+
+        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
+        // before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
+    }
+
     void EditorGradientBakerComponent::BakeImage()
     {
         if (IsBakeDisabled())
@@ -464,7 +515,7 @@ namespace GradientSignal
             AZ::IO::SystemFile::Delete(fullPathIO.c_str());
         }
 
-        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), GetPreviewEntity());
+        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), m_configuration.m_inputBounds);
         m_bakeImageJob->Start();
 
         // Force a refresh now so the bake button gets disabled
@@ -506,6 +557,23 @@ namespace GradientSignal
             m_bakeImageJob = nullptr;
 
             AZ::TickBus::Handler::BusDisconnect();
+
+            // After a successful bake, if the Entity that contains this gradient baker component also
+            // has an image gradient component, then update the image gradient's image asset with the
+            // output path that we baked to
+            if (GradientSignal::ImageGradientRequestBus::HasHandlers(GetEntityId()))
+            {
+                AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
+
+                QString outputImagePath = QString::fromUtf8(
+                    m_configuration.m_outputImagePath.c_str(), static_cast<int>(m_configuration.m_outputImagePath.Native().size()));
+                outputImagePath += ".streamingimage";
+
+                GradientSignal::ImageGradientRequestBus::Event(
+                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetPath, outputImagePath.toUtf8().constData());
+
+                undo.MarkEntityDirty(GetEntityId());
+            }
 
             // Refresh once the job has completed so the Bake button can be re-enabled
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
@@ -559,6 +627,10 @@ namespace GradientSignal
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = CancelPreviewRendering();
+
+        // Re-setup the dependency monitor when the configuration changes because the gradient sampler
+        // could've changed
+        SetupDependencyMonitor();
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
         for (auto entityId : entityIds)

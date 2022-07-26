@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/Nodeling.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Class Name="Nodeling"
-         QualifiedName="ScriptCanvas::Nodes::Core::Internal::Nodeling"
-         PreferredClassName="Nodeling"
-         Uuid="{4413EEA0-8D81-4D61-A1E1-3C1A437F3643}"
-         Base="ScriptCanvas::Node"
-         Icon="Icons/ScriptCanvas/Start.png"
-         Category="Core"
-         Version="1"
-         GeneratePropertyFriend="True"
-         Description="Represents either an execution entry or exit node">
-    <SerializedProperty Name="m_displayName" />
-    <SerializedProperty Name="m_identifier" />
-  </Class>
+    <Class Name="Nodeling"
+        QualifiedName="ScriptCanvas::Nodes::Core::Internal::Nodeling"
+        PreferredClassName="Nodeling"
+        Uuid="{4413EEA0-8D81-4D61-A1E1-3C1A437F3643}"
+        BaseClass="True"
+        Category="Core"
+        Version="1"
+        Description="Represents either an execution entry or exit node">
+        <SerializedProperty Name="m_displayName" />
+        <SerializedProperty Name="m_identifier" />
+    </Class>
 </ScriptCanvas>

@@ -1382,6 +1382,11 @@ void MainWindow::AdjustToolBarIconSize(AzQtComponents::ToolBar::ToolBarIconSize 
 
 void MainWindow::OnGameModeChanged(bool inGameMode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
@@ -1444,7 +1449,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         break;
     // Remove track view option to avoid starting in bad state
     case eNotify_OnBeginSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -1454,7 +1459,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         }
         break;
     case eNotify_OnEndSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)

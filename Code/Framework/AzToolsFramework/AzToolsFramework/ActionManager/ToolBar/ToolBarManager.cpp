@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 
+#include <QWidget>
+
 namespace AzToolsFramework
 {
     ToolBarManager::ToolBarManager()
@@ -17,13 +19,24 @@ namespace AzToolsFramework
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "ToolBarManager - Could not retrieve instance of ActionManagerInterface");
 
+        m_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(m_actionManagerInternalInterface, "ToolBarManager - Could not retrieve instance of ActionManagerInternalInterface");
+
         AZ::Interface<ToolBarManagerInterface>::Register(this);
+        AZ::Interface<ToolBarManagerInternalInterface>::Register(this);
+
+        AZ::SystemTickBus::Handler::BusConnect();
+        ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorToolBar::Initialize();
     }
 
     ToolBarManager::~ToolBarManager()
     {
+        ActionManagerNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
+
+        AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
     }
     
@@ -56,7 +69,7 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
         if (!action)
         {
             return AZ::Failure(AZStd::string::format(
@@ -72,7 +85,40 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.AddAction(sortIndex, actionIdentifier);
-        toolBarIterator->second.RefreshToolBar();
+        m_actionsToToolBarsMap[actionIdentifier].insert(toolBarIdentifier);
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
+        return AZ::Success();
+    }
+    
+    ToolBarManagerOperationResult ToolBarManager::AddActionWithSubMenuToToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar has not been registered.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
+        if (!action)
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        if (toolBarIterator->second.ContainsAction(actionIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - toolbar already contains action.", actionIdentifier.c_str(),
+                toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.AddActionWithSubMenu(sortIndex, actionIdentifier, subMenuIdentifier);
+        m_actionsToToolBarsMap[actionIdentifier].insert(toolBarIdentifier);
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
 
@@ -92,7 +138,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : actions)
         {
-            QAction* action = m_actionManagerInterface->GetAction(pair.first);
+            QAction* action = m_actionManagerInternalInterface->GetAction(pair.first);
             if (!action)
             {
                 errorMessage += AZStd::string(" ") + pair.first;
@@ -108,9 +154,10 @@ namespace AzToolsFramework
             }
 
             toolBarIterator->second.AddAction(pair.second, pair.first);
+            m_actionsToToolBarsMap[pair.first].insert(toolBarIdentifier);
         }
 
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         if (couldNotAddAction)
         {
@@ -131,7 +178,7 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
         if (!action)
         {
             return AZ::Failure(AZStd::string::format(
@@ -147,7 +194,9 @@ namespace AzToolsFramework
         }
 
         toolBarIterator->second.RemoveAction(actionIdentifier);
-        toolBarIterator->second.RefreshToolBar();
+        m_actionsToToolBarsMap[actionIdentifier].erase(toolBarIdentifier);
+
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
         return AZ::Success();
     }
 
@@ -167,7 +216,7 @@ namespace AzToolsFramework
 
         for (const AZStd::string& actionIdentifier : actionIdentifiers)
         {
-            QAction* action = m_actionManagerInterface->GetAction(actionIdentifier);
+            QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
             if (!action)
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
@@ -183,9 +232,10 @@ namespace AzToolsFramework
             }
 
             toolBarIterator->second.RemoveAction(actionIdentifier);
+            m_actionsToToolBarsMap[actionIdentifier].erase(toolBarIdentifier);
         }
 
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         if (couldNotRemoveAction)
         {
@@ -202,11 +252,32 @@ namespace AzToolsFramework
         if (toolBarIterator == m_toolBars.end())
         {
             return AZ::Failure(AZStd::string::format(
-                "ToolBar Manager - Could not add separator - menu \"%s\" has not been registered.", toolBarIdentifier.c_str()));
+                "ToolBar Manager - Could not add separator - toolbar \"%s\" has not been registered.", toolBarIdentifier.c_str()));
         }
 
         toolBarIterator->second.AddSeparator(sortIndex);
-        toolBarIterator->second.RefreshToolBar();
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::AddWidgetToToolBar(const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex)
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not add widget - toolbar \"%s\" has not been registered.", toolBarIdentifier.c_str()));
+        }
+
+        if (!widget)
+        {
+            return AZ::Failure(
+                AZStd::string::format("ToolBar Manager - Could not add widget to toolbar \"%s\" - nullptr widget.", toolBarIdentifier.c_str()));
+        }
+
+        toolBarIterator->second.AddWidget(sortIndex, widget);
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
+
         return AZ::Success();
     }
 
@@ -238,6 +309,57 @@ namespace AzToolsFramework
         }
 
         return AZ::Success(sortKey.value());
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::QueueToolBarRefresh(const AZStd::string& toolBarIdentifier)
+    {
+        if (!m_toolBars.contains(toolBarIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format("ToolBar Manager - Could not refresh toolBar \"%.s\" as it is not registered.", toolBarIdentifier.c_str()));
+        }
+
+        m_toolBarsToRefresh.insert(toolBarIdentifier);
+        return AZ::Success();
+    }
+
+    ToolBarManagerOperationResult ToolBarManager::QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actionsToToolBarsMap.find(actionIdentifier);
+
+        if (actionIterator != m_actionsToToolBarsMap.end())
+        {
+            for (const AZStd::string& toolBarIdentifier : actionIterator->second)
+            {
+                m_toolBarsToRefresh.insert(toolBarIdentifier);
+            }
+        }
+
+        return AZ::Success();
+    }
+
+    void ToolBarManager::RefreshToolBars()
+    {
+        for (const AZStd::string& toolBarIdentifier : m_toolBarsToRefresh)
+        {
+            auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+            if (toolBarIterator != m_toolBars.end())
+            {
+                toolBarIterator->second.RefreshToolBar();
+            }
+        }
+
+        m_toolBarsToRefresh.clear();
+    }
+
+    void ToolBarManager::OnSystemTick()
+    {
+        RefreshToolBars();
+    }
+
+    void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
+    {
+        QueueRefreshForToolBarsContainingAction(actionIdentifier);
     }
 
 } // namespace AzToolsFramework

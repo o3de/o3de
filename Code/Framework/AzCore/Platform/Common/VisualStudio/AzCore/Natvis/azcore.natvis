@@ -137,7 +137,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -150,7 +150,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -163,7 +163,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -245,14 +245,24 @@
 
   <Type Name="AZStd::list_const_iterator&lt;*&gt;">
     <AlternativeType Name="AZStd::list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_const_iterator&lt;*&gt;" />
     <DisplayString>{*((Internal::list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
     <Expand>
       <Item Name="[ptr]">(void*)(m_node), x</Item>
       <Item Name="[value]">*((Internal::list_node&lt;$T1&gt;*)(m_node))</Item>
+      <Item Name="[next]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+      <Item Name="[prev]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_prev)</Item>
     </Expand>
   </Type>
+
+    <Type Name="AZStd::forward_list_const_iterator&lt;*&gt;">
+        <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
+        <DisplayString>{*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
+        <Expand>
+            <Item Name="[ptr]">(void*)(m_node), x</Item>
+            <Item Name="[value]">*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))</Item>
+            <Item Name="[next]">*(AZStd::forward_list_const_iterator&lt;$T1&gt;*) (((Internal::forward_list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+        </Expand>
+    </Type>
 
   <Type Name="AZStd::intrusive_list&lt;*&gt;::const_iterator_impl">
     <AlternativeType Name="AZStd::intrusive_list&lt;*&gt;::iterator_impl" />
@@ -396,40 +406,42 @@
   <!-- -->
 
   <Type Name="AZStd::basic_string&lt;char,*,*&gt;">
-    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s}</DisplayString>
-    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s}</DisplayString>
-    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s</StringView>
-    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s</StringView>
+    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s}</DisplayString>
+    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s}</DisplayString>
+    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,s</StringView>
+    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,s</StringView>
     <Expand>
-      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size</Item>
-      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
-      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
-      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size</Item>
+      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
+      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
+      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[is packed]">(bool)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive</Item>
       <ArrayItems>
-        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size,u</Size>
-        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
-        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
-        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
+        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size,u</Size>
+        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
+        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
+        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;char,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>
 
   <Type Name="AZStd::basic_string&lt;wchar_t,*&gt;">
     <AlternativeType Name="AZStd::basic_string&lt;unsigned short,*&gt;" />
-    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su}</DisplayString>
-    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su}</DisplayString>
-    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su</StringView>
-    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su</StringView>
+    <DisplayString Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su}</DisplayString>
+    <DisplayString Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">{((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su}</DisplayString>
+    <StringView Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer,su</StringView>
+    <StringView Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data,su</StringView>
     <Expand>
-      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size</Item>
-      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
-      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
-      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[size]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">(size_t)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size</Item>
+      <Item Name="[size]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Item>
+      <Item Name="[capacity]" Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.Capacity</Item>
+      <Item Name="[capacity]" Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_capacity</Item>
+      <Item Name="[is packed]">(bool)((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive</Item>
       <ArrayItems>
-        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_size,u</Size>
-        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
-        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
-        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
+        <Size Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_size,u</Size>
+        <Size Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_size</Size>
+        <ValuePointer Condition="((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_buffer</ValuePointer>
+        <ValuePointer Condition="!((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_shortData.m_packed.m_ssoActive">((AZStd::compressed_pair_element&lt;AZStd::basic_string&lt;wchar_t,$T1,$T2&gt;::Storage,0,0&gt;&amp;)m_storage).m_element.m_allocatedData.m_data</ValuePointer>
       </ArrayItems>
     </Expand>
   </Type>

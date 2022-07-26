@@ -506,7 +506,7 @@ def find_child_by_pattern(obj=None, pattern=None, recursive=True, **kw):
     return None
 
 
-def find_child_by_hierarchy(parent, *patterns):
+def find_child_by_hierarchy(parent, *patterns, child_index=0):
     """
     Searches for a hierarchy of children descending from parent.
     parent: The Qt object (or list of Qt obejcts) to search within
@@ -542,7 +542,7 @@ def find_child_by_hierarchy(parent, *patterns):
         current_objects = candidates
 
         search_recursively = False
-    return current_objects[0]
+    return current_objects[child_index]
 
 async def wait_for_child_by_hierarchy(parent, *patterns, timeout=1.0):
     """
@@ -739,7 +739,7 @@ def trigger_context_menu_entry(widget, pattern, pos=None, index=None):
         return run_async(result)
 
 
-async def open_context_menu(widget, pos=None, index=None, timeout=1.0):
+async def open_context_menu(widget, pos=None, index=None, timeout=5.0):
     """
     Trigger a context menu event on a widget
     widget: The widget to trigger the event on

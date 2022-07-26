@@ -32,5 +32,7 @@ namespace RecastNavigation
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        AZ::u32 OnConfigurationChanged() override;
     };
 } // namespace RecastNavigation

@@ -99,8 +99,12 @@ namespace RecastNavigation
         const char* GetSceneName() const;
 
     protected:
+        void OnConfigurationChanged();
+
         AZ::EntityComponentIdPair m_entityComponentIdPair;
         RecastNavigationPhysXProviderConfig m_config;
+
+        AzPhysics::CollisionGroup m_collisionGroup;
 
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
@@ -109,7 +113,7 @@ namespace RecastNavigation
         AZStd::atomic<bool> m_updateInProgress{ false };
 
         //! Task graph objects to collect geometry data in tiles over a grid.
-        AZ::TaskGraph m_taskGraph;
+        AZ::TaskGraph m_taskGraph{ "RecastNavigation PhysX" };
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Collect Geometry", "Recast Navigation" };

@@ -881,23 +881,30 @@ class AndroidProjectGenerator(object):
                                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
+                # If assets must be included inside the APK do the assets layout under
+                # 'main' folder so they will be included into the APK. Otherwise
+                # do the layout under a different folder so it's created, but not
+                # copied into the APK.
+                if self.include_assets_in_apk:
+                    layout_folder = 'app/src/main/assets'
+                else:
+                    layout_folder = 'app/src/assets'
+
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
                     CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
                                                                      python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
                                                                      asset_type=self.asset_type,
                                                                      project_path=self.project_path.as_posix(),
                                                                      asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                     asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
+                                                                     asset_layout_folder=(self.build_dir / layout_folder).resolve().as_posix(),
                                                                      config=native_config)
                 # Copy over settings registry files from the Registry folder with build output directory
                 gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
                     CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR.format(config=native_config,
                                                                         config_lower=native_config_lower,
-                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix())
-                if self.include_assets_in_apk:
-                    # This is a dependency of the layout sync only if we are including assets in the APK
-                    gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                        CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
+                                                                        asset_layout_folder=(self.build_dir / layout_folder).resolve().as_posix())
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
+                    CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
 
 
 

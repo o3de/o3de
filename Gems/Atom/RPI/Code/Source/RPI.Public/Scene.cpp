@@ -183,7 +183,7 @@ namespace AZ
             {
                 if (renderPipeline->m_descriptor.m_allowModification)
                 {
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineChangedByFeatureProcessor);
                 }
             }
         }
@@ -403,7 +403,7 @@ namespace AZ
         void Scene::SimulateTaskGraph()
         {
             static const AZ::TaskDescriptor simulationTGDesc{"RPI::Scene::Simulate", "Graphics"};
-            AZ::TaskGraph simulationTG;
+            AZ::TaskGraph simulationTG{ "RPI::Scene::Simulate" };
 
             for (FeatureProcessorPtr& fp : m_featureProcessors)
             {
@@ -418,7 +418,7 @@ namespace AZ
                     });
             }
             simulationTG.Detach();
-            m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>();
+            m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>("RPI::Scene::Simulate Wait");
             simulationTG.Submit(m_simulationFinishedTGEvent.get());
         }
 
@@ -529,9 +529,9 @@ namespace AZ
         void Scene::CollectDrawPacketsTaskGraph()
         {
             AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
-            AZ::TaskGraphEvent collectDrawPacketsTGEvent;
+            AZ::TaskGraphEvent collectDrawPacketsTGEvent{ "CollectDrawPackets Wait" };
             static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
-            AZ::TaskGraph collectDrawPacketsTG;
+            AZ::TaskGraph collectDrawPacketsTG{ "CollectDrawPackets" };
 
             // Launch FeatureProcessor::Render() taskgraphs
             for (auto& fp : m_featureProcessors)
@@ -550,15 +550,15 @@ namespace AZ
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
             m_cullingScene->BeginCulling(m_renderPacket.m_views);
             static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
-            AZ::TaskGraphEvent processCullablesTGEvent;
-            AZ::TaskGraph processCullablesTG;
+            AZ::TaskGraphEvent processCullablesTGEvent{ "ProcessCullables Wait" };
+            AZ::TaskGraph processCullablesTG{ "ProcessCullables" };
             if (parallelOctreeTraversal)
             {
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
-                            AZ::TaskGraph subTaskGraph;
+                            AZ::TaskGraph subTaskGraph{ "ProcessCullables Subgraph" };
                             m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
                             if (!subTaskGraph.IsEmpty())
                             {
@@ -632,10 +632,10 @@ namespace AZ
 
         void Scene::FinalizeDrawListsTaskGraph()
         {
-            AZ::TaskGraphEvent finalizeDrawListsTGEvent;
+            AZ::TaskGraphEvent finalizeDrawListsTGEvent{ "FinalizeDrawLists Wait" };
             static const AZ::TaskDescriptor finalizeDrawListsTGDesc{"RPI_Scene_PrepareRender_FinalizeDrawLists", "Graphics"};
 
-            AZ::TaskGraph finalizeDrawListsTG;
+            AZ::TaskGraph finalizeDrawListsTG{ "FinalizeDrawLists" };
             for (auto& view : m_renderPacket.m_views)
             {
                 finalizeDrawListsTG.AddTask(
@@ -983,7 +983,7 @@ namespace AZ
 
                             if (pipelineStatesItr == m_pipelineStatesLookup.end())
                             {
-                                m_pipelineStatesLookup[drawListTag].push_back();
+                                m_pipelineStatesLookup[drawListTag].emplace_back();
                                 m_pipelineStatesLookup[drawListTag][0].m_multisampleState = rasterPass->GetMultisampleState();
                                 m_pipelineStatesLookup[drawListTag][0].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                 rasterPass->SetPipelineStateDataIndex(0);
@@ -1016,7 +1016,7 @@ namespace AZ
                                 else
                                 {
                                     // No match found, add new pipeline state data
-                                    pipelineStateList.push_back();
+                                    pipelineStateList.emplace_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                     rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size));

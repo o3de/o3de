@@ -22,6 +22,26 @@
   * Deprecated
   */
 
+//! Deprecated generic function node macros
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE_DEPRECATED(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(NODE_NAME, DEFAULT_FUNC, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS_DEPRECATED(NODE_NAME, DEFAULT_FUNC, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+//! Macros to migrate deprecated generic function node to autogen function node
 #define SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, METHOD_NAME)\
     struct NODE_NAME##Traits\
     {\
@@ -163,6 +183,13 @@ namespace ScriptCanvas
         static void AddDescriptors(AZStd::vector<AZ::ComponentDescriptor*>& descriptors)
         {
             SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(descriptors.push_back(t_Node::CreateDescriptor()));
+        }
+
+        template<typename t_NodeGroup>
+        static void AddToRegistry([[maybe_unused]] NodeRegistry& nodeRegistry)
+        {
+            // Deprecated, do nothing here
+            AZ_Warning("ScriptCanvas", false, "NodeFunctionGeneric is deprecated, please migrate to autogen function node.");
         }
 
         template<typename t_Library>

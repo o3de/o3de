@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/Collision/CollisionGroups.h>
 
 namespace RecastNavigation
 {
@@ -25,5 +26,8 @@ namespace RecastNavigation
 
         //! Either use Editor PhysX world or game PhysX world.
         bool m_useEditorScene = false;
+
+        //! Only colliders from the specified collision group will be considered.
+        AzPhysics::CollisionGroups::Id m_collisionGroupId;
     };
 } // namespace RecastNavigation

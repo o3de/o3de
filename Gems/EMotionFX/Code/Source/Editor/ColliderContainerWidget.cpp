@@ -390,6 +390,11 @@ namespace EMotionFX
         emit RemoveCollider(colliderIndex);
     }
 
+    void ColliderWidget::InvalidateEditorValues()
+    {
+        m_editor->InvalidateValues();
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AddColliderButton::AddColliderButton(const QString& text, QWidget* parent, PhysicsSetup::ColliderConfigType copyToColliderType, const AZStd::vector<AZ::TypeId>& supportedColliderTypes)
@@ -569,6 +574,7 @@ namespace EMotionFX
     {
         for (ColliderWidget* colliderWidget : m_colliderWidgets)
         {
+            colliderWidget->InvalidateEditorValues();
             colliderWidget->Update();
         }
     }

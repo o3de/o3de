@@ -91,6 +91,7 @@ namespace Profiler
         {
             const AZStd::string& m_name;
             double m_executeDuration = 0;
+            double m_executeDurationAverage = 0;
         };
 
         ImGuiCpuProfiler();
@@ -129,6 +130,9 @@ namespace Profiler
 
         // Sort the table by a given column, rearranges the pointers in m_tableData.
         void SortTable(ImGuiTableSortSpecs* sortSpecs);
+
+        // Clear the table, forcing it to rebuild
+        void ResetTable();
 
         // gather the latest timing statistics
         void CacheCpuTimingStatistics();

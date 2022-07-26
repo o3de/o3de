@@ -88,32 +88,7 @@ namespace AZ::Debug
 
     AZ_CVAR_SCOPED(int, bg_traceLogLevel, DefaultLogLevel, nullptr, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
     AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, nullptr, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
-}
 
-namespace AZ::ConsoleTypeHelpers
-{
-    template<>
-    inline CVarFixedString ValueToString<AZ::Debug::RedirectCStream>(const AZ::Debug::RedirectCStream& value)
-    {
-        return ConvertString(AZStd::to_string(static_cast<AZStd::underlying_type_t<AZ::Debug::RedirectCStream>>(value)));
-    }
-
-    template<>
-    inline bool StringSetToValue<AZ::Debug::RedirectCStream>(AZ::Debug::RedirectCStream& outValue,
-        const AZ::ConsoleCommandContainer& arguments)
-    {
-        AZStd::underlying_type_t<AZ::Debug::RedirectCStream> underlyingValue;
-        const bool result = StringSetToValue(underlyingValue, arguments);
-        if (result)
-        {
-            outValue = AZ::Debug::RedirectCStream(underlyingValue);
-        }
-        return result;
-    }
-}
-
-namespace AZ::Debug
-{
     // Allow redirection of trace raw output writes to stdout, stderr or to /dev/null
     static constexpr const char* fileStreamIdentifier = "raw_c_stream";
     static AZ::EnvironmentVariable<FILE*> s_fileStream;
@@ -141,7 +116,8 @@ namespace AZ::Debug
 
     AZ_CVAR_SCOPED(RedirectCStream, bg_redirectrawoutput, RedirectCStream::Stdout, SetCFileStream, ConsoleFunctorFlags::Null,
         "Set to the value of the C stream FILE* object to write raw trace output."
-        " Defaults to the stdout FILE stream");
+        " Defaults to the stdout FILE stream."
+        " Valid values are 0 = stdout, 1 = stderr, 2 = redirect to NUL");
 
 
     /**

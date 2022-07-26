@@ -25,7 +25,6 @@ namespace EMotionFX
     {
     public:
         ColliderRotationManipulators();
-        ~ColliderRotationManipulators();
         void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;

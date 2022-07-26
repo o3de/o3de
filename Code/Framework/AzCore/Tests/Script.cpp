@@ -3436,8 +3436,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(values[2].m_elements.size() == valueCheck.m_elements.size());
 
             // set a table value with metatable
-            values[3].m_elements.push_back();
-            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.back();
+            ScriptContextDebug::DebugValue& subValue = values[3].m_elements.emplace_back();
             subValue.m_name = "valueA";
             subValue.m_type = LUA_TNUMBER;
             subValue.m_value = "16";

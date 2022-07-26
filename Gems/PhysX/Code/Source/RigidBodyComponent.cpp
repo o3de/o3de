@@ -446,6 +446,24 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
+    AZ::Matrix3x3 RigidBodyComponent::GetInertiaWorld() const
+    {
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetInertiaWorld();
+        }
+        return AZ::Matrix3x3::CreateZero();
+    }
+
+    AZ::Matrix3x3 RigidBodyComponent::GetInertiaLocal() const
+    {
+        if (const AzPhysics::RigidBody* body = GetRigidBodyConst())
+        {
+            return body->GetInertiaLocal();
+        }
+        return AZ::Matrix3x3::CreateZero();
+    }
+
     AZ::Matrix3x3 RigidBodyComponent::GetInverseInertiaWorld() const
     {
         if (const AzPhysics::RigidBody* body = GetRigidBodyConst())

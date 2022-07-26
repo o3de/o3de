@@ -27,6 +27,7 @@ namespace ScriptCanvas
         AddVisibility,
         MergeScriptFunctions,
         CorrectDynamicDataTypeForExecution,
+        AddCanHaveInputField,
         // Add your version above
         Current
     };
@@ -209,6 +210,7 @@ namespace ScriptCanvas
                 ->Field("IsReference", &Slot::m_isVariableReference)
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
+                ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
                 ;
         }
 
@@ -223,6 +225,7 @@ namespace ScriptCanvas
         , m_dynamicDataType(DynamicDataType::None)
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
+        , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -237,7 +240,7 @@ namespace ScriptCanvas
             AddContract(contractDesc);
         }
 
-        if (const DataSlotConfiguration* dataSlotConfiguration = azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
+        if (azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
         {
             m_dataType = DataType::Data;
         }
@@ -429,6 +432,11 @@ namespace ScriptCanvas
     bool Slot::IsVariableReference() const
     {
         return m_isVariableReference || m_dataType == DataType::VariableReference;
+    }
+
+    bool Slot::CanHaveInputField() const
+    {
+        return m_canHaveInputField;
     }
 
     bool Slot::CanConvertToValue() const

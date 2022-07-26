@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/std/typetraits/is_abstract.h>
 
 namespace AZStd

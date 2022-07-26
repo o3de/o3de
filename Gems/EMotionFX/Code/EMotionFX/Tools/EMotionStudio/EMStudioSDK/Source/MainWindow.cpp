@@ -388,7 +388,7 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []

@@ -34,6 +34,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Not>("Not", "An execution flow gate that continues True if the Boolean is False, otherwise continues False if the Boolean is True")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                                    ->Attribute(AZ::Edit::Attributes::Category, "Logic")
                                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;

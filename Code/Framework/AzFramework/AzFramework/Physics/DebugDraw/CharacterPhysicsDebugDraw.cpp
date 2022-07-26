@@ -240,6 +240,11 @@ namespace Physics
     {
         m_jointLimitRenderBuffers.Clear();
 
+        if (!ragdollNodeConfig.m_jointConfig)
+        {
+            return;
+        }
+
         if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
         {
             jointHelpers->GenerateJointLimitVisualizationData(

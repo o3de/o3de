@@ -603,7 +603,7 @@ namespace UnitTest
 
         AZ_TEST_ASSERT(rbegin == crbegin1);
         AZ_TEST_ASSERT(crbegin1 == crbegin2);
-        
+
         AZ_TEST_ASSERT(rbegin != rend);
 
         str1.set_capacity(3);
@@ -989,7 +989,7 @@ namespace UnitTest
         static_assert(!IsToStringInvocable<decltype("NarrowStrLiteral")>);
         static_assert(!IsToStringInvocable<decltype(L"WideStrLiteral")>);
 
-        // AZStd::to_string should
+        // AZStd::to_string should be invocable with the following types
         static_assert(IsToStringInvocable<bool>);
         static_assert(IsToStringInvocable<AZ::s8>);
         static_assert(IsToStringInvocable<AZ::u8>);
@@ -1133,7 +1133,7 @@ namespace UnitTest
         AZStd::regex longerThan16(".*\\/Presets\\/GeomCache\\/.*", AZStd::regex::flag_type::icase | AZStd::regex::flag_type::ECMAScript);
         AZStd::regex longerThan32(".*\\/Presets\\/GeomCache\\/Whatever\\/Much\\/Test\\/Very\\/Memory\\/.*", AZStd::regex::flag_type::icase);
     }
-    
+
     TEST_F(Regex, SmileyFaceParseRegression)
     {
         AZStd::regex smiley(":)");
@@ -1256,11 +1256,11 @@ namespace UnitTest
         // compare
         AZStd::size_t compareResult = view2.compare(1, view2.size() - 1, dest, copyResult);
         EXPECT_EQ(0, compareResult);
-        
+
         AZStd::string_view compareView = "Stackhay in Needle";
         compareResult = compareView.compare(view2);
         EXPECT_NE(0, compareResult);
-        
+
         compareResult = compareView.compare(12, 6, view2, 0, 6);
         EXPECT_EQ(0, compareResult);
 
@@ -1362,7 +1362,7 @@ namespace UnitTest
         AZStd::string_view prefixRemovalView = view2;
         prefixRemovalView.remove_prefix(6);
         EXPECT_EQ(" in Haystack", prefixRemovalView);
-        
+
         // remove_suffix
         AZStd::string_view suffixRemovalView = view2;
         suffixRemovalView.remove_suffix(8);
@@ -1393,7 +1393,7 @@ namespace UnitTest
         AZStd::string_view view2("Needle in Haystack");
         AZStd::string_view emptyBeaverView;
         AZStd::string_view superEmptyBeaverView("");
-        
+
         EXPECT_EQ("", emptyBeaverView);
         EXPECT_EQ("", superEmptyBeaverView);
 
@@ -1435,7 +1435,7 @@ namespace UnitTest
         EXPECT_LE("Busy Beaver", beaverView);
         EXPECT_LE(microBeaverStr, view1);
         EXPECT_LE(compareStr, beaverView);
-        
+
         AZStd::string bigBeaver("Big Beaver");
         EXPECT_GE(view1, view2);
         EXPECT_GE(view1, view1);
@@ -1524,7 +1524,7 @@ namespace UnitTest
         AZStd::string_view view2{&s[10], 4};
 
         AZStd::string result;
-        
+
         result = AZStd::string::format("%s %.*s %s", "[", AZ_STRING_ARG(view0), "]");
         EXPECT_EQ(AZStd::string{"[  ]"}, result);
 
@@ -2471,6 +2471,35 @@ namespace UnitTest
         static_assert(ExpectedBasicStringSize == sizeof(AZStd::string),
             "Using Stateful allocator with basic_string class should result in a 32-byte string class"
             " on 64-bit platforms ");
+    }
+
+    TEST_F(String, VectorOfChar_ConvertibleToStringView_Compiles)
+    {
+        // Validates the c++23 range constructor for AZStd::string_view
+        static_assert(AZStd::constructible_from<AZStd::string_view, AZStd::vector<char>>);
+        static_assert(AZStd::constructible_from<AZStd::string, AZStd::vector<char>>);
+        const auto testString = AZStd::string(AZStd::vector<char>{'H', 'e', 'l', 'l', 'o'});
+        EXPECT_EQ("Hello", testString);
+    }
+
+    TEST_F(String, AZStdString_DeductionGuide_Compiles)
+    {
+        constexpr AZStd::string_view testView{ "Hello" };
+        {
+            // legacy common iterator deduction guide
+            AZStd::basic_string testString(testView.begin(), testView.end());
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view deduction guide
+            AZStd::basic_string testString(testView);
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view with position and size deduction guide
+            AZStd::basic_string testString(testView, 1, 3);
+            EXPECT_EQ("ell", testString);
+        }
     }
 
     template <typename StringType>

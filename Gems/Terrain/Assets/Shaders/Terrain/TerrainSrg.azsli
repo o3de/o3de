@@ -31,6 +31,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float3 m_mainCameraPosition;
         float m_firstLodDistance;
         float m_rcpClodDistance;
+        float m_rcpGridSize;
+        float m_gridToQuadScale;
     };
 
     struct DetailMaterialData
@@ -86,9 +88,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
 
     struct MacroMaterialGridInfo
     {
-        uint m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
+        uint m_tileCount1D; // How many x/y tiles along edge of grid. Grid is always square, so total number of tiles is this value squared.
         float m_tileSize; // Size of a tile in meters.
-        float2 m_offset; // x/y offset of min x/y corner of grid.
     };
 
     struct MacroMaterialRefs
@@ -219,10 +220,9 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     // Clipmap Sampler
     Sampler m_clipmapSampler
     {
-        MaxAnisotropy = 16;
-        AddressU = Wrap;
-        AddressV = Wrap;
-        AddressW = Wrap;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };
     
     // The region of the clipmap that needs update.
@@ -250,28 +250,11 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
 
-    uint2 GetMacroGridResolution()
+    float CalculateClodDistance(uint lodLevel, float3 worldPosition)
     {
-        return uint2(m_macroMaterialGridInfo.m_resolution >> 16, m_macroMaterialGridInfo.m_resolution & 0xFFFF);
-    }
-    
-    float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
-    {
-        float minRange = 0;
-        float maxRange = m_meshData.m_firstLodDistance;
-        if (lodLevel > 0)
-        {
-            maxRange = maxRange * float(1u << lodLevel);
-            minRange = m_meshData.m_firstLodDistance * float(1u<< (lodLevel - 1u));
-        }
-
-        // This is conservative on both the min and max side to avoid holes, but it should be possible to use a single clipping plane when CLOD is implemented.
+        float maxRange = m_meshData.m_firstLodDistance * float(1u << lodLevel);
         float viewDistanceToWorldPosition = length(m_meshData.m_mainCameraPosition - worldPosition);
-
-        float2 outcullDistance;
-        outcullDistance.x = viewDistanceToWorldPosition - minRange;
-        outcullDistance.y = maxRange - viewDistanceToWorldPosition;
-        return outcullDistance;
+        return maxRange - viewDistanceToWorldPosition;
     }
 }
 

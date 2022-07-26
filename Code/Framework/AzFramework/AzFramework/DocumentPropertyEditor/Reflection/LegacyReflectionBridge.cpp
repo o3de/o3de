@@ -13,6 +13,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystemInterface.h>
@@ -129,6 +130,12 @@ namespace AZ::Reflection
             bool BeginNode(
                 void* instance, const AZ::SerializeContext::ClassData* classData, const AZ::SerializeContext::ClassElement* classElement)
             {
+                // Ensure our instance pointer is resolved and safe to bind to member attributes
+                if (classElement)
+                {
+                    instance = AZ::Utils::ResolvePointer(instance, *classElement, *m_serializeContext);
+                }
+
                 StackEntry& parentData = m_stack.back();
                 AZStd::string path = parentData.m_path;
                 if (parentData.m_classData && parentData.m_classData->m_container)

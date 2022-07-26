@@ -31,6 +31,8 @@ DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 // Branches with build snapshots as comma separated value string
 env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
+VALIDATION_PIPELINE = /validation_pipe/
+
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -39,7 +41,8 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directory before building. This will cause a \"clean\" build. NOTE: does not imply CLEAN_ASSETS', name: 'CLEAN_OUTPUT_DIRECTORY'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directories of the AssetProcessor before building.', name: 'CLEAN_ASSETS'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
-    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
+    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
+    booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST')
 ]
 
 def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
@@ -692,7 +695,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
-                        if (fileExists(GetCrashArtifactDir())) {
+                        if (!(build_job.key ==~ "${VALIDATION_PIPELINE}") && fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
@@ -916,6 +919,7 @@ try {
 
         // Build and Post-Build Testing Stage
         def buildConfigs = [:]
+        def validateConfig = [:] 
 
         // Platform Builds run on EC2
         pipelineConfig.platforms.each { platform ->
@@ -925,15 +929,31 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
-
-                    buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    if ("${build_job.key}" ==~ "${VALIDATION_PIPELINE}") {
+                        validateConfig["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
+                    else {
+                        buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
                 }
             }
         }
 
         timestamps {
+            stage('Validate') {
+                try {
+                    parallel validateConfig
+                }
+                catch (Exception e) {
+                    echo "Exception block: ${e}"
+                }
+            }
 
             stage('Build') {
+                if (params.FAIL_FAST) {
+                    echo "Fail fast option enabled"
+                    buildConfigs.failFast = true
+                }
                 parallel buildConfigs // Run parallel builds
             }
 
@@ -972,7 +992,8 @@ finally {
                     "build_failure": buildFailure,
                     "recreate_volume": env.RECREATE_VOLUME,
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
-                    "clean_assets": env.CLEAN_ASSETS
+                    "clean_assets": env.CLEAN_ASSETS,
+                    "fail_fast": env.FAIL_FAST
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,

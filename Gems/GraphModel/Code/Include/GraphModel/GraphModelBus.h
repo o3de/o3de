@@ -9,9 +9,9 @@
 #pragma once
 
 // AZ
+#include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
-#include <AzCore/Component/Entity.h>
 
 // Graph Canvas
 #include <GraphCanvas/Editor/EditorTypes.h>
@@ -117,7 +117,11 @@ namespace GraphModelIntegration
         virtual GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) = 0;
 
         //! Create a new connection between the specified source and target specified slots
-        virtual GraphModel::ConnectionPtr AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) = 0;
+        virtual GraphModel::ConnectionPtr AddConnectionBySlotId(
+            GraphModel::NodePtr sourceNode,
+            GraphModel::SlotId sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            GraphModel::SlotId targetSlotId) = 0;
 
         //! Remove the specified connection
         virtual bool RemoveConnection(GraphModel::ConnectionPtr connection) = 0;
@@ -186,34 +190,46 @@ namespace GraphModelIntegration
 
     //! GraphControllerNotifications
     //! Notifications about changes to the state of scene graphs.
-    class GraphControllerNotifications
-        : public AZ::EBusTraits
+    class GraphControllerNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
         //! A node has been added to the scene.
-        virtual void OnGraphModelNodeAdded(GraphModel::NodePtr /*node*/) {}
+        virtual void OnGraphModelNodeAdded(GraphModel::NodePtr /*node*/){};
+
         //! A node has been removed from the scene.
-        virtual void OnGraphModelNodeRemoved(GraphModel::NodePtr /*node*/) {}
+        virtual void OnGraphModelNodeRemoved(GraphModel::NodePtr /*node*/){};
+
         //! Invoked prior to a node being removed from the scene.
-        virtual void PreOnGraphModelNodeRemoved(GraphModel::NodePtr /*node*/) {}
+        virtual void PreOnGraphModelNodeRemoved(GraphModel::NodePtr /*node*/){};
 
         //! A connection has been added to the scene.
-        virtual void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr /*connection*/) {}
+        virtual void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr /*connection*/){};
+
         //! A connection has been removed from the scene.
-        virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/) {}
+        virtual void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr /*connection*/){};
 
         //! The specified node has been wrapped (embedded) onto the wrapperNode
-        virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/) {}
+        virtual void OnGraphModelNodeWrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
+
         //! The specified node has been unwrapped (removed) from the wrapperNode
-        virtual void OnGraphModelNodeUnwrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/) {}
+        virtual void OnGraphModelNodeUnwrapped(GraphModel::NodePtr /*wrapperNode*/, GraphModel::NodePtr /*node*/){};
 
         //! Something in the graph has been modified
         //! \param node The node that was modified in the graph.  If this is nullptr, some metadata on the graph itself was modified
-        virtual void OnGraphModelGraphModified(GraphModel::NodePtr node) {}
+        virtual void OnGraphModelGraphModified(GraphModel::NodePtr node){};
+
+        //! A request has been made to record data for an undoable operation 
+        virtual void OnGraphModelRequestUndoPoint(){};
+
+        //! A request has been made to perform an undo operation
+        virtual void OnGraphModelTriggerUndo(){};
+
+        //! A request has been made to perform a redo operation
+        virtual void OnGraphModelTriggerRedo(){};
     };
 
     using GraphControllerNotificationBus = AZ::EBus<GraphControllerNotifications>;
-}
+} // namespace GraphModelIntegration

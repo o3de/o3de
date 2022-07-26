@@ -54,7 +54,8 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
-            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
+            // Todo: investigate if there's a way for this to not trigger on edge cases such as testing, then turn back into an Error instead of Warning.
+            AZ_Warning("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
 
             if (child->m_parent != nullptr)
             {
@@ -113,7 +114,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesAdded);
 
                 // Set child's pipeline if the parent has a owning pipeline
                 child->SetRenderPipeline(m_pipeline);
@@ -162,7 +163,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -181,7 +182,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -311,7 +312,7 @@ namespace AZ
             PassRequest clearRequest;
             clearRequest.m_templateName = Name("SlowClearPassTemplate");
             clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
-            clearRequest.m_connections.push_back();
+            clearRequest.m_connections.emplace_back();
             clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
             clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");
 
@@ -412,6 +413,11 @@ namespace AZ
 
         void ParentPass::SetRenderPipeline(RenderPipeline* pipeline)
         {
+            if (m_pipeline == pipeline)
+            {
+                return;
+            }
+
             // Call base implementation
             Pass::SetRenderPipeline(pipeline);
 

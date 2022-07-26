@@ -51,7 +51,6 @@ namespace ScriptCanvasEditor
     SystemComponent::~SystemComponent()
     {
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
-        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
@@ -105,7 +104,6 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void SystemComponent::Activate()
@@ -188,116 +186,6 @@ namespace ScriptCanvasEditor
         m_isGarbageCollectRequested = true;
     }
 
-    void SystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
-    {
-        (void)point;
-        (void)flags;
-
-        AzToolsFramework::EntityIdList entitiesWithScriptCanvas;
-
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::EntityIdList highlightedEntities;
-
-        EBUS_EVENT_RESULT(selectedEntities,
-            AzToolsFramework::ToolsApplicationRequests::Bus,
-            GetSelectedEntities);
-
-        FilterForScriptCanvasEnabledEntities(selectedEntities, entitiesWithScriptCanvas);
-
-        EBUS_EVENT_RESULT(highlightedEntities,
-            AzToolsFramework::ToolsApplicationRequests::Bus,
-            GetHighlightedEntities);
-
-        FilterForScriptCanvasEnabledEntities(highlightedEntities, entitiesWithScriptCanvas);
-
-        if (!entitiesWithScriptCanvas.empty())
-        {
-            QMenu* scriptCanvasMenu = nullptr;
-            QAction* action = nullptr;
-
-            // For entities with script canvas component, create a context menu to open any existing script canvases within each selected entity.
-            for (const AZ::EntityId& entityId : entitiesWithScriptCanvas)
-            {
-                if (!scriptCanvasMenu)
-                {
-                    menu->addSeparator();
-                    scriptCanvasMenu = menu->addMenu(QObject::tr("Edit Script Canvas"));
-                    scriptCanvasMenu->setEnabled(false);
-                    menu->addSeparator();
-                }
-
-                AZ::Entity* entity = nullptr;
-                EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
-
-                if (entity)
-                {
-                    AZ::EBusAggregateResults<AZ::Data::AssetId> assetIds;
-                    EditorContextMenuRequestBus::EventResult(assetIds, entity->GetId(), &EditorContextMenuRequests::GetAssetId);
-
-                    if (!assetIds.values.empty())
-                    {
-                        QMenu* entityMenu = scriptCanvasMenu;
-                        if (entitiesWithScriptCanvas.size() > 1)
-                        {
-                            scriptCanvasMenu->setEnabled(true);
-                            entityMenu = scriptCanvasMenu->addMenu(entity->GetName().c_str());
-                            entityMenu->setEnabled(false);
-                        }
-
-                        AZStd::unordered_set< AZ::Data::AssetId > usedIds;
-
-                        for (const auto& assetId : assetIds.values)
-                        {
-                            if (!assetId.IsValid() || usedIds.count(assetId) != 0)
-                            {
-                                continue;
-                            }
-
-                            entityMenu->setEnabled(true);
-
-                            usedIds.insert(assetId);
-
-                            AZStd::string rootPath;
-                            AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-
-                            AZStd::string displayName;
-                            AZ::StringFunc::Path::GetFileName(assetInfo.m_relativePath.c_str(), displayName);
-
-                            action = entityMenu->addAction(QString("%1").arg(QString(displayName.c_str())));
-
-                            QObject::connect(action, &QAction::triggered, [assetInfo]
-                            {
-                                AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-                                SourceHandle sourceHandle(nullptr, assetInfo.m_assetId.m_guid, "");
-                                CompleteDescriptionInPlace(sourceHandle);
-                                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAsset
-                                    , sourceHandle
-                                    , Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void SystemComponent::FilterForScriptCanvasEnabledEntities(AzToolsFramework::EntityIdList& sourceList, AzToolsFramework::EntityIdList& targetList)
-    {
-        for (const AZ::EntityId& entityId : sourceList)
-        {
-            if (entityId.IsValid())
-            {
-                if (EditorContextMenuRequestBus::FindFirstHandler(entityId))
-                {
-                    if (targetList.end() == AZStd::find(targetList.begin(), targetList.end(), entityId))
-                    {
-                        targetList.push_back(entityId);
-                    }
-                }
-            }
-        }
-    }
-
     AzToolsFramework::AssetBrowser::SourceFileDetails SystemComponent::GetSourceFileDetails(const char* fullSourceFileName)
     {
         if (AZStd::wildcard_match("*.scriptcanvas", fullSourceFileName))
@@ -337,7 +225,7 @@ namespace ScriptCanvasEditor
                     AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
                     GeneralRequestBus::BroadcastResult(openOutcome
                         , &GeneralRequests::OpenScriptCanvasAsset
-                        , SourceHandle(nullptr, sourceUUIDInCall, ""), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                        , SourceHandle(nullptr, sourceUUIDInCall), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
                 }
             };
 
