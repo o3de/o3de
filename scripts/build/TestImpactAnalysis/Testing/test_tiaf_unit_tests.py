@@ -23,14 +23,14 @@ class TestTiafInitialiseStorage():
 
     def test_create_TestImpact_no_s3_bucket_name(self, caplog, tiaf_args, config_data, mocker):
         # given:
-        # default args.
+        # Default args.
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit']
         mock_local = mocker.patch(
             "tiaf_persistent_storage_local.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -41,7 +41,7 @@ class TestTiafInitialiseStorage():
     @pytest.mark.parametrize("bucket_name,top_level_dir", [("test_bucket", None), ("test_bucket", "test_dir")])
     def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data):
         # given:
-        # default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
+        # Default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
         # and we patch PersistentStorageS3 to intercept the constructor call.
         tiaf_args['s3_bucket'] = bucket_name
         tiaf_args['s3_top_level_dir'] = top_level_dir
@@ -61,14 +61,14 @@ class TestTiafInitialiseStorage():
 
     def test_create_TestImpact_s3_bucket_name_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, config_data):
         # given:
-        # default arguments + s3_bucket and s3_top_level_dir arguments set to none.
+        # Default arguments + s3_bucket and s3_top_level_dir arguments set to none.
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = None
         mock_storage = mocker.patch(
             "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
 
         # when:
-        # when we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -77,14 +77,14 @@ class TestTiafInitialiseStorage():
 
     def test_create_TestImpact_s3_top_level_dir_bucket_name_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, config_data):
         # given:
-        # default arguments + s3_bucket set to none and s3_top_level_dir is defined.
+        # Default arguments + s3_bucket set to none and s3_top_level_dir is defined.
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = "test_dir"
         mock_storage = mocker.patch(
             "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -99,10 +99,10 @@ class TestTIAFUnitTests():
         Given default arguments, when we create a TestImpact object, tiaf.runtime_args should be eqaul
         """
         # given:
-        # default arguments.
+        # Default arguments.
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -112,7 +112,7 @@ class TestTIAFUnitTests():
 
     def test_create_TestImpact_invalid_config(self, caplog, tiaf_args, mock_runtime, tmp_path_factory, default_runtime_args):
         # given:
-        # invalid config file at invalid_file,
+        # Invalid config file at invalid_file,
         # and setting tiaf_args.config to that path.
         invalid_file = tmp_path_factory.mktemp("test") / "test_file.txt"
         with open(invalid_file, 'w+') as f:
@@ -120,20 +120,20 @@ class TestTIAFUnitTests():
         tiaf_args['config'] = invalid_file
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         # then:
-        # it should raise a SystemError.
+        # It should raise a SystemError.
         with pytest.raises(SystemError) as exc_info:
             tiaf = TestImpact(tiaf_args)
 
     @ pytest.mark.parametrize("branch_name", ["development", "not_a_real_branch"])
     def test_create_TestImpact_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
-        # default args + src_branch set to branch_name.
+        # Default args + src_branch set to branch_name.
         tiaf_args['src_branch'] = branch_name
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -143,11 +143,11 @@ class TestTIAFUnitTests():
     @ pytest.mark.parametrize("branch_name", ["development", "not_a_real_branch"])
     def test_create_TestImpact_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
-        # default args + dst_branch set to branch_name.
+        # Default args + dst_branch set to branch_name.
         tiaf_args['dst_branch'] = branch_name
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -157,11 +157,11 @@ class TestTIAFUnitTests():
     @ pytest.mark.parametrize("commit", ["9a15f038807ba8b987c9e689952d9271ef7fd086", "foobar"])
     def test_create_TestImpact_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args, commit):
         # given:
-        # default args + commit set to commit.
+        # Default args + commit set to commit.
         tiaf_args['commit'] = commit
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -170,40 +170,40 @@ class TestTIAFUnitTests():
 
     def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
         # given:
-        # default ars + mars_index_prefix being provided,
+        # Default args + mars_index_prefix being provided,
         # and transmit_report_to_mars is patched to intercept the call.
         tiaf_args['mars_index_prefix'] = "test_prefix"
         mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
 
         # when:
-        # we run tiaf through the driver.
+        # We run Tiaf through the driver.
         with pytest.raises(SystemExit):
             main(tiaf_args)
 
         # then:
-        # tiaf should call the transmit function.
+        # Tiaf should call the transmit function.
         mock_mars.assert_called()
 
     def test_run_Tiaf_mars_index_prefix_is_not_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
         # given:
-        # default_args - mars index is not supplied.
+        # Default_args - mars index is not supplied.
         mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
 
         # when:
-        # we run tiaf through the driver.
+        # We run tiaf through the driver.
         with pytest.raises(SystemExit):
             main(tiaf_args)
 
         # then:
-        # tiaf should not call the transmit function.
+        # Tiaf should not call the transmit function.
         mock_mars.assert_not_called()
 
     def test_create_TestImpact_valid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
-        # default args
+        # Default args
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -213,12 +213,12 @@ class TestTIAFUnitTests():
 
     def test_create_TestImpact_invalid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
-        # default args + suite defined as "foobar" in given args and expected args.
+        # Default args + suite defined as "foobar" in given args and expected args.
         tiaf_args['suite'] = "foobar"
         default_runtime_args['suite'] = "--suite=foobar"
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -229,17 +229,17 @@ class TestTIAFUnitTests():
     @ pytest.mark.parametrize("policy", ["continue", "abort", "ignore"])
     def test_create_TestImpact_valid_failure_policy(self, caplog, tiaf_args, mock_runtime, default_runtime_args, policy):
         # given:
-        # default args + test_failure_policy set to policy parameter.
+        # Default args + test_failure_policy set to policy parameter.
         tiaf_args['test_failure_policy'] = policy
         default_runtime_args['test_failure_policy'] = "--fpolicy="+policy
 
-        # set src branch to be different than dst branch so that we can get a regular sequence, otherwise TIAF will default to a see sequence and overwrite our failure policy.
+        # Set src branch to be different than dst branch so that we can get a regular sequence, otherwise TIAF will default to a see sequence and overwrite our failure policy.
         tiaf_args['src_branch'] = 122
         default_runtime_args['sequence'] = "--sequence=regular"
         default_runtime_args['ipolicy'] = "--ipolicy=continue"
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -250,12 +250,12 @@ class TestTIAFUnitTests():
     @ pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
     def test_create_TestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, default_runtime_args, safemode, arg_val):
         # given:
-        # default args + safe_mode set.
+        # Default args + safe_mode set.
         tiaf_args['safe_mode'] = safemode
         default_runtime_args['safemode'] = "--safemode="+arg_val
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -265,10 +265,10 @@ class TestTIAFUnitTests():
 
     def test_create_TestImpact_exclude_file_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
-        # default args.
+        # Default args.
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
@@ -278,12 +278,12 @@ class TestTIAFUnitTests():
 
     def test_create_TestImpact_exclude_file_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
-        # default args + exclude_file set.
+        # Default args + exclude_file set.
         tiaf_args['exclude_file'] = "testpath"
         default_runtime_args['exclude'] = "--exclude=testpath"
 
         # when:
-        # we create a TestImpact object.
+        # We create a TestImpact object.
         tiaf = TestImpact(tiaf_args)
 
         # then:
