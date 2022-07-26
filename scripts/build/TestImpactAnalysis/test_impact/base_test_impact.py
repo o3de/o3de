@@ -21,6 +21,8 @@ logger = get_logger(__file__)
 
 class BaseTestImpact(ABC):
 
+    __runtime_type = None
+
     def __init__(self, args: dict):
         """
         Initializes the test impact model with the commit, branches as runtime configuration.
@@ -505,3 +507,11 @@ class BaseTestImpact(ABC):
         The source of truth branch for this TIAF run.
         """
         return self._source_of_truth_branch
+
+    @property
+    def runtime_type(self):
+        """
+        The runtime this TestImpact supports
+        Current options are "cpp" or "python"
+        """
+        return self.__runtime_type

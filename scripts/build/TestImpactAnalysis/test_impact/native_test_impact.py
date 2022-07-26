@@ -14,6 +14,8 @@ logger = get_logger(__file__)
 
 class CPPTestImpact(BaseTestImpact):
 
+    __runtime_type = "native"
+
     def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
         super()._parse_arguments_to_runtime(
             args, sequence_type, runtime_args)
