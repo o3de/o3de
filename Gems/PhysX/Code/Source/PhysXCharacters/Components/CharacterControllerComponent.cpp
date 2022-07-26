@@ -198,11 +198,19 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    void CharacterControllerComponent::AddVelocity(const AZ::Vector3& velocity)
+    void CharacterControllerComponent::AddVelocityForTick(const AZ::Vector3& velocity)
     {
         if (auto* controller = GetController())
         {
-            controller->AddVelocity(velocity);
+            controller->AddVelocityForTick(velocity);
+        }
+    }
+
+    void CharacterControllerComponent::AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity)
+    {
+        if (auto* controller = GetController())
+        {
+            controller->AddVelocityForPhysicsTimestep(velocity);
         }
     }
 
@@ -432,13 +440,22 @@ namespace PhysX
         }
     }
 
-    void CharacterControllerComponent::OnPreSimulate(float deltaTime)
+    void CharacterControllerComponent::OnPostSimulate([[maybe_unused]] float deltaTime)
     {
         if (auto* controller = GetController())
         {
-            controller->ApplyRequestedVelocity(deltaTime);
             const AZ::Vector3 newPosition = controller->GetBasePosition();
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTranslation, newPosition);
+            controller->ResetRequestedVelocityForTick();
+        }
+    }
+
+    void CharacterControllerComponent::OnSceneSimulationStart(float physicsTimestep)
+    {
+        if (auto* controller = GetController())
+        {
+            controller->ApplyRequestedVelocity(physicsTimestep);
+            controller->ResetRequestedVelocityForPhysicsTimestep();
         }
     }
 
@@ -521,16 +538,29 @@ namespace PhysX
 
         if (m_characterConfig->m_applyMoveOnPhysicsTick)
         {
-            m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
+            m_sceneSimulationStartHandler = AzPhysics::SceneEvents::OnSceneSimulationStartHandler(
+                [this](
+                    [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                    float fixedDeltaTime)
+                {
+                    OnSceneSimulationStart(fixedDeltaTime);
+                }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Physics));
+
+            m_postSimulateHandler = AzPhysics::SystemEvents::OnPostsimulateEvent::Handler(
                 [this](float deltaTime)
                 {
-                    OnPreSimulate(deltaTime);
+                    OnPostSimulate(deltaTime);
                 }
             );
 
             if (auto* physXSystem = GetPhysXSystem())
             {
-                physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
+                physXSystem->RegisterPostSimulateEvent(m_postSimulateHandler);
+            }
+
+            if (sceneInterface != nullptr)
+            {
+                sceneInterface->RegisterSceneSimulationStartHandler(m_attachedSceneHandle, m_sceneSimulationStartHandler);
             }
         }
     }
@@ -554,7 +584,8 @@ namespace PhysX
     {
         m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-        m_preSimulateHandler.Disconnect();
+        m_sceneSimulationStartHandler.Disconnect();
+        m_postSimulateHandler.Disconnect();
         m_onSimulatedBodyRemovedHandler.Disconnect();
         CharacterControllerRequestBus::Handler::BusDisconnect();
     }
