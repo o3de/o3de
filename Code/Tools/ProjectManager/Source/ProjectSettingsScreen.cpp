@@ -16,7 +16,6 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QScrollArea>

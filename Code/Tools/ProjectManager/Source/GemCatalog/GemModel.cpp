@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         {
             // do not add gems with duplicate names
             // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
-            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s\n", gemInfo.m_name.toUtf8().constData());
             return QModelIndex();
         }
 

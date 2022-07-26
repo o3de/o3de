@@ -7,8 +7,11 @@
  */
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <EngineInfo.h>
 #include <ProjectInfo.h>
 
 #include <QQueue>
@@ -68,7 +71,7 @@ namespace O3DE::ProjectManager
     private:
         QFrame* CreateFirstTimeContent();
         QFrame* CreateProjectsContent();
-        ProjectButton* CreateProjectButton(const ProjectInfo& project);
+        ProjectButton* CreateProjectButton(const ProjectInfo& project, const EngineInfo& engine);
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
         bool RemoveInvalidProjects();
@@ -89,7 +92,7 @@ namespace O3DE::ProjectManager
         FlowLayout* m_projectsFlowLayout = nullptr;
         QFileSystemWatcher* m_fileSystemWatcher = nullptr;
         QStackedWidget* m_stack = nullptr;
-        QHash<QString, ProjectButton*> m_projectButtons;
+        AZStd::unordered_map<AZ::IO::Path, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;

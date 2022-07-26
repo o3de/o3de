@@ -121,7 +121,10 @@ namespace O3DE::ProjectManager
             QStringToAZTracePrint(cmakeGenerateArgumentsResult.GetError());
             return AZ::Failure(cmakeGenerateArgumentsResult.GetError());
         }
+
         auto cmakeGenerateArguments = cmakeGenerateArgumentsResult.GetValue();
+        logStream << cmakeGenerateArguments.join(' ') << '\n'; 
+
         m_configProjectProcess->start(cmakeGenerateArguments.front(), cmakeGenerateArguments.mid(1));
         if (!m_configProjectProcess->waitForStarted())
         {
@@ -172,7 +175,9 @@ namespace O3DE::ProjectManager
             QStringToAZTracePrint(cmakeBuildArgumentsResult.GetError());
             return AZ::Failure(cmakeBuildArgumentsResult.GetError());
         }
+
         auto cmakeBuildArguments = cmakeBuildArgumentsResult.GetValue();
+        logStream << cmakeBuildArguments.join(' ') << '\n';
 
         m_buildProjectProcess->start(cmakeBuildArguments.front(), cmakeBuildArguments.mid(1));
         if (!m_buildProjectProcess->waitForStarted())
