@@ -3193,7 +3193,7 @@ namespace UnitTest
         // 4) Old asset is reassigned
         // 4a) Old asset ref count hits 0
         // 4b) Old asset triggers OnAssetUnused
-        // 4c) Container is released
+        // 4c) Container is released <-- This is where the bug happens, which should not occur with the fix
         // 5) Reload stalls because container is gone
 
         AZStd::atomic_bool running = true;
