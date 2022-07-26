@@ -188,7 +188,6 @@ set(FILES
     Memory/AllocatorBenchmarks.cpp
     Memory/AllocatorManager.cpp
     Memory/HphaSchema.cpp
-    Memory/HphaSchemaErrorDetection.cpp
     Memory/LeakDetection.cpp
     Memory/MallocSchema.cpp
     AZStd/Algorithms.cpp
@@ -252,5 +251,4 @@ set(FILES
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     EnumTests.cpp
     Memory/HphaSchema.cpp
-    Memory/HphaSchemaErrorDetection.cpp
 )
