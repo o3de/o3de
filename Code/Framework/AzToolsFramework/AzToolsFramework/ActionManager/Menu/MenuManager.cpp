@@ -86,8 +86,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not add action \"%s\" to menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -123,8 +122,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : actions)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(pair.first);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(pair.first))
             {
                 errorMessage += AZStd::string(" ") + pair.first;
                 couldNotAddAction = true;
@@ -163,8 +161,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not remove action \"%s\" from menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -201,8 +198,7 @@ namespace AzToolsFramework
 
         for (const AZStd::string& actionIdentifier : actionIdentifiers)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
                 couldNotRemoveAction = true;
@@ -304,7 +300,7 @@ namespace AzToolsFramework
     }
     
     MenuManagerOperationResult MenuManager::AddWidgetToMenu(
-        const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex)
+        const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
     {
         auto menuIterator = m_menus.find(menuIdentifier);
         if (menuIterator == m_menus.end())
@@ -313,16 +309,17 @@ namespace AzToolsFramework
                 "Menu Manager - Could not add widget to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
         }
 
-        if (!widget)
+        if (m_actionManagerInterface->IsWidgetActionRegistered(widgetActionIdentifier))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add widget to menu \"%s\" - nullptr widget.", menuIdentifier.c_str()));
+            menuIterator->second.AddWidget(sortIndex, widgetActionIdentifier);
+            m_menusToRefresh.insert(menuIdentifier);
+
+            return AZ::Success();
         }
 
-        menuIterator->second.AddWidget(sortIndex, widget);
-        m_menusToRefresh.insert(menuIdentifier);
-
-        return AZ::Success();
+        return AZ::Failure(AZStd::string::format(
+            "Menu Manager - Could not add widget \"%s\" to menu \"%s\" - widget has not been registered.",
+            widgetActionIdentifier.c_str(),  menuIdentifier.c_str()));
     }
 
     QMenu* MenuManager::GetMenu(const AZStd::string& menuIdentifier)
@@ -380,6 +377,29 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not get sort key of sub-menu \"%s\" in menu \"%s\" - sub-menu was not found in menu.", subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        return AZ::Success(sortKey.value());
+    }
+
+    MenuManagerIntegerResult MenuManager::GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of widget \"%s\" in menu \"%s\" - menu has not been registered.",
+                widgetActionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+        
+        auto sortKey = menuIterator->second.GetWidgetSortKey(widgetActionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of widget \"%s\" in menu \"%s\" - sub-menu was not found in menu.",
+                widgetActionIdentifier.c_str(),
+                menuIdentifier.c_str()));
         }
         
         return AZ::Success(sortKey.value());
@@ -480,7 +500,11 @@ namespace AzToolsFramework
 
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
-        QueueRefreshForMenusContainingAction(actionIdentifier);
+        // Only refresh the menu if the action state changing could result in the action being shown/hidden.
+        if (m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(actionIdentifier))
+        {
+            QueueRefreshForMenusContainingAction(actionIdentifier);
+        }
     }
 
 } // namespace AzToolsFramework

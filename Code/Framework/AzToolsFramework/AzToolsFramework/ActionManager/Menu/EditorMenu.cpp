@@ -79,9 +79,13 @@ namespace AzToolsFramework
         m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
     }
 
-    void EditorMenu::AddWidget(int sortKey, QWidget* widget)
+    void EditorMenu::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)
     {
-        m_menuItems.insert({ sortKey, MenuItem(widget) });
+        if (!m_widgetToSortKeyMap.contains(widgetActionIdentifier))
+        {
+            m_widgetToSortKeyMap.insert(AZStd::make_pair(widgetActionIdentifier, sortKey));
+            m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Widget, AZStd::move(widgetActionIdentifier)) });
+        }
     }
     
     bool EditorMenu::ContainsAction(const AZStd::string& actionIdentifier) const
@@ -92,6 +96,11 @@ namespace AzToolsFramework
     bool EditorMenu::ContainsSubMenu(const AZStd::string& menuIdentifier) const
     {
         return m_subMenuToSortKeyMap.contains(menuIdentifier);
+    }
+
+    bool EditorMenu::ContainsWidget(const AZStd::string& widgetActionIdentifier) const
+    {
+        return m_widgetToSortKeyMap.contains(widgetActionIdentifier);
     }
 
     AZStd::optional<int> EditorMenu::GetActionSortKey(const AZStd::string& actionIdentifier) const
@@ -114,6 +123,17 @@ namespace AzToolsFramework
         }
 
         return menuIterator->second;
+    }
+
+    AZStd::optional<int> EditorMenu::GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const
+    {
+        auto widgetIterator = m_widgetToSortKeyMap.find(widgetActionIdentifier);
+        if (widgetIterator == m_widgetToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return widgetIterator->second;
     }
 
     QMenu* EditorMenu::GetMenu()
@@ -173,18 +193,19 @@ namespace AzToolsFramework
 
     EditorMenu::MenuItem::MenuItem(MenuItemType type, AZStd::string identifier)
         : m_type(type)
+        , m_identifier(AZStd::move(identifier))
     {
-        if (type != MenuItemType::Separator)
+        if (type == MenuItemType::Widget)
         {
-            m_identifier = AZStd::move(identifier);
+            if (QWidget* widget = m_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
+            {
+                m_widgetAction = new QWidgetAction(nullptr);
+                m_widgetAction->setDefaultWidget(widget);
+            }
         }
     }
 
-    EditorMenu::MenuItem::MenuItem(QWidget* widget)
-        : m_type(MenuItemType::Widget)
     {
-        m_widgetAction = new QWidgetAction(widget->parent());
-        m_widgetAction->setDefaultWidget(widget);
     }
 
     void EditorMenu::Initialize()

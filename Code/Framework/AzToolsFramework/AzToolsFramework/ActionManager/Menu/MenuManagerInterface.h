@@ -95,11 +95,11 @@ namespace AzToolsFramework
 
         //! Add a Widget to a Menu.
         //! @param menuIdentifier The identifier for the menu the sub-menu is being added to.
-        //! @param widget A pointer to the widget to add to the menu.
+        //! @param widgetActionIdentifier The identifier to the widget to add to the menu.
         //! @param sortIndex An integer defining the position the widget should appear in the menu.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult AddWidgetToMenu(
-            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) = 0;
+            const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) = 0;
 
         //! Add a Menu to a Menu Bar.
         //! @param menuBarIdentifier The identifier for the menu bar the menu is being added to.
@@ -120,6 +120,12 @@ namespace AzToolsFramework
         //! @param subMenuIdentifier The identifier for the sub-menu whose sort key to get in the menu.
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const = 0;
+
+        //! Retrieve the sort key of a widget action in a menu from its identifier.
+        //! @param menuIdentifier The identifier for the menu to query.
+        //! @param widgetActionIdentifier The identifier for the widget whose sort key to get in the menu.
+        //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const = 0;
 
         //! Retrieve the sort key of a sub-menu in a menu from its identifier.
         //! @param menuBarIdentifier The identifier for the menu bar to query.
