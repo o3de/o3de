@@ -9,7 +9,7 @@
 
 from logging import getLogger
 from typing import Counter
-from test_impact import CPPTestImpact, BaseTestImpact, PythonTestImpact
+from test_impact import NativeTestImpact, BaseTestImpact, PythonTestImpact
 from tiaf_driver import main
 import pytest
 logging = getLogger("tiaf")
@@ -114,7 +114,7 @@ class TestTIAFCPPUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = CPPTestImpact(tiaf_args)
+        tiaf = NativeTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal expected args.

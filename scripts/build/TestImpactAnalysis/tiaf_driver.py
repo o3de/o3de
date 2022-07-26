@@ -12,7 +12,7 @@ import sys
 import pathlib
 import traceback
 import re
-from test_impact import CPPTestImpact
+from test_impact import NativeTestImpact
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
@@ -150,7 +150,7 @@ def parse_args():
 
 def main(args: dict):
     try:
-        tiaf = CPPTestImpact(args)
+        tiaf = NativeTestImpact(args)
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")

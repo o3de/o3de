@@ -12,7 +12,7 @@ from tiaf_logger import get_logger
 logger = get_logger(__file__)
 
 
-class CPPTestImpact(BaseTestImpact):
+class NativeTestImpact(BaseTestImpact):
 
     __runtime_type = "native"
 
