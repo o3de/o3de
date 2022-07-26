@@ -64,8 +64,6 @@ namespace AssetProcessor
 
     void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
     {
-        // TODO: after "All Builders" becomes the parent item of all builders in builder list, here we need to handle the case when "All
-        // Builders" is selected
         beginResetModel();
         
         if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
