@@ -42,7 +42,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
-#include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
@@ -134,7 +133,6 @@ namespace AzToolsFramework
             azrtti_typeid<AzToolsFramework::Components::EditorLockComponent>(),
             azrtti_typeid<AzToolsFramework::Components::EditorPendingCompositionComponent>(),
             azrtti_typeid<AzToolsFramework::Components::EditorVisibilityComponent>(),
-            azrtti_typeid<AzToolsFramework::Components::SelectionComponent>(),
             azrtti_typeid<AzToolsFramework::Components::TransformComponent>()
     })
     {
