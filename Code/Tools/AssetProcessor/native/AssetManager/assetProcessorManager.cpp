@@ -226,7 +226,11 @@ namespace AssetProcessor
         }
         else
         {
-            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            QString statKey = QString("ProcessJob,%1,%2,%3,%4")
+                                  .arg(jobEntry.m_databaseSourceName)
+                                  .arg(jobEntry.m_jobKey)
+                                  .arg(jobEntry.m_platformInfo.m_identifier.c_str())
+                                  .arg(jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
 
             if (status == JobStatus::InProgress)
             {
@@ -247,8 +251,7 @@ namespace AssetProcessor
 
                 if (operationDuration)
                 {
-                    Q_EMIT JobProcessDurationChanged(
-                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<int>(operationDuration.value()));
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
@@ -3941,7 +3944,7 @@ namespace AssetProcessor
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
 
-        // Signals SourceAssetTreeModel so it can update the CreateJob duration change
+        // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
         Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 

@@ -35,8 +35,16 @@ set(FILES
     native/ui/MainWindow.h
     native/ui/MainWindow.cpp
     native/ui/MainWindow.ui
+    native/ui/BuilderData.h
+    native/ui/BuilderData.cpp
+    native/ui/BuilderDataItem.h
+    native/ui/BuilderDataItem.cpp
     native/ui/BuilderListModel.h
     native/ui/BuilderListModel.cpp
+    native/ui/BuilderInfoPatternsModel.h
+    native/ui/BuilderInfoPatternsModel.cpp
+    native/ui/BuilderInfoMetricsModel.h
+    native/ui/BuilderInfoMetricsModel.cpp
     native/ui/MessageWindow.h
     native/ui/MessageWindow.cpp
     native/ui/MessageWindow.ui
