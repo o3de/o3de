@@ -32,7 +32,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, fl
             litRatio = visibilityAndThickness.x;
             transmissionDistance = visibilityAndThickness.y;
         } 
-        else if (o_transmission_mode == TransmissionMode::ThinObject) 
+        else if (o_transmission_mode == TransmissionMode::ThinObject || o_transmission_mode == TransmissionMode::Burley) 
         {
             float2 visibilityAndThickness = DirectionalLightShadow::GetVisibilityThinTransmission(
                                                 shadowIndex, surface.position, surface.vertexNormal, screenUv, surface.transmission.GetShrinkFactor());

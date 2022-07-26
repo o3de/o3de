@@ -30,6 +30,7 @@ end
 TransmissionMode_None = 0
 TransmissionMode_ThickObject = 1
 TransmissionMode_ThinObject = 2
+TransmissionMode_Burley = 3
 
 function UpdateUseTextureState(context, subsurfaceScatteringEnabled, textureMapPropertyName, useTexturePropertyName, shaderOptionName) 
     local textureMap = context:GetMaterialPropertyValue_Image(textureMapPropertyName)
@@ -93,11 +94,13 @@ function ProcessEditor(context)
     -- Update visibility for transmission...
 
     local thickTransmissionEnabled = TransmissionMode_ThickObject == context:GetMaterialPropertyValue_enum("transmissionMode")
-    local thinTransmissionEnabled = TransmissionMode_ThinObject == context:GetMaterialPropertyValue_enum("transmissionMode")
+    local thinTransmissionEnabled = TransmissionMode_ThinObject == context:GetMaterialPropertyValue_enum("transmissionMode") or TransmissionMode_Burley == context:GetMaterialPropertyValue_enum("transmissionMode")
+    local burleyTransmissionEnabled = TransmissionMode_Burley == context:GetMaterialPropertyValue_enum("transmissionMode")
 
     local commonTrasmissionVisibility = MaterialPropertyVisibility_Hidden
     local thickTransmissionVisibility = MaterialPropertyVisibility_Hidden
     local thinTransmissionVisibility = MaterialPropertyVisibility_Hidden
+    local burleyTransmissionVisibility = MaterialPropertyVisibility_Hidden
     if (thickTransmissionEnabled or thinTransmissionEnabled) then
         commonTrasmissionVisibility = MaterialPropertyVisibility_Enabled
 
@@ -105,7 +108,11 @@ function ProcessEditor(context)
                 thickTransmissionVisibility = MaterialPropertyVisibility_Enabled
             else -- thin transmission enabled
                 thinTransmissionVisibility = MaterialPropertyVisibility_Enabled
+                if(burleyTransmissionEnabled) then
+                    burleyTransmissionVisibility = MaterialPropertyVisibility_Enabled
+                end
             end
+            
     end
     
     context:SetMaterialPropertyVisibility("thickness", commonTrasmissionVisibility)
