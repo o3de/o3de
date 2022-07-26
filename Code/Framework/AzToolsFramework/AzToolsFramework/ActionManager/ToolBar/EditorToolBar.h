@@ -37,10 +37,10 @@ namespace AzToolsFramework
         static void Initialize();
         
         // Add Menu Items
-        void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier);
-        void AddWidget(int sortKey, QWidget* widget);
+        void AddWidget(int sortKey, AZStd::string widgetActionIdentifier);
+        void AddSeparator(int sortKey);
 
         // Remove Menu Items
         void RemoveAction(AZStd::string actionIdentifier);
@@ -62,24 +62,31 @@ namespace AzToolsFramework
         enum class ToolBarItemType
         {
             Action = 0,
-            Separator,
-            Widget
+            ActionAndSubMenu,
+            Widget,
+            Separator
         };
 
         struct ToolBarItem
         {
-            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = AZStd::string());
-            explicit ToolBarItem(QWidget* widget);
+            explicit ToolBarItem(
+                QToolBar* toolBar,
+                ToolBarItemType type = ToolBarItemType::Separator,
+                AZStd::string identifier = AZStd::string(),
+                AZStd::string subMenuIdentifier = AZStd::string()
+            );
 
             ToolBarItemType m_type;
 
             AZStd::string m_identifier;
+            AZStd::string m_subMenuIdentifier;
             QWidgetAction* m_widgetAction = nullptr;
         };
 
         QToolBar* m_toolBar = nullptr;
         AZStd::multimap<int, ToolBarItem> m_toolBarItems;
         AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::map<AZStd::string, int> m_widgetToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

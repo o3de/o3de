@@ -90,11 +90,11 @@ namespace AzToolsFramework
 
         //! Add a Widget to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the widget is being added to.
-        //! @param widget A pointer to the widget to add to the ToolBar.
+        //! @param widgetActionIdentifier The identifier for the widget to add to the ToolBar.
         //! @param sortIndex An integer defining the position the widget should appear in the ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult AddWidgetToToolBar(
-            const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex) = 0;
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) = 0;
 
         //! Retrieve a QToolBar from its identifier.
         //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.

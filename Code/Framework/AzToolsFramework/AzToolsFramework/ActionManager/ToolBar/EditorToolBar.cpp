@@ -31,29 +31,33 @@ namespace AzToolsFramework
 
     void EditorToolBar::AddSeparator(int sortKey)
     {
-        m_toolBarItems.insert({ sortKey, ToolBarItem() });
+        m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar) });
     }
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-        m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
+        if (!m_actionToSortKeyMap.contains(actionIdentifier))
+        {
+            m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+            m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar, ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
+        }
     }
 
     void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
     {
-        if (QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-            QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(subMenuIdentifier))
+        if (!m_actionToSortKeyMap.contains(actionIdentifier))
         {
-            QToolButton* toolButton = new QToolButton(m_toolBar);
-            
-            toolButton->setPopupMode(QToolButton::MenuButtonPopup);
-            toolButton->setAutoRaise(true);
-            toolButton->setMenu(subMenu);
-            toolButton->setDefaultAction(action);
-
-            m_actionToSortKeyMap.insert(AZStd::make_pair(AZStd::move(actionIdentifier), sortKey));
-            m_toolBarItems.insert({ sortKey, ToolBarItem(static_cast<QWidget*>(toolButton)) });
+            m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+            m_toolBarItems.insert(
+                {
+                    sortKey,
+                    ToolBarItem(
+                        m_toolBar, 
+                        ToolBarItemType::ActionAndSubMenu,
+                        AZStd::move(actionIdentifier),
+                        AZStd::move(subMenuIdentifier))
+                }
+            );
         }
     }
 
@@ -85,9 +89,13 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorToolBar::AddWidget(int sortKey, QWidget* widget)
+    void EditorToolBar::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)
     {
-        m_toolBarItems.insert({ sortKey, ToolBarItem(widget) });
+        if (!m_widgetToSortKeyMap.contains(widgetActionIdentifier))
+        {
+            m_widgetToSortKeyMap.insert(AZStd::make_pair(widgetActionIdentifier, sortKey));
+            m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar, ToolBarItemType::Widget, AZStd::move(widgetActionIdentifier)) });
+        }
     }
 
     bool EditorToolBar::ContainsAction(const AZStd::string& actionIdentifier) const
@@ -135,38 +143,68 @@ namespace AzToolsFramework
 
                         m_toolBar->addAction(action);
                     }
-                    break;
                 }
+                break;
             case ToolBarItemType::Separator:
                 {
                     m_toolBar->addSeparator();
-                    break;
                 }
+                break;
+            case ToolBarItemType::ActionAndSubMenu:
             case ToolBarItemType::Widget:
                 {
                     m_toolBar->addAction(elem.second.m_widgetAction);
-                    break;
                 }
+                break;
             default:
                 break;
             }
         }
     }
 
-    EditorToolBar::ToolBarItem::ToolBarItem(ToolBarItemType type, AZStd::string identifier)
+    EditorToolBar::ToolBarItem::ToolBarItem(QToolBar* toolBar, ToolBarItemType type, AZStd::string identifier, AZStd::string subMenuIdentifier)
         : m_type(type)
+        , m_identifier(AZStd::move(identifier))
+        , m_subMenuIdentifier(AZStd::move(subMenuIdentifier))
     {
-        if (type != ToolBarItemType::Separator)
+        switch (m_type)
         {
-            m_identifier = AZStd::move(identifier);
+            case ToolBarItemType::Widget:
+                {
+                    if (QWidget* widget = m_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
+                    {
+                        m_widgetAction = new QWidgetAction(nullptr);
+                        m_widgetAction->setDefaultWidget(widget);
+                    }
+                }
+                break;
+
+            case ToolBarItemType::ActionAndSubMenu:
+                {
+                    if (QAction* action = m_actionManagerInternalInterface->GetAction(m_identifier);
+                        QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier))
+                    {
+                        QToolButton* toolButton = new QToolButton(toolBar);
+
+                        toolButton->setPopupMode(QToolButton::MenuButtonPopup);
+                        toolButton->setAutoRaise(true);
+                        toolButton->setMenu(subMenu);
+                        toolButton->setDefaultAction(action);
+
+                        m_widgetAction = new QWidgetAction(nullptr);
+                        m_widgetAction->setDefaultWidget(toolButton);
+                    }
+                }
+                break;
+
+            case ToolBarItemType::Action:
+            case ToolBarItemType::Separator:
+            default:
+                break;
         }
     }
 
-    EditorToolBar::ToolBarItem::ToolBarItem(QWidget* widget)
-        : m_type(ToolBarItemType::Widget)
     {
-        m_widgetAction = new QWidgetAction(widget->parent());
-        m_widgetAction->setDefaultWidget(widget);
     }
 
     void EditorToolBar::Initialize()
