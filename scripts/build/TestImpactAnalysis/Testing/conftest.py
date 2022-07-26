@@ -35,8 +35,8 @@ def config_path(build_type, test_data_file):
 
 
 @pytest.fixture
-def binary_path(build_type, test_data_file):
-    return test_data_file[BUILD_INFO_KEY][build_type][BINARY_PATH_KEY]
+def binary_path(test_data_file):
+    return test_data_file[BINARY_PATH_KEY]
 
 
 @pytest.fixture()

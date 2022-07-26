@@ -463,7 +463,6 @@ function(ly_test_impact_write_pytest_file)
     foreach(config_type ${LY_CONFIGURATION_TYPES})
         set(config "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
         set(report "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
-        set(bin "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${config_type}/runtime_bin")
         ly_file_read("cmake/TestImpactFramework/LyTestImpactBuildConfigEntry.in" build_config)
         string(CONFIGURE ${build_config} build_config)
         list(APPEND build_configs "${build_config}")
@@ -472,6 +471,7 @@ function(ly_test_impact_write_pytest_file)
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
 
+    set(bin "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/profile/runtime_bin")
     # Configure and write out our test data file
     ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
     string(CONFIGURE ${test_file} test_file)
