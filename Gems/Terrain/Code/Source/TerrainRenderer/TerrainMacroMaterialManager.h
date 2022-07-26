@@ -83,7 +83,7 @@ namespace Terrain
             int32_t m_priority{ 0 };
             uint32_t m_hash{ 0 };
 
-            bool operator>(MacroMaterialPriority& other)
+            bool operator>(MacroMaterialPriority& other) const
             {
                 return m_priority > other.m_priority || (m_priority == other.m_priority && m_hash > other.m_hash);
             }
