@@ -38,6 +38,11 @@ namespace Multiplayer
         return m_owner.GetEntity();
     }
 
+    AZ::EntityId MultiplayerController::GetEntityId() const
+    {
+        return m_owner.GetEntityId();
+    }
+
     ConstNetworkEntityHandle MultiplayerController::GetEntityHandle() const
     {
         return m_owner.GetEntityHandle();

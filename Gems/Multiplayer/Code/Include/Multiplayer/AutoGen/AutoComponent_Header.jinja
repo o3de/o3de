@@ -505,7 +505,7 @@ namespace {{ Component.attrib['Namespace'] }}
         void Activate() override;
         void Deactivate() override;
 {% if ComponentDerived %}
-        virtual void OnInit() = 0;
+        virtual void OnInit() {}
         virtual void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) = 0;
         virtual void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) = 0;
 {% endif %}
@@ -528,6 +528,7 @@ namespace {{ Component.attrib['Namespace'] }}
         void NotifyStateDeltaChanges(Multiplayer::ReplicationRecord& replicationRecord) override;
         bool HasController() const override;
         Multiplayer::MultiplayerController* GetController() override;
+        const Multiplayer::MultiplayerController* GetController() const override;
 
     protected:
         void ConstructController() override;

@@ -75,6 +75,7 @@ namespace Multiplayer
         virtual void NotifyStateDeltaChanges(ReplicationRecord& replicationRecord) = 0;
         virtual bool HasController() const = 0;
         virtual MultiplayerController* GetController() = 0;
+        virtual const MultiplayerController* GetController() const = 0;
 
     protected:
         virtual void ConstructController() = 0;
