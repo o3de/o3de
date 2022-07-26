@@ -651,6 +651,7 @@ namespace AzToolsFramework
                 return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
             }
 
+            // Take a snapshot of the instance DOM before we manipulate it.
             PrefabDom instanceDomBeforeUpdate;
             instanceDomBeforeUpdate.CopyFrom(instanceDomFromRoot.value().get(), instanceDomBeforeUpdate.GetAllocator());
 
@@ -661,6 +662,7 @@ namespace AzToolsFramework
             EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::HandleEntitiesAdded, EntityList{entity});
             EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequestBus::Events::FinalizeEditorEntity, entity);
 
+            // Set up transform and parent information.
             AZ::Transform transform = AZ::Transform::CreateIdentity();
             transform.SetTranslation(position);
 
@@ -679,7 +681,9 @@ namespace AzToolsFramework
             {
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
-            
+
+            // Update the undo cache on the added entity with the parent information.
+            m_prefabUndoCache.UpdateCache(entityId);
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = {entityId};
@@ -1244,8 +1248,6 @@ namespace AzToolsFramework
 
             AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
-            Prefab::PrefabDom instanceDomBefore;
-
             AZStd::vector<AZ::Entity*> entities;
             AZStd::vector<Instance*> instances;
 
@@ -1265,6 +1267,8 @@ namespace AzToolsFramework
                 outInstance.reset();
             }
 
+            // Take a snapshot of the instance DOM before we manipulate it.
+            Prefab::PrefabDom instanceDomBefore;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
 
             for (AZ::Entity* entity : entities)
@@ -1272,9 +1276,6 @@ namespace AzToolsFramework
                 commonOwningInstance->get().DetachEntity(entity->GetId()).release();
                 AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
             }
-
-            Prefab::PrefabDom instanceDomAfter;
-            m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, commonOwningInstance->get());
 
             // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
             // and then add the deletion as children.
@@ -1294,10 +1295,8 @@ namespace AzToolsFramework
             SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
             deselectAllCommand->SetParent(undoBatch.GetUndoBatch());
 
-            PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
-            command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
-            command->SetParent(undoBatch.GetUndoBatch());
-            command->Redo();
+            PrefabUndoHelpers::UpdatePrefabInstance(commonOwningInstance->get(), "Undo deleting entities",
+                instanceDomBefore, undoBatch.GetUndoBatch());
 
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);

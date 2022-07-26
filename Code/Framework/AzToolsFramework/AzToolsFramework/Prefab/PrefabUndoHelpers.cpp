@@ -17,11 +17,15 @@ namespace AzToolsFramework
         namespace PrefabUndoHelpers
         {
             void UpdatePrefabInstance(
-                const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
+                Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabDom instanceDomAfterUpdate;
                 PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDomAfterUpdate);
+
+                // Preemptively updates the cached dom to prevent unnecessary reloading in InstanceSerializer::Reload().
+                PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
+                instance.SetCachedInstanceDom(instanceDomAfterUpdate);
 
                 PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
                 state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance.GetTemplateId());

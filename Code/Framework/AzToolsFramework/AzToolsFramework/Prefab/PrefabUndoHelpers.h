@@ -15,7 +15,7 @@ namespace AzToolsFramework
         namespace PrefabUndoHelpers
         {
             void UpdatePrefabInstance(
-                const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
+                Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch);
             LinkId CreateLink(
                 TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDom patch,

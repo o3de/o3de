@@ -82,6 +82,7 @@ namespace UnitTest
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }

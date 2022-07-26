@@ -38,11 +38,11 @@ namespace AzToolsFramework
             inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
 
             /**
-            * Find Prefab value from given parent value and target value's name.
-            * @param parentValue A parent value in Prefab DOM.
-            * @param valueName A name of child value of parentValue.
-            * @return Reference to the child value of parentValue with name valueName if the child value exists.
-            */
+             * Find Prefab value from given parent value and target value's name.
+             * @param parentValue A parent value in Prefab DOM.
+             * @param valueName A name of child value of parentValue.
+             * @return Reference to the child value of parentValue with name valueName if the child value exists.
+             */
             PrefabDomValueReference FindPrefabDomValue(PrefabDomValue& parentValue, const char* valueName);
             PrefabDomValueConstReference FindPrefabDomValue(const PrefabDomValue& parentValue, const char* valueName);
 
@@ -75,12 +75,12 @@ namespace AzToolsFramework
             };
 
             /**
-            * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
-            * @param instance The instance to store.
-            * @param prefabDom The prefabDom that will be used to store the Instance data.
-            * @param flags Controls behavior such as whether to store default values.
-            * @return bool on whether the operation succeeded.
-            */
+             * Stores a valid Prefab Instance within a Prefab Dom. Useful for generating Templates.
+             * @param instance The instance to store.
+             * @param prefabDom The prefabDom that will be used to store the Instance data.
+             * @param flags Controls behavior such as whether to store default values.
+             * @return bool on whether the operation succeeded.
+             */
             bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreFlags flags = StoreFlags::None);
 
             /**
@@ -98,14 +98,14 @@ namespace AzToolsFramework
                 StoreFlags flags = StoreFlags::None);
 
             /**
-            * Stores a valid entity in Prefab Dom format.
-            * @param entity The entity to store
-            * @param owningInstance The instance owning the passed in entity.
-            *                       Used for contextualizing the entity's place in a Prefab hierarchy.
-            * @param prefabDom The prefabDom that will be used to store the entity data
-            * @param flags controls behavior such as whether to store default values
-            * @return bool on whether the operation succeeded
-            */
+             * Stores a valid entity in Prefab Dom format.
+             * @param entity The entity to store
+             * @param owningInstance The instance owning the passed in entity.
+             *                       Used for contextualizing the entity's place in a Prefab hierarchy.
+             * @param prefabDom The prefabDom that will be used to store the entity data
+             * @param flags controls behavior such as whether to store default values
+             * @return bool on whether the operation succeeded
+             */
             bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
                 StoreFlags flags = StoreFlags::None);
 
@@ -123,36 +123,36 @@ namespace AzToolsFramework
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(LoadFlags);
 
             /**
-            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
-            * @param instance The Instance to load.
-            * @param prefabDom The prefabDom that will be used to load the Instance data.
-            * @param flags Controls behavior such as random entity id assignment.
-            * @return bool on whether the operation succeeded.
-            */
+             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+             * @param instance The Instance to load.
+             * @param prefabDom The prefabDom that will be used to load the Instance data.
+             * @param flags Controls behavior such as random entity id assignment.
+             * @return bool on whether the operation succeeded.
+             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, LoadFlags flags = LoadFlags::None);
 
             /**
-            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
-            * @param instance The Instance to load.
-            * @param referencedAssets AZ::Assets discovered during json load are added to this list
-            * @param prefabDom The prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers Whether to clear containers in Instance while loading.
-            * @return bool on whether the operation succeeded.
-            */
+             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+             * @param instance The Instance to load.
+             * @param referencedAssets AZ::Assets discovered during json load are added to this list
+             * @param prefabDom The prefabDom that will be used to load the Instance data.
+             * @param shouldClearContainers Whether to clear containers in Instance while loading.
+             * @return bool on whether the operation succeeded.
+             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets,
                 LoadFlags flags = LoadFlags::None);
 
             /**
-            * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
-            * @param instance The Instance to load.
-            * @param newlyAddedEntities The new instances added during deserializing the instance. These are the entities found
-            *       in the prefabDom.
-            * @param prefabDom The prefabDom that will be used to load the Instance data.
-            * @param shouldClearContainers Whether to clear containers in Instance while loading.
-            * @return bool on whether the operation succeeded.
-            */
+             * Loads a valid Prefab Instance from a Prefab Dom. Useful for generating Instances.
+             * @param instance The Instance to load.
+             * @param newlyAddedEntities The new instances added during deserializing the instance. These are the entities found
+             *       in the prefabDom.
+             * @param prefabDom The prefabDom that will be used to load the Instance data.
+             * @param shouldClearContainers Whether to clear containers in Instance while loading.
+             * @return bool on whether the operation succeeded.
+             */
             bool LoadInstanceFromPrefabDom(
                 Instance& instance, EntityList& newlyAddedEntities, const PrefabDom& prefabDom,
                 LoadFlags flags = LoadFlags::None);
@@ -215,6 +215,21 @@ namespace AzToolsFramework
                 AZ_RTTI(InstanceDomMetadata, "{4B509C7B-91B6-4C5E-9696-F7E2C67B6E1B}");
                 virtual ~InstanceDomMetadata() {}
             };
+
+            /**
+             * Compares two Prefab DOM values.
+             * @param valueA The Prefab DOM value.
+             * @param valueB The Prefab DOM value.
+             * @return bool on whether the DOM values are equal or both values are AZStd::nullopt.
+             */
+            inline bool ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB)
+            {
+                if (!valueA.has_value())
+                {
+                    return !valueB.has_value();
+                }
+                return AZ::JsonSerialization::Compare(valueA->get(), valueB->get()) == AZ::JsonSerializerCompareResult::Equal;
+            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
