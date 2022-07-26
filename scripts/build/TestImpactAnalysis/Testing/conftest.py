@@ -13,8 +13,11 @@ import uuid
 
 BUILD_INFO_KEY = 'build_info'
 CONFIG_PATH_KEY = 'config'
-REPORT_PATH_KEY = 'report'
-BINARY_PATH_KEY = 'bin'
+BINARY_PATH_KEY = 'tiaf_bin'
+WORKSPACE_KEY = "workspace"
+ROOT_KEY = "root"
+TEMP_KEY = "temp"
+REPO_KEY = "repo"
 
 
 @pytest.fixture
@@ -35,13 +38,13 @@ def config_path(build_type, test_data_file):
 
 
 @pytest.fixture
-def binary_path(test_data_file):
-    return test_data_file[BINARY_PATH_KEY]
+def binary_path(config_data):
+    return config_data[REPO_KEY][BINARY_PATH_KEY]
 
 
 @pytest.fixture()
-def report_path(build_type, test_data_file, mock_uuid):
-    return test_data_file[BUILD_INFO_KEY][build_type][REPORT_PATH_KEY]+"\\report."+mock_uuid.hex+".json"
+def report_path(build_type, config_data, mock_uuid):
+    return config_data[WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
 
 
 @pytest.fixture
