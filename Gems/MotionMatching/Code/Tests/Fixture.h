@@ -16,6 +16,7 @@ namespace EMotionFX::MotionMatching
         AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         EMotionFX::Integration::SystemComponent,
         MotionMatchingSystemComponent

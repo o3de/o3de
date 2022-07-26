@@ -23,6 +23,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Asset/AssetCatalog.h>
@@ -1099,6 +1100,7 @@ namespace UnitTest
             nullptr
         };
         TestFileIOBase m_fileIO;
+        AZ::TaskExecutor* m_taskExecutor{ nullptr };
         AZ::IO::IStreamer* m_streamer{ nullptr };
         AzFramework::AssetCatalog* m_assetCatalog;
 
@@ -1113,6 +1115,9 @@ namespace UnitTest
 
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
+
+            m_taskExecutor = aznew AZ::TaskExecutor();
+            AZ::TaskExecutor::SetInstance(m_taskExecutor);
 
             m_streamer = CreateStreamer();
             if (m_streamer)
@@ -1139,6 +1144,9 @@ namespace UnitTest
                 AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer);
             }
             DestroyStreamer(m_streamer);
+
+            AZ::TaskExecutor::SetInstance(m_taskExecutor);
+            delete m_taskExecutor;
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();

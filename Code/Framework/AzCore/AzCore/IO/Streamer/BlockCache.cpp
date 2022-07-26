@@ -114,12 +114,12 @@ namespace AZ::IO
         {
             m_onlyEpilogWrites = true;
         }
+        m_recentlyUsed = RecentlyUsedBlockIndex(m_numBlocks);
 
         m_cache = reinterpret_cast<u8*>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
             m_cacheSize, alignment, 0, "AZ::IO::Streamer BlockCache", __FILE__, __LINE__));
         m_cachedPaths = AZStd::unique_ptr<RequestPath[]>(new RequestPath[m_numBlocks]);
         m_cachedOffsets = AZStd::unique_ptr<u64[]>(new u64[m_numBlocks]);
-        m_blockLastTouched = AZStd::unique_ptr<TimePoint[]>(new TimePoint[m_numBlocks]);
         m_inFlightRequests = AZStd::unique_ptr<FileRequest*[]>(new FileRequest*[m_numBlocks]);
 
         ResetCache();
@@ -369,6 +369,7 @@ namespace AZ::IO
             if (m_cachedPaths[i] == filePath)
             {
                 ResetCacheEntry(i);
+                m_recentlyUsed.Flush(i);
             }
         }
     }
@@ -376,6 +377,7 @@ namespace AZ::IO
     void BlockCache::FlushEntireCache()
     {
         ResetCache();
+        m_recentlyUsed.FlushAll();     
     }
 
     void BlockCache::CollectStatistics(AZStd::vector<Statistic>& statistics) const
@@ -431,7 +433,7 @@ namespace AZ::IO
     {
         if (!IsCacheBlockInFlight(cacheBlock))
         {
-            TouchBlock(cacheBlock);
+            m_recentlyUsed.Touch(cacheBlock);
             memcpy(section.m_output, GetCacheBlockData(cacheBlock) + section.m_blockOffset, section.m_copySize);
             return CacheResult::ReadFromCache;
         }
@@ -545,12 +547,13 @@ namespace AZ::IO
 
         if (requestWasSuccessful)
         {
-            TouchBlock(cacheBlockIndex);
+            m_recentlyUsed.Touch(cacheBlockIndex);
             m_inFlightRequests[cacheBlockIndex] = nullptr;
         }
         else
         {
             ResetCacheEntry(cacheBlockIndex);
+            m_recentlyUsed.Flush(cacheBlockIndex); 
         }
         AZ_Assert(m_numInFlightRequests > 0, "Clearing out an in-flight request, but there shouldn't be any in flight according to records.");
         m_numInFlightRequests--;
@@ -685,34 +688,17 @@ namespace AZ::IO
         return m_cache + (index * m_blockSize);
     }
 
-    void BlockCache::TouchBlock(u32 index)
-    {
-        AZ_Assert(index < m_numBlocks, "Index for touch a cache entry in the BlockCache is out of bounds.");
-        m_blockLastTouched[index] = AZStd::chrono::high_resolution_clock::now();
-    }
-
     u32 BlockCache::RecycleOldestBlock(const RequestPath& filePath, u64 offset)
     {
         AZ_Assert((offset & (m_blockSize - 1)) == 0, "The offset used to recycle a block cache needs to be a multiple of the block size.");
 
-        // Find the oldest cache block.
-        TimePoint oldest = m_blockLastTouched[0];
-        u32 oldestIndex = 0;
-        for (u32 i = 1; i < m_numBlocks; ++i)
-        {
-            if (m_blockLastTouched[i] < oldest && !m_inFlightRequests[i])
-            {
-                oldest = m_blockLastTouched[i];
-                oldestIndex = i;
-            }
-        }
-
+        u32 oldestIndex = m_recentlyUsed.GetLeastRecentlyUsed();
         if (!IsCacheBlockInFlight(oldestIndex))
         {
             // Recycle the block.
             m_cachedPaths[oldestIndex] = filePath;
             m_cachedOffsets[oldestIndex] = offset;
-            TouchBlock(oldestIndex);
+            m_recentlyUsed.TouchLeastRecentlyUsed();
             return oldestIndex;
         }
         else
@@ -747,7 +733,6 @@ namespace AZ::IO
 
         m_cachedPaths[index].Clear();
         m_cachedOffsets[index] = 0;
-        m_blockLastTouched[index] = TimePoint::min();
         m_inFlightRequests[index] = nullptr;
     }
 

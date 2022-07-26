@@ -11,6 +11,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/ScriptContext.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
 
@@ -46,6 +47,7 @@ namespace UnitTest
 
             systemEntity->CreateComponent<MemoryComponent>();
             systemEntity->CreateComponent("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}"); // JobManager component
+            systemEntity->CreateComponent<TaskGraphSystemComponent>();
             systemEntity->CreateComponent<StreamerComponent>();
             systemEntity->CreateComponent<AssetManagerComponent>();
             systemEntity->CreateComponent("{A316662A-6C3E-43E6-BC61-4B375D0D83B4}"); // Usersettings component

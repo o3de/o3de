@@ -14,6 +14,7 @@
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -90,6 +91,7 @@ class SpawnerApplication
         return AZ::ComponentTypeList{
             azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
+            azrtti_typeid<AZ::TaskGraphSystemComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),

@@ -60,6 +60,7 @@ namespace EMotionFX
         AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AZ::UserSettingsComponent,
         Physics::MaterialSystemComponent,

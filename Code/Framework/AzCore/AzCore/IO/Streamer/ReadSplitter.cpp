@@ -196,7 +196,8 @@ namespace AZ::IO
 
         while (pending.m_readSize > 0)
         {
-            if (pending.m_request->GetNumDependencies() >= FileRequest::GetMaxNumDependencies())
+            // - 1 because there needs to be room to attach the wait.
+            if (pending.m_request->GetNumDependencies() >= FileRequest::GetMaxNumDependencies() - 1)
             {
                 // Add a wait to make sure the read request isn't completed if all sub-reads completed before
                 // the ReadSplitter has had a chance to add new sub-reads to complete the read.

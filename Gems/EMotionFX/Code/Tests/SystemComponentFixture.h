@@ -21,6 +21,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Application/Application.h>
@@ -215,6 +216,7 @@ namespace EMotionFX
         AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         Physics::MaterialSystemComponent,
         EMotionFX::Integration::SystemComponent
@@ -226,6 +228,7 @@ namespace EMotionFX
         AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
+        AZ::TaskGraphSystemComponent,
         AZ::StreamerComponent,
         AzFramework::AssetCatalogComponent,
         Physics::MaterialSystemComponent,

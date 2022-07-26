@@ -37,7 +37,13 @@ namespace AZ::IO
         m_threadData.m_streamStack = AZStd::move(streamStack);
     }
 
-    Scheduler::~Scheduler() = default;
+    Scheduler::~Scheduler()
+    {
+        if (m_isRunning)
+        {
+            Stop();
+        }
+    }
 
     void Scheduler::Start(const AZStd::thread_desc& threadDesc)
     {
@@ -244,20 +250,23 @@ namespace AZ::IO
             }
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            m_stackStatus = StreamStackEntry::Status{};
-            m_threadData.m_streamStack->UpdateStatus(m_stackStatus);
-            if (m_stackStatus.m_isIdle)
+            if (m_processingSize > 0)
             {
-                auto duration = AZStd::chrono::system_clock::now() - m_processingStartTime;
-                auto durationSec = AZStd::chrono::duration_cast<AZStd::chrono::duration<double>>(duration);
-                m_processingSpeedStat.PushEntry(m_processingSize / durationSec.count());
-                m_processingSize = 0;
+                m_stackStatus = StreamStackEntry::Status{};
+                m_threadData.m_streamStack->UpdateStatus(m_stackStatus);
+                if (m_stackStatus.m_isIdle)
+                {
+                    auto duration = AZStd::chrono::system_clock::now() - m_processingStartTime;
+                    auto durationSec = AZStd::chrono::duration_cast<AZStd::chrono::duration<double>>(duration);
+                    m_processingSpeedStat.PushEntry(m_processingSize / durationSec.count());
+                    m_processingSize = 0;
+                }
             }
 #endif
         }
 
-        // Make sure all requests in the stack are cleared out. This dangling async processes or async processes crashing as assigned
-        // such as memory buffers are no longer available.
+        // Make sure all requests in the stack are cleared out. This prevents dangling async processes or async processes crashing due to
+        // memory buffers not being available among others.
         Thread_ProcessTillIdle();
     }
 
@@ -442,8 +451,11 @@ namespace AZ::IO
         {
             m_stackStatus = StreamStackEntry::Status{};
             m_threadData.m_streamStack->UpdateStatus(m_stackStatus);
-            if (m_stackStatus.m_isIdle)
+            if (m_stackStatus.m_isIdle && m_context.GetOutstandingTaskCount() == 0)
             {
+                // Clean up the last requests as there can be requests that have been completed
+                // on another thread, but haven't been completed yet.
+                m_context.FinalizeCompletedRequests();
                 return;
             }
 
