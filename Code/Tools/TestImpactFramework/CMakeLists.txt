@@ -21,6 +21,7 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED)
             TestImpactFramework
         
     )
+    
     ly_add_pytest(
         NAME TiafPythonUnitTest
         PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/test_tiaf_unit_tests.py
