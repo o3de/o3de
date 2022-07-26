@@ -76,7 +76,6 @@ namespace AZ
         VkAccessFlags GetResourceAccessFlags(const RHI::ScopeAttachment& scopeAttachment);
         VkAccessFlags GetResourceAccessFlags(const RHI::BufferBindFlags& bindFlags);
         VkAccessFlags GetResourceAccessFlags(const RHI::ImageBindFlags& bindFlags);
-        VkAccessFlags GetImageAccessFlags(const RHI::ImageScopeAttachment& scopeImageAttachment);
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageScopeAttachment);
         VkBufferUsageFlags GetBufferUsageFlagBits(RHI::BufferBindFlags bindFlags);
         VkSampleLocationEXT ConvertSampleLocation(const RHI::SamplePosition& position);

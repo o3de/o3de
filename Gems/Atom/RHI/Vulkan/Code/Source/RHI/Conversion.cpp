@@ -1010,7 +1010,17 @@ namespace AZ
         VkAccessFlags GetResourceAccessFlags(const RHI::ScopeAttachment& scopeAttachment)
         {
             VkAccessFlags accessFlags = {};
-            
+            bool isClear = false;
+
+            if (const auto* scopeImageAttachment = azrtti_cast<const RHI::ImageScopeAttachment*>(&scopeAttachment))
+            {
+                const auto& bindingDescriptor = scopeImageAttachment->GetDescriptor();
+                const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+                const bool isClearActionStencil =
+                    bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+                isClear = isClearAction || isClearActionStencil;
+            }
+
             const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = scopeAttachment.GetUsageAndAccess();
             for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : usagesAndAccesses)
             {
@@ -1029,6 +1039,7 @@ namespace AZ
                     break;
                 case RHI::ScopeAttachmentUsage::SubpassInput:
                 case RHI::ScopeAttachmentUsage::Shader:
+                    accessFlags |= isClear ? VK_ACCESS_TRANSFER_WRITE_BIT : 0;
                     accessFlags |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Write) ? VK_ACCESS_SHADER_WRITE_BIT : accessFlags;
                     accessFlags |= RHI::CheckBitsAny(usageAndAccess.m_access, RHI::ScopeAttachmentAccess::Read) ? VK_ACCESS_SHADER_READ_BIT : accessFlags;
                     break;
@@ -1090,23 +1101,6 @@ namespace AZ
                 accessFlags |= VK_ACCESS_SHADER_READ_BIT;
             }
 
-            return accessFlags;
-        }
-
-        VkAccessFlags GetImageAccessFlags(const RHI::ImageScopeAttachment& scopeImageAttachment) 
-        {
-            const auto& bindingDescriptor = scopeImageAttachment.GetDescriptor();
-            const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
-            const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
-            const bool isClear = isClearAction || isClearActionStencil;
-            VkAccessFlags accessFlags = 0;
-
-            for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeImageAttachment.GetUsageAndAccess()) {
-                if(usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader && isClear) {
-                    accessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-                    break;
-                }
-            }
             return accessFlags;
         }
 
