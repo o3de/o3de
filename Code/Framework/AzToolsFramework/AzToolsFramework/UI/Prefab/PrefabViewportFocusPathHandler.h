@@ -33,8 +33,11 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusNotificationBus overrides ...
         void OnPrefabFocusChanged() override;
+        void OnPrefabFocusRefreshed() override;
 
     private:
+        void Refresh();
+
         AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
         QToolButton* m_backButton = nullptr;
 

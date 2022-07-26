@@ -306,6 +306,7 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
     }
@@ -314,6 +315,7 @@ namespace AzToolsFramework
     {
         EditorWindowUIRequestBus::Handler::BusDisconnect();
         Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorPickModeNotificationBus::Handler::BusDisconnect();
@@ -324,6 +326,11 @@ namespace AzToolsFramework
 
         delete m_listModel;
         delete m_gui;
+    }
+
+    void EntityOutlinerWidget::OnPrefabEditScopeChanged()
+    {
+        update();
     }
 
     // Users should be able to drag an entity in the outliner without selecting it.

@@ -26,7 +26,16 @@ namespace AzToolsFramework::Prefab
         //////////////////////////////////////////////////////////////////////////
         
         //! Triggered when the editor focus is changed to a different prefab.
-        virtual void OnPrefabFocusChanged() = 0;
+        virtual void OnPrefabFocusChanged() {}
+
+        //! Triggered when the editor focus path is changed, but the focused instance stays the same.
+        virtual void OnPrefabFocusRefreshed() {}
+
+        //! Triggered when the edit scope is changed.
+        virtual void OnPrefabEditScopeChanged() {}
+
+        //! Triggered when a prefab instance is opened/expanded.
+        virtual void OnInstanceOpened([[maybe_unused]] AZ::EntityId containerEntityId) {}
 
     protected:
         ~PrefabFocusNotifications() = default;
