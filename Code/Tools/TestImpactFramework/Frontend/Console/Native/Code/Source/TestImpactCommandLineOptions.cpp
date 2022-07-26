@@ -463,7 +463,7 @@ namespace TestImpact
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
             "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
             "                                                                specified in the config file.\n"
-            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will used instead of that\n"
+            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will be used instead of that\n"
             "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"
