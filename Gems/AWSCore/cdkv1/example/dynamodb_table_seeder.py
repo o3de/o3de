@@ -32,7 +32,7 @@ def _write_table_data(table: boto3.dynamodb.table.TableResource, table_data: Lis
     Write a list of items to a DynamoDB table using the batch_writer.
 
     Each item must contain at least the keys required by the schema, which for the example
-    is just 'id'.
+    is just 'id'
 
     :param table: The table to fill
     :param table_data: The data to put in the table.
