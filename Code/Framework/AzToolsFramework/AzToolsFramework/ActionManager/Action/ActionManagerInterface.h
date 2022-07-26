@@ -47,6 +47,17 @@ namespace AzToolsFramework
         bool m_hideFromToolBarsWhenDisabled = false;
     };
 
+    struct WidgetActionProperties
+    {
+        AZ_RTTI(WidgetActionProperties, "{9A72C602-ABAA-4010-8806-4EEA32D5F716}");
+
+        WidgetActionProperties() = default;
+        virtual ~WidgetActionProperties() = default;
+
+        AZStd::string m_name = "";
+        AZStd::string m_category = "";
+    };
+
     //! ActionManagerInterface
     //! Interface to register and trigger actions in the Editor.
     class ActionManagerInterface
@@ -66,6 +77,11 @@ namespace AzToolsFramework
             const ActionContextProperties& properties,
             QWidget* widget
         ) = 0;
+
+        //! Returns whether an action context with the identifier queried is registered to the Action Manager.
+        //! @param contextIdentifier The identifier for the action context to query.
+        //! @return True if an Action Context with the identifier provided was found, false otherwise.
+        virtual bool IsActionContextRegistered(const AZStd::string& contextIdentifier) const = 0;
 
         //! Register a new Action to the Action Manager.
         //! @param contextIdentifier The identifier for the action context the newly registered action should be added to.
@@ -93,8 +109,12 @@ namespace AzToolsFramework
             const AZStd::string& actionIdentifier,
             const ActionProperties& properties,
             AZStd::function<void()> handler,
-            AZStd::function<bool()> checkStateCallback
-        ) = 0;
+            AZStd::function<bool()> checkStateCallback) = 0;
+
+        //! Returns whether an action with the identifier queried is registered to the Action Manager.
+        //! @param actionIdentifier The identifier for the action to query.
+        //! @return True if an Action with the identifier provided was found, false otherwise.
+        virtual bool IsActionRegistered(const AZStd::string& actionIdentifier) const = 0;
 
         //! Get an Action's name via its identifier.
         //! @param actionIdentifier The action identifier to get the value from.
@@ -181,6 +201,45 @@ namespace AzToolsFramework
         //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
+
+        //! Register a new Widget Action to the Action Manager.
+        //! @param widgetActionIdentifier The identifier for the newly registered widget action.
+        //! @param properties The properties object for the newly registered widget action.
+        //! @param generator The generator function that will be called to create the widget when invoked.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult RegisterWidgetAction(
+            const AZStd::string& widgetActionIdentifier,
+            const WidgetActionProperties& properties,
+            AZStd::function<QWidget*()> generator) = 0;
+
+        //! Returns whether a widget action with the identifier queried is registered to the Action Manager.
+        //! @param widgetActionIdentifier The identifier for the widget action to query.
+        //! @return True if a WidgetAction with the identifier provided was found, false otherwise.
+        virtual bool IsWidgetActionRegistered(const AZStd::string& widgetActionIdentifier) const = 0;
+
+        //! Get a Widget Action's name via its identifier.
+        //! @param widgetActionIdentifier The widget action identifier to get the value from.
+        //! @return A successful outcome object containing the value, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerGetterResult GetWidgetActionName(const AZStd::string& widgetActionIdentifier) = 0;
+
+        //! Set a Widget Action's name via its identifier.
+        //! @param widgetActionIdentifier The widget action identifier to set the value to.
+        //! @param name The new value for the name property of the widget action.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult SetWidgetActionName(
+            const AZStd::string& widgetActionIdentifier, const AZStd::string& name) = 0;
+
+        //! Get a Widget Action's category via its identifier.
+        //! @param widgetActionIdentifier The widget action identifier to get the value from.
+        //! @return A successful outcome object containing the value, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerGetterResult GetWidgetActionCategory(const AZStd::string& widgetActionIdentifier) = 0;
+
+        //! Set a Widget Action's category via its identifier.
+        //! @param widgetActionIdentifier The widget action identifier to set the value to.
+        //! @param category The new value for the category property of the widget action.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerOperationResult SetWidgetActionCategory(
+            const AZStd::string& widgetActionIdentifier, const AZStd::string& category) = 0;
     };
 
     //! ActionManagerInternalInterface
@@ -209,6 +268,13 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to query.
         //! @return True if the actions should be hidden, false otherwise.
         virtual bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const = 0;
+
+        //! Generate a QWidget from a Widget Action identifier.
+        //! The WidgetAction will generate a new instance of the Widget and parent it to the widget provided.
+        //! Is is on the caller to handle its lifetime correctly.
+        //! @param widgetActionIdentifier The identifier for the widget action to retrieve.
+        //! @return A raw pointer to the QWidget, or nullptr if the action could not be found.
+        virtual QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) const = 0;
     };
 
 } // namespace AzToolsFramework
