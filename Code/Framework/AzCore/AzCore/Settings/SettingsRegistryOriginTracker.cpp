@@ -86,14 +86,6 @@ namespace AZ
         }
        // adds a new origin to origin stack of a dom tree node
         auto addOriginToStack = [&](const AZ::Dom::Path& path, SettingsRegistryOriginStack& stack) {
-            
-            // checks if there is a node in the dom tree for a given path and creates one if it doesn't exist
-            SettingsRegistryOriginStack* stackPtr =
-                m_settingsOriginPrefixTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
-            if (stackPtr == nullptr)
-            {
-                m_settingsOriginPrefixTree.SetValue(path, SettingsRegistryOriginStack());
-            }
             bool hasChildren = false;
             m_settingsOriginPrefixTree.VisitPath(
                 path,
@@ -103,6 +95,20 @@ namespace AZ
                     return false;
                 },
                 AZ::Dom::PrefixTreeTraversalFlags::ExcludeExactPath | AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
+            // remove the duplicate origin from the stack if the key is an exact path
+            if (!hasChildren)
+            {
+                RemoveOrigin(path.ToString(), originPath, false);
+            }
+            // checks if there is a node in the dom tree for a given path and creates one if it doesn't exist
+            SettingsRegistryOriginStack* stackPtr =
+                m_settingsOriginPrefixTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
+            if (stackPtr == nullptr)
+            {
+                m_settingsOriginPrefixTree.SetValue(path, SettingsRegistryOriginStack());
+            }
+            
+            // add an origin object to the stack if the key is an exact path or a parent path without an origin.
             if (stack.empty() || !hasChildren)
             {
 
@@ -165,12 +171,11 @@ namespace AZ
         {
             for (auto& origin : stack)
             {
-                if (visitCallback(origin))
+                if (!visitCallback(origin))
                 {
                     break;
                 }
             }
-            AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
             return true;
         };
         AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
@@ -178,6 +183,4 @@ namespace AZ
             AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific | AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths;
         m_settingsOriginPrefixTree.VisitPath(jsonPath, visitOriginStackCallback, traversalFlags);
     };
-
-
 };
