@@ -326,6 +326,7 @@ namespace AZ
             VkAccessFlags dstAccessFlags = dstQueueId == scopeQueueId ? GetResourceAccessFlags(scopeAttachment) : 0;
             bool sameFamily = srcQueueId.m_familyIndex == dstQueueId.m_familyIndex;
             VkImageLayout newLayout = GetImageAttachmentLayout(static_cast<RHI::ImageScopeAttachment&>(scopeAttachment));
+            srcAccessFlags |= GetImageAccessFlags(static_cast<RHI::ImageScopeAttachment&>(scopeAttachment));
 
             VkImageMemoryBarrier imageBarrier = {};
             imageBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

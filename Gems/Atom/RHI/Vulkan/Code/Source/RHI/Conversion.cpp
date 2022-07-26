@@ -1093,6 +1093,23 @@ namespace AZ
             return accessFlags;
         }
 
+        VkAccessFlags GetImageAccessFlags(const RHI::ImageScopeAttachment& scopeImageAttachment) 
+        {
+            const auto& bindingDescriptor = scopeImageAttachment.GetDescriptor();
+            const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+            const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+            const bool isClear = isClearAction || isClearActionStencil;
+            VkAccessFlags accessFlags = 0;
+
+            for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeImageAttachment.GetUsageAndAccess()) {
+                if(usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader && isClear) {
+                    accessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+                    break;
+                }
+            }
+            return accessFlags;
+        }
+
         VkAccessFlags GetResourceAccessFlags(const RHI::ImageBindFlags& bindFlags)
         {
             VkAccessFlags accessFlags = {};
