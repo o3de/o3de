@@ -113,7 +113,7 @@ namespace Multiplayer
         {        
             // Display the connection status in the bottom-right viewport
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
-            m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), static_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
+            m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
 
             if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
             {
@@ -148,7 +148,7 @@ namespace Multiplayer
             connectionStateColor = AZ::Colors::Green;
             break;
         case AzNetworking::ConnectionState::Disconnecting:
-            connectionStateColor = AZ::Colors::Orange;
+            connectionStateColor = AZ::Colors::Yellow;
             break;
         case AzNetworking::ConnectionState::Disconnected:
             connectionStateColor = AZ::Colors::Red;
@@ -162,7 +162,8 @@ namespace Multiplayer
         MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
         if (agentType == MultiplayerAgentType::Client)
         {
-            DrawConnectionStatusLine(hostIpAddress.GetString().c_str(), connectionStateColor);
+            auto hostAddressText = AZStd::fixed_string<32>::format("Server IP %s", hostIpAddress.GetString().c_str());
+            DrawConnectionStatusLine(hostAddressText.c_str(), connectionStateColor);
         }
 
         // Draw the connect state (example: Connected or Disconnected)
