@@ -273,6 +273,10 @@ namespace AssetUtilities
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AZStd::string> GetAllIntermediateSources(
         AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+    
+    //! Given a source path for an intermediate asset, constructs the product path.
+    //! This does not verify either exist, it just manipulates the string.
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
 
     //! Helper class that provides various paths related to a single output asset.
     //! Files are not guaranteed to exist at the given path.
