@@ -13,6 +13,12 @@
 
 namespace AssetProcessor
 {
+    const char builderNotFoundWarningMessage[] =
+        "Found a %s metric entry with builder %s \"%s\", but Asset Processor does not recognize this "
+        "builder. Ensure this builder is in the asset folders and its name is shown "
+        "in the Builders tab. If this builder was removed intentionally in the past, you can safely ignore this "
+        "warning.\n";
+
     BuilderData::BuilderData(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent)
         : m_dbConnection(dbConnection)
         , QObject(parent)
@@ -40,7 +46,7 @@ namespace AssetProcessor
             m_builderNameToIndex[builders[i].m_name] = i;
         }
 
-        // Analysis jobs stat
+        // CreateJobs stat
         m_dbConnection->QueryStatLikeStatName(
             "CreateJobs,%",
             [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
@@ -60,13 +66,13 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Warning("AssetProcessor", false, "No builder found for an analysis job stat!!!\n");
+                        AZ_Warning("AssetProcessor", false, builderNotFoundWarningMessage, "CreateJobs", "name", builderName.c_str());
                     }
                 }
                 return true;
             });
 
-        // Processing job stat
+        // ProcessJob stat
         m_dbConnection->QueryStatLikeStatName(
             "ProcessJob,%",
             [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry stat)
@@ -88,7 +94,7 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Warning("AssetProcessor", false, "No builder found for a processing job stat!!!\n");
+                        AZ_Warning("AssetProcessor", false, builderNotFoundWarningMessage, "ProcessJob", "bus ID", tokens[4].c_str());
                     }
                 }
                 return true;
@@ -120,7 +126,7 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Warning("AssetProcessor", false, "No builder found for an analysis job stat!!!\n");
+                        AZ_Warning("AssetProcessor", false, builderNotFoundWarningMessage, "CreateJobs", "name", builderName.c_str());
                     }
                 }
                 return true;
