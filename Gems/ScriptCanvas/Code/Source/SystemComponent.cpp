@@ -82,7 +82,7 @@ namespace ScriptCanvas
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic, context);
+        ScriptCanvas::AutoGenRegistryManager::Reflect(context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         SourceHandle::Reflect(context);

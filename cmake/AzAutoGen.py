@@ -37,7 +37,7 @@ class AutoGenConfig:
         self.pythonPaths = pythonPaths
 
 def SanitizeTargetName(targetName):
-    return targetName.replace('.', '').replace('::', '')
+    return re.sub(r'[^\w]', '', targetName.lstrip('0123456789'))
 
 def ParseInputFile(inputFilePath):
     result = []

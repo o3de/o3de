@@ -1321,16 +1321,25 @@ namespace AZ
 
         }
 
-        // All dynamic modules have been gathered at this point
-        AZ::ModuleManagerRequests::LoadModulesResult loadModuleOutcomes;
-        ModuleManagerRequestBus::BroadcastResult(loadModuleOutcomes, &ModuleManagerRequests::LoadDynamicModules, gemModules, ModuleInitializationSteps::RegisterComponentDescriptors, true);
+        // All dynamic modules have been gathered at this point, and each dynamic module will be up until follow three phases:
+        // 1. Load - the first call is to ensure all dynamic modules are loaded
+        // 2. CreateClass - the second call is to create specific AZ::Module class instances for each dynamic module after its loaded
+        // 3. RegisterComponentDescriptors - the third call is to perform a horizontal register step for each module component descriptos after
+        //    module has been loaded and created
+        for (ModuleInitializationSteps lastStepToPerform : { ModuleInitializationSteps::Load,
+            ModuleInitializationSteps::CreateClass, ModuleInitializationSteps::RegisterComponentDescriptors })
+        {
+            AZ::ModuleManagerRequests::LoadModulesResult loadModuleOutcomes;
+            ModuleManagerRequestBus::BroadcastResult(
+                loadModuleOutcomes, &ModuleManagerRequests::LoadDynamicModules, gemModules, lastStepToPerform, true);
 
 #if defined(AZ_ENABLE_TRACING)
-        for (const auto& loadModuleOutcome : loadModuleOutcomes)
-        {
-            AZ_Error("ComponentApplication", loadModuleOutcome.IsSuccess(), "%s", loadModuleOutcome.GetError().c_str());
-        }
+            for (const auto& loadModuleOutcome : loadModuleOutcomes)
+            {
+                AZ_Error("ComponentApplication", loadModuleOutcome.IsSuccess(), "%s", loadModuleOutcome.GetError().c_str());
+            }
 #endif
+        }
     }
 
     void ComponentApplication::Tick()
