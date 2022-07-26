@@ -78,7 +78,7 @@ namespace AzToolsFramework
             explicit AssetEditorWidget(QWidget* parent = nullptr);
             ~AssetEditorWidget() override;
 
-            void CreateAsset(AZ::Data::AssetType assetType);
+            void CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& observerId);
             void OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
             void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
 
@@ -150,6 +150,7 @@ namespace AzToolsFramework
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
             DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
+            AZ::Uuid m_observerId; // Id of the 
 
             // Ids can change when an asset goes from in-memory to saved on disk.
             // If there is a failure, the asset will be removed from the catalog.

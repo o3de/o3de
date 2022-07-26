@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetReference.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QCompleter>
@@ -56,6 +57,7 @@ namespace AzToolsFramework
         : public QWidget
         , private AssetSystemBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
+        , private AssetEditor::AssetEditorNotificationsBus::Handler
     {
         Q_OBJECT
 
@@ -114,6 +116,8 @@ namespace AzToolsFramework
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
 
         AZStd::string m_defaultAssetHint;
+
+        AZ::Uuid m_componentUuid;
 
         void* m_editNotifyTarget = nullptr;
         EditCallbackType* m_editNotifyCallback = nullptr;
@@ -200,6 +204,10 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
+        // AssetEditor::AssetEditorNotificationsBus::Handler interface overrides...
+        void OnAssetCreated(const AZ::Data::AssetId& assetId) override;
+        
+        //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler interface overrides...
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
@@ -216,6 +224,7 @@ namespace AzToolsFramework
         void SetEditButtonVisible(bool visible);
         void SetEditButtonIcon(const QIcon& icon);
         void SetEditButtonTooltip(QString tooltip);
+        void SetComponentId(const AZ::Uuid&);
         void SetBrowseButtonIcon(const QIcon& icon);
         void SetBrowseButtonEnabled(bool enabled);
         void SetBrowseButtonVisible(bool visible);
