@@ -74,8 +74,8 @@ def build_projects_list():
             # Check to see if the project name might be 1 level up in this path if ending with project.
             # For example we could have a path like this C:/Users/USERNAME/O3DE/Projects/loft-arch-vis-sample/Project
             if Path(project_full_path).name == 'Project':
-                p = Path(project_full_path)
-                list_o3de_projects.append((project_full_path, p.parts[-2], project_full_path))
+                append_project_path = Path(project_full_path)
+                list_o3de_projects.append((project_full_path, append_project_path.parts[-2], project_full_path))
             else:
                 list_o3de_projects.append((project_full_path, Path(project_full_path).name, project_full_path))
     return list_o3de_projects
