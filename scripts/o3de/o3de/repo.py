@@ -18,7 +18,7 @@ from o3de import manifest, utils, validation
 logger = logging.getLogger('o3de.repo')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
-def get_repo_manifest_uri(repo_uri: str):
+def get_repo_manifest_uri(repo_uri: str) -> str or None:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
         return None
@@ -26,7 +26,7 @@ def get_repo_manifest_uri(repo_uri: str):
     url = f'{repo_uri}/repo.json'
     return url
 
-def download_repo_manifest(manifest_uri: str):
+def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
     parsed_uri = urllib.parse.urlparse(manifest_uri)
     repo_sha256 = hashlib.sha256(manifest_uri.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
@@ -94,26 +94,22 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
             except json.JSONDecodeError as e:
                 return False
 
-        download_object_manifest_result = download_object_manifests(repo_data)
-        if download_object_manifest_result != 0:
+        if download_object_manifests(repo_data) != 0:
             return False
 
         gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
         for gem_json in gem_set:
-            valid_gem_json = validation.valid_o3de_gem_json(gem_json)
-            if not valid_gem_json:
+            if not validation.valid_o3de_gem_json(gem_json):
                 return False
 
         project_set = get_project_json_paths_from_cached_repo(repo_uri)
         for project_json in project_set:
-            valid_project_json = validation.valid_o3de_project_json(project_json)
-            if not valid_project_json:
+            if not validation.valid_o3de_project_json(project_json):
                 return False
 
         template_set = get_template_json_paths_from_cached_repo(repo_uri)
         for template_json in template_set:
-            valid_template_json = validation.valid_o3de_template_json(template_json)
-            if not valid_template_json:
+            if not validation.valid_o3de_template_json(template_json):
                 return False
 
     return True
@@ -145,8 +141,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
             logger.error(f'{file_name} failed to save: {str(e)}')
             return 1
 
-    download_object_manifest_result = download_object_manifests(repo_data)
-    if download_object_manifest_result != 0:
+    if download_object_manifests(repo_data) != 0:
         return 1
 
     # Having a repo is also optional

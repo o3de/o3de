@@ -479,6 +479,8 @@ def register_repo(json_data: dict,
 
     parsed_uri = urllib.parse.urlparse(manifest_uri)
 
+    # We always remove the repo if it is found, if it is a valid repo and remove is not set
+    # then it will be added again by the call to process_add_o3de_repo
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)

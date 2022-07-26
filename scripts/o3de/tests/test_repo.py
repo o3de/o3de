@@ -306,7 +306,6 @@ class TestRepos:
 
         def mocked_open(path, mode, *args, **kwargs):
             file_data = bytes(0)
-            print(f'open {path}')
             if pathlib.Path(path).name == TEST_O3DE_REPOA_FILENAME:
                 file_data = TEST_O3DE_REPOA_JSON_PAYLOAD
             elif pathlib.Path(path).name == TEST_O3DE_REPOB_FILENAME:
