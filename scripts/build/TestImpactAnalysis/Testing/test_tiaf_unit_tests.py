@@ -28,6 +28,7 @@ class TestTiafInitialiseStorage():
             'commit']
         mock_local = mocker.patch(
             "tiaf_persistent_storage_local.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -45,6 +46,7 @@ class TestTiafInitialiseStorage():
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -73,6 +75,7 @@ class TestTiafInitialiseStorage():
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
             'commit'], None, None, tiaf_args['src_branch']
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -85,8 +88,10 @@ class TestTIAFUnitTests():
     def test_create_TestImpact_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
         # given:
         # default arguments
+
         # when:
         tiaf = TestImpact(tiaf_args)
+
         # then:
         assert_list_content_equal(
             tiaf.runtime_args, default_runtime_args.values())
@@ -106,6 +111,7 @@ class TestTIAFUnitTests():
     def test_create_TestImpact_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
         tiaf_args['src_branch'] = branch_name
+
         # when:
         tiaf = TestImpact(tiaf_args)
         # then:
@@ -115,6 +121,7 @@ class TestTIAFUnitTests():
     def test_create_TestImpact_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
         tiaf_args['dst_branch'] = branch_name
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -136,6 +143,7 @@ class TestTIAFUnitTests():
         # given:
         tiaf_args['mars_index_prefix'] = "test_prefix"
         mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
         # when:
         with pytest.raises(SystemExit):
             main(tiaf_args)
@@ -147,6 +155,7 @@ class TestTIAFUnitTests():
         # given:
         # default_args
         mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
         # when:
         with pytest.raises(SystemExit):
             main(tiaf_args)
@@ -160,6 +169,7 @@ class TestTIAFUnitTests():
 
         # when:
         tiaf = TestImpact(tiaf_args)
+
         # then:
         assert_list_content_equal(
             tiaf.runtime_args, default_runtime_args.values())
@@ -168,6 +178,7 @@ class TestTIAFUnitTests():
         # given:
         tiaf_args['suite'] = "foobar"
         default_runtime_args['suite'] = "--suite=foobar"
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
@@ -185,8 +196,10 @@ class TestTIAFUnitTests():
         tiaf_args['src_branch'] = 122
         default_runtime_args['sequence'] = "--sequence=regular"
         default_runtime_args['ipolicy'] = "--ipolicy=continue"
+
         # when:
         tiaf = TestImpact(tiaf_args)
+
         # then:
         assert_list_content_equal(
             tiaf.runtime_args, default_runtime_args.values())
@@ -199,6 +212,7 @@ class TestTIAFUnitTests():
 
         # when:
         tiaf = TestImpact(tiaf_args)
+
         # then:
         assert_list_content_equal(
             tiaf.runtime_args, default_runtime_args.values())
@@ -218,6 +232,7 @@ class TestTIAFUnitTests():
         # given:
         tiaf_args['exclude_file'] = "testpath"
         default_runtime_args['exclude'] = "--exclude=testpath"
+
         # when:
         tiaf = TestImpact(tiaf_args)
 
