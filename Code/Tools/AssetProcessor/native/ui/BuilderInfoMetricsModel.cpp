@@ -257,7 +257,7 @@ namespace AssetProcessor
             dataChanged(
                 createIndex(rowNum, aznumeric_cast<int>(Column::JobCount), item),
                 createIndex(rowNum, aznumeric_cast<int>(Column::AverageDuration), item));
-            item = item->GetParent().lock().get();
+            item = item->GetParent().expired() ? nullptr : item->GetParent().lock().get();
         }
     }
 
