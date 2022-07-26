@@ -151,8 +151,8 @@ class AddColliderMesh(bpy.types.Operator):
         """
         # Create a Pop-Up confirm window
         bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_phys to mesh.'
-        bpy.types.Scene.pop_up_question_label = 'Add UPD to a Duplicate mesh?'
-        bpy.types.Scene.udp_type = constants.UPD.get('o3de_atom_phys')
+        bpy.types.Scene.pop_up_question_label = 'Add UDP to a Duplicate mesh?'
+        bpy.types.Scene.udp_type = constants.UDP.get('o3de_atom_phys')
         bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
 
@@ -169,8 +169,8 @@ class AddLODMesh(bpy.types.Operator):
         """
         # Create a Pop-Up confirm window
         bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_lod to mesh.'
-        bpy.types.Scene.pop_up_question_label = 'Add UPD to a Duplicate mesh?'
-        bpy.types.Scene.udp_type = constants.UPD.get('o3de_atom_lod')
+        bpy.types.Scene.pop_up_question_label = 'Add UDP to a Duplicate mesh?'
+        bpy.types.Scene.udp_type = constants.UDP.get('o3de_atom_lod')
         bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
 

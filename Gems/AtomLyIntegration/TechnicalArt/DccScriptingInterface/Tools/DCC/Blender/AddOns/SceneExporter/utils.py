@@ -278,7 +278,7 @@ def duplicate_selected(selected_objects, rename):
     @param rename this is the duplicate object name
     @param return duplicated object
     """
-    # Duplicate the mesh and add add the upd name extension
+    # Duplicate the mesh and add add the UDP name extension
     duplicate_object = bpy.data.objects.new(f'{selected_objects.name}{bpy.types.Scene.udp_type}', bpy.data.objects[selected_objects.name].data)
     # Add copy to current collection in scene
     bpy.context.collection.objects.link(duplicate_object)
