@@ -408,10 +408,10 @@ namespace UnitTest
             { AZ::Vector2(0.3f, 0.3f), 0.5f }, // Should return a height of 0.25 + 0.25
             { AZ::Vector2(2.8f, 2.8f), 5.5f }, // Should return a height of 2.75 + 2.75
             { AZ::Vector2(5.5f, 5.5f), 11.0f }, // Should return a height of 5.50 + 5.50
-            { AZ::Vector2(7.7f, 7.7f), 15.0f }, // Should return a height of 7.50 + 7.50
+            { AZ::Vector2(7.7f, 7.7f), 15.5f }, // Should return a height of 7.75 + 7.75
 
-            { AZ::Vector2(-0.3f, -0.3f), -1.0f }, // Should return a height of -0.50 + -0.50
-            { AZ::Vector2(-2.8f, -2.8f), -6.0f }, // Should return a height of -3.00 + -3.00
+            { AZ::Vector2(-0.3f, -0.3f), -0.5f }, // Should return a height of -0.25 + -0.25
+            { AZ::Vector2(-2.8f, -2.8f), -5.5f }, // Should return a height of -2.75 + -2.75
             { AZ::Vector2(-5.5f, -5.5f), -11.0f }, // Should return a height of -5.50 + -5.50
             { AZ::Vector2(-7.7f, -7.7f), -15.5f } // Should return a height of -7.75 + -7.75
         };
@@ -531,7 +531,7 @@ namespace UnitTest
 
         auto terrainSystem = CreateAndActivateTerrainSystem();
 
-        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(2.0f));
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
             aabb,
             [](AZ::Vector3& position, bool& terrainExists)
@@ -583,7 +583,7 @@ namespace UnitTest
     {
         auto terrainSystem = CreateAndActivateTerrainSystem();
 
-        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
+        const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(2.0f));
         auto entity = CreateAndActivateMockTerrainLayerSpawner(
             aabb,
             [](AZ::Vector3& position, bool& terrainExists)
@@ -690,7 +690,8 @@ namespace UnitTest
             // should *still* be X + Y assuming the points were sampled correctly from the grid points.
 
             { AZ::Vector2(3.25f, 5.25f), 8.5f }, // Should return a height of 3.25 + 5.25
-            { AZ::Vector2(7.71f, 9.74f), 17.45f }, // Should return a height of 7.71 + 9.74
+            { AZ::Vector2(7.71f, 8.74f), 16.45f }, // Should return a height of 7.71 + 8.74
+            // We don't test any points > 9.0f because our AABB is max-exclusive, so points between 9-10 will be missing, not interpolated.
 
             { AZ::Vector2(-3.25f, -5.25f), -8.5f }, // Should return a height of -3.25 + -5.25
             { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
@@ -778,7 +779,7 @@ namespace UnitTest
             { AZ::Vector2(-2.25f, -4.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
 
             { AZ::Vector2(3.25f, 5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
-            { AZ::Vector2(7.71f, 9.74f), AZ::Vector3(-0.0292f, 0.9991f, 0.0292f) },
+            { AZ::Vector2(7.71f, 8.74f), AZ::Vector3(-0.0294f, 0.9991f, 0.0294f) },
 
             { AZ::Vector2(-3.25f, -5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
             { AZ::Vector2(-7.71f, -9.74f), AZ::Vector3(-0.0366f, -0.9986f, 0.0366f) },
