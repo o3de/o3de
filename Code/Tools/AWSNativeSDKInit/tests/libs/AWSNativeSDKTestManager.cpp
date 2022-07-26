@@ -6,7 +6,6 @@
  *
  */
 
-
 #include <AWSNativeSDKTestManager.h>
 
 #include <AzCore/Module/Environment.h>
@@ -22,7 +21,7 @@ namespace AWSNativeSDKTestLibs
 
     AWSNativeSDKTestManager::AWSNativeSDKTestManager()
     {
-        AZ::Utils::SetEnv("AWS_DEFAULT_REGION", "us-east-1", 1);
+        AZ::Utils::SetEnv("AWS_DEFAULT_REGION", "us-east-1", true);
         m_awsSDKOptions.memoryManagementOptions.memoryManager = &m_memoryManager;
         Aws::InitAPI(m_awsSDKOptions);
     }
@@ -42,4 +41,4 @@ namespace AWSNativeSDKTestLibs
     {
         s_sdkManager = nullptr;
     }
-}
+} // namespace AWSNativeSDKTestLibs

@@ -25,8 +25,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace AWSNativeSDKInit
 {
-    // Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
-    // Use an AZ::Environment variable to enforce only one init and shutdown
+    //! Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements.
+    //! Use an AZ::Environment variable to enforce only one init and shutdown
     class InitializationManager
     {
     public:
@@ -45,7 +45,8 @@ namespace AWSNativeSDKInit
 
         // Remove our reference
         static void Shutdown();
-    private:    
+
+    private:
         void InitializeAwsApiInternal();
         void ShutdownAwsApiInternal();
 
@@ -56,4 +57,4 @@ namespace AWSNativeSDKInit
         Aws::SDKOptions m_awsSDKOptions;
 #endif
     };
-}
+} // namespace AWSNativeSDKInit
