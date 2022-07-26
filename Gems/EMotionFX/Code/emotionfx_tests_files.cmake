@@ -38,6 +38,7 @@ set(FILES
     Tests/AnimGraphParameterActionTests.cpp
     Tests/AnimGraphParameterActionTests.cpp
     Tests/AnimGraphParameterConditionCommandTests.cpp
+    Tests/MCore/AZCoreConversionsTest.cpp
     Tests/AnimGraphParameterConditionTests.cpp
     Tests/AnimGraphParameterConditionCommandTests.cpp
     Tests/AnimGraphRefCountTests.cpp
