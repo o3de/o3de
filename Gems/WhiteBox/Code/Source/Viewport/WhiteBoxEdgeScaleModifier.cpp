@@ -91,11 +91,11 @@ namespace WhiteBox
             auto sphereColor = [](const AzToolsFramework::ViewportInteraction::MouseInteraction&, const bool mouseOver,
                                   const AZ::Color& defaultColor)
             {
-                return mouseOver ? cl_whiteBoxVertexHoveredColor : defaultColor;
+                return mouseOver ? ed_whiteBoxVertexHover : defaultColor;
             };
 
             auto sphereView = AzToolsFramework::CreateManipulatorViewSphere(
-                cl_whiteBoxVertexDeselectedColor, cl_whiteBoxVertexManipulatorSize, sphereColor, true);
+                ed_whiteBoxVertexUnselected, cl_whiteBoxVertexManipulatorSize, sphereColor, true);
             views.emplace_back(AZStd::move(sphereView));
             manipulator->SetViews(AZStd::move(views));
             manipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
