@@ -3,7 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Lighting Model",
+        "category": "Material Templates",
         "title": "Example PBR",
         "settings": {
             "templatePaths": [

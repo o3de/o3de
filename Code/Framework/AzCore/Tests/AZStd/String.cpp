@@ -2482,6 +2482,26 @@ namespace UnitTest
         EXPECT_EQ("Hello", testString);
     }
 
+    TEST_F(String, AZStdString_DeductionGuide_Compiles)
+    {
+        constexpr AZStd::string_view testView{ "Hello" };
+        {
+            // legacy common iterator deduction guide
+            AZStd::basic_string testString(testView.begin(), testView.end());
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view deduction guide
+            AZStd::basic_string testString(testView);
+            EXPECT_EQ("Hello", testString);
+        }
+        {
+            // basic_string_view with position and size deduction guide
+            AZStd::basic_string testString(testView, 1, 3);
+            EXPECT_EQ("ell", testString);
+        }
+    }
+
     template <typename StringType>
     class ImmutableStringFunctionsFixture
         : public ScopedAllocatorSetupFixture

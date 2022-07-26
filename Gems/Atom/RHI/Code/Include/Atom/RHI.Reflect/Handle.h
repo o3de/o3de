@@ -59,32 +59,34 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            static const T NullIndex = T(-1);
-            static const Handle Null;
+            static const constexpr T NullIndex = T(-1);
+            struct NullType {};
+            static constexpr NullType Null{};
+            constexpr Handle(NullType) {};
 
-            Handle() = default;
-            explicit Handle(T index) : m_index{index} {}
+            constexpr Handle() = default;
+            constexpr explicit Handle(T index) : m_index{index} {}
 
             template <typename U>
-            explicit Handle(U index) : m_index{aznumeric_caster(index)} {}
+            constexpr explicit Handle(U index) : m_index{aznumeric_caster(index)} {}
 
-            bool operator == (const Handle& rhs) const;
-            bool operator != (const Handle& rhs) const;
-            bool operator < (const Handle& rhs) const;
-            bool operator > (const Handle& rhs) const;
-            bool operator <= (const Handle& rhs) const;
+            constexpr bool operator == (const Handle& rhs) const;
+            constexpr bool operator != (const Handle& rhs) const;
+            constexpr bool operator < (const Handle& rhs) const;
+            constexpr bool operator > (const Handle& rhs) const;
+            constexpr bool operator <= (const Handle& rhs) const;
 
             /// Resets the handle to NullIndex.
             void Reset();
 
             /// Returns the index currently stored in the handle.
-            T GetIndex() const;
+            constexpr T GetIndex() const;
 
             /// Returns whether the handle is equal to NullIndex.
-            bool IsNull() const;
+            constexpr bool IsNull() const;
 
             /// Returns whether the handle is NOT equal to NullIndex.
-            bool IsValid() const;
+            constexpr bool IsValid() const;
 
             T m_index = NullIndex;
         };
@@ -110,36 +112,32 @@ namespace AZ
             }
         }
 
-        template <typename HandleType, typename NamespaceType>
-        const Handle<HandleType, NamespaceType> Handle<HandleType, NamespaceType>::Null(
-            Handle<HandleType, NamespaceType>::NullIndex);
-
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::operator==(const Handle& rhs) const
+        constexpr bool Handle<T, NamespaceType>::operator==(const Handle& rhs) const
         {
             return m_index == rhs.m_index;
         }
 
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::operator!=(const Handle& rhs) const
+        constexpr bool Handle<T, NamespaceType>::operator!=(const Handle& rhs) const
         {
             return m_index != rhs.m_index;
         }
 
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::operator<(const Handle& rhs) const
+        constexpr bool Handle<T, NamespaceType>::operator<(const Handle& rhs) const
         {
             return m_index < rhs.m_index;
         }
 
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::operator<=(const Handle& rhs) const
+        constexpr bool Handle<T, NamespaceType>::operator<=(const Handle& rhs) const
         {
             return m_index <= rhs.m_index;
         }
         
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::operator>(const Handle& rhs) const
+        constexpr bool Handle<T, NamespaceType>::operator>(const Handle& rhs) const
         {
             return m_index > rhs.m_index;
         }
@@ -151,22 +149,23 @@ namespace AZ
         }
 
         template <typename T, typename NamespaceType>
-        T Handle<T, NamespaceType>::GetIndex() const
+        constexpr T Handle<T, NamespaceType>::GetIndex() const
         {
             return m_index;
         }
 
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::IsNull() const
+        constexpr bool Handle<T, NamespaceType>::IsNull() const
         {
-            return m_index == Null.m_index;
+            return m_index == NullIndex;
         }
 
         template <typename T, typename NamespaceType>
-        bool Handle<T, NamespaceType>::IsValid() const
+        constexpr bool Handle<T, NamespaceType>::IsValid() const
         {
-            return m_index != Null.m_index;
+            return m_index != NullIndex;
         }
+
     }
 }
 
