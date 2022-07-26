@@ -9,7 +9,7 @@
 
 from logging import getLogger
 from typing import Counter
-from test_impact import CPPTestImpact as TestImpact
+from test_impact import CPPTestImpact, BaseTestImpact, PythonTestImpact
 from tiaf_driver import main
 import pytest
 logging = getLogger("tiaf")
@@ -17,6 +17,18 @@ logging = getLogger("tiaf")
 
 def assert_list_content_equal(list1, list2):
     assert Counter(list1) == Counter(list2)
+
+
+class ConcreteBaseTestImpact(BaseTestImpact):
+    """
+    Concrete implementation of BaseTestImpact so that we can execute unittests on the functionality of BaseTestImpact individually.
+    """
+
+    def _set_default_sequence_type(self):
+        """
+        Returns default sequence type, defaulting to "regular" for this example.
+        """
+        return "regular"
 
 
 class TestTiafInitialiseStorage():
@@ -30,7 +42,7 @@ class TestTiafInitialiseStorage():
             "persistent_storage.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # PersistentStorageLocal should be called with suite, commit and config data as arguments.
@@ -52,7 +64,7 @@ class TestTiafInitialiseStorage():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # PersistentStorageS3 should be called with config data, commit, bucket_name, top_level_dir and src branch as arguments.
@@ -68,7 +80,7 @@ class TestTiafInitialiseStorage():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # PersistentStorageS3 should not be called.
@@ -84,14 +96,33 @@ class TestTiafInitialiseStorage():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # PersistentStorageS3 should not be called.
         mock_storage.assert_not_called()
 
 
-class TestTIAFUnitTests():
+class TestTIAFCPPUnitTests():
+
+    @pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
+    def test_create_TestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, safemode, arg_val):
+        # given:
+        # Default args + safe_mode set.
+        tiaf_args['safe_mode'] = safemode
+        cpp_default_runtime_args['safemode'] = "--safemode="+arg_val
+
+        # when:
+        # We create a TestImpact object.
+        tiaf = CPPTestImpact(tiaf_args)
+
+        # then:
+        # tiaf.runtime_args should equal expected args.
+        assert_list_content_equal(
+            tiaf.runtime_args, cpp_default_runtime_args.values())
+
+
+class TestTIAFBaseUnitTests():
 
     def test_create_TestImpact_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
         """
@@ -102,7 +133,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal our default_runtime_args values.
@@ -123,7 +154,7 @@ class TestTIAFUnitTests():
         # then:
         # It should raise a SystemError.
         with pytest.raises(SystemError) as exc_info:
-            tiaf = TestImpact(tiaf_args)
+            tiaf = ConcreteBaseTestImpact(tiaf_args)
 
     @ pytest.mark.parametrize("branch_name", ["development", "not_a_real_branch"])
     def test_create_TestImpact_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
@@ -133,7 +164,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.source_branch shoudl equal our branch name.
@@ -147,7 +178,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.destination_branch should equal our branch name parameter.
@@ -161,7 +192,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.destination_commit should equal our commit parameter.
@@ -203,7 +234,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal our default_runtime_ars.
@@ -218,7 +249,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal expected args.
@@ -239,23 +270,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
-
-        # then:
-        # tiaf.runtime_args should equal expected args.
-        assert_list_content_equal(
-            tiaf.runtime_args, default_runtime_args.values())
-
-    @ pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
-    def test_create_TestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, default_runtime_args, safemode, arg_val):
-        # given:
-        # Default args + safe_mode set.
-        tiaf_args['safe_mode'] = safemode
-        default_runtime_args['safemode'] = "--safemode="+arg_val
-
-        # when:
-        # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal expected args.
@@ -268,7 +283,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal expected args.
@@ -283,7 +298,7 @@ class TestTIAFUnitTests():
 
         # when:
         # We create a TestImpact object.
-        tiaf = TestImpact(tiaf_args)
+        tiaf = ConcreteBaseTestImpact(tiaf_args)
 
         # then:
         # tiaf.runtime_args should equal expected args.

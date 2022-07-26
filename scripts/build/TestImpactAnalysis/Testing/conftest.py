@@ -85,9 +85,14 @@ def mock_uuid(mocker):
 def default_runtime_args(mock_uuid, report_path):
     runtime_args = {}
     runtime_args['sequence'] = "--sequence=seed"
-    runtime_args['safemode'] = "--safemode=off"
     runtime_args['test_failure_policy'] = "--fpolicy=continue"
     runtime_args['report'] = "--report=" + \
         str(report_path).replace("/", "\\")
     runtime_args['suite'] = "--suite=main"
     return runtime_args
+
+
+@pytest.fixture
+def cpp_default_runtime_args(default_runtime_args):
+    default_runtime_args['safemode'] = "--safemode=off"
+    return default_runtime_args
