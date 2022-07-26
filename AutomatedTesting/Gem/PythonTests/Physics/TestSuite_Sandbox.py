@@ -210,7 +210,7 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_KinematicModeWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_KinematicModeWorks as test_module
 
-    @pytest.mark.skip(reason="GHI #9364: Test Periodically Fails")
+    #@pytest.mark.skip(reason="GHI #9364: Test Periodically Fails")
     class ForceRegion_LinearDampingForceOnRigidBodies(EditorBatchedTest):
         from .tests.force_region import ForceRegion_LinearDampingForceOnRigidBodies as test_module
 
