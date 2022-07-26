@@ -67,8 +67,8 @@ namespace UnitTest
         }
 
         void TestBakeImage(
-            AZStd::string extension = AZStd::string(".png"),
-            GradientSignal::OutputFormat outputFormat = GradientSignal::OutputFormat::R8,
+            AZStd::string extension,
+            GradientSignal::OutputFormat outputFormat,
             AZ::Vector2 outputResolution = AZ::Vector2(10.0f),
             bool useValidGradient = true,
             AZ::Aabb inputBounds = AZ::Aabb::CreateNull())
@@ -183,22 +183,22 @@ namespace UnitTest
 
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_PNG_R8)
     {
-        TestBakeImage();
+        TestBakeImage(".png", GradientSignal::OutputFormat::R8);
     }
 
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_TIFF_R8)
     {
-        TestBakeImage(".tiff");
+        TestBakeImage(".tiff", GradientSignal::OutputFormat::R8);
     }
 
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_TGA_R8)
     {
-        TestBakeImage(".tga");
+        TestBakeImage(".tga", GradientSignal::OutputFormat::R8);
     }
 
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_EXR_R8)
     {
-        TestBakeImage(".exr");
+        TestBakeImage(".exr", GradientSignal::OutputFormat::R8);
     }
 
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_PNG_R16)
