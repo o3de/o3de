@@ -41,12 +41,13 @@ private:
     void InitializeActionContext();
     void InitializeActionUpdaters();
     void InitializeActions();
+    void InitializeWidgetActions();
     void InitializeMenus();
     void InitializeToolBars();
 
-    QWidget* CreateExpander();
-    QWidget* CreateLabel(const AZStd::string& text);
     QWidget* CreateDocsSearchWidget();
+    QWidget* CreateExpander();
+    QWidget* CreatePlayControlsLabel();
     
     // EditorEventsBus overrides ...
     void OnViewPaneOpened(const char* viewPaneName) override;
