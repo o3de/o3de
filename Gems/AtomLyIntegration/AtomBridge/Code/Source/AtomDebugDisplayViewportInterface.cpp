@@ -370,7 +370,7 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawQuad(float width, float height)
+    void AtomDebugDisplayViewportInterface::DrawQuad(float width, float height, bool drawShaded)
     {
         if (!m_auxGeomPtr || width <= 0.0f || height <= 0.0f)
         {
@@ -382,7 +382,7 @@ namespace AZ::AtomBridge
             height, 
             GetCurrentTransform(), 
             m_rendState.m_color,
-            AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
+            drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
             m_rendState.m_depthTest,
             m_rendState.m_depthWrite,
             m_rendState.m_faceCullMode,
@@ -1190,7 +1190,7 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius)
+    void AtomDebugDisplayViewportInterface::DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded)
     {
         if (m_auxGeomPtr)
         {
@@ -1202,7 +1202,7 @@ namespace AZ::AtomBridge
                 worldDir, 
                 scale * radius, 
                 m_rendState.m_color,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
+                drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
                 m_rendState.m_faceCullMode,
