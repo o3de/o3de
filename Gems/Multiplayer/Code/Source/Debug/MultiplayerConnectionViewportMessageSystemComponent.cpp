@@ -112,61 +112,75 @@ namespace Multiplayer
         if (agentType == MultiplayerAgentType::Client)
         {        
             // Display the connection status in the bottom-right viewport
+            m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+            m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), static_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
+
             if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
             {
                 AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
                 if (connectionSet.GetConnectionCount() > 0)
                 {
-                    connectionSet.VisitConnections([this](AzNetworking::IConnection& connection){ this->DrawConnectionStatus(connection.GetConnectionState()); });
+                    connectionSet.VisitConnections([this](AzNetworking::IConnection& connection)
+                    {
+                        m_hostIpAddress = connection.GetRemoteAddress();
+                        this->DrawConnectionStatus(connection.GetConnectionState(), m_hostIpAddress);
+                    });
                 }
                 else
                 {
                     // If we're a client yet are lacking a connection then we've been unintentionally disconnected
                     // Display a disconnect message in the viewport
-                    DrawConnectionStatus(AzNetworking::ConnectionState::Disconnected);
+                    DrawConnectionStatus(AzNetworking::ConnectionState::Disconnected, m_hostIpAddress);
                 }
             }
         }
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState)
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostIpAddress)
     {
-        AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
-        if (!viewport)
-        {
-            return;
-        }
-
-        // Draw the status (example: Connected or Disconnected)
-        const char* connectionStateText = ToString(connectionState).data();
-        const AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
-        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
-        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), static_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
-        
+        AZ::Color connectionStateColor;
         switch (connectionState)
         {
         case AzNetworking::ConnectionState::Connecting:
-            m_drawParams.m_color = AZ::Colors::Yellow;
+            connectionStateColor = AZ::Colors::Yellow;
             break;
         case AzNetworking::ConnectionState::Connected:
-            m_drawParams.m_color = AZ::Colors::Green;
+            connectionStateColor = AZ::Colors::Green;
             break;
         case AzNetworking::ConnectionState::Disconnecting:
-            m_drawParams.m_color = AZ::Colors::Orange;
+            connectionStateColor = AZ::Colors::Orange;
             break;
         case AzNetworking::ConnectionState::Disconnected:
-            m_drawParams.m_color = AZ::Colors::Red;
+            connectionStateColor = AZ::Colors::Red;
             break;
-        default: m_drawParams.m_color = AZ::Colors::White;
+        default:
+            connectionStateColor = AZ::Colors::White;
         }
 
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, connectionStateText);
+        // Draw our host's remote ip address
+        const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
+        MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
+        if (agentType == MultiplayerAgentType::Client)
+        {
+            DrawConnectionStatusLine(hostIpAddress.GetString().c_str(), connectionStateColor);
+        }
 
-        // Draw the status title above the current status
-        const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
-        m_drawParams.m_color = AZ::Colors::White;
+        // Draw the connect state (example: Connected or Disconnected)
+        DrawConnectionStatusLine(ToString(connectionState).data(), connectionStateColor);
+
+        // Draw the status title
+        DrawConnectionStatusLine(ClientStatusTitle, AZ::Colors::White);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatusLine(const char* line, const AZ::Color& color)
+    {
+        m_drawParams.m_color = color;
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, line);
+
+        // Status text renders in the lower right corner, so we draw from the bottom up.
+        // Move the font draw position up to get ready for the next text line.
+        const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, line).GetY();
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, ClientStatusTitle);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
