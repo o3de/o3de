@@ -261,12 +261,12 @@ namespace ScriptCanvas
             elementEntity->Init();
         }
 
-        if (auto* node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(elementEntity))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<Node>(elementEntity))
         {
             return AddNode(elementEntity->GetId());
         }
 
-        if (auto* connection = AZ::EntityUtils::FindFirstDerivedComponent<Connection>(elementEntity))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<Connection>(elementEntity))
         {
             return AddConnection(elementEntity->GetId());
         }

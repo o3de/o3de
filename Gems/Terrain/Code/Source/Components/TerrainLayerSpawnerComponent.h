@@ -31,11 +31,12 @@ namespace Terrain
 {
     namespace AreaConstants
     {
-        static const AZ::u32 s_backgroundLayer = 0;
-        static const AZ::u32 s_foregroundLayer = 1;
-        static const AZ::u32 s_priorityMin = 0;
-        static const AZ::u32 s_priorityMax = 10000; //arbitrary number because std::numeric_limits<AZ::u32>::max() always dislays -1 in RPE
-        static const AZ::u32 s_prioritySoftMax = 100; //design specified slider range
+        static const uint32_t s_backgroundLayer = 0;
+        static const uint32_t s_foregroundLayer = 1;
+        static const int32_t s_priorityMin = -10000;
+        static const int32_t s_priorityMax = 10000;
+        static const int32_t s_prioritySoftMin = -100; //design specified slider range
+        static const int32_t s_prioritySoftMax = 100; //design specified slider range
     }
 
     class TerrainLayerSpawnerConfig
@@ -47,8 +48,8 @@ namespace Terrain
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetSelectableLayers() const;
-        AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
-        AZ::u32 m_priority = AreaConstants::s_priorityMin;
+        uint32_t m_layer = AreaConstants::s_foregroundLayer;
+        int32_t m_priority = 0;
         bool m_useGroundPlane = true;
     };
 
@@ -84,7 +85,7 @@ namespace Terrain
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
         // TerrainSpawnerRequestBus
-        void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
+        void GetPriority(uint32_t& outLayer, int32_t& outPriority) override;
         bool GetUseGroundPlane() override;
         
         void RefreshArea();

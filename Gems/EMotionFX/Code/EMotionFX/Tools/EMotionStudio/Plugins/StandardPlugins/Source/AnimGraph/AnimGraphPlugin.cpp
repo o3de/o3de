@@ -851,7 +851,12 @@ namespace EMStudio
         {
             return;
         }
+        FileOpen(filename);
+    }
 
+    void AnimGraphPlugin::FileOpen(AZStd::string filename)
+    {
+        GetMainWindow()->activateWindow();
         // Auto-relocate to asset source folder.
 
         if (!GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(filename))

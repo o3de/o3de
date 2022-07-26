@@ -58,6 +58,10 @@ namespace AzToolsFramework
 
             void SelectFolder(AZStd::string_view folderPath);
 
+            void DeleteEntries();
+            void RenameEntry();
+            void DuplicateEntries();
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
@@ -94,8 +98,8 @@ namespace AzToolsFramework
             QModelIndexList selectedIndexes() const override;
 
         private:
-            QPointer<AssetBrowserModel> m_assetBrowserModel = nullptr;
-            QPointer<AssetBrowserFilterModel> m_assetBrowserSortFilterProxyModel = nullptr;
+            QPointer<AssetBrowserModel> m_assetBrowserModel;
+            QPointer<AssetBrowserFilterModel> m_assetBrowserSortFilterProxyModel;
             EntryDelegate* m_delegate = nullptr;
 
             bool m_expandToEntriesByDefault = false;

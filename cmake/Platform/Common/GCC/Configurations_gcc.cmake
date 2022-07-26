@@ -73,7 +73,6 @@ ly_append_configurations_options(
         -Wno-switch
         -Wno-uninitialized
         -Wno-unused-result
-        -Wno-unused-variable
 
     COMPILATION_DEBUG
         -O0 # No optimization

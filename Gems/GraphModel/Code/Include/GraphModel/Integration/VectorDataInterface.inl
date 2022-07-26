@@ -82,12 +82,12 @@ namespace GraphModelIntegration
                 Type vector = slot->GetValue<Type>();
                 if (value != vector.GetElement(index))
                 {
-                    vector.SetElement(index, aznumeric_cast<float>(value));
-                    slot->SetValue(vector);
-
                     GraphCanvas::GraphId graphCanvasSceneId;
                     IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                    IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, graphCanvasSceneId);
+                    GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                    vector.SetElement(index, aznumeric_cast<float>(value));
+                    slot->SetValue(vector);
                 }
             }
         }
