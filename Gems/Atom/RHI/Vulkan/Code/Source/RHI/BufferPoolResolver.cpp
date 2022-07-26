@@ -180,7 +180,7 @@ namespace AZ
         {
             for (const BarrierInfo& barrierInfo : barriers)
             {
-                vkCmdPipelineBarrier(
+                m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,
                     barrierInfo.m_dstStageMask,

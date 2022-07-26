@@ -31,7 +31,8 @@ namespace AZ
             m_vkBuffer = vkBuffer;
             m_descriptor = descriptor;
 
-            VkResult vkResult = vkBindBufferMemory(device.GetNativeDevice(), m_vkBuffer, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
+            VkResult vkResult = device.GetContext().BindBufferMemory(
+                device.GetNativeDevice(), m_vkBuffer, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);

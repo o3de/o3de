@@ -143,7 +143,8 @@ namespace AZ
             createInfo.layers = 1;
             
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreateFramebuffer(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFramebuffer);
+            const VkResult result =
+                device.GetContext().CreateFramebuffer(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFramebuffer);
 
             return ConvertResult(result);
         }
@@ -167,7 +168,7 @@ namespace AZ
             if (m_nativeFramebuffer != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyFramebuffer(device.GetNativeDevice(), m_nativeFramebuffer, nullptr);
+                device.GetContext().DestroyFramebuffer(device.GetNativeDevice(), m_nativeFramebuffer, nullptr);
                 m_nativeFramebuffer = VK_NULL_HANDLE;
             }
         }

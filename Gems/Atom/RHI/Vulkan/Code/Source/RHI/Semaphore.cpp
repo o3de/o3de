@@ -27,7 +27,7 @@ namespace AZ
             createInfo.pNext = 0;
             createInfo.flags = 0;
 
-            const VkResult result = vkCreateSemaphore(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSemaphore);
+            const VkResult result = device.GetContext().CreateSemaphore(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSemaphore);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -79,7 +79,7 @@ namespace AZ
             if (m_nativeSemaphore != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, nullptr);
+                device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, nullptr);
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
             // Signal any pending threads.

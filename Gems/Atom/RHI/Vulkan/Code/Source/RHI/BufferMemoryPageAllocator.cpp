@@ -39,7 +39,7 @@ namespace AZ
 
             VkBuffer vkBuffer = GetDevice().CreateBufferResouce(bufferDescriptor);
             VkMemoryRequirements memoryRequirements = {};
-            vkGetBufferMemoryRequirements(GetDevice().GetNativeDevice(), vkBuffer, &memoryRequirements);
+            GetDevice().GetContext().GetBufferMemoryRequirements(GetDevice().GetNativeDevice(), vkBuffer, &memoryRequirements);
 
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
             if (!heapMemoryUsage.TryReserveMemory(memoryRequirements.size))

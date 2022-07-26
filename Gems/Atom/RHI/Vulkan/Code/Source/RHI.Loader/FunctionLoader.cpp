@@ -6,7 +6,9 @@
  *
  */
 
+#define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan/vulkan.h>
+
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/std/containers/vector.h>
@@ -16,48 +18,33 @@ namespace AZ
 {
     namespace Vulkan
     {
-        FunctionLoader::~FunctionLoader()
+        AZStd::unique_ptr<FunctionLoader> FunctionLoader::Create()
         {
-            AZ_Assert(!m_moduleHandle, "Shutdown was not called before destroying this FunctionLoader");
+            return AZStd::make_unique<FunctionLoader>();
         }
 
         bool FunctionLoader::Init()
         {
-            const AZStd::vector<const char*> libs = {
-                AZ_TRAIT_ATOM_VULKAN_DLL,
-                AZ_TRAIT_ATOM_VULKAN_DLL_1,
-            };
-
-            for (const char* libName : libs)
-            {
-                m_moduleHandle = AZ::DynamicModuleHandle::Create(libName);
-                if (m_moduleHandle->Load(false))
-                {
-                    break;
-                }
-                else
-                {
-                    m_moduleHandle = nullptr;
-                }
-            }
-
-            if (!m_moduleHandle)
-            {
-                AZ_Warning("Vulkan", false, "Could not find Vulkan library.");
-                return false;
-            }
-            
-            return InitInternal();
+            return true;
         }
 
         void FunctionLoader::Shutdown()
         {
             ShutdownInternal();
-            if (m_moduleHandle)
-            {
-                m_moduleHandle->Unload();
-            }
-            m_moduleHandle = nullptr;
+        }
+
+        FunctionLoader::~FunctionLoader()
+        {
+        }
+
+        bool FunctionLoader::LoadProcAddresses(GladVulkanContext* context, VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
+        {
+            return gladLoaderLoadVulkanContext(context, instance, physicalDevice, device) != 0;
+        }
+
+        void FunctionLoader::ShutdownInternal()
+        {
+            gladLoaderUnloadVulkan();
         }
     } // namespace Vulkan
 } // namespace AZ

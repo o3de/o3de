@@ -37,7 +37,10 @@ namespace AZ
             createInfo.codeSize = descriptor.m_bytecode.size();
             createInfo.pCode = m_alignedByteCode.data();
 
-            const VkResult result = vkCreateShaderModule(descriptor.m_device->GetNativeDevice(), &createInfo, nullptr, &m_nativeShaderModule);
+            const VkResult result =
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CreateShaderModule(descriptor.m_device->GetNativeDevice(), &createInfo, nullptr, &m_nativeShaderModule);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -69,7 +72,7 @@ namespace AZ
             if (m_nativeShaderModule != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, nullptr);
+                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), m_nativeShaderModule, nullptr);
                 m_nativeShaderModule = VK_NULL_HANDLE;
             }
             m_alignedByteCode.clear();

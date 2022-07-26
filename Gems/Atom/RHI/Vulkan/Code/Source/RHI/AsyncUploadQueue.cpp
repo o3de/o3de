@@ -506,7 +506,10 @@ namespace AZ
             barrier.offset = memoryView->GetOffset() + offset;
             barrier.size = size;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -540,7 +543,10 @@ namespace AZ
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = image.GetDescriptor().m_arraySize;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -571,7 +577,10 @@ namespace AZ
             barrier.offset = memoryView->GetOffset() + offset;
             barrier.size = size;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -609,7 +618,9 @@ namespace AZ
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = image.GetDescriptor().m_arraySize;
 
-            vkCmdPipelineBarrier(
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
                 commandList.GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,

@@ -45,7 +45,7 @@ namespace AZ
                 moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
                 moduleCreateInfo.codeSize = rayTracingFunction->GetByteCode(0).size();
                 moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(rayTracingFunction->GetByteCode(0).data());
-                vkCreateShaderModule(device.GetNativeDevice(), &moduleCreateInfo, nullptr, &shaderModule);
+                device.GetContext().CreateShaderModule(device.GetNativeDevice(), &moduleCreateInfo, nullptr, &shaderModule);
 
                 VkPipelineShaderStageCreateInfo stageCreateInfo = {};
                 stageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -170,14 +170,15 @@ namespace AZ
             createInfo.basePipelineHandle = nullptr;
             createInfo.basePipelineIndex = 0;
 
-            [[maybe_unused]] VkResult result = vkCreateRayTracingPipelinesKHR(device.GetNativeDevice(), nullptr, nullptr, 1, &createInfo, nullptr, &m_pipeline);
+            [[maybe_unused]] VkResult result = device.GetContext().CreateRayTracingPipelinesKHR(
+                device.GetNativeDevice(), nullptr, nullptr, 1, &createInfo, nullptr, &m_pipeline);
             AZ_Assert(result == VK_SUCCESS, "vkCreateRayTracingPipelinesKHR failed");
 
             // retrieve the shader handles
             uint32_t shaderHandleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
             m_shaderHandleData.resize(groups.size()* shaderHandleSize);
 
-            result = vkGetRayTracingShaderGroupHandlesKHR(
+            result = device.GetContext().GetRayTracingShaderGroupHandlesKHR(
                 device.GetNativeDevice(),
                 m_pipeline,
                 0,
@@ -215,7 +216,7 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
             for (auto& shaderModule : m_shaderModules)
             {
-                vkDestroyShaderModule(device.GetNativeDevice(), shaderModule, nullptr);
+                device.GetContext().DestroyShaderModule(device.GetNativeDevice(), shaderModule, nullptr);
             }
         }
     }

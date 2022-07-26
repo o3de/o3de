@@ -120,7 +120,7 @@ namespace AZ
             if (m_nativeDescriptorSetLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyDescriptorSetLayout(device.GetNativeDevice(), m_nativeDescriptorSetLayout, nullptr);
+                device.GetContext().DestroyDescriptorSetLayout(device.GetNativeDevice(), m_nativeDescriptorSetLayout, nullptr);
                 m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             }
             m_shaderResourceGroupLayout = nullptr;
@@ -145,7 +145,8 @@ namespace AZ
             createInfo.pBindings = m_descriptorSetLayoutBindings.size() ? m_descriptorSetLayoutBindings.data() : nullptr;
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreateDescriptorSetLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorSetLayout);
+            const VkResult result =
+                device.GetContext().CreateDescriptorSetLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorSetLayout);
 
             return ConvertResult(result);
         }

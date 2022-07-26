@@ -163,6 +163,7 @@ namespace AZ
 
             template <class Item>
             bool CommitShaderResource(const Item& item);
+            void CommitShaderResourcePushConstants(VkPipelineLayout pipelineLayout, uint8_t rootConstantSize, const uint8_t* rootConstants);
             void CommitDescriptorSets(RHI::PipelineStateType type);
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType type);
             VkPipelineBindPoint GetPipelineBindPoint(const PipelineState& pipelineState) const;
@@ -219,13 +220,7 @@ namespace AZ
             auto pipelineLayout = pipelineState->GetPipelineLayout();
             if (item.m_rootConstantSize && pipelineLayout->GetPushContantsSize() > 0)
             {
-                vkCmdPushConstants(
-                    m_nativeCommandBuffer,
-                    pipelineLayout->GetNativePipelineLayout(),
-                    VK_SHADER_STAGE_ALL,
-                    0,
-                    item.m_rootConstantSize,
-                    item.m_rootConstants);
+                CommitShaderResourcePushConstants(pipelineLayout->GetNativePipelineLayout(), item.m_rootConstantSize, item.m_rootConstants);
             }
 
             m_state.m_bindingsByPipe[static_cast<uint32_t>(pipelineType)].m_dirtyShaderResourceGroupFlags.reset();

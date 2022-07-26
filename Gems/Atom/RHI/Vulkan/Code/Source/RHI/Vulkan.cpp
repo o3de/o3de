@@ -307,10 +307,10 @@ namespace AZ
                 return VK_FALSE;
             }
 
-            void InitDebugMessages(VkInstance instance, DebugMessageTypeFlag messageTypeMask)
+            void InitDebugMessages(const GladVulkanContext& context, VkInstance instance, DebugMessageTypeFlag messageTypeMask)
             {
                 // First check if VK_EXT_debug_utils is supported since it has the same functionalities as VK_EXT_debug_report and more.
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
                     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
                     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -342,11 +342,12 @@ namespace AZ
                         createInfo.messageSeverity |= VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
                     }
 
-                    [[maybe_unused]] VkResult result = vkCreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
+                    [[maybe_unused]] VkResult result =
+                        context.CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
                 }
-                else if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_report))
+                else if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_report))
                 {
                     VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
                     dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
@@ -373,25 +374,22 @@ namespace AZ
                         dbgCreateInfo.flags |= VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
                     }
 
-                    [[maybe_unused]] VkResult result = vkCreateDebugReportCallbackEXT(
-                        instance,
-                        &dbgCreateInfo,
-                        nullptr,
-                        &s_reportCallback);
+                    [[maybe_unused]] VkResult result =
+                        context.CreateDebugReportCallbackEXT(instance, &dbgCreateInfo, nullptr, &s_reportCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug reporting system");
                 }
             }
 
-            void ShutdownDebugMessages(VkInstance instance)
+            void ShutdownDebugMessages(const GladVulkanContext& context, VkInstance instance)
             {
                 if (s_reportCallback != VK_NULL_HANDLE)
                 {
-                    vkDestroyDebugReportCallbackEXT(instance, s_reportCallback, nullptr);
+                    context.DestroyDebugReportCallbackEXT(instance, s_reportCallback, nullptr);
                 }
                 if (s_messageCallback != VK_NULL_HANDLE)
                 {
-                    vkDestroyDebugUtilsMessengerEXT(instance, s_messageCallback, nullptr);
+                    context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, nullptr);
                 }
             }
 
@@ -440,57 +438,65 @@ namespace AZ
             void SetNameToObject([[maybe_unused]] uint64_t objectHandle, [[maybe_unused]] const char* name, [[maybe_unused]] VkObjectType objectType, [[maybe_unused]] const Device& device)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                AZ_Assert(objectHandle != VK_NULL_HANDLE, "objectHandle is null.");
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                AZ_Assert(objectHandle != reinterpret_cast<uint64_t>(VK_NULL_HANDLE), "objectHandle is null.");
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
                     VkDebugUtilsObjectNameInfoEXT info{};
                     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
                     info.objectType = objectType;
                     info.objectHandle = objectHandle;
                     info.pObjectName = name;
-                    AssertSuccess(vkSetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info));
+                    AssertSuccess(device.GetContext().SetDebugUtilsObjectNameEXT(device.GetNativeDevice(), &info));
                 }
 #endif
             }
 
-            void BeginCmdDebugLabel([[maybe_unused]] VkCommandBuffer commandBuffer, [[maybe_unused]] const char* label, [[maybe_unused]] const AZ::Color color)
+            void BeginCmdDebugLabel(
+                [[maybe_unused]] const GladVulkanContext& context,
+                [[maybe_unused]] VkCommandBuffer commandBuffer,
+                [[maybe_unused]] const char* label,
+                [[maybe_unused]] const AZ::Color color)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
                     VkDebugUtilsLabelEXT info = CreateVkDebugUtilLabel(label, color);
-                    vkCmdBeginDebugUtilsLabelEXT(commandBuffer, &info);
+                    context.CmdBeginDebugUtilsLabelEXT(commandBuffer, &info);
                 }
 #endif
             }
 
-            void EndCmdDebugLabel([[maybe_unused]] VkCommandBuffer commandBuffer)
+            void EndCmdDebugLabel([[maybe_unused]] const GladVulkanContext& context, [[maybe_unused]] VkCommandBuffer commandBuffer)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
-                    vkCmdEndDebugUtilsLabelEXT(commandBuffer);
+                    context.CmdEndDebugUtilsLabelEXT(commandBuffer);
                 }
 #endif
             }
 
-            void BeginQueueDebugLabel([[maybe_unused]] VkQueue queue, [[maybe_unused]] const char* label, [[maybe_unused]] const AZ::Color color)
+            void BeginQueueDebugLabel(
+                [[maybe_unused]] const GladVulkanContext& context,
+                [[maybe_unused]] VkQueue queue,
+                [[maybe_unused]] const char* label,
+                [[maybe_unused]] const AZ::Color color)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
                     VkDebugUtilsLabelEXT info = CreateVkDebugUtilLabel(label, color);
-                    vkQueueBeginDebugUtilsLabelEXT(queue, &info);
+                    context.QueueBeginDebugUtilsLabelEXT(queue, &info);
                 }
 #endif
             }
 
-            void EndQueueDebugLabel([[maybe_unused]] VkQueue queue)
+            void EndQueueDebugLabel([[maybe_unused]] const GladVulkanContext& context, [[maybe_unused]] VkQueue queue)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
                 {
-                    vkQueueEndDebugUtilsLabelEXT(queue);
+                    context.QueueEndDebugUtilsLabelEXT(queue);
                 }
 #endif
             }

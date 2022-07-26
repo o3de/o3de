@@ -73,7 +73,8 @@ namespace AZ
             if (m_nativeBufferView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkBufferView>(device.GetNativeDevice(), m_nativeBufferView, vkDestroyBufferView));
+                device.QueueForRelease(new ReleaseContainer<VkBufferView>(
+                    device.GetNativeDevice(), m_nativeBufferView, device.GetContext().DestroyBufferView));
                 m_nativeBufferView = VK_NULL_HANDLE;
             }
             return RHI::ResultCode::Success;
@@ -97,7 +98,8 @@ namespace AZ
             createInfo.offset = bufferMemoryView->GetOffset() + descriptor.m_elementOffset * descriptor.m_elementSize;
             createInfo.range = descriptor.m_elementCount * descriptor.m_elementSize;
 
-            const VkResult result = vkCreateBufferView(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeBufferView);
+            const VkResult result =
+                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeBufferView);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));

@@ -38,7 +38,7 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.connection = xcb_connection;
             createInfo.window = static_cast<xcb_window_t>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = vkCreateXcbSurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
+            const VkResult result = instance.GetContext().CreateXcbSurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
             AssertSuccess(result);
 
             return ConvertResult(result);

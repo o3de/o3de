@@ -96,13 +96,8 @@ namespace AZ
 
             const VkPipelineCache pipelineCache = descriptor.m_pipelineLibrary ? descriptor.m_pipelineLibrary->GetNativePipelineCache() : VK_NULL_HANDLE;
 
-            const VkResult vkResult = vkCreateGraphicsPipelines(
-                descriptor.m_device->GetNativeDevice(), 
-                pipelineCache, 
-                1, 
-                &createInfo, 
-                nullptr, 
-                &GetNativePipelineRef());
+            const VkResult vkResult = descriptor.m_device->GetContext().CreateGraphicsPipelines(
+                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, nullptr, &GetNativePipelineRef());
 
             return ConvertResult(vkResult);
         }
