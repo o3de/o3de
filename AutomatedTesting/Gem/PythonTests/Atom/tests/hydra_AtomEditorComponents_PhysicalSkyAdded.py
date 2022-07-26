@@ -144,12 +144,11 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
     """
 
     import azlmbr.legacy.general as general
-    import azlmbr.math as math
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties, PHYSICAL_SKY_INTENSITY_MODE
-    from azlmbr.math import Math_IsClose
+    from azlmbr.math import Math_IsClose, Color
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -210,11 +209,11 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
 
         # 6. Set Sky Intensity value to 0 then back to 4.
         physical_sky_component.set_component_property_value(
-            AtomComponentProperties.physical_sky('Sky Intensity'), 0)
+            AtomComponentProperties.physical_sky('Sky Intensity'), 0.0)
         Report.result(
             Tests.sky_intensity_set_to_0,
             physical_sky_component.get_component_property_value(
-                AtomComponentProperties.physical_sky('Sky Intensity')) == 0)
+                AtomComponentProperties.physical_sky('Sky Intensity')) == 0.0)
 
         physical_sky_component.set_component_property_value(
             AtomComponentProperties.physical_sky('Sky Intensity'), 4.0)
@@ -242,11 +241,11 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
 
         # 8. Set Turbidity value to 5 then back to 1.
         physical_sky_component.set_component_property_value(
-            AtomComponentProperties.physical_sky('Turbidity'), 0.0)
+            AtomComponentProperties.physical_sky('Turbidity'), 5)
         Report.result(
             Tests.turbidity_set_to_5,
             physical_sky_component.get_component_property_value(
-                AtomComponentProperties.physical_sky('Turbidity')) == 0.0)
+                AtomComponentProperties.physical_sky('Turbidity')) == 5)
 
         physical_sky_component.set_component_property_value(
             AtomComponentProperties.physical_sky('Turbidity'), 1)
@@ -282,8 +281,8 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
         general.idle_wait_frames(1)
 
         # 11. Change fog color to green, then return to default.
-        color_green = math.Color(0.0, 255.0, 0.0, 255.0)
-        color_default = math.Color(0.0, 0.0, 0.0, 255.0)
+        color_green = Color(0.0, 255.0, 0.0, 255.0)
+        color_default = Color(0.0, 0.0, 0.0, 255.0)
 
         physical_sky_component.set_component_property_value(
             AtomComponentProperties.physical_sky('Fog Color'), color_green)
@@ -300,8 +299,7 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
         Report.result(
             Tests.fog_color_set_to_default,
             physical_sky_component.get_component_property_value(
-                AtomComponentProperties.physical_sky('Fog Color'))
-            == color_default)
+                AtomComponentProperties.physical_sky('Fog Color')) == color_default)
 
         # 12. Set Fog Top Height to 0.5 then back to 0.01.
         physical_sky_component.set_component_property_value(

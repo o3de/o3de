@@ -1001,7 +1001,7 @@ class AtomComponentProperties:
         - 'Sun Radius Factor' A factor for Physical sun radius in millions of km. 1 unit is 695,508 km
          (float, range 0.1 - 2, default 1.0). /n
         - 'Enable Fog' Toggle fog on or off (bool, default False).
-        - 'Fog Color' Color of the fog (math.Vector3(float x, float y, float z) where ranges are 0 to 255).
+        - 'Fog Color' Color of the fog (math.Color(float x, float y, float z, float a) where ranges are 0 to 255).
         - 'Fog Top Height' Height of the fog upwards from the horizon (float, range 0.0 - 0.5 default 0.01).
         - 'Fog Bottom Height' Height of the fog downwards from the horizon (float, range 0.0 - 0.3 default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
