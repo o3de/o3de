@@ -1027,6 +1027,7 @@ namespace Terrain
         if (!m_rayTracingMeshUuid.IsNull())
         {
             rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
+            m_rayTracingMeshUuid = AZ::Uuid::CreateNull();
         }
 
         float queryResolution = 1.0f;
