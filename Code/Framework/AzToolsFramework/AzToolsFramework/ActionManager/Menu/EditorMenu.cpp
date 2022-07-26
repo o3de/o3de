@@ -205,9 +205,6 @@ namespace AzToolsFramework
         }
     }
 
-    {
-    }
-
     void EditorMenu::Initialize()
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
