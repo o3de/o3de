@@ -139,8 +139,16 @@ namespace AZStd
             // so we need to handle this case.
             construct_iter(first, last, is_integral<InputIterator>());
         }
-        vector(initializer_list<T> list, const allocator_type& allocator = allocator_type())
-            : vector(list.begin(), list.end(), allocator)
+
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        vector(from_range_t, R&& rg, const allocator_type& alloc = Allocator())
+            : m_allocator(alloc)
+        {
+            assign_range(AZStd::forward<R>(rg));
+        }
+
+        vector(initializer_list<T> ilist, const allocator_type& allocator = allocator_type())
+            : vector(ilist.begin(), ilist.end(), allocator)
         {
         }
 
@@ -289,6 +297,12 @@ namespace AZStd
             reference emplacedElement = *m_last;
             ++m_last;
             return emplacedElement;
+        }
+
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(end(), AZStd::forward<R>(rg));
         }
 
         inline iterator insert(const_iterator pos, value_type&& value)
@@ -609,6 +623,19 @@ namespace AZStd
             assign_iter(first, last, is_integral<InputIterator>());
         }
 
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                assign_iter(ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                assign_iter(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
+        }
+
         void assign(initializer_list<T> iList)
         {
             assign(iList.begin(), iList.end());
@@ -800,6 +827,19 @@ namespace AZStd
         iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
             return insert_impl(insertPos, first, last, is_integral<InputIterator>());
+        }
+
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                return insert_impl(insertPos, ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                return insert_impl(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
         }
 
         iterator insert(const_iterator insertPos, initializer_list<T> ilist)
@@ -1082,159 +1122,157 @@ namespace AZStd
         AZ_FORCE_INLINE iterator insert_impl(const_iterator insertPos, const Iterator& first, const Iterator& last, const false_type& /* is_integral<Iterator> */)
         {
             // specialize for specific interators.
-            return insert_iter(insertPos, first, last, typename iterator_traits<Iterator>::iterator_category());
+            return insert_iter(insertPos, first, last);
         }
 
         template<class Iterator>
-        iterator insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const forward_iterator_tag&)
+        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last)
         {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            // We can template this func if we want to check if first and last belong to the same container. It's possible
-            // for them to be pointers or unchecked iterators.
-            pointer insertPosPtr;
-            if (m_start != 0)
-            {
-                insertPosPtr = const_cast<pointer>(insertPos.get_iterator());   // we validate iterators only if this container has elements. It is possible all to be 0.
-            }
-            else
-            {
-                AZ_Assert(insertPos.m_container == this, "Iterator doesn't belong to this container");
-                insertPosPtr = const_cast<pointer>(insertPos.m_iter);
-                AZ_Assert(insertPosPtr == 0 && m_start == m_end && m_start == m_last && m_start == insertPosPtr, "vector::insert_iter - This is allowed only if the container has no elements");
-            }
-#else
-            pointer insertPosPtr = const_cast<pointer>(insertPos);
-#endif
             const size_type offset = AZStd::ranges::distance(begin(), insertPos);
 
-            size_type numElements = distance(first, last);
-            if (numElements == 0)
+            if constexpr (forward_iterator<Iterator>)
             {
-                return AZStd::ranges::next(begin(), offset);
-            }
-            //AZSTD_CONTAINER_ASSERT(numElements>0,("AZStd::vector<T>::insert<Iterator> - No point to insert 0 elements!"));
-
-            size_type capacity = m_end - m_start;
-            size_type size = m_last - m_start;
-            size_type newSize = size + numElements;
-            size_type expandedSize = 0;
-
-            // if we have an allocated block and we need more memory, try to expand first!
-            if (m_start && capacity < newSize)
-            {
-                expandedSize = m_allocator.resize(m_start, newSize * sizeof(node_type));
-                if (expandedSize % sizeof(node_type) == 0) // make sure it's the exact number of nodes otherwise we can't compute the size on free
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+                // We can template this func if we want to check if first and last belong to the same container. It's possible
+                // for them to be pointers or unchecked iterators.
+                pointer insertPosPtr;
+                if (m_start != 0)
                 {
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (capacity < expandedCapacity)
+                    insertPosPtr = const_cast<pointer>(insertPos.get_iterator());   // we validate iterators only if this container has elements. It is possible all to be 0.
+                }
+                else
+                {
+                    AZ_Assert(insertPos.m_container == this, "Iterator doesn't belong to this container");
+                    insertPosPtr = const_cast<pointer>(insertPos.m_iter);
+                    AZ_Assert(insertPosPtr == 0 && m_start == m_end && m_start == m_last && m_start == insertPosPtr, "vector::insert_iter - This is allowed only if the container has no elements");
+                }
+#else
+                pointer insertPosPtr = const_cast<pointer>(insertPos);
+#endif
+
+                size_type numElements = distance(first, last);
+                if (numElements == 0)
+                {
+                    return AZStd::ranges::next(begin(), offset);
+                }
+                //AZSTD_CONTAINER_ASSERT(numElements>0,("AZStd::vector<T>::insert<Iterator> - No point to insert 0 elements!"));
+
+                size_type capacity = m_end - m_start;
+                size_type size = m_last - m_start;
+                size_type newSize = size + numElements;
+                size_type expandedSize = 0;
+
+                // if we have an allocated block and we need more memory, try to expand first!
+                if (m_start && capacity < newSize)
+                {
+                    expandedSize = m_allocator.resize(m_start, newSize * sizeof(node_type));
+                    if (expandedSize % sizeof(node_type) == 0) // make sure it's the exact number of nodes otherwise we can't compute the size on free
                     {
-                        capacity = expandedCapacity;
-                        m_end = m_start + expandedCapacity;
+                        size_type expandedCapacity = expandedSize / sizeof(node_type);
+                        if (capacity < expandedCapacity)
+                        {
+                            capacity = expandedCapacity;
+                            m_end = m_start + expandedCapacity;
+                        }
                     }
                 }
-            }
 
-            if (capacity <  newSize)
-            {
-                // No enough room, reallocate
-
-                // grow by 50%, if we can.
-                capacity += capacity / 2;
                 if (capacity < newSize)
                 {
-                    capacity = newSize;
+                    // No enough room, reallocate
+
+                    // grow by 50%, if we can.
+                    capacity += capacity / 2;
+                    if (capacity < newSize)
+                    {
+                        capacity = newSize;
+                    }
+
+                    size_type byteSize = capacity * sizeof(node_type);
+
+                    pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
+                    // Copy the elements before insert position.
+                    pointer newLast = AZStd::uninitialized_move(m_start, insertPosPtr, newStart);
+                    // add new data (just copy no move)
+                    newLast = AZStd::uninitialized_copy(first, last, newLast);
+                    // Copy the elements after the insert position.
+                    newLast = AZStd::uninitialized_move(insertPosPtr, m_last, newLast);
+
+                    // Destroy old array
+                    if (m_start)
+                    {
+                        // Call destructor if we need to.
+                        Internal::destroy<pointer>::range(m_start, m_last);
+                        // Free memory (if needed).
+                        deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    }
+
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+                    orphan_all();
+#endif
+
+                    m_start = newStart;
+                    m_last = newLast;
+                    m_end = m_start + capacity;
                 }
-
-                size_type byteSize = capacity * sizeof(node_type);
-
-                pointer newStart = reinterpret_cast<pointer>(m_allocator.allocate(byteSize, alignment_of<node_type>::value));
-                // Copy the elements before insert position.
-                pointer newLast = AZStd::uninitialized_move(m_start, insertPosPtr, newStart);
-                // add new data (just copy no move)
-                newLast = AZStd::uninitialized_copy(first, last, newLast);
-                // Copy the elements after the insert position.
-                newLast = AZStd::uninitialized_move(insertPosPtr, m_last, newLast);
-
-                // Destroy old array
-                if (m_start)
+                else if (size_type(m_last - insertPosPtr) < numElements)
                 {
-                    // Call destructor if we need to.
-                    Internal::destroy<pointer>::range(m_start, m_last);
-                    // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    // Copy the elements after insert position.
+                    pointer newLast = AZStd::uninitialized_move(insertPosPtr, m_last, insertPosPtr + numElements);
+
+                    // Number of elements we can assign.
+                    size_type numInitializedToFill = size_type(m_last - insertPosPtr);
+
+                    // get last iterator to fill
+                    Iterator lastToAssign = first;
+                    AZStd::advance(lastToAssign, numInitializedToFill);
+
+                    // Add new elements to uninitialized elements.
+                    AZStd::uninitialized_copy(lastToAssign, last, m_last);
+
+                    m_last = newLast;
+
+                    // Add assign new data
+                    AZStd::copy(first, lastToAssign, insertPosPtr);
+
+#ifdef AZSTD_HAS_CHECKED_ITERATORS
+                    orphan_range(insertPosPtr, m_last);
+#endif
                 }
+                else
+                {
+                    // We need to copy data in a careful way.
+
+                    // first copy the data that will not overlap.
+                    pointer nonOverlap = m_last - numElements;
+                    pointer newLast = AZStd::uninitialized_move(nonOverlap, m_last, m_last);
+
+                    // move the area with overlapping
+                    AZStd::move_backward(insertPosPtr, nonOverlap, m_last);
+
+                    // add new elements
+                    AZStd::copy(first, last, insertPosPtr);
+
+                    m_last = newLast;
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
-                orphan_all();
+                    orphan_range(insertPosPtr, m_last);
 #endif
-
-                m_start = newStart;
-                m_last  = newLast;
-                m_end   = m_start + capacity;
-            }
-            else if (size_type(m_last - insertPosPtr) < numElements)
-            {
-                // Copy the elements after insert position.
-                pointer newLast = AZStd::uninitialized_move(insertPosPtr, m_last, insertPosPtr + numElements);
-
-                // Number of elements we can assign.
-                size_type numInitializedToFill = size_type(m_last - insertPosPtr);
-
-                // get last iterator to fill
-                Iterator lastToAssign = first;
-                AZStd::advance(lastToAssign, numInitializedToFill);
-
-                // Add new elements to uninitialized elements.
-                AZStd::uninitialized_copy(lastToAssign, last, m_last);
-
-                m_last = newLast;
-
-                // Add assign new data
-                AZStd::copy(first, lastToAssign, insertPosPtr);
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                orphan_range(insertPosPtr, m_last);
-#endif
+                }
             }
             else
             {
-                // We need to copy data in a careful way.
-
-                // first copy the data that will not overlap.
-                pointer nonOverlap = m_last - numElements;
-                pointer newLast = AZStd::uninitialized_move(nonOverlap, m_last, m_last);
-
-                // move the area with overlapping
-                AZStd::move_backward(insertPosPtr, nonOverlap, m_last);
-
-                // add new elements
-                AZStd::copy(first, last, insertPosPtr);
-
-                m_last = newLast;
-
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                orphan_range(insertPosPtr, m_last);
-#endif
+                for (size_t emplaceOffset = offset; first != last; ++first, ++emplaceOffset)
+                {
+                    // As the emplace function can cause a reallocation to occur
+                    // the insert iterator position needs to be re-cacluated each time.
+                    emplace(begin() + emplaceOffset, *first);
+                }
             }
 
             return AZStd::ranges::next(begin(), offset);
         }
 
-
-        template<class Iterator>
-        inline iterator insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const input_iterator_tag&)
-        {
-            const_iterator start(AZSTD_POINTER_ITERATOR_PARAMS(m_start));
-            size_type offset = AZStd::distance(start, insertPos);
-
-            Iterator iter(first);
-            for (; iter != last; ++iter, ++offset)
-            {
-                insert(start + offset, *iter);
-            }
-
-            return AZStd::ranges::next(begin(), offset);
-        }
         //#pragma endregion
 
         //#pragma region Construct interator specializations (construct_iter)
@@ -1326,7 +1364,10 @@ namespace AZStd
 
     // AZStd::vector deduction guides
     template <class InputIt, class Alloc = allocator>
-    vector(InputIt, InputIt, Alloc = Alloc()) -> vector<typename iterator_traits<InputIt>::value_type, Alloc>;
+    vector(InputIt, InputIt, Alloc = Alloc()) -> vector<iter_value_t<InputIt>, Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    vector(from_range_t, R&&, Alloc = Alloc()) -> vector<ranges::range_value_t<R>, Alloc>;
 
     //#pragma region Vector equality/inequality
     template <class T, class Allocator>

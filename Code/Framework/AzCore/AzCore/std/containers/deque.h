@@ -271,27 +271,20 @@ namespace AZStd
         }
 
         template<class InputIterator>
-        AZ_FORCE_INLINE deque(InputIterator first, InputIterator last)
-            : m_map(0)
-            , m_mapSize(0)
-            , m_firstOffset(0)
-            , m_size(0)
+        deque(InputIterator first, InputIterator last, const Allocator& allocator = Allocator())
+            : m_allocator(allocator)
         {
-            construct_iter(first, last, is_integral<InputIterator>());
+            construct_iter(first, last, is_integral<InputIterator>{});
         }
 
-        template<class InputIterator>
-        AZ_FORCE_INLINE deque(InputIterator first, InputIterator last, const Allocator& allocator)
-            : m_map(0)
-            , m_mapSize(0)
-            , m_firstOffset(0)
-            , m_size(0)
-            , m_allocator(allocator)
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        deque(from_range_t, R&& rg, const Allocator& alloc = Allocator())
+            : m_allocator(alloc)
         {
-            construct_iter(first, last, is_integral<InputIterator>());
+            assign_range(AZStd::forward<R>(rg));
         }
 
-        deque(std::initializer_list<T> ilist, const Allocator& alloc = Allocator())
+        deque(initializer_list<T> ilist, const Allocator& alloc = Allocator())
             : deque(ilist.begin(), ilist.end(), alloc)
         {}
 
@@ -439,6 +432,12 @@ namespace AZStd
             ++m_size;
         }
 
+        template<class R>
+        auto prepend_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(begin(), AZStd::forward<R>(rg));
+        }
+
         inline void pop_back()
         {
             AZSTD_CONTAINER_ASSERT(!empty(), "AZStd::deque::pop_back - there are no element to pop!");
@@ -459,6 +458,12 @@ namespace AZStd
             }
         }
 
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(end(), AZStd::forward<R>(rg));
+        }
+
         AZ_FORCE_INLINE void assign(size_type numElements, const value_type& value)
         {
             value_type valueCopy = value;   // in case value is in sequence
@@ -470,6 +475,24 @@ namespace AZStd
         AZ_FORCE_INLINE void assign(InputIterator first, InputIterator last)
         {
             assign_iter(first, last, is_integral<InputIterator>());
+        }
+
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                assign_iter(ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                assign_iter(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
+        }
+
+        void assign(initializer_list<T> iList)
+        {
+            assign(iList.begin(), iList.end());
         }
 
         iterator insert(const_iterator insertPos, const value_type& value)
@@ -581,6 +604,19 @@ namespace AZStd
         iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
             return insert_iter(insertPos, first, last, is_integral<InputIterator>());
+        }
+
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                return insert_iter(insertPos, ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                return insert_iter(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
         }
 
         iterator insert(const_iterator insertPos, initializer_list<value_type> list)
@@ -1137,7 +1173,10 @@ namespace AZStd
 
     // AZStd::deque deduction guides
     template <class InputIt, class Alloc = allocator>
-    deque(InputIt, InputIt, Alloc = Alloc()) -> deque<typename iterator_traits<InputIt>::value_type, Alloc>;
+    deque(InputIt, InputIt, Alloc = Alloc()) -> deque<iter_value_t<InputIt>, Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    deque(from_range_t, R&&, Alloc = Alloc()) -> deque<ranges::range_value_t<R>, Alloc>;
 
     template <class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize>
     AZ_FORCE_INLINE bool operator==(const deque<T, Allocator, NumElementsPerBlock, MinMapSize>& left, const deque<T, Allocator, NumElementsPerBlock, MinMapSize>& right)

@@ -12,6 +12,8 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/has_member_function.h>
 
@@ -141,7 +143,7 @@ namespace UnitTest
     struct HashTableSetTestTraits
     {
         typedef T                               key_type;
-        typedef typename AZStd::equal_to<T>     key_eq;
+        typedef typename AZStd::equal_to<T>     key_equal;
         typedef typename AZStd::hash<T>         hasher;
         typedef T                               value_type;
         typedef AZStd::allocator                allocator_type;
@@ -168,10 +170,10 @@ namespace UnitTest
         hash_set_traits::hasher set_hasher;
 
         //
-        hash_key_table_type hTable(set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_table_type hTable(set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
         ValidateHash(hTable);
         //
-        hash_key_table_type hTable1(elements.begin(), elements.end(), set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_table_type hTable1(elements.begin(), elements.end(), set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
         ValidateHash(hTable1, elements.size());
         //
         hash_key_table_type hTable2(hTable1);
@@ -266,7 +268,7 @@ namespace UnitTest
         typedef HashTableSetTestTraits< int, true, true > hash_multiset_traits;
         typedef hash_table< hash_multiset_traits >  hash_key_multitable_type;
 
-        hash_key_multitable_type hMultiTable(set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_multitable_type hMultiTable(set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
 
         array<int, 7> toInsert2 = {
             { 17, 101, 27, 7, 501, 101, 101 }
@@ -348,10 +350,10 @@ namespace UnitTest
         hash_set_traits::hasher set_hasher;
 
         //
-        hash_key_table_type hTable(set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_table_type hTable(set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
         ValidateHash(hTable);
         //
-        hash_key_table_type hTable1(elements.begin(), elements.end(), set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_table_type hTable1(elements.begin(), elements.end(), set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
         ValidateHash(hTable1, elements.size());
         //
         hash_key_table_type hTable2(hTable1);
@@ -434,7 +436,7 @@ namespace UnitTest
         typedef HashTableSetTestTraits< int, true, false > hash_multiset_traits;
         typedef hash_table< hash_multiset_traits >  hash_key_multitable_type;
 
-        hash_key_multitable_type hMultiTable(set_hasher, hash_set_traits::key_eq(), hash_set_traits::allocator_type());
+        hash_key_multitable_type hMultiTable(set_hasher, hash_set_traits::key_equal(), hash_set_traits::allocator_type());
 
         array<int, 7> toInsert2 = {
             { 17, 101, 27, 7, 501, 101, 101 }
@@ -461,7 +463,7 @@ namespace UnitTest
         typedef unordered_set<int> int_set_type;
 
         int_set_type::hasher myHasher;
-        int_set_type::key_eq myKeyEqCmp;
+        int_set_type::key_equal myKeyEqCmp;
         int_set_type::allocator_type myAllocator;
 
         int_set_type int_set;
@@ -520,7 +522,7 @@ namespace UnitTest
         typedef fixed_unordered_set<int, 101, 300> int_set_type;
 
         int_set_type::hasher myHasher;
-        int_set_type::key_eq myKeyEqCmp;
+        int_set_type::key_equal myKeyEqCmp;
 
         int_set_type int_set;
         ValidateHash(int_set);
@@ -537,7 +539,7 @@ namespace UnitTest
         int_set_type int_set4(uniqueArray.begin(), uniqueArray.end());
         ValidateHash(int_set4, uniqueArray.size());
 
-        int_set_type int_set6(uniqueArray.begin(), uniqueArray.end(), myHasher, myKeyEqCmp);
+        int_set_type int_set6(uniqueArray.begin(), uniqueArray.end(), 0, myHasher, myKeyEqCmp);
         ValidateHash(int_set6, uniqueArray.size());
         EXPECT_EQ(101, int_set6.bucket_count());
     }
@@ -547,7 +549,7 @@ namespace UnitTest
         typedef unordered_multiset<int> int_multiset_type;
 
         int_multiset_type::hasher myHasher;
-        int_multiset_type::key_eq myKeyEqCmp;
+        int_multiset_type::key_equal myKeyEqCmp;
         int_multiset_type::allocator_type myAllocator;
 
         int_multiset_type int_set;
@@ -606,7 +608,7 @@ namespace UnitTest
         typedef fixed_unordered_multiset<int, 101, 300> int_multiset_type;
 
         int_multiset_type::hasher myHasher;
-        int_multiset_type::key_eq myKeyEqCmp;
+        int_multiset_type::key_equal myKeyEqCmp;
 
         int_multiset_type int_set;
         ValidateHash(int_set);
@@ -624,7 +626,7 @@ namespace UnitTest
         ValidateHash(int_set4, uniqueArray.size());
         EXPECT_EQ(101, int_set4.bucket_count());
 
-        int_multiset_type int_set6(uniqueArray.begin(), uniqueArray.end(), myHasher, myKeyEqCmp);
+        int_multiset_type int_set6(uniqueArray.begin(), uniqueArray.end(), 0, myHasher, myKeyEqCmp);
         ValidateHash(int_set6, uniqueArray.size());
         EXPECT_EQ(101, int_set6.bucket_count());
     }
@@ -634,7 +636,7 @@ namespace UnitTest
         typedef unordered_map<int, int> int_int_map_type;
 
         int_int_map_type::hasher myHasher;
-        int_int_map_type::key_eq myKeyEqCmp;
+        int_int_map_type::key_equal myKeyEqCmp;
         int_int_map_type::allocator_type myAllocator;
 
         int_int_map_type intint_map;
@@ -735,7 +737,7 @@ namespace UnitTest
         typedef unordered_map<int, MyClass> int_myclass_map_type;
 
         int_myclass_map_type::hasher myHasher;
-        int_myclass_map_type::key_eq myKeyEqCmp;
+        int_myclass_map_type::key_equal myKeyEqCmp;
         int_myclass_map_type::allocator_type myAllocator;
 
         int_myclass_map_type intclass_map;
@@ -855,7 +857,7 @@ namespace UnitTest
         typedef fixed_unordered_map<int, int, 101, 300> int_int_map_type;
 
         int_int_map_type::hasher myHasher;
-        int_int_map_type::key_eq myKeyEqCmp;
+        int_int_map_type::key_equal myKeyEqCmp;
 
         int_int_map_type intint_map;
         ValidateHash(intint_map);
@@ -892,7 +894,7 @@ namespace UnitTest
         ValidateHash(intint_map4, uniqueArray.size());
         EXPECT_EQ(101, intint_map4.bucket_count());
 
-        int_int_map_type intint_map6(uniqueArray.begin(), uniqueArray.end(), myHasher, myKeyEqCmp);
+        int_int_map_type intint_map6(uniqueArray.begin(), uniqueArray.end(), 0, myHasher, myKeyEqCmp);
         ValidateHash(intint_map6, uniqueArray.size());
         EXPECT_EQ(101, intint_map6.bucket_count());
     }
@@ -902,7 +904,7 @@ namespace UnitTest
         typedef fixed_unordered_map<int, MyClass, 101, 300> int_myclass_map_type;
 
         int_myclass_map_type::hasher myHasher;
-        int_myclass_map_type::key_eq myKeyEqCmp;
+        int_myclass_map_type::key_equal myKeyEqCmp;
 
         int_myclass_map_type intclass_map;
         ValidateHash(intclass_map);
@@ -938,7 +940,7 @@ namespace UnitTest
         ValidateHash(intclass_map4, uniqueArray.size());
         EXPECT_EQ(101, intclass_map4.bucket_count());
 
-        int_myclass_map_type intclass_map6(uniqueArray.begin(), uniqueArray.end(), myHasher, myKeyEqCmp);
+        int_myclass_map_type intclass_map6(uniqueArray.begin(), uniqueArray.end(), 0, myHasher, myKeyEqCmp);
         ValidateHash(intclass_map6, uniqueArray.size());
         EXPECT_EQ(101, intclass_map6.bucket_count());
     }
@@ -948,7 +950,7 @@ namespace UnitTest
         typedef unordered_multimap<int, int> int_int_multimap_type;
 
         int_int_multimap_type::hasher myHasher;
-        int_int_multimap_type::key_eq myKeyEqCmp;
+        int_int_multimap_type::key_equal myKeyEqCmp;
         int_int_multimap_type::allocator_type myAllocator;
 
         int_int_multimap_type intint_map;
@@ -1025,7 +1027,7 @@ namespace UnitTest
         typedef fixed_unordered_multimap<int, int, 101, 300> int_int_multimap_type;
 
         int_int_multimap_type::hasher myHasher;
-        int_int_multimap_type::key_eq myKeyEqCmp;
+        int_int_multimap_type::key_equal myKeyEqCmp;
 
         int_int_multimap_type intint_map;
         ValidateHash(intint_map);
@@ -1057,7 +1059,7 @@ namespace UnitTest
         ValidateHash(intint_map4, multiArray.size());
         EXPECT_EQ(101, intint_map4.bucket_count());
 
-        int_int_multimap_type intint_map6(multiArray.begin(), multiArray.end(), myHasher, myKeyEqCmp);
+        int_int_multimap_type intint_map6(multiArray.begin(), multiArray.end(), 0, myHasher, myKeyEqCmp);
         ValidateHash(intint_map6, multiArray.size());
         EXPECT_EQ(101, intint_map6.bucket_count());
     }
@@ -1291,6 +1293,8 @@ namespace UnitTest
         EXPECT_EQ(8, testContainer.size());
     }
 
+
+
     TEST_F(HashedContainers, UnorderedSetInsertNodeHandleSucceeds)
     {
         using SetType = AZStd::unordered_set<int32_t>;
@@ -1403,7 +1407,7 @@ namespace UnitTest
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1788,6 +1792,104 @@ namespace UnitTest
         EXPECT_EQ(-6354, insertOrAssignPairIter.first->second.m_value);
     }
 
+    template<template<class...> class SetTemplate>
+    static void HashSetRangeConstructorSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        SetTemplate testSet(AZStd::from_range, testView);
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+
+        testSet = SetTemplate(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::span(testView));
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+
+        AZStd::fixed_string<8> testValue(testView);
+        testSet = SetTemplate(AZStd::from_range, testValue);
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+        testSet = SetTemplate(AZStd::from_range, AZStd::string(testView));
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c'));
+
+        // Test Range views
+        testSet = SetTemplate(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('b', 'c', 'd'));
+    }
+
+    template<template<class...> class MapTemplate>
+    static void HashMapRangeConstructorSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+
+        testMap = MapTemplate(AZStd::from_range, AZStd::vector<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::list<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::deque<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::unordered_set<ValueType>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::fixed_vector<ValueType, 8>{testArray.begin(), testArray.end()});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+        testMap = MapTemplate(AZStd::from_range, AZStd::span(testArray));
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 }));
+    }
+
+    TEST_F(HashedContainers, RangeConstructor_Succeeds)
+    {
+        HashSetRangeConstructorSucceeds<AZStd::unordered_set>();
+        HashSetRangeConstructorSucceeds<AZStd::unordered_multiset>();
+        HashMapRangeConstructorSucceeds<AZStd::unordered_map>();
+        HashMapRangeConstructorSucceeds<AZStd::unordered_multimap>();
+    }
+
+    template<template<class...> class SetTemplate>
+    static void HashSetInsertRangeSucceeds()
+    {
+        constexpr AZStd::string_view testView = "abc";
+        SetTemplate testSet{ 'd', 'e', 'f' };
+        testSet.insert_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testSet.insert_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_THAT(testSet, ::testing::UnorderedElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+    }
+
+    template<template<class...> class MapTemplate>
+    static void HashMapInsertRangeSucceeds()
+    {
+        using ValueType = AZStd::pair<char, int>;
+        constexpr AZStd::array testArray{ ValueType{'a', 1}, ValueType{'b', 2}, ValueType{'c', 3} };
+
+        MapTemplate testMap(AZStd::from_range, testArray);
+
+        testMap.insert_range(AZStd::vector<ValueType>{ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }});
+        EXPECT_THAT(testMap, ::testing::UnorderedElementsAre(ValueType{ 'a', 1 }, ValueType{ 'b', 2 }, ValueType{ 'c', 3 },
+            ValueType{ 'd', 4 }, ValueType{ 'e', 5 }, ValueType{ 'f', 6 }));
+    }
+
+    TEST_F(HashedContainers, InsertRange_Succeeds)
+    {
+        HashSetInsertRangeSucceeds<AZStd::unordered_set>();
+        HashSetInsertRangeSucceeds<AZStd::unordered_multiset>();
+        HashMapInsertRangeSucceeds<AZStd::unordered_map>();
+        HashMapInsertRangeSucceeds<AZStd::unordered_multimap>();
+    }
+
     template <typename ContainerType>
     class HashedMapDifferentAllocatorFixture
         : public AllocatorsFixture
@@ -1801,7 +1903,7 @@ namespace UnitTest
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
         }
     };

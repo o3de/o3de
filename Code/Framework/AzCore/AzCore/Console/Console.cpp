@@ -178,7 +178,8 @@ namespace AZ
     {
         auto DeferredCommandCallable = [this](const DeferredCommand& deferredCommand)
         {
-            return this->DispatchCommand(deferredCommand.m_command, deferredCommand.m_arguments, deferredCommand.m_silentMode,
+            return this->DispatchCommand(deferredCommand.m_command,
+                ConsoleCommandContainer(AZStd::from_range, deferredCommand.m_arguments), deferredCommand.m_silentMode,
                 deferredCommand.m_invokedFrom, deferredCommand.m_requiredSet, deferredCommand.m_requiredClear);
         };
         // Attempt to invoke the deferred command and remove it from the queue if successful

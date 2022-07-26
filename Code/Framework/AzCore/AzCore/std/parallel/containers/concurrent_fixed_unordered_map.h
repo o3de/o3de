@@ -18,7 +18,7 @@ namespace AZStd
         struct ConcurrentUnorderedFixedMapTableTraits
         {
             typedef Key                             key_type;
-            typedef EqualKey                        key_eq;
+            typedef EqualKey                        key_equal;
             typedef Hasher                          hasher;
             typedef AZStd::pair<Key, MappedType>     value_type;
             typedef AZStd::no_default_allocator     allocator_type;
@@ -51,7 +51,7 @@ namespace AZStd
         typedef Internal::concurrent_hash_table< Internal::ConcurrentUnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, false, FixedNumBuckets, FixedNumElements, NumLocks> > base_type;
     public:
         typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
+        typedef typename base_type::key_equal   key_equal;
         typedef typename base_type::hasher      hasher;
         typedef MappedType                      mapped_type;
 
@@ -66,12 +66,12 @@ namespace AZStd
         typedef typename base_type::value_type                  value_type;
 
         AZ_FORCE_INLINE concurrent_fixed_unordered_map()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE concurrent_fixed_unordered_map(const hasher& hash, const key_eq& keyEqual)
+            : base_type(hasher(), key_equal()) {}
+        AZ_FORCE_INLINE concurrent_fixed_unordered_map(const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual) {}
         template<class Iterator>
         AZ_FORCE_INLINE concurrent_fixed_unordered_map(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
+            : base_type(hasher(), key_equal())
         {
             for (; first != last; ++first)
             {
@@ -79,7 +79,7 @@ namespace AZStd
             }
         }
         template<class Iterator>
-        AZ_FORCE_INLINE concurrent_fixed_unordered_map(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
+        AZ_FORCE_INLINE concurrent_fixed_unordered_map(Iterator first, Iterator last, const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual, allocator_type())
         {
             for (; first != last; ++first)
@@ -128,7 +128,7 @@ namespace AZStd
         typedef Internal::concurrent_hash_table< Internal::ConcurrentUnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, true, FixedNumBuckets, FixedNumElements, NumLocks> > base_type;
     public:
         typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
+        typedef typename base_type::key_equal   key_equal;
         typedef typename base_type::hasher      hasher;
         typedef MappedType                      mapped_type;
 
@@ -143,12 +143,12 @@ namespace AZStd
         typedef typename base_type::value_type                  value_type;
 
         AZ_FORCE_INLINE concurrent_fixed_unordered_multimap()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE concurrent_fixed_unordered_multimap(const hasher& hash, const key_eq& keyEqual)
+            : base_type(hasher(), key_equal()) {}
+        AZ_FORCE_INLINE concurrent_fixed_unordered_multimap(const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual) {}
         template<class Iterator>
         AZ_FORCE_INLINE concurrent_fixed_unordered_multimap(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
+            : base_type(hasher(), key_equal())
         {
             for (; first != last; ++first)
             {
@@ -156,7 +156,7 @@ namespace AZStd
             }
         }
         template<class Iterator>
-        AZ_FORCE_INLINE concurrent_fixed_unordered_multimap(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
+        AZ_FORCE_INLINE concurrent_fixed_unordered_multimap(Iterator first, Iterator last, const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual)
         {
             for (; first != last; ++first)

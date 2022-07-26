@@ -131,6 +131,32 @@ namespace AZStd
     using std::insert_iterator;
     using std::inserter;
 
+#if !defined(__cpp_lib_concepts)
+    // In order for pre C++20 back_inserter_iterator, front_inseter_iterator and insert_iterator
+    // to work with the range algorithms which require a weakly_incrementable iterator
+    // the difference_type type alias must not be void as it is in C++17
+    // https://en.cppreference.com/w/cpp/iterator/back_insert_iterator
+    // We workaround this by specializing AZStd::iterator_traits for these types
+    // to provide a difference_type type alias
+    template<class Container>
+    struct iterator_traits<back_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+    template<class Container>
+    struct iterator_traits<front_insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+    template<class Container>
+    struct iterator_traits<insert_iterator<Container>>
+    {
+        using difference_type = ptrdiff_t;
+    };
+
+#endif
+
     enum iterator_status_flag
     {
         isf_none = 0x00,     ///< Iterator is invalid.

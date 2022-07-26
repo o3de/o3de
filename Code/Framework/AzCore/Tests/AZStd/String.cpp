@@ -16,6 +16,8 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -2551,6 +2553,89 @@ namespace UnitTest
         EXPECT_EQ(str, formatted);
     }
 
+    template<typename T>
+    class StringTypeFixture
+        : public ScopedAllocatorSetupFixture
+    {};
+
+    using StringTypeWithRangeFunctions = ::testing::Types<AZStd::string, AZStd::fixed_string<32>>;
+    TYPED_TEST_CASE(StringTypeFixture, StringTypeWithRangeFunctions);
+
+    TYPED_TEST(StringTypeFixture, RangeConstructor_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+
+        TypeParam testString(AZStd::from_range, testView);
+        EXPECT_EQ("abc", testString);
+
+        testString = TypeParam(AZStd::from_range, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::list<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::deque<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::set<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::unordered_set<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::fixed_vector<char, 8>{testView.begin(), testView.end()});
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::array{ 'a', 'b', 'c' });
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::span(testView));
+        EXPECT_EQ("abc", testString);
+
+        AZStd::fixed_string<8> testValue(testView);
+        testString = TypeParam(AZStd::from_range, testValue);
+        EXPECT_EQ("abc", testString);
+        testString = TypeParam(AZStd::from_range, AZStd::string(testView));
+        EXPECT_EQ("abc", testString);
+
+        // Test Range views
+        testString = TypeParam(AZStd::from_range, testValue | AZStd::views::transform([](const char elem) -> char { return elem + 1; }));
+        EXPECT_EQ("bcd", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, InsertRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "abc";
+        TypeParam testString{ 'd', 'e', 'f' };
+        testString.insert_range(testString.begin(), AZStd::vector<char>{testView.begin(), testView.end()});
+        testString.insert_range(testString.end(), testView | AZStd::views::transform([](const char elem) -> char { return elem + 6; }));
+        EXPECT_EQ("abcdefghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, AppendRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        testString.append_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        testString.append_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_THAT(testString, ::testing::ElementsAre('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'));
+        EXPECT_EQ("abcdefghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, AssignRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        testString.assign_range(AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("def", testString);
+        testString.assign_range(testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_EQ("ghi", testString);
+    }
+
+    TYPED_TEST(StringTypeFixture, ReplaceWithRange_Succeeds)
+    {
+        constexpr AZStd::string_view testView = "def";
+        TypeParam testString{ 'a', 'b', 'c' };
+        // Replace 'a' with 'd', 'e', 'f'
+        testString.replace_with_range(testString.begin(), testString.begin() + 1, AZStd::vector<char>{testView.begin(), testView.end()});
+        EXPECT_EQ("defbc", testString);
+        // Replace 'b', 'c' with 'g', 'h', 'i'
+        testString.replace_with_range(testString.begin() + 3, testString.end() + 5, testView | AZStd::views::transform([](const char elem) -> char { return elem + 3; }));
+        EXPECT_EQ("defghi", testString);
+    }
 }
 
 #if defined(HAVE_BENCHMARK)
