@@ -10,8 +10,9 @@
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/Vector4.h>
 #include "MathTestData.h"
 
 namespace UnitTest
@@ -403,7 +404,7 @@ namespace UnitTest
         const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
         EXPECT_THAT(matrix3x4.TransformVector(vector), IsClose((matrix4x4 * AZ::Vector4(vector, 0.0f)).GetAsVector3()));
         const AZ::Vector3 point(12.3f, -5.6, 7.3f);
-        EXPECT_THAT(matrix3x4.TransformPoint(point), IsClose((matrix4x4 * AZ::Vector4(vector, 1.0f)).GetAsVector3()));
+        EXPECT_THAT(matrix3x4.TransformPoint(point), IsClose((matrix4x4 * AZ::Vector4(point, 1.0f)).GetAsVector3()));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4CreateFromMatrix4x4Fixture, ::testing::ValuesIn(MathTestData::Matrix4x4s));
