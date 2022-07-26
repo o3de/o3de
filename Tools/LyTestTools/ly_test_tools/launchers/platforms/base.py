@@ -122,7 +122,6 @@ class Launcher(object):
         backup_path = self.workspace.settings.get_temp_path()
         logger.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
         self.workspace.settings.backup_platform_settings(backup_path)
-        self.workspace.settings.backup_shader_compiler_settings(backup_path)
 
     def configure_settings(self):
         """
@@ -145,7 +144,6 @@ class Launcher(object):
         backup_path = self.workspace.settings.get_temp_path()
         logger.debug(f"Restoring backup of bootstrap, platform and user settings in path {backup_path}")
         self.workspace.settings.restore_platform_settings(backup_path)
-        self.workspace.settings.restore_shader_compiler_settings(backup_path)
 
     def teardown(self):
         """
