@@ -75,6 +75,14 @@ class _WindowsResourceLocator(AbstractResourceLocator):
         """
         return os.path.join(self.project_log(), "error.log")
 
+    def material_editor_log(self):
+        """
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
+        """
+        return os.path.join(self.project_log(), "MaterialEditor.log")
+
+
 class WindowsWorkspaceManager(AbstractWorkspaceManager):
     """
     A Windows host WorkspaceManager. Contains Windows overridden functions for the AbstractWorkspaceManager class.

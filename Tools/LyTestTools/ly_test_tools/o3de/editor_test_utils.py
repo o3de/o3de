@@ -26,7 +26,7 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     ly_processes = [
-        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'MaterialEditor'
     ]
     ap_processes = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -66,6 +66,17 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
     :return str: The full path to the given editor the log/ path
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
+
+
+def retrieve_material_editor_log_path(
+        run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
+    """
+    return the log path for MaterialEditor test runs
+    :param run_id: MaterialEditor id that will be used for differentiating paths
+    :param workspace: Workspace fixture
+    :return: str: The full path to the given MaterialEditor log
+    """
+    return os.path.join(workspace.paths.project(), "user", "log", f"log_test_{run_id}")
 
 
 def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
@@ -116,29 +127,60 @@ def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
 
-def retrieve_editor_log_content(run_id: int, log_name: str,
+def retrieve_editor_log_content(run_id: int,
+                                log_name: str,
                                 workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                 timeout: int = 10) -> str:
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
-    :log_name: The name of the editor log to retrieve
+    :param log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    editor_info = "-- No editor log available --"
+    editor_info = "-- No Editor log available --"
     editor_log = os.path.join(retrieve_log_path(run_id, workspace), log_name)
     try:
         waiter.wait_for(lambda: os.path.exists(editor_log), timeout=timeout)
     except AssertionError:              
         pass
-        
+
     # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
     try:
-        with open(editor_log) as f:
+        with open(editor_log) as opened_log:
             editor_info = ""
-            for line in f:
+            for line in opened_log:
+                editor_info += f"[{log_name}]  {line}"
+    except Exception as ex:
+        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
+    return editor_info
+
+
+def retrieve_material_editor_log_content(run_id: int,
+                                         log_name: str,
+                                         workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                         timeout: int = 10) -> str:
+    """
+    Retrieves the contents of the given path to the MaterialEditor log file.
+    :param run_id: MaterialEditor id that will be used for differentiating paths
+    :param log_name: The name of the MaterialEditor log being retrieved
+    :param workspace: Workspace fixture
+    :param timeout: Maximum time to wait for the log file to appear
+    :return str: The contents of the log
+    """
+    material_editor_info = "-- No MaterialEditor log available --"
+    material_editor_log = os.path.join(retrieve_material_editor_log_path(run_id, workspace), log_name)
+    try:
+        waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
+    except AssertionError:
+        pass
+
+    # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
+    try:
+        with open(material_editor_log) as opened_log:
+            editor_info = ""
+            for line in opened_log:
                 editor_info += f"[{log_name}]  {line}"
     except Exception as ex:
         editor_info = f"-- Error reading {log_name}: {str(ex)} --"
@@ -182,6 +224,49 @@ def save_failed_asset_joblogs(workspace: ly_test_tools._internal.managers.worksp
                     workspace.artifact_manager.save_artifact(full_log_path)
                 except Exception as e:  # Purposefully broad
                     logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
+
+
+def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                  starting_path: str,
+                                  destination_file: str) -> None:
+    """
+    Splits a batched editor log file into separate log files for each test case in the log
+    :param workspace: The LyTestTools Workspace object
+    :param starting_path: the original path for the logs
+    :param destination_file: the destination path for the logs
+    :return: None
+    """
+    if not destination_file:
+        logger.warning(f'No destination_file path found, got {destination_file} instead.')
+        raise FileNotFoundError
+    # text that designates the start of logging for a new test
+    test_case_split = ".py (testcase )"
+    dir_name = os.path.dirname(starting_path)
+
+    # the current log we are writing to
+    current_new_log_path = os.path.join(dir_name, f"SetUp" + ".log")
+    current_new_log = open(current_new_log_path, "a+")
+
+    # loop through the log to split, and write to the split logs
+    with open(destination_file) as log_file:
+        for line in log_file:
+            split_line = line.split(test_case_split)
+            if len(split_line) > 1:
+                # found a new test case, we need to split the log, line below is an example of what we're splitting
+                # <13:22:34> (python) - Running automated test: C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\
+                # largeworlds\\dyn_veg\\EditorScripts\\LayerSpawner_InstancesPlantInAllSupportedShapes'
+                new_log_name = split_line[0].split(os.sep)[-1] + ".log"
+                # resulting in LayerSpawner_InstancesPlantInAllSupportedShapes.log
+                current_new_log.close()
+                workspace.artifact_manager.save_artifact(current_new_log.name)
+                current_new_log = open(os.path.join(dir_name, new_log_name), "a+")
+                current_new_log.write(line)
+            else:
+                current_new_log.write(line)
+        # make sure to save the last log
+        last_log_name = current_new_log.name
+        current_new_log.close()
+        workspace.artifact_manager.save_artifact(last_log_name)
 
 
 def _check_log_errors_warnings(log_path: str) -> bool:

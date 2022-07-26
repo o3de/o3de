@@ -60,6 +60,14 @@ class _LinuxResourceManager(AbstractResourceLocator):
         """
         return os.path.join(self.project_log(), "crash.log")
 
+    def material_editor_log(self):
+        """
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
+        """
+        return os.path.join(self.project_log(), "MaterialEditor.log")
+
+
 class LinuxWorkspaceManager(AbstractWorkspaceManager):
     """
     A Linux host WorkspaceManager. Contains Mac overridden functions for the AbstractWorkspaceManager class.

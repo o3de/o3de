@@ -414,3 +414,14 @@ class AbstractResourceLocator(object):
             "crash_log() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).crash_log()")
+
+    @abstractmethod
+    def material_editor_log(self):
+        """
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
+        """
+        raise NotImplementedError(
+            "material_editor_log() is not implemented on the base AbstractResourceLocator() class. "
+            "It must be defined by the inheriting class - "
+            "i.e. _WindowsResourceLocator(AbstractResourceLocator).material_editor_log()")
