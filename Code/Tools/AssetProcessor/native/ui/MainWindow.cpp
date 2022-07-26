@@ -16,6 +16,7 @@
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
 #include <native/ui/BuilderData.h>
+#include <native/ui/BuilderDataItem.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
 #include <native/ui/SourceAssetTreeFilterModel.h>

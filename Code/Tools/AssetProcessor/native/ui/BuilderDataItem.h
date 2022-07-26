@@ -65,3 +65,5 @@ namespace AssetProcessor
         ItemType m_itemType = ItemType::Max;
     };
 }
+
+Q_DECLARE_METATYPE(AssetProcessor::BuilderDataItem*)
