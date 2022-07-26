@@ -20,7 +20,7 @@ namespace AssetProcessor
     public:
         enum class JobType
         {
-            CreateJob,
+            CreateJobs,
             ProcessJob,
             Max
         };

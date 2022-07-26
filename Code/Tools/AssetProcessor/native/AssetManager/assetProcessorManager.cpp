@@ -3944,7 +3944,7 @@ namespace AssetProcessor
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
 
-        // Signals SourceAssetTreeModel so it can update the CreateJob duration change
+        // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
         Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 

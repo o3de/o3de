@@ -60,9 +60,9 @@ namespace AssetProcessor
                     if (m_builderNameToIndex.contains(builderName))
                     {
                         m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
-                            BuilderDataItem::JobType::CreateJob, sourceName, 1, entry.m_statValue);
+                            BuilderDataItem::JobType::CreateJobs, sourceName, 1, entry.m_statValue);
                         m_allBuildersMetrics->UpdateOrInsertEntry(
-                            BuilderDataItem::JobType::CreateJob, builderName + "," + sourceName, 1, entry.m_statValue);
+                            BuilderDataItem::JobType::CreateJobs, builderName + "," + sourceName, 1, entry.m_statValue);
                     }
                     else
                     {
@@ -118,10 +118,10 @@ namespace AssetProcessor
                     {
                         BuilderDataItem* item = nullptr;
                         item = m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
-                            BuilderDataItem::JobType::CreateJob, sourceName, 1, entry.m_statValue);
+                            BuilderDataItem::JobType::CreateJobs, sourceName, 1, entry.m_statValue);
                         Q_EMIT DurationChanged(item);
                         item = m_allBuildersMetrics->UpdateOrInsertEntry(
-                            BuilderDataItem::JobType::CreateJob, builderName + "," + sourceName, 1, entry.m_statValue);
+                            BuilderDataItem::JobType::CreateJobs, builderName + "," + sourceName, 1, entry.m_statValue);
                         Q_EMIT DurationChanged(item);
                     }
                     else

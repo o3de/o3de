@@ -85,7 +85,7 @@ namespace AssetProcessor
             return nullptr;
         }
 
-        // jobType is either CreateJob or ProcessJob
+        // jobType is either CreateJobs or ProcessJob
         const auto& jobType = m_children[aznumeric_cast<int>(entryjobType)];
 
         BuilderDataItem* entry = nullptr;
