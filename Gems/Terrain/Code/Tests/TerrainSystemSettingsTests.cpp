@@ -198,20 +198,38 @@ namespace UnitTest
                     {
                         // Values from 0-10 should linearly interpolate from 0^2 to 10^2
                         EXPECT_NEAR(height, AZStd::lerp(0.0f, 100.0f, x / queryResolution), 0.001f);
+                        EXPECT_TRUE(terrainExists);
                     }
                     else
                     {
                         // Values from 10-19 should linearly interpolate from 10^2 to 20^2
                         EXPECT_NEAR(height, AZStd::lerp(100.0f, 400.0f, (x - queryResolution) / queryResolution), 0.001f);
+                        EXPECT_TRUE(terrainExists);
                     }
                     break;
                 case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
-                    // X values from 0-9 should clamp to X=0 and return 0, and X values from 10-19 should clamp to X=10 and return 10^2
-                    EXPECT_EQ(height, x < 10.0f ? 0.0f : 100.0f);
+                    // X values from 0-4 should round to X=0 and return 0, X values from 5-14 should round to X=10 and return 10^2,
+                    // and X values from 15-19 should round up to X=20 and return no terrain, because they're clamped to the max edge
+                    // of the AABB, and the AABBs are max-exclusive.
+                    if (x < 5.0f)
+                    {
+                        EXPECT_EQ(height, 0.0f);
+                        EXPECT_TRUE(terrainExists);
+                    }
+                    else if (x < 15.0f)
+                    {
+                        EXPECT_EQ(height, 100.0f);
+                        EXPECT_TRUE(terrainExists);
+                    }
+                    else
+                    {
+                        EXPECT_FALSE(terrainExists);
+                    }
                     break;
                 case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
                     // All query points should return X^2
                     EXPECT_EQ(height, x*x);
+                    EXPECT_TRUE(terrainExists);
                     break;
                 }
             }

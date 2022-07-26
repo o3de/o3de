@@ -190,7 +190,7 @@ float TerrainSystem::GetTerrainSurfaceDataQueryResolution() const
     return m_currentSettings.m_surfaceDataQueryResolution;
 }
 
-void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
+void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta)
 {
     // Given an input position, clamp the values to our terrain grid, where it will always go to the terrain grid point
     // at a lower value, whether positive or negative.  Ex: 3.3 -> 3, -3.3 -> -4
@@ -206,7 +206,7 @@ void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::V
     outPosition = (normalizedPosition - normalizedDelta) * queryResolution;
 }
 
-void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition) const
+void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition)
 {
     // Given an input position, clamp the values to our terrain grid, where it will always go to the nearest terrain grid point
     // whether positive or negative.  Ex: 3.3 -> 3, 3.6 -> 4, -3.3 -> -3, -3.6 -> -4
@@ -222,6 +222,72 @@ void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::V
     // (i.e. don't use: outPosition = normalizedPosition.GetRound() * queryResolution;)
     outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
 }
+
+void TerrainSystem::InterpolateHeights(float heights[4], bool exists[4], float lerpX, float lerpY, float& outHeight, bool& outExists)
+{
+    // When interpolating between 4 height points, we also need to take the existence of the 4 points into account.
+    // The logic below uses a precomputed lookup table to determine how to interpolate the points in each combination of existence.
+    // The final "terrain exists" flag gets computed based on the existence of the corner that's closest to the interpolated point.
+
+    uint8_t indexLookup = (exists[3] << 3) | (exists[2] << 2) | (exists[1] << 1) | (exists[0] << 0);
+
+    constexpr uint8_t heightIndices[16][4] =
+    {
+                        // x0y0 x1y0 x0y1 x1y1  output
+        0, 0, 0, 0,     // F    F    F    F     x0y0
+        0, 0, 0, 0,     // T    F    F    F     x0y0
+        1, 1, 1, 1,     // F    T    F    F     x1y0
+        0, 1, 0, 1,     // T    T    F    F     lerp(x0y0, x1y0)
+        2, 2, 2, 2,     // F    F    T    F     x0y1
+        0, 0, 2, 2,     // T    F    T    F     lerp(x0y0, x0y1)
+        1, 1, 2, 2,     // F    T    T    F     lerp(x1y0, x0y1)
+        0, 1, 2, 2,     // T    T    T    F     lerp(lerp(x0y0, x1y0), x0y1)
+
+        3, 3, 3, 3,     // F    F    F    T     x1y1
+        0, 0, 3, 3,     // T    F    F    T     lerp(x0y0, x1y1)
+        1, 1, 3, 3,     // F    T    F    T     lerp(x1y0, x1y1)
+        0, 1, 3, 3,     // T    T    F    T     lerp(lerp(x0y0, x1y0), x1y1)
+        2, 3, 2, 3,     // F    F    T    T     lerp(x0y1, x1y1)
+        0, 0, 2, 3,     // T    F    T    T     lerp(x0y0, lerp(x0y1, x1y1))
+        1, 1, 2, 2,     // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
+        0, 1, 2, 3,     // T    T    T    T     lerp(lerp(x0y0, x1y0), lerp(x0y1, x1y1))
+    };
+
+    const float heightX0Y0 = heights[heightIndices[indexLookup][0]];
+    const float heightX1Y0 = heights[heightIndices[indexLookup][1]];
+    const float heightX0Y1 = heights[heightIndices[indexLookup][2]];
+    const float heightX1Y1 = heights[heightIndices[indexLookup][3]];
+
+    const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, lerpX);
+    const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, lerpX);
+    outHeight = AZ::Lerp(heightXY0, heightXY1, lerpY);
+
+    // "Terrain exists" is set based on the existance of the nearest vertex to the point,
+    // which is determined by which 1/4 of the quad the point falls in.
+    if (lerpX < 0.5f)
+    {
+        if (lerpY < 0.5f)
+        {
+            outExists = exists[0];
+        }
+        else
+        {
+            outExists = exists[1];
+        }
+    }
+    else
+    {
+        if (lerpY < 0.5f)
+        {
+            outExists = exists[2];
+        }
+        else
+        {
+            outExists = exists[3];
+        }
+    }
+}
+
 
 bool TerrainSystem::InWorldBounds(float x, float y) const
 {
@@ -399,7 +465,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
     GenerateQueryPositions(inPositions, outPositions, queryResolution, sampler);
 
-    auto callback = []([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
+    auto callback = [this]([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
                         AZStd::span<bool> outTerrainExists,
                         [[maybe_unused]] AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
@@ -409,6 +475,23 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                                 "The sizes of the terrain exists list and in/out positions list should match.");
                             Terrain::TerrainAreaHeightRequestBus::Event(areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
                                 outPositions, outTerrainExists);
+
+                            // If the area has "use ground plane" checked, make sure any points that fall in the area that didn't
+                            // return data are filled in with the area's minimum height.
+                            const auto& area = m_registeredAreas.find(areaId);
+                            if ((area != m_registeredAreas.end()) && area->second.m_useGroundPlane)
+                            {
+                                const float areaMin = area->second.m_areaBounds.GetMin().GetZ();
+
+                                for (size_t index = 0; index < outPositions.size(); index++)
+                                {
+                                    if (!outTerrainExists[index])
+                                    {
+                                        outTerrainExists[index] = true;
+                                        outPositions[index].SetZ(areaMin);
+                                    }
+                                }
+                            }
                         };
 
     // This will be unused for heights. It's fine if it's empty.
@@ -426,14 +509,13 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), queryResolution, clampedPosition, normalizedDelta);
-                const float heightX0Y0 = outPositions[iteratorIndex].GetZ();
-                const float heightX1Y0 = outPositions[iteratorIndex + 1].GetZ();
-                const float heightX0Y1 = outPositions[iteratorIndex + 2].GetZ();
-                const float heightX1Y1 = outPositions[iteratorIndex + 3].GetZ();
-                const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
-                const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
-                heights[i] = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
-                terrainExists[i] = outTerrainExists[iteratorIndex];
+                float queriedHeights[4] = { outPositions[iteratorIndex].GetZ(),
+                                     outPositions[iteratorIndex + 1].GetZ(),
+                                     outPositions[iteratorIndex + 2].GetZ(),
+                                     outPositions[iteratorIndex + 3].GetZ() };
+
+                InterpolateHeights(queriedHeights, &(outTerrainExists[iteratorIndex]),
+                    normalizedDelta.GetX(), normalizedDelta.GetY(), heights[i], terrainExists[i]);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -459,8 +541,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
         if (terrainExistsPtr)
         {
             *terrainExistsPtr = terrainExists;
-            return height;
         }
+        return height;
     }
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -480,13 +562,15 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             ClampPosition(x, y, queryResolution, pos0, normalizedDelta);
             const AZ::Vector2 pos1 = pos0 + AZ::Vector2(queryResolution);
 
-            const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
-            const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
-            const float heightX0Y1 = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), terrainExists);
-            const float heightX1Y1 = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), terrainExists);
-            const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
-            const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
-            height = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
+            bool exists[4] = { false, false, false, false };
+            float queriedHeights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+            queriedHeights[0] = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), exists[0]);
+            queriedHeights[1] = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), exists[1]);
+            queriedHeights[2] = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), exists[2]);
+            queriedHeights[3] = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), exists[3]);
+
+            InterpolateHeights(queriedHeights, exists, normalizedDelta.GetX(), normalizedDelta.GetY(), height, terrainExists);
         }
         break;
 
@@ -531,7 +615,7 @@ float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists)
     {
         const float areaMin = areaData.m_areaBounds.GetMin().GetZ();
         inPosition.SetZ(areaMin);
-        if (areaData.m_areaBounds.Contains(inPosition))
+        if (SurfaceData::AabbContains2DMaxExclusive(areaData.m_areaBounds, inPosition))
         {
             AZ::Vector3 outPosition;
             Terrain::TerrainAreaHeightRequestBus::Event(
@@ -621,7 +705,7 @@ void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& 
 
         // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
         // any of the four points exist, then the terrain exists.
-        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists [iteratorIndex + 2] || exists[iteratorIndex + 3];
+        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists[iteratorIndex + 2] || exists[iteratorIndex + 3];
     }
 }
 

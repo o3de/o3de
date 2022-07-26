@@ -22,6 +22,7 @@
 #include <Terrain/MockTerrain.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
 #include <TerrainTestFixtures.h>
+#include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 using ::testing::AtLeast;
 using ::testing::FloatNear;
@@ -268,7 +269,7 @@ namespace UnitTest
     TEST_F(TerrainSystemTest, TerrainExistsOnlyWithinTerrainLayerSpawnerBounds)
     {
         // Verify that the presence of a TerrainLayerSpawner causes terrain to exist in (and *only* in) the box where the
-        // TerrainLayerSpawner is defined.
+        // TerrainLayerSpawner is defined. The box is min-inclusive-max-exclusive, so points should *not* exist on the max edge of the box.
 
         // The terrain system should only query Heights from the TerrainAreaHeightRequest bus within the
         // TerrainLayerSpawner region, and so those values should only get returned from GetHeight for queries inside that region.
@@ -305,7 +306,10 @@ namespace UnitTest
                 bool isHole = terrainSystem->GetIsHoleFromFloats(
                     position.GetX(), position.GetY(), AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
 
-                if (spawnerBox.Contains(AZ::Vector3(position.GetX(), position.GetY(), spawnerBox.GetMin().GetZ())))
+                // Verify that the point either should or shouldn't appear on the box, taking min-inclusive-max-exclusive box ranges
+                // into account.
+                if (SurfaceData::AabbContains2DMaxExclusive(spawnerBox,
+                    AZ::Vector3(position.GetX(), position.GetY(), spawnerBox.GetMin().GetZ())))
                 {
                     EXPECT_TRUE(heightQueryTerrainExists);
                     EXPECT_FALSE(isHole);
@@ -503,10 +507,10 @@ namespace UnitTest
             // should *still* be X + Y assuming the points were sampled correctly from the grid points.
 
             { AZ::Vector2(3.25f, 5.25f), 8.5f }, // Should return a height of 3.25 + 5.25
-            { AZ::Vector2(7.71f, 9.74f), 17.45f }, // Should return a height of 7.71 + 9.74
+            { AZ::Vector2(7.71f, 8.74f), 16.45f }, // Should return a height of 7.71 + 9.74
 
             { AZ::Vector2(-3.25f, -5.25f), -8.5f }, // Should return a height of -3.25 + -5.25
-            { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
+            { AZ::Vector2(-7.71f, -8.74f), -16.45f }, // Should return a height of -7.71 + -9.74
         };
 
         // Loop through every test point and validate it.
@@ -522,6 +526,7 @@ namespace UnitTest
             // Verify that our height query returned the bilinear filtered result we expect.
             constexpr float epsilon = 0.0001f;
             EXPECT_NEAR(height, expectedHeight, epsilon);
+            EXPECT_TRUE(heightQueryTerrainExists);
         }
     }
 
@@ -691,7 +696,8 @@ namespace UnitTest
 
             { AZ::Vector2(3.25f, 5.25f), 8.5f }, // Should return a height of 3.25 + 5.25
             { AZ::Vector2(7.71f, 8.74f), 16.45f }, // Should return a height of 7.71 + 8.74
-            // We don't test any points > 9.0f because our AABB is max-exclusive, so points between 9-10 will be missing, not interpolated.
+            // We don't test any points > 9.0f because our AABB is max-exclusive, and would query grid points that don't exist for use as
+            // a part of the interpolation. We'll test those cases separately, as they're more complex.
 
             { AZ::Vector2(-3.25f, -5.25f), -8.5f }, // Should return a height of -3.25 + -5.25
             { AZ::Vector2(-7.71f, -9.74f), -17.45f }, // Should return a height of -7.71 + -9.74
@@ -749,6 +755,8 @@ namespace UnitTest
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
         auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
+        // Note that we keep our test points in the range -9.5 to +8.5. Any value outside that range would use points that don't exist
+        // in the calculation of the normals, which is more complex and can get tested separately.
         const NormalTestPoint testPoints[] = {
 
             { AZ::Vector2(0.0f, 0.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
@@ -779,13 +787,13 @@ namespace UnitTest
             { AZ::Vector2(-2.25f, -4.0f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
 
             { AZ::Vector2(3.25f, 5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
-            { AZ::Vector2(7.71f, 8.74f), AZ::Vector3(-0.0294f, 0.9991f, 0.0294f) },
+            { AZ::Vector2(7.71f, 7.74f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
 
             { AZ::Vector2(-3.25f, -5.25f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
-            { AZ::Vector2(-7.71f, -9.74f), AZ::Vector3(-0.0366f, -0.9986f, 0.0366f) },
+            { AZ::Vector2(-7.71f, -7.74f), AZ::Vector3(-0.5773f, -0.5773f, 0.5773f) },
         };
 
-        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists){
+        auto perPositionCallback = [&testPoints](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists){
             bool found = false;
             for (auto& testPoint : testPoints)
             {
@@ -795,6 +803,7 @@ namespace UnitTest
                     EXPECT_NEAR(surfacePoint.m_normal.GetX(), testPoint.m_expectedNormal.GetX(), epsilon);
                     EXPECT_NEAR(surfacePoint.m_normal.GetY(), testPoint.m_expectedNormal.GetY(), epsilon);
                     EXPECT_NEAR(surfacePoint.m_normal.GetZ(), testPoint.m_expectedNormal.GetZ(), epsilon);
+                    EXPECT_TRUE(terrainExists);
                     found = true;
                     break;
                 }
