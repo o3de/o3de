@@ -274,8 +274,10 @@ namespace AZ
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
 
-            RHI::ShaderInputConstantIndex m_timeInputIndex;
-            float m_simulationTime;
+            RHI::ShaderInputNameIndex m_timeInputIndex = "m_time";
+            float m_simulationTime = 0.0;
+            RHI::ShaderInputNameIndex m_prevTimeInputIndex = "m_prevTime";
+            float m_prevSimulationTime = 0.0;
         };
 
         // --- Template functions ---
