@@ -21,7 +21,6 @@
 
 #include <Tests/GradientSignalTestFixtures.h>
 
-
 namespace UnitTest
 {
     struct EditorGradientSignalBakerTestsFixture
