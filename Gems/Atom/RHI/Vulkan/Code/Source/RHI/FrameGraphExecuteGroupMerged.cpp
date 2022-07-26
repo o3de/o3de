@@ -77,9 +77,9 @@ namespace AZ
 
             const Scope* scope = m_scopes[contextIndex];
             context.SetCommandList(*m_commandList);
-
-            scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Aliasing);
+            
             scope->ProcessClearRequests(*m_commandList);
+            scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Aliasing);
             scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Prologue);
             scope->ResetQueryPools(*m_commandList);
             scope->Begin(*m_commandList);
