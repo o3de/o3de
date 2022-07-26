@@ -21,12 +21,14 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(6) // Introduction of "AddBuildArguments" & "RemoveBuildArguments"
+                    ->Version(7) // Rework of the blend state options
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
                     ->Field("RasterState", &ShaderSourceData::m_rasterState)
                     ->Field("BlendState", &ShaderSourceData::m_blendState)
+                    ->Field("GlobalTargetBlendState", &ShaderSourceData::m_globalTargetBlendState)
+                    ->Field("TargetBlendStates", &ShaderSourceData::m_targetBlendStates)
                     ->Field("ProgramSettings", &ShaderSourceData::m_programSettings)
                     ->Field("RemoveBuildArguments", &ShaderSourceData::m_removeBuildArguments)
                     ->Field("AddBuildArguments", &ShaderSourceData::m_addBuildArguments)
@@ -64,6 +66,8 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_depthStencilState, "Depth Stencil State", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_rasterState, "Raster State", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_blendState, "Blend State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_globalTargetBlendState, "Global Target Blend State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_targetBlendStates, "Target Blend States", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_programSettings, "Program Settings", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, "Remove Build Arguments", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, "Add Build Arguments", "")
@@ -141,6 +145,8 @@ namespace AZ
                     ->Property("depthStencilState", BehaviorValueProperty(&ShaderSourceData::m_depthStencilState))
                     ->Property("rasterState", BehaviorValueProperty(&ShaderSourceData::m_rasterState))
                     ->Property("blendState", BehaviorValueProperty(&ShaderSourceData::m_blendState))
+                    ->Property("globalTargetBlendState", BehaviorValueProperty(&ShaderSourceData::m_globalTargetBlendState))
+                    ->Property("targetBlendStates", BehaviorValueProperty(&ShaderSourceData::m_targetBlendStates))
                     ->Property("programSettings", BehaviorValueProperty(&ShaderSourceData::m_programSettings))
                     ->Property("removeBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_removeBuildArguments))
                     ->Property("addBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_addBuildArguments))
