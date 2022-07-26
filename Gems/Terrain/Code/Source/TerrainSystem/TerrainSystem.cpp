@@ -725,29 +725,29 @@ AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sample
             return outNormal;
         }
     }
-    float range = m_currentSettings.m_heightQueryResolution / 2.0f;
-    const AZ::Vector2 left (x - range, y);
-    const AZ::Vector2 right(x + range, y);
-    const AZ::Vector2 up   (x, y - range);
-    const AZ::Vector2 down (x, y + range);
 
-    bool terrainExists1 = false;
-    bool terrainExists2 = false;
-    bool terrainExists3 = false;
-    bool terrainExists4 = false;
+    const float range = m_currentSettings.m_heightQueryResolution / 2.0f;
+    AZStd::array<AZ::Vector3, 4> directionVectors = { AZ::Vector3(x, y - range, 0.0f),
+                                                      AZ::Vector3(x - range, y, 0.0f),
+                                                      AZ::Vector3(x + range, y, 0.0f),
+                                                      AZ::Vector3(x, y + range, 0.0f) };
 
-    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists1));
-    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists2));
-    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists3));
-    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists4));
+    AZStd::array<float, 4> heights = { 0.0f, 0.0f, 0.0f, 0.0f };
+    AZStd::array<bool, 4> exists = { false, false, false, false };
+    GetHeightsSynchronous(directionVectors, sampler, heights, exists);
 
-    outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
+    directionVectors[0].SetZ(heights[0]);
+    directionVectors[1].SetZ(heights[1]);
+    directionVectors[2].SetZ(heights[2]);
+    directionVectors[3].SetZ(heights[3]);
+
+    outNormal = (directionVectors[2] - directionVectors[1]).Cross(directionVectors[3] - directionVectors[0]).GetNormalized();
 
     if (terrainExistsPtr)
     {
         // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
         // any of the four points exist, then the terrain exists.
-        *terrainExistsPtr = terrainExists1 || terrainExists2 || terrainExists3 || terrainExists4;
+        *terrainExistsPtr = exists[0] || exists[1] || exists[2] || exists[3];
     }
 
     return outNormal;
@@ -817,7 +817,7 @@ void TerrainSystem::GetSurfacePoint(
 {
     outSurfacePoint.m_position = inPosition;
     outSurfacePoint.m_position.SetZ(GetHeightSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr));
-    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, nullptr);
+    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr);
     GetSurfaceWeights(inPosition, outSurfacePoint.m_surfaceTags, sampler, nullptr);
 }
 
