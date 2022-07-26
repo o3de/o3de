@@ -109,11 +109,11 @@ namespace AZ
             {
                 auto* exponentiationPass = azrtti_cast<DepthExponentiationPass*>(GetChildren()[static_cast<uint32_t>(EsmChildPassKind::Exponentiation)].get());
                 AZ_Assert(exponentiationPass, "Child not found or not of type DepthExponentiationPass.");
-                if (m_lightTypeName == Name("directional"))
+                if (m_lightTypeName == AZ_NAME_LITERAL("directional"))
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Directional);
                 }
-                else if (m_lightTypeName == Name("projected"))
+                else if (m_lightTypeName == AZ_NAME_LITERAL("projected"))
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Projected);
                 }

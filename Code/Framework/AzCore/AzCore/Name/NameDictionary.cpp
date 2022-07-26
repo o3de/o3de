@@ -45,6 +45,7 @@ namespace AZ
             if (Name::s_staticNameBegin != nullptr && &s_instance->m_deferredHead != Name::s_staticNameBegin)
             {
                 s_instance->m_deferredHead.m_nextName = Name::s_staticNameBegin;
+                AZStd::lock_guard guard(Name::GetStaticNameListMutex());
                 Name::s_staticNameBegin->m_previousName = &s_instance->m_deferredHead;
             }
             Name* current = s_instance->m_deferredHead.m_nextName;
