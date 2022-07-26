@@ -223,7 +223,8 @@ void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::V
     outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
 }
 
-void TerrainSystem::InterpolateHeights(float heights[4], bool exists[4], float lerpX, float lerpY, float& outHeight, bool& outExists)
+void TerrainSystem::InterpolateHeights(const AZStd::array<float,4>& heights, const AZStd::array<bool,4>& exists,
+    float lerpX, float lerpY, float& outHeight, bool& outExists)
 {
     // When interpolating between 4 height points, we also need to take the existence of the 4 points into account.
     // The logic below uses a precomputed lookup table to determine how to interpolate the points in each combination of existence.
@@ -263,29 +264,10 @@ void TerrainSystem::InterpolateHeights(float heights[4], bool exists[4], float l
     outHeight = AZ::Lerp(heightXY0, heightXY1, lerpY);
 
     // "Terrain exists" is set based on the existance of the nearest vertex to the point,
-    // which is determined by which 1/4 of the quad the point falls in.
-    if (lerpX < 0.5f)
-    {
-        if (lerpY < 0.5f)
-        {
-            outExists = exists[0];
-        }
-        else
-        {
-            outExists = exists[1];
-        }
-    }
-    else
-    {
-        if (lerpY < 0.5f)
-        {
-            outExists = exists[2];
-        }
-        else
-        {
-            outExists = exists[3];
-        }
-    }
+    // which is determined by which 1/4 of the quad the point falls in. We can determine that based on
+    // which side of 0.5 our lerp X and Y values land on.
+    uint8_t existsIndex = ((lerpX >= 0.5f) << 1) | (lerpY >= 0.5f);
+    outExists = exists[existsIndex];
 }
 
 
@@ -509,12 +491,16 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
                 ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), queryResolution, clampedPosition, normalizedDelta);
-                float queriedHeights[4] = { outPositions[iteratorIndex].GetZ(),
+                AZStd::array<float,4> queriedHeights = { outPositions[iteratorIndex].GetZ(),
                                      outPositions[iteratorIndex + 1].GetZ(),
                                      outPositions[iteratorIndex + 2].GetZ(),
                                      outPositions[iteratorIndex + 3].GetZ() };
+                AZStd::array<bool, 4> queriedExistsFlags = { outTerrainExists[iteratorIndex],
+                    outTerrainExists[iteratorIndex + 1],
+                    outTerrainExists[iteratorIndex + 2],
+                    outTerrainExists[iteratorIndex + 3]};
 
-                InterpolateHeights(queriedHeights, &(outTerrainExists[iteratorIndex]),
+                InterpolateHeights(queriedHeights, queriedExistsFlags,
                     normalizedDelta.GetX(), normalizedDelta.GetY(), heights[i], terrainExists[i]);
             }
             break;
@@ -562,13 +548,11 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             ClampPosition(x, y, queryResolution, pos0, normalizedDelta);
             const AZ::Vector2 pos1 = pos0 + AZ::Vector2(queryResolution);
 
-            bool exists[4] = { false, false, false, false };
-            float queriedHeights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-            queriedHeights[0] = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), exists[0]);
-            queriedHeights[1] = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), exists[1]);
-            queriedHeights[2] = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), exists[2]);
-            queriedHeights[3] = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), exists[3]);
+            AZStd::array<bool,4> exists = { false, false, false, false };
+            const AZStd::array<float, 4> queriedHeights = { GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), exists[0]),
+                                                            GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), exists[1]),
+                                                            GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), exists[2]),
+                                                            GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), exists[3]) };
 
             InterpolateHeights(queriedHeights, exists, normalizedDelta.GetX(), normalizedDelta.GetY(), height, terrainExists);
         }

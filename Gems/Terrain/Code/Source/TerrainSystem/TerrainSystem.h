@@ -217,7 +217,8 @@ namespace Terrain
 
         static void ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta);
         static void RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition);
-        static void InterpolateHeights(float heights[4], bool exists[4], float lerpX, float lerpY, float& outHeight, bool& outExists);
+        static void InterpolateHeights(const AZStd::array<float, 4>& heights, const AZStd::array<bool, 4>& exists,
+            float lerpX, float lerpY, float& outHeight, bool& outExists);
         bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const;
