@@ -17,20 +17,52 @@ echo.
 echo ~    local env settings
 echo.
 
+:: developers can add temporary/custom envar settings
 set O3DE_BUILD_FOO=True
 echo     O3DE_BUILD_FOO = %O3DE_BUILD_FOO%
 
+:: developers may have multiple repos, on different branch states
+:: this allows a dev to explicitly set the root engine path
+:: e.g. the nightly installer default is C:\O3DE\0.0.0.0
+:: set O3DE_DEV=C:\depot\o3de-dev
+
+:: the build folder for o3de binaries is not always known
+:: where it is in an installer release may be stable
+:: but for example, the nightly installer is pre-built and does not
+:: have a build folder location, just the binaries location
+:: C:\O3DE\0.0.0.0\bin\Windows\profile\Default
+
+:: engine developers may build in an engine centric way
+:: and configure a cmake build anywhere, this allows devs to set their
+:: build folder name (assuming it is in the engine root)
 set O3DE_BUILD_FOLDER=build
 echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
+:: this allows the full path to your build folder to be explicitly set
+:: this would work for also pointing to a project centric build location
+set "PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%"
+
+:: this allows the full path to your bin folder to be explicitly set
+set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile"
+
+:: this will enable additional debug behaviour within code
+:: this will in many cases cascade into settings like LogLevel
+:: note: expect things to become more verbose
 set DCCSI_GDEBUG=True
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 
+:: this generally enables behaviour such as auto-start/connect debugger in entry points
+:: or may enable local tests that execute during operation
 set DCCSI_DEV_MODE=True
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 
+:: This specifies the debugger to use for DEV_MODE
+:: note: currently only wing is supported (expanding this is future work)
 set DCCSI_GDEBUGGER=WING
 echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 
+:: even though you can enable/disable debug logic
+:: this allows the logging level to be explicitly set (more verbose)
+:: I commonly set this to 10 even when I disbale the global debug flag
 set DCCSI_LOGLEVEL=10
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%

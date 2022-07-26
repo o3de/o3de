@@ -8,10 +8,12 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-<DCCsi>/Tools/__init__.py
+"""Treat IDE tool integrations as a package
 
-This init allows us to treat the Tools folder as a package.
+    < DCCsi >/Tools/IDE/__init__.py
+
+:Status: Prototype
+:Version: 0.0.1
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -24,48 +26,29 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'Tools'
+_PACKAGENAME = 'Tools.IDE'
+
+__all__ = ['WingIDE']
+           # 'PyCharm',
+           # 'VScode']  # to do: add others when they are set up
+
+
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-
-__all__ = ['DCC',
-           'Python']  # to do: add others when they are set up
-          #'Foo',
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# we need to set up basic access to the DCCsi
+# set up access to this DCC folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 
-# a suggestion it to make the DccScriptingInterface a package
-# <DccScriptingInterface>/__init__.py and then
-# from DccScriptingInterface import _PATH_DCCSIG
+from Tools import _PATH_DCCSIG
 
-# then access azpy.constants to pull ENVAR key strings
-# so they are not redefined in __init__ boilerplate
+# suggest to remove a lot of this boilerplate imports and debug config
+# from __init__'s in the future, there were put in an earlier version when
+# some of the scaffolding wasn't fully in place. These settings can now be
+# set in the env (*.bat files) and/or the settings.local.json to active
+# and propogate.
 
-# for now, lifting those strings so they can be more easily moved later
-ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
-
-# another suggestion is that _PATH_DCCSI_TOOLS
-# becomes PATH_DCCSI_TOOLS (remove the leading _)
-# as these variables can propogate and do not need to be private
-
-_PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
-                                   _PATH_DCCSI_TOOLS.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS.as_posix())
-
-ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
-
-_PATH_DCCSIG = Path(_PATH_DCCSI_TOOLS.parent)
-_PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
-                              _PATH_DCCSIG.as_posix()))
-site.addsitedir(_PATH_DCCSIG.as_posix())
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # now we have access to the DCCsi code and azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
@@ -75,14 +58,20 @@ from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 from azpy.config_utils import attach_debugger
 
-#  global space
+from Tools import _PATH_DCCSI_TOOLS
+
+_PATH_DCCSI_TOOLS_IDE = Path(_MODULE_PATH.parent)
+_PATH_DCCSI_TOOLS_IDE = Path(os.getenv('ATH_DCCSI_TOOLS_IDE',
+                                       _PATH_DCCSI_TOOLS_IDE.as_posix()))
+site.addsitedir(_PATH_DCCSI_TOOLS_IDE.as_posix())
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# reconfigure for debug and dev mode
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-# suggestion make constants for known debugger type settings like
-# STR_IDE_WING_TAG = 'WING'
-# move this into <DccScriptingInterface>/__init__.py and propogate
 
 # default loglevel to info unless set
 _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
@@ -96,13 +85,11 @@ if _DCCSI_GDEBUG:
 # -------------------------------------------------------------------------
 
 
-
 # -------------------------------------------------------------------------
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_IDE: {_PATH_DCCSI_TOOLS_IDE}')
 # -------------------------------------------------------------------------
 
 
