@@ -266,7 +266,7 @@ void TerrainSystem::InterpolateHeights(const AZStd::array<float,4>& heights, con
     // "Terrain exists" is set based on the existance of the nearest vertex to the point,
     // which is determined by which 1/4 of the quad the point falls in. We can determine that based on
     // which side of 0.5 our lerp X and Y values land on.
-    uint8_t existsIndex = ((lerpX >= 0.5f) << 1) | (lerpY >= 0.5f);
+    uint8_t existsIndex = ((lerpY >= 0.5f) << 1) | (lerpX >= 0.5f);
     outExists = exists[existsIndex];
 }
 
@@ -799,9 +799,12 @@ void TerrainSystem::GetSurfacePoint(
     Sampler sampler,
     bool* terrainExistsPtr) const
 {
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
+    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr);
     outSurfacePoint.m_position = inPosition;
     outSurfacePoint.m_position.SetZ(GetHeightSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr));
-    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr);
     GetSurfaceWeights(inPosition, outSurfacePoint.m_surfaceTags, sampler, nullptr);
 }
 
@@ -1155,15 +1158,18 @@ void TerrainSystem::QueryList(
     AZStd::vector<AZ::Vector3> normals;
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
-    if (requestedData & TerrainDataMask::Heights)
-    {
-        heights.resize(inPositions.size());
-        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    }
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
         GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::Heights)
+    {
+        heights.resize(inPositions.size());
+        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
     }
     if (requestedData & TerrainDataMask::SurfaceData)
     {
@@ -1336,15 +1342,18 @@ void TerrainSystem::QueryRegionInternal(
     AZStd::vector<AZ::Vector3> normals;
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
-    if (requestedData & TerrainDataMask::Heights)
-    {
-        heights.resize(inPositions.size());
-        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    }
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
         GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+    }
+    if (requestedData & TerrainDataMask::Heights)
+    {
+        heights.resize(inPositions.size());
+        GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
     }
     if (requestedData & TerrainDataMask::SurfaceData)
     {
