@@ -175,6 +175,7 @@ namespace EMStudio
         // we need a way to reinit the ParameterWindow when parameter change.
         void ParametersChanged(EMotionFX::AnimGraph* animGraph);
 
+        void RemoveAll();
     private:
         void Reset();
 
