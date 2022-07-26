@@ -60,7 +60,7 @@ namespace AzPhysics::Automation
         SetEvent(&SimulatedBodyCollisionAutomationHandler::OnCollisionEnd, "OnCollisionEnd");
     }
 
-    void SimulatedBodyCollisionAutomationHandler::Disconnect()
+    void SimulatedBodyCollisionAutomationHandler::Disconnect(AZ::BehaviorArgument* id [[maybe_unused]])
     {
         m_collisionBeginHandler.Disconnect();
         m_collisionPersistHandler.Disconnect();
@@ -181,7 +181,7 @@ namespace AzPhysics::Automation
         SetEvent(&SimulatedBodyTriggerAutomationHandler::OnTriggerExit, "OnTriggerExit");
     }
 
-    void SimulatedBodyTriggerAutomationHandler::Disconnect()
+    void SimulatedBodyTriggerAutomationHandler::Disconnect(AZ::BehaviorArgument* id [[maybe_unused]])
     {
         m_triggerEnterHandler.Disconnect();
         m_triggerExitHandler.Disconnect();
