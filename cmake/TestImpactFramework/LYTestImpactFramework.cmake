@@ -60,7 +60,6 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_BINARY_DIR}")
 
-
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
@@ -454,22 +453,20 @@ endfunction()
 
 #! ly_test_impact_write_pytest_file: writes out the test information utilised by our TIAF testing tools, using the data derived from the build generation process.
 # 
-function(ly_test_impact_write_pytest_file)
+function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
     # For each configuration type, compile the build info we need and add it to our array
     set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
-        set(config "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
-        ly_file_read("cmake/TestImpactFramework/LyTestImpactBuildConfigEntry.in" build_config)
-        string(CONFIGURE ${build_config} build_config)
-        list(APPEND build_configs "${build_config}")
+        set(config_path "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
+        list(APPEND build_configs "\"${config_type}\" : { \"config\" : \"${config_path}\"}")
     endforeach()
  
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
     
     # Configure and write out our test data file
-    ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
+    ly_file_read("${CONFIGURATION_FILE}" test_file)
     string(CONFIGURE ${test_file} test_file)
     file(GENERATE
         OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/ly_test_impact_test_data.json"
@@ -512,7 +509,9 @@ function(ly_test_impact_post_step)
     )
 
     # Write out required test data into config file.
-    ly_test_impact_write_pytest_file()
+    ly_test_impact_write_pytest_file(
+        "cmake/TestImpactFramework/LYTestImpactTestData.in"
+    )
     
     # Copy over the graphviz options file for the build dependency graphs
     message(DEBUG "Test impact framework config file written")
