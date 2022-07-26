@@ -119,6 +119,10 @@ namespace JsonSerializationTests
 
 
     // SimpleInheritence
+    BaseClass* SimpleInheritence::Clone() const
+    {
+        return aznew SimpleInheritence(*this);
+    }
 
     bool SimpleInheritence::Equals(const SimpleInheritence& rhs, bool fullReflection) const
     {

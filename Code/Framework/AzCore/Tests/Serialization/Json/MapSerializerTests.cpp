@@ -296,7 +296,7 @@ namespace JsonSerializationTests
         MapPointerTestDescription<AZStd::unordered_map, AZ::JsonUnorderedMapSerializer, false>,
         MapPointerTestDescription<AZStd::unordered_multimap, AZ::JsonUnorderedMultiMapSerializer, true>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonMapSerializer, JsonSerializerConformityTests, MapSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonMapSerializer, JsonSerializerConformityTests, MapSerializerConformityTestTypes));
 
 
     struct TestString

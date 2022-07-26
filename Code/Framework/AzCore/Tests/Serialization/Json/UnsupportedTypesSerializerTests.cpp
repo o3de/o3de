@@ -14,12 +14,6 @@
 
 namespace JsonSerializationTests
 {
-    struct AnyInfo
-    {
-        using Type = AZStd::any;
-        using Serializer = AZ::JsonAnySerializer;
-    };
-
     struct VariantInfo
     {
         using Type = AZStd::variant<AZStd::monostate, int, double>;
@@ -56,7 +50,7 @@ namespace JsonSerializationTests
         Type m_instance{};
     };
 
-    using UnsupportedTypesTestTypes = ::testing::Types<AnyInfo, VariantInfo, OptionalInfo>;
+    using UnsupportedTypesTestTypes = ::testing::Types<VariantInfo, OptionalInfo>;
     TYPED_TEST_CASE(JsonUnsupportedTypesSerializerTests, UnsupportedTypesTestTypes);
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Load_CallDirectly_ReportsIssueAndHalts)
