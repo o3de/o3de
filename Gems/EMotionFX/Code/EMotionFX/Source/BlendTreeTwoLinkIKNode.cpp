@@ -477,8 +477,11 @@ namespace EMotionFX
         float dotProduct = oldForward.Dot(newForward);
         float deltaAngle = MCore::Math::ACos(MCore::Clamp<float>(dotProduct, -1.0f, 1.0f));
         AZ::Vector3 axis = oldForward.Cross(newForward);
-        AZ::Quaternion deltaRot = MCore::CreateFromAxisAndAngle(axis, deltaAngle);
-        globalTransformA.m_rotation = deltaRot * globalTransformA.m_rotation;
+        if (axis.GetLengthSq() > 0.0f)
+        {
+            globalTransformA.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                axis.GetNormalized(), deltaAngle) * globalTransformA.m_rotation;
+        }
         outTransformPose.SetWorldSpaceTransform(nodeIndexA, globalTransformA);
 
         // globalTransformA = outTransformPose.GetGlobalTransformIncludingActorInstanceTransform(nodeIndexA);
@@ -508,14 +511,13 @@ namespace EMotionFX
         {
             deltaAngle = MCore::Math::ACos(MCore::Clamp<float>(dotProduct, -1.0f, 1.0f));
             axis = oldForward.Cross(newForward);
-            deltaRot = MCore::CreateFromAxisAndAngle(axis, deltaAngle);
-        }
-        else
-        {
-            deltaRot = AZ::Quaternion::CreateIdentity();
+            if (axis.GetLengthSq() > 0.0f)
+            {
+                globalTransformB.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                    axis.GetNormalized(), deltaAngle) * globalTransformB.m_rotation;
+            }
         }
 
-        globalTransformB.m_rotation = deltaRot * globalTransformB.m_rotation;
         globalTransformB.m_position = midPos;
         outTransformPose.SetWorldSpaceTransform(nodeIndexB, globalTransformB);
 
