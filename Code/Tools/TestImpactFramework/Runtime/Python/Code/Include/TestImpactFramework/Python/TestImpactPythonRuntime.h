@@ -6,10 +6,13 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactConfiguration.h>
+#pragma once
 
 namespace TestImpact
 {
-    //! Parses the configuration data (in JSON format) and returns the constructed runtime configuration.
-    RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData);
+    //! The native API exposed to the client responsible for all test runs and persistent data management.
+    class PythonRuntime
+    {
+
+    };
 } // namespace TestImpact

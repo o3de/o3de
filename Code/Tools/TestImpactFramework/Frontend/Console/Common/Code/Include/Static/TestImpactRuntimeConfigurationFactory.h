@@ -6,16 +6,10 @@
  *
  */
 
-#pragma once
-
-#include <TestImpactFramework/TestImpactException.h>
+#include <TestImpactFramework/TestImpactConfiguration.h>
 
 namespace TestImpact
 {
-    //! Exception for target and target-related operations.
-    class TargetException : public Exception
-    {
-    public:
-        using Exception::Exception;
-    };
+    //! Parses the common configuration data (in JSON format) and returns the constructed runtime configuration.
+    RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData);
 } // namespace TestImpact

@@ -20,12 +20,12 @@ ly_add_target(
             Include
         PRIVATE
             Source
-    COMPILE_DEFINITIONS
-        PRIVATE
-            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
-        PUBLIC
+        PRIVATE
+            AZ::TestImpact.Frontend.Console.Common.Static
             AZ::TestImpact.Runtime.Native.Static
+        PUBLIC
+            AZ::TestImpact.Frontend.Console.Common.Headers
 )
 
 ly_add_target(

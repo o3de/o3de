@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Include/TestImpactFramework/Python/TestImpactPythonRuntime.h
+    Include/TestImpactFramework/Python/TestImpactPythonConfiguration.h
     Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactPythonTestTargetDescriptorFactory.h
     Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.cpp
@@ -23,4 +25,5 @@ set(FILES
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
     Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp
     Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.h
+    Source/TestImpactPythonRuntime.cpp
 )

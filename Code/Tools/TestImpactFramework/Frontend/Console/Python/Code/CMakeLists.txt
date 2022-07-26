@@ -26,13 +26,14 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::TestImpact.Frontend.Console.Common.Static
-        PUBLIC
             AZ::TestImpact.Runtime.Python.Static
+        PUBLIC
+            AZ::TestImpact.Frontend.Console.Common.Headers
 )
 
 ly_add_target(
     NAME TestImpact.Frontend.Console.Python EXECUTABLE
-    OUTPUT_NAME tiaf
+    OUTPUT_NAME tiaf_py
     NAMESPACE AZ
     FILES_CMAKE
         testimpactframework_frontend_console_python_files.cmake
@@ -48,7 +49,7 @@ ly_add_target(
 # Tests
 ################################################################################
 
-# Disbled:SPEC-7246
+# Disbled for future PR
 #ly_add_target(
 #    NAME TestImpact.Frontend.Console.Python.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
 #    NAMESPACE AZ

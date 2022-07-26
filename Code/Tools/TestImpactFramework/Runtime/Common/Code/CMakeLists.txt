@@ -37,7 +37,6 @@ ly_add_target(
             Include/Static
     BUILD_DEPENDENCIES
         PUBLIC
-            AZ::AzCore
             TestImpact.Runtime.Common.Headers
 )
 

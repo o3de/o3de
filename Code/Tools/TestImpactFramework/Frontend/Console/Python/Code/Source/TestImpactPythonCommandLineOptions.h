@@ -6,13 +6,16 @@
  *
  */
 
-#include <Target/Native/TestImpactNativeProductionTarget.h>
+#pragma once
+
+#include <TestImpactCommandLineOptions.h>
 
 namespace TestImpact
 {
-    NativeProductionTarget::NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor)
-        : NativeTarget(descriptor.get())
-        , m_descriptor(AZStd::move(descriptor))
+    class PythonCommandLineOptions
+        : public CommandLineOptions
     {
-    }
+    public:
+        using CommandLineOptions::CommandLineOptions;
+    };
 } // namespace TestImpact

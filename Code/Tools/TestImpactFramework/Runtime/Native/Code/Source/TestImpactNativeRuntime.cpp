@@ -7,10 +7,10 @@
  */
 
 #include <TestImpactFramework/TestImpactUtils.h>
-#include <TestImpactFramework/Native/TestImpactRuntime.h>
+#include <TestImpactFramework/Native/TestImpactNativeRuntime.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
-#include <TestImpactRuntimeUtils.h>
+#include <TestImpactNativeRuntimeUtils.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
@@ -244,11 +244,11 @@ namespace TestImpact
         return sequenceReport;
     }
 
-    Runtime::Runtime(
-        RuntimeConfig&& config,
+    NativeRuntime::NativeRuntime(
+        NativeRuntimeConfig&& config,
         const AZStd::optional<RepoPath>& dataFile,
         [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
-        const AZStd::vector<TargetConfig::ExcludedTarget>& testsToExclude,
+        const AZStd::vector<ExcludedTarget>& testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -268,7 +268,7 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the build targets from the build target descriptors
-        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
+        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_commonConfig.m_buildTargetDescriptor, m_config.m_commonConfig.m_testTargetMeta);
 
         // Construct the dynamic dependency map from the build targets
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());
@@ -297,10 +297,10 @@ namespace TestImpact
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<NativeTestEngine>(
-            m_config.m_repo.m_root,
+            m_config.m_commonConfig.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_temp.m_enumerationCacheDirectory,
-            m_config.m_workspace.m_temp.m_artifactDirectory,
+            m_config.m_commonConfig.m_workspace.m_temp.m_enumerationCacheDirectory,
+            m_config.m_commonConfig.m_workspace.m_temp.m_artifactDirectory,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
@@ -314,7 +314,7 @@ namespace TestImpact
             else
             {
                 m_sparTiaFile =
-                    m_config.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) / m_config.m_workspace.m_active.m_sparTiaFile;
+                    m_config.m_commonConfig.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) / m_config.m_commonConfig.m_workspace.m_active.m_sparTiaFile;
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)
@@ -355,9 +355,9 @@ namespace TestImpact
         }
     }
 
-    Runtime::~Runtime() = default;
+    NativeRuntime::~NativeRuntime() = default;
 
-    //void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
+    //void NativeRuntime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
     //{
     //    AZStd::vector<const NativeTestTarget*> testTargets;
     //    const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
@@ -395,7 +395,7 @@ namespace TestImpact
     //    }
     //}
 
-    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> Runtime::SelectCoveringTestTargets(
+    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> NativeRuntime::SelectCoveringTestTargets(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy)
     {
@@ -423,7 +423,7 @@ namespace TestImpact
         return { selectedTestTargets, discardedTestTargets };
     }
 
-    void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
+    void NativeRuntime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
         m_dynamicDependencyMap->ClearAllSourceCoverage();
         DeleteFile(m_sparTiaFile);
@@ -542,7 +542,7 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    PolicyStateBase Runtime::GeneratePolicyStateBase() const
+    PolicyStateBase NativeRuntime::GeneratePolicyStateBase() const
     {
         PolicyStateBase policyState;
 
@@ -556,24 +556,24 @@ namespace TestImpact
         return policyState;
     }
 
-    SequencePolicyState Runtime::GenerateSequencePolicyState() const
+    SequencePolicyState NativeRuntime::GenerateSequencePolicyState() const
     {
         return { GeneratePolicyStateBase() };
     }
 
-    SafeImpactAnalysisSequencePolicyState Runtime::GenerateSafeImpactAnalysisSequencePolicyState(
+    SafeImpactAnalysisSequencePolicyState NativeRuntime::GenerateSafeImpactAnalysisSequencePolicyState(
         Policy::TestPrioritization testPrioritizationPolicy) const
     {
         return { GeneratePolicyStateBase(), testPrioritizationPolicy };
     }
 
-    ImpactAnalysisSequencePolicyState Runtime::GenerateImpactAnalysisSequencePolicyState(
+    ImpactAnalysisSequencePolicyState NativeRuntime::GenerateImpactAnalysisSequencePolicyState(
         Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const
     {
         return { GeneratePolicyStateBase(), testPrioritizationPolicy, dynamicDependencyMapPolicy };
     }
 
-    Client::RegularSequenceReport Runtime::RegularTestSequence(
+    Client::RegularSequenceReport NativeRuntime::RegularTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
@@ -637,7 +637,7 @@ namespace TestImpact
         return sequenceReport;
     }
 
-    Client::ImpactAnalysisSequenceReport Runtime::ImpactAnalysisTestSequence(
+    Client::ImpactAnalysisSequenceReport NativeRuntime::ImpactAnalysisTestSequence(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy,
         Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
@@ -724,7 +724,7 @@ namespace TestImpact
                     jobs,
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,
-                    m_config.m_repo.m_root,
+                    m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
             };
 
@@ -767,7 +767,7 @@ namespace TestImpact
         }
     }
 
-    Client::SafeImpactAnalysisSequenceReport Runtime::SafeImpactAnalysisTestSequence(
+    Client::SafeImpactAnalysisSequenceReport NativeRuntime::SafeImpactAnalysisTestSequence(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -922,13 +922,13 @@ namespace TestImpact
                     ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,
-                    m_config.m_repo.m_root,
+                    m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
         return sequenceReport;
     }
 
-    Client::SeedSequenceReport Runtime::SeededTestSequence(
+    Client::SeedSequenceReport NativeRuntime::SeededTestSequence(
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
@@ -997,13 +997,13 @@ namespace TestImpact
                     testJobs,
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,
-                    m_config.m_repo.m_root,
+                    m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
         return sequenceReport;
     }
 
-    bool Runtime::HasImpactAnalysisData() const
+    bool NativeRuntime::HasImpactAnalysisData() const
     {
         return m_hasImpactAnalysisData;
     }
