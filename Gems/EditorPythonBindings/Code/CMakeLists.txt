@@ -62,8 +62,9 @@ ly_add_target(
 )
 
 # builders and tools use EditorPythonBindings.Editor
-ly_create_alias(NAME EditorPythonBindings.Builders NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
-ly_create_alias(NAME EditorPythonBindings.Tools    NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+ly_create_alias(NAME EditorPythonBindings.Builders   NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+ly_create_alias(NAME EditorPythonBindings.Tools      NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+ly_create_alias(NAME EditorPythonBindings.Automation NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
 
 ################################################################################
 # Tests
@@ -92,3 +93,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         COMPONENT TestTools
     )
 endif()
+
+################################################################################
+# Gem dependencies
+################################################################################
+
+ly_add_dependencies(AZ::AssetProcessor Gem::EditorPythonBindings.Automation)

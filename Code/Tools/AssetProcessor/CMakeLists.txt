@@ -83,6 +83,7 @@ ly_add_target(
 # specified for the target.
 if(TARGET AssetProcessor)
     ly_set_gem_variant_to_load(TARGETS AssetProcessor VARIANTS Builders)
+    ly_set_gem_variant_to_load(TARGETS AssetProcessor VARIANTS Automation)
     set_source_files_properties(
         native/AssetProcessorBuildTarget.cpp
         PROPERTIES
@@ -276,3 +277,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
 
 endif()
+

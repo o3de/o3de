@@ -1744,7 +1744,7 @@ namespace EditorPythonBindings
         {
             serialize->Class<PythonMarshalComponent, AZ::Component>()
                 ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("AssetBuilder")})
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>{AZ_CRC_CE("AssetBuilder"), AZ_CRC_CE("Automation")})
                 ;
         }
     }
