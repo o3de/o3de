@@ -1,5 +1,5 @@
 { 
-    "Source" : "DisplayMapperOnlyGammaCorrection.azsl",
+    "Source" : "DisplayMapperSRGB.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
