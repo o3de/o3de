@@ -64,9 +64,13 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(const AZ::Aabb& spawnerBox)
         {
             // Create the base entity with a mock box shape, Terrain Layer Spawner, and height provider.
+            // Turn off the "use ground plane" setting so that we mark terrain as false anywhere that the spawner doesn't exist.
+            Terrain::TerrainLayerSpawnerConfig config;
+            config.m_useGroundPlane = false;
+
             auto entity = CreateEntity();
             entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
-            entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>();
+            entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
 
             m_boxShapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockBoxShapeComponentRequests>>(entity->GetId());
             m_shapeRequests = AZStd::make_unique<NiceMock<UnitTest::MockShapeComponentRequests>>(entity->GetId());
@@ -170,9 +174,9 @@ namespace UnitTest
         // When we use the BILINEAR sampler, queries for X=0-9 should return values from 0^2-10^2, and X=10-19 should return
         // values from 10^2-20^2. 
 
-        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,1000) and generates
+        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (30,30,1000) and generates
         // a height equal to the X value squared. (We set the max height high enough to allow for the X^2 values without clamping)
-        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 1000.0f);
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 30.0f, 30.0f, 1000.0f);
         auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(spawnerBox);
 
         // Create and activate the terrain system with a world bounds that matches the spawner box, and a query resolution of 10.
@@ -183,7 +187,8 @@ namespace UnitTest
                               AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
                               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
         {
-            // Test a set of points from (0,0) - (20,20).
+            // Test a set of points from (0,0) - (20,20). We stop at 20 so that we don't test interpolation with points that don't
+            // exist on the max boundary edge of 30.
             for (float x = 0.0f; x < 20.0f; x += 1.0f)
             {
                 AZ::Vector3 position(x, x, 0.0f);
@@ -198,19 +203,17 @@ namespace UnitTest
                     {
                         // Values from 0-10 should linearly interpolate from 0^2 to 10^2
                         EXPECT_NEAR(height, AZStd::lerp(0.0f, 100.0f, x / queryResolution), 0.001f);
-                        EXPECT_TRUE(terrainExists);
                     }
                     else
                     {
                         // Values from 10-19 should linearly interpolate from 10^2 to 20^2
                         EXPECT_NEAR(height, AZStd::lerp(100.0f, 400.0f, (x - queryResolution) / queryResolution), 0.001f);
-                        EXPECT_TRUE(terrainExists);
                     }
+                    EXPECT_TRUE(terrainExists);
                     break;
                 case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
                     // X values from 0-4 should round to X=0 and return 0, X values from 5-14 should round to X=10 and return 10^2,
-                    // and X values from 15-19 should round up to X=20 and return no terrain, because they're clamped to the max edge
-                    // of the AABB, and the AABBs are max-exclusive.
+                    // and X values from 15-19 should round up to X=20 and return 20^2.
                     if (x < 5.0f)
                     {
                         EXPECT_EQ(height, 0.0f);
@@ -223,7 +226,7 @@ namespace UnitTest
                     }
                     else
                     {
-                        EXPECT_FALSE(terrainExists);
+                        EXPECT_EQ(height, 400.0f);
                     }
                     break;
                 case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
@@ -247,8 +250,8 @@ namespace UnitTest
         // When we use the BILINEAR sampler, we should get back the same results as the CLAMP sampler, because currently the two
         // are interpreted the same way for surface queries.
 
-        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,20).
-        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 20.0f);
+        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (30,30,30).
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 30.0f, 30.0f, 30.0f);
         auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(spawnerBox);
         // Set up the surface weight mocks that will return X/100 as the surface weight.
         SetupSurfaceWeightMocks(entity.get());
@@ -262,7 +265,8 @@ namespace UnitTest
                               AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
                               AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
         {
-            // Test a set of points from (0,0) - (20,20).
+            // Test a set of points from (0,0) - (20,20). We stop at 20 instead of 30 so that we aren't testing what happens when
+            // a query point doesn't exist.
             for (float x = 0.0f; x < 20.0f; x += 1.0f)
             {
                 AZ::Vector3 position(x, x, 0.0f);
@@ -275,8 +279,23 @@ namespace UnitTest
                     case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
                         [[fallthrough]];
                     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
-                        // For BILINEAR and CLAMP, queries for X=0-9 should return (0/100), and queries for X=10-19 should return (10/100).
-                        EXPECT_NEAR(weight.m_weight, x < 10.0f ? 0.0f : 0.1f, 0.001f);
+                        // For both BILINEAR and CLAMP:
+                        // X values from 0-4 should round to X=0 and return (0/100), X values from 5-14 should round to X=10
+                        // and return (10/100), and X values from 15-19 should round up to X=20 and return (20/100).
+                        // and X values from 15-19 should round up to X=20 and return 20^2.
+                        if (x < 5.0f)
+                        {
+                            EXPECT_NEAR(weight.m_weight, 0.0f, 0.001f);
+                        }
+                        else if (x < 15.0f)
+                        {
+                            EXPECT_NEAR(weight.m_weight, 0.1f, 0.001f);
+                        }
+                        else
+                        {
+                            EXPECT_NEAR(weight.m_weight, 0.2f, 0.001f);
+                        }
+                        break;
                         break;
                     case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
                         // For EXACT, queries should just return x/100 and ignore the query resolution.
