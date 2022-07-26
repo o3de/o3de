@@ -1,4 +1,3 @@
 { 
-  "bin" : "${bin}",
   "build_info" : { ${build_configs} }
 }

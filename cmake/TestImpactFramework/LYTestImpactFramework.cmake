@@ -58,7 +58,7 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/${
 set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
 
 # Path to file used to store data required by TIAF tests
-set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_BINARY_DIR}")
 
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
@@ -456,13 +456,10 @@ endfunction()
 # 
 function(ly_test_impact_write_pytest_file)
 
-    set(runtime_bin "$<TARGET_FILE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}")
-
     # For each configuration type, compile the build info we need and add it to our array
     set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
         set(config "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
-        set(report "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
         ly_file_read("cmake/TestImpactFramework/LyTestImpactBuildConfigEntry.in" build_config)
         string(CONFIGURE ${build_config} build_config)
         list(APPEND build_configs "${build_config}")
@@ -470,8 +467,7 @@ function(ly_test_impact_write_pytest_file)
  
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
-
-    set(bin "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/profile/runtime_bin")
+    
     # Configure and write out our test data file
     ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
     string(CONFIGURE ${test_file} test_file)
