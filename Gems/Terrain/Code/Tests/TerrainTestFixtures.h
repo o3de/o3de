@@ -89,7 +89,7 @@ namespace UnitTest
         void CreateTestTerrainSystemWithSurfaceGradients(const AZ::Aabb& worldBounds, float queryResolution);
         void DestroyTestTerrainSystem();
 
-    protected:
+    private:
         // State data for a full test terrain system setup.
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> m_heightGradientEntities;
         AZStd::vector<AZStd::unique_ptr<AZ::Entity>> m_surfaceGradientEntities;

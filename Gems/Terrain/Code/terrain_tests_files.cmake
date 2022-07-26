@@ -18,6 +18,9 @@ set(FILES
     Tests/TerrainSurfaceGradientListTests.cpp
     Tests/TerrainSystemBenchmarks.cpp
     Tests/TerrainSystemTest.cpp
+    Tests/TerrainWorldComponentTests.cpp
+    Tests/TerrainWorldDebuggerComponentTests.cpp
+    Tests/TerrainWorldRendererComponentTests.cpp
     Tests/TerrainTest.cpp
     Tests/TerrainTestFixtures.cpp
     Tests/TerrainTestFixtures.h

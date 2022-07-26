@@ -79,6 +79,7 @@ namespace PhysX
                         "A prebaked one will remain unchanged at game time even if the heightfield provider changes its data. "
                         "A dynamic one will change with heightfield provider changes.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnToggleBakedHeightfield)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorHeightfieldColliderComponent::IsHeightfieldInvalid)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::MultiLineEdit, &EditorHeightfieldColliderComponent::m_bakedHeightfieldRelativePath,
@@ -264,6 +265,11 @@ namespace PhysX
         m_heightfieldAssetBakingJob.Start();
     }
 
+    bool EditorHeightfieldColliderComponent::IsHeightfieldInvalid() const
+    {
+        return m_shapeConfig->GetCachedNativeHeightfield() == nullptr;
+    }
+
     void EditorHeightfieldColliderComponent::FinishHeightfieldBakingJob()
     {
         m_bakingCompletion.StartAndWaitForCompletion();
@@ -377,6 +383,14 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::RequestHeightfieldBaking()
     {
+        if (IsHeightfieldInvalid())
+        {
+            AZ_Error("PhysX", false,
+                "Unable to start heightfield baking for entity [%s]. Invalid heightfield.",
+                GetEntity()->GetName().c_str());
+            return;
+        }
+
         if (!CheckHeightfieldPathExists())
         {
             GenerateHeightfieldAsset();

@@ -60,6 +60,16 @@ namespace AtomToolsFramework
         return m_config.m_subTitle.c_str();
     }
 
+    const AZStd::string& DynamicNode::GetConfigId() const
+    {
+        return m_configId;
+    }
+
+    const DynamicNodeConfig& DynamicNode::GetConfig() const
+    {
+        return m_config;
+    }
+
     void DynamicNode::RegisterSlots()
     {
         // Register all of the input data slots with the dynamic node

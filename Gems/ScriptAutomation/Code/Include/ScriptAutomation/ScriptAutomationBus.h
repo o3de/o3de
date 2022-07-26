@@ -39,6 +39,18 @@ namespace ScriptAutomation
         virtual void PauseAutomation(float timeout = DefaultPauseTimeout) = 0;
         virtual void ResumeAutomation() = 0;
 
+        //! Set the script automation to idle for the number of frames
+        virtual void SetIdleFrames(int numFrames) = 0;
+
+        //! set the script automation to idle for the supplied number of seconds
+        virtual void SetIdleSeconds(float numSeconds) = 0;
+
+        //! pass the frame capture id to the automation system so it can listen for capture completion
+        virtual void SetFrameCaptureId(uint32_t frameCaptureId) = 0;
+
+        //! tell the automation system that a profiling capture has started
+        virtual void StartProfilingCapture() = 0;
+
         //! Add an operation into the queue for processing later
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
     };

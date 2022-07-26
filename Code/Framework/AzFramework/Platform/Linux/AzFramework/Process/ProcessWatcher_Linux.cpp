@@ -314,7 +314,7 @@ namespace AzFramework
         {
             // If no environment variables were specified, then use the current process's environment variables
             // and pass it along for the execute .
-            extern char **environ;              // Defined in unistd.h
+            [[maybe_unused]] extern char **environ;              // Defined in unistd.h
             environmentVariables = ::environ;
             AZ_Assert(environmentVariables, "Environment variables for current process not available\n");
         }

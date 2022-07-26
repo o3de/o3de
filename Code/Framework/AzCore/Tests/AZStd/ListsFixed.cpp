@@ -342,12 +342,12 @@ namespace UnitTest
         fixed_list<int, 100> int_list;
 
         // Push_back()
-        int_list.push_back();
+        int_list.emplace_back();
         AZ_TEST_VALIDATE_LIST(int_list, 1);
         int_list.front() = 100;
 
         // Push_front()
-        int_list.push_front();
+        int_list.emplace_front();
         AZ_TEST_VALIDATE_LIST(int_list, 2);
         AZ_TEST_ASSERT(int_list.back() == 100);
 
@@ -459,7 +459,7 @@ namespace UnitTest
         int_slist.insert(int_slist.end(), 2, 22);
         AZ_TEST_VALIDATE_LIST(int_slist, 9);
         AZ_TEST_ASSERT(int_slist.back() == 22);
-        AZ_TEST_ASSERT(*int_slist.previous(int_slist.last()) == 22);
+        AZ_TEST_ASSERT(*int_slist.previous(int_slist.before_end()) == 22);
 
         int_slist.insert(int_slist.end(), int_slist1.begin(), int_slist1.end());
         AZ_TEST_VALIDATE_LIST(int_slist, 9 + int_slist1.size());
@@ -468,12 +468,12 @@ namespace UnitTest
         // erase
         int_slist.assign(2, 10);
         int_slist.push_back(20);
-        int_slist.erase(int_slist.last());
+        int_slist.erase(int_slist.before_end());
         AZ_TEST_VALIDATE_LIST(int_slist, 2);
         AZ_TEST_ASSERT(int_slist.back() == 10);
 
         int_slist.insert(int_slist.end(), 3, 44);
-        int_slist.erase(int_slist.previous(int_slist.last()), int_slist.end());
+        int_slist.erase(int_slist.previous(int_slist.before_end()), int_slist.end());
         AZ_TEST_VALIDATE_LIST(int_slist, 3);
         AZ_TEST_ASSERT(int_slist.back() == 44);
 
@@ -582,7 +582,7 @@ namespace UnitTest
         int_slist.push_back(1);
         int_slist.sort();
         AZ_TEST_VALIDATE_LIST(int_slist, 4);
-        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.last(); ++iter)
+        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.before_end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter <= *next(iter));
         }
@@ -592,7 +592,7 @@ namespace UnitTest
         int_slist.push_back(1);
         int_slist.sort(AZStd::greater<int>());
         AZ_TEST_VALIDATE_LIST(int_slist, 4);
-        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.last(); ++iter)
+        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.before_end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter >= *next(iter));
         }
@@ -612,7 +612,7 @@ namespace UnitTest
 
         // reverse
         int_slist.reverse();
-        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.last(); ++iter)
+        for (fixed_forward_list<int, 100>::iterator iter = int_slist.begin(); iter != int_slist.before_end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter <= *next(iter));
         }
@@ -634,7 +634,7 @@ namespace UnitTest
         int_slist2.merge(int_slist3);
         AZ_TEST_VALIDATE_LIST(int_slist2, 8);
         AZ_TEST_VALIDATE_EMPTY_LIST(int_slist3);
-        for (fixed_forward_list<int, 100>::iterator iter = int_slist2.begin(); iter != int_slist2.last(); ++iter)
+        for (fixed_forward_list<int, 100>::iterator iter = int_slist2.begin(); iter != int_slist2.before_end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter < *next(iter));
         }
@@ -647,7 +647,7 @@ namespace UnitTest
         int_slist2.merge(int_slist3, AZStd::greater<int>());
         AZ_TEST_VALIDATE_LIST(int_slist2, 8);
         AZ_TEST_VALIDATE_EMPTY_LIST(int_slist3);
-        for (fixed_forward_list<int, 100>::iterator iter = int_slist2.begin(); iter != int_slist2.last(); ++iter)
+        for (fixed_forward_list<int, 100>::iterator iter = int_slist2.begin(); iter != int_slist2.before_end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter > *next(iter));
         }
@@ -658,18 +658,14 @@ namespace UnitTest
         fixed_forward_list<int, 100> int_slist;
 
         // Push_back()
-        int_slist.push_back();
+        int_slist.emplace_back();
         AZ_TEST_VALIDATE_LIST(int_slist, 1);
         int_slist.front() = 100;
 
         // Push_front()
-        int_slist.push_front();
+        int_slist.emplace_front();
         AZ_TEST_VALIDATE_LIST(int_slist, 2);
         AZ_TEST_ASSERT(int_slist.back() == 100);
-
-        // Insert without value to copy from.
-        int_slist.insert(int_slist.begin());
-        AZ_TEST_VALIDATE_LIST(int_slist, 3);
 
         // default int alignment
         AZ_TEST_ASSERT(((AZStd::size_t)&int_slist.front() % 4) == 0); // default int alignment
