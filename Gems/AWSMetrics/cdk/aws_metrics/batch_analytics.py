@@ -6,9 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_athena as athena
 )
+import aws_cdk as core
+from constructs import Construct
 
 from . import aws_metrics_constants
 from .aws_utils import resource_name_sanitizer
@@ -19,7 +20,7 @@ class BatchAnalytics:
     Query the metrics stored in the S3 data lake via Amazon Athena
     """
     def __init__(self,
-                 stack: core.Construct,
+                 stack: Construct,
                  application_name: str,
                  analytics_bucket_name: str,
                  events_database_name: str,
@@ -104,20 +105,38 @@ class BatchAnalytics:
             ),
             athena.CfnNamedQuery(
                 self._stack,
-                id='NamedQuery-LoginLastMonth',
+                id='NamedQuery-ClientJoinLastMonth',
                 name=resource_name_sanitizer.sanitize_resource_name(
-                    f'{self._stack.stack_name}-NamedQuery-LoginLastMonth', 'athena_named_query'),
+                    f'{self._stack.stack_name}-NamedQuery-ClientJoinLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS ("
                              "SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
                              f"FROM \"{self._events_database_name}\".\"{self._events_table_name}\") "
                              "SELECT "
                              "date_trunc('month', event_month) as month, "
-                             "count(*) as new_accounts "
+                             "count(*) as client_join_counts "
                              "FROM detail "
-                             "WHERE event_name = 'login' "
+                             "WHERE event_name = 'client_join' "
                              "GROUP BY date_trunc('month', event_month)",
-                description='Total number of login events over the last month',
+                description='Total number of client_join events over the last month',
+                work_group=self._athena_work_group.name
+            ),
+            athena.CfnNamedQuery(
+                self._stack,
+                id='NamedQuery-ClientLeaveLastMonth',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-ClientLeaveLastMonth', 'athena_named_query'),
+                database=self._events_database_name,
+                query_string="WITH detail AS ("
+                             "SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
+                             f"FROM \"{self._events_database_name}\".\"{self._events_table_name}\") "
+                             "SELECT "
+                             "date_trunc('month', event_month) as month, "
+                             "count(*) as client_leave_counts "
+                             "FROM detail "
+                             "WHERE event_name = 'client_leave' "
+                             "GROUP BY date_trunc('month', event_month)",
+                description='Total number of client_leave events over the last month',
                 work_group=self._athena_work_group.name
             )
         ]

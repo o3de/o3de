@@ -7,7 +7,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import core
+import aws_cdk as core
 from aws_metrics.aws_metrics_construct import AWSMetrics
 
 import os

@@ -6,12 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_iam as iam,
     aws_kinesisanalytics as analytics,
     aws_lambda as lambda_,
     aws_logs as logs
 )
+import aws_cdk as core
+from constructs import Construct
 
 import os
 
@@ -24,7 +25,7 @@ class RealTimeDataProcessing:
     Create the AWS resources used for real time data processing
     """
 
-    def __init__(self, stack: core.Construct, input_stream_arn: str, application_name: str) -> None:
+    def __init__(self, stack: Construct, input_stream_arn: str, application_name: str) -> None:
         self._stack = stack
         self._input_stream_arn = input_stream_arn
         self._application_name = application_name
@@ -73,13 +74,18 @@ class RealTimeDataProcessing:
                             ),
                             analytics.CfnApplication.RecordColumnProperty(
                                 name='event_timestamp',
-                                sql_type='VARCHAR(32)',
+                                sql_type='TIMESTAMP',
                                 mapping='$.event_timestamp'
                             ),
                             analytics.CfnApplication.RecordColumnProperty(
                                 name='application_id',
                                 sql_type='VARCHAR(32)',
                                 mapping='$.application_id'
+                            ),
+                            analytics.CfnApplication.RecordColumnProperty(
+                                name='client_connection_count',
+                                sql_type='INTEGER',
+                                mapping='$.event_data.client_connection_count'
                             )
                         ],
                         record_format=analytics.CfnApplication.RecordFormatProperty(

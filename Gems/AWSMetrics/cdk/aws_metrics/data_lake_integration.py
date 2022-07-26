@@ -6,11 +6,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_iam as iam,
     aws_s3 as s3,
     aws_glue as glue
 )
+import aws_cdk as core
+from constructs import Construct
 
 from . import aws_metrics_constants
 from .aws_utils import resource_name_sanitizer
@@ -20,7 +21,7 @@ class DataLakeIntegration:
     """
     Create the AWS resources including the S3 bucket, Glue database, table and crawler for data lake integration
     """
-    def __init__(self, stack: core.Construct, application_name: str,
+    def __init__(self, stack: Construct, application_name: str,
                  server_access_logs_bucket: str = None) -> None:
         self._stack = stack
         self._application_name = application_name
@@ -60,12 +61,10 @@ class DataLakeIntegration:
                 restrict_public_buckets=True
             ),
             server_access_logs_bucket=server_access_logs_bucket,
-            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None
+            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None,
+            lifecycle_rules=[s3.LifecycleRule(expiration=core.Duration.days(30))],
+            removal_policy=core.RemovalPolicy.RETAIN
         )
-
-        # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
-        cfn_bucket = self._analytics_bucket.node.find_child('Resource')
-        cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
 
         core.CfnOutput(
             self._stack,

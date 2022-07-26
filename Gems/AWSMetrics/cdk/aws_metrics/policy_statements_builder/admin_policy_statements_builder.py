@@ -8,9 +8,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from __future__ import annotations
 
 from aws_cdk import (
-    core,
     aws_iam as iam
 )
+import aws_cdk as core
 
 import typing
 

@@ -6,11 +6,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_apigateway as apigateway,
     aws_iam as iam,
     aws_kinesis as kinesis
 )
+import aws_cdk as core
+from constructs import Construct
 
 import json
 
@@ -23,7 +24,7 @@ class DataIngestion:
     Create the service API via APIGateway and Kinesis data stream to ingest metrics events.
     """
 
-    def __init__(self, stack: core.Construct, application_name: str) -> None:
+    def __init__(self, stack: Construct, application_name: str) -> None:
         self._stack = stack
 
         # create the input Kinesis stream
