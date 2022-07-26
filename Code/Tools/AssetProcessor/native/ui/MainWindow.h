@@ -156,12 +156,12 @@ private:
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
 
-    AssetProcessor::BuilderData* m_builderData;
-    BuilderListModel* m_builderList;
-    BuilderListSortFilterProxy* m_builderListSortFilterProxy;
-    AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns;
-    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics;
-    AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort;
+    AssetProcessor::BuilderData* m_builderData = nullptr;
+    BuilderListModel* m_builderList = nullptr;
+    BuilderListSortFilterProxy* m_builderListSortFilterProxy = nullptr;
+    AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns = nullptr;
+    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics = nullptr;
+    AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);

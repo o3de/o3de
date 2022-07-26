@@ -11,6 +11,7 @@
 #include <AZCore/std/containers/vector.h>
 #include <AZCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include <QPointer>
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
@@ -60,7 +61,7 @@ namespace AssetProcessor
         void OnDurationChanged(BuilderDataItem* item);
 
     private:
-        BuilderData* m_data;
+        QPointer<BuilderData> m_data;
     };
 
     class BuilderInfoMetricsSortModel : public QSortFilterProxyModel
