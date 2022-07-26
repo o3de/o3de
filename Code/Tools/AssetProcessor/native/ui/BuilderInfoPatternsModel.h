@@ -9,7 +9,7 @@
 #pragma once
 
 #include <QAbstractItemModel>
-#include <AZCore/std/containers/vector.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AssetBuilderSDK
 {

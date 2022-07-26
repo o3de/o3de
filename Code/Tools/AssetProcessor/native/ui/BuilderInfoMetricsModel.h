@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <AZCore/std/containers/vector.h>
-#include <AZCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include <QPointer>
 #include <QAbstractItemModel>

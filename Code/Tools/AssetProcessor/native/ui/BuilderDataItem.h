@@ -7,7 +7,7 @@
  */
 
 #pragma once
-#include <AZCore/std/containers/vector.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
