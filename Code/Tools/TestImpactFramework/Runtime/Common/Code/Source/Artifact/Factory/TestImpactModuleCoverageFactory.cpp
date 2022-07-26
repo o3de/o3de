@@ -161,5 +161,5 @@ namespace TestImpact
 
             return modules;
         }
-    } // namespace JUinit
+    } // namespace PythonCoverage
 } // namespace TestImpact

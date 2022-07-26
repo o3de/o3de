@@ -60,7 +60,7 @@ namespace TestImpact
         SourceCoveringTestsList ExportSourceCoverage() const;
 
         //! Gets the list of orphaned source files in the dependency map that have coverage data but belong to no parent build targets.
-        AZStd::vector<AZStd::string> GetOrphanSourceFiles() const;
+        AZStd::vector<AZStd::string> GetOrphanedSourceFiles() const;
 
         //! Applies the specified change list to the dependency map and resolves the change list to a change dependency list
         //! containing the updated source dependencies for each source file in the change list.
@@ -105,7 +105,7 @@ namespace TestImpact
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
-        //!
+        //! The list of build targets (both test and production) in the repository.
         const BuildTargetList<TestTarget, ProductionTarget>* m_buildTargets;
     };
 
@@ -374,7 +374,7 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    AZStd::vector<AZStd::string> DynamicDependencyMap<TestTarget, ProductionTarget>::GetOrphanSourceFiles() const
+    AZStd::vector<AZStd::string> DynamicDependencyMap<TestTarget, ProductionTarget>::GetOrphanedSourceFiles() const
     {
         AZStd::vector<AZStd::string> orphans;
         for (const auto& [source, dependency] : m_sourceDependencyMap)

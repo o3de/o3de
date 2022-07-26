@@ -33,7 +33,7 @@ namespace TestImpact
         return numFilesDeleted;
     }
 
-    size_t CountFiles(const RepoPath& path, const AZStd::string& pattern)
+    size_t FileCount(const RepoPath& path, const AZStd::string& pattern)
     {
         size_t numFiles = 0;
 
