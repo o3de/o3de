@@ -190,7 +190,7 @@ float TerrainSystem::GetTerrainSurfaceDataQueryResolution() const
     return m_currentSettings.m_surfaceDataQueryResolution;
 }
 
-void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
+void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
 {
     // Given an input position, clamp the values to our terrain grid, where it will always go to the terrain grid point
     // at a lower value, whether positive or negative.  Ex: 3.3 -> 3, -3.3 -> -4
@@ -198,12 +198,29 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
 
     // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
     // and fractional values are the amount in-between each grid point, in the range [0-1).
-    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / m_currentSettings.m_heightQueryResolution;
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / queryResolution;
     normalizedDelta = AZ::Vector2(
         normalizedPosition.GetX() - floor(normalizedPosition.GetX()), normalizedPosition.GetY() - floor(normalizedPosition.GetY()));
 
     // Remove the fractional part, then scale back down into world space.
-    outPosition = (normalizedPosition - normalizedDelta) * m_currentSettings.m_heightQueryResolution;
+    outPosition = (normalizedPosition - normalizedDelta) * queryResolution;
+}
+
+void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition) const
+{
+    // Given an input position, clamp the values to our terrain grid, where it will always go to the nearest terrain grid point
+    // whether positive or negative.  Ex: 3.3 -> 3, 3.6 -> 4, -3.3 -> -3, -3.6 -> -4
+
+    // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
+    // and fractional values are the amount in-between each grid point, in the range [0-1).
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / queryResolution;
+
+    // Round the fractional part, then scale back down into world space.
+    // Note that we use "floor(pos + 0.5f)" instead of round() because round() will round to the nearest even integer (banker's rounding)
+    // on the 0.5 points instead of to the nearest integer biased away from 0 (symmetric arithmetic rounding), which is what we want.
+    // "floor(pos + 0.5f)" will round 1.5 -> 2, 2.5 -> 3, -1.5 -> -2, -2.5 -> -3, etc. 
+    // (i.e. don't use: outPosition = normalizedPosition.GetRound() * queryResolution;)
+    outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
 }
 
 bool TerrainSystem::InWorldBounds(float x, float y) const
@@ -219,7 +236,7 @@ bool TerrainSystem::InWorldBounds(float x, float y) const
 
 // Generate positions to be queried based on the sampler type.
 void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>& inPositions,
-    AZStd::vector<AZ::Vector3>& outPositions,
+    AZStd::vector<AZ::Vector3>& outPositions, float queryResolution,
     Sampler sampler) const
 {
     AZ_PROFILE_FUNCTION(Terrain);
@@ -235,9 +252,8 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
                 {
                     AZ::Vector2 normalizedDelta;
                     AZ::Vector2 pos0;
-                    ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
-                    const AZ::Vector2 pos1(
-                        pos0.GetX() + m_currentSettings.m_heightQueryResolution, pos0.GetY() + m_currentSettings.m_heightQueryResolution);
+                    ClampPosition(position.GetX(), position.GetY(), queryResolution, pos0, normalizedDelta);
+                    const AZ::Vector2 pos1(pos0.GetX() + queryResolution, pos0.GetY() + queryResolution);
                     outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
                     outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
                     outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
@@ -257,9 +273,8 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
             {
-                AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(position.GetX(), position.GetY(), clampedPosition, normalizedDelta);
+                RoundPosition(position.GetX(), position.GetY(), queryResolution, clampedPosition);
                 outPositions.emplace_back(AZ::Vector3(clampedPosition.GetX(), clampedPosition.GetY(), minHeight));
             }
             break;
@@ -380,7 +395,9 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
     outPositions.reserve(inPositions.size() * indexStepSize);
     outTerrainExists.resize(inPositions.size() * indexStepSize);
 
-    GenerateQueryPositions(inPositions, outPositions, sampler);
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
+
+    GenerateQueryPositions(inPositions, outPositions, queryResolution, sampler);
 
     auto callback = []([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
@@ -408,7 +425,7 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                 // We now need to compute the final height after all the bulk queries are done.
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
+                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), queryResolution, clampedPosition, normalizedDelta);
                 const float heightX0Y0 = outPositions[iteratorIndex].GetZ();
                 const float heightX1Y0 = outPositions[iteratorIndex + 1].GetZ();
                 const float heightX0Y1 = outPositions[iteratorIndex + 2].GetZ();
@@ -448,6 +465,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
+
     switch (sampler)
     {
     // Get the value at the requested location, using the terrain grid to bilinear filter between sample grid points.
@@ -458,8 +477,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             // Ex: (3.3, 4.4) would have a pos0 of (3, 4), a pos1 of (4, 5), and a delta of (0.3, 0.4).
             AZ::Vector2 normalizedDelta;
             AZ::Vector2 pos0;
-            ClampPosition(x, y, pos0, normalizedDelta);
-            const AZ::Vector2 pos1 = pos0 + AZ::Vector2(m_currentSettings.m_heightQueryResolution);
+            ClampPosition(x, y, queryResolution, pos0, normalizedDelta);
+            const AZ::Vector2 pos1 = pos0 + AZ::Vector2(queryResolution);
 
             const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
             const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
@@ -474,9 +493,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
         {
-            AZ::Vector2 normalizedDelta;
             AZ::Vector2 clampedPosition;
-            ClampPosition(x, y, clampedPosition, normalizedDelta);
+            RoundPosition(x, y, queryResolution, clampedPosition);
 
             height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
         }
@@ -897,7 +915,8 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& posi
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        if (SurfaceData::AabbContains2D(areaData.m_areaBounds, position))
+        // We use min-inclusive-max-exclusive so that two spawners with a shared edge will have a single owner for that edge.
+        if (SurfaceData::AabbContains2DMaxExclusive(areaData.m_areaBounds, position))
         {
             bounds = areaData.m_areaBounds;
             return areaId;
@@ -909,7 +928,7 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& posi
 
 void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     const AZStd::span<const AZ::Vector3>& inPositions,
-    [[maybe_unused]] Sampler sampler,
+    Sampler sampler,
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
@@ -920,6 +939,14 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
         AZStd::vector<float> heights(inPositions.size());
         GetHeightsSynchronous(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
     }
+
+    // queryPositions contains the modified positions based on our sampler type. For surface queries, we don't currently perform bilinear
+    // interpolation of any results, so our query position size will always match our input size.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size());
+    const float queryResolution = m_currentSettings.m_surfaceDataQueryResolution;
+    Sampler querySampler = (sampler == Sampler::EXACT) ? Sampler::EXACT : Sampler::CLAMP;
+    GenerateQueryPositions(inPositions, queryPositions, queryResolution, querySampler);
 
     auto callback = [](const AZStd::span<const AZ::Vector3> inPositions,
                         [[maybe_unused]] AZStd::span<AZ::Vector3> outPositions,
@@ -943,20 +970,17 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     
     // This will be unused for surface weights. It's fine if it's empty.
     AZStd::vector<AZ::Vector3> outPositions;
-    MakeBulkQueries(inPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
+    MakeBulkQueries(queryPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
 }
 
 void TerrainSystem::GetOrderedSurfaceWeights(
     const float x,
     const float y,
-    [[maybe_unused]] Sampler sampler,
+    Sampler sampler,
     AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
     bool* terrainExistsPtr) const
 {
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-
-    AZ::Aabb bounds;
-    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(AZ::Vector3(x, y, 0.0f), bounds);
 
     if (terrainExistsPtr)
     {
@@ -965,12 +989,39 @@ void TerrainSystem::GetOrderedSurfaceWeights(
 
     outSurfaceWeights.clear();
 
+    const float queryResolution = m_currentSettings.m_surfaceDataQueryResolution;
+
+    AZ::Vector3 inPosition;
+
+    switch (sampler)
+    {
+    // Both bilinear and clamp samplers will clamp the input position to the surface data query grid and get the surface data there.
+    // At some point we might want to consider interpolation of surface weights for the bilinear case, but it's unclear if that's
+    // actually a desired outcome.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+        [[fallthrough]];
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+        {
+            AZ::Vector2 clampedPosition;
+            RoundPosition(x, y, queryResolution, clampedPosition);
+            inPosition = AZ::Vector3(clampedPosition);
+        }
+        break;
+    //! Directly get the value at the location, regardless of terrain sample grid density.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+        [[fallthrough]];
+    default:
+        inPosition = AZ::Vector3(x, y, 0.0f);
+        break;
+    }
+
+    AZ::Aabb bounds;
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(inPosition, bounds);
+
     if (!bestAreaId.IsValid())
     {
         return;
     }
-
-    const AZ::Vector3 inPosition = AZ::Vector3(x, y, 0.0f);
 
     // Get all the surfaces with weights at the given point.
     Terrain::TerrainAreaSurfaceRequestBus::Event(

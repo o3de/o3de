@@ -46,9 +46,10 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
     Summary:
     Load an empty level, 
     Create two entities with constant gradient components with different values.
-    Create two entities with TerrainLayerSpawners
-    Create an entity to spawn vegetation
-    Ensure that vegetation spawns at the correct heights
+    Create two non-overlapping entities with TerrainLayerSpawners in adjacent 20 m x 20 m boxes. 
+      Each spawner has a different constant height.
+    Create an entity to spawn vegetation in a 20 m x 20 m boxes where 10 m overlaps the first spawner, and 10 m overlaps the second.
+    Ensure that vegetation spawns at the correct heights.
     Add a VegetationSurfaceMaskFilter and ensure it responds correctly to surface changes.
     :return: None
     """
@@ -140,12 +141,14 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
 
     # Move view so that the entities are visible.
     general.set_current_view_position(17.0, -66.0, 41.0)
-    general.set_current_view_rotation(-15, 0, 0)
+    general.set_current_view_rotation(-15.0, 0.0, 0.0)
 
     # Expected item counts under conditions to be tested.
     # By default, vegetation spawns at a density of 20 items per 16 meters, 
     # so in a 20m square, there should be around 25 ^ 2 items depending on whether area edges are included.
     # In this case there are 26 ^ 2 items.
+    # When excluding a surface tag from one spawner, we should only get half the total number of instances because the vegetation
+    # spawner halfway overlaps each terrain spawner.
     expected_surface_tag_excluded_item_count = 338
     expected_no_exclusions_item_count = 676
 
@@ -178,6 +181,7 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
 
     item_count = vegetation.VegetationSpawnerRequestBus(bus.Event, "GetAreaProductCount", vegetation_entity.id)
     Report.result(VegetationTests.testTag2_excluded_vegetation_count_correct, item_count == expected_surface_tag_excluded_item_count)
+    Report.info(f"Found item count for testTag2 exclusion: {item_count}")
 
     highest_z, lowest_z = FindHighestAndLowestZValuesInArea(test_aabb)
 
@@ -189,6 +193,7 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
 
     item_count = vegetation.VegetationSpawnerRequestBus(bus.Event, "GetAreaProductCount", vegetation_entity.id)
     Report.result(VegetationTests.cleared_exclusion_vegetation_count_correct, item_count == expected_no_exclusions_item_count)
+    Report.info(f"Found item count for cleared exclusion: {item_count}")
 
     # Exclude test_tag3 to exclude the higher items in terrain_entity_2 and recheck.
     vegetation_entity.get_set_test(3, "Configuration|Exclusion|Surface Tags|[0]", surface_data.SurfaceTag("test_tag3"))
@@ -197,6 +202,7 @@ def TerrainSystem_VegetationSpawnsOnTerrainSurfaces():
 
     item_count = vegetation.VegetationSpawnerRequestBus(bus.Event, "GetAreaProductCount", vegetation_entity.id)
     Report.result(VegetationTests.testTag3_excluded_vegetation_count_correct, item_count == expected_surface_tag_excluded_item_count)
+    Report.info(f"Found item count for testTag3 exclusion: {item_count}")
 
     highest_z, lowest_z = FindHighestAndLowestZValuesInArea(test_aabb)
 
