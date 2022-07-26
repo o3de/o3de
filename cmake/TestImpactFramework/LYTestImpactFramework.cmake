@@ -453,6 +453,7 @@ endfunction()
 
 #! ly_test_impact_write_pytest_file: writes out the test information utilised by our TIAF testing tools, using the data derived from the build generation process.
 # 
+# \arg:CONFIGURATION_FILE path to the test data template file
 function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
     # For each configuration type, compile the build info we need and add it to our array
