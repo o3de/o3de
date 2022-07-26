@@ -141,5 +141,5 @@ namespace AzToolsFramework
             void HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
             //////////////////////////////////////////////////////////////////////////
         };
-    }
-} // namespace AssetBrowser
+    } // namespace AssetBrowser
+} // namespace AzToolsFramework

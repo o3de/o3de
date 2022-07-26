@@ -29,7 +29,7 @@ namespace UnitTest
         }
     };
 
-    TEST_F(LuaEditorSystemComponentTests, LuaEditorSystemComponent_ValidateLuaComponentBoilerplate)
+    TEST_F(LuaEditorSystemComponentTests, LuaEditorSystemComponentValidateLuaComponentBoilerplate)
     {
         TestValidateLuaComponentBoilerplate();
     }

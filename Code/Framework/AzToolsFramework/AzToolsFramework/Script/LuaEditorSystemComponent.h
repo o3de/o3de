@@ -58,11 +58,11 @@ namespace AzToolsFramework
 
         private:
             //! Appends the next available digit to the filename if the filename is already taken.
-            void MakeFilenameUnique(const AZStd::string& directoryPath, const AZStd::string& filename, AZStd::string& outFullFilepath);
+            void MakeFilenameUnique(const AZStd::string& directoryPath, const AZStd::string& filename, AZStd::string& outFullFilepath) const;
 
             //! Saves the given contents to a Lua script on disk.
             //! The file is created if it does not exist, otherwise the file contents will be overwritten.
-            AZ::Outcome<void, AZStd::string> SaveLuaScriptFile(const AZStd::string& fullFilepath, const AZStd::string& fileContents);
+            AZ::Outcome<void, AZStd::string> SaveLuaScriptFile(const AZStd::string& fullFilepath, const AZStd::string& fileContents) const;
 
             static constexpr char LuaExtension[] = ".lua";
             static constexpr char LogName[] = "LuaEditorSystemComponent";

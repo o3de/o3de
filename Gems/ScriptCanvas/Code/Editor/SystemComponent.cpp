@@ -206,8 +206,8 @@ namespace ScriptCanvasEditor
     {
         auto scriptCavnasAssetCreator = [](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
         {
-            AZStd::string defaultFilename = "NewScript";
-            AZStd::string scriptCanvasExtension = ScriptCanvasEditor::SourceDescription::GetFileExtension();
+            const AZStd::string defaultFilename = "NewScript";
+            const AZStd::string scriptCanvasExtension = ScriptCanvasEditor::SourceDescription::GetFileExtension();
 
             AZStd::string fullFilepath;
             AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
@@ -219,7 +219,7 @@ namespace ScriptCanvasEditor
             while (AZ::IO::FileIOBase::GetInstance()->Exists(fullFilepath.c_str()))
             {
                 fileCounter++;
-                AZStd::string incrementalFilename = defaultFilename + AZStd::to_string(fileCounter);
+                const AZStd::string incrementalFilename = defaultFilename + AZStd::to_string(fileCounter);
 
                 AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
                     , incrementalFilename.c_str()
@@ -227,8 +227,8 @@ namespace ScriptCanvasEditor
                     , fullFilepath);
             }
 
-            AZ::IO::Path fullAzFilePath = fullFilepath;
-            ScriptCanvas::DataPtr graph = EditorGraph::Create();
+            const AZ::IO::Path fullAzFilePath = fullFilepath;
+            const ScriptCanvas::DataPtr graph = EditorGraph::Create();
             const AZ::Uuid assetId = AZ::Uuid::CreateRandom();
             SourceHandle source = SourceHandle(graph, assetId);
             source = SourceHandle::MarkAbsolutePath(source, fullAzFilePath);

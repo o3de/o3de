@@ -37,8 +37,8 @@ namespace AzToolsFramework
 
         void LuaEditorSystemComponent::Deactivate()
         {
-            AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Handler::BusDisconnect(LuaComponentScriptBusId);
+            AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         }
 
         void LuaEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -63,18 +63,18 @@ namespace AzToolsFramework
         {
             auto luaAssetCreator = [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
             {
-                AZStd::string defaultScriptName = "NewScript";
+                const AZStd::string_view defaultScriptName = "NewScript";
 
                 AZStd::string fullFilepath;
                 AZ::StringFunc::Path::ConstructFull(
                     fullSourceFolderNameInCallback.c_str(),
-                    defaultScriptName.c_str(),
+                    defaultScriptName.data(),
                     LuaExtension,
                     fullFilepath);
 
                 MakeFilenameUnique(fullSourceFolderNameInCallback, defaultScriptName, fullFilepath);
 
-                auto outcome = SaveLuaScriptFile(fullFilepath, "");
+                const auto outcome = SaveLuaScriptFile(fullFilepath, "");
                 if (outcome.IsSuccess())
                 {
                     AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
@@ -93,19 +93,19 @@ namespace AzToolsFramework
 
             auto luaComponentAssetCreator = [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
             {
-                AZStd::string defaultScriptName = "NewComponent";
+                const AZStd::string_view defaultScriptName = "NewComponent";
 
                 AZStd::string fullFilepath;
                 AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str(),
-                    defaultScriptName.c_str(),
+                    defaultScriptName.data(),
                     LuaExtension,
                     fullFilepath);
 
                 MakeFilenameUnique(fullSourceFolderNameInCallback, defaultScriptName, fullFilepath);
 
-                AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(AZ::IO::Path(fullFilepath).Stem().Native());
+                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(AZ::IO::Path(fullFilepath).Stem().Native());
 
-                auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
+                const auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (outcome.IsSuccess())
                 {
                     AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
@@ -130,7 +130,7 @@ namespace AzToolsFramework
         {
             if (AZ::IO::Path(fullSourceFileName).Extension() == LuaExtension)
             {
-                auto luaScriptOpener = [](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
+                const auto luaScriptOpener = [](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid&)
                 {
                     AzToolsFramework::EditorRequestBus::Broadcast(
                         &AzToolsFramework::EditorRequests::LaunchLuaEditor, fullSourceFileNameInCallback);
@@ -142,13 +142,13 @@ namespace AzToolsFramework
 
         void LuaEditorSystemComponent::HandleInitialFilenameChange(const AZStd::string_view fullFilepath)
         {
-            AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
+            const AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
             if (filepath.Extension() == LuaExtension)
             {
-                AZStd::string_view& filename = filepath.Stem().Native();
-                AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filename);
+                const AZStd::string_view& filename = filepath.Stem().Native();
+                const AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(filename);
 
-                auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
+                const auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (!outcome.IsSuccess())
                 {
                     AZ_Error(LogName, false, outcome.GetError().c_str());
@@ -186,13 +186,13 @@ return $SCRIPT_NAME)LUA";
         void LuaEditorSystemComponent::MakeFilenameUnique(
             const AZStd::string& directoryPath,
             const AZStd::string& filename,
-            AZStd::string& outFullFilepath)
+            AZStd::string& outFullFilepath) const
         {
             int fileCounter = 0;
             while (AZ::IO::FileIOBase::GetInstance()->Exists(outFullFilepath.c_str()))
             {
                 fileCounter++;
-                AZStd::string incrementalFilename = filename + AZStd::to_string(fileCounter);
+                const AZStd::string incrementalFilename = filename + AZStd::to_string(fileCounter);
 
                 AZ::StringFunc::Path::ConstructFull(directoryPath.c_str(),
                     incrementalFilename.c_str(),
@@ -203,9 +203,9 @@ return $SCRIPT_NAME)LUA";
 
         AZ::Outcome<void, AZStd::string> LuaEditorSystemComponent::SaveLuaScriptFile(
             const AZStd::string& fullFilepath,
-            const AZStd::string& fileContents)
+            const AZStd::string& fileContents) const
         {
-            AZStd::string correctedFilepath = AZ::IO::Path(fullFilepath).MakePreferred().Native();
+            const AZStd::string correctedFilepath = AZ::IO::Path(fullFilepath).MakePreferred().Native();
 
             AZ::IO::SystemFile scriptFile = AZ::IO::SystemFile();
             int openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
