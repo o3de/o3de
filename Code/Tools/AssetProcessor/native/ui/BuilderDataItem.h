@@ -10,7 +10,7 @@
 #include <AZCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/string/string.h>
 
 namespace AssetProcessor
@@ -38,21 +38,26 @@ namespace AssetProcessor
             ItemType itemType, const AZStd::string& name,
             AZ::s64 jobCount,
             AZ::s64 totalDuration,
-            AZStd::shared_ptr<BuilderDataItem> parent);
+            AZStd::weak_ptr<BuilderDataItem> parent);
         int ChildCount() const;
         const char* GetName() const;
         AZ::s64 GetJobCount() const;
         AZ::s64 GetTotalDuration() const;
-        BuilderDataItem* GetChild(int row) const;
-        BuilderDataItem* GetParent() const;
-        int GetRow() const; //! Returns this item's row number in its parent's children list.
-        bool SetChild(AZStd::shared_ptr<BuilderDataItem> builder);
-        BuilderDataItem* UpdateOrInsertEntry(JobType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
+        AZStd::shared_ptr<BuilderDataItem> GetChild(int row) const;
+        AZStd::weak_ptr<BuilderDataItem> GetParent() const;
+        //! Returns this item's row number in its parent's children list.
+        int GetRow() const; 
+        //! This method is only called on InvisibleRoot: set the passed-in builder as the only child.
+        bool SetBuilderChild(AZStd::shared_ptr<BuilderDataItem> builder);
+        //! This method is only called on Builder: create JobType children.
+        bool InitializeBuilder(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer);
+        AZStd::shared_ptr<BuilderDataItem> UpdateOrInsertEntry(
+            JobType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
     private:
         void UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff);
 
         AZStd::vector<AZStd::shared_ptr<BuilderDataItem>> m_children;
-        AZStd::shared_ptr<BuilderDataItem> m_parent;
+        AZStd::weak_ptr<BuilderDataItem> m_parent;
         AZStd::unordered_map<AZStd::string, int> m_childNameToIndex;
         AZStd::string m_name;
         AZ::s64 m_jobCount = 0;

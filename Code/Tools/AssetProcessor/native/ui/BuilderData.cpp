@@ -10,6 +10,7 @@
 #include <native/ui/BuilderDataItem.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/smart_ptr/weak_ptr.h>
 
 namespace AssetProcessor
 {
@@ -30,9 +31,10 @@ namespace AssetProcessor
         BuilderInfoList builders;
         AssetBuilderInfoBus::Broadcast(&AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
 
-        m_root.reset(new BuilderDataItem(BuilderDataItem::ItemType::InvisibleRoot, "", 0, 0, nullptr));
+        m_root.reset(new BuilderDataItem(BuilderDataItem::ItemType::InvisibleRoot, "", 0, 0, AZStd::weak_ptr<BuilderDataItem>()));
 
         m_allBuildersMetrics.reset(new BuilderDataItem(BuilderDataItem::ItemType::Builder, "All builders", 0, 0, m_root));
+        m_allBuildersMetrics->InitializeBuilder(m_allBuildersMetrics);
         m_singleBuilderMetrics.clear();
         m_builderGuidToIndex.clear();
         m_builderNameToIndex.clear();
@@ -40,8 +42,9 @@ namespace AssetProcessor
 
         for (int i = 0; i < builders.size(); ++i)
         {
-            m_singleBuilderMetrics.emplace_back(
+            auto builder = m_singleBuilderMetrics.emplace_back(
                 new BuilderDataItem(BuilderDataItem::ItemType::Builder, builders[i].m_name, 0, 0, m_root));
+            builder->InitializeBuilder(builder);
             m_builderGuidToIndex[builders[i].m_busId] = i;
             m_builderNameToIndex[builders[i].m_name] = i;
         }
@@ -116,13 +119,13 @@ namespace AssetProcessor
                     const auto& builderName = tokens[2];
                     if (m_builderNameToIndex.contains(builderName))
                     {
-                        BuilderDataItem* item = nullptr;
+                        AZStd::shared_ptr<BuilderDataItem> item = nullptr;
                         item = m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
                             BuilderDataItem::JobType::CreateJobs, sourceName, 1, entry.m_statValue);
-                        Q_EMIT DurationChanged(item);
+                        Q_EMIT DurationChanged(item.get());
                         item = m_allBuildersMetrics->UpdateOrInsertEntry(
                             BuilderDataItem::JobType::CreateJobs, builderName + "," + sourceName, 1, entry.m_statValue);
-                        Q_EMIT DurationChanged(item);
+                        Q_EMIT DurationChanged(item.get());
                     }
                     else
                     {
@@ -145,11 +148,11 @@ namespace AssetProcessor
             entryName.append(",");
             entryName.append(jobEntry.m_platformInfo.m_identifier);
 
-            BuilderDataItem* item = nullptr;
+            AZStd::shared_ptr<BuilderDataItem> item = nullptr;
             item = m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);
-            Q_EMIT DurationChanged(item);
+            Q_EMIT DurationChanged(item.get());
             item = m_allBuildersMetrics->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);
-            Q_EMIT DurationChanged(item);
+            Q_EMIT DurationChanged(item.get());
         }
     }
 }

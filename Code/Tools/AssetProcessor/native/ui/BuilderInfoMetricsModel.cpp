@@ -71,7 +71,7 @@ namespace AssetProcessor
         if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
         {
             m_data->m_currentSelectedBuilderIndex = m_data->m_builderGuidToIndex[builder.m_busId];
-            m_data->m_root->SetChild(m_data->m_singleBuilderMetrics[m_data->m_currentSelectedBuilderIndex]);
+            m_data->m_root->SetBuilderChild(m_data->m_singleBuilderMetrics[m_data->m_currentSelectedBuilderIndex]);
         }
         else
         {
@@ -110,11 +110,11 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        BuilderDataItem* childItem = parentItem->GetChild(row);
+        AZStd::shared_ptr<BuilderDataItem> childItem = parentItem->GetChild(row);
 
         if (childItem)
         {
-            QModelIndex index = createIndex(row, column, childItem);
+            QModelIndex index = createIndex(row, column, childItem.get());
             Q_ASSERT(checkIndex(index));
             return index;
         }
@@ -231,14 +231,20 @@ namespace AssetProcessor
 
         auto currentItem = static_cast<BuilderDataItem*>(index.internalPointer());
         auto parentItem = currentItem->GetParent();
-        auto rootItem = m_data->m_root.get();
+        auto rootItem = m_data->m_root;
             
-        if (parentItem == rootItem || parentItem == nullptr)
+        if (parentItem.expired())
         {
             return QModelIndex();
         }
 
-        QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+        auto sharedParentitem = parentItem.lock();
+        if (sharedParentitem == rootItem || sharedParentitem == nullptr)
+        {
+            return QModelIndex();
+        }
+
+        QModelIndex parentIndex = createIndex(sharedParentitem->GetRow(), 0, sharedParentitem.get());
         Q_ASSERT(checkIndex(parentIndex));
         return parentIndex;
     }
@@ -251,7 +257,7 @@ namespace AssetProcessor
             dataChanged(
                 createIndex(rowNum, aznumeric_cast<int>(Column::JobCount), item),
                 createIndex(rowNum, aznumeric_cast<int>(Column::AverageDuration), item));
-            item = item->GetParent();
+            item = item->GetParent().lock().get();
         }
     }
 
