@@ -684,6 +684,10 @@ void MainWindow::SetupAssetServerTab()
         {
             this->m_cacheServerData.Reset();
             this->ResetAssetServerView();
+            this->m_cacheServerData.m_statusLevel = CacheServerData::StatusLevel::Notice;
+            this->m_cacheServerData.m_statusMessage = AZStd::string::format("Reset configuration.");
+            this->m_cacheServerData.m_updateStatus = true;
+            this->CheckAssetServerStates();
         });
 
     // setting up the patterns table
@@ -699,6 +703,7 @@ void MainWindow::SetupAssetServerTab()
     ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(aznumeric_cast<int>(PatternColumns::Enabled), QHeaderView::Fixed);
     ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(aznumeric_cast<int>(PatternColumns::Remove), QHeaderView::Fixed);
+    ui->sharedCacheTable->setAlternatingRowColors(true);
 
     ResetAssetServerView();
     CheckAssetServerStates();
@@ -750,12 +755,14 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), patternWidgetItem);
 
     // Remove button
-    auto* button = new QToolButton();
-    button->setIcon(QIcon(":/PropertyEditor/Resources/trash-small.png"));
-    AzQtComponents::PushButton::applySmallIconStyle(button);
+    auto* button = new QPushButton();
+    button->setFlat(true);
+    button->setIcon(QIcon(":/Delete.png"));
+    button->setIconSize(QSize(14, 14));
+    button->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
-    QObject::connect(button, &QToolButton::clicked, this,
+    QObject::connect(button, &QPushButton::clicked, this,
         [this]()
         {
             this->ui->sharedCacheTable->removeRow(this->ui->sharedCacheTable->currentRow());
