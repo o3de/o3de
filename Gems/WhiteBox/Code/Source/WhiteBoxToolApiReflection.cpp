@@ -81,107 +81,141 @@ namespace WhiteBox
             behaviorContext->Class<WhiteBoxMeshHandle>("WhiteBoxMeshHandle")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "whitebox.api")
+                ->Method("IsValid", [](WhiteBoxMeshHandle* whiteBoxMeshHandle) 
+                {
+                    return WhiteBoxMeshFromHandle(*whiteBoxMeshHandle) != nullptr;
+                })
                 ->Method(
                     "InitializeAsUnitCube",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
-                        return Api::InitializeAsUnitCube(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::InitializeAsUnitCube(*whiteboxMesh);
                     })
                 ->Method(
                     "MeshFaceCount",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
-                        return Api::MeshFaceCount(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::MeshFaceCount(*whiteboxMesh);
                     })
                 ->Method(
                     "FacePolygonHandle",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceHandle faceHandle)
                     {
-                        return Api::FacePolygonHandle(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceHandle);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::FacePolygonHandle(*whiteboxMesh, faceHandle);
                     })
                 ->Method(
                     "AddVertex",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const AZ::Vector3& vertex)
                     {
-                        return Api::AddVertex(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), vertex);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::AddVertex(*whiteboxMesh, vertex);
                     })
                 ->Method(
                     "VertexPosition",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::VertexHandle vertexHandle)
                     {
-                        return Api::VertexPosition(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), vertexHandle);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::VertexPosition(*whiteboxMesh, vertexHandle);
                     })
                 ->Method(
                     "VertexPositions",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::VertexHandles& vertexHandles)
                     {
-                        return Api::VertexPositions(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), vertexHandles);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::VertexPositions(*whiteboxMesh, vertexHandles);
                     })
                 ->Method(
                     "TranslatePolygonAppend",
-                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::PolygonHandle& polygonHandle,
-                       const float distance)
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::PolygonHandle& polygonHandle, const float distance)
                     {
-                        return Api::TranslatePolygonAppend(
-                            *WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), polygonHandle, distance);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::TranslatePolygonAppend(*whiteboxMesh, polygonHandle, distance);
                     })
                 ->Method(
                     "TranslatePolygon",
-                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::PolygonHandle& polygonHandle,
-                       const float distance)
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::PolygonHandle& polygonHandle, const float distance)
                     {
-                        return Api::TranslatePolygon(
-                            *WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), polygonHandle, distance);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        Api::TranslatePolygon(*whiteboxMesh, polygonHandle, distance);
                     })
                 ->Method(
                     "CalculateNormals",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
-                        return Api::CalculateNormals(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        Api::CalculateNormals(*whiteboxMesh);
                     })
                 ->Method(
                     "CalculatePlanarUVs",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
-                        return Api::CalculatePlanarUVs(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        Api::CalculatePlanarUVs(*whiteboxMesh);
                     })
                 ->Method(
                     "HideEdge",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::EdgeHandle edgeHandle)
                     {
-                        return Api::HideEdge(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), edgeHandle);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::HideEdge(*whiteboxMesh, edgeHandle);
                     })
                 ->Method(
                     "FlipEdge",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::EdgeHandle edgeHandle)
                     {
-                        return Api::FlipEdge(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), edgeHandle);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::FlipEdge(*whiteboxMesh, edgeHandle);
                     })
                 ->Method(
                     "AddPolygon",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceVertHandlesList& faceVertHandles)
                     {
-                        return Api::AddPolygon(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceVertHandles);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::AddPolygon(*whiteboxMesh, faceVertHandles);
                     })
                 ->Method(
                     "AddTriPolygon",
-                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::VertexHandle v0, Api::VertexHandle v1,
-                       Api::VertexHandle v2)
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::VertexHandle v0, Api::VertexHandle v1, Api::VertexHandle v2)
                     {
-                        return Api::AddTriPolygon(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), v0, v1, v2);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::AddTriPolygon(*whiteboxMesh, v0, v1, v2);
                     })
                 ->Method(
                     "AddQuadPolygon",
-                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, Api::VertexHandle v0, Api::VertexHandle v1,
-                       Api::VertexHandle v2, Api::VertexHandle v3)
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle,
+                       Api::VertexHandle v0,
+                       Api::VertexHandle v1,
+                       Api::VertexHandle v2,
+                       Api::VertexHandle v3)
                     {
-                        return Api::AddQuadPolygon(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), v0, v1, v2, v3);
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.");
+                        return Api::AddQuadPolygon(*whiteboxMesh, v0, v1, v2, v3);
                     })
                 ->Method(
                     "Clear",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
                     {
-                        return Api::Clear(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                        WhiteBoxMesh* whiteboxMesh = WhiteBoxMeshFromHandle(*whiteBoxMeshHandle);
+                        AZ_Assert(whiteboxMesh, "WhiteBoxMesh is not found.")
+                        Api::Clear(*whiteboxMesh);
                     });
 
             behaviorContext->EnumProperty<(int)DefaultShapeType::Cube>("CUBE")
