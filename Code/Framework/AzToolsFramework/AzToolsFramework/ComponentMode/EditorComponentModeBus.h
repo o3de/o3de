@@ -242,6 +242,8 @@ namespace AzToolsFramework
             /// Also called when directly selecting a Component in the EntityOutliner.
             virtual void ActiveComponentModeChanged(const AZ::Uuid& /*componentType*/) {}
 
+            virtual void OnComponentModeExit() {};
+
         protected:
             ~EditorComponentModeNotifications() = default;
         };
@@ -258,6 +260,5 @@ namespace AzToolsFramework
 
             return inComponentMode;
         }
-
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

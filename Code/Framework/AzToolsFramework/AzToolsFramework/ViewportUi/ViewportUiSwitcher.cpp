@@ -8,7 +8,8 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
-
+#pragma optimize("", off)
+#pragma inline_depth(0)
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -46,7 +47,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
-        action->setCheckable(true);
+        action->setCheckable(false);
         action->setIcon(QIcon(QString(button->m_icon.c_str())));
 
         if (!action)
@@ -59,7 +60,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
-
         const AZStd::function<void()>& callback = [this, button]()
         {
             m_buttonGroup->PressButton(button->m_buttonId);
@@ -158,3 +158,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_activeButtonId = buttonId;
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()

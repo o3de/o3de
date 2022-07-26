@@ -40,7 +40,7 @@ namespace AzToolsFramework::ViewportUi
         return RegisterNewSwitcher(buttonGroup);
     }
 
-    void ViewportUiManager::SetClusterActiveButton(const ClusterId clusterId, const ButtonId buttonId)
+    void ViewportUiManager::SetClusterActiveButton(const ClusterId clusterId, [[maybe_unused]] const ButtonId buttonId)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
@@ -65,7 +65,7 @@ namespace AzToolsFramework::ViewportUi
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
             auto switcher = switcherIt->second;
-            switcher->SetHighlightedButton(buttonId);
+            switcher->ClearHighlightedButton();
             m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
             UpdateButtonGroupUi(switcher.get());
         }
@@ -153,6 +153,15 @@ namespace AzToolsFramework::ViewportUi
         {
             m_switcherButtonGroups.erase(switcherIt);
             m_viewportUi->RemoveViewportUiElement(switcherIt->second->GetViewportUiElementId());
+        }
+    }
+
+    void ViewportUiManager::RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            m_viewportUi->RemoveSwitcherButton(switcher->GetViewportUiElementId(), buttonId);
         }
     }
 

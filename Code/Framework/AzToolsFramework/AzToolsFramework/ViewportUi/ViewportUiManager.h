@@ -41,6 +41,7 @@ namespace AzToolsFramework::ViewportUi
         void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
         void RemoveSwitcher(SwitcherId switcherId) override;
+        void RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterVisible(ClusterId clusterId, bool visible) override;
         void SetSwitcherVisible(SwitcherId switcherId, bool visible);
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;

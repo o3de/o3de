@@ -38,11 +38,15 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
 #include <QRect>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -457,6 +461,12 @@ namespace AzToolsFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, clusterId);
     }
 
+    static void DestroySwitcher(const ViewportUi::SwitcherId switcherId)
+    {
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, switcherId);
+    }
+
     static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
@@ -475,6 +485,16 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        return buttonId;
+    }
+
+    ViewportUi::ButtonId RegisterSwitcherButton(const ViewportUi::SwitcherId switcherId, const char* name, const char* iconName)
+    {
+        ViewportUi::ButtonId buttonId;
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, switcherId,
+            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName), name);
 
         return buttonId;
     }
@@ -1026,7 +1046,9 @@ namespace AzToolsFramework
         EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
+        EntityCompositionNotificationBus::Handler::BusConnect();
 
+        CreateComponentModeSwitcher();
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
@@ -1053,6 +1075,7 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         DestroyManipulators(m_entityIdManipulators);
 
+        DestroySwitcher(m_switcher.m_switcherId);
         DestroyCluster(m_transformModeClusterId);
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
@@ -1073,6 +1096,7 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
         EditorEventsBus::Handler::BusDisconnect();
+        EntityCompositionNotificationBus::Handler::BusDisconnect();
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2196,7 +2220,7 @@ namespace AzToolsFramework
             break;
         }
     }
-
+    
     void EditorTransformComponentSelection::RegisterActions()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -2209,7 +2233,7 @@ namespace AzToolsFramework
 
             if (m_entityIdManipulators.m_manipulators)
             {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
+                CreateEntityManipulatorDeselectCommand(undoBatch); CreateComponentModeSwitcher();
             }
 
             // make a copy of selected entity ids
@@ -2730,6 +2754,38 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
+    }
+
+    void EditorTransformComponentSelection::CreateComponentModeSwitcher()
+    {
+        // Create the switcher
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_switcher.m_switcherId, ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
+            ViewportUi::Alignment::TopLeft);
+
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_switcherTransformButtonId,
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
+            m_switcher.m_switcherId,
+            "../../../../Assets/Editor/Icons/Components/Transform.svg",
+            "Transform");
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcher.m_switcherId,
+            m_switcherTransformButtonId);
+
+        m_switcher.m_transformButtonId = m_switcherTransformButtonId;
+        m_componentModeSwitcher = AZStd::make_unique<ComponentModeFramework::ComponentModeSwitcher>(&m_switcher);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler, m_switcher.m_switcherId,
+            m_componentModeSwitcher->m_handler);
+
+        // Register the switcher cluster with the switcher manager
+        
+
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
@@ -3349,6 +3405,7 @@ namespace AzToolsFramework
         // EditorTransformComponentSelection was not responsible for the change in selection
         if (!m_didSetSelectedEntities)
         {
+
             if (!UndoRedoOperationInProgress())
             {
                 EndRecordManipulatorCommand();
@@ -3362,9 +3419,43 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
+        // when the selected entity switches, switch back to the transform button
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+            m_switcher.m_switcherId,
+            m_switcherTransformButtonId);
+
+        // Send a list of selected and deselected entities to the switcher to deal with updating the switcher view
+        m_componentModeSwitcher->Update(newlySelectedEntities, newlyDeselectedEntities);
+        
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
+    }
+
+    void EditorTransformComponentSelection::OnEntityComponentAdded([[maybe_unused]] const AZ::EntityId& entity, [[maybe_unused]] const AZ::ComponentId& component)
+    {
+        // when a component is added to an entity set a staging member variable to the entityComponentIdPair
+        m_componentModePair = AZ::EntityComponentIdPair(entity, component);
+        m_AddRemove = true; // find a better way to do this
+    }
+
+    void EditorTransformComponentSelection::OnEntityComponentRemoved([[maybe_unused]] const AZ::EntityId& entity, [[maybe_unused]] const AZ::ComponentId& component)
+    {
+        m_componentModePair = AZ::EntityComponentIdPair(entity, component);
+        m_AddRemove = false;
+    }
+
+    // this is called twice when a component is added, once while the component is pending and
+    // once when it has been added fully to the entity. This is handled in UpdateComponentButton
+    void EditorTransformComponentSelection::OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList)
+    {
+
+        if (AZStd::find(entityIdList.begin(), entityIdList.end(), m_componentModePair.GetEntityId()) != entityIdList.end())
+        {
+             m_componentModeSwitcher->UpdateComponentButton(m_componentModePair, m_AddRemove);
+        }
     }
 
     static void DrawPreviewAxis(
@@ -3970,3 +4061,5 @@ namespace AzToolsFramework
     template Etcs::PivotOrientationResult Etcs::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
+#pragma optimize("", on)
+#pragma inline_depth()
