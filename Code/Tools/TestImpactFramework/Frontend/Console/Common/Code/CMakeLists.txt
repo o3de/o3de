@@ -29,9 +29,14 @@ ly_add_target(
             Source
         PUBLIC
             Include/Static
-    BUILD_DEPENDENCIES
+    COMPILE_DEFINITIONS
         PUBLIC
-            TestImpact.Frontend.Console.Common.Headers
+            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::TestImpact.Runtime.Common.Headers
+        PUBLIC
+            AZ::TestImpact.Frontend.Console.Common.Headers
 )
 
 ################################################################################

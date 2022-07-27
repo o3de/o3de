@@ -241,6 +241,8 @@ class TestImpact:
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._src_commit = persistent_storage.last_commit_hash
+                    # NOTE: need to draft in failing tests or only update upon success otherwise reruns for failed runs will have the same last commit
+                    # hash as the commit and generate an empty changelist
 
                     # Check to see if this is a re-run for this commit before any other changes have come in
                     if persistent_storage.is_repeat_sequence:
@@ -298,7 +300,7 @@ class TestImpact:
         args.append(f"--sequence={sequence_type}")
         logger.info(f"Sequence type is set to '{sequence_type}'.")
 
-         # Test failure policy
+        # Test failure policy
         args.append(f"--fpolicy={test_failure_policy}")
         logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
@@ -338,6 +340,9 @@ class TestImpact:
             # Get the sequence report the runtime generated
             with open(report_file) as json_file:
                 report = json.load(json_file)
+
+            # Grab the list of failing test targets for this sequence
+            test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and persistent_storage:

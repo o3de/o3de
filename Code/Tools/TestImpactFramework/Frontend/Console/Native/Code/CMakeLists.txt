@@ -16,13 +16,8 @@ ly_add_target(
     FILES_CMAKE
         testimpactframework_frontend_console_native_static_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
         PRIVATE
             Source
-    COMPILE_DEFINITIONS
-        PRIVATE
-            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::TestImpact.Frontend.Console.Common.Static

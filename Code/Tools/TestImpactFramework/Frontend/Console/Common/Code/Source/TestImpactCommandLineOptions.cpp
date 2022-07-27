@@ -17,7 +17,7 @@ namespace TestImpact
 {
     namespace
     {
-        enum 
+        enum CommonOptions
         {
             // Options
             ConfigKey,
@@ -26,19 +26,15 @@ namespace TestImpact
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
-            ExcludedTestsKey,
+            
             TestPrioritizationPolicyKey,
             ExecutionFailurePolicyKey,
             FailedTestCoveragePolicyKey,
             TestFailurePolicyKey,
             IntegrityFailurePolicyKey,
-            TestShardingPolicyKey,
             TargetOutputCaptureKey,
-            MaxConcurrencyKey,
-            TestTargetTimeoutKey,
             GlobalTimeoutKey,
             SuiteFilterKey,
-            SafeModeKey,
             DraftFailingTestsKey,
             // Values
             None,
@@ -57,8 +53,7 @@ namespace TestImpact
             Keep
         };
 
-        constexpr const char* OptionKeys[] =
-        {
+        constexpr const char* OptionKeys[] = {
             // Options
             "config",
             "datafile",
@@ -66,19 +61,15 @@ namespace TestImpact
             "changelist",
             "report",
             "sequence",
-            "excluded",
+            
             "ppolicy",
             "epolicy",
             "cpolicy",
             "fpolicy",
             "ipolicy",
-            "shard",
             "targetout",
-            "maxconcurrency",
-            "ttimeout",
             "gtimeout",
             "suite",
-            "safemode",
             "draftfailingtests",
             // Values
             "none",
@@ -120,17 +111,6 @@ namespace TestImpact
         AZStd::optional<RepoPath> ParseSequenceReportFile(const AZ::CommandLine& cmd)
         {
             return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
-        }
-
-        AZStd::vector<TargetConfig::ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
-        {
-            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
-            if (excludeFilePath.has_value())
-            {
-                return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
-            }
-
-            return {};
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -203,17 +183,6 @@ namespace TestImpact
             return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
         }
 
-        Policy::TestSharding ParseTestShardingPolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<Policy::TestSharding> states =
-            {
-                Policy::TestSharding::Never,
-                Policy::TestSharding::Always
-            };
-
-            return ParseOnOffOption(OptionKeys[TestShardingPolicyKey], states, cmd).value_or(Policy::TestSharding::Never);
-        }
-
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
         {
             if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCaptureKey]);
@@ -261,25 +230,9 @@ namespace TestImpact
             return Policy::TargetOutputCapture::None;
         }
 
-        AZStd::optional<size_t> ParseMaxConcurrency(const AZ::CommandLine& cmd)
-        {
-            return ParseUnsignedIntegerOption(OptionKeys[MaxConcurrencyKey], cmd);
-        }
-
-        AZStd::optional<AZStd::chrono::milliseconds> ParseTestTargetTimeout(const AZ::CommandLine& cmd)
-        {
-            return ParseSecondsOption(OptionKeys[TestTargetTimeoutKey], cmd);
-        }
-
         AZStd::optional<AZStd::chrono::milliseconds> ParseGlobalTimeout(const AZ::CommandLine& cmd)
         {
             return ParseSecondsOption(OptionKeys[GlobalTimeoutKey], cmd);
-        }
-
-        bool ParseSafeMode(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<bool> states = { false, true };
-            return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
         }
 
         bool ParseDraftFailingTests(const AZ::CommandLine& cmd)
@@ -312,26 +265,16 @@ namespace TestImpact
         m_previousRunDataFile = ParsePreviousRunDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
-        m_excludedTests = ParseExcludedTestsFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
         m_failedTestCoveragePolicy = ParseFailedTestCoveragePolicy(cmd);
         m_testFailurePolicy = ParseTestFailurePolicy(cmd);
         m_integrityFailurePolicy = ParseIntegrityFailurePolicy(cmd);
-        m_testShardingPolicy = ParseTestShardingPolicy(cmd);
         m_targetOutputCapture = ParseTargetOutputCapture(cmd);
-        m_maxConcurrency = ParseMaxConcurrency(cmd);
-        m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
-        m_safeMode = ParseSafeMode(cmd);
         m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
-    }
-
-    bool CommandLineOptions::HasExcludedTests() const
-    {
-        return !m_excludedTests.empty();
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -352,11 +295,6 @@ namespace TestImpact
     bool CommandLineOptions::HasSequenceReportFilePath() const
     {
         return m_sequenceReportFile.has_value();
-    }
-
-    bool CommandLineOptions::HasSafeMode() const
-    {
-        return m_safeMode;
     }
 
     bool CommandLineOptions::HasDraftFailingTests() const
@@ -382,11 +320,6 @@ namespace TestImpact
     const AZStd::optional<RepoPath>& CommandLineOptions::GetSequenceReportFilePath() const
     {
         return m_sequenceReportFile;
-    }
-
-    const AZStd::vector<TargetConfig::ExcludedTarget>& CommandLineOptions::GetExcludedTests() const
-    {
-        return m_excludedTests;
     }
 
     const RepoPath& CommandLineOptions::GetConfigurationFilePath() const
@@ -423,27 +356,12 @@ namespace TestImpact
     {
         return m_integrityFailurePolicy;
     }
-    
-    Policy::TestSharding CommandLineOptions::GetTestShardingPolicy() const
-    {
-        return m_testShardingPolicy;
-    }
-    
+
     Policy::TargetOutputCapture CommandLineOptions::GetTargetOutputCapture() const
     {
         return m_targetOutputCapture;
     }
-    
-    const AZStd::optional<size_t>& CommandLineOptions::GetMaxConcurrency() const
-    {
-        return m_maxConcurrency;
-    }
-    
-    const AZStd::optional<AZStd::chrono::milliseconds>& CommandLineOptions::GetTestTargetTimeout() const
-    {
-        return m_testTargetTimeout;
-    }
-    
+
     const AZStd::optional<AZStd::chrono::milliseconds>& CommandLineOptions::GetGlobalTimeout() const
     {
         return m_globalTimeout;
@@ -463,7 +381,7 @@ namespace TestImpact
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
             "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
             "                                                                specified in the config file.\n"
-            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will be used instead of that\n"
+            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will used instead of that\n"
             "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"
@@ -471,8 +389,6 @@ namespace TestImpact
             "                                                                is not specified, no report will be written).\n"
             "    -gtimeout=<seconds>                                         Global timeout value to terminate the entire test sequence should it \n"
             "                                                                be exceeded.\n"
-            "    -ttimeout=<seconds>                                         Timeout value to terminate individual test targets should it be \n"
-            "                                                                exceeded.\n"
             "    -sequence=<none, seed, regular, tia, tianowrite, tiaorseed> The type of test sequence to perform, where 'none' runs no tests and\n"
             "                                                                will report a all tests successful, 'seed' removes any prior coverage \n"
             "                                                                data and runs all test targets with instrumentation to reseed the \n"
@@ -486,12 +402,6 @@ namespace TestImpact
             "                                                                the subset of selected tests and 'tiaorseed' uses any prior coverage data \n"
             "                                                                to run the instrumented subset of selected tests (if no prior coverage \n"
             "                                                                data a seed run is performed instead).\n"
-            "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
-            "                                                                tests is run without instrumentation after the set of selected \n"
-            "                                                                instrumented tests is run (this has the effect of ensuring all \n"
-            "                                                                tests are run regardless).\n"
-            "    -shard=<on,off>                                             Break any test targets with a sharding policy into the number of \n"
-            "                                                                shards according to the maximum concurrency value.\n"
             "    -cpolicy=<remove, keep>                                     Policy for handling the coverage data of failing tests, where 'discard' \n"
             "                                                                will discard the coverage data produced by the failing tests, causing \n"
             "                                                                them to be drafted into future test runs and 'keep' will keep any existing \n"
@@ -529,8 +439,6 @@ namespace TestImpact
             "                                                                prioritize test targets according to the locality of their covering \n"
             "                                                                production targets in the dependency graph(if no dependency graph data \n"
             "                                                                available, no prioritization will occur).\n"
-            "    -maxconcurrency=<number>                                    The maximum number of concurrent test targets/shards to be in flight at \n"
-            "                                                                any given moment.\n"
             "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
 
         return help;

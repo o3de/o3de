@@ -36,6 +36,8 @@ namespace TestImpact
     {
     public:
         CommandLineOptions(int argc, char** argv);
+
+        //! Compiles the command line usage to a string.
         static AZStd::string GetCommandLineUsageString();
 
         //! Returns true if a test impact data file path has been supplied, otherwise false.
@@ -44,17 +46,11 @@ namespace TestImpact
         //! Returns true if a previous run data file path has been supplied, otherwise false.
         bool HasPreviousRunDataFilePath() const;
 
-        //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
-        bool HasExcludedTests() const;
-
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFilePath() const;
 
         //! Returns true if a sequence report file path has been supplied, otherwise false.
         bool HasSequenceReportFilePath() const;
-
-        //! Returns true if the safe mode option has been enabled, otherwise false.
-        bool HasSafeMode() const;
 
         //! Returns true if the draft failing tests option has been enabled, otherwise false.
         bool HasDraftFailingTests() const;
@@ -74,9 +70,6 @@ namespace TestImpact
         //! Returns the path to the sequence report file (if any).
         const AZStd::optional<RepoPath>& GetSequenceReportFilePath() const;
 
-        //! Returns the tests to exclude from this run of TIAF (if any).
-        const AZStd::vector<TargetConfig::ExcludedTarget>& GetExcludedTests() const;
-
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
 
@@ -95,17 +88,8 @@ namespace TestImpact
         //! Returns the integration failure policy to use.
         Policy::IntegrityFailure GetIntegrityFailurePolicy() const;
 
-        //! Returns the test sharding policy to use.
-        Policy::TestSharding GetTestShardingPolicy() const;
-
         //! Returns the test target standard output capture policy to use.
         Policy::TargetOutputCapture GetTargetOutputCapture() const;
-
-        //! Returns the maximum number of test targets to be in flight at any given time.
-        const AZStd::optional<size_t>& GetMaxConcurrency() const;
-
-        //! Returns the individual test target timeout to use (if any).
-        const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
 
         //! Returns the global test sequence timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
@@ -119,20 +103,15 @@ namespace TestImpact
         AZStd::optional<RepoPath> m_previousRunDataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
-        AZStd::vector<TargetConfig::ExcludedTarget> m_excludedTests;
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
         Policy::FailedTestCoverage m_failedTestCoveragePolicy = Policy::FailedTestCoverage::Keep;
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
-        Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
-        AZStd::optional<size_t> m_maxConcurrency;
-        AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;
-        bool m_safeMode = false;
         bool m_draftFailingTests = false;
     };
 } // namespace TestImpact

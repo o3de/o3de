@@ -17,56 +17,24 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
-#include <TestImpactFramework/Native/TestImpactRuntime.h>
+#include <TestImpactFramework/Native/TestImpactNativeRuntime.h>
 
+#include <TestImpactConsoleUtils.h>
 #include <TestImpactConsoleTestSequenceEventHandler.h>
-#include <TestImpactCommandLineOptions.h>
-#include <TestImpactRuntimeConfigurationFactory.h>
+#include <TestImpactNativeCommandLineOptions.h>
+#include <TestImpactNativeRuntimeConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
-#include <iostream>
-
 namespace TestImpact::Console
 {
-    //! Gets the appropriate console return code for the specified test sequence result.
-    ReturnCode GetReturnCodeForTestSequenceResult(TestSequenceResult result)
-    {
-        switch (result)
-        {
-        case TestSequenceResult::Success:
-            return ReturnCode::Success;
-        case TestSequenceResult::Failure:
-            return ReturnCode::TestFailure;
-        case TestSequenceResult::Timeout:
-            return ReturnCode::Timeout;
-        default:
-            std::cout << "Unexpected TestSequenceResult value: " << aznumeric_cast<size_t>(result) << std::endl;
-            return ReturnCode::UnknownError;
-        }
-    }
-
-    //! Wrapper around sequence reports to optionally serialize them and transform the result into a return code.
-    template<typename SequenceReportType>
-    ReturnCode ConsumeSequenceReportAndGetReturnCode(const SequenceReportType& sequenceReport, const CommandLineOptions& options)
-    {
-        if (options.HasSequenceReportFilePath())
-        {
-            std::cout << "Exporting sequence report '" << options.GetSequenceReportFilePath().value().c_str() << "'" << std::endl;
-            const auto sequenceReportJson = SerializeSequenceReport(sequenceReport);
-            WriteFileContents<SequenceReportException>(sequenceReportJson, options.GetSequenceReportFilePath().value());
-        }
-
-        return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
-    }
-
     //! Wrapper around impact analysis sequences to handle the case where the safe mode option is active.
     ReturnCode WrappedImpactAnalysisTestSequence(
-        const CommandLineOptions& options,
-        Runtime& runtime,
+        const NativeCommandLineOptions& options,
+        NativeRuntime& runtime,
         const AZStd::optional<ChangeList>& changeList)
     {
         // Even though it is possible for a regular run to be selected (see below) which does not actually require a change list,
@@ -145,10 +113,9 @@ namespace TestImpact::Console
     {
         try
         {
-            CommandLineOptions options(argc, argv);
+            NativeCommandLineOptions options(argc, argv);
             AZStd::optional<ChangeList> changeList;
 
-            // If we have a change list, check to see whether or not the client has requested the printing of said change list
             if (options.HasChangeListFilePath())
             {
                 changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFilePath()));
@@ -163,8 +130,8 @@ namespace TestImpact::Console
 
             std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
             std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
-            Runtime runtime(
-                RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
+            NativeRuntime runtime(
+                NativeRuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
                 options.GetDataFilePath(),
                 options.GetPreviousRunDataFilePath(),
                 options.GetExcludedTests(),
@@ -241,7 +208,7 @@ namespace TestImpact::Console
         catch (const CommandLineOptionsException& e)
         {
             std::cout << e.what() << std::endl;
-            std::cout << CommandLineOptions::GetCommandLineUsageString().c_str() << std::endl;
+            std::cout << NativeCommandLineOptions::GetCommandLineUsageString().c_str() << std::endl;
             return ReturnCode::InvalidArgs;
         }
         catch (const ChangeListException& e)

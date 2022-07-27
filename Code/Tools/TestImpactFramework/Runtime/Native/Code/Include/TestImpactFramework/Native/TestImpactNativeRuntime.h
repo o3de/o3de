@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactConfiguration.h>
+#include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
@@ -24,7 +24,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
-{    
+{
     class NativeTestEngine;
     class NativeTestTarget;
     class NativeProductionTarget;
@@ -92,8 +92,8 @@ namespace TestImpact
     //! @param totalNumTestRuns The total number of test runs in the sequence.
     using TestRunCompleteCallback = AZStd::function<void(Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)>;
 
-    //! The API exposed to the client responsible for all test runs and persistent data management.
-    class Runtime
+    //! The native API exposed to the client responsible for all test runs and persistent data management.
+    class NativeRuntime
     {
     public:
         //! Constructs a runtime with the specified configuration and policies.
@@ -107,11 +107,11 @@ namespace TestImpact
         //! @param testFailurePolicy Determines how to handle test targets that report test failures.
         //! @param integrationFailurePolicy Determines how to handle instances where the build system model and/or test impact analysis data is compromised.
         //! @param testShardingPolicy  Determines how to handle test targets that have opted in to test sharding.
-        Runtime(
-            RuntimeConfig&& config,
+        NativeRuntime(
+            NativeRuntimeConfig&& config,
             const AZStd::optional<RepoPath>& dataFile,
             [[maybe_unused]]const AZStd::optional<RepoPath>& previousRunDataFile,
-            const AZStd::vector<TargetConfig::ExcludedTarget>& testsToExclude,
+            const AZStd::vector<ExcludedTarget>& testsToExclude,
             SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -121,7 +121,7 @@ namespace TestImpact
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<size_t> maxConcurrency = AZStd::nullopt);
 
-        ~Runtime();
+        ~NativeRuntime();
         
         //! Runs a test sequence where all tests with a matching suite in the suite filter and also not on the excluded list are selected.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
@@ -223,7 +223,7 @@ namespace TestImpact
         ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
             Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const;
 
-        RuntimeConfig m_config;
+        NativeRuntimeConfig m_config;
         RepoPath m_sparTiaFile;
         SuiteType m_suiteFilter;
         Policy::ExecutionFailure m_executionFailurePolicy;

@@ -22,6 +22,7 @@ namespace TestImpact
         // Keys for pertinent JSON elements
         constexpr const char* Keys[] =
         {
+            "common",
             "root",
             "platform",
             "relative_paths",
@@ -43,12 +44,8 @@ namespace TestImpact
             "target_vertex",
             "file",
             "file",
-            "test_runner",
-            "instrumentation",
             "bin",
             "exclude",
-            "target",
-            "tests",
             "regular",
             "instrumented",
             "shard",
@@ -66,14 +63,13 @@ namespace TestImpact
             "build_target_descriptor",
             "dependency_graph_data",
             "test_target_meta",
-            "test_engine",
-            "target",
             "gem_target"
         };
 
         enum
         {
-            Root = 0,
+            Common,
+            Root,
             PlatformName,
             RelativePaths,
             ArtifactDir,
@@ -94,12 +90,8 @@ namespace TestImpact
             TargetVertexMatcher,
             TestTargetMetaFile,
             GemTargetFile,
-            TestRunner,
-            TestInstrumentation,
             BinaryFile,
             TargetExclude,
-            ExcludedTargetName,
-            ExcludedTargetTests,
             RegularTargetExcludeFilter,
             InstrumentedTargetExcludeFilter,
             TestSharding,
@@ -117,14 +109,12 @@ namespace TestImpact
             BuildTargetDescriptor,
             DependencyGraphData,
             TestTargetMeta,
-            TestEngine,
-            TargetConfig,
             GemTarget
         };
     }
 
     //! Returns an absolute path for a path relative to the specified root.
-    RepoPath GetAbsPathFromRelPath(const RepoPath& root, const RepoPath& rel)
+    inline RepoPath GetAbsPathFromRelPath(const RepoPath& root, const RepoPath& rel)
     {
         return root / rel;
     }
@@ -224,86 +214,6 @@ namespace TestImpact
         return gemTargetConfig;
     }
 
-    TestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
-    {
-        TestEngineConfig testEngineConfig;
-        testEngineConfig.m_testRunner.m_binary = testEngine[Config::Keys[Config::TestRunner]][Config::Keys[Config::BinaryFile]].GetString();
-        testEngineConfig.m_instrumentation.m_binary = testEngine[Config::Keys[Config::TestInstrumentation]][Config::Keys[Config::BinaryFile]].GetString();
-        return testEngineConfig;
-    }
-
-    AZStd::vector<TargetConfig::ExcludedTarget> ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes)
-    {
-        AZStd::vector<TargetConfig::ExcludedTarget> targetExcludeList;
-        targetExcludeList.reserve(testExcludes.Size());
-        for (const auto& testExclude : testExcludes)
-        {
-            TargetConfig::ExcludedTarget excludedTarget;
-            excludedTarget.m_name = testExclude[Config::Keys[Config::ExcludedTargetName]].GetString();
-            if (testExclude.HasMember(Config::Keys[Config::ExcludedTargetTests]))
-            {
-                const auto& excludedTests = testExclude[Config::Keys[Config::ExcludedTargetTests]].GetArray();
-                for (const auto& excludedTest : excludedTests)
-                {
-                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
-                }
-            }
-
-            targetExcludeList.push_back(excludedTarget);
-        }
-
-        return targetExcludeList;
-    }
-
-    TargetConfig ParseTargetConfig(const rapidjson::Value& target)
-    {
-        TargetConfig targetConfig;
-        targetConfig.m_outputDirectory = target[Config::Keys[Config::Directory]].GetString();
-        const auto& testExcludes = target[Config::Keys[Config::TargetExclude]];
-        targetConfig.m_excludedRegularTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::RegularTargetExcludeFilter]].GetArray());
-        targetConfig.m_excludedInstrumentedTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::InstrumentedTargetExcludeFilter]].GetArray());
-
-        const auto& testShards =  target[Config::Keys[Config::TestSharding]].GetArray();
-        targetConfig.m_shardedTestTargets.reserve(testShards.Size());
-        for (const auto& testShard : testShards)
-        {
-            const auto getShardingConfiguration = [](const AZStd::string& config)
-            {
-                if (config == Config::Keys[Config::ContinuousFixtureSharding])
-                {
-                    return ShardConfiguration::FixtureContiguous;
-                }
-                else if (config == Config::Keys[Config::InterleavedFixtureSharding])
-                {
-                    return ShardConfiguration::FixtureInterleaved;
-                }
-                else if (config == Config::Keys[Config::ContinuousTestSharding])
-                {
-                    return ShardConfiguration::TestContiguous;
-                }
-                else if (config == Config::Keys[Config::InterleavedTestSharding])
-                {
-                    return ShardConfiguration::TestInterleaved;
-                }
-                else if (config == Config::Keys[Config::NeverShard])
-                {
-                    return ShardConfiguration::Never;
-                }
-                else
-                {
-                    throw ConfigurationException(AZStd::string::format("Unexpected sharding configuration: %s", config.c_str()));
-                }
-            };
-
-            TargetConfig::ShardedTarget shard;
-            shard.m_name = testShard[Config::Keys[Config::TargetName]].GetString();
-            shard.m_configuration = getShardingConfiguration(testShard[Config::Keys[Config::TestShardingPolicy]].GetString());
-            targetConfig.m_shardedTestTargets.push_back(AZStd::move(shard));
-        }
-
-        return targetConfig;
-    }
-
     RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData)
     {
         rapidjson::Document configurationFile;
@@ -314,16 +224,14 @@ namespace TestImpact
         }
 
         RuntimeConfig runtimeConfig;
-        const auto& staticArtifacts = configurationFile[Config::Keys[Config::Artifacts]][Config::Keys[Config::StaticArtifacts]];
-        runtimeConfig.m_meta = ParseConfigMeta(configurationFile[Config::Keys[Config::Meta]]);
-        runtimeConfig.m_repo = ParseRepoConfig(configurationFile[Config::Keys[Config::Repository]]);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Workspace]]);
+        const auto& staticArtifacts = configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Artifacts]][Config::Keys[Config::StaticArtifacts]];
+        runtimeConfig.m_meta = ParseConfigMeta(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Meta]]);
+        runtimeConfig.m_repo = ParseRepoConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Repository]]);
+        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Workspace]]);
         runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);
         runtimeConfig.m_gemTarget = ParseGemTargetConfig(staticArtifacts[Config::Keys[Config::GemTarget]]);
-        runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::TestEngine]]);
-        runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::TargetConfig]]);
 
         return runtimeConfig;
     }
