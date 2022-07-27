@@ -148,27 +148,6 @@ namespace TestImpact
         DeleteFiles(m_artifactDir, "*.xml");
     }
 
-    //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> NativeTestEngine::UpdateEnumerationCache(
-    //    const AZStd::vector<const NativeTestTarget*>& testTargets,
-    //    Policy::ExecutionFailure executionFailurePolicy,
-    //    Policy::TestFailure testFailurePolicy,
-    //    AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-    //    AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-    //    AZStd::optional<TestEngineJobCompleteCallback> callback) const
-    //{
-    //    TestEngineJobMap<TestEnumerator::JobInfo::IdType> engineJobs;
-    //    const auto jobInfos = m_testJobInfoGenerator->GenerateTestEnumerationJobInfos(testTargets, TestEnumerator::JobInfo::CachePolicy::Write);
-    //
-    //    auto [result, runnerJobs] = m_testEnumerator->Enumerate(
-    //        jobInfos,
-    //        testTargetTimeout,
-    //        globalTimeout,
-    //        TestJobRunnerCallbackHandler<TestEnumerator>(testTargets, &engineJobs, executionFailurePolicy, testFailurePolicy, &callback));
-    //
-    //    auto engineRuns = CompileTestEngineRuns<TestEnumerator>(testTargets, runnerJobs, AZStd::move(engineJobs));
-    //    return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
-    //}
-
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> NativeTestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
