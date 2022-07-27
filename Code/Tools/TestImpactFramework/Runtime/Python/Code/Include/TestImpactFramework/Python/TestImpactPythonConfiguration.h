@@ -12,6 +12,7 @@
 
 namespace TestImpact
 {
+    //! Python runtime configuration.
     struct PythonRuntimeConfig
     {
         RuntimeConfig m_commonConfig;

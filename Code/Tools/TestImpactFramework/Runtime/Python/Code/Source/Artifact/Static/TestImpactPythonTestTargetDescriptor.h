@@ -20,7 +20,7 @@ namespace TestImpact
         PythonTestTargetDescriptor() = default;
         PythonTestTargetDescriptor(TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath);
 
-        TestSuiteMeta m_testSuiteMeta;
+        TestSuiteMeta m_testSuiteMeta; //<! The meta-data about this target's test suite.
         RepoPath m_scriptPath; //!< Path to the Python script for this test (relative to repository root).
     };
 } // namespace TestImpact
