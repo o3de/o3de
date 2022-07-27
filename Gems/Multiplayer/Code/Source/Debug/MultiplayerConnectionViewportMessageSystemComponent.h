@@ -72,5 +72,6 @@ namespace Multiplayer
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;
         AzNetworking::IpAddress m_hostIpAddress;
+        int m_currentConnectionsDrawCount = 0;
     };
 }

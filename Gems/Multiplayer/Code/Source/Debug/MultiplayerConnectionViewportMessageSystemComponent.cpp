@@ -26,7 +26,10 @@ namespace Multiplayer
 
     AZ_CVAR_SCOPED(float, cl_viewportConnectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
-    
+
+    AZ_CVAR_SCOPED(int, cl_viewportConnectionStatusMaxDrawCount, 4, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
+        "Limits the number of connect statuses seen in the viewport. Generally, clients are connected to 1 server, but defining a max draw count in case other connections are established.");
+
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -118,6 +121,7 @@ namespace Multiplayer
             if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
             {
                 AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
+                m_currentConnectionsDrawCount = 0;
                 if (connectionSet.GetConnectionCount() > 0)
                 {
                     connectionSet.VisitConnections([this](AzNetworking::IConnection& connection)
@@ -138,6 +142,13 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostIpAddress)
     {
+        // Limit the amount of connections we draw on screen
+        if (m_currentConnectionsDrawCount >= cl_viewportConnectionStatusMaxDrawCount)
+        {
+            return;
+        }
+        ++m_currentConnectionsDrawCount;
+
         AZ::Color connectionStateColor;
         switch (connectionState)
         {
