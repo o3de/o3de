@@ -3940,6 +3940,9 @@ namespace AssetProcessor
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
+
+        // Signals SourceAssetTreeModel so it can update the CreateJob duration change
+        Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
@@ -5026,8 +5029,7 @@ namespace AssetProcessor
                         entry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                         {
-                            container.push_back();
-                            container.back() = AZStd::move(entry);
+                            container.emplace_back() = AZStd::move(entry);
                             return true; // return true to keep iterating over further rows.
                         });
 

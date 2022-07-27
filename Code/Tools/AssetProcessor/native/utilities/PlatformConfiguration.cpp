@@ -2124,7 +2124,7 @@ namespace AssetProcessor
                 addedEntries = true;
             }
         }
-        return true;
+        return addedEntries;
     }
 
     // AssetProcessor

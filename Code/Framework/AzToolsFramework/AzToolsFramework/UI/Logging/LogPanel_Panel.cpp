@@ -322,8 +322,7 @@ namespace AzToolsFramework
             {
                 m_numLinesRemoved++; // this line will cause a line to be removed.
             }
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_numLinesAdded;
         }
 
@@ -446,8 +445,7 @@ namespace AzToolsFramework
                 m_linesAdded = 0;
             }
 
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_linesAdded;
         }
 

@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Sine",
+        "category": "Math Functions",
+        "title": "ddy_fine",
         "inputSlots": [
             {
                 "name": "inValue",
@@ -25,6 +25,9 @@
                         0.0,
                         0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -44,6 +47,9 @@
                         0.0,
                         0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = ddy_fine(NODEID_inValue);" ]
                 }
             }
         ]

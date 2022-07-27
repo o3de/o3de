@@ -454,7 +454,7 @@ namespace PhysXDebug
         if (dirty)
         {
             // The physics scene is dirty and contains changes to be gathered.
-            if (auto* scene = GetCurrentPxScene())
+            if (GetCurrentPxScene())
             {
                 ConfigurePhysXVisualizationParameters();
                 ConfigureCullingBox();

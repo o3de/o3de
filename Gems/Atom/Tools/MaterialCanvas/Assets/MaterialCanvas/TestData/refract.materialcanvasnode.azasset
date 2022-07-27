@@ -3,13 +3,13 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Lighting Model",
-        "title": "Example PBR",
+        "category": "Math Functions",
+        "title": "refract",
         "inputSlots": [
             {
-                "name": "inBaseColor",
-                "displayName": "Base Color",
-                "description": "Base Color",
+                "name": "inValue1",
+                "displayName": "Value1",
+                "description": "Value1",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -20,17 +20,20 @@
                 "defaultValue": {
                     "$type": "Vector4",
                     "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
-                "name": "inMetallic",
-                "displayName": "Metallic",
-                "description": "Metallic",
+                "name": "inValue2",
+                "displayName": "Value2",
+                "description": "Value2",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -44,14 +47,17 @@
                         0.0,
                         0.0,
                         0.0,
-                        1.0
+                        0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
-                "name": "inSpecular",
-                "displayName": "Specular",
-                "description": "Specular",
+                "name": "inValue3",
+                "displayName": "Value3",
+                "description": "Value3",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -65,20 +71,21 @@
                         0.0,
                         0.0,
                         0.0,
-                        1.0
+                        0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
-            },
+            }
+        ],
+        "outputSlots": [
             {
-                "name": "inRoughness",
-                "displayName": "Roughness",
-                "description": "Roughness",
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
+                    "float4"
                 ],
                 "defaultValue": {
                     "$type": "Vector4",
@@ -86,29 +93,11 @@
                         0.0,
                         0.0,
                         0.0,
-                        1.0
+                        0.0
                     ]
-                }
-            },
-            {
-                "name": "inEmissive",
-                "displayName": "Emissive",
-                "description": "Emissive",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = refract(NODEID_inValue1, NODEID_inValue2, NODEID_inValue3);" ]
                 }
             }
         ]
