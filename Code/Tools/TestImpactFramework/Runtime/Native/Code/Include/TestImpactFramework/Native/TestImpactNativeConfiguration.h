@@ -47,6 +47,7 @@ namespace TestImpact
         AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
     };
 
+    //! Native runtime configuration.
     struct NativeRuntimeConfig
     {
         RuntimeConfig m_commonConfig;

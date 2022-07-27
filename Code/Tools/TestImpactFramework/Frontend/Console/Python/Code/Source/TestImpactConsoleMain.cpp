@@ -22,11 +22,11 @@
 namespace TestImpact::Console
 {
     //! Entry point for the test impact analysis framework console front end application.
-    ReturnCode Main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
+    ReturnCode Main(int argc, char** argv)
     {
         try
         {
-            PythonCommandLineOptions options(argc, argv);
+            const PythonCommandLineOptions options(argc, argv);
             AZStd::optional<ChangeList> changeList;
 
             if (options.HasChangeListFilePath())

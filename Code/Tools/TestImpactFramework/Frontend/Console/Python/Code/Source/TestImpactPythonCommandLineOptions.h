@@ -12,6 +12,7 @@
 
 namespace TestImpact
 {
+    //! Representation of the command line options specific to the python runtime supplied to the console frontend application.
     class PythonCommandLineOptions
         : public CommandLineOptions
     {

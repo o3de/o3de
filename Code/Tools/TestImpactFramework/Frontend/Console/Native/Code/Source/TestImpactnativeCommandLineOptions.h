@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Representation of the command line options specific to the native runtime supplied to the console frontend application.
     class NativeCommandLineOptions
         : public CommandLineOptions
     {

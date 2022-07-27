@@ -68,7 +68,7 @@ namespace TestImpact
             TargetName,
             TestShardingPolicy,
         };
-    }
+    } // namespace Config
 
     NativeTestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
@@ -115,28 +115,19 @@ namespace TestImpact
         {
             const auto getShardingConfiguration = [](const AZStd::string& config)
             {
-                if (config == Config::Keys[Config::ContinuousFixtureSharding])
+                switch(config)
                 {
+                case Config::Keys[Config::ContinuousFixtureSharding]:
                     return ShardConfiguration::FixtureContiguous;
-                }
-                else if (config == Config::Keys[Config::InterleavedFixtureSharding])
-                {
+                case Config::Keys[Config::InterleavedFixtureSharding]:
                     return ShardConfiguration::FixtureInterleaved;
-                }
-                else if (config == Config::Keys[Config::ContinuousTestSharding])
-                {
+                case Config::Keys[Config::ContinuousTestSharding]:
                     return ShardConfiguration::TestContiguous;
-                }
-                else if (config == Config::Keys[Config::InterleavedTestSharding])
-                {
+                case Config::Keys[Config::InterleavedTestSharding]:
                     return ShardConfiguration::TestInterleaved;
-                }
-                else if (config == Config::Keys[Config::NeverShard])
-                {
+                case Config::Keys[Config::NeverShard]:
                     return ShardConfiguration::Never;
-                }
-                else
-                {
+                default:
                     throw ConfigurationException(AZStd::string::format("Unexpected sharding configuration: %s", config.c_str()));
                 }
             };

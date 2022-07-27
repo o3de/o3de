@@ -113,7 +113,7 @@ namespace TestImpact::Console
     {
         try
         {
-            NativeCommandLineOptions options(argc, argv);
+            const NativeCommandLineOptions options(argc, argv);
             AZStd::optional<ChangeList> changeList;
 
             if (options.HasChangeListFilePath())

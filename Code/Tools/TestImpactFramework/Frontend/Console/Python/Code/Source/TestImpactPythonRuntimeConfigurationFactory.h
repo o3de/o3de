@@ -10,6 +10,6 @@
 
 namespace TestImpact
 {
-    //! Parses the native-soecific configuration data (in JSON format) and returns the constructed runtime configuration.
+    //! Parses the python-specific configuration data (in JSON format) and returns the constructed runtime configuration.
     PythonRuntimeConfig PythonRuntimeConfigurationFactory(const AZStd::string& configurationData);
 } // namespace TestImpact
