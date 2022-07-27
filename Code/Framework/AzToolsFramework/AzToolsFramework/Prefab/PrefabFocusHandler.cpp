@@ -14,6 +14,7 @@
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -186,6 +187,24 @@ namespace AzToolsFramework::Prefab
         return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
     }
 
+    PrefabFocusOperationResult PrefabFocusHandler::SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState)
+    {
+        if (InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); instance.has_value())
+        {
+            m_containerEntityInterface->SetContainerOpen(instance->get().GetContainerEntityId(), openState);
+
+            if (openState == true)
+            {
+                PrefabFocusNotificationBus::Broadcast(
+                    &PrefabFocusNotifications::OnInstanceOpened, instance->get().GetContainerEntityId());
+            }
+
+            return AZ::Success();
+        }
+
+        return AZ::Failure(AZStd::string::format("Prefab Focus Handler: Could not find owning instance of entity"));
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
     {
         InstanceOptionalReference focusedInstance;
@@ -340,6 +359,12 @@ namespace AzToolsFramework::Prefab
         return m_rootAliasFocusPathLength;
     }
 
+    void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope)
+    {
+        m_prefabEditScope = prefabEditScope;
+        SwitchToEditScope();
+    }
+
     void PrefabFocusHandler::OnContextReset()
     {
         // Focus on the root prefab (AZ::EntityId() will default to it)
@@ -371,7 +396,7 @@ namespace AzToolsFramework::Prefab
             {
                 // Refresh the path and notify changes.
                 RefreshInstanceFocusPath();
-                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
             }
         }
     }
@@ -380,7 +405,7 @@ namespace AzToolsFramework::Prefab
     {
         // Refresh the path and notify changes in case propagation updated any container names.
         RefreshInstanceFocusPath();
-        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
     }
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
@@ -408,7 +433,7 @@ namespace AzToolsFramework::Prefab
             {
                 // Refresh the path and notify changes.
                 RefreshInstanceFocusPath();
-                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+                PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
             }
         }
     }
@@ -482,6 +507,70 @@ namespace AzToolsFramework::Prefab
                 }
             );
         }
+    }
+
+    void PrefabFocusHandler::SetInstanceContainersOpenStateOfAllDescendantContainers(
+        InstanceOptionalReference instance, bool openState) const
+    {
+        // If this is called outside the Editor, this interface won't be initialized.
+        if (!m_containerEntityInterface)
+        {
+            return;
+        }
+
+        if (!instance.has_value())
+        {
+            return;
+        }
+
+        AZStd::queue<InstanceOptionalReference> instanceQueue;
+
+        // We skip this instance and start from children.
+        instance->get().GetNestedInstances(
+            [&](AZStd::unique_ptr<Instance>& nestedInstance)
+        {
+            instanceQueue.push(*nestedInstance.get());
+        }
+        );
+
+        while (!instanceQueue.empty())
+        {
+            InstanceOptionalReference currentInstance = instanceQueue.front();
+            instanceQueue.pop();
+
+            if (currentInstance.has_value())
+            {
+                m_containerEntityInterface->SetContainerOpen(currentInstance->get().GetContainerEntityId(), openState);
+
+                currentInstance->get().GetNestedInstances(
+                    [&](AZStd::unique_ptr<Instance>& nestedInstance)
+                {
+                    instanceQueue.push(*nestedInstance.get());
+                }
+                );
+            }
+        }
+    }
+
+    void PrefabFocusHandler::SwitchToEditScope() const
+    {
+        auto focusInstance = GetInstanceReference(m_rootAliasFocusPath);
+
+        switch (m_prefabEditScope)
+        {           
+        case PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT:
+        {
+            SetInstanceContainersOpenStateOfAllDescendantContainers(focusInstance, true);
+        }
+        break;
+        default:
+        {
+            SetInstanceContainersOpenStateOfAllDescendantContainers(focusInstance, false);
+        }
+        break;
+        }
+
+        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabEditScopeChanged);
     }
 
     InstanceOptionalReference PrefabFocusHandler::GetInstanceReference(RootAliasPath rootAliasPath) const
