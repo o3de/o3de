@@ -6,4 +6,5 @@
 #
 #
 
-add_subdirectory(Code)
+add_subdirectory(Common)
+add_subdirectory(Native)
