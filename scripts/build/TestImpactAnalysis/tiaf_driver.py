@@ -115,7 +115,8 @@ def parse_args():
     # Safe mode
     parser.add_argument(
         '--safe-mode',
-        action='store_true',
+        action='store_const',
+        const="on",
         help="Run impact analysis tests in safe mode (ignored when seeding)",
         required=False
     )
