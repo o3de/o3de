@@ -202,14 +202,17 @@ namespace AzToolsFramework
             if (instancesFileReference.has_value())
             {
                 PrefabDomValue& instances = instancesFileReference->get();
-                if (!RemoveLinkOnReload(instances, instancesTemplateReference))
+                if (instancesTemplateReference.has_value())
                 {
-                    AZ_Error(
-                        "Prefab", false,
-                        "PrefabLoader::ReloadTemplateFrom - "
-                        "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
-                        loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
-                    return;
+                    if (!RemoveStateLinksOnReload(instances, instancesTemplateReference->get()))
+                    {
+                        AZ_Error(
+                            "Prefab", false,
+                            "PrefabLoader::ReloadTemplateFromFile - "
+                            "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
+                            loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
+                        return;
+                    }
                 }
 
                 // For each instance value in 'instances', locate the what was changed on file and update existing template
@@ -230,14 +233,12 @@ namespace AzToolsFramework
 
             SanitizeLoadedTemplate(existingTemplateDom);
 
-
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(relativePath);
         }
 
-        bool PrefabLoader::RemoveLinkOnReload(PrefabDomValue& fileInstances, PrefabDomValueReference templateInstancesReference)
+        bool PrefabLoader::RemoveStateLinksOnReload(PrefabDomValue& fileInstances, PrefabDomValue& templateInstances)
         {
-            PrefabDomValue& templateInstances = templateInstancesReference->get();
             for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
                  instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
             {
