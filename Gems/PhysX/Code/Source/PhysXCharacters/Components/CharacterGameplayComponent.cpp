@@ -11,8 +11,6 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <PhysX/PhysXLocks.h>
-#include <PhysX/Utils.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <System/PhysXSystem.h>
 
@@ -269,17 +267,9 @@ namespace PhysX
             }
         }
 
-        Physics::Character* character = nullptr;
-        Physics::CharacterRequestBus::EventResult(character, GetEntityId(), &Physics::CharacterRequests::GetCharacter);
-        if (character)
+        if (auto* physXSystem = GetPhysXSystem())
         {
-            auto controller = static_cast<PhysX::CharacterController*>(character);
-            controller->SetFilterFlags(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::ePREFILTER);
-            if (auto callbackManager = controller->GetCallbackManager())
-            {
-                callbackManager->SetControllerFilter(CollisionLayerBasedControllerFilter);
-                callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
-            }
+            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
         }
 
         CharacterGameplayRequestBus::Handler::BusConnect(GetEntityId());
@@ -326,49 +316,5 @@ namespace PhysX
 
         m_fallingVelocity += m_gravityMultiplier * m_gravity * deltaTime;
         Physics::CharacterRequestBus::Event(GetEntityId(), &Physics::CharacterRequests::AddVelocityForPhysicsTimestep, m_fallingVelocity);
-    }
-
-    bool CollisionLayerBasedControllerFilter(
-        const physx::PxController& controllerA, const physx::PxController& controllerB)
-    {
-        PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
-        physx::PxRigidDynamic* actorA = controllerA.getActor();
-        physx::PxRigidDynamic* actorB = controllerB.getActor();
-
-        if (actorA && actorA->getNbShapes() > 0 && actorB && actorB->getNbShapes() > 0)
-        {
-            physx::PxShape* shapeA = nullptr;
-            actorA->getShapes(&shapeA, 1, 0);
-            physx::PxFilterData filterDataA = shapeA->getSimulationFilterData();
-            physx::PxShape* shapeB = nullptr;
-            actorB->getShapes(&shapeB, 1, 0);
-            physx::PxFilterData filterDataB = shapeB->getSimulationFilterData();
-            return PhysX::Utils::Collision::ShouldCollide(filterDataA, filterDataB);
-        }
-
-        return true;
-    }
-
-    physx::PxQueryHitType::Enum CollisionLayerBasedObjectPreFilter(
-        const physx::PxFilterData& filterData, const physx::PxShape* shape, const physx::PxRigidActor* actor,
-        [[maybe_unused]] physx::PxHitFlags& queryFlags)
-    {
-        // non-kinematic dynamic bodies should not impede the movement of the character
-        if (actor->getConcreteType() == physx::PxConcreteType::eRIGID_DYNAMIC)
-        {
-            const physx::PxRigidDynamic* rigidDynamic = static_cast<const physx::PxRigidDynamic*>(actor);
-            if (!(rigidDynamic->getRigidBodyFlags() & physx::PxRigidBodyFlag::eKINEMATIC))
-            {
-                return physx::PxQueryHitType::eNONE;
-            }
-        }
-
-        // all other cases should be determined by collision filters
-        if (PhysX::Utils::Collision::ShouldCollide(filterData, shape->getSimulationFilterData()))
-        {
-            return physx::PxQueryHitType::eBLOCK;
-        }
-
-        return physx::PxQueryHitType::eNONE;
     }
 } // namespace PhysX

@@ -152,7 +152,7 @@ def main(args: dict):
     try:
         tiaf = TestImpact(args)
         tiaf_result = tiaf.run()
-        if args.mars_index_prefix:
+        if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(
                 args['mars_index_prefix'], tiaf_result, sys.argv, args['build_number'])
