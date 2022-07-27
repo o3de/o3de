@@ -46,16 +46,6 @@ class TestAutomation(TestAutomationBase):
         from . import Pane_HappyPath_ResizesProperly as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvas_ChangingAssets_ComponentStable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Graph_HappyPath_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -456,3 +446,20 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
+    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Test Entity created",
+            "Game Mode successfully entered",
+            "Game Mode successfully exited",
+            "Script Canvas File Updated",
+            "Expected log lines were found",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvas_ChangingAssets_ComponentStable.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
