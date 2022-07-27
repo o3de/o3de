@@ -11,8 +11,6 @@ from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
 
-ARG_SAFE_MODE = "safe_mode"
-
 
 class NativeTestImpact(BaseTestImpact):
 

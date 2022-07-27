@@ -27,10 +27,6 @@ ARG_SOURCE_BRANCH = 'src_branch'
 ARG_DESTINATION_BRANCH = 'dst_branch'
 ARG_COMMIT = 'commit'
 ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
-ARG_TEST_FAILURE_POLICY = 'test_failure_policy'
-ARG_EXCLUDE_FILE = 'exclude_file'
-ARG_TEST_TIMEOUT = 'test_timeout'
-ARG_GLOBAL_TIMEOUT = 'global_timeout'
 
 
 class BaseTestImpact(ABC):
@@ -118,7 +114,7 @@ class BaseTestImpact(ABC):
                         args['integration_policy'] = "continue"
         args['sequence'] = sequence_type
         self._parse_arguments_to_runtime(
-            args, sequence_type, self._runtime_args)
+            args, self._runtime_args)
 
     def _parse_arguments_to_runtime(self, args, runtime_args):
         """
