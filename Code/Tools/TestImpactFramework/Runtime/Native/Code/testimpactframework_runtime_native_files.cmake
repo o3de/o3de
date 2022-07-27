@@ -7,7 +7,8 @@
 #
 
 set(FILES
-    Include/TestImpactFramework/Native/TestImpactRuntime.h
+    Include/TestImpactFramework/Native/TestImpactNativeRuntime.h
+    Include/TestImpactFramework/Native/TestImpactNativeConfiguration.h
     Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
@@ -40,7 +41,7 @@ set(FILES
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
-    Source/TestImpactRuntime.cpp
-    Source/TestImpactRuntimeUtils.cpp
-    Source/TestImpactRuntimeUtils.h
+    Source/TestImpactNativeRuntime.cpp
+    Source/TestImpactNativeRuntimeUtils.cpp
+    Source/TestImpactNativeRuntimeUtils.h
 )

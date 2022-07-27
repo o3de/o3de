@@ -9,7 +9,7 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
-#include <TestImpactRuntimeUtils.h>
+#include <TestImpactNativeRuntimeUtils.h>
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h>
@@ -58,7 +58,7 @@ namespace TestImpact
     }
 
     AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> ConstructTestTargetExcludeList(
-        const TargetList<NativeTestTarget>& testTargets, const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets)
+        const TargetList<NativeTestTarget>& testTargets, const AZStd::vector<ExcludedTarget>& excludedTestTargets)
     {
         AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
         for (const auto& excludedTestTarget : excludedTestTargets)

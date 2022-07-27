@@ -29,33 +29,12 @@ ly_add_target(
             Source
         PUBLIC
             Include/Static
-    BUILD_DEPENDENCIES
+    COMPILE_DEFINITIONS
         PUBLIC
-            TestImpact.Frontend.Console.Common.Headers
+            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::TestImpact.Runtime.Common.Headers
+        PUBLIC
+            AZ::TestImpact.Frontend.Console.Common.Headers
 )
-
-################################################################################
-# Tests
-################################################################################
-
-# Disabled until future PR
-#ly_add_target(
-#    NAME TestImpact.Frontend.Console.Common.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-#    NAMESPACE AZ
-#    FILES_CMAKE
-#        testimpactframework_frontend_console_common_tests_files.cmake
-#    INCLUDE_DIRECTORIES
-#        PRIVATE
-#            Include
-#            Source
-#            Tests
-#    BUILD_DEPENDENCIES
-#        PRIVATE
-#            AZ::AzTestShared
-#            AZ::AzTest
-#            AZ::TestImpact.Frontend.Console.Common.Static
-#)
-#
-#ly_add_googletest(
-#    NAME AZ::TestImpact.Frontend.Console.Common.Tests
-#)

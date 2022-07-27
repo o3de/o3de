@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
@@ -80,46 +80,11 @@ namespace TestImpact
         RepoPath m_metaFile; //!< Path to the gem target file.
     };
 
-    //! Test engine configuration.
-    struct TestEngineConfig
+    //! Test target excluded from test selection.
+    struct ExcludedTarget
     {
-        //! Test runner configuration.
-        struct TestRunner
-        {
-            RepoPath m_binary; //!< Path to the test runner binary.
-        };
-
-        //! Test instrumentation configuration.
-        struct Instrumentation
-        {
-            RepoPath m_binary; //!< Path to the test instrumentation binary.
-        };
-
-        TestRunner m_testRunner;
-        Instrumentation m_instrumentation;
-    };
-
-    //! Build target configuration.
-    struct TargetConfig
-    {
-        //! Test target sharding configuration.
-        struct ShardedTarget
-        {
-            AZStd::string m_name; //!< Name of test target this sharding configuration applies to.
-            ShardConfiguration m_configuration; //!< The shard configuration to use.
-        };
-
-        //! Test target excluded from test selection.
-        struct ExcludedTarget
-        {
-            AZStd::string m_name; //!< Name of test target to exclude.
-            AZStd::vector<AZStd::string> m_excludedTests; //!< Specific tests to exclude (if empty, all tests are excluded).
-        };
-
-        RepoPath m_outputDirectory; //!< Path to the test target binary directory.
-        AZStd::vector<ExcludedTarget> m_excludedRegularTestTargets; //!< Test targets to always exclude from regular test run sequences.
-        AZStd::vector<ExcludedTarget> m_excludedInstrumentedTestTargets; //!< Test targets to always exclude from instrumented test run sequences.
-        AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
+        AZStd::string m_name; //!< Name of test target to exclude.
+        AZStd::vector<AZStd::string> m_excludedTests; //!< Specific tests to exclude (if empty, all tests are excluded).
     };
 
     struct RuntimeConfig
@@ -131,7 +96,5 @@ namespace TestImpact
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
         GemTargetConfig m_gemTarget;
-        TestEngineConfig m_testEngine;
-        TargetConfig m_target;
     };
 } // namespace TestImpact

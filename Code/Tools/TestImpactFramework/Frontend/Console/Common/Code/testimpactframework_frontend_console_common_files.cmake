@@ -7,4 +7,13 @@
 #
 
 set(FILES
+    Include/Static/TestImpactConsoleUtils.h
+    Include/Static/TestImpactCommandLineOptionsException.h
+    Include/Static/TestImpactCommandLineOptionsUtils.h
+    Include/Static/TestImpactCommandLineOptions.h
+    Include/Static/TestImpactRuntimeConfigurationFactory.h
+    Source/TestImpactConsoleUtils.cpp
+    Source/TestImpactCommandLineOptionsUtils.cpp
+    Source/TestImpactCommandLineOptions.cpp
+    Source/TestImpactRuntimeConfigurationFactory.cpp
 )

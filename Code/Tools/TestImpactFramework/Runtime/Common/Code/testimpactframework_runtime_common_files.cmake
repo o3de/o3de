@@ -11,7 +11,6 @@ set(FILES
     Include/Static/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h
     Include/Static/Artifact/Factory/TestImpactTestRunSuiteFactory.h
     Include/Static/Artifact/Factory/TestImpactModuleCoverageFactory.h
-    Include/Static/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
     Include/Static/Artifact/Static/TestImpactTestSuiteMeta.h
     Include/Static/Artifact/Static/TestImpactTargetDescriptor.h
     Include/Static/Artifact/Static/TestImpactDependencyGraphData.h
@@ -68,7 +67,6 @@ set(FILES
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
-    Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.cpp
     Source/Process/TestImpactProcess.cpp
     Source/Process/TestImpactProcessInfo.cpp
     Source/Process/JobRunner/TestImpactProcessJobMeta.cpp

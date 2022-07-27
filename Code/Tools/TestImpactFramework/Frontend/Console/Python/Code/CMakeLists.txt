@@ -11,31 +11,36 @@ if(LY_MONOLITHIC_GAME)
 endif()
 
 ly_add_target(
-    NAME TestImpact.Frontend.Console.Native.Static STATIC
+    NAME TestImpact.Frontend.Console.Python.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_native_static_files.cmake
+        testimpactframework_frontend_console_python_static_files.cmake
     INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
         PRIVATE
             Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::TestImpact.Frontend.Console.Common.Static
-            AZ::TestImpact.Runtime.Native.Static
+            AZ::TestImpact.Runtime.Python.Static
         PUBLIC
             AZ::TestImpact.Frontend.Console.Common.Headers
 )
 
 ly_add_target(
-    NAME TestImpact.Frontend.Console.Native EXECUTABLE
-    OUTPUT_NAME tiaf
+    NAME TestImpact.Frontend.Console.Python EXECUTABLE
+    OUTPUT_NAME tiaf_py
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_native_files.cmake
+        testimpactframework_frontend_console_python_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::TestImpact.Frontend.Console.Native.Static
+            AZ::TestImpact.Frontend.Console.Python.Static
 )
