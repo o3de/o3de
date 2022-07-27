@@ -70,9 +70,9 @@ namespace SandboxEditor
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
                 m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
@@ -80,9 +80,9 @@ namespace SandboxEditor
                 );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }

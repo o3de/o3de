@@ -199,14 +199,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project settings when the project path is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
 
             AZ::IO::FixedMaxPath newProjectPath;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
             {
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
@@ -232,14 +232,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project specialization when the project name is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
 
             FixedValueString newProjectName;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
             {
                 // Add the project_name as a specialization for loading the build system dependency .setreg files
@@ -268,10 +268,10 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
-            if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
+            if (notifyEventArgs.m_jsonKeyPath == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
             {
                 AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
             }

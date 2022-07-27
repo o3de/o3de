@@ -11,7 +11,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileReader.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -52,6 +51,30 @@ namespace AZ::SettingsRegistryImplInternal
 
 namespace AZ
 {
+    SettingsRegistryImpl::ScopedMergeEvent::ScopedMergeEvent(SettingsRegistryImpl& settingsRegistry,
+        MergeEventArgs mergeEventArgs)
+        : m_settingsRegistry{ settingsRegistry }
+        , m_mergeEventArgs{ AZStd::move(mergeEventArgs) }
+    {
+        {
+            // Push the file to be merged under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.m_settingMutex);
+            m_settingsRegistry.m_mergeFilePathStack.emplace(m_mergeEventArgs.m_mergeFilePath);
+        }
+        m_settingsRegistry.m_preMergeEvent.Signal(mergeEventArgs);
+    }
+
+    SettingsRegistryImpl::ScopedMergeEvent::~ScopedMergeEvent()
+    {
+        m_settingsRegistry.m_postMergeEvent.Signal(m_mergeEventArgs);
+
+        {
+            // Pop the file that finished merging under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.m_settingMutex);
+            m_settingsRegistry.m_mergeFilePathStack.pop();
+        }
+    }
+
     template<typename T>
     bool SettingsRegistryImpl::SetValueInternal(AZStd::string_view path, T value)
     {
@@ -169,6 +192,8 @@ namespace AZ
     {
         m_useFileIo = useFileIo;
     }
+
+    SettingsRegistryImpl::~SettingsRegistryImpl() = default;
 
     void SettingsRegistryImpl::SetContext(SerializeContext* context)
     {
@@ -318,7 +343,10 @@ namespace AZ
         decltype(m_signalNotifierQueue) localNotifierQueue;
         {
             AZStd::scoped_lock signalLock(m_signalMutex);
-            m_signalNotifierQueue.push_back({ FixedValueString{jsonPath}, type });
+            m_signalNotifierQueue.push_back({
+                FixedValueString{jsonPath},
+                type,
+                !m_mergeFilePathStack.empty() ? m_mergeFilePathStack.top() : "<in-memory>"});
             // If the signal count was 0, then a dispatch is in progress
             if (m_signalCount++ == 0)
             {
@@ -330,7 +358,7 @@ namespace AZ
         {
             for (const SignalNotifierArgs& notifierArgs : localNotifierQueue)
             {
-                localNotifierEvent.Signal(notifierArgs.m_jsonPath, notifierArgs.m_type);
+                localNotifierEvent.Signal({ notifierArgs.m_jsonPath, notifierArgs.m_type, notifierArgs.m_mergeFilePath.Native()});
             }
             // Clear the local notifier queue and check if more notifiers have been added
             localNotifierQueue = {};
@@ -1310,8 +1338,6 @@ namespace AZ
             return false;
         }
 
-        ScopedMergeEvent scopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
-
         // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
         // option is enabled
         JsonApplyPatchSettings applyPatchSettings;
@@ -1354,6 +1380,7 @@ namespace AZ
             };
         }
 
+        ScopedMergeEvent scopedMergeEvent(*this, { path, rootKey });
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         auto anchorType = Type::NoType;
         if (rootKey.empty())

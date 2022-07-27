@@ -77,11 +77,12 @@ namespace AZ::ComponentApplicationLifecycle
         }
         auto eventNameRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
             AZ_STRING_ARG(eventName));
-        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](AZStd::string_view path, Type type)
+        auto lifecycleCallback = [callback = AZStd::move(callback), eventNameRegistrationKey](
+            const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            if (path == eventNameRegistrationKey)
+            if (notifyEventArgs.m_jsonKeyPath == eventNameRegistrationKey)
             {
-                callback(path, type);
+                callback(notifyEventArgs);
             }
         };
 
