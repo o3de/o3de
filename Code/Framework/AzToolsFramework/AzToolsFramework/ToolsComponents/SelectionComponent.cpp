@@ -52,7 +52,7 @@ namespace AzToolsFramework
         {
             // this is a quick hack to test - not final
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Skip Selection Component");
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, "Skip Selection Component");
         }
 
         AZ::JsonSerializationResult::Result SelectionComponentSerializer::Store(
@@ -64,7 +64,7 @@ namespace AzToolsFramework
         {
             // this is a quick hack to test - not final
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Skip Selection Component");
+            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Unavailable, "Skip Selection Component");
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)
