@@ -313,13 +313,10 @@ namespace Terrain
             }
         }
 
-        const bool drawHeights = m_configuration.m_debugQueries.m_drawHeights;
-        const bool drawNormals = m_configuration.m_debugQueries.m_drawNormals;
-        const float normalHeight = m_configuration.m_debugQueries.m_normalHeight;
-
         // Process the terrain data query and turn the results into debug visualizations.
         // We'll reuse the normalLineVertices buffer for drawing both heights and normals. The first point of each normal line
         // always starts at the height position, so we can use those to draw heights.
+        const float normalHeight = m_configuration.m_debugQueries.m_normalHeight;
         AZStd::vector<AZ::Vector3> normalLineVertices;
         auto ProcessSurfacePoint =
             [normalHeight, &normalLineVertices](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
