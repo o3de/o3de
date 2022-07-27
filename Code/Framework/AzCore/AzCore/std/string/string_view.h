@@ -1018,6 +1018,7 @@ namespace AZStd
         size_type m_size{};
     };
 
+    // AZStd::basic_string_view deduction guides
     template<class It, class End>
     basic_string_view(It, End)->basic_string_view<iter_value_t<It>>;
     template<class R>

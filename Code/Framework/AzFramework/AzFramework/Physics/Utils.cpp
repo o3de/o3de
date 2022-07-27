@@ -90,7 +90,11 @@ namespace Physics
                     ->Event("SetMaximumSpeed", &CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
                     ->Event("GetVelocity", &CharacterRequests::GetVelocity, "Get Velocity")
                     ->Event("AddVelocity", &CharacterRequests::AddVelocity, "Add Velocity")
-                    ;
+                    ->Event("AddVelocityForTick", &CharacterRequests::AddVelocityForTick, "Add Velocity For Tick")
+                    ->Event(
+                        "AddVelocityForPhysicsTimestep",
+                        &CharacterRequests::AddVelocityForPhysicsTimestep,
+                        "Add Velocity For Physics Timestep");
             }
         }
 
