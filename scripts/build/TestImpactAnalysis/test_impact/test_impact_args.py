@@ -12,6 +12,13 @@ value = 0
 
 
 class RuntimeArgs(Enum):
+    """
+    Enum for all of the possible arguments that we could pass through to the TIAF runtime.
+    Defined by three properties:
+    py_arg: The argument that will be passed to the tiaf_driver.
+    runtime_arg: The argument that we will set the value to.
+    message: The message to log when we apply this argument to the runtime.
+    """
     # Base arguments
     SEQUENCE = ("sequence", "--sequence=", "Sequence type is set to: ")
     FPOLICY = ("test_failure_policy", "--fpolicy=",
