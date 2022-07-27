@@ -143,6 +143,28 @@ class TestTIAFNativeUnitTests():
         mock_storage.assert_called_with(*expected_storage_args)
 
 
+class TestTIAFPythonUnitTests():
+
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\python"), ("test_bucket", "test_dir", "test_dir\\python")])
+    def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir):
+        # given:
+        # Default args + s3_bucket and s3_top_level_dir set
+        tiaf_args['s3_bucket'] = bucket_name
+        tiaf_args['s3_top_level_dir'] = top_level_dir
+        mock_storage = mocker.patch(
+            "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
+
+        # when:
+        # We create a NativeTestImpact object
+        tiaf = PythonTestImpact(tiaf_args)
+
+        # then:
+        # PersistentStorageS3.__init__ should be called with config data, suite, commit, bucket_name, modified top level dir and src_branch as arguments
+        mock_storage.assert_called_with(*expected_storage_args)
+
+
 class TestTIAFBaseUnitTests():
 
     def test_create_TestImpact_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
