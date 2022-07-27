@@ -1539,7 +1539,7 @@ namespace AZ::Data
         
         if (container)
         {
-            auto result = m_ownedAssetContainers.insert({ container.get(), container });
+            [[maybe_unused]] auto result = m_ownedAssetContainers.insert({ container.get(), container });
 
             ASSET_DEBUG_OUTPUT(AZStd::string::format(
                 "Insert asset container - %p - %s - " AZ_STRING_FORMAT,
