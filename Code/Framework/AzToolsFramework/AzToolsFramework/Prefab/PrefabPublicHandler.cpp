@@ -682,8 +682,9 @@ namespace AzToolsFramework
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
 
-            // Update the undo cache on the added entity with the parent information.
+            // Update the undo cache on the added entity and the parent entity with the parent information.
             m_prefabUndoCache.UpdateCache(entityId);
+            m_prefabUndoCache.UpdateCache(parentId);
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = {entityId};
@@ -1259,23 +1260,32 @@ namespace AzToolsFramework
                 return AZStd::move(retrieveEntitiesAndInstancesOutcome);
             }
 
-            for (auto& nestedInstance : instances)
-            {
-                AZStd::unique_ptr<Instance> outInstance =
-                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
-                RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
-                outInstance.reset();
-            }
-
             // Take a snapshot of the instance DOM before we manipulate it.
             Prefab::PrefabDom instanceDomBefore;
             m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
 
+            for (auto& nestedInstance : instances)
+            {
+                AZ::EntityId containerEntityId = nestedInstance->GetContainerEntityId();
+                AZStd::unique_ptr<Instance> outInstance =
+                    commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
+                RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
+                outInstance.reset();
+
+                m_prefabUndoCache.PurgeCache(containerEntityId);
+            }
+
             for (AZ::Entity* entity : entities)
             {
+                AZ::EntityId entityId = entity->GetId();
                 commonOwningInstance->get().DetachEntity(entity->GetId()).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
+                
+                m_prefabUndoCache.PurgeCache(entityId);
             }
+
+            // Update the undo cache on the container entity of the owning instance.
+            m_prefabUndoCache.UpdateCache(commonOwningInstance->get().GetContainerEntityId());
 
             // In order to undo DeleteSelected, we have to create a selection command which selects the current selection
             // and then add the deletion as children.
