@@ -194,10 +194,20 @@ namespace UnitTest
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
         float queryResolution, AZ::Aabb worldBounds) const
     {
+        const float defaultSurfaceQueryResolution = 1.0f;
+        return CreateAndActivateTerrainSystem(queryResolution, defaultSurfaceQueryResolution, worldBounds);
+    }
+
+    // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
+    // on a test-by-test basis.
+    AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
+        float heightQueryResolution, float surfaceQueryResolution, AZ::Aabb worldBounds) const
+    {
         // Create the terrain system and give it one tick to fully initialize itself.
         auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
         terrainSystem->SetTerrainAabb(worldBounds);
-        terrainSystem->SetTerrainHeightQueryResolution(queryResolution);
+        terrainSystem->SetTerrainHeightQueryResolution(heightQueryResolution);
+        terrainSystem->SetTerrainSurfaceDataQueryResolution(surfaceQueryResolution);
         terrainSystem->Activate();
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
         return terrainSystem;
@@ -381,5 +391,46 @@ namespace UnitTest
         m_terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
     }
 
+    TerrainSystemTestFixture::TerrainSystemTestFixture()
+        : m_restoreFileIO(m_fileIOMock)
+    {
+        // Install Mock File IO, since the ShaderMetricsSystem inside of Atom's RPISystem will try to read/write a file.
+        AZ::IO::MockFileIOBase::InstallDefaultReturns(m_fileIOMock);
+    }
+
+    void TerrainSystemTestFixture::SetUp()
+    {
+        UnitTest::TerrainTestFixture::SetUp();
+
+        // Create a system entity with a SceneSystemComponent for Atom and a TerrainSystemComponent for the TerrainWorldComponent.
+        // However, we don't initialize and activate it until *after* the RPI system is initialized, since the TerrainSystemComponent
+        // relies on the RPI.
+        m_systemEntity = CreateEntity();
+        m_systemEntity->CreateComponent<AzFramework::SceneSystemComponent>();
+        m_systemEntity->CreateComponent<Terrain::TerrainSystemComponent>();
+
+        // Create a stub RHI for use by Atom
+        m_rhiFactory.reset(aznew UnitTest::StubRHI::Factory());
+
+        // Create the Atom RPISystem
+        AZ::RPI::RPISystemDescriptor rpiSystemDescriptor;
+        m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
+        m_rpiSystem->Initialize(rpiSystemDescriptor);
+
+        // Now that the RPISystem is activated, activate the system entity.
+        m_systemEntity->Init();
+        m_systemEntity->Activate();
+    }
+
+    void TerrainSystemTestFixture::TearDown()
+    {
+        m_rpiSystem->Shutdown();
+        m_rpiSystem = nullptr;
+        m_rhiFactory = nullptr;
+
+        m_systemEntity.reset();
+
+        UnitTest::TerrainTestFixture::TearDown();
+    }
 }
 

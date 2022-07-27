@@ -246,4 +246,16 @@ namespace PhysX
         AZStd::unique_ptr<CharacterControllerCallbackManager>
             m_callbackManager; ///< Manages callbacks for collision filtering, collision notifications, and handling riding on objects.
     };
+
+    //! Example implementation of controller-controller filtering callback.
+    //! This example causes controllers to impede each other's movement based on their collision filters.
+    bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB);
+
+    //! Example implementation of controller-object filtering callback.
+    //! This example causes static and kinematic bodies to impede the character based on collision layers.
+    physx::PxQueryHitType::Enum CollisionLayerBasedObjectPreFilter(
+        const physx::PxFilterData& filterData,
+        const physx::PxShape* shape,
+        const physx::PxRigidActor* actor,
+        [[maybe_unused]] physx::PxHitFlags& queryFlags);
 } // namespace PhysX
