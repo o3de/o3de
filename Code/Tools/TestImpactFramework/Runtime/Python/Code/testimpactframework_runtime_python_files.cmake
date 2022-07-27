@@ -15,15 +15,5 @@ set(FILES
     Source/Artifact/Static/TestImpactPythonTestTargetDescriptor.h
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h
-    Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
-    Source/TestRunner/Python/TestImpactPythonTestRunner.h
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
-    Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
-    Source/TestEngine/Python/TestImpactPythonTestEngine.h
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.h
     Source/TestImpactPythonRuntime.cpp
 )
