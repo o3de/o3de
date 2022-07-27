@@ -94,5 +94,4 @@ def default_runtime_args(mock_uuid, report_path):
 
 @pytest.fixture
 def cpp_default_runtime_args(default_runtime_args):
-    default_runtime_args['safemode'] = "--safemode=off"
     return default_runtime_args

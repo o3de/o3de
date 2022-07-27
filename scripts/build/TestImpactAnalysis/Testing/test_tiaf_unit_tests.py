@@ -113,12 +113,25 @@ class TestTiafInitialiseStorage():
 
 class TestTIAFNativeUnitTests():
 
-    @pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
+    @pytest.mark.parametrize("safemode, arg_val", [("on", "on")])
     def test_create_NativeTestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, safemode, arg_val):
         # given:
         # Default args + safe_mode set.
         tiaf_args['safe_mode'] = safemode
         cpp_default_runtime_args['safemode'] = "--safemode="+arg_val
+
+        # when:
+        # We create a TestImpact object.
+        tiaf = NativeTestImpact(tiaf_args)
+
+        # then:
+        # tiaf.runtime_args should equal expected args.
+        assert_list_content_equal(
+            tiaf.runtime_args, cpp_default_runtime_args.values())
+
+    def test_create_NativeTestImpact_no_safe_mode(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args):
+        # given:
+        # Default args + safe_mode set.
 
         # when:
         # We create a TestImpact object.
