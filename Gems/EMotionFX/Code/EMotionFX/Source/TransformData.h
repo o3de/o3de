@@ -13,7 +13,6 @@
 #include "BaseObject.h"
 #include "Pose.h"
 
-
 namespace EMotionFX
 {
     // forward declarations

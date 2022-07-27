@@ -112,13 +112,15 @@ namespace AssetProcessor
             stream.setCodec("UTF-8");
             stream << buffer.GetString();
 
-            m_errorLevel = ErrorLevel::Notice;
-            m_errorMessage = AZStd::string::format("Updated settings file (%s)", fullpath.c_str());
+            m_statusLevel = StatusLevel::Notice;
+            m_statusMessage = AZStd::string::format("Updated settings file (%s)", fullpath.c_str());
+            m_updateStatus = true;
         }
         else
         {
-            m_errorLevel = ErrorLevel::Error;
-            m_errorMessage = AZStd::string::format("**Error**: Could not write settings file (%s)", fullpath.c_str());
+            m_statusLevel = StatusLevel::Error;
+            m_statusMessage = AZStd::string::format("**Error**: Could not write settings file (%s)", fullpath.c_str());
+            m_updateStatus = false;
         }
         file.close();
         return result;

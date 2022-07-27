@@ -30,6 +30,9 @@ namespace AssetProcessor
 
         QModelIndex GetIndexForSource(const AZStd::string& source);
 
+    public Q_SLOTS:
+        void OnCreateJobsDurationChanged(QString sourceName);
+
     protected:
         void ResetModel() override;
 

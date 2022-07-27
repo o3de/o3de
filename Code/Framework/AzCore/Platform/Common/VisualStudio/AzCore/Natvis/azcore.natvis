@@ -137,7 +137,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -150,7 +150,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -163,7 +163,7 @@
         <Size>m_numElements</Size>
         <HeadPointer>m_head.m_next</HeadPointer>
         <NextPointer>m_next</NextPointer>
-        <ValueNode>*($T1*)(this+1)</ValueNode>
+        <ValueNode>(*(Internal::forward_list_node&lt;$T1&gt;*)(this)).m_value</ValueNode>
       </LinkedListItems>
     </Expand>
   </Type>
@@ -245,14 +245,24 @@
 
   <Type Name="AZStd::list_const_iterator&lt;*&gt;">
     <AlternativeType Name="AZStd::list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
-    <AlternativeType Name="AZStd::forward_list_const_iterator&lt;*&gt;" />
     <DisplayString>{*((Internal::list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
     <Expand>
       <Item Name="[ptr]">(void*)(m_node), x</Item>
       <Item Name="[value]">*((Internal::list_node&lt;$T1&gt;*)(m_node))</Item>
+      <Item Name="[next]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+      <Item Name="[prev]">*(AZStd::list_const_iterator&lt;$T1&gt;*) (((Internal::list_node&lt;$T1&gt;*)(m_node))->m_prev)</Item>
     </Expand>
   </Type>
+
+    <Type Name="AZStd::forward_list_const_iterator&lt;*&gt;">
+        <AlternativeType Name="AZStd::forward_list_iterator&lt;*&gt;" />
+        <DisplayString>{*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))}</DisplayString>
+        <Expand>
+            <Item Name="[ptr]">(void*)(m_node), x</Item>
+            <Item Name="[value]">*((Internal::forward_list_node&lt;$T1&gt;*)(m_node))</Item>
+            <Item Name="[next]">*(AZStd::forward_list_const_iterator&lt;$T1&gt;*) (((Internal::forward_list_node&lt;$T1&gt;*)(m_node))->m_next)</Item>
+        </Expand>
+    </Type>
 
   <Type Name="AZStd::intrusive_list&lt;*&gt;::const_iterator_impl">
     <AlternativeType Name="AZStd::intrusive_list&lt;*&gt;::iterator_impl" />
