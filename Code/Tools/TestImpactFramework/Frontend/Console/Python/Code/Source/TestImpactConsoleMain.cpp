@@ -26,7 +26,7 @@ namespace TestImpact::Console
     {
         try
         {
-            PythonCommandLineOptions options(argc, argv);
+            const PythonCommandLineOptions options(argc, argv);
             AZStd::optional<ChangeList> changeList;
 
             if (options.HasChangeListFilePath())
