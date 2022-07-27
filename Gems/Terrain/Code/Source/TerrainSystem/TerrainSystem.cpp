@@ -235,23 +235,23 @@ void TerrainSystem::InterpolateHeights(const AZStd::array<float,4>& heights, con
     constexpr uint8_t heightIndices[16][4] =
     {
                         // x0y0 x1y0 x0y1 x1y1  output
-        0, 0, 0, 0,     // F    F    F    F     x0y0
-        0, 0, 0, 0,     // T    F    F    F     x0y0
-        1, 1, 1, 1,     // F    T    F    F     x1y0
-        0, 1, 0, 1,     // T    T    F    F     lerp(x0y0, x1y0)
-        2, 2, 2, 2,     // F    F    T    F     x0y1
-        0, 0, 2, 2,     // T    F    T    F     lerp(x0y0, x0y1)
-        1, 1, 2, 2,     // F    T    T    F     lerp(x1y0, x0y1)
-        0, 1, 2, 2,     // T    T    T    F     lerp(lerp(x0y0, x1y0), x0y1)
+        { 0, 0, 0, 0 }, // F    F    F    F     x0y0
+        { 0, 0, 0, 0 }, // T    F    F    F     x0y0
+        { 1, 1, 1, 1 }, // F    T    F    F     x1y0
+        { 0, 1, 0, 1 }, // T    T    F    F     lerp(x0y0, x1y0)
+        { 2, 2, 2, 2 }, // F    F    T    F     x0y1
+        { 0, 0, 2, 2 }, // T    F    T    F     lerp(x0y0, x0y1)
+        { 1, 1, 2, 2 }, // F    T    T    F     lerp(x1y0, x0y1)
+        { 0, 1, 2, 2 }, // T    T    T    F     lerp(lerp(x0y0, x1y0), x0y1)
 
-        3, 3, 3, 3,     // F    F    F    T     x1y1
-        0, 0, 3, 3,     // T    F    F    T     lerp(x0y0, x1y1)
-        1, 1, 3, 3,     // F    T    F    T     lerp(x1y0, x1y1)
-        0, 1, 3, 3,     // T    T    F    T     lerp(lerp(x0y0, x1y0), x1y1)
-        2, 3, 2, 3,     // F    F    T    T     lerp(x0y1, x1y1)
-        0, 0, 2, 3,     // T    F    T    T     lerp(x0y0, lerp(x0y1, x1y1))
-        1, 1, 2, 2,     // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
-        0, 1, 2, 3,     // T    T    T    T     lerp(lerp(x0y0, x1y0), lerp(x0y1, x1y1))
+        { 3, 3, 3, 3 }, // F    F    F    T     x1y1
+        { 0, 0, 3, 3 }, // T    F    F    T     lerp(x0y0, x1y1)
+        { 1, 1, 3, 3 }, // F    T    F    T     lerp(x1y0, x1y1)
+        { 0, 1, 3, 3 }, // T    T    F    T     lerp(lerp(x0y0, x1y0), x1y1)
+        { 2, 3, 2, 3 }, // F    F    T    T     lerp(x0y1, x1y1)
+        { 0, 0, 2, 3 }, // T    F    T    T     lerp(x0y0, lerp(x0y1, x1y1))
+        { 1, 1, 2, 2 }, // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
+        { 0, 1, 2, 3 }, // T    T    T    T     lerp(lerp(x0y0, x1y0), lerp(x0y1, x1y1))
     };
 
     const float heightX0Y0 = heights[heightIndices[indexLookup][0]];
