@@ -66,6 +66,7 @@ PARAMETERS_QT = "Parameters"
 """
 General constants
 """
+BASE_LEVEL_NAME = "Base"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
 WAIT_FRAMES = 200

@@ -137,7 +137,7 @@ namespace UnitTest
 
             // check assignment operator
             {
-                if (const AZ::BezierSpline* bezierSpline = azrtti_cast<const AZ::BezierSpline*>(bezierSplinePtr.get()))
+                if (azrtti_cast<const AZ::BezierSpline*>(bezierSplinePtr.get()))
                 {
                     AZ::BezierSpline newBezierSpline;
                     newBezierSpline = *bezierSplinePtr.get();

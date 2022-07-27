@@ -21,6 +21,7 @@ namespace MaterialCanvas
         typedef AZ::Uuid BusIdType;
 
         virtual GraphCanvas::GraphId GetGraphId() const = 0;
+        virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
     };
 
     using MaterialCanvasDocumentRequestBus = AZ::EBus<MaterialCanvasDocumentRequests>;

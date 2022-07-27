@@ -294,7 +294,7 @@ namespace AZ
                     // This is because on mobiles VK_SUBOPTIMAL_KHR is returned when the swapchain's "preTransform"
                     // doesn't match the rotation of the device and that means its render engine internally will
                     // perform the rotation and on certain devices that's not as optimal as being handled by O3DE.
-                    // Handle the rotation ourselves is not trivial to achieve, because the viewport dimensions have
+                    // Handling the rotation ourselves is not trivial to achieve, because the viewport dimensions have
                     // to be flipped (which affects UI operations) and view/projection matrices of 3D and 2D systems
                     // have to be manipulated in higher level code, which is very intrusive.
 #if AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL

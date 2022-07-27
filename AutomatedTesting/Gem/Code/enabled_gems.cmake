@@ -64,4 +64,5 @@ set(ENABLED_GEMS
     PrimitiveAssets
     Stars
     RecastNavigation
+    ScriptAutomation
 )

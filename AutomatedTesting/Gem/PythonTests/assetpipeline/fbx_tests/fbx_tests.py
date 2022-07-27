@@ -11,6 +11,7 @@ import logging
 import os
 import pytest
 from typing import List
+import distutils.dir_util
 
 # Import LyTestTools
 import ly_test_tools.builtin.helpers as helpers
@@ -597,8 +598,8 @@ class TestsFBX_AllPlatforms(object):
         logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
         with open(expected_debug_graph_path, "r") as scene_file:
             expected_lines = scene_file.readlines()
-
         assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
+
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset=False):
         """
@@ -653,7 +654,6 @@ class TestsFBX_AllPlatforms(object):
         if blackbox_params.scene_debug_file:
             scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset \
                 else blackbox_params.scene_debug_file
-
             self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
 
             # Run again for the .dbgsg.xml file
@@ -671,3 +671,68 @@ class TestsFBX_AllPlatforms(object):
                                                                           f"{blackbox_params.asset_folder}/"
                                                                           f"{expected_source.source_file_name}",
                                                                           cache_root)
+
+    def test_FBX_ModifiedFBXFile_ConsistentProductOutput_OutputSucceeds(self, workspace, ap_setup_fixture,
+                                                                            asset_processor):
+        """
+        Test verifies changing an FBX file with a custom .assetinfo file produces an expected output
+        The .assetinfo file will remain unchanged.
+
+        Test Steps:
+            1. Create test environment with an FBX file and a custom .assetinfo file
+            2. Launch Asset Processor
+            3. Validate that Asset Processor generates the expected output
+            4. Modify the FBX file
+            5. Run asset processor
+            6. Validate that Asset Processor generates the expected output
+        """
+
+        # Copying test assets to project folder
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "ModifiedFBXFile_ConsistentProductOutput")
+        # Run AP against the FBX file and the .assetinfo file
+        result, _ = asset_processor.batch_process(extra_params=["--debugOutput",
+                                                    "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        assert result, "Asset Processor Failed"
+
+        # Set path to expected dbgsg output, copied from test folder
+        scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", "modifiedfbxfile.dbgsg")
+        assert os.path.exists(scene_debug_expected), "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
+
+        # Set path to actual dbgsg output, obtained when running AP
+        scene_debug_actual = os.path.join(asset_processor.temp_project_cache(asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]), "ModifiedFBXFile_ConsistentProductOutput","modifiedfbxfile.dbgsg")
+        assert os.path.exists(scene_debug_actual)
+
+        # Compare the dbgsg files to ensure expected outputs
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+
+        # Run again for the .dbgsg.xml files
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+
+        # Remove the files to be replaced from the source test asset folder
+        filestoremove = [
+            os.path.join(asset_processor.project_test_source_folder(),"ModifiedFBXFile.fbx"),
+            scene_debug_expected,
+            scene_debug_expected + ".xml"
+        ]
+        for file in filestoremove:
+            os.remove(file)
+            assert not os.path.exists(file), f"File failed to be removed: {file}"
+
+        # Add the replacement FBX and expected dbgsg files into the test project
+        source = os.path.join(ap_setup_fixture["tests_dir"], "Assets",
+                              "Override_ModifiedFBXFile_ConsistentProductOutput")
+        destination = asset_processor.project_test_source_folder()
+        # Note: Replace distutils for shutil.copytree("src", "dst", dirs_exist_ok=True) once updated to Python 3.8
+        distutils.dir_util.copy_tree(source, destination)
+        assert os.path.exists(scene_debug_expected), \
+            "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
+
+        # Run AP again to regenerate the .dbgsg files
+        asset_processor.batch_process(extra_params=["--debugOutput",
+                                                    "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+
+        # Compare the new .dbgsg files with their expected outputs
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+
+        # Run again for the .dbgsg.xml file
+        self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
