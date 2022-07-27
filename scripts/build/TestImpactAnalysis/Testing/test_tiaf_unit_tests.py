@@ -34,6 +34,10 @@ class ConcreteBaseTestImpact(BaseTestImpact):
         """
         return self._default_sequence_type
 
+    @property
+    def runtime_type(self):
+        return self._runtime_type
+
 
 class TestTiafInitialiseStorage():
 

@@ -522,17 +522,18 @@ class BaseTestImpact(ABC):
         return self._source_of_truth_branch
 
     @property
+    @abstractmethod
     def runtime_type(self):
         """
-        The runtime this TestImpact supports. If self._runtime_type is not set, will raise NotImplementedError
+        The runtime this TestImpact supports. Must be implemented by subclass
         Current options are "cpp" or "python"
         """
-        if not self._runtime_type:
-            raise NotImplementedError(
-                "Error, runtime_type must be set for TestImpact classes")
-        return self._runtime_type
+        pass
 
     @property
     @abstractmethod
     def default_sequence_type(self):
+        """
+        The default sequence type for this TestImpact class. Must be implemented by subclass.
+        """
         pass

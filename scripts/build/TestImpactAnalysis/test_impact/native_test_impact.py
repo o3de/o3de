@@ -33,3 +33,7 @@ class NativeTestImpact(BaseTestImpact):
     @property
     def default_sequence_type(self):
         return self._default_sequence_type
+
+    @property
+    def runtime_type(self):
+        return self._runtime_type
