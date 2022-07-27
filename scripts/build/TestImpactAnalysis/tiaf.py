@@ -241,11 +241,8 @@ class TestImpact:
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._src_commit = persistent_storage.last_commit_hash
-
-                    '''
-                    YOU NEED TO DRAFT IN FAILING TESTS OR INLY UPDAT UPON SUCCESS OTHERWISE RERUNS FOR FAILED RUNS WILL HAVE SAME LAST COMMIT HASH AS COMMOIT AND GENERATE EMPTY CHANGELISTS!!!
-                    
-                    '''
+                    # NOTE: need to draft in failing tests or only update upon success otherwise reruns for failed runs will have the same last commit
+                    # hash as the commit and generate an empty changelist
 
                     # Check to see if this is a re-run for this commit before any other changes have come in
                     if persistent_storage.is_repeat_sequence:

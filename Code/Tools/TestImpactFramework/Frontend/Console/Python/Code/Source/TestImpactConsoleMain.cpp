@@ -12,8 +12,10 @@
 #include <TestImpactFramework/TestImpactChangeListSerializer.h>
 #include <TestImpactFramework/TestImpactConfigurationException.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
+#include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
 
 #include <TestImpactPythonCommandLineOptions.h>
+#include <TestImpactPythonRuntimeConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
 #include <TestImpactConsoleUtils.h>
 
@@ -37,6 +39,62 @@ namespace TestImpact::Console
             {
                 std::cout << "No test operations specified.";
                 return ReturnCode::Success;
+            }
+
+            std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
+            std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
+            PythonRuntime runtime(
+                PythonRuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
+                options.GetDataFilePath(),
+                options.GetPreviousRunDataFilePath(),
+                options.GetExcludedTests(),
+                options.GetSuiteFilter(),
+                options.GetExecutionFailurePolicy(),
+                options.GetFailedTestCoveragePolicy(),
+                options.GetTestFailurePolicy(),
+                options.GetIntegrityFailurePolicy(),
+                options.GetTargetOutputCapture());
+
+            if (runtime.HasImpactAnalysisData())
+            {
+                std::cout << "Test impact analysis data for this repository was found.\n";
+            }
+            else
+            {
+                std::cout
+                    << "Test impact analysis data for this repository was not found, seed or regular sequence fallbacks will be used.\n";
+            }
+
+            switch (const auto type = options.GetTestSequenceType())
+            {
+            case TestSequenceType::Regular:
+            {
+                std::cout << "TestSequenceType::Regular" << std::endl;
+                break;
+            }
+            case TestSequenceType::Seed:
+            {
+                std::cout << "TestSequenceType::Seed" << std::endl;
+                break;
+            }
+            case TestSequenceType::ImpactAnalysisNoWrite:
+            {
+                std::cout << "TestSequenceType::ImpactAnalysisNoWrite" << std::endl;
+                break;
+            }
+            case TestSequenceType::ImpactAnalysis:
+            {
+                std::cout << "TestSequenceType::ImpactAnalysis" << std::endl;
+                break;
+            }
+            case TestSequenceType::ImpactAnalysisOrSeed:
+            {
+                std::cout << "TestSequenceType::ImpactAnalysisOrSeed" << std::endl;
+                break;
+            }
+            default:
+                std::cout << "Unexpected TestSequenceType value: " << static_cast<size_t>(type) << std::endl;
+                return ReturnCode::UnknownError;
             }
 
             return ReturnCode::Success;

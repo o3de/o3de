@@ -26,7 +26,6 @@ namespace TestImpact
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
-            
             TestPrioritizationPolicyKey,
             ExecutionFailurePolicyKey,
             FailedTestCoveragePolicyKey,
@@ -36,6 +35,7 @@ namespace TestImpact
             GlobalTimeoutKey,
             SuiteFilterKey,
             DraftFailingTestsKey,
+            ExcludedTestsKey,
             // Values
             None,
             Seed,
@@ -61,7 +61,6 @@ namespace TestImpact
             "changelist",
             "report",
             "sequence",
-            
             "ppolicy",
             "epolicy",
             "cpolicy",
@@ -71,6 +70,7 @@ namespace TestImpact
             "gtimeout",
             "suite",
             "draftfailingtests",
+            "excluded",
             // Values
             "none",
             "seed",
@@ -253,6 +253,17 @@ namespace TestImpact
 
             return ParseMultiStateOption(OptionKeys[SuiteFilterKey], states, cmd).value_or(SuiteType::Main);
         }
+
+        AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
+        {
+            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
+            if (excludeFilePath.has_value())
+            {
+                return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
+            }
+
+            return {};
+        }
     }
 
     CommandLineOptions::CommandLineOptions(int argc, char** argv)
@@ -275,6 +286,7 @@ namespace TestImpact
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
+        m_excludedTests = ParseExcludedTestsFile(cmd);
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -372,6 +384,16 @@ namespace TestImpact
         return m_suiteFilter;
     }
 
+    bool CommandLineOptions::HasExcludedTests() const
+    {
+        return !m_excludedTests.empty();
+    }
+
+    const AZStd::vector<ExcludedTarget>& CommandLineOptions::GetExcludedTests() const
+    {
+        return m_excludedTests;
+    }
+
     AZStd::string CommandLineOptions::GetCommandLineUsageString()
     {
         AZStd::string help =
@@ -383,6 +405,8 @@ namespace TestImpact
             "                                                                specified in the config file.\n"
             "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will used instead of that\n"
             "                                                                specified in the config file.\n"
+            "    -excluded=<filename>                                        Optional path to a test target exclusion file that will be used instead of\n"
+            "                                                                that specified in the config file\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"
             "    -report=<filename>                                          Path to where the sequence report file will be written (if this option \n"
