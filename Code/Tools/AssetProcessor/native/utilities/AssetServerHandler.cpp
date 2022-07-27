@@ -36,15 +36,16 @@ namespace AssetProcessor
         if (settingsRegistry)
         {
             bool enableAssetCacheServerMode = false;
-            AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
-            if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+            AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorServerKey);
+            key += "/";
+            if (settingsRegistry->Get(enableAssetCacheServerMode, key + "enableCacheServer"))
             {
                 enableCacheServerMode = enableAssetCacheServerMode ? AssetServerMode::Server : AssetServerMode::Client;
                 AZ_Warning(AssetProcessor::DebugChannel, false, "The 'enableCacheServer' key is deprecated. Please swith to 'assetCacheServerMode'");
             }
 
             AZStd::string assetCacheServerModeValue;
-            if (settingsRegistry->Get(assetCacheServerModeValue, key + "/Server/assetCacheServerMode"))
+            if (settingsRegistry->Get(assetCacheServerModeValue, key + AssetCacheServerModeKey))
             {
                 AZStd::to_lower(assetCacheServerModeValue.begin(), assetCacheServerModeValue.end());
 
@@ -73,7 +74,9 @@ namespace AssetProcessor
         {
             AZStd::string address;
             if (settingsRegistry->Get(address,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey) + "/Server/cacheServerAddress"))
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorServerKey)
+                + "/"
+                + CacheServerAddressKey))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
                 return AZStd::move(address);
@@ -114,10 +117,23 @@ namespace AssetProcessor
         return QString();
     }
 
+    const char* AssetServerHandler::GetAssetServerModeText(AssetServerMode mode)
+    {
+        switch (mode)
+        {
+            case AssetServerMode::Inactive: return "inactive";
+            case AssetServerMode::Server: return "server";
+            case AssetServerMode::Client: return "client";
+            default:
+                break;
+        }
+        return "unknown";
+    }
+
     AssetServerHandler::AssetServerHandler()
     {
-        SetServerAddress(CheckServerAddress());
         SetRemoteCachingMode(CheckServerMode());
+        SetServerAddress(CheckServerAddress());
         AssetServerBus::Handler::BusConnect();
     }
 
@@ -216,7 +232,7 @@ namespace AssetProcessor
         return m_serverAddress;
     }
 
-    void AssetServerHandler::SetServerAddress(const AZStd::string& address)
+    bool AssetServerHandler::SetServerAddress(const AZStd::string& address)
     {
         AZStd::string previousServerAddress = m_serverAddress;
         m_serverAddress = address;
@@ -228,7 +244,9 @@ namespace AssetProcessor
                 "Server address (%.*s) is invalid! Reverting back to (%.*s)",
                 AZ_STRING_ARG(address),
                 AZ_STRING_ARG(previousServerAddress));
+            return false;
         }
+        return true;
     }
 
     bool AssetServerHandler::RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams)

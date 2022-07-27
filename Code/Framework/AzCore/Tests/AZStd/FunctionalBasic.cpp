@@ -202,6 +202,8 @@ namespace UnitTest
         {
             return ~lhs.m_value;
         }
+
+        void RawTestFunc(int) {};
     }
 
     TEST_F(FunctionalBasicTest, FunctionalOperators_ReturnsExpectedValue)
@@ -216,5 +218,11 @@ namespace UnitTest
         Internal::FunctionalOperatorConfig::PerformOperation<void>(7, Internal::IntWrapper{ 11 }, AZStd::make_tuple(18, -4, 77, 0, 7, -7, false, true, false, true, false, true, true, true, false, 3, 15, 12, ~7));
         Internal::FunctionalOperatorConfig::PerformOperation<void>(Internal::IntWrapper{ 45 }, 34, AZStd::make_tuple(79, 11, 1530, 1, 11, -45, false, true, true, false, true, false, true, true, false, 32, 47, 15, ~45));
         Internal::FunctionalOperatorConfig::PerformOperation<void>(24, Internal::IntWrapper{ 24 }, AZStd::make_tuple(48, 0, 576, 1, 0, -24, true, false, false, false, true, true, true, true, false, 24, 24, 0, ~24));
+    }
+
+    TEST_F(FunctionalBasicTest, DeductionGuide_Compiles)
+    {
+        AZStd::function rawFuncDeduce(&Internal::RawTestFunc);
+        AZStd::function functionObjectDeduce([](int) -> double { return {}; });
     }
 }

@@ -28,7 +28,7 @@ namespace AzToolsFramework
     static const int PropertyQTConstant_BottomMargin = 2;
 
     //! String for displaying inifinity
-    static const char* PropertyQTConstant_InfinityString = "INF";
+    static constexpr const char* PropertyQTConstant_InfinityString = "INF";
 };
 
 #endif

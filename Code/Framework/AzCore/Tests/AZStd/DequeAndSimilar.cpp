@@ -30,9 +30,6 @@
 
 namespace UnitTest
 {
-    using namespace AZStd;
-    using namespace UnitTestInternal;
-
     class Containers
         : public AllocatorsFixture
     {
@@ -45,7 +42,7 @@ namespace UnitTest
     {
         // DequeContainerTest-Begin
 
-        typedef deque<int> int_deque_type;
+        using int_deque_type = AZStd::deque<int>;
 
         int_deque_type int_deque;
         AZ_TEST_VALIDATE_EMPTY_DEQUE(int_deque);
@@ -112,7 +109,7 @@ namespace UnitTest
         int_deque1.assign(5, 333);
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 5);
 
-        array<int, 7> elements = {
+        AZStd::array<int, 7> elements = {
             {1, 2, 3, 4, 5, 6, 7}
         };
         int_deque1.assign(elements.begin(), elements.end());
@@ -142,11 +139,11 @@ namespace UnitTest
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 20);
         AZ_TEST_ASSERT(int_deque1[3] == 601);
 
-        int_deque1.insert(int_deque1.begin(), elements.begin(), next(elements.begin()));
+        int_deque1.insert(int_deque1.begin(), elements.begin(), AZStd::next(elements.begin()));
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 21);
         AZ_TEST_ASSERT(int_deque1.front() == 1);
 
-        int_deque1.insert(int_deque1.end(), prev(elements.end()), elements.end());
+        int_deque1.insert(int_deque1.end(), AZStd::prev(elements.end()), elements.end());
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 22);
         AZ_TEST_ASSERT(int_deque1.back() == 7);
 
@@ -163,9 +160,6 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_deque1.front() == 1);
         AZ_TEST_ASSERT(int_deque1[3] == 3);
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        int_deque1.insert(int_deque1.begin(), {});
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 37);
         int_deque1.erase(int_deque1.begin(), int_deque1.begin() + 8);
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 29);
@@ -200,30 +194,30 @@ namespace UnitTest
         }
 
         // extensions
-        int_deque2.push_back();
+        int_deque2.emplace_back();
         AZ_TEST_VALIDATE_DEQUE(int_deque2, 2);
         AZ_TEST_ASSERT(int_deque2.front() == 401);
 
-        int_deque2.push_front();
+        int_deque2.emplace_front();
         AZ_TEST_VALIDATE_DEQUE(int_deque2, 3);
         AZ_TEST_ASSERT(int_deque2[1] == 401);
 
         // alignment
-        deque<MyClass> aligned_deque(5, 99);
+        AZStd::deque<UnitTestInternal::MyClass> aligned_deque(5, 99);
         for (AZStd::size_t i = 0; i < aligned_deque.size(); ++i)
         {
-            AZ_TEST_ASSERT(((AZStd::size_t)&aligned_deque[i] & (alignment_of<MyClass>::value - 1)) == 0);
+            AZ_TEST_ASSERT(((AZStd::size_t)&aligned_deque[i] & (AZStd::alignment_of<UnitTestInternal::MyClass>::value - 1)) == 0);
         }
 
         // different allocators
-        typedef static_buffer_allocator<16*1024, 1> static_buffer_16KB_type;
+        using static_buffer_16KB_type = AZStd::static_buffer_allocator<16 * 1024, 1>;
         static_buffer_16KB_type myMemoryManager1;
         static_buffer_16KB_type myMemoryManager2;
-        typedef allocator_ref<static_buffer_16KB_type> static_allocator_ref_type;
+        using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB_type>;
         static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
         static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
 
-        typedef deque<int, static_allocator_ref_type> int_deque_myalloc_type;
+        using int_deque_myalloc_type = AZStd::deque<int, static_allocator_ref_type>;
         int_deque_myalloc_type int_deque10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
         AZ_TEST_VALIDATE_DEQUE(int_deque10, 100);
         AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() >= 100 * sizeof(int));
@@ -287,19 +281,26 @@ namespace UnitTest
         // DequeContainerTest-End
     }
 
+    TEST_F(Containers, Deque_DeductionGuide_Compiles)
+    {
+        constexpr AZStd::string_view testView;
+        AZStd::deque testDeque(testView.begin(), testView.end());
+        EXPECT_TRUE(testDeque.empty());
+    }
+
     /**
     * Queue container test.
     */
     TEST_F(Containers, Queue)
     {
         // QueueContainerTest-Begin
-        typedef queue<int> int_queue_type;
+        using int_queue_type = AZStd::queue<int>;
         int_queue_type int_queue;
         AZ_TEST_ASSERT(int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 0);
 
         // Queue uses deque as default container, so try to construct to queue from a deque.
-        deque<int> container(40, 10);
+        AZStd::deque<int> container(40, 10);
         int_queue_type int_queue2(container);
         AZ_TEST_ASSERT(!int_queue2.empty());
         AZ_TEST_ASSERT(int_queue2.size() == 40);
@@ -336,7 +337,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_queue.size() == 40);
         AZ_TEST_ASSERT(int_queue.back() == 20);
 
-        queue<MyClass> class_queue;
+        AZStd::queue<UnitTestInternal::MyClass> class_queue;
         class_queue.emplace(3, false, 1.0f);
 
         // QueueContainerTest-End
@@ -348,12 +349,12 @@ namespace UnitTest
     TEST_F(Containers, PriorityQueue)
     {
         // PriorityQueueContainerTest-Begin
-        typedef priority_queue<int> int_priority_queue_type;
+        using int_priority_queue_type = AZStd::priority_queue<int>;
         int_priority_queue_type int_queue;
         AZ_TEST_ASSERT(int_queue.empty());
         AZ_TEST_ASSERT(int_queue.size() == 0);
 
-        array<int, 10> elements = {
+        AZStd::array<int, 10> elements = {
             {10, 2, 6, 3, 5, 8, 7, 9, 1, 4}
         };
         int_priority_queue_type int_queue2(elements.begin(), elements.end());
@@ -368,7 +369,7 @@ namespace UnitTest
         }
         AZ_TEST_ASSERT(int_queue2.size() == 0);
 
-        priority_queue<int, vector<int>, AZStd::greater<int> > int_queue3(elements.begin(), elements.end());
+        AZStd::priority_queue<int, AZStd::vector<int>, AZStd::greater<int> > int_queue3(elements.begin(), elements.end());
         AZ_TEST_ASSERT(!int_queue3.empty());
         AZ_TEST_ASSERT(int_queue3.size() == 10);
         lastValue = 0;
@@ -394,12 +395,12 @@ namespace UnitTest
     TEST_F(Containers, Stack)
     {
         // StackContainerTest-Begin
-        typedef stack<int> int_stack_type;
+        using int_stack_type = AZStd::stack<int>;
         int_stack_type int_stack;
         AZ_TEST_ASSERT(int_stack.empty());
         AZ_TEST_ASSERT(int_stack.size() == 0);
 
-        deque<int> container(40, 10);
+        AZStd::deque<int> container(40, 10);
         int_stack_type int_stack2(container);
         AZ_TEST_ASSERT(!int_stack2.empty());
         AZ_TEST_ASSERT(int_stack2.size() == 40);
@@ -455,8 +456,8 @@ namespace UnitTest
      */
     TEST_F(Containers, RingBuffer)
     {
-        typedef ring_buffer<int> int_ringbuffer_type;
-        typedef ring_buffer<MyClass> class_ringbuffer_type;
+        using int_ringbuffer_type = AZStd::ring_buffer<int>;
+        using class_ringbuffer_type = AZStd::ring_buffer<UnitTestInternal::MyClass>;
 
         // Test empty  buffer with intergral type.
         int_ringbuffer_type int_buffer;
@@ -620,13 +621,13 @@ namespace UnitTest
         int_buffer5.push_back(101);
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 1);
         AZ_TEST_ASSERT(int_buffer5.back() == 101);
-        int_buffer5.push_back();
+        int_buffer5.emplace_back();
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 2);
 
         int_buffer5.push_front(201);
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 3);
         AZ_TEST_ASSERT(int_buffer5.front() == 201);
-        int_buffer5.push_front();
+        int_buffer5.emplace_front();
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 4);
 
         // pop

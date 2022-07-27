@@ -676,15 +676,15 @@ namespace UnitTest
         {
             ObjectToPatch sourceObj;
             sourceObj.m_intValue = 101;
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
-            sourceObj.m_objectArray.push_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
+            sourceObj.m_objectArray.emplace_back();
             sourceObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(40));
             {
                 // derived
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
-                sourceObj.m_derivedObjectArray.push_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
+                sourceObj.m_derivedObjectArray.emplace_back();
             }
 
             // test generic containers with persistent ID
@@ -706,17 +706,17 @@ namespace UnitTest
 
             ObjectToPatch targetObj;
             targetObj.m_intValue = 121;
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
-            targetObj.m_objectArray.push_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
+            targetObj.m_objectArray.emplace_back();
             targetObj.m_objectArray[0].m_persistentId = 1;
             targetObj.m_objectArray[0].m_data = 301;
             targetObj.m_dynamicField.Set(aznew ContainedObjectNoPersistentId(50));
             {
                 // derived
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
-                targetObj.m_derivedObjectArray.push_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
+                targetObj.m_derivedObjectArray.emplace_back();
                 targetObj.m_derivedObjectArray[0].m_persistentId = 1;
                 targetObj.m_derivedObjectArray[0].m_data = 3010;
             }

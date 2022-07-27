@@ -40,7 +40,6 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-
     void MotionMatchingEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         BaseSystemComponent::GetProvidedServices(provided);

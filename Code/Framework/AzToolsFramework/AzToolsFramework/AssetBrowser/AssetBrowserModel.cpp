@@ -8,13 +8,17 @@
 
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
+#include <QFileInfo>
 #include <QMimeData>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QRegularExpression::d': class 'QExplicitlySharedDataPointer<QRegularExpressionPrivate>' needs to have dll-interface to be used by clients of class 'QRegularExpression'
 #include <QRegularExpression>
@@ -39,6 +43,16 @@ namespace AzToolsFramework
         {
             AssetBrowserModelRequestBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
+        }
+
+        void AssetBrowserModel::EnableTickBus()
+        {
+            m_isTickBusEnabled = true;
+        }
+
+        void AssetBrowserModel::DisableTickBus()
+        {
+            m_isTickBusEnabled = false;
         }
 
         QModelIndex AssetBrowserModel::findIndex(const QString& absoluteAssetPath) const
@@ -183,12 +197,48 @@ namespace AzToolsFramework
                 return QVariant::fromValue(item);
             }
 
+            if (role == Qt::EditRole)
+            {
+                const AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                QString displayFileName = item->GetDisplayName();
+                QString baseFileName = QFileInfo(displayFileName).baseName();
+                return baseFileName;
+            }
+
             return QVariant();
+        }
+
+        bool AssetBrowserModel::setData(const QModelIndex& index, const QVariant& value, [[maybe_unused]]int role)
+        {
+            using namespace AZ::IO;
+            AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+            Path oldPath = item->GetFullPath();
+            PathView extension = oldPath.Extension();
+            QByteArray newName = value.toString().toUtf8().data();
+            PathView newFile = newName.data();
+            if (newFile.Native().empty() || !AzQtComponents::FileDialog::IsValidFileName(newFile.Native().data()))
+            {
+                return false;
+            }
+            Path newPath = oldPath;
+            newPath.ReplaceFilename(newFile);
+            newPath.ReplaceExtension(extension);
+            using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
+            SCCommandBus::Broadcast(
+                &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
+                [this, index](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                {
+                    if (success)
+                    {
+                        emit dataChanged(index.parent(), index);
+                    }
+                });
+            return false;
         }
 
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
-            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
+            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 
             if (index.isValid())
             {
@@ -367,7 +417,8 @@ namespace AzToolsFramework
         void AssetBrowserModel::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/) 
         {
             // if any entries changed since last tick, notify the views
-            if (EntryCache* cache = EntryCache::GetInstance())
+            EntryCache* cache = EntryCache::GetInstance();
+            if (m_isTickBusEnabled && cache)
             {
                 if (!cache->m_dirtyThumbnailsSet.empty())
                 {
@@ -405,10 +456,10 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            index = createIndex(row, aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName), entry);
+            int column = 1;
+            index = createIndex(row, column, entry);
             return true;
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

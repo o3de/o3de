@@ -263,7 +263,7 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
 
-            m_stats.m_meshStatsForLod.swap({});
+            m_stats.m_meshStatsForLod = {};
             SetDirty();
 
             return BaseClass::OnConfigurationChanged();

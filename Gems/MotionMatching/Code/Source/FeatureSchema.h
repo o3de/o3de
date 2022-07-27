@@ -36,6 +36,8 @@ namespace EMotionFX::MotionMatching
 
         Feature* FindFeatureById(const AZ::TypeId& featureId) const;
 
+        AZStd::vector<AZStd::string> CollectColumnNames() const;
+
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
