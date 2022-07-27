@@ -34,8 +34,6 @@ namespace
 
     const unsigned int g_sleepDurationForLockingAndFingerprintChecking = 100;
 
-    const unsigned int g_graceTimeBeforeLockingAndFingerprintChecking = 300;
-
     const unsigned int g_timeoutInSecsForRetryingCopy = 30;
 
     const char* const s_tempString = "%TEMP%";
@@ -279,12 +277,12 @@ namespace AssetProcessor
     {
         // the following trace can be uncommented if there is a need to deeply inspect job running.
         //AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace Start(%i %s,%s,%s)\n", this, GetInputFileAbsolutePath().toUtf8().data(), GetPlatform().toUtf8().data(), GetJobKey().toUtf8().data());
-
+        
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
         RCParams rc(this);
         BuilderParams builderParams(this);
-
+        
         //Create the process job request
         AssetBuilderSDK::ProcessJobRequest processJobRequest;
         PopulateProcessJobRequest(processJobRequest);
@@ -344,13 +342,14 @@ namespace AssetProcessor
 
         // Signal start and end of the job
         ScopedJobSignaler signaler;
-
+        
         // listen for the user quitting (CTRL-C or otherwise)
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
         QElapsedTimer ticker;
         ticker.start();
         AssetBuilderSDK::ProcessJobResponse result;
+        AssetBuilderSDK::JobCancelListener cancelListener(builderParams.m_processJobRequest.m_jobId);
 
         if (builderParams.m_rcJob->m_jobDetails.m_autoFail)
         {
@@ -367,15 +366,7 @@ namespace AssetProcessor
             return;
         }
 
-        // We are adding a grace time before we check exclusive lock and validate the fingerprint of the file.
-        // This grace time should prevent multiple jobs from getting added to the queue if the source file is still updating.
-        qint64 milliSecsDiff = QDateTime::currentMSecsSinceEpoch() - builderParams.m_rcJob->GetJobEntry().m_computedFingerprintTimeStamp;
-        if (milliSecsDiff < g_graceTimeBeforeLockingAndFingerprintChecking)
-        {
-            QThread::msleep(aznumeric_cast<unsigned long>(g_graceTimeBeforeLockingAndFingerprintChecking - milliSecsDiff));
-        }
-        // Lock and unlock the source file to ensure it is not still open by another process.
-        // This prevents premature processing of some source files that are opened for writing, but are zero bytes for longer than the modification threshhold
+        // If requested, make sure we can open the file with exclusive permissions
         QString inputFile = builderParams.m_rcJob->GetJobEntry().GetAbsoluteSourcePath();
         if (builderParams.m_rcJob->GetJobEntry().m_checkExclusiveLock && QFile::exists(inputFile))
         {
@@ -383,7 +374,7 @@ namespace AssetProcessor
             while (!AssetUtilities::CheckCanLock(inputFile))
             {
                 QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-                if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
+                if (listener.WasQuitRequested() || cancelListener.IsCancelled() || (ticker.elapsed() > g_jobMaximumWaitTime))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                     Q_EMIT builderParams.m_rcJob->JobFinished(result);
@@ -391,24 +382,7 @@ namespace AssetProcessor
                 }
             }
         }
-
-        // We will only continue once the fingerprint of the file stops changing
-        unsigned int fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        while (fingerprint != builderParams.m_rcJob->GetOriginalFingerprint())
-        {
-            builderParams.m_rcJob->SetOriginalFingerprint(fingerprint);
-            QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-
-            if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
-            {
-                result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-                Q_EMIT builderParams.m_rcJob->JobFinished(result);
-                return;
-            }
-
-            fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        }
-
+            
         Q_EMIT builderParams.m_rcJob->BeginWork();
         // We will actually start working on the job after this point and even if RcController gets the same job again, we will put it in the queue for processing
         builderParams.m_rcJob->DoWork(result, builderParams, listener);
