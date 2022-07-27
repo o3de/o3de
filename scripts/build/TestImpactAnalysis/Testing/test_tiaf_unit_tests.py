@@ -163,7 +163,7 @@ class TestTIAFPythonUnitTests():
             'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
 
         # when:
-        # We create a NativeTestImpact object
+        # We create a PythonTestImpact object
         tiaf = PythonTestImpact(tiaf_args)
 
         # then:
