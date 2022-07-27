@@ -461,12 +461,6 @@ namespace AzToolsFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, clusterId);
     }
 
-    static void DestroySwitcher(const ViewportUi::SwitcherId switcherId)
-    {
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, switcherId);
-    }
-
     static void SetViewportUiClusterVisible(const ViewportUi::ClusterId clusterId, const bool visible)
     {
         ViewportUi::ViewportUiRequestBus::Event(
@@ -485,16 +479,6 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
-
-        return buttonId;
-    }
-
-    ViewportUi::ButtonId RegisterSwitcherButton(const ViewportUi::SwitcherId switcherId, const char* name, const char* iconName)
-    {
-        ViewportUi::ButtonId buttonId;
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton, switcherId,
-            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName), name);
 
         return buttonId;
     }
@@ -1075,7 +1059,6 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         DestroyManipulators(m_entityIdManipulators);
 
-        DestroySwitcher(m_switcher.m_switcherId);
         DestroyCluster(m_transformModeClusterId);
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
@@ -2758,34 +2741,12 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::CreateComponentModeSwitcher()
     {
-        // Create the switcher
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            m_switcher.m_switcherId, ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
-            ViewportUi::Alignment::TopLeft);
+        m_componentModeSwitcher = AZStd::make_shared<ComponentModeFramework::ComponentModeSwitcher>();
+    }
 
-        //Initial Transform button
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            m_switcherTransformButtonId,
-            ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
-            m_switcher.m_switcherId,
-            "../../../../Assets/Editor/Icons/Components/Transform.svg",
-            "Transform");
-
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcher.m_switcherId,
-            m_switcherTransformButtonId);
-
-        m_switcher.m_transformButtonId = m_switcherTransformButtonId;
-
-        // Creating ComponentModeSwitcher with switcher input
-        m_componentModeSwitcher = AZStd::make_unique<ComponentModeFramework::ComponentModeSwitcher>(&m_switcher);
-
-        // Registers the SwitcherEventHandler which is defined in ComponentModeSwitcher
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler, m_switcher.m_switcherId,
-            m_componentModeSwitcher->m_handler);
+    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
+    {
+        m_componentModeSwitcher = componentModeSwitcher;
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
@@ -3418,16 +3379,6 @@ namespace AzToolsFramework
             // clear if we instigated the selection change after selection changes
             m_didSetSelectedEntities = false;
         }
-
-        // when the selected entity switches, switch back to the transform button
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-            m_switcher.m_switcherId,
-            m_switcherTransformButtonId);
-
-        // Send a list of selected and deselected entities to the switcher to deal with updating the switcher view
-        m_componentModeSwitcher->Update(newlySelectedEntities, newlyDeselectedEntities);
         
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 

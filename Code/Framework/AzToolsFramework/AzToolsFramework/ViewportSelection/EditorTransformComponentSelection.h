@@ -268,6 +268,7 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
+        void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
@@ -373,11 +374,8 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster;//!< Related viewport ui state for aligning positions to a grid or reference frame.
-        Switcher m_switcher; //!< Related viewport ui state for controlling the component mode switcher.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
-        AZStd::unique_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
-        AZ::EntityComponentIdPair m_componentModePair;
-        bool m_AddRemove;
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

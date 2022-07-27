@@ -158,9 +158,9 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId switcherId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            cluster->Update();
+            switcher->Update();
         }
     }
 
@@ -169,6 +169,15 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             viewportUiSwitcher->SetActiveButton(buttonId);
+        }
+    }
+
+    void ViewportUiDisplay::SetSwitcherButtonTooltip(
+        const ViewportUiElementId switcherId, const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        {
+            viewportUiSwitcher->SetButtonTooltip(buttonId, tooltip);
         }
     }
 

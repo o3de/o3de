@@ -70,6 +70,8 @@ namespace AzToolsFramework::ViewportUi
         virtual void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) = 0;
         //! Updates/sets the cluster button's tooltip to the passed string.
         virtual void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) = 0;
+        //! Updates/sets the switcher button's tooltip to the passed string.
+        virtual void SetSwitcherButtonTooltip(SwitcherId switcherId, ButtonId buttonId, const AZStd::string& tooltip) = 0;
         //! Registers a new button onto a cluster.
         virtual const ButtonId CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon) = 0;
         //! Registers a new button onto a switcher.
