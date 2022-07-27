@@ -141,7 +141,7 @@ namespace AzToolsFramework
              * @return If reloading the nested instance pointed by instanceIterator on targetTemplate succeeded or not.
              */
             bool ReloadNestedInstance(
-                PrefabDomValue::ConstMemberIterator& instanceIterator,
+                PrefabDomValue::MemberIterator& instanceIterator,
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 

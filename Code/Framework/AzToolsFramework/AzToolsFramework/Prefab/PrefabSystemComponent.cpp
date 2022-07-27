@@ -1013,7 +1013,20 @@ namespace AzToolsFramework
             }
 
             link.SetLinkDom(instance);
-
+            PrefabDom& targetTemplatePrefabDom = FindTemplateDom(targetTemplateId);
+            PrefabDomPath instancePath = link.GetInstancePath();
+            PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
+            if(!instanceValue)
+            {
+                PrefabDomValueReference templateInstancesReference = PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::InstancesName);
+                PrefabDomValue& templateInstances = templateInstancesReference->get();
+                PrefabDomValue instanceObject;
+                instanceObject.SetObject();
+                templateInstances.AddMember(
+                    rapidjson::Value(instanceIterator->name.GetString(), targetTemplatePrefabDom.GetAllocator()),
+                    instanceObject.Move(), targetTemplatePrefabDom.GetAllocator());
+            }
+            //initialize link 
             if (!link.UpdateTarget())
             {
                 AZ_Error("Prefab", false,
