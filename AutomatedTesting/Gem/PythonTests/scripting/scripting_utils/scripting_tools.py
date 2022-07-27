@@ -411,7 +411,6 @@ def located_expected_tracer_lines(self, section_tracer, lines):
     for line in lines:
         for found_line in found_lines:
             if line == found_line:
-                print("found line: " + found_line)
                 matching_lines += 1
 
     return matching_lines >= expected_lines
