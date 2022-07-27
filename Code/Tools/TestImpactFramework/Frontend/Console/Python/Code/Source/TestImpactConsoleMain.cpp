@@ -22,7 +22,7 @@
 namespace TestImpact::Console
 {
     //! Entry point for the test impact analysis framework console front end application.
-    ReturnCode Main([[maybe_unused]] int argc, [[maybe_unused]] char** argv)
+    ReturnCode Main(int argc, char** argv)
     {
         try
         {

@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    //! Build target specialization for test targets (build targets containing test code and no production code).
+    //! Build target specialization for python test targets (build targets containing test code and no production code).
     class PythonTestTarget
         : public Target
     {
