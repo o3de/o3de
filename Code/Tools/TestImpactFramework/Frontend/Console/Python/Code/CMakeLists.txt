@@ -44,29 +44,3 @@ ly_add_target(
         PRIVATE
             AZ::TestImpact.Frontend.Console.Python.Static
 )
-
-################################################################################
-# Tests
-################################################################################
-
-# Disbled for future PR
-#ly_add_target(
-#    NAME TestImpact.Frontend.Console.Python.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-#    NAMESPACE AZ
-#    FILES_CMAKE
-#        testimpactframework_frontend_console_python_static_tests_files.cmake
-#    INCLUDE_DIRECTORIES
-#        PRIVATE
-#            Include
-#            Source
-#            Tests
-#    BUILD_DEPENDENCIES
-#        PRIVATE
-#            AZ::AzTestShared
-#            AZ::AzTest
-#            AZ::TestImpact.Frontend.Console.Python.Static
-#)
-#
-#ly_add_googletest(
-#    NAME AZ::TestImpact.Frontend.Console.Python.Tests
-#)

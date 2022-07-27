@@ -26,7 +26,6 @@ namespace TestImpact
             "suites",
             "suite",
             "name",
-            "command",
             "timeout",
             "script"
         };
@@ -39,7 +38,6 @@ namespace TestImpact
             TestSuitesKey,
             SuiteKey,
             NameKey,
-            CommandKey,
             TimeoutKey,
             ScriptKey
         };

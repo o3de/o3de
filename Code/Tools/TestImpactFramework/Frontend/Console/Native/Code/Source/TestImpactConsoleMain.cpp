@@ -121,7 +121,6 @@ namespace TestImpact::Console
                 changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFilePath()));
             }
 
-            // As of now, there are no non-test operations but leave this door open for the future
             if (options.GetTestSequenceType() == TestSequenceType::None)
             {
                 std::cout << "No test operations specified.";
