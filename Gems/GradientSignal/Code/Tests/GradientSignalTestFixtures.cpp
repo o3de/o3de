@@ -139,12 +139,12 @@ namespace UnitTest
         return testEntity;
     }
 
-    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestConstantGradient(float shapeHalfBounds)
+    AZStd::unique_ptr<AZ::Entity> GradientSignalBaseFixture::BuildTestConstantGradient(float shapeHalfBounds, float value)
     {
         // Create a Constant Gradient Component with arbitrary parameters.
         auto entity = CreateTestEntity(shapeHalfBounds);
         GradientSignal::ConstantGradientConfig config;
-        config.m_value = 0.75f;
+        config.m_value = value;
         entity->CreateComponent<GradientSignal::ConstantGradientComponent>(config);
 
         ActivateEntity(entity.get());

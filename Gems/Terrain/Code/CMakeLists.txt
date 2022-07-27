@@ -106,7 +106,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFrameworkTestShared
+                AZ::AzTestShared
                 AZ::AzFramework
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks

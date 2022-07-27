@@ -40,6 +40,12 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
+    AZ_CVAR(uint16_t, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The maximum times the editor will attempt to connect to the server.");
+
+    AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
+
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
     
     //////////////////////////////////////////////////////////////////////////
@@ -167,6 +173,8 @@ namespace Multiplayer
         case eNotify_OnEndGameMode:
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
+            m_connectionEvent.RemoveFromQueue();
+            
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -295,8 +303,12 @@ namespace Multiplayer
                 m_serverProcessWatcher->TerminateProcess(0);
             }
             m_serverProcessWatcher.reset(outProcess);
-            m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-            AZ::TickBus::Handler::BusConnect();
+
+            if (editorsv_print_server_logs)
+            {
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+                AZ::TickBus::Handler::BusConnect();
+            }
         }
         else
         {
@@ -404,8 +416,14 @@ namespace Multiplayer
     void MultiplayerEditorSystemComponent::Connect()
     {
         ++m_connectionAttempts;
+        if (m_connectionAttempts > editorsv_max_connection_attempts)
+        {
+            m_connectionEvent.RemoveFromQueue();
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorConnectionAttemptsFailed, editorsv_max_connection_attempts);
+            return;
+        }
 
-        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorConnectionAttempt, m_connectionAttempts);
+        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorConnectionAttempt, m_connectionAttempts, editorsv_max_connection_attempts);
         AZ_TracePrintf("MultiplayerEditor", "Editor TCP connection attempt #%i.", m_connectionAttempts)
 
         const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
@@ -414,7 +432,6 @@ namespace Multiplayer
 
         const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
         m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
         if (m_editorConnId != AzNetworking::InvalidConnectionId)
         {
             AZ_TracePrintf("MultiplayerEditor", "Editor has connected to the editor-server.")

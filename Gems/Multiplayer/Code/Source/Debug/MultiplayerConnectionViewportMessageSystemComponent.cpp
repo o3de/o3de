@@ -184,14 +184,19 @@ namespace Multiplayer
         m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
     }   
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts)
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<128>::format(OnEditorConnectionAttemptMessage, connectionAttempts);
+        m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptMessage, connectionAttempts, maxAttempts);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttemptsFailed(uint16_t failedAttempts)
+    {
+        m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptsFailedMessage, failedAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<128>::format(OnConnectToSimulationFailMessage, serverPort);
+        m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnConnectToSimulationFailMessage, serverPort);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationSuccess() 

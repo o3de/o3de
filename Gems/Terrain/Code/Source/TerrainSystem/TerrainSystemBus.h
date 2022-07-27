@@ -97,7 +97,7 @@ namespace Terrain
 
         virtual ~TerrainSpawnerRequests() = default;
 
-        virtual void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) = 0;
+        virtual void GetPriority(uint32_t& outLayer, int32_t& outPriority) = 0;
         virtual bool GetUseGroundPlane() = 0;
 
     };

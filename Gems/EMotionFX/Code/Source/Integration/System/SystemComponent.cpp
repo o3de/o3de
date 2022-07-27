@@ -69,6 +69,7 @@
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
 #include <QApplication>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
@@ -76,6 +77,10 @@
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
 #include <SceneAPIExt/Utilities/LegacyPhysicsMaterialFbxManifestConversion.h>
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 
 #include <IEditor.h>
 #endif // EMOTIONFXANIMATION_EDITOR
@@ -668,7 +673,7 @@ namespace EMotionFX
                 if (hasPhysicsController)
                 {
                     Physics::CharacterRequestBus::Event(
-                        entityId, &Physics::CharacterRequests::AddVelocity, positionDelta * deltaTimeInv);
+                        entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
                 }
                 else if (hasCustomMotionExtractionController)
                 {
@@ -856,6 +861,66 @@ namespace EMotionFX
             return SourceFileDetails(); // no result
         }
 
+        void SystemComponent::AddSourceFileOpeners(const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+        {
+            using namespace AzToolsFramework::AssetBrowser;
+
+            if (HandlesSource(fullSourceFileName))
+            {
+                auto animationEditorCallback =
+                    [fullSourceFileName]([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+                {
+                    AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
+                    const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
+                    if (fullDetails)
+                    {
+                        AzToolsFramework::OpenViewPane(LyViewPane::AnimationEditor);
+
+                        EMStudio::GetMainWindow()->ApplicationModeChanged("AnimGraph");
+
+                        if (AZStd::wildcard_match("*.motionset", fullSourceFileName))
+                        {
+                            EMStudio::EMStudioPlugin* plugin =
+                                EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::MotionSetsWindowPlugin::CLASS_ID);
+                            EMStudio::MotionSetsWindowPlugin* motionSetPlugin = (EMStudio::MotionSetsWindowPlugin*)plugin;
+                            if (plugin)
+                            {
+                                // We need to wait for the end of frame otherwise setting the current widget fails
+                                QTimer::singleShot(
+                                    0,
+                                    [motionSetPlugin, fullSourceFileName]()
+                                    {
+                                        motionSetPlugin->LoadMotionSet(AZStd::string(fullSourceFileName));
+                                        QDockWidget* dockWidget = motionSetPlugin->GetDockWidget();
+                                        AzQtComponents::DockTabWidget* tabWidget =
+                                            AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget);
+                                        tabWidget->setCurrentWidget(dockWidget);
+                                    });
+                            }
+                        }
+                        else
+                        {
+                            EMStudio::EMStudioPlugin* plugin =
+                                EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
+                            EMStudio::AnimGraphPlugin* animGraphPlugin = (EMStudio::AnimGraphPlugin*)plugin;
+                            if (plugin)
+                            {
+                                animGraphPlugin->FileOpen(AZStd::string(fullSourceFileName));
+                            }
+                        }
+
+                    }
+                };
+                openers.push_back({ "Animation Editor", "Open In Animation Editor...",
+                                    QIcon(), animationEditorCallback });
+            }
+        }
+
+        bool SystemComponent::HandlesSource(AZStd::string_view fileName) const
+        {
+            return AZStd::wildcard_match("*.animgraph", fileName.data()) || AZStd::wildcard_match("*.motionset", fileName.data());
+        }
+        
         void SystemComponent::FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
         {
             EMotionFX::Pipeline::Utilities::FixFbxManifestsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);

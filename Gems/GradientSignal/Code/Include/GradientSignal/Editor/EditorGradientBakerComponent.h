@@ -67,6 +67,7 @@ namespace GradientSignal
 
         void Process() override;
         void CancelAndWait();
+        void Wait();
         bool IsFinished() const;
 
     private:

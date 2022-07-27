@@ -1179,7 +1179,7 @@ namespace EMStudio
             }
 
             // Check if the motion is not valid, that means the motion is not loaded.
-            if (EMotionFX::Motion* motion = motionEntry->GetMotion())
+            if (motionEntry->GetMotion())
             {
                 // Calculcate how many motion sets except than the provided one use the given motion.
                 size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);

@@ -57,11 +57,13 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
         PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
+        PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
+        void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
@@ -78,6 +80,9 @@ namespace AzToolsFramework::Prefab
         void RefreshInstanceFocusPath();
 
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
+        void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
+
+        void SwitchToEditScope() const;
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
@@ -87,6 +92,8 @@ namespace AzToolsFramework::Prefab
         AZ::IO::Path m_filenameFocusPath;
         //! The length of the current focus path. Stored to simplify internal checks.
         int m_rootAliasFocusPathLength = 0;
+        //! The current focus mode.
+        PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
