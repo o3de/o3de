@@ -54,8 +54,7 @@ namespace Multiplayer
         //! Returns the raw AZ::Entity pointer for the entity that owns this controller.
         //! @return the raw AZ::Entity pointer for the entity that owns this controller
         AZ::Entity* GetEntity() const;
-
-        //! Returns the AZ::EntityId of the entity that owns this controller.
+        
         //! @return the AZ::EntityId of the entity that owns this controller
         AZ::EntityId GetEntityId() const;
 
