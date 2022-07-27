@@ -23,7 +23,6 @@ namespace TestImpact
             MaxConcurrencyKey,
             TestTargetTimeoutKey,
             SafeModeKey,
-            ExcludedTestsKey,
         };
 
         constexpr const char* OptionKeys[] = {
@@ -32,7 +31,6 @@ namespace TestImpact
             "maxconcurrency",
             "ttimeout",
             "safemode",
-            "excluded",
         };
 
         Policy::TestSharding ParseTestShardingPolicy(const AZ::CommandLine& cmd)
@@ -57,17 +55,6 @@ namespace TestImpact
             const BinaryStateValue<bool> states = { false, true };
             return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
         }
-
-        AZStd::vector<ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
-        {
-            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
-            if (excludeFilePath.has_value())
-            {
-                return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
-            }
-
-            return {};
-        }
     } // namespace
 
     NativeCommandLineOptions::NativeCommandLineOptions(int argc, char** argv)
@@ -80,7 +67,6 @@ namespace TestImpact
         m_maxConcurrency = ParseMaxConcurrency(cmd);
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
-        m_excludedTests = ParseExcludedTestsFile(cmd);
     }
 
     bool NativeCommandLineOptions::HasSafeMode() const
@@ -101,16 +87,6 @@ namespace TestImpact
     const AZStd::optional<AZStd::chrono::milliseconds>& NativeCommandLineOptions::GetTestTargetTimeout() const
     {
         return m_testTargetTimeout;
-    }
-
-    bool NativeCommandLineOptions::HasExcludedTests() const
-    {
-        return !m_excludedTests.empty();
-    }
-
-    const AZStd::vector<ExcludedTarget>& NativeCommandLineOptions::GetExcludedTests() const
-    {
-        return m_excludedTests;
     }
 
     AZStd::string NativeCommandLineOptions::GetCommandLineUsageString()

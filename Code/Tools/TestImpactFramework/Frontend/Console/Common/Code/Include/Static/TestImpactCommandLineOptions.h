@@ -97,6 +97,12 @@ namespace TestImpact
         //! Returns the filter for test suite that will be allowed to be run.
         SuiteType GetSuiteFilter() const;
 
+        //! Returns the tests to exclude from this run of TIAF (if any).
+        const AZStd::vector<ExcludedTarget>& GetExcludedTests() const;
+
+        //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
+        bool HasExcludedTests() const;
+
     private:
         RepoPath m_configurationFile;
         AZStd::optional<RepoPath> m_dataFile;
@@ -113,5 +119,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;
         bool m_draftFailingTests = false;
+        AZStd::vector<ExcludedTarget> m_excludedTests;
     };
 } // namespace TestImpact

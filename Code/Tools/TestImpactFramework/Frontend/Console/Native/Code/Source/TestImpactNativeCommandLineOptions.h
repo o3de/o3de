@@ -35,17 +35,10 @@ namespace TestImpact
         //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
 
-        //! Returns the tests to exclude from this run of TIAF (if any).
-        const AZStd::vector<ExcludedTarget>& GetExcludedTests() const;
-
-        //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
-        bool HasExcludedTests() const;
-
     private:
         Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
         AZStd::optional<size_t> m_maxConcurrency;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         bool m_safeMode = false;
-        AZStd::vector<ExcludedTarget> m_excludedTests;
     };
 } // namespace TestImpact

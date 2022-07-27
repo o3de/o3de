@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactConfiguration.h>
 
 namespace TestImpact
