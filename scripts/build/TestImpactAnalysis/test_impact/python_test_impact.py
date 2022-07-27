@@ -19,8 +19,15 @@ class PythonTestImpact(BaseTestImpact):
 
     @property
     def default_sequence_type(self):
+        """
+        The default sequence type for this TestImpact class. Must be implemented by subclass.
+        """
         return self._default_sequence_type
 
     @property
     def runtime_type(self):
+        """
+        The runtime this TestImpact supports. Must be implemented by subclass
+        Current options are "cpp" or "python"
+        """
         return self._runtime_type

@@ -18,6 +18,13 @@ class NativeTestImpact(BaseTestImpact):
     _default_sequence_type = "regular"
 
     def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
+        """
+        Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
+
+        @param args: Dictionary containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
+        @sequence_type: The sequence type as determined when initialising this TestImpact object.
+        @runtime_args: A list of strings that will become the arguments for our runtime.
+        """
         super()._parse_arguments_to_runtime(
             args, sequence_type, runtime_args)
 
@@ -32,8 +39,15 @@ class NativeTestImpact(BaseTestImpact):
 
     @property
     def default_sequence_type(self):
+        """
+        The default sequence type for this TestImpact class. Must be implemented by subclass.
+        """
         return self._default_sequence_type
 
     @property
     def runtime_type(self):
+        """
+        The runtime this TestImpact supports. Must be implemented by subclass
+        Current options are "cpp" or "python"
+        """
         return self._runtime_type
