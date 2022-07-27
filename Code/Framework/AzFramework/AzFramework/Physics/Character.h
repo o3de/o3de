@@ -112,7 +112,7 @@ namespace Physics
         virtual AzPhysics::CollisionGroup GetCollisionGroup() const = 0;
         virtual AZ::Crc32 GetColliderTag() const = 0;
 
-        // O3DE_DEPRECATION_NOTICE()
+        // O3DE_DEPRECATION_NOTICE(GHI-10883)
         // Please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.
         virtual void AddVelocity(const AZ::Vector3& velocity)
         {
@@ -127,7 +127,7 @@ namespace Physics
         /// All requests received are accumulated (so for example, the effects of animation and gravity
         /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
         /// Velocities added this way will apply until the end of the tick.
-        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
+        /// Obstacles and the maximum speed setting may prevent the actual movement from exactly matching the requested movement.
         /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of the tick.
         virtual void AddVelocityForTick(const AZ::Vector3& velocity) = 0;
 
@@ -135,7 +135,7 @@ namespace Physics
         /// All requests received are accumulated (so for example, the effects of animation and gravity
         /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
         /// Velocities added this way will apply until the end of the physics timestep.
-        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
+        /// Obstacles and the maximum speed setting may prevent the actual movement from exactly matching the requested movement.
         /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of a physics timestep.
         virtual void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) = 0;
 

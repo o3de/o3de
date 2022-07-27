@@ -36,8 +36,11 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_gravityMultiplier,
                         "Gravity Multiplier", "Multiplier for global gravity value that applies only to this character entity.")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_groundDetectionBoxHeight,
-                        "Ground Detection Box Height", "Vertical size of box to use when testing for ground contact.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &CharacterGameplayConfiguration::m_groundDetectionBoxHeight,
+                        "Ground Detection Box Height",
+                        "Vertical size of box centered on the character's foot position used when testing for ground contact.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                     ;
@@ -158,14 +161,13 @@ namespace PhysX
             if (pxController->getType() == physx::PxControllerShapeType::eCAPSULE)
             {
                 const float radius = static_cast<physx::PxCapsuleController*>(pxController)->getRadius();
-                footBoxDimensions.SetX(2.0f * radius);
-                footBoxDimensions.SetY(2.0f * radius);
+                footBoxDimensions = AZ::Vector3(2.0f * radius, 2.0f * radius, m_groundDetectionBoxHeight);
             }
             else if (pxController->getType() == physx::PxControllerShapeType::eBOX)
             {
                 const auto* boxController = static_cast<physx::PxBoxController*>(pxController);
-                footBoxDimensions.SetX(2.0f * boxController->getHalfSideExtent());
-                footBoxDimensions.SetY(2.0f * boxController->getHalfForwardExtent());
+                footBoxDimensions = AZ::Vector3(
+                    2.0f * boxController->getHalfSideExtent(), 2.0f * boxController->getHalfForwardExtent(), m_groundDetectionBoxHeight);
             }
 
             AZ::Transform footBoxTransform = AZ::Transform::CreateFromQuaternionAndTranslation(

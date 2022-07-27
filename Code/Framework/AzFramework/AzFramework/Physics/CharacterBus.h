@@ -70,7 +70,7 @@ namespace Physics
         /// Gets the observed velocity of the character, which may differ from the desired velocity if the character is obstructed.
         virtual AZ::Vector3 GetVelocity() const = 0;
 
-        // O3DE_DEPRECATION_NOTICE()
+        // O3DE_DEPRECATION_NOTICE(GHI-10883)
         // Please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.
         virtual void AddVelocity(const AZ::Vector3& velocity)
         {
