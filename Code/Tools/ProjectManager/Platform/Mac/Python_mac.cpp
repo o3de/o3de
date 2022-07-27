@@ -20,10 +20,10 @@ namespace Platform
     {
         bool succeeded = true;
         
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7/lib-dynload");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7/site-packages");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.10/lib");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.10/lib/python3.10/lib-dynload");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.10/lib/python3.10");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.10/lib/python3.10/site-packages");
 
         return succeeded;
     }
@@ -32,7 +32,7 @@ namespace Platform
     {
         // append lib path to Python paths
         AZ::IO::FixedMaxPath libPath = engineRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/Python.framework/Versions/3.7", pythonPackage);
+        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/Python.framework/Versions/3.10", pythonPackage);
         libPath = libPath.LexicallyNormal();
         return libPath.String();
     }
