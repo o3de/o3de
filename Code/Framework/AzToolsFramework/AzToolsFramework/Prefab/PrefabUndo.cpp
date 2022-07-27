@@ -92,18 +92,18 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
 
-            // Preemptively updates the cached dom to prevent reloading instance dom.
+            // Preemptively updates the cached DOM to prevent reloading instance dom.
             AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
             PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
 
             if (!entityAliasPath.empty() && cachedDom.has_value())
             {
-                // Create a copy of the dom of the end state so that it shares the lifecycle of the cached dom.
+                // Create a copy of the DOM of the end state so that it shares the lifecycle of the cached DOM.
                 PrefabDom endStateCopy;
                 endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
                 Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
 
-                // Update the cached instance dom corresponding to the entity so that the same modified entity isn't reloaded again.
+                // Update the cached instance DOM corresponding to the entity so that the same modified entity isn't reloaded again.
                 entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
             }
         }

@@ -35,9 +35,9 @@ namespace UnitTest
         AZ::Entity* createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
         ASSERT_TRUE(createdEntity != nullptr);
 
-        // Verify that the cached instance DOM is up to date due to preemptive cache update.
+        // Verify that cached instance DOM matches template DOM due to preemptive cache update.
         InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(createdEntityId);
         ASSERT_TRUE(owningInstance.has_value());
-        EXPECT_TRUE(owningInstance->get().IsCachedInstanceDomUpToDate());
+        ValidateCachedInstanceDomMatchesTemplateDom(owningInstance->get());
     }
 } // namespace UnitTest

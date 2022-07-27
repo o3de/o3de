@@ -14,7 +14,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -75,7 +74,6 @@ namespace AzToolsFramework
             , m_entityIdInstanceRelationship(entityIdInstanceRelationship)
             , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
             , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
-            , m_prefabSystemComponentInterface(AZ::Interface<PrefabSystemComponentInterface>::Get())
         {
             AZ_Assert(m_instanceEntityMapper,
                 "Instance Entity Mapper Interface could not be found. "
@@ -84,11 +82,6 @@ namespace AzToolsFramework
 
             AZ_Assert(m_templateInstanceMapper,
                 "Template Instance Mapper Interface could not be found. "
-                "It is a requirement for the Prefab Instance class. "
-                "Check that it is being correctly initialized.");
-
-            AZ_Assert(m_prefabSystemComponentInterface,
-                "Prefab System Component Interface could not be found. "
                 "It is a requirement for the Prefab Instance class. "
                 "Check that it is being correctly initialized.");
 
@@ -924,16 +917,6 @@ namespace AzToolsFramework
         void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
         {
             m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
-        }
-
-        bool Instance::IsCachedInstanceDomUpToDate() const
-        {
-            if (m_cachedInstanceDom.IsNull())
-            {
-                return false;
-            }
-            PrefabDomConstReference prefabDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
-            return PrefabDomUtils::ComparePrefabDomValues(prefabDom, m_cachedInstanceDom);
         }
     }
 } // namespace AzToolsFramework

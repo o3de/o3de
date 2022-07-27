@@ -219,4 +219,10 @@ namespace UnitTest
             &AzToolsFramework::EditorEntityContextRequests::AddRequiredComponents, *entity);
         entity->Activate();
     }
+
+    void PrefabTestFixture::ValidateCachedInstanceDomMatchesTemplateDom(const Instance& instance)
+    {
+        PrefabDomConstReference templateDom = m_prefabSystemComponent->FindTemplateDom(instance.GetTemplateId());
+        PrefabTestDomUtils::ComparePrefabDomValues(templateDom, instance.GetCachedInstanceDom());
+    }
 }

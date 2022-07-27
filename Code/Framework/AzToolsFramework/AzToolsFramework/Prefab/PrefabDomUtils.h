@@ -215,21 +215,6 @@ namespace AzToolsFramework
                 AZ_RTTI(InstanceDomMetadata, "{4B509C7B-91B6-4C5E-9696-F7E2C67B6E1B}");
                 virtual ~InstanceDomMetadata() {}
             };
-
-            /**
-             * Compares two Prefab DOM values.
-             * @param valueA The Prefab DOM value.
-             * @param valueB The Prefab DOM value.
-             * @return bool on whether the DOM values are equal or both values are AZStd::nullopt.
-             */
-            inline bool ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB)
-            {
-                if (!valueA.has_value())
-                {
-                    return !valueB.has_value();
-                }
-                return AZ::JsonSerialization::Compare(valueA->get(), valueB->get()) == AZ::JsonSerializerCompareResult::Equal;
-            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

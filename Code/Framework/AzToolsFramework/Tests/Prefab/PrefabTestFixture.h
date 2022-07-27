@@ -77,6 +77,9 @@ namespace UnitTest
 
         void AddRequiredEditorComponents(AZ::Entity* entity);
 
+        // Validates that cached instance DOM matches template DOM.
+        void ValidateCachedInstanceDomMatchesTemplateDom(const Instance& instance);
+
         PrefabSystemComponent* m_prefabSystemComponent = nullptr;
         PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
