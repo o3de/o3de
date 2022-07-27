@@ -11,6 +11,8 @@ from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
 
+ARG_SAFE_MODE = "safe_mode"
+
 
 class NativeTestImpact(BaseTestImpact):
 
@@ -28,7 +30,7 @@ class NativeTestImpact(BaseTestImpact):
         super()._parse_arguments_to_runtime(
             args, sequence_type, runtime_args)
 
-        if args.get('safe_mode'):
+        if args.get(ARG_SAFE_MODE):
             runtime_args.append("--safemode=on")
             logger.info("Safe mode set to 'on'.")
         else:

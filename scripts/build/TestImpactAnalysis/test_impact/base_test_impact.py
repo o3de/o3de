@@ -19,6 +19,18 @@ from tiaf_tools import get_logger
 
 logger = get_logger(__file__)
 
+ARG_S3_BUCKET = 's3_bucket'
+ARG_SUITE = 'suite'
+ARG_CONFIG = 'config'
+ARG_SOURCE_BRANCH = 'src_branch'
+ARG_DESTINATION_BRANCH = 'dst_branch'
+ARG_COMMIT = 'commit'
+ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
+ARG_TEST_FAILURE_POLICY = 'test_failure_policy'
+ARG_EXCLUDE_FILE = 'exclude_file'
+ARG_TEST_TIMEOUT = 'test_timeout'
+ARG_GLOBAL_TIMEOUT = 'global_timeout'
+
 
 class BaseTestImpact(ABC):
 
@@ -41,14 +53,14 @@ class BaseTestImpact(ABC):
         # Unique instance id to be used as part of the report name.
         self._instance_id = uuid.uuid4().hex
 
-        self._s3_bucket = args.get('s3_bucket')
-        self._suite = args.get('suite')
+        self._s3_bucket = args.get(ARG_S3_BUCKET)
+        self._suite = args.get(ARG_SUITE)
 
-        self._config = self._parse_config_file(args['config'])
+        self._config = self._parse_config_file(args.get(ARG_CONFIG))
 
         # Initialize branches
-        self._src_branch = args.get("src_branch")
-        self._dst_branch = args.get("dst_branch")
+        self._src_branch = args.get(ARG_SOURCE_BRANCH)
+        self._dst_branch = args.get(ARG_DESTINATION_BRANCH)
         logger.info(f"Source branch: '{self._src_branch}'.")
         logger.info(f"Destination branch: '{self._dst_branch}'.")
 
@@ -56,7 +68,7 @@ class BaseTestImpact(ABC):
         self._determine_source_of_truth()
 
         # Initialize commit info
-        self._dst_commit = args.get("commit")
+        self._dst_commit = args.get(ARG_COMMIT)
         logger.info(f"Commit: '{self._dst_commit}'.")
         self._src_commit = None
         self._commit_distance = None
@@ -67,7 +79,7 @@ class BaseTestImpact(ABC):
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
             self._persistent_storage = self._initialize_persistent_storage(
-                s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get('s3_top_level_dir'))
+                s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get(ARG_S3_TOP_LEVEL_DIR))
 
             # If persistent storage intialized correctly
             if self._persistent_storage:
@@ -126,7 +138,7 @@ class BaseTestImpact(ABC):
         logger.info(f"Sequence type is set to '{sequence_type}'.")
 
         # Test failure policy
-        test_failure_policy = args.get('test_failure_policy')
+        test_failure_policy = args.get(ARG_TEST_FAILURE_POLICY)
         runtime_args.append(f"--fpolicy={test_failure_policy}")
         logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
@@ -137,12 +149,12 @@ class BaseTestImpact(ABC):
         logger.info(f"Sequence report file is set to '{self._report_file}'.")
 
         # Suite
-        suite = args.get('suite')
+        suite = args.get(ARG_SUITE)
         runtime_args.append(f"--suite={suite}")
         logger.info(f"Test suite is set to '{suite}'.")
 
         # Exclude tests
-        exclude_file = args.get('exclude_file')
+        exclude_file = args.get(ARG_EXCLUDE_FILE)
         if exclude_file:
             runtime_args.append(f"--exclude={exclude_file}")
             logger.info(
@@ -151,13 +163,13 @@ class BaseTestImpact(ABC):
             logger.info(f'Exclude file not found, skipping.')
 
         # Timeouts
-        test_timeout = args.get('test_timeout')
+        test_timeout = args.get(ARG_TEST_TIMEOUT)
         if test_timeout:
             runtime_args.append(f"--ttimeout={test_timeout}")
             logger.info(
                 f"Test target timeout is set to {test_timeout} seconds.")
 
-        global_timeout = args.get('global_timeout')
+        global_timeout = args.get(ARG_GLOBAL_TIMEOUT)
         if global_timeout:
             runtime_args.append(f"--gtimeout={global_timeout}")
             logger.info(
@@ -395,16 +407,15 @@ class BaseTestImpact(ABC):
         Function to build our s3_top_level_dir name. Reads the argument from our dictionary and then appends runtime_type to the end.
         If s3_top_level_dir name is not provided in args, we will default to "tiaf"+runtime_type.
 
-        @param args: Dictionary containing the arguments passed to this TestImpact object
+        @param dir_name: Name of the directory to use as top level when compiling directory name.
 
         @return: Compiled s3_top_level_dir name
         """
-        if self.runtime_type:
-            if dir_name:
-                dir_name = os.path.join(dir_name, self.runtime_type)
-            else:
-                dir_name = os.path.join("tiaf", self.runtime_type)
-        return dir_name
+        if dir_name:
+            dir_name = os.path.join(dir_name, self.runtime_type)
+            return dir_name
+        raise SystemError(
+            "s3_top_level_dir not set while trying to access s3 instance.")
 
     def run(self):
         """
@@ -526,7 +537,7 @@ class BaseTestImpact(ABC):
     def runtime_type(self):
         """
         The runtime this TestImpact supports. Must be implemented by subclass
-        Current options are "cpp" or "python"
+        Current options are "native" or "python"
         """
         pass
 
