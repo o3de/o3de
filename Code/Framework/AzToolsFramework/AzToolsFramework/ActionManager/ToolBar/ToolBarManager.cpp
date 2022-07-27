@@ -312,6 +312,32 @@ namespace AzToolsFramework
         return AZ::Success(sortKey.value());
     }
 
+    ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfWidgetInToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of widget \"%s\" in toolbar \"%s\" - toolbar has not been registered.",
+                widgetActionIdentifier.c_str(),
+                toolBarIdentifier.c_str())
+            );
+        }
+
+        auto sortKey = toolBarIterator->second.GetWidgetSortKey(widgetActionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of widget \"%s\" in toolbar \"%s\" - widget was not found in toolbar.",
+                widgetActionIdentifier.c_str(),
+                toolBarIdentifier.c_str())
+            );
+        }
+
+        return AZ::Success(sortKey.value());
+    }
+
     ToolBarManagerOperationResult ToolBarManager::QueueToolBarRefresh(const AZStd::string& toolBarIdentifier)
     {
         if (!m_toolBars.contains(toolBarIdentifier))

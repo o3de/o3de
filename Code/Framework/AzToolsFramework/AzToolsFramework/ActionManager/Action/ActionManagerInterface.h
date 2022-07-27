@@ -210,7 +210,8 @@ namespace AzToolsFramework
         virtual ActionManagerOperationResult RegisterWidgetAction(
             const AZStd::string& widgetActionIdentifier,
             const WidgetActionProperties& properties,
-            AZStd::function<QWidget*()> generator) = 0;
+            AZStd::function<QWidget*()> generator
+        ) = 0;
 
         //! Returns whether a widget action with the identifier queried is registered to the Action Manager.
         //! @param widgetActionIdentifier The identifier for the widget action to query.

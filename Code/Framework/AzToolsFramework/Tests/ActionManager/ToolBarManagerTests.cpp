@@ -349,6 +349,53 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Add the widget to the toolBar.
+        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", "o3de.widgetAction.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredWidgetInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Verify the API fails as the widget is not registered.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetNotInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Verify the API fails as the widget is registered but was not added to the toolBar.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, VerifyHideFromToolBarsWhenDisabledTrue)
     {
         // Register toolbar, get it and verify it's empty.

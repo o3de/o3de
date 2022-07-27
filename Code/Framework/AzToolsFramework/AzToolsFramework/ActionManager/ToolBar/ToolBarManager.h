@@ -50,7 +50,10 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
         QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
-        ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
+        ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
+        ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const override;
 
         // ToolBarManagerInternalInterface overrides ...
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;

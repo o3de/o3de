@@ -526,6 +526,53 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Add the widget to the menu.
+        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "o3de.widgetAction.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredWidgetInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
+        // Verify the API fails as the widget is not registered.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetNotInMenu)
+    {
+        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Verify the API fails as the widget is registered but was not added to the menu.
+        auto outcome = m_menuManagerInterface->GetSortKeyOfWidgetInMenu("o3de.menu.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetSortKeyOfMenuInMenuBar)
     {
         m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");

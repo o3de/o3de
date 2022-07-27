@@ -103,6 +103,11 @@ namespace AzToolsFramework
         return m_actionToSortKeyMap.contains(actionIdentifier);
     }
 
+    bool EditorToolBar::ContainsWidget(const AZStd::string& widgetActionIdentifier) const
+    {
+        return m_widgetToSortKeyMap.contains(widgetActionIdentifier);
+    }
+
     AZStd::optional<int> EditorToolBar::GetActionSortKey(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actionToSortKeyMap.find(actionIdentifier);
@@ -112,6 +117,17 @@ namespace AzToolsFramework
         }
 
         return actionIterator->second;
+    }
+
+    AZStd::optional<int> EditorToolBar::GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const
+    {
+        auto widgetIterator = m_widgetToSortKeyMap.find(widgetActionIdentifier);
+        if (widgetIterator == m_widgetToSortKeyMap.end())
+        {
+            return AZStd::nullopt;
+        }
+
+        return widgetIterator->second;
     }
 
     QToolBar* EditorToolBar::GetToolBar()

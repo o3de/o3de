@@ -47,9 +47,11 @@ namespace AzToolsFramework
         
         // Returns whether the action queried is contained in this toolbar.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
+        bool ContainsWidget(const AZStd::string& widgetActionIdentifier) const;
         
         // Returns the sort key for the queried action, or 0 if it's not found.
         AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
+        AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
 
         // Returns the pointer to the ToolBar.
         QToolBar* GetToolBar();
