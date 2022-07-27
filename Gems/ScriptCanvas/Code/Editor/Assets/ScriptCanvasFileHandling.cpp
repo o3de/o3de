@@ -28,23 +28,75 @@
 
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
-namespace ScriptCanvas
+namespace ScriptCanvasFileHandlingCpp
 {
-    AZStd::string FileLoadResult::ToString() const
+    class SourceTreeLoader
     {
-        if (m_isSuccess)
-        {
-            return "Success";
-        }
-        else
-        {
-            return AZStd::string::format("Failure@@@ File Read: %s@@@Deserialize: %s@@@Json: %s",
-                m_fileReadErrors.c_str(), m_deserializeResult.m_errors.c_str(), m_deserializeResult.m_jsonResults.c_str());
-        }
-    }
+    public:
+        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator, 0);
 
-    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, SourceTree* parent)
+        ScriptCanvas::SourceHandle m_source;
+        AZStd::vector<SourceTreeLoader> m_dependencies;
+
+        void AssignParents(SourceTreeLoader& parent)
+        {
+            m_parent = &parent;
+
+            for (auto& dep : m_dependencies)
+            {
+                dep.AssignParents(*this);
+            }
+        }
+
+        ScriptCanvas::SourceTree ConvertToSourceTree() const
+        {
+            ScriptCanvas::SourceTree sourceTree;
+            sourceTree.m_source = m_source;
+
+            for (auto& dep : m_dependencies)
+            {
+                sourceTree.m_dependencies.push_back(dep.ConvertToSourceTree());
+            }
+
+            return sourceTree;
+        }
+
+        AZStd::optional<SourceTreeLoader> FindDependency(ScriptCanvas::SourceHandle dependency)
+        {
+            if (m_source.AnyEquals(dependency))
+            {
+                return *this;
+            }
+
+            for (auto& dep : m_dependencies)
+            {
+                if (auto depOptional = dep.FindDependency(dependency))
+                {
+                    return *depOptional;
+                }
+            }
+
+            return AZStd::nullopt;
+        }
+
+        SourceTreeLoader* ModRoot()
+        {
+            if (!m_parent)
+            {
+                return this;
+            }
+
+            return m_parent->ModRoot();
+        }
+
+    private:
+        SourceTreeLoader* m_parent = nullptr;
+    };
+
+    AZ::Outcome<SourceTreeLoader, AZStd::string> LoadEditorAssetTree(ScriptCanvas::SourceHandle handle)
     {
+        using namespace ScriptCanvas;
+
         if (!ScriptCanvasEditor::CompleteDescriptionInPlace(handle))
         {
             return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to describe graph from %s", handle.ToString().c_str()));
@@ -99,27 +151,63 @@ namespace ScriptCanvas
         const ScriptCanvasEditor::EditorGraph* graph = handle.Get();
         serializeContext->EnumerateObject(graph, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
-        SourceTree result;
+        SourceTreeLoader result;
+        result.m_source = AZStd::move(handle);
 
         for (auto& dependentAsset : dependentAssets)
         {
-            auto loadDependentOutcome = LoadEditorAssetTree(dependentAsset, &result);
-            if (!loadDependentOutcome.IsSuccess())
+            // check the root if it is loaded already, and if not skip the load step, just add the value to the dependences at this step
+            if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset))
             {
-                return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
-                    , dependentAsset.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                result.m_dependencies.push_back(*sourceTreeOptional);
+            }
+            else
+            {
+                auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset);
+                if (!loadDependentOutcome.IsSuccess())
+                {
+                    return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
+                        , dependentAsset.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                }
+
+                result.m_dependencies.push_back(loadDependentOutcome.TakeValue());
             }
 
-            result.m_dependencies.push_back(loadDependentOutcome.TakeValue());
+            result.m_dependencies.back().AssignParents(result);
         }
 
-        if (parent)
-        {
-            result.SetParent(*parent);
-        }
-
-        result.m_source = AZStd::move(handle);
         return AZ::Success(result);
+    }
+
+}
+
+namespace ScriptCanvas
+{
+    AZStd::string FileLoadResult::ToString() const
+    {
+        if (m_isSuccess)
+        {
+            return "Success";
+        }
+        else
+        {
+            return AZStd::string::format("Failure@@@ File Read: %s@@@Deserialize: %s@@@Json: %s",
+                m_fileReadErrors.c_str(), m_deserializeResult.m_errors.c_str(), m_deserializeResult.m_jsonResults.c_str());
+        }
+    }
+
+    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(SourceHandle sourceHandle)
+    {
+        auto loadOutome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(sourceHandle);
+
+        if (loadOutome.IsSuccess())
+        {
+            return AZ::Success(loadOutome.GetValue().ConvertToSourceTree());
+        }
+        else
+        {
+            return AZ::Failure(loadOutome.TakeError());
+        }
     }
 
     FileLoadResult LoadFromFile(AZStd::string_view path, MakeInternalGraphEntitiesUnique makeEntityIdsUnique)

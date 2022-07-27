@@ -87,21 +87,6 @@ namespace GraphSerializationCpp
 
 namespace ScriptCanvas
 {
-    SourceTree* SourceTree::ModRoot()
-    {
-        if (!m_parent)
-        {
-            return this;
-        }
-
-        return m_parent->ModRoot();
-    }
-
-    void SourceTree::SetParent(SourceTree& parent)
-    {
-        m_parent = &parent;
-    }
-
     AZStd::string SourceTree::ToString(size_t depth) const
     {
         AZStd::string result;

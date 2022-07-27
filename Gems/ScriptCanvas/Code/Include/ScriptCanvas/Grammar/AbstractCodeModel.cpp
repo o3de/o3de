@@ -2962,12 +2962,14 @@ namespace ScriptCanvas
             {
                 const auto& dependencies = dependencyOutcome.GetValue();
 
-                // #functions2 this search needs to recurse, this layer of dependencies will only be one step deep
-                // currently this problem is found by the asset processor
+                // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined.
+                // This layer of dependencies will only be one step deep.
+                // Currently, this problem is only detected by the asset processor
                 if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
                 {
+                    // Need to add an error on naming function definition the same as the file, or account for possibility that all over the place in the grammar
                     AZStd::string circularDependency = AZStd::string::format
-                    (ParseErrors::CircularDependencyFormat
+                        ( ParseErrors::CircularDependencyFormat
                         , m_source.m_name.data()
                         , node.GetDebugName().data()
                         , m_source.m_name.data());
