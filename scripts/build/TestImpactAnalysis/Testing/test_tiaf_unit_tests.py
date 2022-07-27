@@ -57,7 +57,7 @@ class TestTiafInitialiseStorage():
         mock_local.assert_called_with(
             *expected_storage_args)
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\base"), ("test_bucket", "test_dir", "test_dir\\base")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\base")])
     def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data, expected_top_level_dir):
         # given:
         # Default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
@@ -129,7 +129,7 @@ class TestTIAFNativeUnitTests():
         assert_list_content_equal(
             tiaf.runtime_args, cpp_default_runtime_args.values())
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\native"), ("test_bucket", "test_dir", "test_dir\\native")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\native")])
     def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, mocker, bucket_name, top_level_dir, expected_top_level_dir):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
@@ -151,7 +151,7 @@ class TestTIAFNativeUnitTests():
 
 class TestTIAFPythonUnitTests():
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\python"), ("test_bucket", "test_dir", "test_dir\\python")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\python")])
     def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
