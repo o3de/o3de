@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
 import zlib
 import json
 from io import BytesIO
