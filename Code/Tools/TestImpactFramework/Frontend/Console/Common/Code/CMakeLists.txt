@@ -6,52 +6,44 @@
 #
 #
 
-if(LY_MONOLITHIC_GAME)
-    return()
-endif()
-
 ly_add_target(
-    NAME TestImpact.Frontend.Console.Static STATIC
+    NAME TestImpact.Frontend.Console.Common.Headers HEADERONLY
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_static_files.cmake
+        testimpactframework_frontend_console_common_headers_files.cmake
     INCLUDE_DIRECTORIES
-        PUBLIC
-            Include
-        PRIVATE
-            Source
-    COMPILE_DEFINITIONS
-        PRIVATE
-            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
+        INTERFACE
+            Include/Headers
     BUILD_DEPENDENCIES
-        PUBLIC
-            AZ::TestImpact.Runtime.Static
+        INTERFACE
+            AZ::AzCore
 )
 
 ly_add_target(
-    NAME TestImpact.Frontend.Console EXECUTABLE
-    OUTPUT_NAME tiaf
+    NAME TestImpact.Frontend.Console.Common.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
-        testimpactframework_frontend_console_files.cmake
+        testimpactframework_frontend_console_common_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+        PUBLIC
+            Include/Static
     BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::TestImpact.Frontend.Console.Static
+        PUBLIC
+            TestImpact.Frontend.Console.Common.Headers
 )
 
 ################################################################################
 # Tests
 ################################################################################
 
-# Disbled:SPEC-7246
+# Disabled until future PR
 #ly_add_target(
-#    NAME TestImpact.Frontend.Console.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+#    NAME TestImpact.Frontend.Console.Common.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
 #    NAMESPACE AZ
 #    FILES_CMAKE
-#        testimpactframework_frontend_console_static_tests_files.cmake
+#        testimpactframework_frontend_console_common_tests_files.cmake
 #    INCLUDE_DIRECTORIES
 #        PRIVATE
 #            Include
@@ -61,9 +53,9 @@ ly_add_target(
 #        PRIVATE
 #            AZ::AzTestShared
 #            AZ::AzTest
-#            AZ::TestImpact.Frontend.Console.Static
+#            AZ::TestImpact.Frontend.Console.Common.Static
 #)
 #
 #ly_add_googletest(
-#    NAME AZ::TestImpact.Frontend.Console.Static.Tests
+#    NAME AZ::TestImpact.Frontend.Console.Common.Tests
 #)

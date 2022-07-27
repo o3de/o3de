@@ -42,10 +42,15 @@ namespace TestImpact
             "target_dependency_file",
             "target_vertex",
             "file",
+            "file",
             "test_runner",
             "instrumentation",
             "bin",
             "exclude",
+            "target",
+            "tests",
+            "regular",
+            "instrumented",
             "shard",
             "fixture_contiguous",
             "fixture_interleaved",
@@ -62,7 +67,8 @@ namespace TestImpact
             "dependency_graph_data",
             "test_target_meta",
             "test_engine",
-            "target"
+            "target",
+            "gem_target"
         };
 
         enum
@@ -87,10 +93,15 @@ namespace TestImpact
             TargetDependencyFileMatcher,
             TargetVertexMatcher,
             TestTargetMetaFile,
+            GemTargetFile,
             TestRunner,
             TestInstrumentation,
             BinaryFile,
-            TargetExcludeFilter,
+            TargetExclude,
+            ExcludedTargetName,
+            ExcludedTargetTests,
+            RegularTargetExcludeFilter,
+            InstrumentedTargetExcludeFilter,
             TestSharding,
             ContinuousFixtureSharding,
             InterleavedFixtureSharding,
@@ -107,7 +118,8 @@ namespace TestImpact
             DependencyGraphData,
             TestTargetMeta,
             TestEngine,
-            TargetConfig
+            TargetConfig,
+            GemTarget
         };
     }
 
@@ -205,6 +217,13 @@ namespace TestImpact
         return testTargetMetaConfig;
     }
 
+    GemTargetConfig ParseGemTargetConfig(const rapidjson::Value& gemTarget)
+    {
+        GemTargetConfig gemTargetConfig;
+        gemTargetConfig.m_metaFile = gemTarget[Config::Keys[Config::GemTargetFile]].GetString();
+        return gemTargetConfig;
+    }
+
     TestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
         TestEngineConfig testEngineConfig;
@@ -213,16 +232,36 @@ namespace TestImpact
         return testEngineConfig;
     }
 
+    AZStd::vector<TargetConfig::ExcludedTarget> ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes)
+    {
+        AZStd::vector<TargetConfig::ExcludedTarget> targetExcludeList;
+        targetExcludeList.reserve(testExcludes.Size());
+        for (const auto& testExclude : testExcludes)
+        {
+            TargetConfig::ExcludedTarget excludedTarget;
+            excludedTarget.m_name = testExclude[Config::Keys[Config::ExcludedTargetName]].GetString();
+            if (testExclude.HasMember(Config::Keys[Config::ExcludedTargetTests]))
+            {
+                const auto& excludedTests = testExclude[Config::Keys[Config::ExcludedTargetTests]].GetArray();
+                for (const auto& excludedTest : excludedTests)
+                {
+                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
+                }
+            }
+
+            targetExcludeList.push_back(excludedTarget);
+        }
+
+        return targetExcludeList;
+    }
+
     TargetConfig ParseTargetConfig(const rapidjson::Value& target)
     {
         TargetConfig targetConfig;
         targetConfig.m_outputDirectory = target[Config::Keys[Config::Directory]].GetString();
-        const auto& testExcludes = target[Config::Keys[Config::TargetExcludeFilter]].GetArray();
-        targetConfig.m_excludedTestTargets.reserve(testExcludes.Size());
-        for (const auto& testExclude : testExcludes)
-        {
-            targetConfig.m_excludedTestTargets.push_back(testExclude.GetString());
-        }
+        const auto& testExcludes = target[Config::Keys[Config::TargetExclude]];
+        targetConfig.m_excludedRegularTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::RegularTargetExcludeFilter]].GetArray());
+        targetConfig.m_excludedInstrumentedTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::InstrumentedTargetExcludeFilter]].GetArray());
 
         const auto& testShards =  target[Config::Keys[Config::TestSharding]].GetArray();
         targetConfig.m_shardedTestTargets.reserve(testShards.Size());
@@ -282,6 +321,7 @@ namespace TestImpact
         runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);
+        runtimeConfig.m_gemTarget = ParseGemTargetConfig(staticArtifacts[Config::Keys[Config::GemTarget]]);
         runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::TestEngine]]);
         runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::TargetConfig]]);
 

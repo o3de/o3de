@@ -12,7 +12,6 @@
 #include <TestImpactCommandLineOptionsUtils.h>
 
 #include <AzCore/Settings/CommandLine.h>
-#include <AzCore/JSON/document.h>
 
 namespace TestImpact
 {
@@ -23,10 +22,11 @@ namespace TestImpact
             // Options
             ConfigKey,
             DataFileKey,
+            PreviousRunDataFileKey,
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
-            ExcludeTestsKey,
+            ExcludedTestsKey,
             TestPrioritizationPolicyKey,
             ExecutionFailurePolicyKey,
             FailedTestCoveragePolicyKey,
@@ -39,6 +39,7 @@ namespace TestImpact
             GlobalTimeoutKey,
             SuiteFilterKey,
             SafeModeKey,
+            DraftFailingTestsKey,
             // Values
             None,
             Seed,
@@ -61,10 +62,11 @@ namespace TestImpact
             // Options
             "config",
             "datafile",
+            "previousrundatafile",
             "changelist",
             "report",
             "sequence",
-            "exclude",
+            "excluded",
             "ppolicy",
             "epolicy",
             "cpolicy",
@@ -77,6 +79,7 @@ namespace TestImpact
             "gtimeout",
             "suite",
             "safemode",
+            "draftfailingtests",
             // Values
             "none",
             "seed",
@@ -104,6 +107,11 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[DataFileKey], cmd);
         }
 
+        AZStd::optional<RepoPath> ParsePreviousRunDataFile(const AZ::CommandLine& cmd)
+        {
+            return ParsePathOption(OptionKeys[PreviousRunDataFileKey], cmd);
+        }
+
         AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
         {
             return ParsePathOption(OptionKeys[ChangeListKey], cmd);
@@ -114,14 +122,15 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
         }
 
-        AZStd::vector<AZStd::string> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
+        AZStd::vector<TargetConfig::ExcludedTarget> ParseExcludedTestsFile(const AZ::CommandLine& cmd)
         {
-            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludeTestsKey], cmd);
+            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludedTestsKey], cmd);
             if (excludeFilePath.has_value())
             {
                 return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
             }
-            return AZStd::vector<AZStd::string>();
+
+            return {};
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -273,6 +282,12 @@ namespace TestImpact
             return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
         }
 
+        bool ParseDraftFailingTests(const AZ::CommandLine& cmd)
+        {
+            const BinaryStateValue<bool> states = { false, true };
+            return ParseOnOffOption(OptionKeys[DraftFailingTestsKey], states, cmd).value_or(false);
+        }
+
         SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
         {
             const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
@@ -294,9 +309,10 @@ namespace TestImpact
 
         m_configurationFile = ParseConfigurationFile(cmd);
         m_dataFile = ParseDataFile(cmd);
+        m_previousRunDataFile = ParsePreviousRunDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
-        m_excludeTests = ParseExcludeTestsFile(cmd);
+        m_excludedTests = ParseExcludedTestsFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
@@ -309,17 +325,23 @@ namespace TestImpact
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
+        m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
 
-    bool CommandLineOptions::HasExcludeTests() const
+    bool CommandLineOptions::HasExcludedTests() const
     {
-        return !m_excludeTests.empty();
+        return !m_excludedTests.empty();
     }
 
     bool CommandLineOptions::HasDataFilePath() const
     {
         return m_dataFile.has_value();
+    }
+
+    bool CommandLineOptions::HasPreviousRunDataFilePath() const
+    {
+        return m_previousRunDataFile.has_value();
     }
  
     bool CommandLineOptions::HasChangeListFilePath() const
@@ -337,9 +359,19 @@ namespace TestImpact
         return m_safeMode;
     }
 
+    bool CommandLineOptions::HasDraftFailingTests() const
+    {
+        return m_draftFailingTests;
+    }
+
     const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFilePath() const
     {
         return m_dataFile;
+    }
+
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetPreviousRunDataFilePath() const
+    {
+        return m_previousRunDataFile;
     }
 
     const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFilePath() const
@@ -352,9 +384,9 @@ namespace TestImpact
         return m_sequenceReportFile;
     }
 
-    const AZStd::vector<AZStd::string>& CommandLineOptions::GetExcludeTests() const
+    const AZStd::vector<TargetConfig::ExcludedTarget>& CommandLineOptions::GetExcludedTests() const
     {
-        return m_excludeTests;
+        return m_excludedTests;
     }
 
     const RepoPath& CommandLineOptions::GetConfigurationFilePath() const
@@ -421,6 +453,7 @@ namespace TestImpact
     {
         return m_suiteFilter;
     }
+
     AZStd::string CommandLineOptions::GetCommandLineUsageString()
     {
         AZStd::string help =
@@ -429,6 +462,8 @@ namespace TestImpact
             "    -config=<filename>                                          Path to the configuration file for the TIAF runtime (default: \n"
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
             "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
+            "                                                                specified in the config file.\n"
+            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will be used instead of that\n"
             "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"

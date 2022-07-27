@@ -6,5 +6,6 @@
 #
 #
 
-add_subdirectory(Common)
-add_subdirectory(Native)
+set(FILES
+    Include/Headers/TestImpactFramework/TestImpactConsoleMain.h
+)
