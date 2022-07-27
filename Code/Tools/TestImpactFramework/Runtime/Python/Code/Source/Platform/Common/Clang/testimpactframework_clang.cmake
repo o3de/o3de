@@ -6,6 +6,4 @@
 #
 #
 
-add_subdirectory(Common)
-add_subdirectory(Native)
-add_subdirectory(Python)
+set(LY_COMPILE_OPTIONS PUBLIC -fexceptions)

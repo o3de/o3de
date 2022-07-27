@@ -16,7 +16,7 @@ namespace TestImpact
     //! Artifact produced by the build system for each test target containing the additional meta-data about the test.
     struct TestSuiteMeta
     {
-        AZStd::string m_name;
-        AZStd::chrono::milliseconds m_timeout = AZStd::chrono::milliseconds{ 0 };
+        AZStd::string m_name; //!< The name of the test suite.
+        AZStd::chrono::milliseconds m_timeout = AZStd::chrono::milliseconds{ 0 }; //!< The timeout for the test suite time to run in.
     };
 } // namespace TestImpact

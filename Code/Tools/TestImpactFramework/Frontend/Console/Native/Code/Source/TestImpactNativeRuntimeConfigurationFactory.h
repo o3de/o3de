@@ -10,6 +10,6 @@
 
 namespace TestImpact
 {
-    //! Parses the native-soecific configuration data (in JSON format) and returns the constructed runtime configuration.
+    //! Parses the native-specific configuration data (in JSON format) and returns the constructed runtime configuration.
     NativeRuntimeConfig NativeRuntimeConfigurationFactory(const AZStd::string& configurationData);
 } // namespace TestImpact
