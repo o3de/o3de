@@ -15,4 +15,8 @@ logger = get_logger(__file__)
 class PythonTestImpact(BaseTestImpact):
 
     _runtime_type = "python"
-    pass
+    _default_sequence_type = "regular"
+
+    @property
+    def default_sequence_type(self):
+        return self._default_sequence_type

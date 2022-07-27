@@ -25,12 +25,14 @@ class ConcreteBaseTestImpact(BaseTestImpact):
     """
 
     _runtime_type = "base"
+    _default_sequence_type = "regular"
 
-    def _set_default_sequence_type(self):
+    @property
+    def default_sequence_type(self):
         """
         Returns default sequence type, defaulting to "regular" for this example.
         """
-        return "regular"
+        return self._default_sequence_type
 
 
 class TestTiafInitialiseStorage():

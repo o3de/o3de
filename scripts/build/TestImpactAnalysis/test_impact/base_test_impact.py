@@ -6,7 +6,7 @@
 #
 #
 
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
 import uuid
 from pathlib import PurePath, Path
 import json
@@ -61,7 +61,7 @@ class BaseTestImpact(ABC):
         self._src_commit = None
         self._commit_distance = None
 
-        sequence_type = self._set_default_sequence_type()
+        sequence_type = self._default_sequence_type
 
         # If flag is set for us to use TIAF
         if self._use_test_impact_analysis:
@@ -390,10 +390,6 @@ class BaseTestImpact(ABC):
         result["change_list"] = self._change_list
         return result
 
-    @abstractclassmethod
-    def _set_default_sequence_type(self):
-        pass
-
     def _compile_s3_top_level_dir_name(self, dir_name: str):
         """
         Function to build our s3_top_level_dir name. Reads the argument from our dictionary and then appends runtime_type to the end.
@@ -535,3 +531,8 @@ class BaseTestImpact(ABC):
             raise NotImplementedError(
                 "Error, runtime_type must be set for TestImpact classes")
         return self._runtime_type
+
+    @property
+    @abstractmethod
+    def default_sequence_type(self):
+        pass
