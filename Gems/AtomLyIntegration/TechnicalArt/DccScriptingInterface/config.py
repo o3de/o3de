@@ -207,9 +207,10 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
         for p in path_list:
             p = Path(p)
             if (p.exists() and p.as_posix() not in known_pathlist):
-                os.environ[envar] = p.as_posix() + os.pathsep + os.environ[envar]
-                # adding directly to sys.path apparently doesn't work for .dll locations like Qt
+                # adding directly to sys.path apparently doesn't work
+                # for .dll locations like Qt
                 # this pattern by extending the ENVAR seems to work correctly
+                os.environ[envar] = p.as_posix() + os.pathsep + os.environ[envar]
 
     return os.environ[envar]
 # -------------------------------------------------------------------------
