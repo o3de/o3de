@@ -1266,22 +1266,16 @@ namespace AzToolsFramework
 
             for (auto& nestedInstance : instances)
             {
-                AZ::EntityId containerEntityId = nestedInstance->GetContainerEntityId();
                 AZStd::unique_ptr<Instance> outInstance =
                     commonOwningInstance->get().DetachNestedInstance(nestedInstance->GetInstanceAlias());
                 RemoveLink(outInstance, commonOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
                 outInstance.reset();
-
-                m_prefabUndoCache.PurgeCache(containerEntityId);
             }
 
             for (AZ::Entity* entity : entities)
             {
-                AZ::EntityId entityId = entity->GetId();
                 commonOwningInstance->get().DetachEntity(entity->GetId()).release();
-                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entityId);
-                
-                m_prefabUndoCache.PurgeCache(entityId);
+                AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationRequests::DeleteEntity, entity->GetId());
             }
 
             // Update the undo cache on the container entity of the owning instance.

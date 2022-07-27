@@ -24,7 +24,6 @@ namespace AzToolsFramework
                 PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDomAfterUpdate);
 
                 // Preemptively updates the cached DOM to prevent unnecessary reloading.
-                PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
                 instance.SetCachedInstanceDom(instanceDomAfterUpdate);
 
                 PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
