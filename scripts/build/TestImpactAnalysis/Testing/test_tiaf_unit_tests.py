@@ -24,6 +24,8 @@ class ConcreteBaseTestImpact(BaseTestImpact):
     Concrete implementation of BaseTestImpact so that we can execute unittests on the functionality of BaseTestImpact individually.
     """
 
+    _runtime_type = "base"
+
     def _set_default_sequence_type(self):
         """
         Returns default sequence type, defaulting to "regular" for this example.
@@ -49,8 +51,8 @@ class TestTiafInitialiseStorage():
         mock_local.assert_called_with(
             *expected_storage_args)
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir", [("test_bucket", None), ("test_bucket", "test_dir")])
-    def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data):
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\base"), ("test_bucket", "test_dir", "test_dir\\base")])
+    def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data, expected_top_level_dir):
         # given:
         # Default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
         # and we patch PersistentStorageS3 to intercept the constructor call.
@@ -60,7 +62,7 @@ class TestTiafInitialiseStorage():
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
-            'commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
 
         # when:
         # We create a TestImpact object.
@@ -103,10 +105,10 @@ class TestTiafInitialiseStorage():
         mock_storage.assert_not_called()
 
 
-class TestTIAFCPPUnitTests():
+class TestTIAFNativeUnitTests():
 
     @pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
-    def test_create_TestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, safemode, arg_val):
+    def test_create_NativeTestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, safemode, arg_val):
         # given:
         # Default args + safe_mode set.
         tiaf_args['safe_mode'] = safemode
@@ -120,6 +122,25 @@ class TestTIAFCPPUnitTests():
         # tiaf.runtime_args should equal expected args.
         assert_list_content_equal(
             tiaf.runtime_args, cpp_default_runtime_args.values())
+
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", None, "tiaf\\native"), ("test_bucket", "test_dir", "test_dir\\native")])
+    def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, mocker, bucket_name, top_level_dir, expected_top_level_dir):
+        # given:
+        # Default args + s3_bucket and s3_top_level_dir set
+        tiaf_args['s3_bucket'] = bucket_name
+        tiaf_args['s3_top_level_dir'] = top_level_dir
+        mock_storage = mocker.patch(
+            "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
+
+        # when:
+        # We create a NativeTestImpact object
+        tiaf = NativeTestImpact(tiaf_args)
+
+        # then:
+        # PersistentStorageS3.__init__ should be called with config data, suite, commit, bucket_name, modified top level dir and src_branch as arguments
+        mock_storage.assert_called_with(*expected_storage_args)
 
 
 class TestTIAFBaseUnitTests():
