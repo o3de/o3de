@@ -280,24 +280,30 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
-    TEST_F(ActionManagerFixture, AddNullWidgetInMenu)
+    TEST_F(ActionManagerFixture, AddUnregisteredWidgetInMenu)
     {
-        // Register menu.
-        m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-
-        // Try to add a nullptr widget.
-        auto outcome = m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", nullptr, 42);
+        // Try to add a widget without registering it.
+        auto outcome = m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "someUnregisteredWidgetIdentifier", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, VerifyWidgetInMenu)
     {
-        // Register menu and create a QWidget.
+        // Register menu and widget action.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+
         QWidget* widget = new QWidget();
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {}, [widget]()
+            {
+                // Note: the WidgetAction generator function should create a new widget every time it's called.
+                // This implementation is technically incorrect, but it allows us to test the correct behavior.
+                return widget;
+            }
+        );
 
         // Add the widget to the menu.
-        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", widget, 42);
+        m_menuManagerInterface->AddWidgetToMenu("o3de.menu.test", "o3de.widgetAction.test", 42);
 
         // Manually trigger Menu refresh - Editor will call this once per tick.
         m_menuManagerInternalInterface->RefreshMenus();
