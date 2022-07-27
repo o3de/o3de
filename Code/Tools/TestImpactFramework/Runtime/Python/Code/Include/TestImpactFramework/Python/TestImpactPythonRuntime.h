@@ -10,9 +10,31 @@
 
 #include <TestImpactFramework/Python/TestImpactPythonConfiguration.h>
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/containers/unordered_set.h>
+
 namespace TestImpact
 {
-    //! The native API exposed to the client responsible for all test runs and persistent data management.
+    class PythonTestEngine;
+    class PythonTestTarget;
+    class PythonProductionTarget;
+
+    template<typename TestTarget, typename ProdutionTarget>
+    class ChangeDependencyList;
+
+    template<typename TestTarget, typename ProdutionTarget>
+    class BuildTargetList;
+
+    template<typename TestTarget, typename ProdutionTarget>
+    class DynamicDependencyMap;
+
+    template<typename TestTarget, typename ProdutionTarget>
+    class TestSelectorAndPrioritizer;
+
+    template<typename TestTarget>
+    class TestTargetExclusionList;
+
+    //! The python API exposed to the client responsible for all test runs and persistent data management.
     class PythonRuntime
     {
     public:
@@ -32,5 +54,25 @@ namespace TestImpact
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
         bool HasImpactAnalysisData() const;
+
+    private:
+        PythonRuntimeConfig m_config;
+        RepoPath m_sparTiaFile;
+        SuiteType m_suiteFilter;
+        Policy::ExecutionFailure m_executionFailurePolicy;
+        Policy::FailedTestCoverage m_failedTestCoveragePolicy;
+        Policy::TestFailure m_testFailurePolicy;
+        Policy::IntegrityFailure m_integrationFailurePolicy;
+        Policy::TargetOutputCapture m_targetOutputCapture;
+        size_t m_maxConcurrency = 0;
+        AZStd::unique_ptr<BuildTargetList<PythonTestTarget, PythonProductionTarget>> m_buildTargets;
+        AZStd::unique_ptr<DynamicDependencyMap<PythonTestTarget, PythonProductionTarget>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<PythonTestTarget, PythonProductionTarget>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<PythonTestEngine> m_testEngine;
+        AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_regularTestTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_instrumentedTestTargetExcludeList;
+        AZStd::unordered_set<const PythonTestTarget*> m_testTargetShardList;
+        AZStd::unordered_set<const PythonTestTarget*> m_previouslyFailingTestTargets;
+        bool m_hasImpactAnalysisData = false;
     };
 } // namespace TestImpact
