@@ -267,11 +267,6 @@ namespace PhysX
             }
         }
 
-        if (auto* physXSystem = GetPhysXSystem())
-        {
-            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
-        }
-
         CharacterGameplayRequestBus::Handler::BusConnect(GetEntityId());
     }
 
