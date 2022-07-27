@@ -16,8 +16,6 @@ import azlmbr.legacy.general as general
 import azlmbr.paths as paths
 from scripting_utils.scripting_constants import (WAIT_TIME_3, BASE_LEVEL_NAME)
 
-LEVEL_NAME = "tmp_level"
-WAIT_TIME = 3.0  # SECONDS
 EXPECTED_LINES = ["Activator Script: Activated", "Deactivator Script: Deactivated"]
 controller_dict = {
     "name": "Controller",
@@ -34,7 +32,8 @@ deactivated_dict = {
     "status": "active",
     "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas"),
 }
-
+ENTITY_TO_ACTIVATE_PATH = "Configuration|Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate"
+ENTITY_TO_DEACTIVATE_PATH = "Configuration|Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate"
 # fmt: off
 class Tests():
     controller_exists    = ("Successfully found controller entity",  "Failed to find controller entity")
@@ -88,7 +87,6 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
         entity. Hydra editor utils to create the entity and editor entity utils to drill into its properties to change values.
 
         """
-
         entity = scripting_tools.create_entity_with_sc_component_asset(entity_dict["name"], entity_dict["path"])
         editor_entity = EditorEntity.find_editor_entity(entity_dict["name"])
         editor_entity.set_start_status(entity_dict["status"])
@@ -96,17 +94,13 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
         if entity_dict["name"] == "Controller":
             activated_entity = EditorEntity.find_editor_entity(activated_dict["name"])
             sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
-            sc_component.set_component_property_value(
-                "Configuration|Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate",
-                activated_entity.id,
-            )
+            sc_component.set_component_property_value(ENTITY_TO_ACTIVATE_PATH, activated_entity.id)
+
             deactivated_entity = EditorEntity.find_editor_entity(deactivated_dict["name"])
             sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
-            sc_component.set_component_property_value(
-                "Configuration|Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate",
-                deactivated_entity.id,
-            )
-        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME)
+            sc_component.set_component_property_value(ENTITY_TO_DEACTIVATE_PATH, deactivated_entity.id)
+
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
 
     def validate_entity_exist(self, entity_name: str, test_tuple: tuple):
         """
