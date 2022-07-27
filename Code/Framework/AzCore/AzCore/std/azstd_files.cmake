@@ -42,6 +42,7 @@ set(FILES
     ranges/common_view.h
     ranges/elements_view.h
     ranges/empty_view.h
+    ranges/filter_view.h
     ranges/iter_move.h
     ranges/iter_swap.h
     ranges/join_view.h
