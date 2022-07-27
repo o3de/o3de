@@ -13,6 +13,7 @@ import json
 import subprocess
 import re
 import os
+from test_impact import RuntimeArgs
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_tools import get_logger
@@ -102,13 +103,8 @@ class BaseTestImpact(ABC):
                         # Use TIA no-write sequence (regular subset of tests) for non coverage updating branches
                         sequence_type = "tianowrite"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        self._runtime_args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-                    self._runtime_args.append(
-                        f"--changelist={self._change_list_path}")
-                    logger.info(
-                        f"Change list is set to '{self._change_list_path}'.")
+                        args['integration_policy'] = "continue"
+                    args['change_list'] = self._change_list_path
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
@@ -119,61 +115,30 @@ class BaseTestImpact(ABC):
                         # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
                         sequence_type = "regular"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        self._runtime_args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-
+                        args['integration_policy'] = "continue"
+        args['sequence'] = sequence_type
         self._parse_arguments_to_runtime(
             args, sequence_type, self._runtime_args)
 
-    def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
+    def _parse_arguments_to_runtime(self, args, runtime_args):
         """
         Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
 
         @param args: Dictionary containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
-        @sequence_type: The sequence type as determined when initialising this TestImpact object.
         @runtime_args: A list of strings that will become the arguments for our runtime.
         """
-        runtime_args.append(f"--sequence={sequence_type}")
-        logger.info(f"Sequence type is set to '{sequence_type}'.")
 
-        # Test failure policy
-        test_failure_policy = args.get(ARG_TEST_FAILURE_POLICY)
-        runtime_args.append(f"--fpolicy={test_failure_policy}")
-        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
+        for argument in RuntimeArgs:
+            value = args.get(argument.py_arg)
+            if value:
+                runtime_args.append(f"{argument.runtime_arg}{value}")
+                logger.info(f"{argument.message}{value}")
 
         # Sequence report
         self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
         runtime_args.append(f"--report={self._report_file}")
         logger.info(f"Sequence report file is set to '{self._report_file}'.")
-
-        # Suite
-        suite = args.get(ARG_SUITE)
-        runtime_args.append(f"--suite={suite}")
-        logger.info(f"Test suite is set to '{suite}'.")
-
-        # Exclude tests
-        exclude_file = args.get(ARG_EXCLUDE_FILE)
-        if exclude_file:
-            runtime_args.append(f"--exclude={exclude_file}")
-            logger.info(
-                f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
-        else:
-            logger.info(f'Exclude file not found, skipping.')
-
-        # Timeouts
-        test_timeout = args.get(ARG_TEST_TIMEOUT)
-        if test_timeout:
-            runtime_args.append(f"--ttimeout={test_timeout}")
-            logger.info(
-                f"Test target timeout is set to {test_timeout} seconds.")
-
-        global_timeout = args.get(ARG_GLOBAL_TIMEOUT)
-        if global_timeout:
-            runtime_args.append(f"--gtimeout={global_timeout}")
-            logger.info(
-                f"Global sequence timeout is set to {test_timeout} seconds.")
 
     def _handle_historic_data(self):
         """
