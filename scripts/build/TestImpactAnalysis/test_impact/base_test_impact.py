@@ -12,6 +12,7 @@ from pathlib import PurePath, Path
 import json
 import subprocess
 import re
+import os
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_tools import get_logger
@@ -21,7 +22,7 @@ logger = get_logger(__file__)
 
 class BaseTestImpact(ABC):
 
-    __runtime_type = None
+    _runtime_type = None
 
     def __init__(self, args: dict):
         """
@@ -209,7 +210,7 @@ class BaseTestImpact(ABC):
         try:
             if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
+                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch)
             else:
                 return PersistentStorageLocal(
                     self._config, suite, self._dst_commit)
@@ -393,6 +394,22 @@ class BaseTestImpact(ABC):
     def _set_default_sequence_type(self):
         pass
 
+    def _compile_s3_top_level_dir_name(self, dir_name: str):
+        """
+        Function to build our s3_top_level_dir name. Reads the argument from our dictionary and then appends runtime_type to the end.
+        If s3_top_level_dir name is not provided in args, we will default to "tiaf"+runtime_type.
+
+        @param args: Dictionary containing the arguments passed to this TestImpact object
+
+        @return: Compiled s3_top_level_dir name
+        """
+        if self.runtime_type:
+            if dir_name:
+                dir_name = os.path.join(dir_name, self.runtime_type)
+            else:
+                dir_name = os.path.join("tiaf", self.runtime_type)
+        return dir_name
+
     def run(self):
         """
         Builds our runtime argument string based on the initialisation state, then executes the runtime with those arguments.
@@ -511,7 +528,10 @@ class BaseTestImpact(ABC):
     @property
     def runtime_type(self):
         """
-        The runtime this TestImpact supports
+        The runtime this TestImpact supports. If self._runtime_type is not set, will raise NotImplementedError
         Current options are "cpp" or "python"
         """
-        return self.__runtime_type
+        if not self._runtime_type:
+            raise NotImplementedError(
+                "Error, runtime_type must be set for TestImpact classes")
+        return self._runtime_type

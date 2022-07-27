@@ -14,5 +14,5 @@ logger = get_logger(__file__)
 
 class PythonTestImpact(BaseTestImpact):
 
-    __runtime_type = "python"
+    _runtime_type = "python"
     pass
