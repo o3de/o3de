@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include <AZCore/Settings/SettingsRegistryOriginTracker.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/ranges/filter_view.h>
 #include <AzCore/IO/ByteContainerStream.h>
 
 namespace AZ
@@ -18,57 +19,64 @@ namespace AZ
         : m_settingsRegistry(registry)
     {
         registry.SetNotifyForMergeOperations(true);
-        auto preMergeCallback =
-            [this](AZStd::string_view filePath, [[maybe_unused]] AZStd::string_view rootKey)
-        {
-            m_currentOriginStack.emplace(filePath);
-            
-        };
-        auto postMergeCallback =
-            [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view rootKey)
-        {
-            m_currentOriginStack.pop();
-        };
-        m_preMergeEventHandler = m_settingsRegistry.RegisterPreMergeEvent(preMergeCallback);
-        m_postMergeEventHandler = m_settingsRegistry.RegisterPostMergeEvent(postMergeCallback);
         m_notifyHandler = m_settingsRegistry.RegisterNotifier(SettingsNotificationHandler(*this));
-    };
+    }
 
-    SettingsRegistryOriginTracker::~SettingsRegistryOriginTracker()
+    SettingsRegistryOriginTracker::~SettingsRegistryOriginTracker() = default;
+
+    SettingsRegistryOriginTracker::SettingsNotificationHandler::SettingsNotificationHandler(
+        AZ::SettingsRegistryOriginTracker& originTracker)
+        : m_originTracker(originTracker)
     {
-        AZ_Assert(
-            m_currentOriginStack.empty(),
-            "The Settings Registry Origin Tracker origin stack should be empty on destruction."
-            " This implies that it is being destroyed during the middle of merging a file");
-    };
+    }
 
-    SettingsRegistryOriginTracker::SettingsNotificationHandler::SettingsNotificationHandler(AZ::SettingsRegistryOriginTracker &originTracker) : m_originTracker(originTracker){
-    };
+    void SettingsRegistryOriginTracker::SetTrackingFilter(TrackingFilterCallback filterCallback)
+    {
+        m_trackingFilter = AZStd::move(filterCallback);
+    }
 
     SettingsRegistryOriginTracker::SettingsNotificationHandler::~SettingsNotificationHandler() = default;
 
     bool SettingsRegistryOriginTracker::SettingsRegistryOrigin::operator==(const SettingsRegistryOrigin& origin) const
     {
-        return (
-            m_originFilePath == origin.m_originFilePath && m_settingsKey == origin.m_settingsKey &&
-            m_settingsValue == origin.m_settingsValue);
+        if (m_originFilePath == origin.m_originFilePath && m_settingsKey == origin.m_settingsKey)
+        {
+            if (m_settingsValue.has_value() == origin.m_settingsValue.has_value())
+            {
+                if (m_settingsValue.has_value())
+                {
+                    auto TrimWhitespace = [](char element) -> bool
+                    {
+                        return !::isspace(element);
+                    };
+                    return AZStd::ranges::equal(*m_settingsValue | AZStd::views::filter(TrimWhitespace),
+                        *origin.m_settingsValue | AZStd::views::filter(TrimWhitespace));
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
+    void AZ::SettingsRegistryOriginTracker::SettingsNotificationHandler::operator()(
+        const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+    {
+        m_originTracker.AddOrigin(notifyEventArgs.m_jsonKeyPath, notifyEventArgs.m_mergeFilePath);
+    }
 
-    void AZ::SettingsRegistryOriginTracker::SettingsNotificationHandler::operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type){
-        AZ::IO::Path originPath =
-            !m_originTracker.m_currentOriginStack.empty() ? m_originTracker.m_currentOriginStack.top() : "<in-memory>";
-        m_originTracker.AddOrigin(path, originPath);
-    };
-
-    bool SettingsRegistryOriginTracker::FindLastOrigin(AZ::IO::Path &originPath, AZStd::string_view key) {
+    bool SettingsRegistryOriginTracker::FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key)
+    {
         auto populateOriginPath = [&](const AZ::Dom::Path&, const SettingsRegistryOriginStack& stack)
         {
             if (originPath.empty() && !stack.empty())
             {
                 originPath = stack.back().m_originFilePath;
                 return false;
-            };
+            }
             return true;
         };
         AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
@@ -79,61 +87,78 @@ namespace AZ
 
     void SettingsRegistryOriginTracker::AddOrigin(AZStd::string_view key, AZ::IO::PathView originPath)
     {
-        const AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
-        if (m_settingsOriginPrefixTree.ValueAtPath(jsonPath, AZ::Dom::PrefixTreeMatch::ExactPath) == nullptr)
-        {
-            m_settingsOriginPrefixTree.SetValue(jsonPath, SettingsRegistryOriginStack());
-        }
-       // adds a new origin to origin stack of a dom tree node
-        auto addOriginToStack = [&](const AZ::Dom::Path& path, SettingsRegistryOriginStack& stack) {
-            bool hasChildren = false;
-            m_settingsOriginPrefixTree.VisitPath(
-                path,
-                [&hasChildren](const AZ::Dom::Path&, SettingsRegistryOriginStack&)
-                {
-                    hasChildren = true;
-                    return false;
-                },
-                AZ::Dom::PrefixTreeTraversalFlags::ExcludeExactPath | AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths);
-            // remove the duplicate origin from the stack if the key is an exact path
-            if (!hasChildren)
-            {
-                RemoveOrigin(path.ToString(), originPath, false);
-            }
-            // checks if there is a node in the dom tree for a given path and creates one if it doesn't exist
-            SettingsRegistryOriginStack* stackPtr =
-                m_settingsOriginPrefixTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
-            if (stackPtr == nullptr)
-            {
-                m_settingsOriginPrefixTree.SetValue(path, SettingsRegistryOriginStack());
-            }
-            
-            // add an origin object to the stack if the key is an exact path or a parent path without an origin.
-            if (stack.empty() || !hasChildren)
-            {
+        //! Scratch Buffer for storing json parent path
+        AZStd::string domPathBuffer;
 
-                AZStd::string pathStr = path.ToString();
-                SettingsRegistryOriginTracker::SettingsRegistryOrigin origin{ originPath, pathStr };
-                // retrieves the settings registry value for a key if it exists
-                if (m_settingsRegistry.GetType(path.ToString()) != AZ::SettingsRegistryInterface::Type::NoType)
-                {
-                    AZStd::string settingJsonStr;
-                    AZ::IO::ByteContainerStream stringWriter(&settingJsonStr);
-                    AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
-                    AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(
-                        this->m_settingsRegistry, pathStr, stringWriter, dumperSettings);
-                    origin.m_settingsValue.emplace(settingJsonStr);
-                }
-                stack.emplace_back(origin);
-            };
-            return true;
-        };
-        // Add origin does not add an origin to any child paths, so children are excluded
-        // Parent paths will also have an origin added if they do not currently contain one
-        AZ::Dom::PrefixTreeTraversalFlags traversalFlags =
-            AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific;
-        m_settingsOriginPrefixTree.VisitPath(jsonPath, addOriginToStack, traversalFlags);
-    };
+        // Remove any entries lower in the stack for this setting that has the same file origin
+        // This could occur if the settings file is merged multiple times
+        // i.e foo.setreg -> bar.setreg -> ... -> foo.setreg
+        // This makes sure the origin stack only contains one entry
+        // for any settings key, file origin pair
+        RemoveOrigin(key, originPath);
+
+        AZ::Dom::Path domPath(key);
+        do
+        {
+            // If a tracking filter callback exist, invoke it
+            // and if it returns false skip tracking the json entry
+            if (m_trackingFilter && !m_trackingFilter(key))
+            {
+                return;
+            }
+
+            // Check to see if the settings is within the settings registry
+            // If the setting has been removed, then the SettingsRegistryInterface::GetType function will return no type
+            SettingsRegistryOrigin settingsRegistryOrigin{ originPath, key };
+            if (auto type = m_settingsRegistry.GetType(key);
+                type != AZ::SettingsRegistryInterface::Type::NoType)
+            {
+                // Retrieve the JSON value as a string using the SettingsRegistryMergeUtils::DumpSettingsRegistryToStream function
+                AZStd::string settingsValue;
+                AZ::IO::ByteContainerStream stringWriter(&settingsValue);
+                AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+                dumperSettings.m_prettifyOutput = false;
+                AZ_Verify(AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(m_settingsRegistry, key, stringWriter, dumperSettings),
+                    R"(Failed to Dump SettingsRegistry at key "%.*s")", AZ_STRING_ARG(key));
+
+                // The settings at the json pointer path has been written to the string writer as JSON
+                // So emplace it into the settings value of SettingsRegistryOrigin
+                settingsRegistryOrigin.m_settingsValue.emplace(settingsValue);
+            }
+
+            // Push the new entry settings registry origin entry for this DOM path to origin stack
+            if (SettingsRegistryOriginStack* settingsOriginStack = m_settingsOriginPrefixTree.ValueAtPath(
+                domPath, AZ::Dom::PrefixTreeMatch::ExactPath);
+                settingsOriginStack != nullptr)
+            {
+                settingsOriginStack->emplace_front(AZStd::move(settingsRegistryOrigin));
+            }
+            else
+            {
+                SettingsRegistryOriginStack newOriginStack;
+                newOriginStack.emplace_front(AZStd::move(settingsRegistryOrigin));
+                m_settingsOriginPrefixTree.SetValue(domPath, AZStd::move(newOriginStack));
+            }
+
+            // Recursively walk up the json path fields to make sure that ancestor keys have their file origin set as well
+            // The scenario where this occurs is if a setting is set at a hierarchy multiple levels below an existing key
+            // i.e SettingsRegistry->MergeSettings("/O3DE", ...),
+            // SettingsRegistry->MergeSettings("/O3DE/Two/Levels", ...)
+            // When the "/O3DE/Two/Levels" key origin is being added, there is no origin being tracked for "/O3DE/Two"
+            if (domPath.IsEmpty())
+            {
+                break;
+            }
+
+            // Pop of the current field entry and examine the parent JSON path
+            domPath.Pop();
+            domPathBuffer = domPath.ToString();
+            key = domPathBuffer;
+
+            // If the parent DOM path isn't in the settings registry origin prefix tree
+            // Then loop again the supplied file path origin of the child entry
+        } while (m_settingsOriginPrefixTree.ValueAtPath(domPath, AZ::Dom::PrefixTreeMatch::ExactPath) == nullptr);
+    }
 
     void SettingsRegistryOriginTracker::RemoveOrigin(AZStd::string_view key, AZ::IO::PathView originPath, bool recurseChildren)
     {
@@ -143,7 +168,7 @@ namespace AZ
         // to allow deletion of children settings paths entries safely.
         const AZ::Dom::PrefixTreeTraversalFlags traversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths |
             (recurseChildren ? AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific
-                             : AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths);
+                : AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths);
 
         //remove a setting origin at a given Dom path.
         auto removeOriginAtKey = [this, &originPath](const AZ::Dom::Path& path, SettingsRegistryOriginStack& originStack)
@@ -156,20 +181,20 @@ namespace AZ
             AZStd::erase_if(originStack, removeOriginCondition);
 
             // if the originStack is empty, remove associated node from prefix tree
-            if (originStack.empty() && path.size() > 0)
+            if (originStack.empty() && !path.IsEmpty())
             {
-                m_settingsOriginPrefixTree.EraseValue(path, true);
-            };
+                m_settingsOriginPrefixTree.EraseValue(path);
+            }
             return true;
         };
         m_settingsOriginPrefixTree.VisitPath(jsonPath, removeOriginAtKey, traversalFlags);
-    };
+    }
 
     void SettingsRegistryOriginTracker::VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback)
     {
         auto visitOriginStackCallback = [&](const AZ::Dom::Path&, SettingsRegistryOriginStack& stack)
         {
-            for (auto& origin : stack)
+            for (const auto& origin : stack)
             {
                 if (!visitCallback(origin))
                 {
@@ -182,5 +207,5 @@ namespace AZ
         AZ::Dom::PrefixTreeTraversalFlags traversalFlags =
             AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific | AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths;
         m_settingsOriginPrefixTree.VisitPath(jsonPath, visitOriginStackCallback, traversalFlags);
-    };
-};
+    }
+}
