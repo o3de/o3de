@@ -193,8 +193,7 @@ namespace AZ
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
             // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
-            auto canRegister = CanRegisterView(viewTag, view.get());
-            AZ_Assert(canRegister, "Can't register view [%s] with viewTag [%s]",
+            AZ_Assert(CanRegisterView(viewTag, view.get()), "Can't register view [%s] with viewTag [%s]",
                       view->GetName().GetCStr(), viewTag.GetCStr());
 
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
@@ -269,8 +268,7 @@ namespace AZ
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
             // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
-            auto canRegister = CanRegisterView(viewTag, view.get());
-            AZ_Assert(canRegister, "View [%s] is already registered for ViewTag [%s].", view->GetName().GetCStr(), viewTag.GetCStr());
+            AZ_Assert(CanRegisterView(viewTag, view.get()), "View [%s] is already registered for ViewTag [%s].", view->GetName().GetCStr(), viewTag.GetCStr());
 
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
@@ -607,7 +605,7 @@ namespace AZ
         {
             return m_renderMode;
         }
-        
+
         bool RenderPipeline::NeedsRender() const
         {
             return m_renderMode != RenderMode::NoRender;
@@ -652,7 +650,7 @@ namespace AZ
                 return false;
             }
 
-            // insert the pass 
+            // insert the pass
             auto parentPass = foundPass->GetParent();
             auto passIndex = parentPass->FindChildPassIndex(referencePassName);
             // Note: no need to check if passIndex is valid since the pass was already found
@@ -660,7 +658,7 @@ namespace AZ
         }
 
         bool RenderPipeline::AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName)
-        {            
+        {
             auto foundPass = FindFirstPass(referencePassName);
 
             if (!foundPass)
@@ -670,7 +668,7 @@ namespace AZ
                 return false;
             }
 
-            // insert the pass 
+            // insert the pass
             auto parentPass = foundPass->GetParent();
             auto passIndex = parentPass->FindChildPassIndex(referencePassName);
             // Note: no need to check if passIndex is valid since the pass was already found
