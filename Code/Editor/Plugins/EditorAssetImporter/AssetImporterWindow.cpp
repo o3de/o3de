@@ -33,6 +33,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
+#include <Editor/QtViewPaneManager.h>
 #include <Util/PathUtil.h>
 #include <ActionOutput.h>
 
@@ -276,12 +277,56 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
         return true;
     }
 
-    QMessageBox messageBox(QMessageBox::Icon::NoIcon, "Unsaved changes",
-        "You have unsaved changes. Do you want to discard those changes?",
-        QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel, this);
-    messageBox.exec();
-    QMessageBox::StandardButton choice = static_cast<QMessageBox::StandardButton>(messageBox.result());
-    return choice == QMessageBox::StandardButton::Discard;
+    const int result = QMessageBox::question(
+        this,
+        tr("Save Changes?"),
+        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        QMessageBox::Yes,
+        QMessageBox::No,
+        QMessageBox::Cancel);
+
+    if (result == QMessageBox::Cancel)
+    {
+        return false;
+    }
+    else if (result == QMessageBox::No)
+    {
+        return true;
+    }
+
+    AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
+    m_assetImporterDocument->SaveScene(
+        output,
+        [this](bool wasSuccessful)
+        {
+            if(wasSuccessful)
+            {
+                // Mark the save as successful, so the prompt to save won't show up
+                // next time the scene settings window is opened.
+                m_rootDisplay->HandleSaveWasSuccessful();
+                // Make sure information on the current document is cleared out, so
+                // if a new file is immediately opened, it won't show stale info.
+                m_assetImporterDocument->GetScene()->GetManifest().Clear();
+                m_assetImporterDocument->ClearScene();
+
+                m_isClosed = true;
+                // Close the pane, instead of this window, because this window is automatically
+                // docked in this pane. If it's closed, the pane will be there, but empty.
+                QtViewPaneManager::instance()->ClosePane(LyViewPane::SceneSettings);
+            }
+            else
+            {
+                QMessageBox messageBox(
+                    QMessageBox::Icon::Warning,
+                    tr("Failed to save"),
+                    tr("An error has been encountered saving this file. See the logs for details."));
+                messageBox.exec();
+            }
+        });
+
+    // Don't close yet, in case the save fails.
+    // Scene saving is asynchronous, and will close the panel if it's successful.
+    return false;
 }
 
 void AssetImporterWindow::UpdateClicked()
