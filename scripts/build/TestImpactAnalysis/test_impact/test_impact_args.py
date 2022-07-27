@@ -12,6 +12,7 @@ value = 0
 
 
 class RuntimeArgs(Enum):
+    # Base arguments
     SEQUENCE = ("sequence", "--sequence=", "Sequence type is set to: ")
     FPOLICY = ("test_failure_policy", "--fpolicy=",
                "Test failure policy is set to: ")
@@ -25,7 +26,11 @@ class RuntimeArgs(Enum):
     IPOLICY = ("integration_policy", "--ipolicy=",
                "Integration failure policy is set to: ")
     CHANGELIST = ("change_list", "--changelist=", "Change list is set to: ")
+
+    # Native arguments
     SAFEMODE = ("safe_mode", "--safemode=", "Safe mode set to: ")
+
+    # Python arguments
 
     def __init__(self, py_arg, runtime_arg, message):
         self.py_arg = py_arg
