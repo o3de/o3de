@@ -339,7 +339,7 @@ class ProcessFbxFile(QtCore.QObject):
         path_parts = full_path.split('/')
         for index, part in enumerate(path_parts):
             if part == 'KB3DTextures':
-                return '/'.join(path_parts[(index-2):])
+                return '/'.join(path_parts[(index-1):])
         return full_path
 
     ##############################
