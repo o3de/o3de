@@ -57,7 +57,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 
     ActivateEntity(entity.get());
 
-    AZ::u32 priority = 999, layer = 999;
+    int32_t priority = 999;
+    uint32_t layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
 
     EXPECT_EQ(0, priority);
@@ -89,7 +90,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
 
     ActivateEntity(entity.get());
 
-    AZ::u32 priority = 999, layer = 999;
+    int32_t priority = 999;
+    uint32_t layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
 
     EXPECT_EQ(testPriority, priority);

@@ -18,5 +18,8 @@
         <file>AssetProcessor_refresh.png</file>
         <file>o3de_assetprocessor.png</file>
         <file>o3de_assetprocessor_taskbar.svg</file>
-    </qresource>
+		<file>Browse.png</file>
+		<file>Browse_on.png</file>
+		<file>Delete.png</file>
+	</qresource>
 </RCC>

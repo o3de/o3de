@@ -1303,6 +1303,10 @@ namespace AZStd
 #endif
     };
 
+    // AZStd::forward_list deduction guides
+    template <class InputIt, class Alloc = allocator>
+    forward_list(InputIt, InputIt, Alloc = Alloc()) -> forward_list<typename iterator_traits<InputIt>::value_type, Alloc>;
+
     template<class T, class Allocator, class U>
     decltype(auto) erase(forward_list<T, Allocator>& container, const U& value)
     {

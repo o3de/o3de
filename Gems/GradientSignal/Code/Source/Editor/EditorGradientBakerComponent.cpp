@@ -6,13 +6,12 @@
  *
  */
 
-#include "EditorGradientBakerComponent.h"
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
@@ -243,12 +242,24 @@ namespace GradientSignal
         m_shouldCancel = true;
 
         // Then we synchronously block until the job has completed
+        Wait();
+    }
+
+    void BakeImageJob::Wait()
+    {
+        // Jobs don't inherently have a way to block on cancellation / completion, so we need to implement it
+        // ourselves.
+
+        // If we've already started the job, block on a condition variable that gets notified at
+        // the end of the Process() function.
         AZStd::unique_lock<decltype(m_bakeImageMutex)> lock(m_bakeImageMutex);
         if (!m_isFinished)
         {
             m_finishedNotify.wait(lock, [this] { return m_isFinished == true; });
         }
 
+        // Regardless of whether or not we were running, we need to reset the internal Job class status
+        // and clear our cancel flag.
         Reset(true);
         m_shouldCancel = false;
     }

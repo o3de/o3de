@@ -17,20 +17,21 @@ namespace AssetProcessor
 {
     struct CacheServerData
     {
-        enum class ErrorLevel
+        enum class StatusLevel
         {
-            None,
-            Notice,
-            Warning,
-            Error
+            None,   // uninitialized or no state
+            Notice, // a notification to inform the user about state changes
+            Error,  // system is configured wrong
+            Active  // the system is active as a Client or Server
         };
 
         bool m_dirty = false;
         AssetServerMode m_cachingMode = AssetServerMode::Inactive;
         AZStd::string m_serverAddress = "";
         RecognizerContainer m_patternContainer;
-        ErrorLevel m_errorLevel = ErrorLevel::None;
-        AZStd::string m_errorMessage;
+        StatusLevel m_statusLevel = StatusLevel::None;
+        AZStd::string m_statusMessage;
+        bool m_updateStatus = false;
 
         void Reset();
         bool Save(const AZ::IO::Path& projectPath);

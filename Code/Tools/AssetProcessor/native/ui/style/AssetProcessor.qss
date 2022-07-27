@@ -102,6 +102,7 @@ QTableWidget#incomingSourceDependenciesTable:item:selected:!active {
     selection-color: rgb(192, 192, 192);
 }
 
+QPushButton#sharedCacheSupport,
 QPushButton#supportButton,
 QPushButton#MissingProductDependenciesSupport {
     min-height: 24px; /* We have to set the min- and max-height otherwise the margins are not respected. */
@@ -154,4 +155,51 @@ QListWidget::item:hover {
 
 QListWidget QHeaderView::section {
     background-color: rgb(34,34,34);
+}
+
+QLabel#sharedCacheStatus {
+    background-color: transparent;
+    color : white;
+}
+
+QLabel#sharedCacheStatus[highlight = "blue"] {
+    color : white;
+    font-weight: normal; 
+    background-color: rgba(88, 140, 188, 0.1);
+    border: 1px solid #4285F4;
+}
+
+QLabel#sharedCacheStatus[highlight = "green"] {
+    color : white;
+    font-weight: normal;
+    background-color: rgba(88, 188, 97, 0.1);
+    border: 1px solid #58BC61;
+}
+
+QLabel#sharedCacheStatus[highlight = "red"] {
+    color : white;
+    font-weight: normal;
+    background-color: rgba(255, 0, 0, 0.1);
+    border: 1px solid #FA2727;
+}
+
+QToolButton#serverAddressToolButton {
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    border-image: url(":/Browse_on.png") 0 0 0 0 stretch stretch;
+    padding: 0 0 0 0;
+}
+
+QPushButton#removeButton {
+    background-color: transparent;
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 0 0 0 0;
+}
+
+QWidget#SharedCachePage {
+    background-color: rgba(34, 34, 34, 0.5);
+    border: none;
 }
