@@ -34,7 +34,7 @@ ly_add_target(
 # Tests
 ################################################################################
 
-# Disabled: SPEC-7246
+# Disabled until future PR
 #add_subdirectory(Tests/TestProcess)
 #add_subdirectory(Tests/TestTargetA)
 #add_subdirectory(Tests/TestTargetB)

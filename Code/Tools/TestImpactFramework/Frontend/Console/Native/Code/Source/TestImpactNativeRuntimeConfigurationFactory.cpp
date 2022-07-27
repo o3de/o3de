@@ -70,12 +70,6 @@ namespace TestImpact
         };
     }
 
-    //! Returns an absolute path for a path relative to the specified root.
-    inline RepoPath GetAbsPathFromRelPath(const RepoPath& root, const RepoPath& rel)
-    {
-        return root / rel;
-    }
-
     NativeTestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
         NativeTestEngineConfig testEngineConfig;

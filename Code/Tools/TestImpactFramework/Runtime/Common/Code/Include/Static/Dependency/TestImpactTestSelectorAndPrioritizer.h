@@ -73,39 +73,39 @@ namespace TestImpact
         DependencyGraphDataMap m_dependencyGraphDataMap;
 
     protected:
-        //!
+        //! Action to perform when production sources are created.
         virtual void CreateProductionSourceAction(const ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //!
+        //! Action to perform when test sources are created.
         virtual void CreateTestSourceAction(const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //!
+        //! Action to perform when production sources with coverage are updated.
         virtual void UpdateProductionSourceWithCoverageAction(
             const ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
             const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
 
-        //!
+        //! Action to perform when test sources with coverage are updated.
         virtual void UpdateTestSourceWithCoverageAction(
             const TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //!
+        //! Action to perform when production sources without coverage are updated.
         virtual void UpdateProductionSourceWithoutCoverageAction(
             const ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //!
+        //! Action to perform when test sources without coverage are updated.
         virtual void UpdateTestSourceWithoutCoverageAction(
             const TestTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap);
 
-        //!
+        //! Action to perform when sources that cannot be determined to be production or test sources without coverage are updated.
         virtual void UpdateIndeterminateSourceWithoutCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
             const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
 
-        //!
+        //! Action to perform when sources that cannot be determined to be production or test sources without coverage are deleted.
         virtual void DeleteIndeterminateSourceWithoutCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
     };

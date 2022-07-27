@@ -357,44 +357,6 @@ namespace TestImpact
 
     NativeRuntime::~NativeRuntime() = default;
 
-    //void NativeRuntime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
-    //{
-    //    AZStd::vector<const NativeTestTarget*> testTargets;
-    //    const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
-    //    {
-    //        for (const auto& sourceDependency : sourceDependencies)
-    //        {
-    //            for (const auto& parentTarget : sourceDependency.GetParentTargets())
-    //            {
-    //                AZStd::visit([&testTargets]([[maybe_unused]] auto&& target)
-    //                {
-    //                    if constexpr (IsTestTarget<decltype(target)>)
-    //                    {
-    //                        testTargets.push_back(target);
-    //                    }
-    //                }, parentTarget.GetBuildTarget());
-    //            }
-    //        }
-    //    };
-    //
-    //    // Gather all of the test targets that have had any of their sources modified
-    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetCreateSourceDependencies());
-    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetUpdateSourceDependencies());
-    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
-    //
-    //    // Enumerate the mutated test targets to ensure their enumeration caches are up to date
-    //    if (!testTargets.empty())
-    //    {
-    //        m_testEngine->UpdateEnumerationCache(
-    //            testTargets,
-    //            Policy::ExecutionFailure::Ignore,
-    //            Policy::TestFailure::Continue,
-    //            AZStd::nullopt,
-    //            AZStd::nullopt,
-    //            AZStd::nullopt);
-    //    }
-    //}
-
     AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> NativeRuntime::SelectCoveringTestTargets(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy)
