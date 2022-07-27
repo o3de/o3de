@@ -18,7 +18,7 @@ namespace AssetProcessor
         const AZ::s64 dayInMs = 86400000;
         if (durationInMs < 0)
         {
-            return "";
+            return QString();
         }
 
         AZ::s64 dayCount = durationInMs / dayInMs;
@@ -27,12 +27,9 @@ namespace AssetProcessor
         {
             return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr, %1 day'").arg(dayCount);
         }
-        else
+        
+        if (duration.isValid())
         {
-            if (!duration.isValid())
-            {
-                return "";
-            }
             if (duration.hour() > 0)
             {
                 return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
@@ -47,6 +44,8 @@ namespace AssetProcessor
             }
             return duration.toString("zzz' ms'");
         }
+
+        return QString();
     }
 
     BuilderInfoMetricsModel::BuilderInfoMetricsModel(BuilderData* builderData, QObject* parent)
@@ -92,29 +91,18 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        BuilderDataItem* parentItem = nullptr;
+        BuilderDataItem* const parentItem =
+            parent.isValid() ? static_cast<BuilderDataItem*>(parent.internalPointer()) : m_data->m_root.get();
 
-        if (!parent.isValid())
+        if (parentItem)
         {
-            parentItem = m_data->m_root.get();
-        }
-        else
-        {
-            parentItem = static_cast<BuilderDataItem*>(parent.internalPointer());
-        }
-
-        if (!parentItem)
-        {
-            return QModelIndex();
-        }
-
-        AZStd::shared_ptr<BuilderDataItem> childItem = parentItem->GetChild(row);
-
-        if (childItem)
-        {
-            QModelIndex index = createIndex(row, column, childItem.get());
-            Q_ASSERT(checkIndex(index));
-            return index;
+            AZStd::shared_ptr<BuilderDataItem> childItem = parentItem->GetChild(row);
+            if (childItem)
+            {
+                QModelIndex index = createIndex(row, column, childItem.get());
+                Q_ASSERT(checkIndex(index));
+                return index;
+            }
         }
 
         return QModelIndex();
@@ -122,15 +110,8 @@ namespace AssetProcessor
 
     int BuilderInfoMetricsModel::rowCount(const QModelIndex& parent) const
     {
-        BuilderDataItem* parentItem = nullptr;
-        if (!parent.isValid())
-        {
-            parentItem = m_data->m_root.get();
-        }
-        else
-        {
-            parentItem = static_cast<BuilderDataItem*>(parent.internalPointer());
-        }
+        BuilderDataItem* const parentItem =
+            parent.isValid() ? static_cast<BuilderDataItem*>(parent.internalPointer()) : m_data->m_root.get();
 
         if (!parentItem)
         {
@@ -194,11 +175,7 @@ namespace AssetProcessor
 
     QVariant BuilderInfoMetricsModel::headerData(int section, Qt::Orientation orientation, int role) const
     {
-        if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
-        {
-            return QVariant();
-        }
-        if (section < 0 || section >= aznumeric_cast<int>(Column::Max))
+        if (orientation != Qt::Horizontal || role != Qt::DisplayRole || section < 0 || section >= aznumeric_cast<int>(Column::Max))
         {
             return QVariant();
         }
