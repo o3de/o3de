@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "rcjob.h"
-
-
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 
@@ -20,7 +19,6 @@
 #include "native/utilities/JobDiagnosticTracker.h"
 
 #include <qstorageinfo.h>
-
 
 namespace
 {
@@ -277,12 +275,12 @@ namespace AssetProcessor
     {
         // the following trace can be uncommented if there is a need to deeply inspect job running.
         //AZ_TracePrintf(AssetProcessor::DebugChannel, "JobTrace Start(%i %s,%s,%s)\n", this, GetInputFileAbsolutePath().toUtf8().data(), GetPlatform().toUtf8().data(), GetJobKey().toUtf8().data());
-        
+
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
         RCParams rc(this);
         BuilderParams builderParams(this);
-        
+
         //Create the process job request
         AssetBuilderSDK::ProcessJobRequest processJobRequest;
         PopulateProcessJobRequest(processJobRequest);
@@ -342,7 +340,7 @@ namespace AssetProcessor
 
         // Signal start and end of the job
         ScopedJobSignaler signaler;
-        
+
         // listen for the user quitting (CTRL-C or otherwise)
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
@@ -382,7 +380,7 @@ namespace AssetProcessor
                 }
             }
         }
-            
+
         Q_EMIT builderParams.m_rcJob->BeginWork();
         // We will actually start working on the job after this point and even if RcController gets the same job again, we will put it in the queue for processing
         builderParams.m_rcJob->DoWork(result, builderParams, listener);
