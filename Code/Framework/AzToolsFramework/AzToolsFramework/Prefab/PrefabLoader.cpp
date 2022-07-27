@@ -197,10 +197,20 @@ namespace AzToolsFramework
             }
 
             existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
-            PrefabDomValueReference instancesDomReference = PrefabDomUtils::GetInstancesValue(loadedDomFromFile);
-            if (instancesDomReference.has_value())
+            PrefabDomValueReference instancesFileReference = PrefabDomUtils::GetInstancesValue(loadedDomFromFile);
+            PrefabDomValueReference instancesTemplateReference = PrefabDomUtils::GetInstancesValue(existingTemplateDom);
+            if (instancesFileReference.has_value())
             {
-                PrefabDomValue& instances = instancesDomReference->get();
+                PrefabDomValue& instances = instancesFileReference->get();
+                if (!RemoveLinkOnReload(instances, instancesTemplateReference))
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "PrefabLoader::ReloadTemplateFrom - "
+                        "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
+                        loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
+                    return;
+                }
 
                 // For each instance value in 'instances', locate the what was changed on file and update existing template
                 for (PrefabDomValue::MemberIterator instanceIterator = instances.MemberBegin(); instanceIterator != instances.MemberEnd();
@@ -210,7 +220,7 @@ namespace AzToolsFramework
                     {
                         AZ_Error(
                             "Prefab", false,
-                            "PrefabLoader::ReloadTemplateFrom - "
+                            "PrefabLoader::ReloadTemplateFromFile - "
                             "Reloading nested instance '%s' in target Template '%u' from Prefab file '%.*s' failed.",
                             instanceIterator->name.GetString(), loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
                         return;
@@ -220,8 +230,36 @@ namespace AzToolsFramework
 
             SanitizeLoadedTemplate(existingTemplateDom);
 
+
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(relativePath);
+        }
+
+        bool PrefabLoader::RemoveLinkOnReload(PrefabDomValue& fileInstances, PrefabDomValueReference templateInstancesReference)
+        {
+            PrefabDomValue& templateInstances = templateInstancesReference->get();
+            for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
+                 instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
+            {
+                if (!fileInstances.HasMember(instanceIterator->name))
+                {
+                    PrefabDomValue& nestedTemplateDom = instanceIterator->value;
+                    PrefabDomValueReference instanceLinkIdReference =
+                        PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::LinkIdName);
+                    if (!instanceLinkIdReference.has_value() || !instanceLinkIdReference->get().IsUint64())
+                    {
+                        AZ_Error(
+                            "Prefab", false,
+                            "PrefabLoader::RemoveLinkOnReload - "
+                            "Can't get '%s' Uint64 value in Instance value '%s' of Template's Prefab DOM from file.",
+                            PrefabDomUtils::LinkIdName, instanceIterator->name.GetString());
+                        return false;
+                    }
+                    LinkId instanceLinkId = instanceLinkIdReference->get().GetUint64();
+                    m_prefabSystemComponentInterface->RemoveLink(instanceLinkId);
+                }
+            }
+            return true;
         }
 
         bool PrefabLoader::ReloadNestedInstance(
@@ -247,6 +285,7 @@ namespace AzToolsFramework
                 TemplateId newSourceTemplateId = LoadTemplateFromFile(nestedTemplatePath, progressedFilePathsSet);
 
                 m_prefabSystemComponentInterface->AddLink(newSourceTemplateId, targetTemplateId, instanceIterator, AZStd::nullopt);
+                return true;
             }
             else
             {
