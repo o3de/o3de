@@ -132,6 +132,18 @@ HAIR_LIGHTING_MODEL = {
     'Kajiya': 2,
 }
 
+# PostFX Layer Category as defined in
+# ./Gems/AtomLyIntegration/CommonFeatures/Assets/PostProcess/default.postfxlayercategories
+POSTFX_LAYER_CATEGORY = {
+    'FrontEnd': 1000000,
+    'Cinematics': 2000000,
+    'Gameplay': 3000000,
+    'Camera': 4000000,
+    'Volume': 5000000,
+    'Level': 6000000,
+    'Default': 2147483647,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -990,11 +1002,23 @@ class AtomComponentProperties:
     def postfx_layer(property: str = 'name') -> str:
         """
         PostFX Layer component properties.
+          - 'Layer Category' frequency at which the settings will be applied from atom_constants.py POSTFX_LAYER_CATEGORY
+          - 'Priority' this will take over other settings with the same frequency. lower takes precedence (int)
+          - 'Weight' how much these settings override previous settings. (float 0.0 to default 1.0)
+          - 'Select Camera Tags Only' property container list of tags.
+            Only cameras with these tags will include this effect.
+          - 'Excluded Camera Tags' property container list of tags.
+            Cameras with these tags will not be included in the effect.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Layer',
+            'Layer Category': 'Controller|Configuration|Layer Category',
+            'Priority': 'Controller|Configuration|Priority',
+            'Weight': 'Controller|Configuration|Weight',
+            'Select Camera Tags Only': 'Controller|Configuration|Select Camera Tags Only',
+            'Excluded Camera Tags': 'Controller|Configuration|Excluded Camera Tags',
         }
         return properties[property]
 
@@ -1003,13 +1027,44 @@ class AtomComponentProperties:
         """
         PostFX Gradient Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Gradient Entity Id' a separate entity id containing a gradient component.
+          - 'Opacity' factor multiplied by the current gradient before mixing. (float 0.0 to 1.0)
+          - 'Invert Input' swap the gradient input order black/white behave oppositely (bool)
+          - 'Enable Levels' toggle the application of input/output levels (bool)
+          - 'Input Max' adjustment to the white point for the input
+            treating more of the gradient as max value. (float 0.0 to default 1.0)
+          - 'Input Min' adjustment to the black point for the input
+            treating more of the gradient as min value. (float 0.0 default to 1.0)
+          - 'Input Mid' adjustment to the midtone point for the input
+            effecting all values of the gradient to be more toward min or max. (float 0.0 to 10.0, default 1.0)
+          - 'Output Max' adjusts the output white point of the effective gradient after input levels are applied
+            (float 0.0 to default 1.0)
+          - 'Output Min' adjusts the output black point of the effective gradient after input levels are applied
+            (float 0.0 default to 1.0)
+          - 'Enable Transform' toggle the ability to apply transform to the gradient input (bool)
+          - 'Scale' adjusts the gradient size (Vector3 default 1.0,1.0,1.0)
+          - 'Rotate' rotates the gradient (Vector3 rotation degrees; default 0.0,0.0,0.0)
+          - 'Translate' moves the gradient position (Vector3 default 0.0,0.0,0.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Gradient Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Gradient Entity Id': 'Controller|Configuration|Gradient Sampler|Gradient Entity Id',
+            'Opacity': 'Controller|Configuration|Gradient Sampler|Opacity',
+            'Invert Input': 'Controller|Configuration|Gradient Sampler|Advanced|Invert Input',
+            'Enable Levels': 'Controller|Configuration|Gradient Sampler|Enable Levels',
+            'Input Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Max',
+            'Input Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Min',
+            'Input Mid': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Mid',
+            'Output Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Max',
+            'Output Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Min',
+            'Enable Transform': 'Controller|Configuration|Gradient Sampler|Enable Transform',
+            'Scale': 'Controller|Configuration|Gradient Sampler|Enable Transform|Scale',
+            'Rotate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Rotate',
+            'Translate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Translate',
         }
         return properties[property]
 
@@ -1033,8 +1088,9 @@ class AtomComponentProperties:
         """
         PostFX Shape Weight Modifier component properties. Requires PostFX Layer and one of 'shapes' listed.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'shapes' a list of supported shapes as component names. 'Tube Shape' is also supported but requires 'Spline'.
+          - 'Fall-off Distance' Distance from the shape to smoothly transition the PostFX.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -1043,6 +1099,7 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
                        'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
+            'Fall-off Distance': 'Controller|Configuration|Fall-off Distance',
         }
         return properties[property]
 

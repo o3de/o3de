@@ -81,6 +81,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Terrain::TerrainDataNotificationBus

@@ -219,6 +219,16 @@ namespace GraphCanvas
         , m_paletteOverride(nullptr)
         , m_colorOverride(nullptr)
     {
+        Initialize();
+    }
+
+    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
+    {
+        delete m_colorOverride;
+    }
+
+    void GeneralNodeTitleGraphicsWidget::Initialize()
+    {
         setCacheMode(QGraphicsItem::CacheMode::DeviceCoordinateCache);
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         setGraphicsItem(this);
@@ -228,14 +238,9 @@ namespace GraphCanvas
         m_titleWidget = aznew GraphCanvasLabel(this);
         m_subTitleWidget = aznew GraphCanvasLabel(this);
         m_linearLayout = new QGraphicsLinearLayout(Qt::Vertical);
-        m_linearLayout->setSpacing(0);
-        setLayout(m_linearLayout);
-        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(entityId), 16, 16, QChar('0')));
-    }
 
-    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
-    {
-        delete m_colorOverride;
+        setLayout(m_linearLayout);
+        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(m_entityId), 16, 16, QChar('0')));
     }
 
     void GeneralNodeTitleGraphicsWidget::Activate()
@@ -422,11 +427,19 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::UpdateStyles()
     {
         m_styleHelper.SetStyle(GetEntityId(), Styling::Elements::Title);
+
+        qreal spacing = m_styleHelper.GetAttribute(Styling::Attribute::Spacing, 0);
+        qreal margin = m_styleHelper.GetAttribute(Styling::Attribute::Margin, 0);
+
+        m_linearLayout->setSpacing(spacing);
+        m_linearLayout->setContentsMargins(margin, margin, margin, margin);
+        
         m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
         m_subTitleWidget->SetStyle(GetEntityId(), Styling::Elements::SubTitle);
 
         // Just clear our the disabled palette and we'll get it when we need it.
         m_disabledPalette = nullptr;
+
     }
 
     void GeneralNodeTitleGraphicsWidget::RefreshDisplay()
@@ -444,6 +457,7 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::OnAddedToScene(const AZ::EntityId& scene)
     {
         SceneNotificationBus::Handler::BusConnect(scene);
+
         UpdateStyles();
         RefreshDisplay();
     }
@@ -467,6 +481,11 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
+
+        if (m_styleHelper.GetColor(Styling::Attribute::BackgroundColor) == Qt::transparent)    // If the background color is set to transparent, we dont need to worry about any of this
+        {
+            return;
+        }
 
         // Background
         QRectF bounds = boundingRect();

@@ -28,6 +28,11 @@ namespace AZ
         (tokens.PrecedesInternal(*this), ...);
     }
 
+    inline TaskGraphEvent::TaskGraphEvent(const char* label)
+        : m_label{ label }
+    {
+    }
+
     inline bool TaskGraphEvent::IsSignaled()
     {
         return m_semaphore.try_acquire_for(AZStd::chrono::milliseconds{ 0 });
