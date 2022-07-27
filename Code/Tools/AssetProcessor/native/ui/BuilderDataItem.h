@@ -12,6 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <QMetaType>
 
 namespace AssetProcessor
 {
