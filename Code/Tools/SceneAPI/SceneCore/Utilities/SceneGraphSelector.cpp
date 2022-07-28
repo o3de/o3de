@@ -8,7 +8,6 @@
 
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <AzCore/std/containers/set.h>

@@ -33,6 +33,7 @@
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphUpwardsIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
@@ -117,17 +118,8 @@ namespace AZ::SceneAPI::Behaviors
             const Containers::SceneGraph& graph,
             const Containers::SceneGraph::NodeIndex meshIndex)
         {
-            auto childIndex = graph.GetNodeChild(meshIndex);
-            while (childIndex.IsValid())
-            {
-                const auto nodeContent = graph.GetNodeContent(childIndex);
-                if (nodeContent && azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(nodeContent.get()))
-                {
-                    meshNodeData.m_propertyMapIndex = childIndex;
-                    return;
-                }
-                childIndex = graph.GetNodeSibling(childIndex);
-            }
+            meshNodeData.m_propertyMapIndex = AZ::SceneAPI::Utilities::GetImmediateChildOfType(
+                graph, meshIndex, azrtti_typeid<AZ::SceneAPI::DataTypes::ICustomPropertyData>());
         }
 
         MeshTransformMap CalculateMeshTransformMap(const Containers::Scene& scene)
