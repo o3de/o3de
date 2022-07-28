@@ -344,7 +344,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
@@ -400,7 +400,7 @@ namespace PhysX
                 return;
             }
         }
-        
+
         AZ::Transform colliderTransform = GetWorldTM();
         colliderTransform.ExtractUniformScale();
 
@@ -412,7 +412,6 @@ namespace PhysX
         configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
-        
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_editorRigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -423,7 +422,7 @@ namespace PhysX
                 // AddSimulatedBody may update mass / CoM / Inertia tensor based on the config, so grab the updated values.
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
-                m_config.m_inertiaTensor = body->GetInverseInertiaLocal();
+                m_config.m_inertiaTensor = body->GetInertiaLocal();
             }
         }
         AZ_Error("EditorRigidBodyComponent",

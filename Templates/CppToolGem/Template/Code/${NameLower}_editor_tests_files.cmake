@@ -7,5 +7,5 @@
 # {END_LICENSE}
 
 set(FILES
-    Tests/${Name}EditorTest.cpp
+    Tests/Tools/${Name}EditorTest.cpp
 )

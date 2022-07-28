@@ -28,6 +28,9 @@ namespace UnitTest
         int argC = 0;
         m_qApp.reset(new QApplication(argC, nullptr));
 
+        qRegisterMetaType<AssetProcessor::AssetScanningStatus>("AssetScanningStatus");
+        qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
+
         AZ::Test::ScopedAutoTempDirectory tempEngineRoot;
 
         AZStd::set<AZ::IO::Path> expectedFiles;

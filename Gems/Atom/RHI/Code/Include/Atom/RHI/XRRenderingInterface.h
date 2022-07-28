@@ -15,7 +15,7 @@
 
 namespace AZ::RHI
 {
-    //! Base instance descriptor class used to communicate with base XR module
+    //! Base instance descriptor class used to communicate with base XR module.
     class XRInstanceDescriptor : public AZStd::intrusive_base
     {
     public:
@@ -26,7 +26,7 @@ namespace AZ::RHI
         virtual ~XRInstanceDescriptor() = default;
     };
 
-    //! Base physical device descriptor class used to communicate with base XR module
+    //! Base physical device descriptor class used to communicate with base XR module.
     class XRPhysicalDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
@@ -37,7 +37,7 @@ namespace AZ::RHI
         virtual ~XRPhysicalDeviceDescriptor() = default;
     };
 
-    //! Base device descriptor class used to communicate with base XR module
+    //! Base device descriptor class used to communicate with base XR module.
     class XRDeviceDescriptor : public AZStd::intrusive_base
     {
     public:
@@ -46,6 +46,28 @@ namespace AZ::RHI
 
         XRDeviceDescriptor() = default;
         virtual ~XRDeviceDescriptor() = default;
+    };
+
+    //! Base session descriptor class used to communicate with base XR module.
+    class XRSessionDescriptor : public AZStd::intrusive_base
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
+        AZ_RTTI(XRSessionDescriptor, "{697039B1-0004-4544-8B5D-B8E2B1AA7E8D}");
+
+        XRSessionDescriptor() = default;
+        virtual ~XRSessionDescriptor() = default;
+    };
+
+    //! Base swapchain descriptor class used to communicate with base XR module.
+    class XRSwapChainDescriptor : public AZStd::intrusive_base
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_RTTI(XRSwapChainDescriptor, "{89DB71B1-913E-4802-9F77-B23E2F15D4D4}");
+
+        XRSwapChainDescriptor() = default;
+        virtual ~XRSwapChainDescriptor() = default;
     };
        
     //! The class defines the XR specific RHI rendering interface. 
@@ -58,17 +80,36 @@ namespace AZ::RHI
         XRRenderingInterface() = default;
         virtual ~XRRenderingInterface() = default;
 
-        //! Rendering api to create a native instance
+        //! Rendering api to create a native instance.
         virtual AZ::RHI::ResultCode InitNativeInstance(AZ::RHI::XRInstanceDescriptor* instanceDescriptor) = 0;
 
         //! Rendering api to get the number of physical devices
-        virtual AZ::u32 GetNumPhysicalDevices() = 0;
+        virtual AZ::u32 GetNumPhysicalDevices() const = 0;
 
-        //! Rendering api to get the physical devices associated with a specific index
+        //! Rendering api to get the physical devices associated with a specific index.
         virtual AZ::RHI::ResultCode GetXRPhysicalDevice(
             AZ::RHI::XRPhysicalDeviceDescriptor* physicalDeviceDescriptor, int32_t index) = 0;
 
-        //! Rendering api to create a XR specific native object
+        //! Rendering api to create a XR specific native object.
         virtual AZ::RHI::ResultCode CreateDevice(AZ::RHI::XRDeviceDescriptor* instanceDescriptor) = 0;
+
+        //! Rendering api to create a XR Session
+        virtual AZ::RHI::ResultCode CreateSession(AZ::RHI::XRSessionDescriptor* sessionDescriptor) = 0;
+
+        //! Rendering api to create a XR SwapChain which should internally create a xr swapchain per view as 
+        //! well as multiple swapchain images per xr swapchain
+        virtual AZ::RHI::ResultCode CreateSwapChain() = 0;
+
+        //! Rendering api to signal the beginning of a frame.
+        virtual void BeginFrame() = 0;
+
+        //! Rendering api to signal the end of a frame.
+        virtual void EndFrame() = 0;
+
+        //! Rendering api to get the native swapchain image to write into.
+        virtual AZ::RHI::ResultCode GetSwapChainImage(AZ::RHI::XRSwapChainDescriptor* swapchainDescriptor) const = 0;
+
+        //! Rendering api to get the active swapchain image index associated with the swapchain of the provided view index.
+        virtual AZ::u32 GetCurrentImageIndex(AZ::u32 viewIndex) const = 0;
     };
 }

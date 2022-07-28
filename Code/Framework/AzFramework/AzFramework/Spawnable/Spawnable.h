@@ -173,6 +173,7 @@ namespace AzFramework
             const EntityAliasList* m_entityAliasList;
         };
 
+        inline static constexpr const char* DefaultMainSpawnableName = "Root";
         inline static constexpr const char* FileExtension = "spawnable";
         inline static constexpr const char* DotFileExtension = ".spawnable";
 

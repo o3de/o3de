@@ -38,10 +38,6 @@ namespace PhysX
         }
         void TearDownFixture()
         {
-            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
-            {
-                materialManager->DeleteAllMaterials();
-            }
             //Cleanup any created scenes
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {

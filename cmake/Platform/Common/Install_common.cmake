@@ -398,10 +398,12 @@ endif()
     ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
     ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
     ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
+    ly_setup_subdirectory_install_code("${absolute_target_source_dir}" O3DE_INSTALL_CODE_PLACEHOLDER)
 
     # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
     file(WRITE "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/permutation.cmake"
         "${cmake_copyright_comment}"
+        "${O3DE_INSTALL_CODE_PLACEHOLDER}"
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
@@ -824,6 +826,15 @@ function(ly_setup_subdirectory_enable_gems absolute_target_source_dir output_scr
         string(APPEND enable_gems_calls ${enable_gems_command})
     endforeach()
     set(${output_script} ${enable_gems_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_install_code: Add the CMake code specified in the O3DE_SUBDIRECTORY_INSTALL_CODE
+#!  DIRECTORY property to the beginning of the generated CMakeLists.txt in the same relative install layout diredctory
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_install_code absolute_target_source_dir output_script)
+    unset(${output_script} PARENT_SCOPE)
+    get_property(subdirectory_install_code DIRECTORY ${absolute_target_source_dir} PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE)
+    set(${output_script} ${subdirectory_install_code} PARENT_SCOPE)
 endfunction()
 
 #! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt

@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
 namespace AzToolsFramework
 {
@@ -17,6 +18,8 @@ namespace AzToolsFramework
         AZStd::string description,
         AZStd::string category,
         AZStd::string iconPath,
+        bool hideFromMenusWhenDisabled,
+        bool hideFromToolBarsWhenDisabled,
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
         : m_identifier(AZStd::move(identifier))
@@ -24,6 +27,8 @@ namespace AzToolsFramework
         , m_description(AZStd::move(description))
         , m_category(AZStd::move(category))
         , m_iconPath(AZStd::move(iconPath))
+        , m_hideFromMenusWhenDisabled(hideFromMenusWhenDisabled)
+        , m_hideFromToolBarsWhenDisabled(hideFromToolBarsWhenDisabled)
     {
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), nullptr);
@@ -65,6 +70,7 @@ namespace AzToolsFramework
     void EditorAction::SetName(AZStd::string name)
     {
         m_name = AZStd::move(name);
+        m_action->setText(m_name.c_str());
     }
 
     const AZStd::string& EditorAction::GetDescription() const
@@ -75,6 +81,7 @@ namespace AzToolsFramework
     void EditorAction::SetDescription(AZStd::string description)
     {
         m_description = AZStd::move(description);
+        m_action->setToolTip(m_description.c_str());
     }
 
     const AZStd::string& EditorAction::GetCategory() const
@@ -103,21 +110,60 @@ namespace AzToolsFramework
         }
     }
 
+    bool EditorAction::GetHideFromMenusWhenDisabled() const
+    {
+        return m_hideFromMenusWhenDisabled;
+    }
+
+    bool EditorAction::GetHideFromToolBarsWhenDisabled() const
+    {
+        return m_hideFromToolBarsWhenDisabled;
+    }
+
     QAction* EditorAction::GetAction()
     {
-        // Update the action to ensure it is visualized correctly.
-        Update();
-
         return m_action;
+    }
+
+    const QAction* EditorAction::GetAction() const
+    {
+        return m_action;
+    }
+    
+    void EditorAction::SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
+    {
+        if (enabledStateCallback)
+        {
+            m_enabledStateCallback = AZStd::move(enabledStateCallback);
+            m_action->setEnabled(m_enabledStateCallback());
+        }
+    }
+
+    bool EditorAction::HasEnabledStateCallback() const
+    {
+        return m_enabledStateCallback != nullptr;
+    }
+
+    bool EditorAction::IsEnabled() const
+    {
+        return m_action->isEnabled();
     }
 
     void EditorAction::Update()
     {
         if (m_checkStateCallback)
         {
-            // Refresh checkable action value.
+            // Refresh checkable state.
             m_action->setChecked(m_checkStateCallback());
         }
+
+        if (m_enabledStateCallback)
+        {
+            // Refresh enabled state.
+            m_action->setEnabled(m_enabledStateCallback());
+        }
+
+        ActionManagerNotificationBus::Broadcast(&ActionManagerNotificationBus::Handler::OnActionStateChanged, m_identifier);
     }
 
     bool EditorAction::IsCheckable()

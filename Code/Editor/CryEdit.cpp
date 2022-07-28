@@ -71,6 +71,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyleManager.h>
@@ -434,10 +435,6 @@ CCryEditApp::CCryEditApp()
 
     m_sPreviewFile[0] = 0;
 
-    // Place all significant initialization in InitInstance
-    ZeroStruct(m_tagLocations);
-    ZeroStruct(m_tagAngles);
-
     AzFramework::AssetSystemInfoBus::Handler::BusConnect();
 
     m_disableIdleProcessingCounter = 0;
@@ -697,9 +694,11 @@ void CCryEditApp::OnFileSave()
         AZ_Assert(prefabIntegrationInterface != nullptr, "PrefabIntegrationInterface is not found.");
 
         prefabIntegrationInterface->SaveCurrentPrefab();
+
+        // when attempting to save, update the last known location using the active camera transform
+        AzToolsFramework::StoreViewBookmarkLastKnownLocationFromActiveCamera();
     }
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateDocumentReady(QAction* action)
@@ -1574,8 +1573,6 @@ bool CCryEditApp::InitInstance()
     QElapsedTimer startupTimer;
     startupTimer.start();
 
-    // create / attach to the environment:
-    AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
     m_pEditor = new CEditorImpl();
 
     // parameters must be parsed early to capture arguments for test bootstrap
@@ -1812,8 +1809,6 @@ void CCryEditApp::LoadFile(QString fileName)
     {
         return;
     }
-
-    LoadTagLocations();
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
@@ -2087,7 +2082,7 @@ int CCryEditApp::ExitInstance(int exitCode)
             m_pEditor->OnEarlyExitShutdownSequence();
         }
 
-        gEnv->pLog->FlushAndClose();
+        gEnv->pLog->Flush();
 
         // note: the intention here is to quit immediately without processing anything further
         // on linux and mac, _exit has that effect
@@ -2168,7 +2163,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         delete m_mutexApplication;
     }
 
-    DetachEditorCoreAZEnvironment();
     return 0;
 }
 
@@ -2305,9 +2299,27 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
         }
     }
-    else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+    else
     {
-        GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+        {
+            GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        }
+
+        // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
+        static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
+        const int64_t maxFrameTimeMs = ed_backgroundSystemTickCap;
+
+        if (maxFrameTimeMs > 0)
+        {
+            const int64_t maxElapsedTimeMs = maxFrameTimeMs + static_cast<int64_t>(sTimeLastMs);
+            const int64_t realElapsedTimeMs = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
+            if (maxElapsedTimeMs > realElapsedTimeMs)
+            {
+                CrySleep(aznumeric_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
+            }
+        }
+        sTimeLastMs = AZ::GetRealElapsedTimeMs();
     }
 
     DisplayLevelLoadErrors();
@@ -3293,7 +3305,7 @@ void CCryEditApp::OnOpenLevel()
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
-        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data());
+        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
     }
 }
 
@@ -3379,7 +3391,6 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostR
     {
         GetIEditor()->ShowConsole(bVisible);
     }
-    LoadTagLocations();
 
     MainWindow::instance()->menuBar()->setEnabled(true);
 
@@ -3440,55 +3451,6 @@ void CCryEditApp::OnViewConfigureLayout()
         {
             // Will kill this Pane. so must be last line in this function.
             layout->CreateLayout(dlg.GetLayout());
-        }
-    }
-}
-
-void CCryEditApp::SaveTagLocations()
-{
-    // Save to file.
-    QString filename = QFileInfo(GetIEditor()->GetDocument()->GetLevelPathName()).dir().absoluteFilePath("tags.txt");
-    QFile f(filename);
-    if (f.open(QFile::WriteOnly))
-    {
-        QTextStream stream(&f);
-        for (int i = 0; i < 12; i++)
-        {
-            stream <<
-                m_tagLocations[i].x << "," << m_tagLocations[i].y << "," <<  m_tagLocations[i].z << "," <<
-                m_tagAngles[i].x << "," << m_tagAngles[i].y << "," << m_tagAngles[i].z << Qt::endl;
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::LoadTagLocations()
-{
-    QString filename = QFileInfo(GetIEditor()->GetDocument()->GetLevelPathName()).dir().absoluteFilePath("tags.txt");
-    // Load tag locations from file.
-
-    ZeroStruct(m_tagLocations);
-
-    QFile f(filename);
-    if (f.open(QFile::ReadOnly))
-    {
-        QTextStream stream(&f);
-        for (int i = 0; i < 12; i++)
-        {
-            QStringList line = stream.readLine().split(",");
-            float x = 0, y = 0, z = 0, ax = 0, ay = 0, az = 0;
-            if (line.count() == 6)
-            {
-                x = line[0].toFloat();
-                y = line[1].toFloat();
-                z = line[2].toFloat();
-                ax = line[3].toFloat();
-                ay = line[4].toFloat();
-                az = line[5].toFloat();
-            }
-
-            m_tagLocations[i] = Vec3(x, y, z);
-            m_tagAngles[i] = Ang3(ax, ay, az);
         }
     }
 }
@@ -4008,14 +3970,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     return ret;
 }
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
-{
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-}
-
-extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
-{
-    AZ::Environment::Detach();
-}
+AZ_DECLARE_MODULE_INITIALIZATION
 
 #include <moc_CryEdit.cpp>

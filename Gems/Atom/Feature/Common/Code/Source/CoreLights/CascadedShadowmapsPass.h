@@ -39,10 +39,10 @@ namespace AZ
             const AZStd::span<const RPI::PipelineViewTag> GetPipelineViewTags();
 
             //! This exposes the shadowmap atlas.
-            ShadowmapAtlas& GetShadowmapAtlas();
+            ShadowmapAtlas& GetShadowmapAtlas() { return m_atlas; }
 
             //! This queues the image size and array size which will be updated in the beginning of the frame.
-            void QueueForUpdateShadowmapImageSize(ShadowmapSize shadowmapSize, uint32_t arraySize);
+            void SetShadowmapSize(ShadowmapSize shadowmapSize, u16 numCascades);
 
         private:
             CascadedShadowmapsPass() = delete;
@@ -53,11 +53,9 @@ namespace AZ
             void GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const override;
             void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const override;
 
-            RPI::Ptr<ShadowmapPass> CreateChild(uint16_t cascadeIndex);
+            void CreateChildPassesInternal() override;
+            void CreateChildShadowMapPass(u16 cascadeIndex);
 
-            void UpdateChildren();
-
-            void SetCascadesCount(uint16_t cascadesCount);
             void UpdateShadowmapImageSize();
 
             const Name m_slotName{ "Shadowmap" };
@@ -73,13 +71,10 @@ namespace AZ
 
             // Generated pipeline view tags for the children (ShadowmapPass).
             AZStd::fixed_vector<RPI::PipelineViewTag, Shadow::MaxNumberOfCascades> m_childrenPipelineViewTags;
-            uint16_t m_numberOfCascades = 0;
+            u16 m_numCascades = 0;
 
             ShadowmapAtlas m_atlas;
-
             ShadowmapSize m_shadowmapSize = ShadowmapSize::None;
-            uint32_t m_arraySize = 1;
-            bool m_updateChildren = true;
         };
     } // namespace Render
 } // namespace AZ

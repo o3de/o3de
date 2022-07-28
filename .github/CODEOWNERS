@@ -49,6 +49,9 @@
 /AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
 /Code/Framework/AzCore/AzCore/Asset/ @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/Asset/ @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/AssetManager.cpp @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/TestCatalog.h @o3de/sig-content-maintainers
 
 # SIG-Content Viewport ownership area
 /Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers

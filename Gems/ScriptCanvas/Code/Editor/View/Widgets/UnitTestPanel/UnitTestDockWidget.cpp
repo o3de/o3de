@@ -432,7 +432,7 @@ namespace ScriptCanvasEditor
 
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
         GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAssetId
-            , SourceHandle(nullptr, sourceUuid, {})
+            , SourceHandle(nullptr, sourceUuid)
             , Tracker::ScriptCanvasFileState::UNMODIFIED);
 
         if (!openOutcome)
@@ -520,7 +520,7 @@ namespace ScriptCanvasEditor
                         continue;
                     }
 
-                    SourceHandle source(nullptr, scriptUuid, "");
+                    SourceHandle source(nullptr, scriptUuid);
                     ScriptCanvasEditor::CompleteDescriptionInPlace(source);
                     RunTestGraph(source, mode);
                 }

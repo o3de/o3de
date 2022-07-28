@@ -193,11 +193,28 @@ namespace PhysX
 
         AZStd::pair<uint8_t, uint8_t> GetPhysXMaterialIndicesFromHeightfieldSamples(
             const AZStd::vector<Physics::HeightMaterialPoint>& samples,
-            const int32_t row, const int32_t col,
-            const int32_t numRows, const int32_t numCols);
+            const size_t col, const size_t row, 
+            const size_t numCols, const size_t numRows);
 
         Physics::HeightfieldShapeConfiguration CreateBaseHeightfieldShapeConfiguration(AZ::EntityId entityId);
         Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
+
+        //! Refresh a portion of the heightfield shape in the given scene based on the data in the HeightfieldShapeConfiguration.
+        //! @param physicsScene The scene that the shape is located in. (Needed for write-locking the scene in the thread)
+        //! @param heightfieldShape The shape containing the heightfield in the scene.
+        //! @param heightfield The updated shape configuration that contains the new data for the heightfieldShape.
+        //! @param startCol The starting column of the heightfield to refresh
+        //! @param startRow The starting row of the heightfield to refresh
+        //! @param numColsToUpdate The number of columns to refresh in the heightfieldShape
+        //! @param numRowsToUpdate The number of rows to refresh in the heightfieldShape
+        void RefreshHeightfieldShape(
+            AzPhysics::Scene* physicsScene,
+            Physics::Shape* heightfieldShape,
+            Physics::HeightfieldShapeConfiguration& heightfield,
+            const size_t startCol,
+            const size_t startRow, 
+            const size_t numColsToUpdate,
+            const size_t numRowsToUpdate);
 
         //! Sets an array of material slots from Physics Asset.
         //! If the configuration indicates that it should use the physics materials

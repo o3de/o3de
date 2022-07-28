@@ -12,7 +12,6 @@
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
 {
@@ -24,7 +23,6 @@ namespace Multiplayer
             {
                 MultiplayerSystemComponent::CreateDescriptor(),
                 NetBindComponent::CreateDescriptor(),
-                NetworkSpawnableHolderComponent::CreateDescriptor(),
 #ifdef MULTIPLAYER_EDITOR
                 MultiplayerToolsSystemComponent::CreateDescriptor(),
 #endif

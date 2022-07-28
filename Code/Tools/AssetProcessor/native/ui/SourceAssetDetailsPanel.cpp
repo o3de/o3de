@@ -242,4 +242,3 @@ namespace AssetProcessor
         m_ui->DependencySeparatorLine->setVisible(visible);
     }
 }
-

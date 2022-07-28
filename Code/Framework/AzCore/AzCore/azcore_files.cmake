@@ -253,6 +253,8 @@ set(FILES
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
@@ -337,6 +339,7 @@ set(FILES
     Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h
@@ -415,8 +418,6 @@ set(FILES
     Memory/SystemAllocator.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Environment.cpp
-    Module/Environment.h
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h

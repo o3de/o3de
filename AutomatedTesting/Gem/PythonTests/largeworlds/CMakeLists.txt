@@ -52,6 +52,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
             LargeWorlds
     )
 
+    ly_add_pytest(
+        NAME AutomatedTesting::LandscapeCanvasTests_Sandbox_Optimized
+        TEST_SERIAL
+        TEST_SUITE sandbox
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/TestSuite_Sandbox.py
+        RUNTIME_DEPENDENCIES
+           AZ::AssetProcessor
+           Legacy::Editor
+           AutomatedTesting.Assets
+        COMPONENT
+            LargeWorlds
+    )
+
 ## GradientSignal ##
 
     ly_add_pytest(

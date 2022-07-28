@@ -1,5 +1,4 @@
 {
-    "Source": "Default_Level.prefab",
     "ContainerEntity": {
         "Id": "Entity_[1146574390643]",
         "Name": "Level",
@@ -23,8 +22,7 @@
             "Component_[15230859088967841193]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 15230859088967841193,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[16239496886950819870]": {
                 "$type": "EditorDisabledCompositionComponent",
@@ -50,8 +48,7 @@
                 "$type": "EditorVisibilityComponent",
                 "Id": 9562516168917670048
             }
-        },
-        "IsDependencyReady": true
+        }
     },
     "Entities": {
         "Entity_[1155164325235]": {
@@ -93,9 +90,7 @@
                         "Configuration": {
                             "Intensity": 1.0,
                             "CameraEntityId": "",
-                            "ShadowFilterMethod": 1,
-                            "ShadowmapSize": "Size1024",
-                            "Pcf Method": 1
+                            "ShadowFilterMethod": 1
                         }
                     }
                 },
@@ -114,21 +109,7 @@
                             -0.847000002861023,
                             -15.8100004196167
                         ]
-                    },
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            9.442070960998536
-                        ],
-                        "Rotation": [
-                            -0.6098860502243042,
-                            -0.09055805951356888,
-                            -0.10376212745904924,
-                            0.7804304361343384
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    }
                 },
                 "Component_[8599729549570828259]": {
                     "$type": "EditorEntitySortComponent",
@@ -138,8 +119,7 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 952797371922080273
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1159459292531]": {
             "Id": "Entity_[1159459292531]",
@@ -164,15 +144,7 @@
                 "Component_[16578565737331764849]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 16578565737331764849,
-                    "Parent Entity": "Entity_[1176639161715]",
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    "Parent Entity": "Entity_[1176639161715]"
                 },
                 "Component_[16919232076966545697]": {
                     "$type": "EditorInspectorComponent",
@@ -180,30 +152,38 @@
                 },
                 "Component_[5182430712893438093]": {
                     "$type": "EditorMaterialComponent",
-                    "Id": 5182430712893438093,
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialAssetId": {
-                                    "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
-                                    "subId": 803645540
+                    "Id": 5182430712893438093
+                },
+                "Component_[5245524694917323904]": {
+                    "$type": "EditorColliderComponent",
+                    "Id": 5245524694917323904,
+                    "ColliderConfiguration": {
+                        "Position": [
+                            0.0,
+                            0.0,
+                            -0.5
+                        ],
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
                                 }
-                            }
+                            ]
                         }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialAssetId": {
-                                        "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
-                                        "subId": 803645540
-                                    }
-                                }
-                            }
-                        ]
-                    ]
+                    },
+                    "ShapeConfiguration": {
+                        "ShapeType": 1,
+                        "Box": {
+                            "Configuration": [
+                                512.0,
+                                512.0,
+                                1.0
+                            ]
+                        }
+                    },
+                    "DebugDrawSettings": {
+                        "LocallyEnabled": false
+                    }
                 },
                 "Component_[5675108321710651991]": {
                     "$type": "AZ::Render::EditorMeshComponent",
@@ -236,8 +216,7 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 9410832619875640998
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1163754259827]": {
             "Id": "Entity_[1163754259827]",
@@ -271,30 +250,16 @@
                     "Parent Entity": "Entity_[1176639161715]",
                     "Transform Data": {
                         "Translate": [
-                            -2.300000190734864,
-                            -3.9368600845336916,
+                            -2.3000001907348633,
+                            -3.9368600845336914,
                             1.0
                         ],
                         "Rotate": [
                             -2.050307512283325,
-                            1.9552897214889529,
-                            -43.62335586547852
+                            1.9552897214889526,
+                            -43.623355865478516
                         ]
-                    },
-                    "Cached World Transform": {
-                        "Translation": [
-                            -11.904647827148438,
-                            13.392678260803223,
-                            -3.0449724197387697
-                        ],
-                        "Rotation": [
-                            -0.02294669672846794,
-                            0.00919158011674881,
-                            -0.37172695994377139,
-                            0.9280129671096802
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    }
                 },
                 "Component_[18387556550380114975]": {
                     "$type": "SelectionComponent",
@@ -312,6 +277,13 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 7169798125182238623
                 },
+                "Component_[7255796294953281766]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 7255796294953281766,
+                    "m_template": {
+                        "$type": "FlyCameraInputComponent"
+                    }
+                },
                 "Component_[8866210352157164042]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 8866210352157164042
@@ -319,16 +291,8 @@
                 "Component_[9129253381063760879]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 9129253381063760879
-                },
-                "Component_[7255796294953281766]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 7255796294953281766,
-                    "m_template": {
-                        "$type": "FlyCameraInputComponent"
-                    }
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1168049227123]": {
             "Id": "Entity_[1168049227123]",
@@ -373,15 +337,7 @@
                 "Component_[380249072065273654]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 380249072065273654,
-                    "Parent Entity": "Entity_[1176639161715]",
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    "Parent Entity": "Entity_[1176639161715]"
                 },
                 "Component_[7476660583684339787]": {
                     "$type": "EditorPendingCompositionComponent",
@@ -403,8 +359,7 @@
                     "$type": "EditorLockComponent",
                     "Id": 9189909764215270515
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1172344194419]": {
             "Id": "Entity_[1172344194419]",
@@ -444,21 +399,7 @@
                             0.10000000149011612,
                             180.0
                         ]
-                    },
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        "Rotation": [
-                            0.0008726645028218627,
-                            0.0,
-                            0.9999996423721314,
-                            0.0
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    }
                 },
                 "Component_[6495255223970673916]": {
                     "$type": "AZ::Render::EditorMeshComponent",
@@ -487,8 +428,7 @@
                     "$type": "EditorLockComponent",
                     "Id": 9439770997198325425
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1176639161715]": {
             "Id": "Entity_[1176639161715]",
@@ -497,15 +437,7 @@
                 "Component_[10757302973393310045]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 10757302973393310045,
-                    "Parent Entity": "Entity_[1146574390643]",
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1146574390643]"
+                    "Parent Entity": "Entity_[1146574390643]"
                 },
                 "Component_[14505817420424255464]": {
                     "$type": "EditorInspectorComponent",
@@ -543,38 +475,20 @@
                 "Component_[5855590796136709437]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 5855590796136709437,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[1155164325235]"
-                        },
-                        {
-                            "EntityId": "Entity_[1180934129011]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[1172344194419]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[1168049227123]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[1163754259827]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[1159459292531]",
-                            "SortIndex": 5
-                        }
+                    "Child Entity Order": [
+                        "Entity_[1155164325235]",
+                        "Entity_[1180934129011]",
+                        "Entity_[1172344194419]",
+                        "Entity_[1168049227123]",
+                        "Entity_[1163754259827]",
+                        "Entity_[1159459292531]"
                     ]
                 },
                 "Component_[9277695270015777859]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 9277695270015777859
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[1180934129011]": {
             "Id": "Entity_[1180934129011]",
@@ -652,22 +566,13 @@
                 "Component_[6644513399057217122]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 6644513399057217122,
-                    "Parent Entity": "Entity_[1176639161715]",
-                    "Cached World Transform": {
-                        "Translation": [
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "Cached World Transform Parent": "Entity_[1176639161715]"
+                    "Parent Entity": "Entity_[1176639161715]"
                 },
                 "Component_[931091830724002070]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 931091830724002070
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

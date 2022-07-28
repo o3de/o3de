@@ -8,7 +8,6 @@
 
 #include <Window/MaterialEditorMainWindow.h>
 #include <Window/MaterialEditorViewportContent.h>
-#include <Window/SettingsDialog/SettingsDialog.h>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -25,9 +24,9 @@ namespace MaterialEditor
         m_toolBar = new AtomToolsFramework::EntityPreviewViewportToolBar(m_toolId, this);
         addToolBar(m_toolBar);
 
-        m_materialInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
-        m_materialInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/MaterialInspector");
-        AddDockWidget("Inspector", m_materialInspector, Qt::RightDockWidgetArea);
+        m_documentInspector = new AtomToolsFramework::AtomToolsDocumentInspector(m_toolId, this);
+        m_documentInspector->SetDocumentSettingsPrefix("/O3DE/Atom/MaterialEditor/DocumentInspector");
+        AddDockWidget("Inspector", m_documentInspector, Qt::RightDockWidgetArea);
 
         m_materialViewport = new AtomToolsFramework::EntityPreviewViewportWidget(m_toolId, this);
 
@@ -60,19 +59,19 @@ namespace MaterialEditor
     void MaterialEditorMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         Base::OnDocumentOpened(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialEditorMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
     {
         Base::OnDocumentCleared(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialEditorMainWindow::OnDocumentError(const AZ::Uuid& documentId)
     {
         Base::OnDocumentError(documentId);
-        m_materialInspector->SetDocumentId(documentId);
+        m_documentInspector->SetDocumentId(documentId);
     }
 
     void MaterialEditorMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
@@ -106,25 +105,17 @@ namespace MaterialEditor
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    void MaterialEditorMainWindow::OpenSettings()
+    AZStd::string MaterialEditorMainWindow::GetHelpDialogText() const
     {
-        SettingsDialog dialog(this);
-        dialog.exec();
-    }
-
-    void MaterialEditorMainWindow::OpenHelp()
-    {
-        QMessageBox::information(
-            this, windowTitle(),
-            R"(<html><head/><body>
+        return R"(<html><head/><body>
             <p><h3><u>Camera Controls</u></h3></p>
             <p><b>LMB</b> - rotate camera</p>
             <p><b>RMB</b> or <b>Alt+LMB</b> - orbit camera around target</p>
-            <p><b>MMB</b> or <b>Alt+MMB</b> - pan camera on its xy plane</p>
+            <p><b>MMB</b> - pan camera on its xy plane</p>
             <p><b>Alt+RMB</b> or <b>LMB+RMB</b> - dolly camera on its z axis</p>
             <p><b>Ctrl+LMB</b> - rotate model</p>
             <p><b>Shift+LMB</b> - rotate environment</p>
-            </body></html>)");
+            </body></html>)";
     }
 } // namespace MaterialEditor
 

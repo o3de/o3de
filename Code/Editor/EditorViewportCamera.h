@@ -15,25 +15,26 @@ namespace AZ
 {
     class Transform;
     class Vector3;
+    class Quaternion;
 } // namespace AZ
 
 namespace SandboxEditor
 {
-    //! Set the default viewport camera translation/position.
+    //! Sets the default viewport camera translation/position.
     SANDBOX_API void SetDefaultViewportCameraPosition(const AZ::Vector3& position);
 
-    //! Set the default viewport camera orientation/rotation.
+    //! Sets the default viewport camera orientation/rotation.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
     SANDBOX_API void SetDefaultViewportCameraRotation(float pitch, float yaw);
 
-    //! Set the camera to interpolate to the given position and orientation.
+    //! Sets the camera to interpolate to the given position and orientation.
     //! @param position The new position of the camera.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
     SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, float pitch, float yaw);
 
-    //! Get the default viewport camera transform.
+    //! Gets the default viewport camera transform.
     SANDBOX_API AZ::Transform GetDefaultViewportCameraTransform();
 
     //! Returns a quaternion representing a pitch/yaw rotation for a camera.

@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 namespace AZ::IO::Platform
 {
@@ -48,3 +49,28 @@ namespace AZ::IO::Platform
         }
     }
 }
+
+namespace AZ::IO::PosixInternal
+{
+    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags readStatusFlags)
+    {
+        // Apple does not support pipe2
+        // Therefore use a combination of pipe + fcntl
+        // to set the read end of the pipe status flags
+        const int pipeResult = pipe(pipeFileDescriptors);
+        if (pipeResult == 0)
+        {
+            // Query the file status flags from the read end and bit-wise or the input status flags to
+            const int fcntlFlags = fcntl(pipeFileDescriptors[0], F_GETFL);
+            if (const int fcntlStatusResult = fcntl(pipeFileDescriptors[0], F_SETFL, fcntlFlags | static_cast<int>(readStatusFlags));
+                fcntlStatusResult == -1)
+            {
+                // If the status flags could not be set, close the pipe and return the fcntl status result
+                close(pipeFileDescriptors[1]);
+                close(pipeFileDescriptors[0]);
+                return fcntlStatusResult;
+            }
+        }
+        return pipeResult;
+    }
+} // namespace AZ::IO::PosixInternal

@@ -9,9 +9,10 @@
 #pragma once
 
 #include <DebugDraw.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
-#include <Misc/RecastHelpers.h>
-#include <Misc/RecastSmartPointer.h>
+#include <RecastNavigation/RecastHelpers.h>
+#include <RecastNavigation/RecastSmartPointer.h>
 
 namespace RecastNavigation
 {

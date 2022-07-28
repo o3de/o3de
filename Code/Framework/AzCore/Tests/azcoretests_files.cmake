@@ -139,6 +139,7 @@ set(FILES
     Serialization/Json/UuidSerializerTests.cpp
     Time/TimeTests.cpp
     Math/AabbTests.cpp
+    Math/CapsuleTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h

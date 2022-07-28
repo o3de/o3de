@@ -28,7 +28,6 @@
 
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
-#include <EMotionFX/Source/StandardMaterial.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -114,15 +113,6 @@ namespace EMotionFX
             const AZ::u32 exfxNodeCount = aznumeric_cast<AZ::u32>(nodeIndices.size());
             actor->SetNumNodes(aznumeric_cast<AZ::u32>(exfxNodeCount));
             actor->ResizeTransformData();
-
-            // Add a standard material
-            // This material is used within the existing EMotionFX GL window. The engine will use a native engine material at runtime. The GL window will also be replaced by a native engine viewport
-            EMotionFX::StandardMaterial* defaultMat = EMotionFX::StandardMaterial::Create("Default");
-            defaultMat->SetAmbient(MCore::RGBAColor(0.0f, 0.0f, 0.0f));
-            defaultMat->SetDiffuse(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetSpecular(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetShine(100.0f);
-            actor->AddMaterial(0, defaultMat);
 
             EMotionFX::Pose* bindPose = actor->GetBindPose();
             AZ_Assert(bindPose, "BindPose not available for actor");
@@ -336,20 +326,7 @@ namespace EMotionFX
 
             // The search begin from the rootBoneNodeIndex.
             auto graphDownwardsRootBoneView = SceneViews::MakeSceneGraphDownwardsView<SceneViews::BreadthFirst>(graph, rootBoneNodeIndex, nameContentView.begin(), true);
-            auto it = graphDownwardsRootBoneView.begin();
-            if (!it->second)
-            {
-                // We always skip the first node because it's introduced by scenegraph
-                ++it;
-                if (!it->second && it != graphDownwardsRootBoneView.end())
-                {
-                    // In maya / max, we skip 1 root node when it have no content (emotionfx always does this)
-                    // However, fbx doesn't restrain itself from having multiple root nodes. We might want to revisit here if it ever become a problem.
-                    ++it;
-                }
-            }
-
-            for (; it != graphDownwardsRootBoneView.end(); ++it)
+            for (auto it = graphDownwardsRootBoneView.begin(); it != graphDownwardsRootBoneView.end(); ++it)
             {
                 const SceneContainers::SceneGraph::NodeIndex& nodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
 
@@ -357,7 +334,11 @@ namespace EMotionFX
                 // Note: For example, the end point could be a transform node. We will process that later on its parent node.
                 if (graph.IsNodeEndPoint(nodeIndex))
                 {
-                    continue;
+                    // Skip the end point node except if it's a root node.
+                    if (graph.GetRoot() != nodeIndex)
+                    {
+                        continue;
+                    }
                 }
 
                 auto mesh = azrtti_cast<const SceneDataTypes::IMeshData*>(it->second);

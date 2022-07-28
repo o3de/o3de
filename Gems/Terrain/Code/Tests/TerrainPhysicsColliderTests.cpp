@@ -148,7 +148,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsAligned
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -181,7 +181,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMinB
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -213,7 +213,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderConstrictsMaxB
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -272,7 +272,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
 
     ActivateEntity(m_entity.get());
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -480,7 +480,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsAndM
     Physics::HeightfieldProviderRequestsBus::EventResult(
         heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-    int32_t cols, rows;
+    size_t cols, rows;
     Physics::HeightfieldProviderRequestsBus::Event(
         m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -590,7 +590,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         Physics::HeightfieldProviderRequestsBus::EventResult(
             heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-        int32_t cols, rows;
+        size_t cols, rows;
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -687,7 +687,7 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderDefaultMateria
         Physics::HeightfieldProviderRequestsBus::EventResult(
             heightsAndMaterials, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-        int32_t cols, rows;
+        size_t cols, rows;
         Physics::HeightfieldProviderRequestsBus::Event(
             m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, cols, rows);
 
@@ -769,8 +769,8 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
 
     // Request a sub-part of the terrain and validate the points match the original data
     int32_t callCounter = 0;
-    Physics::UpdateHeightfieldSampleFunction validateDataCallback = [&callCounter, &heightsMaterials](int32_t row,
-        int32_t column, const Physics::HeightMaterialPoint& dataPoint)
+    Physics::UpdateHeightfieldSampleFunction validateDataCallback =
+        [&callCounter, &heightsMaterials](size_t column, size_t row, const Physics::HeightMaterialPoint& dataPoint)
     {
         size_t lookUpIndex = row * expectedGridSize + column;
         EXPECT_LT(lookUpIndex, heightsMaterials.size());
@@ -782,8 +782,12 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderRequestSubpart
     AZ::Vector3 regionMax(AZ::Vector3(200.0f));
     int32_t dx = int32_t(regionMax.GetX() - regionMin.GetX()) + 1;
     int32_t dy = int32_t(regionMax.GetY() - regionMin.GetY()) + 1;
-            
-    m_colliderComponent->UpdateHeightsAndMaterials(validateDataCallback, AZ::Aabb::CreateFromMinMax(regionMin, regionMax));
+
+    size_t startRow, startColumn, numRows, numColumns;
+    m_colliderComponent->GetHeightfieldIndicesFromRegion(
+        AZ::Aabb::CreateFromMinMax(regionMin, regionMax), startColumn, startRow, numColumns, numRows);
+
+    m_colliderComponent->UpdateHeightsAndMaterials(validateDataCallback, startColumn, startRow, numColumns, numRows);
 
     // Validate update heightfield callback was called the exact amount of times required for the region
     EXPECT_EQ(dx * dy, callCounter);

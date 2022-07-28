@@ -76,6 +76,16 @@ namespace StandaloneTools
             }
         }
 
+        // Check Application Entity
+        for (const auto& component : m_applicationEntity->GetComponents())
+        {
+            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+            {
+                targetManagement->SetTargetAsHost(true);
+            }
+        }
+
+        // Check Module Entities
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
             [](const AZ::ModuleData& moduleData)

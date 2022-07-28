@@ -24,6 +24,7 @@
         "Gems/Camera",
         "Gems/CameraFramework",
         "Gems/CertificateManager",
+        "Gems/Compression",
         "Gems/CrashReporting",
         "Gems/CustomAssetExample",
         "Gems/DebugDraw",

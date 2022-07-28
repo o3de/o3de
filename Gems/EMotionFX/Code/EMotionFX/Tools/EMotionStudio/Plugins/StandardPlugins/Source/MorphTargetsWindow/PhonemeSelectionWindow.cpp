@@ -9,8 +9,9 @@
 #include "PhonemeSelectionWindow.h"
 #include "MorphTargetsWindowPlugin.h"
 #include <EMotionFX/Source/MorphSetup.h>
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <MCore/Source/StringConversions.h>
+#include <MysticQt/Source/DialogStack.h>
 #include <QLabel>
 #include <QPixmap>
 #include <QVBoxLayout>

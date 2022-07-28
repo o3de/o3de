@@ -230,12 +230,11 @@ public: // member functions
     void MarkRenderGraphDirty() override;
     // ~UiCanvasComponentImplementationInterface
 
-    // RenderToTextureRequests
+    // LyShine::RenderToTextureRequestBus overrides ...
     AZ::RHI::AttachmentId UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size) override;
     AZ::RHI::AttachmentId UseRenderTargetAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     void ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
     AZ::Data::Instance<AZ::RPI::AttachmentImage> GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId) override;
-    // ~RenderToTextureRequests
 
     void UpdateCanvas(float deltaTime, bool isInGame);
     void RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, UiRenderer* uiRenderer = nullptr);

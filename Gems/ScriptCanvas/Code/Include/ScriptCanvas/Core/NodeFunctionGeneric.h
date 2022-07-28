@@ -22,6 +22,26 @@
   * Deprecated
   */
 
+//! Deprecated generic function node macros
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE_DEPRECATED(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS(NODE_NAME, DEFAULT_FUNC, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_WITH_DEFAULTS_DEPRECATED(NODE_NAME, DEFAULT_FUNC, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+#define SCRIPT_CANVAS_GENERIC_FUNCTION_NODE_DEPRECATED(NODE_NAME, CATEGORY, UUID, DESCRIPTION, ...)\
+    SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, "")
+
+//! Macros to migrate deprecated generic function node to autogen function node
 #define SCRIPT_CANVAS_GENERIC_FUNCTION_REPLACEMENT(NODE_NAME, CATEGORY, UUID, METHOD_NAME)\
     struct NODE_NAME##Traits\
     {\
@@ -39,11 +59,48 @@ namespace ScriptCanvas
         : public Node
     {
     public:
-        AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
-        AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
+        AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option"); // 'function' : Symbol involving type with internal linkage not defined
+        AZ_RTTI((NodeFunctionGenericMultiReturn, "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
-        AZ_POP_DISABLE_WARNING
+        AZ_POP_DISABLE_WARNING;
+
+        static constexpr void DeprecatedTypeNameVisitor(
+            const AZ::DeprecatedTypeNameCallback& visitCallback)
+        {
+            // NodeFunctionGenericMultiReturn previously restricted the typename to 128 bytes
+            AZStd::array<char, 128> deprecatedName{};
+
+            // Due to the extra set of parenthesis, the actual type name of NodeFunctionGenericMultiReturn started literally as
+            // "(NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>"
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "(NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>)<");
+            auto AppendDeprecatedFunctionName = [&deprecatedName](AZStd::string_view deprecatedFuncName)
+            {
+                // The function signature name was restricted to 64 bytes
+                AZStd::array<char, 64> deprecatedFuncSignature{};
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedFuncSignature.data(), deprecatedFuncSignature.size(), deprecatedFuncName.data());
+
+                // If the function type was a pointer then it a '*' needs to be appended to it.
+                // But the AZ_TYPE_INFO_INTERNAL_SPECIALIZE_CV macro will only append a '*' if the function signature buffer has room for it
+                if constexpr (AZStd::is_pointer_v<t_Func>)
+                {
+                    AZ::Internal::AzTypeInfoSafeCat(deprecatedFuncSignature.data(), deprecatedFuncSignature.size(), "*");
+                }
+
+                // Now copy the function signature to the deprecatedName buffer
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), deprecatedFuncSignature.data());
+            };
+            AZ::DeprecatedTypeNameVisitor<t_Func>(AppendDeprecatedFunctionName);
+            // The old AZ::Internal::AggregateTypes implementations placed a space after each argument as a separator
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), " ");
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), AZ::AzTypeInfo<t_Traits>::Name());
+            AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), " >");
+
+            if (visitCallback)
+            {
+                visitCallback(deprecatedName.data());
+            }
+        }
 
 
         static const char* GetNodeFunctionName()
@@ -126,6 +183,13 @@ namespace ScriptCanvas
         static void AddDescriptors(AZStd::vector<AZ::ComponentDescriptor*>& descriptors)
         {
             SCRIPT_CANVAS_CALL_ON_INDEX_SEQUENCE(descriptors.push_back(t_Node::CreateDescriptor()));
+        }
+
+        template<typename t_NodeGroup>
+        static void AddToRegistry([[maybe_unused]] NodeRegistry& nodeRegistry)
+        {
+            // Deprecated, do nothing here
+            AZ_Warning("ScriptCanvas", false, "NodeFunctionGeneric is deprecated, please migrate to autogen function node.");
         }
 
         template<typename t_Library>

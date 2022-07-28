@@ -11,7 +11,10 @@
 #include <Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderRotationManipulators.h>
 #include <Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointLimitOptimizer.h>
 #include <Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointSwingLimitManipulators.h>
+#include <Editor/Plugins/Ragdoll/JointTwistLimitManipulators.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 
 namespace EMotionFX
@@ -23,6 +26,8 @@ namespace EMotionFX
         m_subModes[SubMode::ColliderDimensions] = AZStd::make_unique<ColliderCapsuleManipulators>();
         m_subModes[SubMode::JointLimitParentRotation] = AZStd::make_unique<JointLimitRotationManipulators>(JointLimitFrame::Parent);
         m_subModes[SubMode::JointLimitChildRotation] = AZStd::make_unique<JointLimitRotationManipulators>(JointLimitFrame::Child);
+        m_subModes[SubMode::JointSwingLimits] = AZStd::make_unique<JointSwingLimitManipulators>();
+        m_subModes[SubMode::JointTwistLimits] = AZStd::make_unique<JointTwistLimitManipulators>();
     }
 
     AZ::s32 PhysicsSetupViewportUiCluster::GetViewportId() const
@@ -41,8 +46,8 @@ namespace EMotionFX
         AZ_Assert(m_subModes.find(mode) != m_subModes.end(), "Submode not found:%d", static_cast<AZ::u32>(mode));
         m_subModes[m_subMode]->Teardown();
         m_subMode = mode;
-        m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
         m_subModes[m_subMode]->SetViewportId(GetViewportId());
+        m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
 
         const auto modeIndex = static_cast<size_t>(mode);
         AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
@@ -96,6 +101,12 @@ namespace EMotionFX
                     RegisterClusterButton(viewportId, m_clusterId, "Rotate");
                 m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
                     RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+                m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits");
+                m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits");
+                m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "Question");
             }
 
             const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -119,6 +130,18 @@ namespace EMotionFX
                 else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)])
                 {
                     SetCurrentMode(SubMode::JointLimitChildRotation);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)])
+                {
+                    SetCurrentMode(SubMode::JointSwingLimits);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)])
+                {
+                    SetCurrentMode(SubMode::JointTwistLimits);
+                }
+                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)])
+                {
+                    OptimizeJointLimits(m_physicsSetupManipulatorData);
                 }
             };
 

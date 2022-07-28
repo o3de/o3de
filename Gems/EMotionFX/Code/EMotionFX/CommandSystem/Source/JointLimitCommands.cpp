@@ -128,12 +128,12 @@ namespace EMotionFX
         return true;
     }
 
-    void CommandAdjustJointLimit::SetJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration)
+    void CommandAdjustJointLimit::SetJointConfiguration(const AzPhysics::JointConfiguration* jointConfiguration)
     {
         m_contents = MCore::ReflectionSerializer::Serialize(jointConfiguration).GetValue();
     }
 
-    void CommandAdjustJointLimit::SetOldJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration)
+    void CommandAdjustJointLimit::SetOldJointConfiguration(const AzPhysics::JointConfiguration* jointConfiguration)
     {
         m_oldContents = MCore::ReflectionSerializer::Serialize(jointConfiguration).GetValue();
     }

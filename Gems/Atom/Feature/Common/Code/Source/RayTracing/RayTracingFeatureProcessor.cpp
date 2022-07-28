@@ -77,7 +77,7 @@ namespace AZ
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
-        void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes)
+        void RayTracingFeatureProcessor::AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             if (!m_rayTracingEnabled)
             {
@@ -85,22 +85,21 @@ namespace AZ
             }
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            uint32_t objectIndex = objectId.GetIndex();
 
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
             // check to see if we already have this mesh
-            MeshMap::iterator itMesh = m_meshes.find(objectIndex);
+            MeshMap::iterator itMesh = m_meshes.find(uuid);
             if (itMesh != m_meshes.end())
             {
-                AZ_Assert(false, "SetMesh called on an existing Mesh objectId, call RemoveMesh first");
+                AZ_Assert(false, "AddMesh called on an existing Mesh, call RemoveMesh first");
                 return;
             }
 
             // add the mesh
-            m_meshes.insert(AZStd::make_pair(objectIndex, Mesh{ assetId }));
-            Mesh& mesh = m_meshes[objectIndex];
+            m_meshes.insert(AZStd::make_pair(uuid, Mesh{ assetId }));
+            Mesh& mesh = m_meshes[uuid];
 
             // add the subMeshes to the end of the global subMesh vector
             // Note 1: the MeshInfo and MaterialInfo vectors are parallel with the subMesh vector
@@ -181,8 +180,8 @@ namespace AZ
             }
 
             // set initial transform
-            mesh.m_transform = m_transformServiceFeatureProcessor->GetTransformForId(objectId);
-            mesh.m_nonUniformScale = m_transformServiceFeatureProcessor->GetNonUniformScaleForId(objectId);
+            mesh.m_transform = transform;
+            mesh.m_nonUniformScale = nonUniformScale;
 
             AZ::Transform noScaleTransform = mesh.m_transform;
             noScaleTransform.ExtractUniformScale();
@@ -216,8 +215,8 @@ namespace AZ
                 meshInfo.m_positionByteOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
                 meshInfo.m_normalByteOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
                 meshInfo.m_tangentByteOffset = subMesh.m_tangentShaderBufferView ? subMesh.m_tangentVertexBufferView.GetByteOffset() : 0;
-                meshInfo.m_tangentByteOffset = subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
-                meshInfo.m_tangentByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
+                meshInfo.m_bitangentByteOffset = subMesh.m_bitangentShaderBufferView ? subMesh.m_bitangentVertexBufferView.GetByteOffset() : 0;
+                meshInfo.m_uvByteOffset = subMesh.m_uvShaderBufferView ? subMesh.m_uvVertexBufferView.GetByteOffset() : 0;
 
                 // add material textures
                 subMesh.m_baseColor.StoreToFloat4(materialInfo.m_baseColor.data());
@@ -242,7 +241,7 @@ namespace AZ
             m_indexListNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::RemoveMesh(const ObjectId objectId)
+        void RayTracingFeatureProcessor::RemoveMesh(const AZ::Uuid& uuid)
         {
             if (!m_rayTracingEnabled)
             {
@@ -252,7 +251,7 @@ namespace AZ
             // lock the mutex to protect the mesh and BLAS lists
             AZStd::unique_lock<AZStd::mutex> lock(m_mutex);
 
-            MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
+            MeshMap::iterator itMesh = m_meshes.find(uuid);
             if (itMesh != m_meshes.end())
             {
                 Mesh& mesh = itMesh->second;
@@ -339,14 +338,14 @@ namespace AZ
             m_indexListNeedsUpdate = true;
         }
 
-        void RayTracingFeatureProcessor::SetMeshTransform(const ObjectId objectId, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
+        void RayTracingFeatureProcessor::SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale)
         {
             if (!m_rayTracingEnabled)
             {
                 return;
             }
 
-            MeshMap::iterator itMesh = m_meshes.find(objectId.GetIndex());
+            MeshMap::iterator itMesh = m_meshes.find(uuid);
             if (itMesh != m_meshes.end())
             {
                 Mesh& mesh = itMesh->second;

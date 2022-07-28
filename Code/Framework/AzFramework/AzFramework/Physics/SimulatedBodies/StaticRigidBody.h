@@ -37,7 +37,7 @@ namespace AzPhysics
 
         //! Add a shape to the static rigid body.
         //! @param shape A shared pointer of the shape to add.
-        virtual void AddShape(const AZStd::shared_ptr<Physics::Shape>& shape) = 0;
+        virtual void AddShape(AZStd::shared_ptr<Physics::Shape> shape) = 0;
 
         //! Returns the number of shapes that make up this static rigid body.
         //! @return Returns the number of shapes as a AZ::u32.

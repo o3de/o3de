@@ -122,7 +122,7 @@ namespace AssetProcessor
     void FileProcessor::AssessDeletedFile(QString filePath)
     {
         using namespace AzToolsFramework;
-        
+
         if (m_shutdownSignalled)
         {
             return;
@@ -230,7 +230,7 @@ namespace AssetProcessor
 
         AssetSystem::FileInfosNotificationMessage message;
         ConnectionBus::Broadcast(&ConnectionBusTraits::Send, 0, message);
-        
+
         // It's important to clear this out since rescanning will end up filling this up with duplicates otherwise
         QList<AssetFileInfo> emptyList;
         m_filesInAssetScanner.swap(emptyList);
@@ -241,11 +241,11 @@ namespace AssetProcessor
     bool FileProcessor::GetRelativePath(QString& filePath, QString& relativeFileName, QString& scanFolderPath) const
     {
         filePath = AssetUtilities::NormalizeFilePath(filePath);
-        if (filePath.startsWith(m_normalizedCacheRootPath, Qt::CaseInsensitive))
+        if (AssetUtilities::IsInCacheFolder(filePath.toUtf8().constData(), m_normalizedCacheRootPath.toUtf8().constData()))
         {
             // modifies/adds to the cache are irrelevant.  Deletions are all we care about
             return false;
-        } 
+        }
 
         if (m_platformConfig->IsFileExcluded(filePath))
         {
@@ -273,9 +273,10 @@ namespace AssetProcessor
         {
             AssetDatabase::FileDatabaseEntryContainer container;
             AZStd::string searchStr = file.m_fileName + AZ_CORRECT_DATABASE_SEPARATOR;
-            m_connection->GetFilesLikeFileName(
+            m_connection->GetFilesLikeFileNameScanFolderId(
                 searchStr.c_str(),
                 AssetDatabaseConnection::LikeType::StartsWith,
+                file.m_scanFolderPK,
                 container);
             for (const auto& subFile : container)
             {

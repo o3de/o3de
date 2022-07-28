@@ -211,8 +211,9 @@ namespace Platform
         return false;
     }
 } // namespace AZ::IO::Platform
+} // namespace AZ::IO
 
-namespace PosixInternal
+namespace AZ::IO::PosixInternal
 {
     int Dup(int fileDescriptor)
     {
@@ -225,4 +226,86 @@ namespace PosixInternal
     }
 } // namespace AZ::IO::PosixInternal
 
+namespace AZ::IO
+{
+    // FileDescriptorCapturer UnixLike Impl
+    void FileDescriptorCapturer::Start(int pipeSize)
+    {
+        if (m_redirectToPipe)
+        {
+            // Capturer is already in progress
+            return;
+        }
+        if (m_sourceDescriptor == -1)
+        {
+            // Source file descriptor isn't set.
+            return;
+        }
+        int pipeCreated = PosixInternal::Pipe(m_pipe, pipeSize, PosixInternal::OpenFlags::NonBlock);
+
+        if (pipeCreated == -1)
+        {
+            return;
+        }
+
+        // Duplicate the original source descriptor to restore in Stop
+        m_dupSourceDescriptor = PosixInternal::Dup(m_sourceDescriptor);
+
+        // Duplicate the write end of the pipe onto the original source descriptor
+        // This causes the writes to the source descriptor to redirect to the pipe
+        if (PosixInternal::Dup2(m_pipe[WriteEnd], m_sourceDescriptor) == -1)
+        {
+            // Failed to redirect the source descriptor to the pipe
+            PosixInternal::Close(m_dupSourceDescriptor);
+            PosixInternal::Close(m_pipe[WriteEnd]);
+            PosixInternal::Close(m_pipe[ReadEnd]);
+            // Reset pipe descriptor to -1
+            m_pipe[WriteEnd] = -1;
+            m_pipe[ReadEnd] = -1;
+            m_dupSourceDescriptor = -1;
+            return;
+        }
+
+        m_redirectToPipe = true;
+    }
+
+    void FileDescriptorCapturer::Flush(const OutputRedirectVisitor& redirectCallback)
+    {
+        if (!redirectCallback)
+        {
+            return;
+        }
+        constexpr int PipeBufferSize = DefaultPipeSize;
+        AZStd::array<AZStd::byte, PipeBufferSize> capturedBytes;
+
+        int bytesRead{};
+        do
+        {
+            // Pump the read end of the pipe until it is empty
+            // and invoke the visitor for each call
+            bytesRead = PosixInternal::Read(m_pipe[ReadEnd],
+                AZStd::ranges::data(capturedBytes), static_cast<int>(AZStd::ranges::size(capturedBytes)));
+            if (bytesRead > 0)
+            {
+                redirectCallback(AZStd::span(AZStd::ranges::data(capturedBytes), bytesRead));
+            }
+
+        } while (bytesRead > 0);
+    }
+
+    void FileDescriptorCapturer::Stop(const OutputRedirectVisitor& redirectCallback)
+    {
+        // Close the write end of the pipe before flushing
+        // This is required in order to not block the thread when reading from the pipe
+        if (m_pipe[WriteEnd] != -1)
+        {
+            PosixInternal::Close(m_pipe[WriteEnd]);
+            m_pipe[WriteEnd] = -1;
+        }
+
+        // Invoke the visitor with the output in the pipe
+        Flush(redirectCallback);
+        // Closes the pipe and resets the descriptor
+        Reset();
+    }
 } // namespace AZ::IO
