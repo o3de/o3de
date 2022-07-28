@@ -29,16 +29,12 @@ namespace AZ
             bool Init();
             void Shutdown();
 
-            virtual ~FunctionLoader();
+            ~FunctionLoader();
 
-            virtual bool LoadProcAddresses(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device) = 0;
+            bool LoadProcAddresses(GladVulkanContext* context, VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device);
 
-        protected:
-
-            virtual bool InitInternal() = 0;
-            virtual void ShutdownInternal() = 0;
-
-            AZStd::unique_ptr<AZ::DynamicModuleHandle> m_moduleHandle;
+        private:
+            void ShutdownInternal();
         };
     } // namespace Vulkan
 } // namespace AZ

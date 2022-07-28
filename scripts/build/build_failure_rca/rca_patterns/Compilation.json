@@ -1,0 +1,60 @@
+{
+    "indications": [
+      {
+        "name": "Compilation error",
+        "description": "Compilation error, see log for more details",
+        "comment": "Compilation error, see log for more details",
+        "single_line": false,
+        "find_all": false,
+        "log_patterns": [
+          "The following build commands failed:.*\\(\\d+ failure\\)"
+        ],
+        "log_testcases": [
+          "The following build commands failed:\\nLd /Users/lybuilder/workspace/o3de/build/ios/bin/debug/AutomatedTesting.GameLauncher.app/AutomatedTesting.GameLauncher normal\\n(1 failure)"
+        ],
+        "owners": []
+      },
+      {
+        "name": "Ninja Build Compilation Failure",
+        "description": "Build failed to compile, check above error message to see compilation error(s).",
+        "comment": "Build failed to compile",
+        "single_line": true,
+        "find_all": true,
+        "log_patterns": [
+          "^.*ninja: build stopped: subcommand failed.*$"
+        ],
+        "log_testcases": [
+          "ninja: build stopped: subcommand failed."
+        ],
+        "owners": []
+      },
+      {
+        "name": "Warning is treated as an error",
+        "description": "Warning is treated as an error, see log for more details",
+        "comment": "Warning is treated as an error, see log for more details",
+        "single_line": true,
+        "find_all": true,
+        "log_patterns": [
+          "^.*error C2220: the following warning is treated as an error.*$"
+        ],
+        "log_testcases": [
+          "D:/workspace/o3de/Code/Framework/AzCore/AzCore/Task/TaskExecutor.cpp(47,17): error C2220: the following warning is treated as an error [D:\\workspace\\o3de\\build\\windows_vs2019\\Code\\Framework\\AzCore\\AzCore.vcxproj]"
+        ],
+        "owners": []
+      },
+      {
+        "name": "Local variable is initialized but not referenced",
+        "description": "Warning C4189: local variable is initialized but not referenced. This warning is a result of an unused variable or parameter, see https://github.com/aws-lumberyard/build-failure-rca/blob/main/build-failure-rca/docs/warning_c4189.md for details",
+        "comment": "",
+        "single_line": true,
+        "find_all": true,
+        "log_patterns": [
+          "^.*warning C4189: '[\\w]*': local variable is initialized but not referenced.*$"
+        ],
+        "log_testcases": [
+          "D:/workspace/o3de/Gems/Atom/RPI/Code/Source/RPI.Public/Pass/RenderPass.cpp(301,30): warning C4189: 'success': local variable is initialized but not referenced"
+        ],
+        "owners": []
+      }
+    ]
+  }
