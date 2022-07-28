@@ -8,7 +8,6 @@
 
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
-#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
@@ -599,7 +598,12 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::Client;
-                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum);
+                auto preActivationCallback = [this, connection](const INetworkEntityManager::EntityList& entityList)
+                {
+                    EnableAutonomousControl(entityList, connection->GetConnectionId());
+                };
+
+                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum, preActivationCallback);
             }
             else
             {
@@ -608,8 +612,6 @@ namespace Multiplayer
 
             if (controlledEntity.Exists())
             {
-                EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
-
                 ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
                 AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
                 connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
@@ -988,13 +990,13 @@ namespace Multiplayer
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
                 const int userId = 0;
-                NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
-
-                if (controlledEntity.Exists())
+                auto preActivationCallback = [this](const INetworkEntityManager::EntityList& entityList)
                 {
-                    EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
-                }
-                else
+                    EnableAutonomousControl(entityList, InvalidConnectionId);
+                };
+
+                NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum, preActivationCallback);
+                if (!controlledEntity.Exists())
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
                     m_playersWaitingToBeSpawned.push_back(AZStd::make_pair(userId, datum));
@@ -1264,35 +1266,23 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
+    void MultiplayerSystemComponent::EnableAutonomousControl(INetworkEntityManager::EntityList entityList, AzNetworking::ConnectionId connectionId)
     {
-        if (!entityHandle.Exists())
+        if (entityList.empty())
         {
             AZLOG_WARN("Attempting to enable autonomous control for an invalid entity");
             return;
         }
 
-        entityHandle.GetNetBindComponent()->SetOwningConnectionId(connectionId);
-        if (connectionId == InvalidConnectionId)
+        for (NetworkEntityHandle subEntity : entityList)
         {
-            entityHandle.GetNetBindComponent()->SetAllowAutonomy(true);
-        }
-
-        auto* hierarchyComponent = entityHandle.FindComponent<NetworkHierarchyRootComponent>();
-        if (hierarchyComponent != nullptr)
-        {
-            for (AZ::Entity* subEntity : hierarchyComponent->GetHierarchicalEntities())
+            if (NetBindComponent* netbindComponent = subEntity.GetNetBindComponent())
             {
-                NetworkEntityHandle subEntityHandle = NetworkEntityHandle(subEntity);
-                NetBindComponent* subEntityNetBindComponent = subEntityHandle.GetNetBindComponent();
+                netbindComponent->SetOwningConnectionId(connectionId);
 
-                if (subEntityNetBindComponent != nullptr)
+                if (connectionId == InvalidConnectionId)
                 {
-                    subEntityNetBindComponent->SetOwningConnectionId(connectionId);
-                    if (connectionId == InvalidConnectionId)
-                    {
-                        subEntityNetBindComponent->SetAllowAutonomy(true);
-                    }
+                    netbindComponent->SetAllowAutonomy(true);
                 }
             }
         }
@@ -1300,11 +1290,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
-        SpawnPlayersWaitingToBeSpawned();
-    }
-
-    void MultiplayerSystemComponent::SpawnPlayersWaitingToBeSpawned()
-    {
+        // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
         IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
         if (!spawner)
         {
@@ -1314,12 +1300,16 @@ namespace Multiplayer
 
         for (const auto& [id, datum] : m_playersWaitingToBeSpawned)
         {
-            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(id, datum);
-
-            // If there wasn't any spawner available, wait until a level loads and check again
-            if (controlledEntity.Exists())
+            auto preActivationCallback = [this](const INetworkEntityManager::EntityList& entityList)
             {
-                EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
+                EnableAutonomousControl(entityList, InvalidConnectionId);
+            };
+
+            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(id, datum, preActivationCallback);
+            if (!controlledEntity.Exists())
+            {
+                AZLOG_WARN("Attempting to spawn players on level load failed.");
+                return;
             }
         }
 

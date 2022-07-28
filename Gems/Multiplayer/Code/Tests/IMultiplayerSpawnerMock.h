@@ -25,7 +25,8 @@ class IMultiplayerSpawnerMock : public Multiplayer::IMultiplayerSpawner
 
         Multiplayer::NetworkEntityHandle OnPlayerJoin(
             [[maybe_unused]] uint64_t userId,
-            [[maybe_unused]] const Multiplayer::MultiplayerAgentDatum& agentDatum) override
+            [[maybe_unused]] const Multiplayer::MultiplayerAgentDatum& agentDatum,
+            [[maybe_unused]] EntityPreActivationCallback preActivationCallback) override
         {
             ++m_playerCount;
             return Multiplayer::NetworkEntityHandle();
