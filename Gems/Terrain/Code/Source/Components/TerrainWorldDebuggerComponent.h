@@ -55,7 +55,7 @@ namespace Terrain
 
         bool m_drawQueries{ false };
         AzFramework::Terrain::TerrainDataRequests::Sampler m_sampler{ AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR };
-        float m_distance{ 16.0f };
+        size_t m_pointsPerDirection{ 32 };
         float m_spacing{ 0.5f };
         bool m_drawHeights{ true };
         float m_heightPointSize{ 1.0f / 16.0f };

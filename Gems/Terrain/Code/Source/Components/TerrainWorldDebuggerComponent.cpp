@@ -34,7 +34,7 @@ namespace Terrain
                 ->Version(1)
                 ->Field("DrawQueries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
                 ->Field("Sampler", &TerrainDebugQueryVisualizerConfig::m_sampler)
-                ->Field("Distance", &TerrainDebugQueryVisualizerConfig::m_distance)
+                ->Field("PointsPerDirection", &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection)
                 ->Field("Spacing", &TerrainDebugQueryVisualizerConfig::m_spacing)
                 ->Field("DrawHeights", &TerrainDebugQueryVisualizerConfig::m_drawHeights)
                 ->Field("HeightPointSize", &TerrainDebugQueryVisualizerConfig::m_heightPointSize)
@@ -66,27 +66,28 @@ namespace Terrain
                         ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, "Exact")
                         ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, "Clamp")
                         ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, "Bilinear")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_distance, "Distance (m)",
-                        "Determines how far out from the center point the query results should be drawn in meters")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection, "Point count",
+                        "The number of points in each direction to visualize")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
-                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 32.0f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 1)
+                        ->Attribute(AZ::Edit::Attributes::Max, 64)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_spacing, "Spacing (m)",
                         "Determines how far apart the query results should be drawn in meters")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.25f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 4.0f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawHeights, "Draw Heights",
                         "Enable visualization of terrain height queries")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_heightPointSize,
                         "Height Point Size (m)", "Determines the size of the height point in meters")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableHeights)
-                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f / 128.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 4.0f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f / 128.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f / 128.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawNormals, "Draw Normals",
                         "Enable visualization of terrain normal queries")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
@@ -94,9 +95,10 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_normalHeight, "Normal Height (m)",
                         "Determines the height of the normal line in meters")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableNormals)
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_useCameraPosition, "Use Camera Position",
                         "Determines whether to use the current camera position or a specified position")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
@@ -299,16 +301,20 @@ namespace Terrain
         // Build up the list of positions to query.
         AZStd::vector<AZ::Vector3> positionList;
 
-        const float distance = m_configuration.m_debugQueries.m_distance;
         const float spacing = m_configuration.m_debugQueries.m_spacing;
+        const float distance = spacing * (m_configuration.m_debugQueries.m_pointsPerDirection / 2.0f);
 
-        const size_t totalPositions = aznumeric_cast<size_t>(powf((distance * 2.0f) / spacing, 2.0f));
+        const size_t totalPositions =
+            m_configuration.m_debugQueries.m_pointsPerDirection * m_configuration.m_debugQueries.m_pointsPerDirection;
+
         positionList.reserve(totalPositions);
 
-        for (float y = centerPos.GetY() - distance; y < centerPos.GetY() + distance; y += spacing)
+        for (size_t yPoint = 0; yPoint < m_configuration.m_debugQueries.m_pointsPerDirection; yPoint++)
         {
-            for (float x = centerPos.GetX() - distance; x < centerPos.GetX() + distance; x += spacing)
+            for (size_t xPoint = 0; xPoint < m_configuration.m_debugQueries.m_pointsPerDirection; xPoint++)
             {
+                float x = centerPos.GetX() - distance + (spacing * xPoint);
+                float y = centerPos.GetY() - distance + (spacing * yPoint);
                 positionList.emplace_back(x, y, 0.0f);
             }
         }
@@ -318,6 +324,7 @@ namespace Terrain
         // always starts at the height position, so we can use those to draw heights.
         const float normalHeight = m_configuration.m_debugQueries.m_normalHeight;
         AZStd::vector<AZ::Vector3> normalLineVertices;
+        normalLineVertices.reserve(totalPositions * 2);
         auto ProcessSurfacePoint =
             [normalHeight, &normalLineVertices](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
@@ -356,8 +363,12 @@ namespace Terrain
         // Draw the normals
         if (m_configuration.m_debugQueries.m_drawNormals && !normalLineVertices.empty())
         {
-            const AZ::Color normalColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
-            debugDisplay.DrawLines(normalLineVertices, normalColor);
+            for (size_t index = 0; index < normalLineVertices.size(); index += 2)
+            {
+                AZ::Vector3 normal = (normalLineVertices[index + 1] - normalLineVertices[index]).GetNormalized();
+                const AZ::Vector4 normalColor = (AZ::Vector4(normal, 1.0f) + AZ::Vector4(1.0f)) / 2.0f;
+                debugDisplay.DrawLine(normalLineVertices[index], normalLineVertices[index + 1], normalColor, normalColor);
+            }
         }
 
     }
