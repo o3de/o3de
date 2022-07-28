@@ -1,21 +1,44 @@
-"""!
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+# coding:utf-8
+#!/usr/bin/python
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the
+# root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 # -------------------------------------------------------------------------
 
-"""! @brief
-<DCCsi>/config.py
-Generate dynamic and synthetic environment context and settings.
-This module uses dynaconf (a dynamic configuration and settings package)
+"""! The dccsi Core configuration module
+
+:file: < DCCsi >/config.py
+:Status: Prototype
+:Version: 0.1.0, first significant refactor
+
+This module handles core configuration of the dccsi
+-   It initializes and generates a dynamic, and synthetic, environment context,
+    and settings.
+-   ConfigCore class, inherets from azpy.config_class.ConfigClass (not yet)
+-   This module uses dynaconf (a dynamic configuration and settings package)
 
 This config.py synthetic env can be overridden or extended with a local .env
-"C:/Depot/o3de-dev/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/.env"
-^ this is only appropriate to a developer making local settings changes,
-primarily to outside of this module. See: example.env.tmp (copy and rename to .env)
-and want those settings to persist across the dccsi modules which use config.py
+Example, create such as file:
+    "< o3de >/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/.env"
+
+    ^ this is only appropriate to a developer making local settings changes,
+    primarily to outside of this module, and want those settings to persist
+    across the dccsi modules which draw from this core config.py
+    See: example.env.tmp (copy and rename to .env)
+
+    This file should not be commited
+
+The second way to locally override or persist settings, is to make changes in
+the file:
+    DccScriptingInterface/settings.local.json
+
+    ^ this file can be generated via the core config.py cli
+    or from
 
 If you only want to make transient envar settings changes that only persist to
 an IDE session, you can create and modify this file:

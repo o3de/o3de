@@ -25,15 +25,17 @@ The DCCsi helps with aspects such as, configuration and settings, launching DCC 
 
 # Getting Started
 
-Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to.) And in fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
+Each IDE is different.  Some TAs (like me) like Wing IDE because it's relatively easy to set up and works great with DCC apps like Maya.  It's also pretty powerful and you can do a lot of data-driven configuration with it (which we will be covering some of.)  We aren't picking an IDE for you, that's a personal choice, we are just showing you how one like Wing can be set up to provide a better out-of-box experience (so that you don't have to do the setup and configuration yourself.)  In fact, we intend to do the same for other IDS like PyCharm and VScode (maybe others in the future.)
 
-To use Wing, there are a few things that you need to do locally to get set up (and we may automate these steps in the future.)  
+To use Wing, there are a few things that you need to do locally to get set up (and we may automate some of these steps in the future.)  
+
+## What to know ...
 
 The default location for the DCCsi Gem folder is something like:
 
 `C:/path/to/o3de/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface`
 
-## What to know ...
+But you are reading this, so you have already found it :)
 
 ### General
 
@@ -41,13 +43,13 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
 
 - What type of user are you?  Are you a C++ engine developer, a Technical Artist (TA) working in source, or a TA on a game team using a pre-built engine; or a end user that is a novice with little python experience?
 
-- O3DE has it's own python interpreter, the python version and/or location could change as upgrades happen. We may want to use this as the IDE interpreter when running our code (likewise we may want to use a DCC tools interpreter); and this is one reason why the env is data-driven and configurable.
+- O3DE has it's own python interpreter, the python version and/or location could change as upgrades happen. We may want to use this O3DE python as the IDE interpreter when running our code (likewise we may want to use a compatible  DCC tools interpreter); and this is one reason why the env is data-driven and configurable.)
 
-- O3DE builds it's own Qt dlls (and other binaries), provides it's own access to PySide2, installs python package dependencies during cmake configuration; we need to ensure we are bootstrapping access to these things, so we are developing and testing code with the same interpreter, using the same packages and code access, and operating in an environment similar to the editor! (and there are other ways to operate, like creating a standalone PySide2 gui application.)
+- O3DE builds it's own Qt dlls (and other binaries), provides it's own access to PySide2, installs python package dependencies during cmake configuration; we need to ensure we are bootstrapping access to these things, so we are developing and testing code with the same interpreter, using the same packages and code access, and operating in an environment similar to the editor! (and there are other ways to operate, like creating a standalone PySide2 gui application. A tpoic for another time perhaps.)
 
-- We also want to interface with a number of DCC applications, each with their own python interpreters and configuration concerns.  So we might want to use those python.exe's as the IDE interpreter, access their APIs, and manage package dependencies; we might have common shared code running across these tools, so things can get out of hand (these integrations try to solve some of this for you.)
+- We also want to interface with a number of DCC applications, each with their own python interpreters and configuration concerns.  So we might want to use those python.exe's as the IDE interpreter, access their APIs, and manage compatible package dependencies; we might have common shared code running across these tools ... things can get out of hand and rather confusing quickly (this IDE integration attempts to solve some of this nightmare for you.)
 
-- Are you using the O3DE installer? The release, or the nightly? What platform are you on?  All of these decisions have an impact as well, and we want to be able to configure our development environments in a way that deals with the differences.
+- Are you using the O3DE installer? The release, or the nightly? What platform are you on?  All of these decisions have an impact on development as well, and we want to be able to configure our development environments in a way that deals with the differences.
   
   - These will have different install locations (and these locations have changed over time as the engine matures.)
     
@@ -62,12 +64,12 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
     - `C:\O3DE\0.0.0.0\bin\Windows\profile\Default\editor.exe`
 
 - But you might be building from source.  You might have multiple engine repos cloned locally, they may be on different branches.  You can build in an engine-centric way, or a project-centric way, and developers choose their cmake configuration and build folder.  Configuration needs to account for these many options.  This guide is geared towards developers, and developers need to be aware of these things.
-  
-  - Be aware of your development set up. Here is an example of the location I work with the most locally on a day-to-day bases.  Generally I only work on windows, I build in an engine-centric way, because I branch hope a lot ... and I test branches with multiple projects I am also working on. I keep it simple.
-    
-    - `C:\depot\o3de-dev\build\bin\profile\editor.exe`
 
-- This is not a guide for actually developing python code and tools for the O3DE editor (that does exist however); this guide is focused on Wing.
+- Be aware of your development set up. Here is an example of the location I work with the most locally on a day-to-day bases.  Generally I only work on windows, I build in an engine-centric way, because I branch hop a lot ... and I test branches with multiple projects I am also working on. I keep it simple and easy so I can do these things most efficiently.
+  
+  - `C:\depot\o3de-dev\build\bin\profile\editor.exe`
+
+- This is not a guide for actually developing python code and tools for the O3DE editor (that does exist however); this guide is focused on Wing IDE.
 
 - This guide likewise isn't focus very much on DCC tools or their configuration, however it does touch on these topics as they are concerned with Wing, like picking MayaPy.exe as your IDE interpreter.
 
@@ -165,7 +167,7 @@ Notes:
 
 1. foo
 
-1. fooey
+2. fooey
 
 ## HELP
 

@@ -311,7 +311,7 @@ PATH_USER_O3DE = str(STR_USER_O3DE_PATH).format(home=PATH_USER_HOME,
 
 PATH_DCCSI_TOOLS = str('{0}\\{1}'.format(PATH_DCCSIG, TAG_DIR_DCCSI_TOOLS))
 
-# logging into the cache
+# logging into the user home o3de cache (temporarily)
 PATH_DCCSI_LOG_PATH = str('{PATH_O3DE_PROJECT}\\user\\log\{TAG_DCCSI_NICKNAME}')
 
 # dev \ <build> \

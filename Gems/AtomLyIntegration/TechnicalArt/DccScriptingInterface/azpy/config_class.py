@@ -53,7 +53,8 @@ from azpy.env_bool import env_bool
 
 # -------------------------------------------------------------------------
 # global constants here
-DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
+import DccScriptingInterface as dccsi
+from dccsi.constants import DCCSI_DYNAMIC_PREFIX
 
 from azpy.constants import ENVAR_PATH_DCCSIG
 from azpy.constants import ENVAR_DCCSI_SYS_PATH

@@ -7,14 +7,14 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# --------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 """! @brief
 <DCCsi>/azpy/__init__.py
 
 This is the shared pure-python api.
 """
 
-# --------------------------------------------------------------------------
+# -------------------------------------------------------------------------
 # standard imports
 import sys
 import os
@@ -143,6 +143,11 @@ _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run in debug perform local tests from IDE or CLI"""
+
+    # this is a legacy cli that existed prior to config.py patterns
+    # which now handle configuration and dynamic settings
+    # this cli should be removed in a future iteration (tech debt)
+    # and this __ini__ streamlined and slimmed down
 
     _LOGGER.info(constants.STR_CROSSBAR)
     _LOGGER.info('~ {}.py ... Running script as __main__'.format(_PACKAGENAME))
