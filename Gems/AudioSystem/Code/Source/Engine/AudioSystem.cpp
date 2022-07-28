@@ -152,7 +152,7 @@ namespace Audio
             AudioRequestsQueue callbacksToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingCallbacksMutex);
-                callbacksToProcess.swap(AZStd::move(m_pendingCallbacksQueue));
+                callbacksToProcess = AZStd::move(m_pendingCallbacksQueue);
             }
 
             while (!callbacksToProcess.empty())
@@ -223,7 +223,7 @@ namespace Audio
             AudioRequestsQueue requestsToProcess{};
             {
                 AZStd::scoped_lock lock(m_pendingRequestsMutex);
-                requestsToProcess.swap(AZStd::move(m_pendingRequestsQueue));
+                requestsToProcess = AZStd::move(m_pendingRequestsQueue);
             }
 
             while (!requestsToProcess.empty())

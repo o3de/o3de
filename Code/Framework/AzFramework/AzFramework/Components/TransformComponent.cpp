@@ -736,6 +736,7 @@ namespace AzFramework
                 ->Event("GetLocalX", &AZ::TransformBus::Events::GetLocalX)
                 ->Event("GetLocalY", &AZ::TransformBus::Events::GetLocalY)
                 ->Event("GetLocalZ", &AZ::TransformBus::Events::GetLocalZ)
+                ->Event("SetWorldRotation", &AZ::TransformBus::Events::SetWorldRotation)
                 ->Event("SetWorldRotationQuaternion", &AZ::TransformBus::Events::SetWorldRotationQuaternion)
                 ->Event("GetWorldRotation", &AZ::TransformBus::Events::GetWorldRotation)
                 ->Event("GetWorldRotationQuaternion", &AZ::TransformBus::Events::GetWorldRotationQuaternion)

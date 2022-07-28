@@ -22,11 +22,11 @@ namespace UnitTest
     {
         using namespace AzToolsFramework::Prefab;
 
-        inline static const char* ComponentsValueName = "Components";
-        inline static const char* ComponentIdName = "Id";
-        inline static const char* EntitiesValueName = "Entities";
-        inline static const char* EntityNameValueName = "Name";
-        inline static const char* BoolPropertyName = "BoolProperty";
+        inline static constexpr const char* ComponentsValueName = "Components";
+        inline static constexpr const char* ComponentIdName = "Id";
+        inline static constexpr const char* EntitiesValueName = "Entities";
+        inline static constexpr const char* EntityNameValueName = "Name";
+        inline static constexpr const char* BoolPropertyName = "BoolProperty";
 
         inline PrefabDomPath GetPrefabDomEntitiesPath()
         {

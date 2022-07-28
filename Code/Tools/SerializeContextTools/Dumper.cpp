@@ -681,8 +681,10 @@ namespace AZ::SerializeContextTools
             rapidjson::Value(rapidjson::StringRef("Deprecated")) : rapidjson::Value(classData->m_version), document.GetAllocator());
 
         auto systemComponentIt = AZStd::lower_bound(systemComponents.begin(), systemComponents.end(), classData->m_typeId);
-        bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
+        const bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
         classNode.AddMember("IsSystemComponent", isSystemComponent, document.GetAllocator());
+        const bool isComponent = isSystemComponent || (classData->m_azRtti != nullptr && classData->m_azRtti->IsTypeOf<AZ::Component>());
+        classNode.AddMember("IsComponent", isComponent, document.GetAllocator());
         classNode.AddMember("IsPrimitive", Utilities::IsSerializationPrimitive(genericClassInfo ? genericClassInfo->GetGenericTypeId() : classData->m_typeId), document.GetAllocator());
         classNode.AddMember("IsContainer", classData->m_container != nullptr, document.GetAllocator());
         if (genericClassInfo)
