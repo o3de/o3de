@@ -45,8 +45,6 @@
 #include <QApplication>
 #include <QRect>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -3988,5 +3986,3 @@ namespace AzToolsFramework
     template Etcs::PivotOrientationResult Etcs::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
-#pragma optimize("", on)
-#pragma inline_depth()

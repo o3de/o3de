@@ -33,12 +33,6 @@ namespace UnitTest
             return m_clusterButtonGroups;
         }
 
-        const AZStd::unordered_map<AzToolsFramework::ViewportUi::SwitcherId, AZStd::shared_ptr<ButtonGroup>>& GetSwitcherMap()
-        {
-            return m_switcherButtonGroups;
-        }
-        
-
         ViewportUiDisplay* GetViewportUiDisplay()
         {
             return m_viewportUi.get();
@@ -208,94 +202,4 @@ namespace UnitTest
             m_viewportManagerWrapper.GetViewportManager()->GetViewportUiDisplay()->IsViewportUiElementVisible(cluster->GetViewportUiElementId());
         EXPECT_TRUE(visible);
     }
-
-    TEST_F(ViewportUiManagerTestFixture, CreateSwitcherAddsNewSwitcherAndReturnsId)
-    {
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        auto switcherEntry = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId);
-
-        EXPECT_TRUE(switcherEntry != m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().end());
-        EXPECT_TRUE(switcherEntry->second.get() != nullptr);
-    }
-
-    TEST_F(ViewportUiManagerTestFixture, CreateSwitcherButtonAddsNewButtonAndReturnsId)
-    {
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcherButton(switcherId, "");
-
-        auto switcherEntry = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId);
-
-        EXPECT_TRUE(switcherEntry->second->GetButton(buttonId) != nullptr);
-    }
-
-    TEST_F(ViewportUiManagerTestFixture, SetSwitcherActiveButtonSetsButtonStateToActive)
-    {
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcherButton(switcherId, "");
-
-        auto switcherEntry = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId);
-        auto button = switcherEntry->second->GetButton(buttonId);
-
-        m_viewportManagerWrapper.GetViewportManager()->SetSwitcherActiveButton(switcherId, buttonId);
-
-        EXPECT_TRUE(button->m_state == AzToolsFramework::ViewportUi::Internal::Button::State::Selected);
-    }
-
-    TEST_F(ViewportUiManagerTestFixture, RegisterSwitcherEventHandlerConnectsHandlerToSwitcherEvent)
-    {
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        auto buttonId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcherButton(switcherId, "");
-
-        // create a handler which will be triggered by the cluster
-        bool handlerTriggered = false;
-        auto testButtonId = ButtonId(buttonId);
-        AZ::Event<ButtonId>::Handler handler(
-            [&handlerTriggered, testButtonId](ButtonId buttonId)
-            {
-                if (buttonId == testButtonId)
-                {
-                    handlerTriggered = true;
-                }
-            });
-
-        auto switcherEntry = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId);
-
-        // trigger the cluster
-        m_viewportManagerWrapper.GetViewportManager()->RegisterSwitcherEventHandler(switcherId, handler);
-        switcherEntry->second->PressButton(buttonId);
-
-        EXPECT_TRUE(handlerTriggered);
-    }
-
-    TEST_F(ViewportUiManagerTestFixture, RemoveSwitcherRemovesSwitcherFromViewportUi)
-    {
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        m_viewportManagerWrapper.GetViewportManager()->RemoveSwitcher(switcherId);
-
-        auto switcherEntry = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId);
-
-        EXPECT_TRUE(switcherEntry == m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().end());
-    }
-
-    TEST_F(ViewportUiManagerTestFixture, SetSwitcherVisibleChangesSwitcherVisibility)
-    {
-        m_viewportManagerWrapper.GetMockRenderOverlay()->setVisible(true);
-
-        auto switcherId = m_viewportManagerWrapper.GetViewportManager()->CreateSwitcher(AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        m_viewportManagerWrapper.GetViewportManager()->CreateSwitcherButton(switcherId, "");
-        m_viewportManagerWrapper.GetViewportManager()->Update();
-
-        m_viewportManagerWrapper.GetViewportManager()->SetSwitcherVisible(switcherId, false);
-        auto switcher = m_viewportManagerWrapper.GetViewportManager()->GetSwitcherMap().find(switcherId)->second;
-
-        bool visible = m_viewportManagerWrapper.GetViewportManager()->GetViewportUiDisplay()->IsViewportUiElementVisible(
-            switcher->GetViewportUiElementId());
-        EXPECT_FALSE(visible);
-
-        m_viewportManagerWrapper.GetViewportManager()->SetSwitcherVisible(switcherId, true);
-        visible = m_viewportManagerWrapper.GetViewportManager()->GetViewportUiDisplay()->IsViewportUiElementVisible(
-            switcher->GetViewportUiElementId());
-        EXPECT_TRUE(visible);
-    }
-
 } // namespace UnitTest
