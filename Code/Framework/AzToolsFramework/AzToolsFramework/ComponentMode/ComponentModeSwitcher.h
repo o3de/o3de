@@ -111,6 +111,7 @@ namespace AzToolsFramework
             bool m_AddRemove;
             ViewportUi::ButtonId m_transformButtonId;
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler;
+            ComponentData m_activeSwitcherComponent;
         };
 
     } // namespace ComponentModeFramework

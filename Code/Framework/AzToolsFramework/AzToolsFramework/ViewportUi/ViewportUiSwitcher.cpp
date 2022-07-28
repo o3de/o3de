@@ -143,7 +143,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             QString buttonName = ((*buttonIt)->m_name).c_str();
             //QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
             auto pixmap = QPixmap(QString((*buttonIt)->m_icon.c_str()));
-            auto mask = pixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
+            auto mask = pixmap.createMaskFromColor(Qt::transparent, Qt::MaskOutColor);
             pixmap.fill((QColor(255, 255, 255)));
             pixmap.setMask(mask);
             //QImage image = QImage(QString((*buttonIt)->m_icon.c_str())).convertToFormat(QImage::Format_Grayscale8);

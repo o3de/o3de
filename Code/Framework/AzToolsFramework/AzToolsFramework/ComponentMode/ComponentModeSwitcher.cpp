@@ -140,29 +140,6 @@ namespace AzToolsFramework::ComponentModeFramework
         }
     }
 
-    void ComponentModeSwitcher::AddSwitcherButton(ComponentData& component, const char* componentName, const char* iconStr)
-    {
-        ViewportUi::ButtonId buttonId;
-        ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId,
-            ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
-            m_switcher.m_switcherId,
-            iconStr,
-            componentName);
-
-        component.m_buttonId = buttonId;
-
-        AZStd::string buttonTooltip = AZStd::string::format(" Enter %s component mode", component.m_componentName.c_str());
-
-        ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId,
-            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherButtonTooltip,
-            m_switcher.m_switcherId,
-            buttonId,
-            buttonTooltip);
-    }
-
     void ComponentModeSwitcher::AddComponentButton(AZ::EntityComponentIdPair pairId)
     {
         // Check if the component has a component mode.
@@ -192,6 +169,29 @@ namespace AzToolsFramework::ComponentModeFramework
             
             
         }
+    }
+
+    void ComponentModeSwitcher::AddSwitcherButton(ComponentData& componentData, const char* componentName, const char* iconStr)
+    {
+        ViewportUi::ButtonId buttonId;
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            buttonId,
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
+            m_switcher.m_switcherId,
+            iconStr,
+            componentName);
+
+        componentData.m_buttonId = buttonId;
+
+        AZStd::string buttonTooltip = AZStd::string::format(" Enter %s component mode", componentData.m_componentName.c_str());
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherButtonTooltip,
+            m_switcher.m_switcherId,
+            buttonId,
+            buttonTooltip);
     }
 
     void ComponentModeSwitcher::RemoveComponentButton(AZ::EntityComponentIdPair pairId)
@@ -290,6 +290,7 @@ namespace AzToolsFramework::ComponentModeFramework
                     &ComponentModeSystemRequestBus::Events::AddedToComponentMode,
                     componentData.m_pairId,
                     componentData.m_component->GetUnderlyingComponentType());
+
                 if (isComponentActive)
                 {
                     ViewportUi::ViewportUiRequestBus::Event(
@@ -297,6 +298,7 @@ namespace AzToolsFramework::ComponentModeFramework
                         &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                         m_switcher.m_switcherId,
                         componentData.m_buttonId);
+                    m_activeSwitcherComponent = componentData;
                 }
             }
         }
@@ -307,6 +309,7 @@ namespace AzToolsFramework::ComponentModeFramework
         AZStd::set<AZStd::string> componentNames;
         for (const auto& entityComponent : entity.GetComponents())
         {
+            
             componentNames.insert(AzToolsFramework::GetFriendlyComponentName(entityComponent));
             //for m_addecomponents - check if name is there
         }

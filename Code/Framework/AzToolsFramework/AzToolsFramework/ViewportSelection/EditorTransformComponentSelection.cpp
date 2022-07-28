@@ -2741,7 +2741,10 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::CreateComponentModeSwitcher()
     {
-        m_componentModeSwitcher = AZStd::make_shared<ComponentModeFramework::ComponentModeSwitcher>();
+        if (ComponentSwitcherEnabled())
+        {
+            m_componentModeSwitcher = AZStd::make_shared<ComponentModeFramework::ComponentModeSwitcher>();
+        }
     }
 
     void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
