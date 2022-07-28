@@ -53,7 +53,7 @@ class TestTerminalReport(object):
         mock_report.stats.get.return_value = []
         mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, mock_config)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_add_commands.assert_not_called()
         mock_report.config.getoption.assert_not_called()
@@ -67,7 +67,7 @@ class TestTerminalReport(object):
         mock_report.stats.get.return_value = [mock_node, mock_node]
         mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, mock_config)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         assert len(mock_add_commands.mock_calls) == 2
         mock_report.config.getoption.assert_called()
@@ -84,7 +84,7 @@ class TestTerminalReport(object):
         mock_report.stats.get.side_effect = [[mock_node], []]  # first item is failure list
         mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, mock_config)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_basename.assert_called_with(node_id)
 
@@ -99,7 +99,7 @@ class TestTerminalReport(object):
         mock_report.stats.get.side_effect = [[], [mock_node]]  # second item is error list
         mock_config = mock.MagicMock()
 
-        terminal_report.pytest_terminal_summary(mock_report, mock_config)
+        terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         mock_basename.assert_called_with(node_id)
 

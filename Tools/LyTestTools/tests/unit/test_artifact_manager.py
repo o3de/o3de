@@ -68,13 +68,14 @@ class TestSetTestName(unittest.TestCase):
         self.mock_artifact_manager.set_dest_path(test_name, create_amount)
         mock_get_collision.assert_called_once_with(os.path.join(self.mock_root, test_name), create_amount)
 
+    @mock.patch('os.makedirs', mock.MagicMock())
     @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_SetDestPathAmount_ValidFilePathExists_NoFilePathCreatedSetsAttributes(self):
         test_name = 'dummy'
-        updated_path = os.path.join(self.mock_artifact_manager.artifact_path, test_name)
+        expected_path = os.path.join(self.mock_artifact_manager.artifact_path, test_name)
 
         self.mock_artifact_manager.set_dest_path(test_name)
-        assert self.mock_artifact_manager.dest_path == updated_path
+        assert self.mock_artifact_manager.dest_path == expected_path
 
 
 class TestSaveArtifact(unittest.TestCase):

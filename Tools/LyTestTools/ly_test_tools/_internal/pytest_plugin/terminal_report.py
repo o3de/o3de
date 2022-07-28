@@ -33,7 +33,7 @@ def _add_commands(terminalreporter, header, test_path, node_ids, build_dir=None)
         terminalreporter.write_line("Error: Cannot provide rerun commands because test node id list is empty!")
 
 
-def pytest_terminal_summary(terminalreporter, config):
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
     """
     Pytest's hook for terminal reporting. This hook is invoked at the end of the test session.
 
