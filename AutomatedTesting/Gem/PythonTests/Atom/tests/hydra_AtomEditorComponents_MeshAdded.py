@@ -78,6 +78,9 @@ class Tests:
     mesh_component_removed = (
         "Mesh component removed successfully",
         "P1: Mesh component was not correctly removed from the entity")
+    model_asset_is_optimized = (
+        "valenaactor.azmodel has <= 231,904 vertices",
+        "P0: Model has not been fully optimized")
 
 
 def AtomEditorComponents_Mesh_AddedToEntity():
@@ -113,11 +116,12 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     17) Remove Mesh component then UNDO the remove
     18) Enter/Exit game mode.
     19) Test IsHidden.
-    10) Test IsVisible.
-    21) Delete Mesh entity.
-    22) UNDO deletion.
-    23) REDO deletion.
-    24) Look for errors.
+    20) Test IsVisible.
+    21) Verify that vertex welding is functioning
+    22) Delete Mesh entity.
+    23) UNDO deletion.
+    24) REDO deletion.
+    25) Look for errors.
 
     :return: None
     """
@@ -126,6 +130,8 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
     from PySide2 import QtWidgets
 
+    import azlmbr.bus
+    from functools import partial
     import azlmbr.legacy.general as general
     from Atom.atom_utils.atom_constants import (MESH_LOD_TYPE,
                                                 AtomComponentProperties)
@@ -133,6 +139,35 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, TestHelper, Tracer
+
+    class OnModelReadyHelper:
+        def __init__(self):
+            self.isModelReady = False
+        
+        def model_is_ready_predicate(self):
+            """
+            A predicate function what will be used in wait_for_condition.
+            """
+            return self.isModelReady
+
+        def on_model_ready(self, parameters):
+            self.isModelReady = True
+
+        def wait_for_on_model_ready(self, entityId, mesh_component, model_id):
+            self.isModelReady = False
+            # Connect to the MeshNotificationBus
+            # Listen for notifications when entities are created/deleted
+            self.onModelReadyHandler = azlmbr.bus.NotificationHandler('MeshComponentNotificationBus')
+            self.onModelReadyHandler.connect(entityId)
+            self.onModelReadyHandler.add_callback('OnModelReady', self.on_model_ready)
+            
+            waitCondition = partial(self.model_is_ready_predicate)
+            
+            mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model_id)
+            if TestHelper.wait_for_condition(waitCondition, 20.0):
+                return True
+            else:
+                return False
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -285,22 +320,38 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         mesh_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, mesh_entity.is_visible() is True)
+        
+        # 21. Set Mesh component asset property
+        model_path = os.path.join('valena', 'valenaactor.azmodel')
+        model = Asset.find_asset_by_path(model_path)
+        onModelReadyHelper = OnModelReadyHelper()
+        onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
+        Report.result(Tests.model_asset_specified,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
+        
+        vertex_count = mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Vertex Count LOD0'))
 
-        # 21. Delete Mesh entity.
+        Report.result(Tests.model_asset_is_optimized,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 231904)
+
+        # 22. Delete Mesh entity.
         mesh_entity.delete()
         Report.result(Tests.entity_deleted, not mesh_entity.exists())
 
-        # 22. UNDO deletion.
+        # 23. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, mesh_entity.exists())
 
-        # 23. REDO deletion.
+        # 24. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not mesh_entity.exists())
 
-        # 24. Look for errors or asserts.
+        # 25. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
