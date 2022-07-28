@@ -112,7 +112,10 @@ class BaseTestImpact(ABC):
                         sequence_type = "regular"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args['integration_policy'] = "continue"
+        # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
         args['sequence'] = sequence_type
+        args['report'] = PurePath(self._temp_workspace).joinpath(
+            f"report.{self._instance_id}.json")
         self._parse_arguments_to_runtime(
             args, self._runtime_args)
 
@@ -129,12 +132,6 @@ class BaseTestImpact(ABC):
             if value:
                 runtime_args.append(f"{argument.runtime_arg}{value}")
                 logger.info(f"{argument.message}{value}")
-
-        # Sequence report
-        self._report_file = PurePath(self._temp_workspace).joinpath(
-            f"report.{self._instance_id}.json")
-        runtime_args.append(f"--report={self._report_file}")
-        logger.info(f"Sequence report file is set to '{self._report_file}'.")
 
     def _handle_historic_data(self):
         """

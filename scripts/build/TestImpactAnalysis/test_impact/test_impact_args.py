@@ -33,6 +33,7 @@ class RuntimeArgs(Enum):
     IPOLICY = ("integration_policy", "--ipolicy=",
                "Integration failure policy is set to: ")
     CHANGELIST = ("change_list", "--changelist=", "Change list is set to: ")
+    REPORT = ("report", "--report=", "Sequencer report file is set to: ")
 
     # Native arguments
     SAFEMODE = ("safe_mode", "--safemode=", "Safe mode set to: ")
