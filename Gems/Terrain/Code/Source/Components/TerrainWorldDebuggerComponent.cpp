@@ -287,6 +287,11 @@ namespace Terrain
             return;
         }
 
+        const float spacing = m_configuration.m_debugQueries.m_spacing;
+        const float halfDistance = spacing * (m_configuration.m_debugQueries.m_pointsPerDirection / 2.0f);
+        const size_t totalPositions =
+            m_configuration.m_debugQueries.m_pointsPerDirection * m_configuration.m_debugQueries.m_pointsPerDirection;
+
         // Get the center point for our visualization area either from the camera or a configured location.
         AZ::Vector3 centerPos = m_configuration.m_debugQueries.m_centerPosition;
         if (m_configuration.m_debugQueries.m_useCameraPosition)
@@ -294,27 +299,25 @@ namespace Terrain
             if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
             {
                 AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
-                centerPos = viewportContext->GetCameraTransform().GetTranslation();
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+
+                // Get our camera's center point, but then extend the center point out further along the camera's "forward"
+                // direction by half the total distance to try and get as much of our total query area as possible visible
+                // in front of the camera so that we don't waste any of our query points.
+                centerPos = cameraTransform.GetTranslation() + (viewportContext->GetCameraTransform().GetBasisY() * halfDistance);
             }
         }
 
         // Build up the list of positions to query.
         AZStd::vector<AZ::Vector3> positionList;
-
-        const float spacing = m_configuration.m_debugQueries.m_spacing;
-        const float distance = spacing * (m_configuration.m_debugQueries.m_pointsPerDirection / 2.0f);
-
-        const size_t totalPositions =
-            m_configuration.m_debugQueries.m_pointsPerDirection * m_configuration.m_debugQueries.m_pointsPerDirection;
-
         positionList.reserve(totalPositions);
 
         for (size_t yPoint = 0; yPoint < m_configuration.m_debugQueries.m_pointsPerDirection; yPoint++)
         {
             for (size_t xPoint = 0; xPoint < m_configuration.m_debugQueries.m_pointsPerDirection; xPoint++)
             {
-                float x = centerPos.GetX() - distance + (spacing * xPoint);
-                float y = centerPos.GetY() - distance + (spacing * yPoint);
+                float x = centerPos.GetX() - halfDistance + (spacing * xPoint);
+                float y = centerPos.GetY() - halfDistance + (spacing * yPoint);
                 positionList.emplace_back(x, y, 0.0f);
             }
         }
