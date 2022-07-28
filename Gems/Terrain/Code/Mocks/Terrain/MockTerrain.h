@@ -71,7 +71,7 @@ namespace UnitTest
             Terrain::TerrainSpawnerRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
+        MOCK_METHOD2(GetPriority, void(uint32_t& outLayer, int32_t& outPriority));
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
 

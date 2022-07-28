@@ -21,6 +21,8 @@ namespace ScriptCanvas
     static constexpr int MaxMessageLength = 4096;
     static constexpr const char ScriptCanvasAutoGenRegistrationWarningMessage[] = "[Warning] Registry name %s is occupied already, ignore AutoGen registry registration.\n";
 
+    static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
+
     AutoGenRegistryManager::~AutoGenRegistryManager()
     {
         m_registries.clear();
@@ -28,10 +30,20 @@ namespace ScriptCanvas
 
     AutoGenRegistryManager* AutoGenRegistryManager::GetInstance()
     {
-        // Use static object so each module will keep its own registry collection
-        static AutoGenRegistryManager s_autogenRegistry;
+        // Look up variable in AZ::Environment first
+        // This is need if the Environment variable was already created
+        if (!g_autogenRegistry)
+        {
+            g_autogenRegistry = AZ::Environment::FindVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
+        }
 
-        return &s_autogenRegistry;
+        // Create the environment variable in O3DEKernel memory space if it has not been found
+        if (!g_autogenRegistry)
+        {
+            g_autogenRegistry = AZ::Environment::CreateVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
+        }
+
+        return &(g_autogenRegistry.Get());
     }
 
     AZStd::vector<AZStd::string> AutoGenRegistryManager::GetRegistryNames(const char* registryName)

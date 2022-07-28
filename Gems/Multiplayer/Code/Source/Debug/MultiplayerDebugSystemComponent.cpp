@@ -8,16 +8,19 @@
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
 
@@ -130,20 +133,97 @@ namespace Multiplayer
                 if (auto console = AZ::Interface<AZ::IConsole>::Get())
                 {
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
-                    if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
+                    const bool enableHosting = multiplayerAgentType == MultiplayerAgentType::Uninitialized;                    
+                    if (ImGui::BeginMenu(HostLevelMenuTitle, enableHosting))
                     {
-                        if (ImGui::Button(HOST_BUTTON_TITLE))
+                        // Run through all the assets in the asset catalog and gather up the list of level assets
+                        AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
+                        AZStd::set<AZStd::string> multiplayerLevelFilePaths;
+                        auto enumerateCB =
+                            [levelAssetType, &multiplayerLevelFilePaths]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                         {
-                            console->PerformCommand("host");
+                            // Skip everything that isn't a spawnable
+                            if (assetInfo.m_assetType != levelAssetType)
+                            {
+                                return;
+                            }
+
+                            // Skip non-network spawnables
+                            // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                            if (!assetInfo.m_relativePath.ends_with(Multiplayer::NetworkSpawnableFileExtension))
+                            {
+                                return;   
+                            }
+
+                            // Skip spawnables not inside the levels folder
+                            if (!assetInfo.m_relativePath.starts_with("levels"))
+                            {
+                                return;
+                            }
+
+                            // Skip spawnables that live inside level folders, but isn't the level itself
+                            AZ::IO::PathView spawnableFilePath(assetInfo.m_relativePath);
+                            AZ::IO::PathView filenameSansExtention = spawnableFilePath.Stem().Stem(); // Just the filename without the .network.spawnable extension
+                            
+                            AZ::IO::PathView::const_iterator parentFolderName = spawnableFilePath.end();
+                            AZStd::advance(parentFolderName, -2);
+                            if (parentFolderName->Native() != filenameSansExtention.Native())
+                            {
+                                return;
+                            }
+
+                            AZStd::string multiplayerLevelFilePath = assetInfo.m_relativePath;
+                            AZ::StringFunc::Replace(multiplayerLevelFilePath, Multiplayer::NetworkFileExtension.data(), "");
+                            multiplayerLevelFilePaths.emplace(multiplayerLevelFilePath);
+                        };
+
+                        AZ::Data::AssetCatalogRequestBus::Broadcast(
+                            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                        if (multiplayerLevelFilePaths.size() > 0)
+                        {
+                            int levelIndex = 0;
+                            for (const auto& multiplayerLevelFilePath : multiplayerLevelFilePaths)
+                            {
+                                auto levelMenuItem = AZStd::string::format("%d- %s", levelIndex, multiplayerLevelFilePath.c_str());
+                                if (ImGui::MenuItem(levelMenuItem.c_str()))
+                                {
+                                    AZ::TickBus::QueueFunction(
+                                        [console, multiplayerLevelFilePath]()
+                                        {
+                                            auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
+                                            console->PerformCommand("host");
+                                            console->PerformCommand(loadLevelString.c_str());
+                                        });
+                                }
+                                ++levelIndex;
+                            }
                         }
+                        else
+                        {
+                            ImGui::MenuItem(NoMultiplayerLevelsFound);
+                        }
+                        
+                        ImGui::EndMenu();
                     }
-                    else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
-                        multiplayerAgentType == MultiplayerAgentType::ClientServer)
+                    
+                    // Disable the launch local client button if we're not hosting
+                    const bool isHost = multiplayerAgentType == MultiplayerAgentType::DedicatedServer || multiplayerAgentType == MultiplayerAgentType::ClientServer;
+                    if (!isHost)
                     {
-                        if (ImGui::Button(LAUNCH_LOCAL_CLIENT_BUTTON_TITLE))
-                        {
-                            console->PerformCommand("sv_launch_local_client");
-                        }
+                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
+                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    }
+
+                    if (ImGui::Button(LaunchLocalClientButtonTitle))
+                    {
+                        console->PerformCommand("sv_launch_local_client");
+                    }
+
+                    if (!isHost)
+                    {
+                        ImGui::PopItemFlag();
+                        ImGui::PopStyleVar();
                     }
                 }
             }

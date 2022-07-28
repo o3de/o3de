@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Divide",
+        "category": "Math Functions",
+        "title": "divide",
         "inputSlots": [
             {
                 "name": "inValue1",

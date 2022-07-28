@@ -213,8 +213,7 @@ namespace Multiplayer
         {
             return GetEntity()->GetTransform()->GetWorldTranslation();
         }
-        GetParent().m_physicsCharacter->AddVelocity(velocity);
-        GetParent().m_physicsCharacter->ApplyRequestedVelocity(deltaTime);
+        GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
         GetEntity()->GetTransform()->SetWorldTranslation(GetParent().m_physicsCharacter->GetBasePosition());
         AZLOG
         (

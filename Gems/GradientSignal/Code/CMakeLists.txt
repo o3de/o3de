@@ -192,6 +192,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Source
             BUILD_DEPENDENCIES
                 PRIVATE
+                    3rdParty::OpenImageIO
                     AZ::AzTest
                     AZ::AzTestShared
                     Gem::GradientSignal.Tests.Static
