@@ -371,7 +371,10 @@ namespace AssetProcessor
             // We will only continue once we get exclusive lock on the source file
             while (!AssetUtilities::CheckCanLock(inputFile))
             {
+                // Wait for a while before checking again, we need to let some time pass for the other process to finish whatever work it is doing
                 QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
+
+                // If AP shutdown is requested, the job is canceled or we exceeded the max wait time, abort the loop and mark the job as canceled
                 if (listener.WasQuitRequested() || cancelListener.IsCancelled() || (ticker.elapsed() > g_jobMaximumWaitTime))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
