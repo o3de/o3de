@@ -919,7 +919,7 @@ namespace EMotionFX
         }
 
         void SystemComponent::AddSourceFileCreators(
-            const char* fullSourceFolderName,
+            [[maybe_unused]] const char* fullSourceFolderName,
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
         {
