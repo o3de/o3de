@@ -416,7 +416,7 @@ namespace AZ
 
     Quaternion Quaternion::CreateFromEulerRadiansXYZ(const Vector3& eulerRadians)
     {
-         const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
+        const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
         const Simd::Vec3::FloatType angles = Simd::Vec3::Mul(half, eulerRadians.GetSimdValue());
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
@@ -444,10 +444,10 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sy = Simd::Vec3::SelectFirst(sin);
-        const float cy = Simd::Vec3::SelectFirst(cos);
-        const float sx = Simd::Vec3::SelectSecond(sin);
-        const float cx = Simd::Vec3::SelectSecond(cos);
+        const float sx = Simd::Vec3::SelectFirst(sin);
+        const float cx = Simd::Vec3::SelectFirst(cos);
+        const float sy = Simd::Vec3::SelectSecond(sin);
+        const float cy = Simd::Vec3::SelectSecond(cos);
         const float sz = Simd::Vec3::SelectThird(sin);
         const float cz = Simd::Vec3::SelectThird(cos);
 
@@ -466,15 +466,13 @@ namespace AZ
         Simd::Vec3::FloatType sin, cos;
         Simd::Vec3::SinCos(angles, sin, cos);
 
-        const float sx = Simd::Vec3::SelectThird(sin);
-        const float cx = Simd::Vec3::SelectThird(cos);
-
+        const float sx = Simd::Vec3::SelectFirst(sin);
+        const float cx = Simd::Vec3::SelectFirst(cos);
         const float sy = Simd::Vec3::SelectSecond(sin);
         const float cy = Simd::Vec3::SelectSecond(cos);
+        const float sz = Simd::Vec3::SelectThird(sin);
+        const float cz = Simd::Vec3::SelectThird(cos);
         
-        const float sz = Simd::Vec3::SelectFirst(sin);
-        const float cz = Simd::Vec3::SelectFirst(cos);
- 
         // rot = rotz * roty * rotx
         return AZ::Quaternion(
             sx * cy * cz - cx * sy * sz,
