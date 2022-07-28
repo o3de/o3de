@@ -115,19 +115,28 @@ namespace TestImpact
         {
             const auto getShardingConfiguration = [](const AZStd::string& config)
             {
-                switch(config)
+                if (Config::ContinuousFixtureSharding == config)
                 {
-                case Config::Keys[Config::ContinuousFixtureSharding]:
                     return ShardConfiguration::FixtureContiguous;
-                case Config::Keys[Config::InterleavedFixtureSharding]:
+                }
+                else if (Config::InterleavedFixtureSharding == config)
+                {
                     return ShardConfiguration::FixtureInterleaved;
-                case Config::Keys[Config::ContinuousTestSharding]:
+                }
+                else if (Config::ContinuousTestSharding == config)
+                {
                     return ShardConfiguration::TestContiguous;
-                case Config::Keys[Config::InterleavedTestSharding]:
+                }
+                else if (Config::InterleavedTestSharding == config)
+                {
                     return ShardConfiguration::TestInterleaved;
-                case Config::Keys[Config::NeverShard]:
+                }
+                else if (Config::NeverShard == config)
+                {
                     return ShardConfiguration::Never;
-                default:
+                }
+                else
+                {
                     throw ConfigurationException(AZStd::string::format("Unexpected sharding configuration: %s", config.c_str()));
                 }
             };
