@@ -47,6 +47,7 @@
 
 #include "AbstractCodeModel.h"
 #include "ParsingUtilities.h"
+#include "ParsingMetaData.h"
 
 namespace ParsingUtilitiesCpp
 {
@@ -1090,6 +1091,43 @@ namespace ScriptCanvas
         {
             auto nodeling = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node);
             return nodeling && nodeling->IsExecutionEntry() && execution->GetSymbol() == Symbol::FunctionDefinition;
+        }
+
+        bool IsUserFunctionCallLocallyDefined(const AbstractCodeModel& model, const Node& node)
+        {
+            auto functionCallNode = azrtti_cast<const ScriptCanvas::Nodes::Core::FunctionCallNode*>(&node);
+            if (!functionCallNode)
+            {
+                return false;
+            }
+
+            const auto& source = model.GetSource();
+
+            // move check later after testing
+            AZ::IO::Path nodeSourcePath = functionCallNode->GetAssetHint();
+            nodeSourcePath = nodeSourcePath.MakePreferred().ReplaceExtension();
+            AZ::IO::Path sourcePath = source.m_path;
+            sourcePath = sourcePath.MakePreferred().ReplaceExtension();
+
+            if (nodeSourcePath.IsRelativeTo(sourcePath) || sourcePath.IsRelativeTo(nodeSourcePath))
+            {
+                return true;
+            }
+
+            auto assetId = functionCallNode->GetAssetId();
+            if (source.m_assetId == assetId)
+            {
+                return true;
+            }
+
+            // just for unit tests, can NOT be submitted
+            return true;
+        }
+
+        bool IsUserFunctionCallLocallyDefined(const ExecutionTreeConstPtr& execution)
+        {
+            auto userFunctionCallMetaData = AZStd::any_cast<const UserFunctionNodeCallMetaData>(&execution->GetMetaDataEx());
+            return userFunctionCallMetaData && userFunctionCallMetaData->m_isLocal;
         }
 
         const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const Node* node)

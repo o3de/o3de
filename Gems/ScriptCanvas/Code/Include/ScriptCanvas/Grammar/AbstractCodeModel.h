@@ -408,6 +408,8 @@ namespace ScriptCanvas
 
             void ParseReturnValue(ExecutionTreePtr execution, VariableConstPtr variable, const Slot* returnValueSlot);
 
+            void ParseSubgraphInterface(const Node& node);
+
             void ParseUserFunctionTopology();
 
             void ParseUserIn(ExecutionTreePtr root, const Nodes::Core::FunctionDefinitionNode* nodeling);

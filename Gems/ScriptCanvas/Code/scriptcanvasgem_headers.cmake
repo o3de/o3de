@@ -113,6 +113,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h
     Include/ScriptCanvas/Grammar/AbstractCodeModel.h
+    Include/ScriptCanvas/Grammar/ASTModifications.h
     Include/ScriptCanvas/Grammar/DebugMap.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h

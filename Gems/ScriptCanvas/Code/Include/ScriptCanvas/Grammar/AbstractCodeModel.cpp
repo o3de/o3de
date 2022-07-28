@@ -32,6 +32,7 @@
 #include <ScriptCanvas/Variable/VariableData.h>
 
 #include "AbstractCodeModel.h"
+#include "ASTModifications.h"
 #include "ExecutionTraversalListeners.h"
 #include "ParsingUtilities.h"
 #include "Primitives.h"
@@ -2596,6 +2597,7 @@ namespace ScriptCanvas
             else
             {
                 ParseDependencies(node);
+                ParseSubgraphInterface(node);
                 ParseImplicitVariables(node);
                 return CheckCreateRoot(node);
             }
@@ -2956,53 +2958,37 @@ namespace ScriptCanvas
 
         void AbstractCodeModel::ParseDependencies(const Node& node)
         {
-            const auto dependencyOutcome = node.GetDependencies();
-
-            if (dependencyOutcome.IsSuccess())
+            if (!IsUserFunctionCallLocallyDefined(*this, node))
             {
-                const auto& dependencies = dependencyOutcome.GetValue();
+                const auto dependencyOutcome = node.GetDependencies();
 
-                // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined.
-                // This layer of dependencies will only be one step deep.
-                // Currently, this problem is only detected by the asset processor
-                if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
+                if (dependencyOutcome.IsSuccess())
                 {
-                    // Need to add an error on naming function definition the same as the file, or account for possibility that all over the place in the grammar
-                    AZStd::string circularDependency = AZStd::string::format
-                        ( ParseErrors::CircularDependencyFormat
-                        , m_source.m_name.data()
-                        , node.GetDebugName().data()
-                        , m_source.m_name.data());
+                    auto& dependencies = dependencyOutcome.GetValue();
 
-                    AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
+                    // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined.
+                    // This layer of dependencies will only be one step deep.
+                    // Currently, this problem is only detected by the asset processor
+                    if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
+                    {
+                        // Need to add an error on naming function definition the same as the file, or account for possibility that all over the place in the grammar
+                        AZStd::string circularDependency = AZStd::string::format
+                            ( ParseErrors::CircularDependencyFormat
+                            , m_source.m_name.data()
+                            , node.GetDebugName().data()
+                            , m_source.m_name.data());
+
+                        AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
+                    }
+
+                    // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates
+                    // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
+                    m_orderedDependencies.source.MergeWith(dependencies);
                 }
-
-                // #functions2 make this use an identifier for the node, for property window display and easier find/replace updates
-                // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
-                m_orderedDependencies.source.MergeWith(dependencies);
-            }
-            else
-            {
-                AddError(nullptr, ValidationConstPtr(aznew DependencyRetrievalFailiure(node.GetEntityId())));
-            }
-
-            if (auto subgraphInterface = node.GetSubgraphInterface())
-            {
-                m_subgraphInterface.MergeExecutionCharacteristics(*subgraphInterface);
-
-                if (subgraphInterface->HasOnGraphStart())
+                else
                 {
-                    m_subgraphStartCalls.insert(&node);
+                    AddError(nullptr, ValidationConstPtr(aznew DependencyRetrievalFailiure(node.GetEntityId())));
                 }
-
-                if (subgraphInterface->IsActiveDefaultObject())
-                {
-                    m_activeDefaultObject.insert(&node);
-                }
-            }
-            else if (azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
-            {
-                AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
             }
         }
 
@@ -3290,6 +3276,11 @@ namespace ScriptCanvas
              * yield a model that, when translated, does benefit from a simple depth first traversal of grammar nodes,
              * as is done in the translator(s).
              */
+
+            if (execution->GetId().m_node && IsUserFunctionCallLocallyDefined(*this, *execution->GetId().m_node))
+            {
+                MarkUserFunctionCallLocallyDefined(execution);
+            }
 
             AccountForEBusConnectionControl(execution);
 
@@ -4977,6 +4968,31 @@ namespace ScriptCanvas
             }
 
             execution->AddReturnValue(nullptr, returnValue);
+        }
+
+        void AbstractCodeModel::ParseSubgraphInterface(const Node& node)
+        {
+            if (!IsUserFunctionCallLocallyDefined(*this, node))
+            {
+                if (auto subgraphInterface = node.GetSubgraphInterface())
+                {
+                    m_subgraphInterface.MergeExecutionCharacteristics(*subgraphInterface);
+
+                    if (subgraphInterface->HasOnGraphStart())
+                    {
+                        m_subgraphStartCalls.insert(&node);
+                    }
+
+                    if (subgraphInterface->IsActiveDefaultObject())
+                    {
+                        m_activeDefaultObject.insert(&node);
+                    }
+                }
+                else if (azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
+                {
+                    AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
+                }
+            }
         }
 
         void AbstractCodeModel::ParseUserFunctionTopology()

@@ -160,6 +160,8 @@ namespace ScriptCanvas
 
             MetaDataConstPtr GetMetaData() const;
 
+            const AZStd::any& GetMetaDataEx() const;
+
             const AZStd::string& GetName() const;
 
             const LexicalScope& GetNameLexicalScope() const;
@@ -229,6 +231,8 @@ namespace ScriptCanvas
             ExecutionInput& ModInput(size_t index);
 
             MetaDataPtr ModMetaData();
+
+            AZStd::any& ModMetaDataEx();
 
             ExecutionTreePtr ModParent();
 
@@ -302,6 +306,8 @@ namespace ScriptCanvas
 
             // The node and the activation slot. The execution in, or the event or latent out slot.
             ExecutionId m_in;
+
+            AZStd::any m_metaDataEx;
 
             MetaDataPtr m_metaData;
             

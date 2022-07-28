@@ -170,6 +170,10 @@ namespace ScriptCanvas
 
         bool IsUserFunctionCallPure(const ExecutionTreeConstPtr& execution);
 
+        bool IsUserFunctionCallLocallyDefined(const AbstractCodeModel& model, const Node& node);
+
+        bool IsUserFunctionCallLocallyDefined(const ExecutionTreeConstPtr& execution);
+
         bool IsUserFunctionDefinition(const ExecutionTreeConstPtr& execution);
 
         const ScriptCanvas::Nodes::Core::FunctionDefinitionNode* IsUserOutNode(const Node* node);
