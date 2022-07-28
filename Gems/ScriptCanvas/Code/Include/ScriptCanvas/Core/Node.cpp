@@ -2998,6 +2998,11 @@ namespace ScriptCanvas
         return m_toolTip;
     }
 
+    const AZ::Crc32& Node::GetNodeLexicalId() const
+    {
+        return m_nodeLexicalId;
+    }
+
     const AZStd::string& Node::GetNodeStyle() const
     {
         return m_nodeStyle;
@@ -3113,7 +3118,9 @@ namespace ScriptCanvas
 
     AZ::Outcome<DependencyReport, void> Node::GetDependencies() const
     {
-        return AZ::Failure();
+        // TODO: Set this back to failure by default, allow user to set this to success for data driven nodes
+        //return AZ::Failure();
+        return AZ::Success(DependencyReport{});
     }
     
     AZ::Outcome<AZStd::string, void> Node::GetFunctionCallName(const Slot* /*slot*/) const

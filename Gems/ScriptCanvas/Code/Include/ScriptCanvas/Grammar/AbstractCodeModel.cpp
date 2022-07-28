@@ -1560,8 +1560,10 @@ namespace ScriptCanvas
             return result.m_connections.size() > originalSize;
         }
 
-        VariableConstPtr AbstractCodeModel::FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const
+        VariableOperatorData* AbstractCodeModel::FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const
         {
+            VariableOperatorData* variableData = aznew VariableOperatorData;
+
             ExecutionTreeConstPtr outputChild = executionWithInput;
             ExecutionTreeConstPtr outputSource = firstNode == FirstNode::Self ? outputChild : outputChild->GetParent();
 
@@ -1570,15 +1572,36 @@ namespace ScriptCanvas
                 // check every connected SC Node
                 for (const auto& scNodeAndOutputSlot : scriptCanvasNodesConnectedToInput)
                 {
-                    const auto outputSCNode = scNodeAndOutputSlot.first;
+
+                    auto outputSCNode = scNodeAndOutputSlot.first;
+
                     const auto outputSlot = scNodeAndOutputSlot.second;
+
                     const auto mostRecentOutputNodeOnThread = outputSource->GetId().m_node;
+
+                    // TODO: Make a for loop to loop back through all connected small operator nodes
+                    if (outputSCNode->GetNodeName() == "++")
+                    {
+                        auto slots = outputSCNode->GetAllSlots();
+                        Slot firstSlot = *slots.front();
+                        auto connectedNodes = outputSCNode->GetConnectedNodes(firstSlot);
+                        
+                        if (!connectedNodes.empty())
+                        {
+                            variableData->m_smallOperations.emplace_back(outputSCNode->GetNodeLexicalId());
+                            outputSCNode = connectedNodes.front().first;
+                            variableData->m_value = outputSource->GetChild(0).m_output[0].second->m_source;
+                            return variableData;
+                        }
+                        
+                    }
 
                     if (outputSCNode == mostRecentOutputNodeOnThread)
                     {
                         if (!IsPropertyExtractionSlot(outputSource, outputSlot) && (IsVariableGet(outputSource) || IsVariableSet(outputSource)))
                         {
-                            return outputSource->GetChild(0).m_output[0].second->m_source;
+                            variableData->m_value = outputSource->GetChild(0).m_output[0].second->m_source;
+                            return variableData;
                         }
 
                         for (size_t index(0); index < outputSource->GetChildrenCount(); ++index)
@@ -1602,7 +1625,8 @@ namespace ScriptCanvas
                                             }
                                         }
 
-                                        return sourceOutputVarPair.second->m_source;
+                                        variableData->m_value = sourceOutputVarPair.second->m_source;
+                                        return variableData;
                                     }
                                 }
                             }
@@ -2671,7 +2695,11 @@ namespace ScriptCanvas
             }
         }
 
-        VariableConstPtr AbstractCodeModel::ParseConnectedInputData(const Slot& inputSlot, ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode)
+        VariableOperatorData* AbstractCodeModel::ParseConnectedInputData(
+            const Slot& inputSlot,
+            ExecutionTreePtr executionWithInput,
+            const EndpointsResolved& scriptCanvasNodesConnectedToInput,
+            FirstNode firstNode)
         {
             if (auto inScopeVar = FindConnectedInputInScope(executionWithInput, scriptCanvasNodesConnectedToInput, firstNode))
             {
@@ -2714,7 +2742,10 @@ namespace ScriptCanvas
                 AddPreviouslyExecutedScopeVariableToOutputAssignments(newInputResultOfAssignment, inPreviouslyExecutedScopeResult);
 
                 // finally, return the newly created variable to the input of the child SC node that is directly connected
-                return newInputResultOfAssignment;
+                VariableOperatorData* retValue = aznew VariableOperatorData;
+                retValue->m_value = newInputResultOfAssignment;
+
+                return retValue;
             }
 
             // \todo add member variable if data has crossed threads, maybe make it opt-in?
@@ -4387,9 +4418,11 @@ namespace ScriptCanvas
             }
             else
             {
-                if (auto sourceVariable = ParseConnectedInputData(input, execution, nodes, FirstNode::Parent))
+                if (auto sourceVariableOperationData = ParseConnectedInputData(input, execution, nodes, FirstNode::Parent))
                 {
-                    execution->AddInput({ &input, sourceVariable, DebugDataSource::FromOtherSlot(input.GetId(), input.GetDataType(), sourceVariable->m_sourceSlotId) });
+                    auto& sourceVariable = sourceVariableOperationData->m_value;
+                    auto& sourceSmallOperations = sourceVariableOperationData->m_smallOperations;
+                    execution->AddInput({ &input, sourceVariable, DebugDataSource::FromOtherSlot(input.GetId(), input.GetDataType(), sourceVariable->m_sourceSlotId), sourceSmallOperations });
                     CheckConversion(execution->ModConversions(), sourceVariable, execution->GetInputCount() - 1, input.GetDataType());
                 }
                 else
@@ -4949,8 +4982,8 @@ namespace ScriptCanvas
                 {
                     if (auto sourceVariable = ParseConnectedInputData(returnValueSlot, execution, nodes, FirstNode::Self))
                     {
-                        returnValue->m_initializationValue = sourceVariable;
-                        returnValue->m_sourceDebug = DebugDataSource::FromReturn(returnValueSlot, execution, sourceVariable);
+                        returnValue->m_initializationValue = sourceVariable->m_value;
+                        returnValue->m_sourceDebug = DebugDataSource::FromReturn(returnValueSlot, execution, sourceVariable->m_value);
                     }
                 }
                 else

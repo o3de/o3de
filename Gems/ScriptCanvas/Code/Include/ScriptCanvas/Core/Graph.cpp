@@ -867,7 +867,8 @@ namespace ScriptCanvas
 
         if (!nodeComponent->IsEntryPoint())
         {
-            if (nodeComponent->FindConnectedNodesByDescriptor(SlotDescriptors::ExecutionIn()).empty())
+            // TODO: Add more permanent solution to make small operators ignore this
+            if (nodeComponent->FindConnectedNodesByDescriptor(SlotDescriptors::ExecutionIn()).empty() && nodeComponent->GetNodeName() != "++")
             {
                 ValidationStruct validationStruct;
                 validationStruct.m_validationEventId = ExecutionValidationIds::UnusedNodeCrc;

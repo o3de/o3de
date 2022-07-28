@@ -306,7 +306,11 @@ namespace ScriptCanvas
                 Self,
                 Parent
             };
-            VariableConstPtr ParseConnectedInputData(const Slot& inputSlot, ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode);
+            VariableOperatorData* ParseConnectedInputData(
+                const Slot& inputSlot,
+                ExecutionTreePtr executionWithInput,
+                const EndpointsResolved& scriptCanvasNodesConnectedToInput,
+                FirstNode firstNode);
 
             void ParseConstructionInputVariables();
 
@@ -500,7 +504,7 @@ namespace ScriptCanvas
 
             bool FindConnectedInputInPreviouslyExecutedScopeRecurse(ConnectionsInPreviouslyExecutedScope& result, ExecutionTreeConstPtr outputSource, ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput) const;
 
-            VariableConstPtr FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const;
+            VariableOperatorData* FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const;
 
             AZStd::vector<AZStd::pair<VariableConstPtr, AZStd::string>> GetAllDeactivationVariables() const;
 

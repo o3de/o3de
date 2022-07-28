@@ -542,6 +542,7 @@ namespace ScriptCanvas
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
         virtual const AZStd::string& GetNodeToolTip() const;
+        virtual const AZ::Crc32& GetNodeLexicalId() const;
         virtual const AZStd::string& GetNodeStyle() const;
 
         virtual void SetNodeName(const AZStd::string& name);

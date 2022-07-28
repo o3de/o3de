@@ -688,7 +688,7 @@ namespace ScriptCanvas
             }
             else if (IsVariableGet(execution))
             {
-                WriteVariableRead(execution->GetInput(0).m_value);
+                WriteVariableRead(execution->GetInput(0));
                 m_dotLua.WriteNewLine();
             }
             else if (IsVariableSet(execution) || execution->GetSymbol() == Grammar::Symbol::VariableAssignment)
@@ -1872,13 +1872,13 @@ namespace ScriptCanvas
                 if (canWriteValue(isformatStingInput, input))
                 {
                     CheckConversion converter(m_dotLua, execution->GetInput(index).m_value, execution->GetConversions(), index);
-                    WriteVariableReference(input);
+                    WriteVariableReference(execution->GetInput(index));
                 }
                 else
                 {
                     m_dotLua.Write("tostring(");
                     CheckConversion converter(m_dotLua, execution->GetInput(index).m_value, execution->GetConversions(), index);
-                    WriteVariableReference(input);
+                    WriteVariableReference(execution->GetInput(index));
                     m_dotLua.Write(")");
                 }
             }
@@ -2420,12 +2420,22 @@ namespace ScriptCanvas
             }
         }
 
+        void GraphToLua::WriteVariableRead(Grammar::ExecutionInput variable)
+        {
+            WriteVariableReference(variable);
+            
+            if (IsReferenceInLuaAndValueInScriptCanvas(variable.m_value->m_datum.GetType()))
+            {
+                m_dotLua.Write(":Clone()");
+            }
+        }
+
         void GraphToLua::WriteVariableRead(Grammar::VariableConstPtr variable)
         {
             AZ_Assert(variable, "non valid variable");
-            
+
             WriteVariableReference(variable);
-            
+
             if (IsReferenceInLuaAndValueInScriptCanvas(variable->m_datum.GetType()))
             {
                 m_dotLua.Write(":Clone()");
@@ -2446,15 +2456,33 @@ namespace ScriptCanvas
             }
         }
 
+        void GraphToLua::WriteVariableReference(Grammar::ExecutionInput variable)
+        {
+            if (variable.m_value->m_isMember)
+            {
+                m_dotLua.Write("self.");
+            }
+            if (variable.m_smallOperations.empty())
+            {
+                m_dotLua.Write(variable.m_value->m_name.data());
+            }
+            else
+            {
+                // TODO: Add check for lexicalId
+                m_dotLua.Write("(");
+                m_dotLua.Write(variable.m_value->m_name.data());
+                m_dotLua.Write(" + 1)");
+            }
+        }
+
         void GraphToLua::WriteVariableReference(Grammar::VariableConstPtr variable)
         {
             AZ_Assert(variable, "non valid variable");
-            
+
             if (variable->m_isMember)
             {
                 m_dotLua.Write("self.");
             }
-
             m_dotLua.Write(variable->m_name.data());
         }
 

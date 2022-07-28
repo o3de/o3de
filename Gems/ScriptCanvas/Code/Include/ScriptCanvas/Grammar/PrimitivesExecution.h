@@ -76,6 +76,17 @@ namespace ScriptCanvas
             const Slot* m_slot = nullptr;
             VariableConstPtr m_value;
             DebugDataSource m_sourceDebug;
+
+            AZStd::vector<AZ::Crc32> m_smallOperations;
+        };
+
+        struct VariableOperatorData
+        {
+            AZ_TYPE_INFO(VariableOperatorData, "{103413EF-830E-418F-AECB-645063FFD93F}");
+            AZ_CLASS_ALLOCATOR(VariableOperatorData, AZ::SystemAllocator, 0);
+
+            VariableConstPtr m_value;
+            AZStd::vector<AZ::Crc32> m_smallOperations;
         };
 
         struct ExecutionChild
