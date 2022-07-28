@@ -44,10 +44,10 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
-        PrefabFocusHandler();
-        ~PrefabFocusHandler();
-
         static void Reflect(AZ::ReflectContext* context);
+
+        void RegisterPrefabFocusHandlerInterface();
+        void UnregisterPrefabFocusHandlerInterface();
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;

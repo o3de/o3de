@@ -26,6 +26,28 @@ namespace AzToolsFramework::Prefab
 {
     PrefabFocusHandler::PrefabFocusHandler()
     {
+        
+    }
+
+    PrefabFocusHandler::~PrefabFocusHandler()
+    {
+        
+    }
+
+    void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+        {
+            behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                ->Event("FocusOnOwningPrefab", &PrefabFocusPublicInterface::FocusOnOwningPrefab);
+        }
+    }
+
+    void PrefabFocusHandler::RegisterPrefabFocusHandlerInterface()
+    {
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         AZ_Assert(
             m_instanceEntityMapperInterface,
@@ -34,7 +56,8 @@ namespace AzToolsFramework::Prefab
             "Check that it is being correctly initialized.");
 
         m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-        AZ_Assert(m_instanceToTemplateInterface,
+        AZ_Assert(
+            m_instanceToTemplateInterface,
             "Prefab - PrefabFocusHandler - "
             "Instance To Template Interface could not be found. "
             "Check that it is being correctly initialized.");
@@ -54,7 +77,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusPublicRequestBus::Handler::BusConnect();
     }
 
-    PrefabFocusHandler::~PrefabFocusHandler()
+    void PrefabFocusHandler::UnregisterPrefabFocusHandlerInterface()
     {
         PrefabFocusPublicRequestBus::Handler::BusDisconnect();
         AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
@@ -62,18 +85,6 @@ namespace AzToolsFramework::Prefab
         PrefabPublicNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
-    }
-
-    void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
-        {
-            behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                ->Attribute(AZ::Script::Attributes::Module, "prefab")
-                ->Event("FocusOnOwningPrefab", &PrefabFocusPublicInterface::FocusOnOwningPrefab);
-        }
     }
 
     void PrefabFocusHandler::InitializeEditorInterfaces()

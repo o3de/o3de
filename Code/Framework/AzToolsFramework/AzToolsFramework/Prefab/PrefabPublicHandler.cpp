@@ -60,6 +60,7 @@ namespace AzToolsFramework
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface, "Could not get PrefabSystemComponentInterface on PrefabPublicHandler construction.");
 
+            m_prefabFocusHandler.RegisterPrefabFocusHandlerInterface();
             m_prefabUndoCache.Initialize();
 
             AZ::Interface<PrefabPublicInterface>::Register(this);
@@ -70,6 +71,7 @@ namespace AzToolsFramework
             AZ::Interface<PrefabPublicInterface>::Unregister(this);
 
             m_prefabUndoCache.Destroy();
+            m_prefabFocusHandler.UnregisterPrefabFocusHandlerInterface();
         }
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
