@@ -106,9 +106,9 @@ class Launcher(object):
 
         # Wait for the AssetProcessor to be open.
         if launch_ap:
+            logger.debug('AssetProcessor started from calling Launcher.setup()')
             self.workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
             self.workspace.asset_processor.wait_for_idle()
-            logger.debug('AssetProcessor started from calling Launcher.setup()')
 
     def backup_settings(self):
         """
