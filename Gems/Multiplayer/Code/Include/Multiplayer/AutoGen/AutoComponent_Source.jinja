@@ -1783,6 +1783,11 @@ namespace {{ Component.attrib['Namespace'] }}
         return m_controller.get();
     }
 
+    const Multiplayer::MultiplayerController* {{ ComponentBaseName }}::GetController() const
+    {
+        return m_controller.get();
+    }
+
     void {{ ComponentBaseName }}::ConstructController()
     {
         AZ_Assert(m_controller == nullptr, "We already have a {{ ControllerName }}...");
