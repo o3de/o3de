@@ -1,13 +1,15 @@
-# coding:utf-8
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# !/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project.
-# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+# its licensors.
 #
-# SPDX-License-Identifier: Apache-2.0 OR MIT
+# For complete copyright and license terms please see the LICENSE at the root of this
+# distribution (the "License"). All use of this software is governed by the License,
+# or, if provided, by the license below or the license accompanying this file. Do not
+# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-#
-# -------------------------------------------------------------------------
 
 """! @brief This module contains several common utilities/operations for Python when creating tools for the DCCsi. """
 
@@ -31,6 +33,7 @@ import logging
 import json
 import re
 import os
+
 
 _LOGGER = logging.getLogger('SDK.DCC.Python.general_utilities')
 
@@ -107,6 +110,10 @@ def get_markdown_information(target_path: Path) -> dict:
     return markdown
 
 
+def get_clean_path(target_path) -> str:
+    return target_path.replace('\\', '/')
+
+
 def get_files_by_name(base_directory: Path, target_file: str) -> list:
     file_list = []
     for (root, dirs, files) in os.walk(base_directory, topdown=True):
@@ -118,7 +125,7 @@ def get_files_by_name(base_directory: Path, target_file: str) -> list:
 
 
 def set_json_data(target_path: Path, json_data: Box):
-    with open(target_path, 'w') as json_file:
+    with open(str(target_path), 'w') as json_file:
         json.dump(json_data, json_file, indent=4)
 
 
