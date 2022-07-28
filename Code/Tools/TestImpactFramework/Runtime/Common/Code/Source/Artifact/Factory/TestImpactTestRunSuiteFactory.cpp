@@ -65,7 +65,7 @@ namespace TestImpact
                         return !name.starts_with("DISABLED_") && name.find("/DISABLED_") == AZStd::string::npos;
                     };
 
-                    const auto getDuration = [](const AZ::rapidxml::xml_node<>* node)
+                    const auto getDuration = [&](const AZ::rapidxml::xml_node<>* node)
                     {
                         const AZStd::string duration = node->first_attribute(Keys[DurationKey])->value();
                         return AZStd::chrono::milliseconds(static_cast<AZStd::sys_time_t>(AZStd::stof(duration) * 1000.f));
@@ -79,7 +79,7 @@ namespace TestImpact
                     for (auto testcase_node = testsuite_node->first_node(Keys[TestCaseKey]); testcase_node;
                          testcase_node = testcase_node->next_sibling())
                     {
-                        const auto getStatus = [](const AZ::rapidxml::xml_node<>* node)
+                        const auto getStatus = [&](const AZ::rapidxml::xml_node<>* node)
                         {
                             const AZStd::string status = node->first_attribute(Keys[StatusKey])->value();
                             if (status == Keys[RunKey])
@@ -194,7 +194,7 @@ namespace TestImpact
                 //    of the tests should it abort on failure
                 auto masterTestsuiteNode = testsuites_node->first_node(Keys[TestSuiteKey]);
                 
-                const auto getDuration = [](const AZ::rapidxml::xml_node<>* node)
+                const auto getDuration = [&](const AZ::rapidxml::xml_node<>* node)
                 {
                     if (const auto attribute = node->first_attribute(Keys[TimeKey]))
                     {
