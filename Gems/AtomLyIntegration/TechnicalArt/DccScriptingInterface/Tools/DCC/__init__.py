@@ -59,7 +59,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 from azpy.config_utils import attach_debugger
 
-from Tools import _PATH_DCCSI_TOOLS
+from Tools import PATH_DCCSI_TOOLS
 
 _PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
 _PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC',
@@ -91,7 +91,7 @@ if _DCCSI_GDEBUG:
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 _LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 # -------------------------------------------------------------------------
 

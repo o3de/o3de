@@ -45,7 +45,8 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 # propogate values easily into sub-modules with less boilerplate.
 
 # set up access to this Substance folder as a pkg
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_MODULE_PATH = Path(__file__)
+_DCCSI_TOOLS_SUBSTANCE_PATH = Path(_MODULE_PATH.parent)
 
 from Tools import _PATH_DCCSIG
 
@@ -58,8 +59,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 from azpy.config_utils import attach_debugger
 
-
-from Tools import _PATH_DCCSI_TOOLS
+from Tools import PATH_DCCSI_TOOLS
 from Tools.DCC import _PATH_DCCSI_TOOLS_DCC
 
 _DCCSI_TOOLS_SUBSTANCE = Path(_MODULE_PATH.parent)

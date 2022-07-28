@@ -30,7 +30,8 @@ sys.path.append(_PATH_DCCSIG)
 # all the constants moved here, need to be removed from azpy.constants
 # and then modules should be refactored to all pull from here
 
-# some common paths
+# ENVAR_ denotes a common key string
+
 # resolves the windows progam install directory
 ENVAR_PROGRAMFILES_X86 = 'PROGRAMFILES(X86)'
 PATH_PROGRAMFILES_X86 = os.environ[ENVAR_PROGRAMFILES_X86]
@@ -79,9 +80,14 @@ PATH_DCCSI_PYTHON_LIB = (f'{_PATH_DCCSIG.as_posix()}' +
 # however the setting derived from that envar is soft,
 # and the defaults can be overridden
 
-# ENVAR_ denotes a common key string
-# envar to retreive the path for the DccScriptingInterface Gem (DCCSI)
+# envar to get/set the path for the DccScriptingInterface Gem (DCCSI)
 ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
+
+# enavar to get/set the < dccsi>/tools folder
+ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
+
+# enavar to get/set the < dccsi>/tools/IDE folder
+ENVAR_PATH_DCCSI_TOOLS_IDE = 'PATH_DCCSI_TOOLS_IDE'
 
 # envar to get/set bool for global DCCSI_GDEBUG behaviour
 ENVAR_DCCSI_GDEBUG = 'DCCSI_GDEBUG'

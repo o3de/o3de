@@ -52,30 +52,32 @@ __all__ = ['globals', # global state module
 
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
 # add gems parent, dccsi lives under:
 #  < o3de >\Gems\AtomLyIntegration\TechnicalArt
-_PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[1].resolve()
-sys.path.append(_PATH_O3DE_TECHART_GEMS)
-site.addsitedir(_PATH_O3DE_TECHART_GEMS)
+PATH_O3DE_TECHART_GEMS = _MODULE_PATH.parents[1].resolve()
+sys.path.append(PATH_O3DE_TECHART_GEMS)
+site.addsitedir(PATH_O3DE_TECHART_GEMS)
 
 # there may be other TechArt gems in the future
 # or the dccsi maybe split up
 
-# pulling from this __init__.py module, may cause some cyclical import
-# problems. So we may need to move the logical parts to a sub pkg/modula
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
+
+#  < o3de >\Gems\AtomLyIntegration\TechnicalArt\< dccsi >
+PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
+# this allows the dccsi gem location to be overridden in the external env
+PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
+                              PATH_DCCSIG.as_posix()))
+site.addsitedir(PATH_DCCSIG.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
+
+# pulling from this __init__.py module, may cause cyclical imports
 # -------------------------------------------------------------------------
-# global state here
 from DccScriptingInterface.globals import *
 from azpy.config_utils import attach_debugger
 from azpy import test_imports
-
-_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
-_LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
-_LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
-_LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
-_LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
-_LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
 
 # suggestion would be to turn this into a method to reduce boilerplate
 # but where to put it that makes sense?
@@ -86,23 +88,13 @@ if DCCSI_DEV_MODE:
 
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
 
-    # If in dev mode and test this will force imports of __all__
+    # If in dev mode and test is flagged this will force imports of __all__
     # although slower and verbose, this can help detect cyclical import
     # failure and other issues
+
+    # the DCCSI_TESTS flag needs to be properly added in .bat env
     if DCCSI_TESTS:
         test_imports(_all=__all__,
                      _pkg=_PACKAGENAME,
                      _logger=_LOGGER)
-
-###########################################################################
-# Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
-if __name__ == '__main__':
-    """Run as main, perform additional debug and module tests"""
-    pass
-
-
-
-
-
-

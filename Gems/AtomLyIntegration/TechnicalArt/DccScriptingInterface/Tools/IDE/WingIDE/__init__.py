@@ -102,9 +102,10 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'Tools.IDE.Wing'
+_PACKAGENAME = 'DCCsi.Tools.IDE.Wing'
 
-__all__ = ['config',
+__all__ = ['globals',
+           'config',
            'constants'
            'discovery',
            'start']
@@ -120,8 +121,8 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 
 # get parent package variables
 from Tools.IDE import _PATH_DCCSIG
-from Tools.IDE import _PATH_DCCSI_TOOLS
-from Tools.IDE import _PATH_DCCSI_TOOLS_IDE
+from Tools.IDE import PATH_DCCSI_TOOLS
+from Tools.IDE import PATH_DCCSI_TOOLS_IDE
 
 # set up access to this Wing IDE folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?

@@ -28,11 +28,8 @@ _MODULENAME = 'DCCsi.globals'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
-PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
-sys.path.append(PATH_DCCSIG)
 # -------------------------------------------------------------------------
 # global state to be shared
-
 from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
 # the default folder path location for the dccsi gem
 PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
@@ -97,12 +94,19 @@ DCCSI_SETTIBGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
 # default / temp log path
 DCCSI_O3DE_USER_HOM_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
 
+# putting thwese here, allows us to pull them from globals
+# and reduce boilerplate in other modules
+_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
+_LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
+_LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
+_LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
+_LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
+_LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
+
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run as main, perform additional debug and module tests"""
-
-    # to do: log values above, to test externally from cli
 
     pass
