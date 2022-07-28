@@ -39,7 +39,6 @@
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
 
-#pragma optimize("",off)
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ
@@ -1407,4 +1406,3 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
 } // namespace Multiplayer
-#pragma optimize("", on)

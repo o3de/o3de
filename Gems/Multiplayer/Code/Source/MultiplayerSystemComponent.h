@@ -141,7 +141,7 @@ namespace Multiplayer
 
         //! AzFramework::RootSpawnableNotificationBus::Handler
         //! @{
-        void OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation) override;
+        void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         //! @}
 
     private:
