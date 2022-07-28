@@ -228,7 +228,7 @@ namespace TestImpact
                 for (auto testCaseNode = masterTestsuiteNode->first_node(Keys[TestCaseKey]); testCaseNode;
                      testCaseNode = testCaseNode->next_sibling(), testCount++)
                 {
-                    const auto getResult = [&testFailureCount, &testErrorCount, &testSkippedCount, &testPassCount]
+                    const auto getResult = [&]
                     (const AZ::rapidxml::xml_node<>* node) -> AZStd::optional<TestRunResult>
                     {
                         if (node->first_node(Keys[TestCaseFailedKey]))
