@@ -43,7 +43,7 @@ namespace Terrain
                 ;
 
             serialize->Class<ClipmapConfiguration>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("ClipmapEnabled", &ClipmapConfiguration::m_clipmapEnabled)
                 ->Field("ClipmapSize", &ClipmapConfiguration::m_clipmapSize)
                 ->Field("MacroClipmapMaxResolution", &ClipmapConfiguration::m_macroClipmapMaxResolution)
