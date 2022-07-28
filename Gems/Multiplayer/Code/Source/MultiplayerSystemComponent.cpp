@@ -29,13 +29,10 @@
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
-#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzFramework/Process/ProcessWatcher.h>
@@ -43,6 +40,7 @@
 #include <cmath>
 #include <AzCore/Debug/Profiler.h>
 
+#pragma optimize("",off)
 AZ_DEFINE_BUDGET(MULTIPLAYER);
 
 namespace AZ
@@ -227,6 +225,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+        AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
@@ -256,6 +255,7 @@ namespace Multiplayer
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+        AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
     }
@@ -982,23 +982,27 @@ namespace Multiplayer
         // Spawn the default player for this host since the host is also a player (not a dedicated server)
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
-            IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
-            NetworkEntityHandle controlledEntity;
-            if (spawner)
+            if (IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get())
             {
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
-                controlledEntity = spawner->OnPlayerJoin(0, datum);
+                const int userId = 0;
+                NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
+
+                if (controlledEntity.Exists())
+                {
+                    EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
+                }
+                else
+                {
+                    // If there wasn't any spawner available, wait until a level loads and check again
+                    m_playersWaitingToBeSpawned.push_back(AZStd::make_pair(userId, datum));
+                }
             }
             else
             {
                 AZLOG_ERROR("No IMultiplayerSpawner found for host's default player. Ensure one is registered.");
-            }
-
-            if (controlledEntity.Exists())
-            {
-                EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
             }
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
@@ -1294,6 +1298,34 @@ namespace Multiplayer
         }
     }
 
+    void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        SpawnPlayersWaitingToBeSpawned();
+    }
+
+    void MultiplayerSystemComponent::SpawnPlayersWaitingToBeSpawned()
+    {
+        IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+        if (!spawner)
+        {
+            AZLOG_ERROR("Attempting to spawn players on level load failed. No IMultiplayerSpawner found. Ensure one is registered.");
+            return;
+        }
+
+        for (const auto& [id, datum] : m_playersWaitingToBeSpawned)
+        {
+            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(id, datum);
+
+            // If there wasn't any spawner available, wait until a level loads and check again
+            if (controlledEntity.Exists())
+            {
+                EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
+            }
+        }
+
+        m_playersWaitingToBeSpawned.clear();
+    }
+
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         if (!AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated))
@@ -1384,4 +1416,5 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-}
+} // namespace Multiplayer
+#pragma optimize("", on)

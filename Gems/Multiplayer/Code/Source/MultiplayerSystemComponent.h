@@ -19,8 +19,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
-#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
@@ -45,6 +43,7 @@ namespace Multiplayer
         , public ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
+        , AzFramework::RootSpawnableNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerSystemComponent, "{7C99C4C1-1103-43F9-AD62-8B91CF7C1981}");
@@ -140,6 +139,11 @@ namespace Multiplayer
         void DumpStats(const AZ::ConsoleCommandContainer& arguments);
         //! @}
 
+        //! AzFramework::RootSpawnableNotificationBus::Handler
+        //! @{
+        void OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation) override;
+        //! @}
+
     private:
 
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
@@ -147,6 +151,7 @@ namespace Multiplayer
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
         void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
+        void SpawnPlayersWaitingToBeSpawned();
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
@@ -183,6 +188,9 @@ namespace Multiplayer
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
         bool m_spawnNetboundEntities = false;
+
+        // Store player information if they connect before there is a level and IPlayerSpawner available
+        AZStd::vector<AZStd::pair<int, MultiplayerAgentDatum>> m_playersWaitingToBeSpawned;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
