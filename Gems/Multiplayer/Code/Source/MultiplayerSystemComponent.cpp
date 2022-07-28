@@ -1265,7 +1265,7 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerSystemComponent::EnableAutonomousControl(INetworkEntityManager::EntityList entityList, AzNetworking::ConnectionId connectionId)
+    void MultiplayerSystemComponent::EnableAutonomousControl(const INetworkEntityManager::EntityList& entityList, AzNetworking::ConnectionId connectionId)
     {
         if (entityList.empty())
         {
@@ -1405,4 +1405,4 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-} // namespace Multiplayer
+}
