@@ -24,7 +24,7 @@ namespace AZ
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.window = reinterpret_cast<ANativeWindow*>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = vkCreateAndroidSurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
+            const VkResult result = instance.GetContext().CreateAndroidSurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
             AssertSuccess(result);
 
             return ConvertResult(result);
