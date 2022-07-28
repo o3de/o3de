@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -918,7 +919,7 @@ namespace EMotionFX
         }
 
         void SystemComponent::AddSourceFileCreators(
-            [[maybe_unused]] const char* fullSourceFolderName,
+            const char* fullSourceFolderName,
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
         {
