@@ -9,8 +9,8 @@
 
 namespace AssetProcessor
 {
-    const AZStd::string jobTypeDisplayNames[] = { "Analysis Jobs", "Processing Jobs" };
-    const AZStd::string invalidJobTypeDisplayName{ "Invalid Job Type" };
+    static constexpr AZStd::array jobTypeDisplayNames{ "Analysis Jobs", "Processing Jobs" };
+    static constexpr char invalidJobTypeDisplayName[] = "Invalid Job Type";
 
     BuilderDataItem::BuilderDataItem(
         ItemType itemType, const AZStd::string& name,
@@ -99,17 +99,18 @@ namespace AssetProcessor
             return false;
         }
 
-        for (int i = 0; i < aznumeric_cast<int>(JobType::Max); ++i)
+        for (int jobTypeIndex = 0; jobTypeIndex < aznumeric_cast<int>(JobType::Max); ++jobTypeIndex)
         {
-            int numJobType = sizeof(jobTypeDisplayNames) / sizeof(jobTypeDisplayNames[0]);
-            const AZStd::string& jobTypeDisplayName = i < numJobType ? jobTypeDisplayNames[i] : invalidJobTypeDisplayName;
-            if (i >= numJobType)
+            const AZStd::string& jobTypeDisplayName =
+                jobTypeIndex < jobTypeDisplayNames.size() ? jobTypeDisplayNames[jobTypeIndex] : invalidJobTypeDisplayName;
+            if (jobTypeIndex >= jobTypeDisplayNames.size())
             {
                 AZ_Warning(
                     "Asset Processor",
                     false,
                     "Invalid job type name. Job type indexed %d in scoped enum JobType does not have a matching display name in "
-                    "jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderDataItem.cpp.");
+                    "jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderDataItem.cpp.",
+                    jobTypeIndex);
             }
 
             m_children.emplace_back(new BuilderDataItem(ItemType::JobType, jobTypeDisplayName, 0, 0, builderWeakPointer));

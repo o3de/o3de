@@ -14,7 +14,7 @@
 
 namespace AssetProcessor
 {
-    const char builderNotFoundWarningMessage[] =
+    static constexpr char builderNotFoundWarningMessage[] =
         "Found a %s metric entry with builder %s \"%s\", but Asset Processor does not recognize this "
         "builder. Ensure this builder is in the asset folders and its name is shown "
         "in the Builders tab. If this builder was removed intentionally in the past, you can safely ignore this "
@@ -142,11 +142,11 @@ namespace AssetProcessor
         {
             int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
 
-            AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
-            entryName.append(",");
-            entryName.append(jobEntry.m_jobKey.toUtf8().constData());
-            entryName.append(",");
-            entryName.append(jobEntry.m_platformInfo.m_identifier);
+            AZStd::string entryName = AZStd::string::format(
+                "{},{},{}",
+                jobEntry.m_databaseSourceName.toUtf8().constData(),
+                jobEntry.m_jobKey.toUtf8().constData(),
+                jobEntry.m_platformInfo.m_identifier);
 
             AZStd::shared_ptr<BuilderDataItem> item = nullptr;
             item = m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);
