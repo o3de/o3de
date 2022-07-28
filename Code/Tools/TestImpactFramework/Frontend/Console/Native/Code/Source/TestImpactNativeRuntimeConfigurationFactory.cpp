@@ -115,23 +115,23 @@ namespace TestImpact
         {
             const auto getShardingConfiguration = [](const AZStd::string& config)
             {
-                if (Config::ContinuousFixtureSharding == config)
+                if (config == Config::Keys[Config::ContinuousFixtureSharding])
                 {
                     return ShardConfiguration::FixtureContiguous;
                 }
-                else if (Config::InterleavedFixtureSharding == config)
+                else if (config == Config::Keys[Config::InterleavedFixtureSharding])
                 {
                     return ShardConfiguration::FixtureInterleaved;
                 }
-                else if (Config::ContinuousTestSharding == config)
+                else if (config == Config::Keys[Config::ContinuousTestSharding])
                 {
                     return ShardConfiguration::TestContiguous;
                 }
-                else if (Config::InterleavedTestSharding == config)
+                else if (config == Config::Keys[Config::InterleavedTestSharding])
                 {
                     return ShardConfiguration::TestInterleaved;
                 }
-                else if (Config::NeverShard == config)
+                else if (config == Config::Keys[Config::NeverShard])
                 {
                     return ShardConfiguration::Never;
                 }

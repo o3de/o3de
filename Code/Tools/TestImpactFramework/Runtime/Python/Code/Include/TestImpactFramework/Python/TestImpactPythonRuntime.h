@@ -17,20 +17,28 @@ namespace TestImpact
     {
     public:
         PythonRuntime(
-            PythonRuntimeConfig&& config,
-            const AZStd::optional<RepoPath>& dataFile,
+            [[maybe_unused]] PythonRuntimeConfig&& config,
+            [[maybe_unused]] const AZStd::optional<RepoPath>& dataFile,
             [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
-            const AZStd::vector<ExcludedTarget>& testsToExclude,
-            SuiteType suiteFilter,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::FailedTestCoverage failedTestCoveragePolicy,
-            Policy::TestFailure testFailurePolicy,
-            Policy::IntegrityFailure integrationFailurePolicy,
-            Policy::TargetOutputCapture targetOutputCapture);
+            [[maybe_unused]] const AZStd::vector<ExcludedTarget>& testsToExclude,
+            [[maybe_unused]] SuiteType suiteFilter,
+            [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
+            [[maybe_unused]] Policy::FailedTestCoverage failedTestCoveragePolicy,
+            [[maybe_unused]] Policy::TestFailure testFailurePolicy,
+            [[maybe_unused]] Policy::IntegrityFailure integrationFailurePolicy,
+            [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture)
+        {
+        }
 
-        ~PythonRuntime();
+        ~PythonRuntime()
+        {
+
+        }
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
-        bool HasImpactAnalysisData() const;
+        bool HasImpactAnalysisData() const
+        {
+            return false;
+        }
     };
 } // namespace TestImpact
