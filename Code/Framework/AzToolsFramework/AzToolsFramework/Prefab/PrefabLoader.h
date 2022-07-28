@@ -135,11 +135,12 @@ namespace AzToolsFramework
 
             /**
              * Removes links from given template instances that are no longer shown on file.
-             * @param fileInstances An instance file dom containing updated nested instances.
-             * @param templateInstances An instance dom containing nested instances.
+             * @param instancesFileReference A reference to an instance file dom containing updated nested instances.
+             * @param instancesTemplateReference A reference to an instance dom containing nested instances.
              * @return If the links were removed successfully
              */
-            bool RemoveStateLinksOnReload(PrefabDomValue& fileInstances, PrefabDomValue& templateInstances);
+            bool RemoveStaleLinksOnReload(
+                PrefabDomValueReference instancesFileReference, PrefabDomValueReference instancesTemplateReference);
 
             /**
              * Reload nested instance given a nested instance value iterator and target Template with its id.

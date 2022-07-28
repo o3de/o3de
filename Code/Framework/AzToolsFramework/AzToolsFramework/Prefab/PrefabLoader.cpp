@@ -199,21 +199,18 @@ namespace AzToolsFramework
             existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
             PrefabDomValueReference instancesFileReference = PrefabDomUtils::GetInstancesValue(loadedDomFromFile);
             PrefabDomValueReference instancesTemplateReference = PrefabDomUtils::GetInstancesValue(existingTemplateDom);
+            if (!RemoveStaleLinksOnReload(instancesFileReference, instancesTemplateReference))
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - "
+                    "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
+                    loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
+                return;
+            }
             if (instancesFileReference.has_value())
             {
                 PrefabDomValue& instances = instancesFileReference->get();
-                if (instancesTemplateReference.has_value())
-                {
-                    if (!RemoveStateLinksOnReload(instances, instancesTemplateReference->get()))
-                    {
-                        AZ_Error(
-                            "Prefab", false,
-                            "PrefabLoader::ReloadTemplateFromFile - "
-                            "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
-                            loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
-                        return;
-                    }
-                }
 
                 // For each instance value in 'instances', locate the what was changed on file and update existing template
                 for (PrefabDomValue::MemberIterator instanceIterator = instances.MemberBegin(); instanceIterator != instances.MemberEnd();
@@ -237,8 +234,19 @@ namespace AzToolsFramework
             progressedFilePathsSet.erase(relativePath);
         }
 
-        bool PrefabLoader::RemoveStateLinksOnReload(PrefabDomValue& fileInstances, PrefabDomValue& templateInstances)
+        bool PrefabLoader::RemoveStaleLinksOnReload(
+            PrefabDomValueReference instancesFileReference, PrefabDomValueReference instancesTemplateReference)
         {
+            if (!instancesFileReference.has_value() || !instancesTemplateReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::RemoveStaleLinksOnReload - "
+                    "Can't get instance values from references passed in.");
+                return;
+            }
+            PrefabDomValue& fileInstances = instancesFileReference->get();
+            PrefabDomValue& templateInstances = instancesTemplateReference->get();
             for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
                  instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
             {
