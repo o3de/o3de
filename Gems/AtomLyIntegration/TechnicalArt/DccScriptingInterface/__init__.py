@@ -140,17 +140,6 @@ if _DCCSI_DEV_MODE:
                      _pkg=_PACKAGENAME,
                      _logger=_LOGGER)
 
-# resolve the O3DE root
-# a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
-# dev is a legacy Lumberyard concept, as the engine snadbox was /dev
-_O3DE_DEV = _PATH_DCCSIG.parents[4].resolve()
-
-# default settings file path
-_DCCSI_SETTIBGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
-
-# default / temp log path
-_DCCSI_O3DE_USER_HOM_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
-
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
