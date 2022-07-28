@@ -28,16 +28,17 @@ import logging as _logging
 # global scope
 _PACKAGENAME = 'DCCsi.Tools.IDE'
 
-__all__ = ['WingIDE']
+__all__ = ['Wing']
            # 'PyCharm',
            # 'VScode']  # to do: add others when they are set up
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# set up access to this DCC folder as a pkg
+# set up access to this IDE folder as a pkg
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
@@ -50,7 +51,6 @@ from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE
 
 # the path to this < dccsi >/Tools/IDE pkg
 PATH_DCCSI_TOOLS_IDE = Path(_MODULE_PATH.parent)
-
 PATH_DCCSI_TOOLS_IDE = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE,
                                        PATH_DCCSI_TOOLS_IDE.as_posix()))
 site.addsitedir(PATH_DCCSI_TOOLS_IDE.as_posix())

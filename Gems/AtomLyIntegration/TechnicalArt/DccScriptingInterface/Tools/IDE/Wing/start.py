@@ -10,7 +10,7 @@
 # -------------------------------------------------------------------------
 """! O3DE DCCsi Wing Pro 8+ IDE start module
 
-:file: < DCCsi >/Tools/IDE/WingIDE/start.py
+:file: < DCCsi >/Tools/IDE/Wing/start.py
 :Status: Prototype
 :Version: 0.0.1
 
@@ -29,19 +29,17 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'DCCsi.Tools.IDE.WingIDE.start'
+_MODULENAME = 'DCCsi.Tools.IDE.Wing.start'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_MODULE_PATH = Path(__file__)
 
-# This ensures basic code access to the DCCsi
-# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
-_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
-site.addsitedir(_PATH_DCCSIG.as_posix())
+# ensure code access to the DCCsi
+from DccScriptingInterface.Tools import PATH_DCCSIG
 
-import DccScriptingInterface.Tools.IDE.WingIDE.config as wing_config
-
+# initialize the wing config and settings
+import DccScriptingInterface.Tools.IDE.Wing.config as wing_config
 _SETTINGS = wing_config.get_config_settings()
 # --- END -----------------------------------------------------------------
 
@@ -52,47 +50,34 @@ _SETTINGS = wing_config.get_config_settings()
 if __name__ == '__main__':
     """Run this file as main (external commandline)"""
 
-    _MODULENAME = 'DCCsi.Tools.DCC.Substance.config.cli'
+    _MODULENAME = f'{_MODULENAME}.cli'
 
-    from azpy.config_utils import ENVAR_DCCSI_GDEBUG
-    from azpy.config_utils import ENVAR_DCCSI_DEV_MODE
-    from azpy.config_utils import ENVAR_DCCSI_LOGLEVEL
-    from azpy.config_utils import ENVAR_DCCSI_GDEBUGGER
+    from DccScriptingInterface.globals import *
 
-    # defaults, can be overridden/forced here for development
-    # they should be committed in an off/False state
-    from azpy.env_bool import env_bool
-    _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-    _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-    _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-    _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
-
-    from azpy.constants import FRMT_LOG_LONG
-    from azpy.constants import STR_CROSSBAR
-
-    if _DCCSI_GDEBUG:
-        # override loglevel if running debug
-        _DCCSI_LOGLEVEL = _logging.DEBUG
+    from DccScriptingInterface.constants import STR_CROSSBAR
+    from DccScriptingInterface.constants import FRMT_LOG_LONG
 
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+    _logging.basicConfig(level=DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
-                        datefmt='%m-%d %H:%M')
+                         datefmt='%m-%d %H:%M')
 
     _LOGGER = _logging.getLogger(_MODULENAME)
 
     _LOGGER.info(STR_CROSSBAR)
-    _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
-    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
-    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    _LOGGER.debug(f'_MODULENAME: {_MODULENAME}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
 
     # commandline interface
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi.Tools.DCC.Substance.start',
-        epilog="Attempts to start Substance3D with the DCCsi and O3DE bootstrapping")
+        description=f'O3DE {_MODULENAME}',
+        epilog="Attempts to start Wing Pro 8+ with the DCCsi and O3DE bootstrapping")
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
@@ -139,7 +124,7 @@ if __name__ == '__main__':
                          env=os.environ.copy(),
                          shell=True)
     except Exception as e:
-        _LOGGER.error(f'Could not start Substance: {e}')
+        _LOGGER.error(f'Could not start Wing: {e}')
 
     # -- DONE ----
     _LOGGER.info(STR_CROSSBAR)

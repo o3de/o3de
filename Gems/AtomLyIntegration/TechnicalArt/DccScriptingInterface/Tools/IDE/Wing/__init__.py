@@ -109,53 +109,59 @@ __all__ = ['globals',
            'constants'
            'discovery',
            'start']
+          #'Foo',
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# Boilerplate code in this module is here as a developer convenience,
-# simply so I can run this module as an entrypoint, perform some local tests,
-# and/or propogate values easily into sub-modules with less boilerplate.
+# set up access to this IDE/Wing folder as a pkg
+_MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
-# get parent package variables
-from Tools.IDE import _PATH_DCCSIG
-from Tools.IDE import PATH_DCCSI_TOOLS
-from Tools.IDE import PATH_DCCSI_TOOLS_IDE
+# last two parents
+from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS
+from DccScriptingInterface.Tools.IDE import PATH_DCCSI_TOOLS_IDE
+from DccScriptingInterface.globals import *
 
 # set up access to this Wing IDE folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
 site.addsitedir(_DCCSI_TOOLS_IDE_WING.as_posix())
 
-from Tools.IDE import _DCCSI_GDEBUG
-from Tools.IDE import _DCCSI_DEV_MODE
-from Tools.IDE import _DCCSI_GDEBUGGER
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 
-# message collection
-_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
-_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'_DCCSI_TOOLS_IDE_WING: {_DCCSI_TOOLS_IDE_WING}')
+# the path to this < dccsi >/Tools/IDE pkg
+PATH_DCCSI_TOOLS_IDE_WING = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_IDE_WING = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
+                                           PATH_DCCSI_TOOLS_IDE_WING.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS_IDE_WING.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE_WING}: {PATH_DCCSI_TOOLS_IDE_WING}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
-    from azpy.config_utils import attach_debugger
+from azpy.config_utils import attach_debugger
+from azpy import test_imports
 
-    attach_debugger(debugger_type=_DCCSI_GDEBUGGER)
+# suggestion would be to turn this into a method to reduce boilerplate
+# but where to put it that makes sense?
+if DCCSI_DEV_MODE:
+    # if dev mode, this will attemp to auto-attach the debugger
+    # at the earliest possible point in this module
+    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
 
-    from azpy.shared.utils.init import test_imports
-    # If in dev mode this will test imports of __all__
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
-# -------------------------------------------------------------------------
 
+    # If in dev mode and test is flagged this will force imports of __all__
+    # although slower and verbose, this can help detect cyclical import
+    # failure and other issues
 
-###########################################################################
-# Main Code Block, runs this script as main (testing)
+    # the DCCSI_TESTS flag needs to be properly added in .bat env
+    if DCCSI_TESTS:
+        test_imports(_all=__all__,
+                     _pkg=_PACKAGENAME,
+                     _logger=_LOGGER)
 # -------------------------------------------------------------------------
-if __name__ == '__main__':
-    """Run as main, perform debug and tests"""
-    pass

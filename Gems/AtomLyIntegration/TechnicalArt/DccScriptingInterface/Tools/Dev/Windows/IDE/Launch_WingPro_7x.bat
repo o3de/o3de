@@ -97,7 +97,7 @@ SET PATH=%PATH_O3DE_BIN%;%PATH%
 CALL %~dp0..\Env_DCC_Maya.bat
 CALL %~dp0..\Env_DCC_Blender.bat
 CALL %~dp0..\Env_DCC_Substance.bat
-CALL %~dp0..\Env_IDE_WingIDE.bat
+CALL %~dp0..\Env_IDE_Wing.bat
 
 SET PATH=%WINGHOME%;%PATH%
 

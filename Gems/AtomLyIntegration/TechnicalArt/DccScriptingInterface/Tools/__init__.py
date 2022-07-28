@@ -29,13 +29,13 @@ import logging as _logging
 # global scope
 _PACKAGENAME = 'DCCsi.Tools'
 
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
-
 __all__ = ['DCC',
            'IDE',
            'Python']  # to do: add others when they are set up
           #'Foo',
+
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 

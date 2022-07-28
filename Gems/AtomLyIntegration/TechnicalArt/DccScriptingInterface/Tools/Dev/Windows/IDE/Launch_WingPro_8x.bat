@@ -92,7 +92,7 @@ SET PATH=%DCCSI_BLENDER_PY_EXE%;%PATH%
 CALL %~dp0..\Env_DCC_Substance.bat
 SET PATH=%DCCSI_SUBSTANCE_PY_EXE%;%PATH%
 
-CALL %~dp0..\Env_IDE_WingIDE.bat
+CALL %~dp0..\Env_IDE_Wing.bat
 SET PATH=%WINGHOME%;%PATH%
 
 :: if the user has set up a custom env call it

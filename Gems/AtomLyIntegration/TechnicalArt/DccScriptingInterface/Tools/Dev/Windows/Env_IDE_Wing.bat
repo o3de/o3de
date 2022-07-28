@@ -60,7 +60,7 @@ REM IF "%WING_PROJ%"=="" (set "WING_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutio
 
 :: put project env variables/paths here
 IF "%WINGHOME%"=="" (set "WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%")
-IF "%WING_PROJ%"=="" (set "WING_PROJ=%PATH_DCCSIG%\Tools\IDE\WingIDE\.solutions\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr")
+IF "%WING_PROJ%"=="" (set "WING_PROJ=%PATH_DCCSIG%\Tools\IDE\Wing\.solutions\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr")
 
 echo     DCCSI_WING_VERSION_MAJOR = %DCCSI_WING_VERSION_MAJOR%
 REM echo     DCCSI_WING_VERSION_MINOR = %DCCSI_WING_VERSION_MINOR%

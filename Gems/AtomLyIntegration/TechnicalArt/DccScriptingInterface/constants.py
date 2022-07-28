@@ -80,6 +80,8 @@ PATH_DCCSI_PYTHON_LIB = (f'{_PATH_DCCSIG.as_posix()}' +
 # however the setting derived from that envar is soft,
 # and the defaults can be overridden
 
+# the envars for init paths are all here
+# we aware that other constants are nested within folder structure
 # envar to get/set the path for the DccScriptingInterface Gem (DCCSI)
 ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
 
@@ -89,19 +91,37 @@ ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
 # enavar to get/set the < dccsi>/tools/IDE folder
 ENVAR_PATH_DCCSI_TOOLS_IDE = 'PATH_DCCSI_TOOLS_IDE'
 
+# enavar to get/set the < dccsi>/tools/IDE/Wing folder
+ENVAR_PATH_DCCSI_TOOLS_IDE_WING = 'PATH_DCCSI_TOOLS_IDE_WING'
+
 # envar to get/set bool for global DCCSI_GDEBUG behaviour
 ENVAR_DCCSI_GDEBUG = 'DCCSI_GDEBUG'
+
 # envar to get/set bool for developer mode (debugging)
 ENVAR_DCCSI_DEV_MODE = 'DCCSI_DEV_MODE'
+
 # envar to get/set the ide debugger str/slug (only 'WING' implemented)
 ENVAR_DCCSI_GDEBUGGER = 'DCCSI_GDEBUGGER'
+
 # envar to get/set int for global logging level
 ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
+
 # envar to get/set bool for running extra local tests
 ENVAR_DCCSI_TESTS = 'DCCSI_TESTS'
 
 # a str prefix for dynamic settings
 DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
+
 # the common filename.ext for local/override settings file
 DCCSI_SETTINGS_LOCAL_FILENAME = 'setting.local.json'
+
+# utility: constants, like pretty print strings
+STR_CROSSBAR = str('{0}'.format('-' * 74))
+STR_CROSSBAR_RL = str('{0}\r'.format(STR_CROSSBAR))
+STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
+
+# Log formating
+FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
+# -------------------------------------------------------------------------
 
