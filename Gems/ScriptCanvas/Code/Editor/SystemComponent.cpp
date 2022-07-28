@@ -229,8 +229,7 @@ namespace ScriptCanvasEditor
 
             const AZ::IO::Path fullAzFilePath = fullFilepath;
             const ScriptCanvas::DataPtr graph = EditorGraph::Create();
-            const AZ::Uuid assetId = AZ::Uuid::CreateRandom();
-            SourceHandle source = SourceHandle(graph, assetId);
+            SourceHandle source = SourceHandle::FromRelativePath(graph, fullAzFilePath.RelativePath());
             source = SourceHandle::MarkAbsolutePath(source, fullAzFilePath);
 
             AZ::IO::FileIOStream fileStream(fullAzFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);

@@ -103,13 +103,13 @@ namespace AzToolsFramework
             void RequestOpenItemForEditing(const QModelIndex& index);
 
         private:
-            //Non owning pointer 
+            //Non owning pointer
             AssetBrowserFilterModel* m_filterModel = nullptr;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
-			bool m_isTickBusEnabled = false;
+            bool m_isTickBusEnabled = false;
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 

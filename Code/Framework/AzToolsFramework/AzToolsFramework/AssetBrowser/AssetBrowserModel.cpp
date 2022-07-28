@@ -233,8 +233,8 @@ namespace AzToolsFramework
                     if (success)
                     {
                         emit dataChanged(index.parent(), index);
-						
-						if (m_assetEntriesToCreatorBusIds.contains(item))
+
+                        if (m_assetEntriesToCreatorBusIds.contains(item))
                         {
                             AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
                                 m_assetEntriesToCreatorBusIds[item],
@@ -262,7 +262,6 @@ namespace AzToolsFramework
                 }
             }
             return defaultFlags;
-            //return Qt::ItemFlags(~Qt::ItemIsDragEnabled & defaultFlags);
         }
 
         QMimeData* AssetBrowserModel::mimeData(const QModelIndexList& indexes) const
@@ -507,7 +506,7 @@ namespace AzToolsFramework
                 m_newlyCreatedAssetPathsToCreatorBusIds.erase(fullpath);
 
                 QTimer::singleShot(0, this,
-                    [&, entry]()
+                    [this, entry]()
                     {
                         QModelIndex index;
                         if (GetEntryIndex(entry, index))
