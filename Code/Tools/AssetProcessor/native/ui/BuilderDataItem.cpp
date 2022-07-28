@@ -13,12 +13,12 @@ namespace AssetProcessor
     static constexpr char invalidJobTypeDisplayName[] = "Invalid Job Type";
 
     BuilderDataItem::BuilderDataItem(
-        ItemType itemType, const AZStd::string& name,
+        ItemType itemType, AZStd::string name,
         AZ::s64 jobCount,
         AZ::s64 totalDuration,
         AZStd::weak_ptr<BuilderDataItem> parent)
         : m_itemType(itemType)
-        , m_name(name)
+        , m_name(AZStd::move(name))
         , m_jobCount(jobCount)
         , m_totalDuration(totalDuration)
         , m_parent(parent)

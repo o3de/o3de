@@ -36,10 +36,7 @@ namespace AssetProcessor
         };
 
         BuilderDataItem(
-            ItemType itemType, const AZStd::string& name,
-            AZ::s64 jobCount,
-            AZ::s64 totalDuration,
-            AZStd::weak_ptr<BuilderDataItem> parent);
+            ItemType itemType, AZStd::string name, AZ::s64 jobCount, AZ::s64 totalDuration, AZStd::weak_ptr<BuilderDataItem> parent);
         int ChildCount() const;
         const char* GetName() const;
         AZ::s64 GetJobCount() const;
