@@ -14,7 +14,7 @@
 
 :file: < DCCsi >/config.py
 :Status: Prototype
-:Version: 0.1.0, first significant refactor
+:Version: 0.0.1, first significant refactor
 
 This module handles core configuration of the dccsi
 -   It initializes and generates a dynamic, and synthetic, environment context,

@@ -40,7 +40,8 @@ _PACKAGENAME = 'DCCsi'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-__all__ = ['config', # dccsi core config.py
+__all__ = ['globals', # global state module
+           'config', # dccsi core config.py
            'constants', # global dccsi constants
            'foundation', # set up dependancy pkgs for DCC tools
            'return_sys_version', # util
