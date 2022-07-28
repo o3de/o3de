@@ -21,11 +21,17 @@ set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 # Directory for test impact artifacts and data
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
 
-# Directory for artifacts generated at runtime
-set(LY_TEST_IMPACT_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/Temp")
+# Directory name for TIAF temp directory
+set(LY_TEST_IMPACT_TEMP_DIR "Temp")
+
+# Directory for artifacts generated at runtime 
+set(LY_TEST_IMPACT_RUNTIME_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/${LY_TEST_IMPACT_TEMP_DIR}")
+
+# Directory name for TIAF persistent directory
+set(LY_TEST_IMPACT_PERSISTENT_DIR "Persistent")
 
 # Directory for files that persist between runtime runs
-set(LY_TEST_IMPACT_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/Persistent")
+set(LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/${LY_TEST_IMPACT_PERSISTENT_DIR}")
 
 # Directory for static artifacts produced as part of the build system generation process
 set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
@@ -42,11 +48,17 @@ set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.t
 # Main gem target file for all shared library gems
 set(LY_TEST_IMPACT_GEM_TARGET_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/BuildType/All.gems")
 
+# File name for TIAF config files.
+set(LY_TEST_IMPACT_CONFIG_FILE_NAME "tiaf.json")
+
 # Path to the config file for each build configuration
-set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_PERSISTENT_DIR}/tiaf.json")
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
 
 # Preprocessor directive for the config file path
 set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
+
+# Path to file used to store data required by TIAF tests
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -403,13 +415,13 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     set(bin_dir ${BIN_DIR})
     
     # Temp dir
-    set(temp_dir "${LY_TEST_IMPACT_TEMP_DIR}")
+    set(temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
 
     # Active persistent data dir
-    set(active_dir "${LY_TEST_IMPACT_PERSISTENT_DIR}/active")
+    set(active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/active")
 
     # Historic persistent data dir
-    set(historic_dir "${LY_TEST_IMPACT_PERSISTENT_DIR}/historic")
+    set(historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/historic")
 
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
@@ -439,6 +451,30 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
+#! ly_test_impact_write_pytest_file: writes out the test information utilised by our TIAF testing tools, using the data derived from the build generation process.
+# 
+# \arg:CONFIGURATION_FILE path to the test data template file
+function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
+
+    # For each configuration type, compile the build info we need and add it to our array
+    set(build_configs "")
+    foreach(config_type ${LY_CONFIGURATION_TYPES})
+        set(config_path "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
+        list(APPEND build_configs "\"${config_type}\" : { \"config\" : \"${config_path}\"}")
+    endforeach()
+ 
+    # Configure our list of entries
+    string(REPLACE ";" ",\n" build_configs "${build_configs}")
+    
+    # Configure and write out our test data file
+    ly_file_read("${CONFIGURATION_FILE}" test_file)
+    string(CONFIGURE ${test_file} test_file)
+    file(GENERATE
+        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/ly_test_impact_test_data.json"
+        CONTENT "${test_file}")
+
+endfunction()
+
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
@@ -449,7 +485,7 @@ function(ly_test_impact_post_step)
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
     # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_TEMP_DIR}")
+    file(REMOVE_RECURSE "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
     file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
 
     # Export the soruce to target mapping files
@@ -471,6 +507,11 @@ function(ly_test_impact_post_step)
     ly_test_impact_write_config_file(
         "cmake/TestImpactFramework/ConsoleFrontendConfig.in"
         ${bin_dir}
+    )
+
+    # Write out required test data into config file.
+    ly_test_impact_write_pytest_file(
+        "cmake/TestImpactFramework/LYTestImpactTestData.in"
     )
     
     # Copy over the graphviz options file for the build dependency graphs
