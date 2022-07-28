@@ -29,6 +29,8 @@ namespace AzToolsFramework
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
+    class InstanceToTemplateInterface;
+    class InstanceUpdateExecutorInterface;
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
@@ -52,6 +54,7 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
+        LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -98,6 +101,8 @@ namespace AzToolsFramework::Prefab
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 

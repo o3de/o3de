@@ -22,6 +22,9 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceUpdateExecutorInterface, "{26BB4ACF-6EA5-4668-84E7-AB75B90BA449}");
             virtual ~InstanceUpdateExecutorInterface() = default;
 
+            // Add an instance into the queue so it's updated at the end of the frame.
+            virtual void AddInstanceToQueue(InstanceOptionalReference instance) = 0;
+
             // Add all Instances of Template with given Id into a queue for updating them later.
             virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) = 0;
 

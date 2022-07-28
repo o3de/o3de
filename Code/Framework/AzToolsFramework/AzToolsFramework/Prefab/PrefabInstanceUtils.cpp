@@ -16,12 +16,12 @@ namespace AzToolsFramework
     {
         namespace PrefabInstanceUtils
         {
-            AZStd::pair<const Instance*, AZStd::string> ClimbUpToTargetInstance(
+            AZStd::pair<const Instance*, AZStd::vector<InstanceOptionalConstReference>> GetRelativePathBetweenInstances(
                 const Instance* startInstance, const Instance* targetInstance)
             {
                 if (!startInstance)
                 {
-                    return AZStd::make_pair(nullptr, "");
+                    return AZStd::make_pair(nullptr, AZStd::vector<InstanceOptionalConstReference>());
                 }
 
                 // Climb up the instance hierarchy from this instance until you hit the target or the root.
@@ -34,14 +34,28 @@ namespace AzToolsFramework
                     instance = instance->get().GetParentInstance();
                 }
 
+                return AZStd::make_pair(&instance->get(), AZStd::move(instancePath));
+            }
+
+            AZStd::pair<const Instance*, AZStd::string> GetRelativePathStringBetweenInstances(
+                const Instance* startInstance, const Instance* targetInstance)
+            {
+                if (!startInstance)
+                {
+                    return AZStd::make_pair(nullptr, "");
+                }
+
+                auto getRelativePathResult = GetRelativePathBetweenInstances(startInstance, targetInstance);
+
                 AZStd::string relativePathToStartInstance;
-                for (auto instanceIter = instancePath.rbegin(); instanceIter != instancePath.rend(); ++instanceIter)
+                const auto& instancePath = getRelativePathResult.second;
+                for (auto instanceIter = instancePath.crbegin(); instanceIter != instancePath.crend(); ++instanceIter)
                 {
                     relativePathToStartInstance.append("/Instances/");
                     relativePathToStartInstance.append((*instanceIter)->get().GetInstanceAlias());
                 }
 
-                return AZStd::make_pair(&instance->get(), AZStd::move(relativePathToStartInstance));
+                return AZStd::make_pair(getRelativePathResult.first, AZStd::move(relativePathToStartInstance));
             }
         } // namespace PrefabInstanceUtils
     } // namespace Prefab

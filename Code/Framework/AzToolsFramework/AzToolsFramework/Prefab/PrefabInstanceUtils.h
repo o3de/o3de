@@ -21,12 +21,25 @@ namespace AzToolsFramework
             /**
              * Climbs up the instance hierarchy tree from startInstance.
              * Stops when it hits either the targetInstance or the root.
+             * Then return relative path between targetInstance and startInstance.
              * @param startInstance An instance as starting point from an instance hierarchy tree.
              * @param targetInstance Target instance to climb up to from startInstance.
              * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
-             * of startInstance), and startInstance's relative path to targetInstance.
+             * of startInstance), and targetInstance's relative path to startInstance.
              */
-            AZStd::pair<const Instance*, AZStd::string> ClimbUpToTargetInstance(
+            AZStd::pair<const Instance*, AZStd::vector<InstanceOptionalConstReference>> GetRelativePathBetweenInstances(
+                const Instance* startInstance, const Instance* targetInstance);
+
+            /**
+             * Climbs up the instance hierarchy tree from startInstance.
+             * Stops when it hits either the targetInstance or the root.
+             * Then return a string of relative path between startInstance and targetInstance.
+             * @param startInstance An instance as starting point from an instance hierarchy tree.
+             * @param targetInstance Target instance to climb up to from startInstance.
+             * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
+             * of startInstance), and a string of startInstance's relative path to targetInstance.
+             */
+            AZStd::pair<const Instance*, AZStd::string> GetRelativePathStringBetweenInstances(
                 const Instance* startInstance, const Instance* targetInstance);
 
         } // namespace PrefabInstanceUtils

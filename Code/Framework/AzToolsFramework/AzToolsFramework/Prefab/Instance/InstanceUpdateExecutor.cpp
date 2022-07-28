@@ -72,6 +72,21 @@ namespace AzToolsFramework
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
+        void InstanceUpdateExecutor::AddInstanceToQueue(InstanceOptionalReference instance)
+        {
+            if (instance == AZStd::nullopt)
+            {
+                AZ_Warning(
+                    "Prefab", false,
+                    "InstanceUpdateExecutor::AddInstanceToQueue - "
+                    "Caller tried to insert null instance into the queue.");
+
+                return;
+            }
+
+            m_instancesUpdateQueue.emplace_back(&instance->get());
+        }
+
         void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
         {
             auto findInstancesResult =

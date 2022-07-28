@@ -245,13 +245,6 @@ namespace AzToolsFramework
         // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
         if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
-            if (ed_useCursorLockIconInFocusMode)
-            {
-                ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
-                    ViewportInteraction::CursorStyleOverride::Forbidden);
-            }
-
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)

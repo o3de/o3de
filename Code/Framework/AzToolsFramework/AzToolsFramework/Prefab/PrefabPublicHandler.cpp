@@ -734,6 +734,11 @@ namespace AzToolsFramework
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
+                // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
+                // of the entity can be stale. Therefore, check whether the parent entity is in the focus tree instead.
+                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(afterParentId);
+                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+
                 if (beforeParentId != afterParentId)
                 {
                     // If the entity parent changed, verify if the owning instance changed too
@@ -748,7 +753,7 @@ namespace AzToolsFramework
                         // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
                         AZStd::vector<Instance*> instancesInvolved;
 
-                        if (isInstanceContainerEntity)
+                        if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                         {
                             instancesInvolved.push_back(&owningInstance->get());
                         }
@@ -808,8 +813,13 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                        // WIP - Re-generate patches to add correct path.
+                        PrefabDom newPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(newPatch, beforeState, afterState);
+                        LinkId linkId = m_prefabFocusInterface->AppendPathFromFocusedInstanceToPatchPaths(newPatch, entityId);
+
+                        // WIP - Store patch to the link closest to the focused prefab.
+                        Internal_HandleContainerOverride(parentUndoBatch, entityId, newPatch, linkId);
                     }
                 }
                 else
