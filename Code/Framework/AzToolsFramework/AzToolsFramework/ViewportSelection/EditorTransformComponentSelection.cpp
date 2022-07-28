@@ -1030,7 +1030,6 @@ namespace AzToolsFramework
         EditorContextMenuBus::Handler::BusConnect();
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
-        EntityCompositionNotificationBus::Handler::BusConnect();
 
         CreateComponentModeSwitcher();
         CreateTransformModeSelectionCluster();
@@ -1079,7 +1078,6 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
         EditorEventsBus::Handler::BusDisconnect();
-        EntityCompositionNotificationBus::Handler::BusDisconnect();
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2203,7 +2201,7 @@ namespace AzToolsFramework
             break;
         }
     }
-    
+
     void EditorTransformComponentSelection::RegisterActions()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -2216,7 +2214,7 @@ namespace AzToolsFramework
 
             if (m_entityIdManipulators.m_manipulators)
             {
-                CreateEntityManipulatorDeselectCommand(undoBatch); CreateComponentModeSwitcher();
+                CreateEntityManipulatorDeselectCommand(undoBatch);
             }
 
             // make a copy of selected entity ids
@@ -3369,7 +3367,6 @@ namespace AzToolsFramework
         // EditorTransformComponentSelection was not responsible for the change in selection
         if (!m_didSetSelectedEntities)
         {
-
             if (!UndoRedoOperationInProgress())
             {
                 EndRecordManipulatorCommand();
@@ -3382,7 +3379,7 @@ namespace AzToolsFramework
             // clear if we instigated the selection change after selection changes
             m_didSetSelectedEntities = false;
         }
-        
+
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();

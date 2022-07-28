@@ -9,8 +9,7 @@
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <QBitmap>
-#pragma optimize("", off)
-#pragma inline_depth(0)
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -67,6 +66,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
+
         const AZStd::function<void()>& callback = [this, button]()
         {
             m_buttonGroup->PressButton(button->m_buttonId);
@@ -141,18 +141,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
-            //QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
+
             auto pixmap = QPixmap(QString((*buttonIt)->m_icon.c_str()));
-            auto mask = pixmap.createMaskFromColor(Qt::transparent, Qt::MaskOutColor);
+            auto mask = pixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
             pixmap.fill((QColor(255, 255, 255)));
             pixmap.setMask(mask);
-            //QImage image = QImage(QString((*buttonIt)->m_icon.c_str())).convertToFormat(QImage::Format_Grayscale8);
-            //image.convertToFormat(QImage::Format_Grayscale8);
-            //auto newPixmap = QPixmap::fromImage(image);
-            //action->setIcon(QIcon(pixmap));
+
             m_activeButton->setIcon(QIcon(pixmap));
             m_activeButton->setText(buttonName);
-
         }
 
         // Look up button ID in map then remove it from its current position
@@ -185,5 +181,3 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
-#pragma optimize("", on)
-#pragma inline_depth()

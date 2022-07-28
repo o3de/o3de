@@ -600,7 +600,7 @@ namespace AZ
     }
 
     Component* Entity::FindComponent(ComponentId id) const
-                      {
+    {
         size_t numComponents = m_components.size();
         for (size_t i = 0; i < numComponents; ++i)
         {

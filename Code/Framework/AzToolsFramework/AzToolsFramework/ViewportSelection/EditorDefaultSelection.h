@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 #include <QWidget>
 

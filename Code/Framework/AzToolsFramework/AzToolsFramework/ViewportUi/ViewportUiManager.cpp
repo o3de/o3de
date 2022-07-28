@@ -40,7 +40,7 @@ namespace AzToolsFramework::ViewportUi
         return RegisterNewSwitcher(buttonGroup);
     }
 
-    void ViewportUiManager::SetClusterActiveButton(const ClusterId clusterId, [[maybe_unused]] const ButtonId buttonId)
+    void ViewportUiManager::SetClusterActiveButton(const ClusterId clusterId, const ButtonId buttonId)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {

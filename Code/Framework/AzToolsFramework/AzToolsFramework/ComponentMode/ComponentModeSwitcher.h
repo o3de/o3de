@@ -8,12 +8,12 @@
 
 #pragma once
 
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
-#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 
 namespace AZ
 {
@@ -23,6 +23,13 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
+
+        enum class AddOrRemoveComponent : AZ::u8
+        {
+            Add,
+            Remove
+        };
+
         // Struct containing relevant information about component for the switcher
         struct ComponentData
         {
@@ -30,12 +37,12 @@ namespace AzToolsFramework
             ComponentData(AZ::EntityComponentIdPair pairId);
 
             // Member variables
-            AZ::EntityComponentIdPair m_pairId; //!< ID of entity component pair.
+            AZ::EntityComponentIdPair m_pairId; //!< Id of entity component pair.
             AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
             AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
             AZStd::string m_componentName; //!< Freindly name of component.
-            AZStd::string m_iconStr; //!< Path of icon.
-            ViewportUi::ButtonId m_buttonId; //!< Button ID of switcher component.
+            AZStd::string m_iconStr; //!< Path of component icon.
+            ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
         };
 
         struct Switcher
@@ -45,7 +52,7 @@ namespace AzToolsFramework
             Switcher(const Switcher&) = delete;
             Switcher& operator=(const Switcher&) = delete;
 
-            ViewportUi::SwitcherId m_switcherId; //!< Switcher id.
+            ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
             AZ::Event<ViewportUi::ButtonId>::Handler m_switcherHandler; //!< Callback for when a switcher button is pressed.
         };
 
@@ -59,31 +66,32 @@ namespace AzToolsFramework
             ComponentModeSwitcher();
             ~ComponentModeSwitcher();
 
-            // Add or remove component buttons to/from the switcher based on entities selected.
-            void Update(EntityIdList selectedEntityIds, EntityIdList deselectedEntityIds);
-            void AddComponentButton(AZ::EntityComponentIdPair);
-            // Removes component button
-            void RemoveComponentButton(AZ::EntityComponentIdPair);
-            std::size_t GetComponentCount() const { return m_addedComponents.size();};
-            
+            std::size_t GetComponentCount() const
+            {
+                return m_addedComponents.size();
+            };
+
+            ComponentData* GetActiveComponent() const
+            {
+                return m_activeSwitcherComponent;
+            };
+
             // Handler for the entering component mode.
-        protected:
-            Switcher m_switcher; //!< Related viewport ui state for controlling the component mode switcher.
+            
 
         private:
             // Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
             void AddSwitcherButton(ComponentData&, const char* componentName, const char* iconStr);
-            // Creates button with component information.
-            //void AddComponentButton(AZ::EntityComponentIdPair);
-            //// Removes component button
-            //void RemoveComponentButton(AZ::EntityComponentIdPair);
-            //// Uses ComponentModeSystemRequestBus to initiate component mode.
+            // Adds component button to switcher.
+            void AddComponentButton(AZ::EntityComponentIdPair);
+            // Removes component button from switcher.
+            void RemoveComponentButton(AZ::EntityComponentIdPair);
+            // Add or remove component buttons to/from the switcher based on entities selected.
+            void UpdateSwitcherOnEntitySelectionChange(EntityIdList newlyselectedEntityIds, EntityIdList newlydeselectedEntityIds);
+            // Uses ComponentModeSystemRequestBus to initiate component mode.
             void ActivateComponentMode(ViewportUi::ButtonId);
-            // Removes swticher buttons that are not common to the inputted entity.
+            // Removes swticher buttons that are not common to all selected entities.
             void RemoveExclusiveComponents(const AZ::Entity&);
-
-            // EditorComponentModeNotificationBus overrides ...
-            void OnComponentModeExit() override;
 
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(
@@ -103,15 +111,16 @@ namespace AzToolsFramework
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
             // Member variables
-            //Switcher* m_switcher = nullptr; //!< Pointer to the UI switcher.
-            AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements
-            EntityIdList m_entityIds; //!< List of entities active in the switcher
-            AZStd::set<AZStd::string> m_addedComponentNames;
-            AZ::EntityComponentIdPair m_componentModePair;
-            bool m_AddRemove;
-            ViewportUi::ButtonId m_transformButtonId;
-            AZ::Event<ViewportUi::ButtonId>::Handler m_handler;
-            ComponentData m_activeSwitcherComponent;
+            ComponentData* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
+
+            AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements.
+            EntityIdList m_entityIds; //!< List of entities active in the switcher.
+            ViewportUi::ButtonId m_transformButtonId; //!< Id of the default button of the switcher, used to exit component mode.
+            AZ::Event<ViewportUi::ButtonId>::Handler m_handler; //!< Handler for onclick of switcher buttons, activates component mode.
+            ViewportUi::SwitcherId m_switcherId; //!< Id of linked switcher.
+
+            AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
+            AddOrRemoveComponent m_addOrRemove; //!< Setting to either add or remove component.
         };
 
     } // namespace ComponentModeFramework

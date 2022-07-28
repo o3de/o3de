@@ -32,7 +32,6 @@ namespace AzToolsFramework
 
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
-        //ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
@@ -43,7 +42,6 @@ namespace AzToolsFramework
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
-        //ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
         m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
 
         AZ_Assert(
@@ -132,7 +130,6 @@ namespace AzToolsFramework
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
             &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
-
     }
 
     void EditorDefaultSelection::EndComponentMode()

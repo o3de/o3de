@@ -34,7 +34,6 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 namespace AzToolsFramework
 {
@@ -119,21 +118,8 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
     };
 
-    struct Switcher
-    {
-        Switcher() = default;
-        // disable copying and moving (implicit)
-        Switcher(const Switcher&) = delete;
-        Switcher& operator=(const Switcher&) = delete;
-
-        ViewportUi::SwitcherId m_switcherId; //!< Switcher id.
-        AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of Switcher button ids.
-        AZ::Event<ViewportUi::ButtonId>::Handler m_switcherHandler; //!< Callback for when a switcher button is pressed.
-        ViewportUi::ButtonId m_transformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
-    };
-
     //! Exposed to the viewport manager
-    ViewportUi::ButtonId RegisterSwitcherButton(ViewportUi::SwitcherId switcherId, const char* name, const char* iconName);
+    //ViewportUi::ButtonId RegisterSwitcherButton(ViewportUi::SwitcherId switcherId, const char* name, const char* iconName);
 
     //! Grouping of viewport ui related state for aligning transforms to a grid.
     struct SnappingCluster
@@ -168,7 +154,6 @@ namespace AzToolsFramework
         , private AZ::TransformNotificationBus::MultiHandler
         , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
         , private ReadOnlyEntityPublicNotificationBus::Handler
-        , private EntityCompositionNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -368,14 +353,13 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_translateButtonId; //!< Id of the Viewport UI button for translate mode.
         ViewportUi::ButtonId m_rotateButtonId; //!< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; //!< Id of the Viewport UI button for scale mode.
-        ViewportUi::ButtonId m_switcherTransformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
-        SnappingCluster m_snappingCluster;//!< Related viewport ui state for aligning positions to a grid or reference frame.
+        SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; //! < Viewport UI switcher for showing component mode components.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
-        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

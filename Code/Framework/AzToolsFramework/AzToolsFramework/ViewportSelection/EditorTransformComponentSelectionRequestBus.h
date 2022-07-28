@@ -130,6 +130,7 @@ namespace AzToolsFramework
         //! Snap selected entities to be aligned with the world space grid.
         virtual void SnapSelectedEntitiesToWorldGrid(float gridSize) = 0;
 
+        //! Replace ComponentModeSwitcher with overriden ComponentModeSwitcher
         virtual void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) = 0;
 
     protected:
