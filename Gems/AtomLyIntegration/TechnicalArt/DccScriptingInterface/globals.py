@@ -102,4 +102,7 @@ DCCSI_O3DE_USER_HOM_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run as main, perform additional debug and module tests"""
+
+    # to do: log values above, to test externally from cli
+
     pass
