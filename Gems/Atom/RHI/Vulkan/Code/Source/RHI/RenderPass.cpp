@@ -110,7 +110,7 @@ namespace AZ
             if (m_nativeRenderPass != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyRenderPass(device.GetNativeDevice(), m_nativeRenderPass, nullptr);
+                device.GetContext().DestroyRenderPass(device.GetNativeDevice(), m_nativeRenderPass, nullptr);
                 m_nativeRenderPass = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -141,7 +141,8 @@ namespace AZ
 
             auto& device = static_cast<Device&>(GetDevice());
 
-            const VkResult result = vkCreateRenderPass(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeRenderPass);
+            const VkResult result =
+                device.GetContext().CreateRenderPass(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeRenderPass);
             AssertSuccess(result);
 
             return ConvertResult(result);

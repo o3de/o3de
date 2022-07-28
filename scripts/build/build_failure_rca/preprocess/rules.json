@@ -1,0 +1,6 @@
+{
+    "ignore_patterns": [
+        ".*Building CXX.*",
+        ".*Linking CXX.*"
+    ]
+}

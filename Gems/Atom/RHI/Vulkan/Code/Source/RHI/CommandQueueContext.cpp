@@ -93,14 +93,11 @@ namespace AZ
             auto& device = static_cast<Device&>(swapchain.GetDevice());
             // First search among the existing queues if they support presentation for the format of the swapchain
             VkPhysicalDevice vkPhysicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice()).GetNativePhysicalDevice();
-            auto supportsPresentation = [&swapchain, &vkPhysicalDevice](uint32_t familyIndex)
+            auto supportsPresentation = [&swapchain, &device, &vkPhysicalDevice](uint32_t familyIndex)
             {
                 VkBool32 supported = VK_FALSE;
-                AssertSuccess(vkGetPhysicalDeviceSurfaceSupportKHR(
-                    vkPhysicalDevice,
-                    familyIndex,
-                    swapchain.GetSurface().GetNativeSurface(),
-                    &supported));
+                AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceSupportKHR(
+                    vkPhysicalDevice, familyIndex, swapchain.GetSurface().GetNativeSurface(), &supported));
                 return supported == VK_TRUE;
             };
 
