@@ -298,7 +298,6 @@ namespace AZ
                 };
 
                 RHI::DispatchRaysItem dispatchRaysItem;
-                dispatchRaysItem.m_submitIndex = index;
                 dispatchRaysItem.m_width = m_outputAttachmentSize.m_width;
                 dispatchRaysItem.m_height = m_outputAttachmentSize.m_height;
                 dispatchRaysItem.m_depth = 1;
@@ -309,7 +308,7 @@ namespace AZ
                 dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
 
                 // submit the DispatchRays item
-                context.GetCommandList()->Submit(dispatchRaysItem);
+                context.GetCommandList()->Submit(dispatchRaysItem, index);
             }
         }
     }   // namespace RPI

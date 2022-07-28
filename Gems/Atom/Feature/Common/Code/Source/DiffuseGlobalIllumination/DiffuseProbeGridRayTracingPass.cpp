@@ -346,7 +346,6 @@ namespace AZ
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
-                    dispatchRaysItem.m_submitIndex = index;
                     dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
                     dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
                     dispatchRaysItem.m_depth = 1;
@@ -357,7 +356,7 @@ namespace AZ
                     dispatchRaysItem.m_globalPipelineState = m_globalPipelineState.get();
 
                     // submit the DispatchRays item
-                    context.GetCommandList()->Submit(dispatchRaysItem);
+                    context.GetCommandList()->Submit(dispatchRaysItem, index);
                 }
             }
         }

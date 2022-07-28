@@ -69,16 +69,16 @@ namespace AZ
             virtual void SetShaderResourceGroupForDispatch(const ShaderResourceGroup& shaderResourceGroup) = 0;
 
             /// Submits a single copy item for processing on the command list.
-            virtual void Submit(const CopyItem& copyItem) = 0;
+            virtual void Submit(const CopyItem& copyItem, uint32_t submitIndex = 0) = 0;
 
             /// Submits a single draw item for processing on the command list.
-            virtual void Submit(const DrawItem& drawItem) = 0;
+            virtual void Submit(const DrawItem& drawItem, uint32_t submitIndex = 0) = 0;
 
             /// Submits a single dispatch item for processing on the command list.
-            virtual void Submit(const DispatchItem& dispatchItem) = 0;
+            virtual void Submit(const DispatchItem& dispatchItem, uint32_t submitIndex = 0) = 0;
 
             /// Submits a single dispatch rays item for processing on the command list.
-            virtual void Submit(const DispatchRaysItem& dispatchRaysItem) = 0;
+            virtual void Submit(const DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex = 0) = 0;
 
             /// Starts predication on the command list.
             virtual void BeginPredication(const Buffer& buffer, uint64_t offset, PredicationOp operation) = 0;
@@ -110,8 +110,8 @@ namespace AZ
             /// Sets the submit range for this command list
             void SetSubmitRange(const SubmitRange& submitRange) { m_submitRange = submitRange; }
 
-            /// Validates a submit item against the range for this command list, and tracks the total number of submits
-            void ValidateSubmitItem(const SubmitItem& submitItem);
+            /// Validates a submit index against the range for this command list, and tracks the total number of submits
+            void ValidateSubmitIndex(uint32_t submitIndex);
 
             /// Validates the total number of submits against the expected number
             void ValidateTotalSubmits(const ScopeProducer* scopeProducer);
@@ -123,5 +123,20 @@ namespace AZ
             SubmitRange m_submitRange;
             uint32_t m_totalSubmits = 0;
         };
+
+        inline void CommandList::ValidateSubmitIndex([[maybe_unused]] uint32_t submitIndex)
+        {
+            if (m_submitRange.GetCount())
+            {
+                AZ_Assert((submitIndex >= m_submitRange.m_startIndex) && (submitIndex < m_submitRange.m_endIndex),
+                    "Submit index %d is not in the valid submission range for this CommandList (%d, %d). "
+                    "Call FrameGraphExecuteContext::GetSubmitRange() to retrieve the range when submitting items to the CommandList.",
+                    submitIndex,
+                    m_submitRange.m_startIndex,
+                    m_submitRange.m_endIndex - 1);
+
+                m_totalSubmits++;
+            }
+        }
     }
 }

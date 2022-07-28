@@ -184,14 +184,13 @@ namespace AZ
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
 
                 RHI::DispatchItem dispatchItem;
-                dispatchItem.m_submitIndex = index;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * dispatchItem.m_arguments.m_direct.m_threadsPerGroupY;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                commandList->Submit(dispatchItem);
+                commandList->Submit(dispatchItem, index);
             }
         }
     }   // namespace Render

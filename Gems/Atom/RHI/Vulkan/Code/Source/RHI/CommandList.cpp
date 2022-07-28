@@ -94,9 +94,9 @@ namespace AZ
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Dispatch);
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem) 
+        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(copyItem);
+            ValidateSubmitIndex(submitIndex);
 
             switch (copyItem.m_type)
             {
@@ -248,9 +248,9 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem) 
+        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(drawItem);
+            ValidateSubmitIndex(submitIndex);
 
             if (!CommitShaderResource(drawItem))
             {
@@ -365,9 +365,9 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem) 
+        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(dispatchItem);
+            ValidateSubmitIndex(submitIndex);
 
             if (!CommitShaderResource(dispatchItem))
             {
@@ -400,9 +400,9 @@ namespace AZ
             }            
         }       
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
+        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
-            ValidateSubmitItem(dispatchRaysItem);
+            ValidateSubmitIndex(submitIndex);
 
             // manually clear the Dispatch bindings
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType::Dispatch);
