@@ -114,8 +114,9 @@ class BaseTestImpact(ABC):
                         args['integration_policy'] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
         args['sequence'] = sequence_type
-        args['report'] = PurePath(self._temp_workspace).joinpath(
+        self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
+        args['report'] = self._report_file
         self._parse_arguments_to_runtime(
             args, self._runtime_args)
 
