@@ -44,6 +44,7 @@ namespace Terrain
 
             serialize->Class<ClipmapConfiguration>()
                 ->Version(1)
+                ->Field("ClipmapEnabled", &ClipmapConfiguration::m_clipmapEnabled)
                 ->Field("ClipmapSize", &ClipmapConfiguration::m_clipmapSize)
                 ->Field("MacroClipmapMaxResolution", &ClipmapConfiguration::m_macroClipmapMaxResolution)
                 ->Field("DetailClipmapMaxResolution", &ClipmapConfiguration::m_detailClipmapMaxResolution)
@@ -98,6 +99,9 @@ namespace Terrain
                     ;
 
                 editContext->Class<ClipmapConfiguration>("Clipmap", "Settings related to clipmap rendering")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ClipmapConfiguration::m_clipmapEnabled,
+                        "Clipmap Enabled",
+                        "Enable the clipmaps for rendering terrain materials")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClipmapConfiguration::m_clipmapSize,
                         "Clipmap image size",
                         "The size of the clipmap image in each layer.")
