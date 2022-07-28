@@ -144,11 +144,11 @@ namespace AZ::NameBenchmarks
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name("not created as a literal"));
+                names[i] = (AZ::Name("not created as a literal"));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = Name();
+                names[i] = AZ::Name();
             }
         }
 
@@ -165,11 +165,11 @@ namespace AZ::NameBenchmarks
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name::FromStringLiteral("created as a literal"));
+                names[i] = (AZ::Name::FromStringLiteral("created as a literal"));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = Name();
+                names[i] = AZ::Name();
             }
         }
 

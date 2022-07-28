@@ -4764,7 +4764,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, false>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4776,7 +4776,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();
@@ -4789,7 +4789,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, true>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4801,7 +4801,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();
