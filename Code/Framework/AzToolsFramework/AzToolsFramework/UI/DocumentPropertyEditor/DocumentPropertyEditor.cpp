@@ -645,7 +645,12 @@ namespace AzToolsFramework
         m_handlerCleanupTimer->setInterval(0);
         connect(m_handlerCleanupTimer, &QTimer::timeout, this, &DocumentPropertyEditor::CleanupReleasedHandlers);
 
-        m_spawnDebugView = ed_showDPEDebugView;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_showDPEDebugView", m_spawnDebugView);
+        }
+
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
