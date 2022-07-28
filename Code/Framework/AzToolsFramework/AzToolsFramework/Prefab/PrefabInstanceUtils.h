@@ -9,15 +9,13 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/utils.h> 
+#include <AzCore/std/utils.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
-        class Instance;
-        using InstanceOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const Instance>>;
-
         namespace PrefabInstanceUtils
         {
             /**

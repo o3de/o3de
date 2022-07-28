@@ -8,8 +8,6 @@
 
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-
 namespace AzToolsFramework
 {
     namespace Prefab
