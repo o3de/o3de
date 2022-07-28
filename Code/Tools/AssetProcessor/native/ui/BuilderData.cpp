@@ -143,10 +143,10 @@ namespace AssetProcessor
             int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
 
             AZStd::string entryName = AZStd::string::format(
-                "{},{},{}",
+                "%s,%s,%s",
                 jobEntry.m_databaseSourceName.toUtf8().constData(),
                 jobEntry.m_jobKey.toUtf8().constData(),
-                jobEntry.m_platformInfo.m_identifier);
+                jobEntry.m_platformInfo.m_identifier.c_str());
 
             AZStd::shared_ptr<BuilderDataItem> item = nullptr;
             item = m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderDataItem::JobType::ProcessJob, entryName, 1, value);

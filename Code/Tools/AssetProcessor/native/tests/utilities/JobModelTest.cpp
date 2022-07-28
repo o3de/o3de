@@ -293,11 +293,11 @@ void JobModelUnitTests::CreateDatabaseTestData()
     for (const auto& jobEntry : m_data->m_jobEntries)
     {
         AZStd::string statName = AZStd::string::format(
-            "ProcessJob,{},{},{},{}",
-            m_data->m_sourceName,
-            jobEntry.m_jobKey,
-            jobEntry.m_platform,
-            jobEntry.m_builderGuid.ToString<AZStd::string>());
+            "ProcessJob,%s,%s,%s,%s",
+            m_data->m_sourceName.c_str(),
+            jobEntry.m_jobKey.c_str(),
+            jobEntry.m_platform.c_str(),
+            jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
         statEntry = { statName /* StatName */,
                       aznumeric_cast<AZ::s64>(jobEntry.m_fingerprint) /* StatValue */,
                       aznumeric_cast<AZ::s64>(jobEntry.m_jobRunKey) /* LastLogTime */ };
