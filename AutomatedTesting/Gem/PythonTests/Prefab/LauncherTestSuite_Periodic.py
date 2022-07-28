@@ -24,11 +24,10 @@ def remote_console_instance(request):
 
 
 @pytest.mark.SUITE_periodic
-@pytest.mark.parametrize("launcher_platform", ['windows'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestLauncherAutomation(object):
 
-    def test_Launcher_MultipleLevelLoads(self, launcher, remote_console_instance, launcher_platform):
+    def test_Launcher_MultipleLevelLoads(self, launcher, remote_console_instance):
         levels = ["levels/Prefab/Base/Base.spawnable",
                   "levels/Prefab/QuitOnSuccessfulSpawn/QuitOnSuccessfulSpawn.spawnable"]
         run_launcher_tests(launcher, levels, remote_console_instance, null_renderer=True)
