@@ -24,16 +24,6 @@
 
 namespace AzToolsFramework::Prefab
 {
-    PrefabFocusHandler::PrefabFocusHandler()
-    {
-        
-    }
-
-    PrefabFocusHandler::~PrefabFocusHandler()
-    {
-        
-    }
-
     void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
