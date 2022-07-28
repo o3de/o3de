@@ -21,7 +21,7 @@ def assert_list_content_equal(list1, list2):
 
 class ConcreteBaseTestImpact(BaseTestImpact):
     """
-    Concrete implementation of BaseTestImpact so that we can execute unittests on the functionality of BaseTestImpact individually.
+    Concrete implementation of BaseTestImpact so that we can execute unit tests on the functionality of BaseTestImpact individually.
     """
 
     _runtime_type = "base"
