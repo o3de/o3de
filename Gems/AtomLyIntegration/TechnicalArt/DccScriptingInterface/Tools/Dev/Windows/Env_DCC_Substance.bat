@@ -99,14 +99,6 @@ echo     DCCSI_SUBSTANCE_CFG_SLUG = %DCCSI_SUBSTANCE_CFG_SLUG%
 IF "%DCCSI_SUBSTANCE_CFG%"=="" (set "DCCSI_SUBSTANCE_CFG=%DCCSI_TOOLS_SUBSTANCE%\%DCCSI_SUBSTANCE_CFG_SLUG%")
 echo     DCCSI_SUBSTANCE_CFG = %DCCSI_SUBSTANCE_CFG%
 
-:: Only launchers should actually set the PATH and PYTHONPATH !!!
-:: add to the PATH
-::SET PATH=%DCCSI_BLENDER_LOCATION%;%DCCSI_BLENDER_PY_BIN%;%PATH%
-
-:: add all python related paths to PYTHONPATH for package imports
-::set PYTHONPATH=%DCCSI_BLENDER_SCRIPTS%;%DCCSI_BLENDER_SCRIPTS%;%PYTHONPATH%
-::echo     PYTHONPATH = %PYTHONPATH%
-
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
