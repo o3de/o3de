@@ -172,7 +172,7 @@ namespace AZ
             auto registeredViewItr = m_persistentViewsByViewTag.find(view);
             if (registeredViewItr != m_persistentViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
             {
-                AZ_Error("RenderPipeline", false, "View [%s] is already registered for persistent ViewTag [%s].",
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for persistent ViewTag [%s].",
                          view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
                 return false;
             }
@@ -180,7 +180,7 @@ namespace AZ
             registeredViewItr = m_transientViewsByViewTag.find(view);
             if (registeredViewItr != m_transientViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
             {
-                AZ_Error("RenderPipeline", false, "View [%s] is already registered for transient ViewTag [%s].",
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for transient ViewTag [%s].",
                          view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
                 return false;
             }
@@ -193,8 +193,11 @@ namespace AZ
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
             // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
-            AZ_Assert(CanRegisterView(viewTag, view.get()), "Can't register view [%s] with viewTag [%s]",
-                      view->GetName().GetCStr(), viewTag.GetCStr());
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
 
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
@@ -268,7 +271,11 @@ namespace AZ
             // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
             // here if the view is already registered with another viewTag.
             // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
-            AZ_Assert(CanRegisterView(viewTag, view.get()), "View [%s] is already registered for ViewTag [%s].", view->GetName().GetCStr(), viewTag.GetCStr());
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register transient view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
 
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
