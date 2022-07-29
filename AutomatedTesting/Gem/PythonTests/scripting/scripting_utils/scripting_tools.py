@@ -15,6 +15,7 @@ from editor_python_test_tools.editor_entity_utils import EditorEntity
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
+import azlmbr.globals.properties as azproperties
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
@@ -527,7 +528,7 @@ def validate_entity_start_state_by_name(entity_name, expected_state):
     """
 
     state_options = {
-        "active": 0,
+        "active": azproperties,
         "inactive": 1,
         "editor": 2,
     }

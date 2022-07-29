@@ -77,11 +77,11 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
     def setup_level_entities(self):
 
-        self.create_editor_entity(activated_dict)
-        self.create_editor_entity(deactivated_dict)
-        self.create_editor_entity(controller_dict)
+        self.create_entity_with_start_status(activated_dict)
+        self.create_entity_with_start_status(deactivated_dict)
+        self.create_entity_with_start_status(controller_dict)
 
-    def create_editor_entity(self, entity_dict: dict):
+    def create_entity_with_start_status(self, entity_dict: dict):
         """
         Create entities and configure their activation status and variables. We call two different libraries to modify the
         entity. Hydra editor utils to create the entity and editor entity utils to drill into its properties to change values.
