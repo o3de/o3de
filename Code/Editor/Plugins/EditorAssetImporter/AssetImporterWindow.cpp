@@ -33,7 +33,6 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/conversions.h>
-#include <Editor/QtViewPaneManager.h>
 #include <Util/PathUtil.h>
 #include <ActionOutput.h>
 
