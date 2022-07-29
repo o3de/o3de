@@ -5,9 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #include "rcjob.h"
-
-
 
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 
@@ -21,7 +20,6 @@
 
 #include <qstorageinfo.h>
 
-
 namespace
 {
     bool s_typesRegistered = false;
@@ -33,8 +31,6 @@ namespace
     const unsigned int g_jobMaximumWaitTime = 1000 * 60 * 60;
 
     const unsigned int g_sleepDurationForLockingAndFingerprintChecking = 100;
-
-    const unsigned int g_graceTimeBeforeLockingAndFingerprintChecking = 300;
 
     const unsigned int g_timeoutInSecsForRetryingCopy = 30;
 
@@ -351,6 +347,7 @@ namespace AssetProcessor
         QElapsedTimer ticker;
         ticker.start();
         AssetBuilderSDK::ProcessJobResponse result;
+        AssetBuilderSDK::JobCancelListener cancelListener(builderParams.m_processJobRequest.m_jobId);
 
         if (builderParams.m_rcJob->m_jobDetails.m_autoFail)
         {
@@ -367,46 +364,24 @@ namespace AssetProcessor
             return;
         }
 
-        // We are adding a grace time before we check exclusive lock and validate the fingerprint of the file.
-        // This grace time should prevent multiple jobs from getting added to the queue if the source file is still updating.
-        qint64 milliSecsDiff = QDateTime::currentMSecsSinceEpoch() - builderParams.m_rcJob->GetJobEntry().m_computedFingerprintTimeStamp;
-        if (milliSecsDiff < g_graceTimeBeforeLockingAndFingerprintChecking)
-        {
-            QThread::msleep(aznumeric_cast<unsigned long>(g_graceTimeBeforeLockingAndFingerprintChecking - milliSecsDiff));
-        }
-        // Lock and unlock the source file to ensure it is not still open by another process.
-        // This prevents premature processing of some source files that are opened for writing, but are zero bytes for longer than the modification threshhold
+        // If requested, make sure we can open the file with exclusive permissions
         QString inputFile = builderParams.m_rcJob->GetJobEntry().GetAbsoluteSourcePath();
         if (builderParams.m_rcJob->GetJobEntry().m_checkExclusiveLock && QFile::exists(inputFile))
         {
             // We will only continue once we get exclusive lock on the source file
             while (!AssetUtilities::CheckCanLock(inputFile))
             {
+                // Wait for a while before checking again, we need to let some time pass for the other process to finish whatever work it is doing
                 QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-                if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
+
+                // If AP shutdown is requested, the job is canceled or we exceeded the max wait time, abort the loop and mark the job as canceled
+                if (listener.WasQuitRequested() || cancelListener.IsCancelled() || (ticker.elapsed() > g_jobMaximumWaitTime))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                     Q_EMIT builderParams.m_rcJob->JobFinished(result);
                     return;
                 }
             }
-        }
-
-        // We will only continue once the fingerprint of the file stops changing
-        unsigned int fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        while (fingerprint != builderParams.m_rcJob->GetOriginalFingerprint())
-        {
-            builderParams.m_rcJob->SetOriginalFingerprint(fingerprint);
-            QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-
-            if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
-            {
-                result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
-                Q_EMIT builderParams.m_rcJob->JobFinished(result);
-                return;
-            }
-
-            fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
         }
 
         Q_EMIT builderParams.m_rcJob->BeginWork();
