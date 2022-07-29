@@ -675,7 +675,7 @@ namespace EMotionFX
                 if (hasPhysicsController)
                 {
                     Physics::CharacterRequestBus::Event(
-                        entityId, &Physics::CharacterRequests::AddVelocity, positionDelta * deltaTimeInv);
+                        entityId, &Physics::CharacterRequests::AddVelocityForTick, positionDelta * deltaTimeInv);
                 }
                 else if (hasCustomMotionExtractionController)
                 {

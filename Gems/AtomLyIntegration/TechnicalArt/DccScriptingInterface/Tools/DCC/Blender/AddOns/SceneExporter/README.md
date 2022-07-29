@@ -4,18 +4,17 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
 # -------------------------------------------------------------------------
 
 This folder contains the Blender O3DE Scene Exporter Plugin (DCCsi) for O3DE
 
 ![SciFiDockSmall](https://user-images.githubusercontent.com/87207603/175056100-d8dc00fa-5795-4a46-b1ab-724c25fb1604.gif)
 
-
 The Blender O3DE Scene exporter is a convenience tool
 for one click exporter from Blender to O3DE.
 
 ![image](https://user-images.githubusercontent.com/87207603/175056642-603dd641-328b-4585-b1e6-4928a463a503.png)
-
 
 This DCCsi tool is non-destructive to your scene,
 as it will export selected copies of your mesh and textures,
@@ -32,12 +31,10 @@ Hardware and Software Requirements:
 Support for Blender 3.+ Windows 10/11 64-bit version
 O3DE Stable 21.11 Release Windows 10/11 64-bit version
 
-
 INSTALL:
 
 Simply Zip-up the SceneExporter folder into the Blender Plugin.
 ![image](https://user-images.githubusercontent.com/87207603/175057362-a50b99d1-58d0-46d6-b408-cb211d86f529.png)
-
 
 How to install Blender O3DE Scene Exporter Blender add-ons:
     Locate the in Add-Ons SceneExporter.zip, this should be located in:
@@ -48,7 +45,7 @@ How to install Blender O3DE Scene Exporter Blender add-ons:
     You can now see the add on in Import-Export or search for O3DE*.
     Make sure its Checked to Active.
     This will add the new O3DE Tab and the new File Export to O3DE option to the Menu.
-    
+
 HOW TO USE:
 
 When your in Blenders Layout Mode you will see a TAB to access the o3de Scene Exporter tools menu:
@@ -63,9 +60,3 @@ If you have a more complex Project Path, you can also export your first export w
 If you export this way once, you will add the custom project path into the tool.
 ![image](https://user-images.githubusercontent.com/87207603/175065046-1d77b771-7466-4e3c-bd40-07928451abcb.png)
 This method also has options found on the Scene Exporter Tool menu.
-
-
-
-
- 
- 

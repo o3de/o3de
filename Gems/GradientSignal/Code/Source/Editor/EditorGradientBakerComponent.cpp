@@ -6,13 +6,12 @@
  *
  */
 
-#include "EditorGradientBakerComponent.h"
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
@@ -243,12 +242,24 @@ namespace GradientSignal
         m_shouldCancel = true;
 
         // Then we synchronously block until the job has completed
+        Wait();
+    }
+
+    void BakeImageJob::Wait()
+    {
+        // Jobs don't inherently have a way to block on cancellation / completion, so we need to implement it
+        // ourselves.
+
+        // If we've already started the job, block on a condition variable that gets notified at
+        // the end of the Process() function.
         AZStd::unique_lock<decltype(m_bakeImageMutex)> lock(m_bakeImageMutex);
         if (!m_isFinished)
         {
             m_finishedNotify.wait(lock, [this] { return m_isFinished == true; });
         }
 
+        // Regardless of whether or not we were running, we need to reset the internal Job class status
+        // and clear our cancel flag.
         Reset(true);
         m_shouldCancel = false;
     }
@@ -369,6 +380,30 @@ namespace GradientSignal
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<EditorGradientBakerComponent>()->RequestBus("GradientBakerRequestBus");
+
+            behaviorContext->EBus<GradientBakerRequestBus>("GradientBakerRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Gradient")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "gradient")
+                ->Event("BakeImage", &GradientBakerRequests::BakeImage)
+                ->Event("GetInputBounds", &GradientBakerRequests::GetInputBounds)
+                ->Event("SetInputBounds", &GradientBakerRequests::SetInputBounds)
+                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds")
+                ->Event("GetOutputResolution", &GradientBakerRequests::GetOutputResolution)
+                ->Event("SetOutputResolution", &GradientBakerRequests::SetOutputResolution)
+                ->VirtualProperty("OutputResolution", "GetOutputResolution", "SetOutputResolution")
+                ->Event("GetOutputFormat", &GradientBakerRequests::GetOutputFormat)
+                ->Event("SetOutputFormat", &GradientBakerRequests::SetOutputFormat)
+                ->VirtualProperty("OutputFormat", "GetOutputFormat", "SetOutputFormat")
+                ->Event("GetOutputImagePath", &GradientBakerRequests::GetOutputImagePath)
+                ->Event("SetOutputImagePath", &GradientBakerRequests::SetOutputImagePath)
+                ->VirtualProperty("OutputImagePath", "GetOutputImagePath", "SetOutputImagePath")
+                ;
+        }
     }
 
     void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -403,6 +438,8 @@ namespace GradientSignal
         // Setup the dependency monitor and listen for gradient requests
         SetupDependencyMonitor();
 
+        GradientBakerRequestBus::Handler::BusConnect(GetEntityId());
+
         UpdatePreviewSettings();
 
         // If we have a valid output image path set and the other criteria for baking
@@ -423,6 +460,8 @@ namespace GradientSignal
     {
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        GradientBakerRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
@@ -606,6 +645,54 @@ namespace GradientSignal
     bool EditorGradientBakerComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
     {
         return m_configuration.m_gradientSampler.IsEntityInHierarchy(entityId);
+    }
+
+    AZ::EntityId EditorGradientBakerComponent::GetInputBounds() const
+    {
+        return m_configuration.m_inputBounds;
+    }
+
+    void EditorGradientBakerComponent::SetInputBounds(const AZ::EntityId& inputBounds)
+    {
+        m_configuration.m_inputBounds = inputBounds;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    AZ::Vector2 EditorGradientBakerComponent::GetOutputResolution() const
+    {
+        return m_configuration.m_outputResolution;
+    }
+
+    void EditorGradientBakerComponent::SetOutputResolution(const AZ::Vector2& resolution)
+    {
+        m_configuration.m_outputResolution = resolution;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    OutputFormat EditorGradientBakerComponent::GetOutputFormat() const
+    {
+        return m_configuration.m_outputFormat;
+    }
+
+    void EditorGradientBakerComponent::SetOutputFormat(OutputFormat outputFormat)
+    {
+        m_configuration.m_outputFormat = outputFormat;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+    }
+
+    AZ::IO::Path EditorGradientBakerComponent::GetOutputImagePath() const
+    {
+        return m_configuration.m_outputImagePath;
+    }
+
+    void EditorGradientBakerComponent::SetOutputImagePath(const AZ::IO::Path& outputImagePath)
+    {
+        m_configuration.m_outputImagePath = outputImagePath;
+
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void EditorGradientBakerComponent::OnSectorDataConfigurationUpdated() const
