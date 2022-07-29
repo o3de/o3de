@@ -1115,7 +1115,7 @@ namespace ScriptCanvas
             }
 
             auto assetId = functionCallNode->GetAssetId();
-            if (source.m_assetId == assetId)
+            if (source.m_assetId.m_guid == assetId.m_guid)
             {
                 return true;
             }
