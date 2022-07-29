@@ -111,7 +111,7 @@ class AssetProcessor(object):
 
         self.send_message("waitforidle")
         result = self.read_message(read_timeout=timeout)
-        assert self.process_exists(), "Asset Processor has unexpectedly shut down during idle wait!"
+        assert self.process_exists(), "Asset Processor has crashed or unexpectedly shut down during idle wait."
         assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
         return True
 
@@ -129,7 +129,7 @@ class AssetProcessor(object):
 
         self.send_message("signalidle")
         result = self.read_message()
-        assert self.process_exists(), "Asset Processor has unexpectedly shut down during idle request!"
+        assert self.process_exists(), "Asset Processor has crashed or unexpectedly shut down during idle request."
         assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
 
     def send_quit(self):
