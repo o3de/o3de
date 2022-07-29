@@ -7,7 +7,6 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Sequence
 import uuid
 from pathlib import PurePath, Path
 import json
