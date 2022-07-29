@@ -65,6 +65,8 @@ set(FILES
     Serialization/StringifySerializer.h
     Serialization/TrackChangedSerializer.h
     Serialization/TrackChangedSerializer.inl
+    Serialization/TypeValidatingSerializer.h
+    Serialization/TypeValidatingSerializer.inl
     TcpTransport/TcpConnection.cpp
     TcpTransport/TcpConnection.h
     TcpTransport/TcpConnection.inl

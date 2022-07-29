@@ -23,7 +23,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Console/IConsole.h>
+
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
@@ -120,8 +120,6 @@ SEditorSettings::SEditorSettings()
     autoBackupTime = 10;
     autoBackupMaxCount = 3;
     autoRemindTime = 0;
-
-    bAutoSaveTagPoints = false;
 
     bNavigationContinuousUpdate = false;
     bNavigationShowAreas = true;
@@ -456,7 +454,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    SaveValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     SaveValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     SaveValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -647,7 +644,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    LoadValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     LoadValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     LoadValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -836,7 +832,8 @@ void SEditorSettings::Load()
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
-
+AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
+    
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)

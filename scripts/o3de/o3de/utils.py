@@ -163,7 +163,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
                 renamed = True
 
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name = str, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -248,7 +248,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     return 0
 
 
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name = str, download_progress_callback = None) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file

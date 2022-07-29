@@ -10,25 +10,41 @@
 
 namespace UnitTests
 {
-    MockBuilderInfoHandler::~MockBuilderInfoHandler()
+    MockMultiBuilderInfoHandler::~MockMultiBuilderInfoHandler()
     {
         BusDisconnect();
-        m_builderDesc = {};
     }
 
-    void MockBuilderInfoHandler::GetMatchingBuildersInfo(
-        [[maybe_unused]] const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
+    void MockMultiBuilderInfoHandler::GetMatchingBuildersInfo(
+        const AZStd::string& assetPath, AssetProcessor::BuilderInfoList& builderInfoList)
     {
-        builderInfoList.push_back(m_builderDesc);
+        AZStd::set<AZ::Uuid> uniqueBuilderDescIDs;
+
+        for (AssetUtilities::BuilderFilePatternMatcher& matcherPair : m_matcherBuilderPatterns)
+        {
+            if (uniqueBuilderDescIDs.find(matcherPair.GetBuilderDescID()) != uniqueBuilderDescIDs.end())
+            {
+                continue;
+            }
+            if (matcherPair.MatchesPath(assetPath))
+            {
+                const AssetBuilderSDK::AssetBuilderDesc& builderDesc = m_builderDescMap[matcherPair.GetBuilderDescID()];
+                uniqueBuilderDescIDs.insert(matcherPair.GetBuilderDescID());
+                builderInfoList.push_back(builderDesc);
+            }
+        }
     }
 
-    void MockBuilderInfoHandler::GetAllBuildersInfo(AssetProcessor::BuilderInfoList& builderInfoList)
+    void MockMultiBuilderInfoHandler::GetAllBuildersInfo([[maybe_unused]] AssetProcessor::BuilderInfoList& builderInfoList)
     {
-        builderInfoList.push_back(m_builderDesc);
+        for (const auto& builder : m_builderDescMap)
+        {
+            builderInfoList.push_back(builder.second);
+        }
     }
 
-    void MockBuilderInfoHandler::CreateJobs(
-        const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    void MockMultiBuilderInfoHandler::CreateJobs(
+        AssetBuilderExtraInfo extraInfo, const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
     {
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
 
@@ -39,40 +55,73 @@ namespace UnitTests
             jobDescriptor.m_critical = true;
             jobDescriptor.m_jobKey = "Mock Job";
             jobDescriptor.SetPlatformIdentifier(platform.m_identifier.c_str());
-            jobDescriptor.m_additionalFingerprintInfo = m_jobFingerprint.toUtf8().data();
+            jobDescriptor.m_additionalFingerprintInfo = extraInfo.m_jobFingerprint.toUtf8().constData();
 
-            if (!m_jobDependencyFilePath.isEmpty())
+            if (!extraInfo.m_jobDependencyFilePath.isEmpty())
             {
-                AssetBuilderSDK::JobDependency jobDependency(
+                auto jobDependency = AssetBuilderSDK::JobDependency(
                     "Mock Job", "pc", AssetBuilderSDK::JobDependencyType::Order,
-                    AssetBuilderSDK::SourceFileDependency(m_jobDependencyFilePath.toUtf8().constData(), AZ::Uuid::CreateNull()));
+                    AssetBuilderSDK::SourceFileDependency(extraInfo.m_jobDependencyFilePath.toUtf8().constData(), AZ::Uuid::CreateNull()));
 
-                if (!m_subIdDependencies.empty())
+                if (!extraInfo.m_subIdDependencies.empty())
                 {
-                    jobDependency.m_productSubIds = m_subIdDependencies;
+                    jobDependency.m_productSubIds = extraInfo.m_subIdDependencies;
                 }
 
                 jobDescriptor.m_jobDependencyList.push_back(jobDependency);
             }
 
-            if (!m_dependencyFilePath.isEmpty())
+            if (!extraInfo.m_dependencyFilePath.isEmpty())
             {
                 response.m_sourceFileDependencyList.push_back(
-                    AssetBuilderSDK::SourceFileDependency(m_dependencyFilePath.toUtf8().data(), AZ::Uuid::CreateNull()));
+                    AssetBuilderSDK::SourceFileDependency(extraInfo.m_dependencyFilePath.toUtf8().constData(), AZ::Uuid::CreateNull()));
             }
+
             response.m_createJobOutputs.push_back(jobDescriptor);
             m_createJobsCount++;
         }
     }
 
-    void MockBuilderInfoHandler::ProcessJob(
-        [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+    void MockMultiBuilderInfoHandler::ProcessJob(
+        AssetBuilderExtraInfo extraInfo,
+        [[maybe_unused]] const AssetBuilderSDK::ProcessJobRequest& request,
+        AssetBuilderSDK::ProcessJobResponse& response)
     {
         response.m_resultCode = AssetBuilderSDK::ProcessJobResultCode::ProcessJobResult_Success;
     }
 
-    AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(
-        const QString& builderName, const QString& builderId, const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns)
+    void MockMultiBuilderInfoHandler::CreateBuilderDesc(
+        const QString& builderName,
+        const QString& builderId,
+        const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns,
+        const AssetBuilderExtraInfo& extraInfo)
+    {
+        CreateBuilderDesc(
+            builderName, builderId, builderPatterns,
+            AZStd::bind(&MockMultiBuilderInfoHandler::CreateJobs, this, extraInfo, AZStd::placeholders::_1, AZStd::placeholders::_2),
+            AZStd::bind(&MockMultiBuilderInfoHandler::ProcessJob, this, extraInfo, AZStd::placeholders::_1, AZStd::placeholders::_2), extraInfo.m_analysisFingerprint);
+    }
+
+    void MockMultiBuilderInfoHandler::CreateBuilderDescInfoRef(
+        const QString& builderName,
+        const QString& builderId,
+        const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns,
+        const AssetBuilderExtraInfo& extraInfo)
+    {
+        CreateBuilderDesc(
+            builderName, builderId, builderPatterns,
+            AZStd::bind(&MockMultiBuilderInfoHandler::CreateJobs, this, AZStd::ref(extraInfo), AZStd::placeholders::_1, AZStd::placeholders::_2),
+            AZStd::bind(&MockMultiBuilderInfoHandler::ProcessJob, this, AZStd::ref(extraInfo), AZStd::placeholders::_1, AZStd::placeholders::_2),
+            extraInfo.m_analysisFingerprint);
+    }
+
+    void MockMultiBuilderInfoHandler::CreateBuilderDesc(
+        const QString& builderName,
+        const QString& builderId,
+        const AZStd::vector<AssetBuilderSDK::AssetBuilderPattern>& builderPatterns,
+        const AssetBuilderSDK::CreateJobFunction& createJobsFunction,
+        const AssetBuilderSDK::ProcessJobFunction& processJobFunction,
+        AZStd::optional<QString> analysisFingerprint)
     {
         AssetBuilderSDK::AssetBuilderDesc builderDesc;
 
@@ -80,10 +129,20 @@ namespace UnitTests
         builderDesc.m_patterns = builderPatterns;
         builderDesc.m_busId = AZ::Uuid::CreateString(builderId.toUtf8().data());
         builderDesc.m_builderType = AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal;
-        builderDesc.m_createJobFunction =
-            AZStd::bind(&MockBuilderInfoHandler::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDesc.m_processJobFunction =
-            AZStd::bind(&MockBuilderInfoHandler::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        return builderDesc;
+        builderDesc.m_createJobFunction = createJobsFunction;
+        builderDesc.m_processJobFunction = processJobFunction;
+
+        if (analysisFingerprint && !analysisFingerprint->isEmpty())
+        {
+            builderDesc.m_analysisFingerprint = analysisFingerprint.value().toUtf8().constData();
+        }
+
+        m_builderDescMap[builderDesc.m_busId] = builderDesc;
+
+        for (const AssetBuilderSDK::AssetBuilderPattern& pattern : builderDesc.m_patterns)
+        {
+            AssetUtilities::BuilderFilePatternMatcher patternMatcher(pattern, builderDesc.m_busId);
+            m_matcherBuilderPatterns.push_back(patternMatcher);
+        }
     }
 }

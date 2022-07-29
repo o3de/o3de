@@ -16,14 +16,17 @@ logger = get_logger(__file__)
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):
 
+    COMMON_CONFIG_KEY = "common"
     WORKSPACE_KEY = "workspace"
     HISTORIC_SEQUENCES_KEY = "historic_sequences"
     ACTIVE_KEY = "active"
     ROOT_KEY = "root"
     RELATIVE_PATHS_KEY = "relative_paths"
     TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
+    PREVIOUS_TEST_RUN_DATA_FILE_KEY = "previous_test_run_data_file"
     LAST_COMMIT_HASH_KEY = "last_commit_hash"
     COVERAGE_DATA_KEY = "coverage_data"
+    PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
 
     def __init__(self, config: dict, suite: str, commit: str):
         """
@@ -47,13 +50,16 @@ class PersistentStorage(ABC):
         try:
             # The runtime expects the coverage data to be in the location specified in the config file (unless overridden with 
             # the --datafile command line argument, which the TIAF scripts do not do)
-            self._active_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
+            self._active_workspace = pathlib.Path(config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
             self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
-            unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
+            unpacked_coverage_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
+            previous_test_run_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
         self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file)
+        self._previous_test_run_data_file = self._active_workspace.joinpath(previous_test_run_data_file)
         
     def _unpack_historic_data(self, historic_data_json: str):
         """
@@ -88,6 +94,13 @@ class PersistentStorage(ABC):
             else:
                 logger.info(f"No prior sequence data found for any commits.")
 
+            # Test runs for the previous sequence associated with the last commit hash
+            if self.PREVIOUS_TEST_RUNS_KEY in self._historic_data:
+                logger.info(f"Previous test run data for a sequence of '{len(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])}' test targets found.")
+            else:
+                self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = {}
+                logger.info("No previous test run data found.")
+
             # Create the active workspace directory for the unpacked historic data files so they are accessible by the runtime
             self._active_workspace.mkdir(exist_ok=True)
 
@@ -95,6 +108,12 @@ class PersistentStorage(ABC):
             logger.info(f"Writing coverage data to '{self._unpacked_coverage_data_file}'.")
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(self._historic_data[self.COVERAGE_DATA_KEY])
+
+            # Previous test runs file
+            logger.info(f"Writing previous test runs data to '{self._previous_test_run_data_file}'.")
+            with open(self._previous_test_run_data_file, "w", newline='\n') as previous_test_runs_data:
+                previous_test_runs_json = json.dumps(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])
+                previous_test_runs_data.write(previous_test_runs_json)
 
             self._has_historic_data = True
         except json.JSONDecodeError:
@@ -104,9 +123,11 @@ class PersistentStorage(ABC):
         except EnvironmentError as e:
             logger.error(f"There was a problem the coverage data file '{self._unpacked_coverage_data_file}': '{e}'.")
 
-    def _pack_historic_data(self):
+    def _pack_historic_data(self, test_runs: list):
         """
         Packs the current historic data into a JSON file for serializing.
+
+        @param test_runs: The test runs for the sequence that just completed.
 
         @return: The packed historic data in JSON format.
         """
@@ -124,6 +145,9 @@ class PersistentStorage(ABC):
                 if not self.HISTORIC_SEQUENCES_KEY in self._historic_data:
                     self._historic_data[self.HISTORIC_SEQUENCES_KEY] = {}
                 self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash] = self._last_commit_hash
+
+                # Test runs for this completed sequence
+                self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = test_runs
 
                 # Coverage data for this branch
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
@@ -147,12 +171,14 @@ class PersistentStorage(ABC):
         """
         pass
 
-    def update_and_store_historic_data(self):
+    def update_and_store_historic_data(self, test_runs: list):
         """
         Updates the historic data and stores it in the designated persistent storage location.
+
+        @param test_runs: The test runs for the sequence that just completed.
         """
 
-        historic_data_json = self._pack_historic_data()
+        historic_data_json = self._pack_historic_data(test_runs)
         if historic_data_json:
             logger.info(f"Attempting to store historic data with new last commit hash '{self._this_commit_hash}'...")
             self._store_historic_data(historic_data_json)
@@ -163,20 +189,37 @@ class PersistentStorage(ABC):
 
     @property
     def has_historic_data(self):
+        """
+        Flag denoting that persistent storage was able to find relevant historic data for the requested branch.
+        """
         return self._has_historic_data
 
     @property
     def last_commit_hash(self):
+        """
+        Hash of the last commit we processed, ingested from our historic data.
+        """
         return self._last_commit_hash
 
     @property
-    def is_repeat_sequence(self):
+    def is_last_commit_hash_equal_to_this_commit_hash(self):
+        """
+        Is the current commit that we are running TIAF on the same as the last commit we have in our historic data.
+        This means that this is a repeat sequence.
+        """
         return self._last_commit_hash == self._this_commit_hash
 
     @property
     def this_commit_last_commit_hash(self):
+        """
+        Hash of this commit. Is none if this commit hash was not found in our historic data.
+        """
         return self._this_commit_hash_last_commit_hash
 
     @property
-    def can_rerun_sequence(self):
+    def has_previous_last_commit_hash(self):
+        """
+        If the hash of the last commit was found in our historic data, then this flag will be set.
+        """
         return self._has_previous_last_commit_hash
+

@@ -47,7 +47,8 @@ namespace UnitTest
 
         void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
         {
-
+            // This should fail given we should be in a disconnecting state
+            EXPECT_FALSE(connection->Disconnect(reason, endpoint));
         }
     };
 

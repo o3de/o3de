@@ -127,8 +127,11 @@ namespace GradientSignal
     void SurfaceMaskGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         SurfaceMaskGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
 
         // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
         GradientRequestBus::Handler::BusConnect(GetEntityId());
@@ -138,6 +141,8 @@ namespace GradientSignal
     {
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
         SurfaceMaskGradientRequestBus::Handler::BusDisconnect();
@@ -251,4 +256,37 @@ namespace GradientSignal
 
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
+
+    void SurfaceMaskGradientComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds,
+        const SurfaceData::SurfaceTagSet& changedSurfaceTags)
+    {
+        bool changedTagAffectsGradient = false;
+
+        // Only hold the lock while we're comparing the surface tags. Don't hold onto it during the OnCompositionChanged call,
+        // because that can execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::shared_lock lock(m_queryMutex);
+            for (auto& tag : m_configuration.m_surfaceTagList)
+            {
+                if (changedSurfaceTags.contains(tag))
+                {
+                    changedTagAffectsGradient = true;
+                    break;
+                }
+            }
+        }
+
+        if (changedTagAffectsGradient)
+        {
+            AZ::Aabb expandedBounds(oldBounds);
+            expandedBounds.AddAabb(newBounds);
+
+            LmbrCentral::DependencyNotificationBus::Event(
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedBounds);
+        }
+    }
+
 }

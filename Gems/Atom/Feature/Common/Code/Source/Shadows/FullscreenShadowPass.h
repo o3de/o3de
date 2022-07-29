@@ -27,7 +27,9 @@ namespace AZ
         class FullscreenShadowPass final
             : public RPI::FullscreenTrianglePass
         {
-            AZ_RPI_PASS(FullscreenShadow);
+            AZ_RPI_PASS(FullscreenShadowPass);
+
+            using Base = RPI::FullscreenTrianglePass;
 
         public:
             AZ_RTTI(AZ::Render::FullscreenShadowPass, "{A7D3076A-DD01-4B79-AF34-4BB72DAD35E2}", RPI::FullscreenTrianglePass);

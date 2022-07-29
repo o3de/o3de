@@ -27,7 +27,6 @@
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <EMotionFX/Rendering/OpenGL2/Source/GraphicsManager.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>

@@ -192,14 +192,16 @@ namespace EMStudio
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
                 AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+                m_rotateManipulators.SetLocalOrientation(m_mouseDownStartTransform.GetRotation());
             });
 
         m_rotateManipulators.InstallMouseMoveCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion,
-                    m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta);
+                AZ::Quaternion localRotation = m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta;
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
+                m_rotateManipulators.SetLocalOrientation(localRotation);
             });
 
         // Setup the scale manipulator

@@ -185,11 +185,13 @@ namespace AZ
     
         void CommandListBase::WaitOnResourceFence(const Fence& fence)
         {
+            m_isEncoded = true;
             fence.WaitOnGpu(m_mtlCommandBuffer);
         }
     
         void CommandListBase::SignalResourceFence(const Fence& fence)
         {
+            m_isEncoded = true;
             fence.SignalFromGpu(m_mtlCommandBuffer);
         }
     

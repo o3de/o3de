@@ -340,6 +340,7 @@ namespace EMotionFX::MotionMatching
     void FeatureTrajectory::DebugDrawTrajectory(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const FeatureMatrix& featureMatrix,
+        const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex,
         const Transform& worldSpaceTransform,
         const AZ::Color& color,
@@ -360,8 +361,9 @@ namespace EMotionFX::MotionMatching
         AZ::Vector3 nextSamplePos;
         for (size_t i = 0; i < numSamples - 1; ++i)
         {
-            const Sample currentSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
-            nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
+            Sample currentSample =
+                GetFeatureDataInverseTransformed(featureMatrix, featureTransformer, frameIndex, splineToFeatureMatrixIndex(i));
+            nextSample = GetFeatureDataInverseTransformed(featureMatrix, featureTransformer, frameIndex, splineToFeatureMatrixIndex(i + 1));
 
             const AZ::Vector3 currentSamplePos = worldSpaceTransform.TransformPoint(AZ::Vector3(currentSample.m_position));
             nextSamplePos = worldSpaceTransform.TransformPoint(AZ::Vector3(nextSample.m_position));
@@ -387,16 +389,17 @@ namespace EMotionFX::MotionMatching
         AzFramework::DebugDisplayRequests& debugDisplay,
         const Pose& currentPose,
         const FeatureMatrix& featureMatrix,
+        const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex)
     {
         const Transform transform = currentPose.GetWorldSpaceTransform(m_jointIndex);
 
         DebugDrawTrajectory(
-            debugDisplay, featureMatrix, frameIndex, transform, m_debugColor, m_numPastSamples,
+            debugDisplay, featureMatrix, featureTransformer, frameIndex, transform, m_debugColor, m_numPastSamples,
             AZStd::bind(&FeatureTrajectory::CalcPastFrameIndex, this, AZStd::placeholders::_1));
 
         DebugDrawTrajectory(
-            debugDisplay, featureMatrix, frameIndex, transform, m_debugColor, m_numFutureSamples,
+            debugDisplay, featureMatrix, featureTransformer, frameIndex, transform, m_debugColor, m_numFutureSamples,
             AZStd::bind(&FeatureTrajectory::CalcFutureFrameIndex, this, AZStd::placeholders::_1));
     }
 
@@ -547,6 +550,20 @@ namespace EMotionFX::MotionMatching
             /*.m_position           =*/featureMatrix.GetVector2(frameIndex, columnOffset + 0),
             /*.m_facingDirection    =*/featureMatrix.GetVector2(frameIndex, columnOffset + 2),
         };
+    }
+
+    FeatureTrajectory::Sample FeatureTrajectory::GetFeatureDataInverseTransformed(
+        const FeatureMatrix& featureMatrix, const FeatureMatrixTransformer* featureTransformer, size_t frameIndex, size_t sampleIndex) const
+    {
+        Sample sample = GetFeatureData(featureMatrix, frameIndex, sampleIndex);
+        if (featureTransformer)
+        {
+            const size_t columnOffset = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
+
+            sample.m_position = featureTransformer->InverseTransform(sample.m_position, columnOffset + 0);
+            sample.m_facingDirection = featureTransformer->InverseTransform(sample.m_facingDirection, columnOffset + 2);
+        }
+        return sample;
     }
 
     void FeatureTrajectory::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample)

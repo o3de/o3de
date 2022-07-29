@@ -12,6 +12,7 @@ set(FILES
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
     ActionManager/MenuManagerTests.cpp
+    ActionManager/ToolBarManagerTests.cpp
     ArchiveTests.cpp
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
@@ -161,5 +162,6 @@ set(FILES
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
+    Viewport/ViewBookmarkTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

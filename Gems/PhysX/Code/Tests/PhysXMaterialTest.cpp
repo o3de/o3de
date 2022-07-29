@@ -16,22 +16,13 @@
 #include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
 
+#include <Tests/PhysXGenericTestFixture.h>
+
 namespace UnitTest
 {
     static constexpr float Tolerance = 1e-4f;
 
-    class PhysXMaterialFixture
-        : public testing::Test
-    {
-    public:
-        void TearDown() override
-        {
-            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
-            {
-                materialManager->DeleteAllMaterials();
-            }
-        }
-    };
+    using PhysXMaterialFixture = PhysX::GenericPhysicsInterfaceTest;
 
     TEST_F(PhysXMaterialFixture, Material_FindOrCreateMaterial)
     {

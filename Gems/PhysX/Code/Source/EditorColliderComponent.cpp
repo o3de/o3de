@@ -144,8 +144,8 @@ namespace PhysX
     void EditorColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysXTriggerService"));
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
     }
 
     void EditorColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -207,7 +207,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
@@ -700,11 +700,17 @@ namespace PhysX
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
-        // GHI #9780
         // By refreshing the entire tree the component's properties reflected on edit context
         // will get updated correctly and show the right material slots list.
         // Unfortunately, the level prefab did its check against the dirty entity before
         // this and it will save old data to file (the previous material slots list).
+        // To workaround this issue we mark the entity as dirty again so the prefab
+        // will save the most current data.
+        // There is a side effect to this fix though, the undo stack needs to be amended and there is
+        // no good way to do that at the moment. This means a user will have to hit Ctrl+Z twice
+        // to revert its last change, which is not good, but not as bad as losing data.
+        AzToolsFramework::ScopedUndoBatch undoBatch("PhysX editor collider component material slots updated");
+        undoBatch.MarkEntityDirty(GetEntityId());
 
         ValidateAssetMaterials();
     }

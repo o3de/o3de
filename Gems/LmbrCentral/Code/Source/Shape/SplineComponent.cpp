@@ -182,16 +182,28 @@ namespace LmbrCentral
                 Handler<BehaviorSplineComponentNotificationBusHandler>();
 
             behaviorContext->EBus<SplineComponentRequestBus>("SplineComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                 ->Attribute(AZ::Script::Attributes::Module, "shape")
-                ->Event("GetSpline", &SplineComponentRequestBus::Events::GetSpline)
+                ->Event("GetSpline",
+                    [](SplineComponentRequests* handler) -> const AZ::Spline&
+                    {
+                        return *(handler->GetSpline());
+                    })
                 ->Event("SetClosed", &SplineComponentRequestBus::Events::SetClosed)
                 ->Event("AddVertex", &SplineComponentRequestBus::Events::AddVertex)
                 ->Event("UpdateVertex", &SplineComponentRequestBus::Events::UpdateVertex)
                 ->Event("InsertVertex", &SplineComponentRequestBus::Events::InsertVertex)
                 ->Event("RemoveVertex", &SplineComponentRequestBus::Events::RemoveVertex)
-                ->Event("ClearVertices", &SplineComponentRequestBus::Events::ClearVertices);
+                ->Event("ClearVertices", &SplineComponentRequestBus::Events::ClearVertices)
+                ->Event("GetVertex",
+                    [](SplineComponentRequests* handler, size_t index) -> AZStd::tuple<AZ::Vector3, bool>
+                    {
+                        AZ::Vector3 vertex(0.0f);
+                        bool vertexFound = handler->GetVertex(index, vertex);
+                        return AZStd::make_tuple(vertex, vertexFound);
+                    })
+                ->Event("GetVertexCount", &SplineComponentRequestBus::Events::Size);
         }
     }
 

@@ -36,7 +36,7 @@ namespace PhysX
 
         if (classElement.GetVersion() <= 1)
         {
-            const int pvdTransportTypeElemIndex = classElement.FindElement(AZ_CRC("PvdTransportType", 0x91e0b21e));
+            const int pvdTransportTypeElemIndex = classElement.FindElement(AZ_CRC_CE("PvdTransportType"));
 
             if (pvdTransportTypeElemIndex >= 0)
             {
@@ -58,7 +58,7 @@ namespace PhysX
 
         if (classElement.GetVersion() <= 2)
         {
-            const int globalColliderDebugDrawElemIndex = classElement.FindElement(AZ_CRC("GlobalColliderDebugDraw", 0xca73ed43));
+            const int globalColliderDebugDrawElemIndex = classElement.FindElement(AZ_CRC_CE("GlobalColliderDebugDraw"));
 
             if (globalColliderDebugDrawElemIndex >= 0)
             {
@@ -107,7 +107,7 @@ namespace PhysX
                 editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_enabled,
                     "Enabled", "Enables the PhysX system component.")
@@ -118,12 +118,12 @@ namespace PhysX
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PhysXService"));
+        provided.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -248,12 +248,12 @@ namespace PhysX
         return convex;
     }
 
-    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns)
+    physx::PxHeightField* SystemComponent::CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows)
     {
         physx::PxHeightFieldDesc desc;
         desc.format = physx::PxHeightFieldFormat::eS16_TM;
-        desc.nbColumns = numColumns;
-        desc.nbRows = numRows;
+        desc.nbColumns = static_cast<physx::PxU32>(numColumns);
+        desc.nbRows = static_cast<physx::PxU32>(numRows);
         desc.samples.data = samples;
         desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
@@ -417,6 +417,16 @@ namespace PhysX
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_physXSystem->CreateCollisionGroup(groupName, group);
+    }
+
+    bool SystemComponent::ShouldCollide(
+        const Physics::ColliderConfiguration& colliderConfigurationA, const Physics::ColliderConfiguration& colliderConfigurationB)
+    {
+        physx::PxFilterData filterDataA = PhysX::Collision::CreateFilterData(
+            colliderConfigurationA.m_collisionLayer, GetCollisionGroupById(colliderConfigurationA.m_collisionGroupId));
+        physx::PxFilterData filterDataB = PhysX::Collision::CreateFilterData(
+            colliderConfigurationB.m_collisionLayer, GetCollisionGroupById(colliderConfigurationB.m_collisionGroupId));
+        return PhysX::Collision::ShouldCollide(filterDataA, filterDataB);
     }
 
     physx::PxFilterData SystemComponent::CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group)

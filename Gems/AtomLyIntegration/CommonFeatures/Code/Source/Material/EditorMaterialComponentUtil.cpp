@@ -113,8 +113,8 @@ namespace AZ
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
                 exportData.m_materialTypeVersion = editData.m_materialTypeAsset->GetVersion();
-                exportData.m_materialType = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialTypeSourcePath);
-                exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
+                exportData.m_materialType = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialTypeSourcePath);
+                exportData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
@@ -196,7 +196,7 @@ namespace AZ
             {
                 AZ::Data::AssetId primaryMaterialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
                     materialAssignmentId);
                 AZ::Data::AssetId primaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(primaryMaterialAssetId);
 
@@ -206,7 +206,7 @@ namespace AZ
                     {
                         AZ::Data::AssetId secondaryMaterialAssetId = {};
                         MaterialComponentRequestBus::EventResult(
-                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
                             materialAssignmentId);
                         AZ::Data::AssetId secondaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(secondaryMaterialAssetId);
                         return primaryMaterialTypeAssetId == secondaryMaterialTypeAssetId;
@@ -220,7 +220,7 @@ namespace AZ
             {
                 AZ::Data::AssetId primaryMaterialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
                     materialAssignmentId);
 
                 return primaryMaterialAssetId.IsValid() && AZStd::all_of(
@@ -229,7 +229,7 @@ namespace AZ
                     {
                         AZ::Data::AssetId secondaryMaterialAssetId = {};
                         MaterialComponentRequestBus::EventResult(
-                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId,
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
                             materialAssignmentId);
                         return primaryMaterialAssetId == secondaryMaterialAssetId;
                     });
@@ -240,7 +240,7 @@ namespace AZ
             {
                 MaterialAssignmentMap primaryMaterialSlots;
                 MaterialComponentRequestBus::EventResult(
-                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
 
                 return AZStd::all_of(
                     secondaryEntityIds.begin(), secondaryEntityIds.end(),
@@ -249,7 +249,7 @@ namespace AZ
                         MaterialAssignmentMap secondaryMaterialSlots;
                         MaterialComponentRequestBus::EventResult(
                             secondaryMaterialSlots, secondaryEntityId,
-                            &MaterialComponentRequestBus::Events::GetOriginalMaterialAssignments);
+                            &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
 
                         if (primaryMaterialSlots.size() != secondaryMaterialSlots.size())
                         {

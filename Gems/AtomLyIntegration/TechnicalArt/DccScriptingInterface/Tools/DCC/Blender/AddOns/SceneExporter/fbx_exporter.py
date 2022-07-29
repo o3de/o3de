@@ -10,7 +10,6 @@
 # -------------------------------------------------------------------------
 import bpy
 from pathlib import Path
-from . import ui
 from . import utils
 from . import o3de_utils
 from . import constants
@@ -54,6 +53,15 @@ def amimation_export_options():
         bake_anim_force_startend_keying_option = False
         bpy.types.Scene.file_menu_animation_export = False
         return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    elif bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
+        # Set Animation Options
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        bpy.types.Scene.file_menu_animation_export = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
 
     if bpy.types.Scene.file_menu_animation_export:
         bake_anim_option = True
@@ -75,6 +83,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
     This function will send to selected .FBX to an O3DE Project Path
     @param fbx_file_path this is the o3de project path where the selected meshe(s)
     will be exported as an .fbx
+    @param file_name A custom file name string
     """
     # Export file path Var
     export_file_path = ''
@@ -121,7 +130,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_active_collection=False,
             global_scale=1.0,
             apply_unit_scale=True,
-            apply_scale_options='FBX_SCALE_NONE',
+            apply_scale_options='FBX_SCALE_UNITS',
             use_space_transform=True,
             bake_space_transform=False,
             object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
@@ -132,7 +141,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_mesh_edges=False,
             use_tspace=False,
             use_custom_props=False,
-            add_leaf_bones=True,
+            add_leaf_bones=False,
             primary_bone_axis='Y',
             secondary_bone_axis='X',
             use_armature_deform_only=False,
@@ -151,8 +160,10 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_metadata=True,
             axis_forward='-Z',
             axis_up='Y')
-        ui.message_box("3D Model Exported, please reload O3DE Level", "O3DE Tools", "LIGHT")
+        
+        transforms_status = utils.check_selected_transforms()
+        # Show export status
+        bpy.types.Scene.pop_up_notes = f'{file_name} Exported! Freeze Transforms: {transforms_status}'
+        bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
-            utils.ReplaceStoredPaths()
-    else:
-        ui.message_box("Nothing Selected!", "O3DE Tools", "ERROR")
+            utils.replace_stored_paths()

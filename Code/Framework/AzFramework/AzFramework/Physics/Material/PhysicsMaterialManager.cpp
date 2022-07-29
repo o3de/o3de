@@ -22,7 +22,25 @@ namespace Physics
 
     MaterialManager::~MaterialManager()
     {
+        for (const auto& material : m_materials)
+        {
+            if (material.first != m_defaultMaterial->GetId())
+            {
+                AZ_Warning(
+                    "PhysX Material Manager", !(material.second.use_count() > 1),
+                    "Leak: Material '%s' (from asset '%s') is still being referenced by %ld objects.",
+                    material.second->GetId().ToString<AZStd::string>().c_str(),
+                    material.second->GetMaterialAsset().GetHint().c_str(),
+                    material.second.use_count() - 1);
+            }
+        }
         m_materials.clear();
+
+        AZ_Warning(
+            "PhysX Material Manager", !(m_defaultMaterial.use_count() > 1),
+            "Leak: Default material '%s' is still being referenced by %ld objects.",
+            m_defaultMaterial->GetId().ToString<AZStd::string>().c_str(),
+            m_defaultMaterial.use_count() - 1);
         m_defaultMaterial.reset();
     }
 

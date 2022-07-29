@@ -143,7 +143,7 @@ namespace JsonSerializationTests
 
         bool AreEqual(const Container& lhs, const Container& rhs) override
         {
-            if (lhs.size() != rhs.size())
+            if (AZStd::ranges::distance(lhs) != AZStd::ranges::distance(rhs))
             {
                 return false;
             }
@@ -237,7 +237,7 @@ namespace JsonSerializationTests
 
         bool AreEqual(const Container& lhs, const Container& rhs) override
         {
-            if (lhs.size() != rhs.size())
+            if (AZStd::ranges::distance(lhs) != AZStd::ranges::distance(rhs))
             {
                 return false;
             }

@@ -9,6 +9,7 @@
 
 #include <AzCore/std/ranges/all_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
+#include <AzCore/std/typetraits/is_reference.h>
 
 namespace AZStd::ranges
 {
@@ -174,15 +175,32 @@ namespace AZStd::ranges
     struct elements_view_iterator_category<View, N, Const, enable_if_t<forward_range<Internal::maybe_const<Const, View>> >>
     {
     private:
-        using Base = Internal::maybe_const<Const, View>;
-        using IterCategory = typename iterator_traits<iterator_t<Base>>::iterator_category;
+        // Use a "function" to check the type traits of the join view iterators
+        // and return an instance of the correct tag type
+        // The function will only be used in the unevaluated context of decltype
+        // to determine the type.
+        // It is a form of template metaprogramming which uses actual code
+        // to create an instance of a type and then uses decltype to extract the type
+        static constexpr auto get_iterator_category()
+        {
+            using Base = Internal::maybe_const<Const, View>;
+            using IterCategory = typename iterator_traits<iterator_t<Base>>::iterator_category;
+
+            if constexpr (!is_lvalue_reference_v<decltype(AZStd::get<N>(*declval<iterator_t<Base>>()))>)
+            {
+                return input_iterator_tag{};
+            }
+            else if constexpr (derived_from<IterCategory, random_access_iterator_tag>)
+            {
+                return random_access_iterator_tag{};
+            }
+            else
+            {
+                return IterCategory{};
+            }
+        }
     public:
-        using iterator_category = conditional_t<
-            !is_lvalue_reference_v<decltype(AZStd::get<N>(*declval<iterator_t<Base>>()))>,
-            input_iterator_tag,
-            conditional_t<derived_from<IterCategory, random_access_iterator_tag>,
-                random_access_iterator_tag,
-                IterCategory>>;
+        using iterator_category = decltype(get_iterator_category());
     };
 
     template<class View, size_t N, class ViewEnable>
@@ -202,6 +220,21 @@ namespace AZStd::ranges
         friend struct sentinel;
 
         using Base = Internal::maybe_const<Const, View>;
+
+        static constexpr decltype(auto) get_element(const iterator_t<Base>& i)
+        {
+            if constexpr (is_reference_v<range_reference_t<Base>>)
+            {
+                // Return a reference to the element of the tuple like type
+                return AZStd::get<N>(*i);
+            }
+            else
+            {
+                // Cast the result of calling AZStd::get on value type reference
+                using E = remove_cv_t<tuple_element_t<N, range_reference_t<Base>>>;
+                return static_cast<E>(AZStd::get<N>(*i));
+            }
+        }
     public:
 
         using iterator_concept = conditional_t<random_access_range<Base>,
@@ -214,6 +247,18 @@ namespace AZStd::ranges
 
         using value_type = remove_cvref_t<tuple_element_t<N, range_value_t<Base>>>;
         using difference_type = range_difference_t<Base>;
+
+    // libstdc++ std::reverse_iterator use pre C++ concept when the concept feature is off
+    // which requires that the iterator type has the aliases
+    // of difference_type, value_type, pointer, reference, iterator_category,
+    // With C++20, the iterator concept support is used to deduce the traits
+    // needed, therefore alleviating the need to special std::iterator_traits
+    // The following code allows std::reverse_iterator(which is aliased into AZStd namespace)
+    // to work with the AZStd range views
+    #if !__cpp_lib_concepts
+        using pointer = void;
+        using reference = decltype(get_element(declval<iterator_t<Base>>()));
+    #endif
 
         template<class BaseIter = iterator_t<Base>, class = enable_if_t<default_initializable<BaseIter>>>
         iterator() {}
@@ -250,7 +295,7 @@ namespace AZStd::ranges
             return *this;
         }
 
-        constexpr decltype(auto) operator++(int)
+        constexpr auto operator++(int)
         {
             if constexpr (!forward_range<Base>)
             {
@@ -265,14 +310,14 @@ namespace AZStd::ranges
         }
 
         template<bool Enable = bidirectional_range<Base>, class = enable_if_t<Enable>>
-        constexpr iterator& operator--() const
+        constexpr iterator& operator--()
         {
             --m_current;
             return *this;
         }
 
         template<bool Enable = bidirectional_range<Base>, class = enable_if_t<Enable>>
-        constexpr iterator operator--(int) const
+        constexpr iterator operator--(int)
         {
             auto tmp = *this;
             --(*this);
@@ -359,22 +404,8 @@ namespace AZStd::ranges
         {
             return x.m_current - y.m_current;
         }
-    private:
-        static constexpr decltype(auto) get_element(const iterator_t<Base>& i)
-        {
-            if constexpr (is_reference_v<range_reference_t<Base>>)
-            {
-                // Return a reference to the element of the tuple like type
-                return AZStd::get<N>(*i);
-            }
-            else
-            {
-                // Cast the result of calling AZStd::get on value type reference
-                using E = remove_cv_t<tuple_element_t<N, range_reference_t<Base>>>;
-                return static_cast<E>(AZStd::get<N>(*i));
-            }
-        }
 
+    private:
         //! iterator to range being viewed
         iterator_t<Base> m_current{};
     };

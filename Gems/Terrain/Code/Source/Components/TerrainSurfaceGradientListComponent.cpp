@@ -37,8 +37,8 @@ namespace Terrain
                 ->Attribute(AZ::Script::Attributes::Category, "Terrain")
                 ->Attribute(AZ::Script::Attributes::Module, "terrain")
                 ->Constructor()
-                ->Property("gradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
-                ->Property("surfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
+                ->Property("GradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
+                ->Property("SurfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
         }
     }
 
@@ -96,6 +96,7 @@ namespace Terrain
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the surface information needs to be refreshed.
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
 
@@ -205,9 +206,25 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        OnCompositionRegionChanged(AZ::Aabb::CreateNull());
+    }
+
+    void TerrainSurfaceGradientListComponent::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
+    {
+        if (dirtyRegion.IsValid())
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshRegion,
+                dirtyRegion,
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
+        else
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea,
+                GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
     }
 
 } // namespace Terrain

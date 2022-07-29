@@ -72,12 +72,12 @@ namespace AzNetworking
         return m_listenThread.Listen(*this);
     }
 
-    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress)
+    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress, uint16_t localPort)
     {
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
         AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, m_trustZone, net_TcpUseEncryption);
         AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Invalid role for connection");
-        connection->Connect();
+        connection->Connect(localPort);
 
         TcpSocket* tcpSocket = connection->GetTcpSocket();
         if (tcpSocket == nullptr)

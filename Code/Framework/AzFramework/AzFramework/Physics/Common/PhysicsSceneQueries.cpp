@@ -50,7 +50,7 @@ namespace AzPhysics
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                if (auto* editContext = azrtti_cast<AZ::EditContext*>(serializeContext->GetEditContext()))
+                if (auto* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Enum<QueryType>("Query Type Flags", "Object types to include in the query")
                         ->Value("Static", QueryType::Static)

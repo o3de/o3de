@@ -8,6 +8,7 @@
 
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Grid/GridComponentConfig.h>
@@ -69,7 +70,7 @@ namespace MaterialCanvas
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
 
         AZ::Render::MaterialComponentRequestBus::Event(
-            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+            GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
             AZ::Render::DefaultMaterialAssignmentId,
             AZ::RPI::AssetUtils::GetAssetIdForProductPath("materials/special/shadowcatcher.azmaterial"));
 
@@ -120,8 +121,20 @@ namespace MaterialCanvas
         return m_gridEntity ? m_gridEntity->GetId() : AZ::EntityId();
     }
 
+    void MaterialCanvasViewportContent::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        AZ::Render::MaterialComponentRequestBus::Event(
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, AZ::Data::AssetId());
+    }
+
     void MaterialCanvasViewportContent::OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId)
     {
+        ApplyMaterial(documentId);
+    }
+
+    void MaterialCanvasViewportContent::OnDocumentModified(const AZ::Uuid& documentId)
+    {
+        ApplyMaterial(documentId);
     }
 
     void MaterialCanvasViewportContent::OnViewportSettingsChanged()
@@ -160,7 +173,7 @@ namespace MaterialCanvas
                     viewportRequests->GetShadowCatcherEnabled());
 
                 AZ::Render::MaterialComponentRequestBus::Event(
-                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyOverride,
+                    GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetPropertyValue,
                     AZ::Render::DefaultMaterialAssignmentId, "settings.opacity", AZStd::any(lightingPreset.m_shadowCatcherOpacity));
 
                 AZ::Render::DisplayMapperComponentRequestBus::Event(
@@ -171,5 +184,29 @@ namespace MaterialCanvas
                     GetGridEntityId(), &AZ::Render::GridComponentRequestBus::Events::SetSize,
                     viewportRequests->GetGridEnabled() ? 4.0f : 0.0f);
             });
+    }
+
+    void MaterialCanvasViewportContent::ApplyMaterial(const AZ::Uuid& documentId)
+    {
+        AZ::Data::AssetId assetId;
+
+        AZStd::vector<AZStd::string> generatedFiles;
+        MaterialCanvasDocumentRequestBus::EventResult(
+            generatedFiles, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGeneratedFilePaths);
+
+        for (const auto& generatedFile : generatedFiles)
+        {
+            if (AZ::StringFunc::EndsWith(generatedFile, ".material"))
+            {
+                if (auto assetIdOutcome = AZ::RPI::AssetUtils::MakeAssetId(generatedFile, 0))
+                {
+                    assetId = assetIdOutcome.GetValue();
+                    break;
+                }
+            }
+        }
+
+        AZ::Render::MaterialComponentRequestBus::Event(
+            GetObjectEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetIdOnDefaultSlot, assetId);
     }
 } // namespace MaterialCanvas

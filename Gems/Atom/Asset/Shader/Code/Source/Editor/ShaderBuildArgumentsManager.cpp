@@ -189,7 +189,7 @@ namespace AZ
             defaultConfigDirectory = ResolvePathAliases(defaultConfigDirectory);
             // The default directory, which contains factory settings, must always exist.
             AZ_Assert(AZ::IO::SystemFile::Exists(defaultConfigDirectory.c_str()), "The default directory with shader build arguments must exist: %s", defaultConfigDirectory.c_str());
-            return { defaultConfigDirectory };
+            return AZ::IO::FixedMaxPath{ defaultConfigDirectory };
         }
 
         AZ::IO::FixedMaxPath ShaderBuildArgumentsManager::GetUserConfigDirectoryPath()
@@ -205,7 +205,7 @@ namespace AZ
                 return {};
             }
             userConfig = ResolvePathAliases(userConfig);
-            return { userConfig };
+            return AZ::IO::FixedMaxPath{ userConfig };
         }
 
         AZStd::unordered_map<AZStd::string, AZ::IO::FixedMaxPath> ShaderBuildArgumentsManager::DiscoverConfigurationFiles()

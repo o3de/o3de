@@ -210,6 +210,14 @@ namespace AZ
                 m_drawListTag.Reset();
             }
         }
+        
+        AZStd::string MakeTimeString(AZ::u64 timestampMilliseconds, AZ::u64 nowMilliseconds)
+        {
+            AZ::u64 elapsedMilliseconds = nowMilliseconds - timestampMilliseconds;
+            double elapsedSeconds = aznumeric_cast<double>(elapsedMilliseconds) / 1'000;
+            AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestampMilliseconds, elapsedSeconds);
+            return timeString;
+        };
 
         ///////////////////////////////////////////////////////////////////////
         // AssetBus overrides
@@ -244,20 +252,12 @@ namespace AZ
 
                 if (ShaderReloadDebugTracker::IsEnabled())
                 {
-                    auto makeTimeString = [](AZ::u64 timestamp, AZ::u64 now)
-                    {
-                        AZ::u64 elapsedMillis = now - timestamp;
-                        double elapsedSeconds = aznumeric_cast<double>(elapsedMillis / 1'000);
-                        AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
-                        return timeString;
-                    };
-
-                    AZStd::sys_time_t now = AZStd::GetTimeNowMicroSecond();
+                    AZStd::sys_time_t now = AZStd::GetTimeUTCMilliSecond();
 
                     const auto shaderVariantAsset = m_asset->GetRootVariantAsset();
                     ShaderReloadDebugTracker::Printf("{%p}->Shader::OnAssetReloaded for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
-                        m_asset.GetHint().c_str(), makeTimeString(m_asset->m_buildTimestamp, now).c_str(),
-                        shaderVariantAsset.GetHint().c_str(), makeTimeString(shaderVariantAsset->GetBuildTimestamp(), now).c_str());
+                        m_asset.GetHint().c_str(), MakeTimeString(m_asset->m_buildTimestamp, now).c_str(),
+                        shaderVariantAsset.GetHint().c_str(), MakeTimeString(shaderVariantAsset->GetBuildTimestamp(), now).c_str());
                 }
                 Init(*m_asset.Get());
                 ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
@@ -406,19 +406,11 @@ namespace AZ
             
             if (ShaderReloadDebugTracker::IsEnabled())
             {
-                auto makeTimeString = [](AZStd::sys_time_t timestamp, AZStd::sys_time_t now)
-                {
-                    AZStd::sys_time_t elapsedMicroseconds = now - timestamp;
-                    double elapsedSeconds = aznumeric_cast<double>(elapsedMicroseconds / 1'000'000);
-                    AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
-                    return timeString;
-                };
-
-                AZStd::sys_time_t now = AZStd::GetTimeNowMicroSecond();
+                AZStd::sys_time_t now = AZStd::GetTimeUTCMilliSecond();
 
                 ShaderReloadDebugTracker::Printf("{%p}->Shader::GetVariant for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
-                    m_asset.GetHint().c_str(), makeTimeString(m_asset->GetBuildTimestamp(), now).c_str(),
-                    variant.GetShaderVariantAsset().GetHint().c_str(), makeTimeString(variant.GetShaderVariantAsset()->GetBuildTimestamp(), now).c_str());
+                    m_asset.GetHint().c_str(), MakeTimeString(m_asset->GetBuildTimestamp(), now).c_str(),
+                    variant.GetShaderVariantAsset().GetHint().c_str(), MakeTimeString(variant.GetShaderVariantAsset()->GetBuildTimestamp(), now).c_str());
             }
 
             return variant;

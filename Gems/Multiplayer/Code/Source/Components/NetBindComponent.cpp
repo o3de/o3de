@@ -9,6 +9,7 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/MultiplayerController.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
@@ -29,11 +30,16 @@ namespace Multiplayer
 {
     void NetBindComponent::Reflect(AZ::ReflectContext* context)
     {
+        PrefabEntityId::Reflect(context);
+
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
             serializeContext->Class<NetBindComponent, AZ::Component>()
-                ->Version(1);
+                ->Version(2)
+                ->Field("Prefab EntityId", &NetBindComponent::m_prefabEntityId)
+                ->Field("Prefab AssetId", &NetBindComponent::m_prefabAssetId)
+                ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
@@ -106,7 +112,7 @@ namespace Multiplayer
                     return netBindComponent->IsNetEntityRoleClient();
                 })
 
-            ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
+                ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -122,7 +128,24 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleServer();
                 })
-            ;
+
+                ->Method("MarkForRemoval", [](AZ::EntityId id) {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                        return;
+                    }
+
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return;
+                    }
+
+                    AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(netBindComponent->GetEntityHandle());
+                });
         }
     }
 
@@ -147,7 +170,22 @@ namespace Multiplayer
 
     void NetBindComponent::Init()
     {
-        ;
+        auto* netEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+
+        if (m_netEntityId == InvalidNetEntityId && netEntityManager && m_prefabAssetId.IsValid())
+        {
+            // The component hasn't been pre-setup with NetworkEntityManager yet. Setup now.
+            const AZ::Name netSpawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(m_prefabAssetId);
+
+            AZ_Assert(!netSpawnableName.IsEmpty(),
+                "Could not locate net spawnable on Init for Prefab AssetId: %s",
+                m_prefabAssetId.ToFixedString().c_str());
+
+            PrefabEntityId prefabEntityId;
+            prefabEntityId.m_prefabName = netSpawnableName;
+            prefabEntityId.m_entityOffset = m_prefabEntityId.m_entityOffset;
+            netEntityManager->SetupNetEntity(GetEntity(), prefabEntityId, NetEntityRole::Authority);
+        }
     }
 
     void NetBindComponent::Activate()
@@ -212,6 +250,16 @@ namespace Multiplayer
         return (m_netEntityRole == NetEntityRole::Client);
     }
 
+    void NetBindComponent::SetAllowEntityMigration(EntityMigration value)
+    {
+        m_netEntityMigration = value;
+    }
+
+    EntityMigration NetBindComponent::GetAllowEntityMigration() const
+    {
+        return m_netEntityMigration;
+    }
+
     bool NetBindComponent::HasController() const
     {
         return (m_netEntityRole == NetEntityRole::Authority)
@@ -226,6 +274,11 @@ namespace Multiplayer
     const PrefabEntityId& NetBindComponent::GetPrefabEntityId() const
     {
         return m_prefabEntityId;
+    }
+
+    void NetBindComponent::SetPrefabEntityId(const PrefabEntityId& prefabEntityId)
+    {
+        m_prefabEntityId = prefabEntityId;
     }
 
     ConstNetworkEntityHandle NetBindComponent::GetEntityHandle() const
@@ -470,13 +523,13 @@ namespace Multiplayer
         stats.RecordEntitySerializeStart(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         bool success = true;
+        serializer.BeginObject(GetEntity()->GetName().c_str());
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
             success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer);
-
             stats.RecordComponentSerializeEnd(serializer.GetSerializerMode(), (*iter)->GetNetComponentId());
         }
-
+        serializer.EndObject(GetEntity()->GetName().c_str());
         stats.RecordEntitySerializeStop(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         return success;
@@ -700,6 +753,16 @@ namespace Multiplayer
             m_needsToBeStopped = false;
             m_entityStopEvent.Signal(m_netEntityHandle);
         }
+    }
+
+    const AZ::Data::AssetId& NetBindComponent::GetPrefabAssetId() const
+    {
+        return m_prefabAssetId;
+    }
+
+    void NetBindComponent::SetPrefabAssetId(const AZ::Data::AssetId& prefabAssetId)
+    {
+        m_prefabAssetId = prefabAssetId;
     }
 
     bool NetworkRoleHasController(NetEntityRole networkRole)

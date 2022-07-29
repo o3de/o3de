@@ -70,8 +70,8 @@ namespace O3DE::ProjectManager
             QScrollArea* templatesScrollArea = new QScrollArea(this);
             QWidget* scrollWidget = new QWidget();
 
-            FlowLayout* flowLayout = new FlowLayout(0, s_spacerSize, s_spacerSize);
-            scrollWidget->setLayout(flowLayout);
+            m_templateFlowLayout = new FlowLayout(0, s_spacerSize, s_spacerSize);
+            scrollWidget->setLayout(m_templateFlowLayout);
 
             templatesScrollArea->setWidget(scrollWidget);
             templatesScrollArea->setWidgetResizable(true);
@@ -97,49 +97,6 @@ namespace O3DE::ProjectManager
                     }
                 });
 
-            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
-            if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
-            {
-                m_templates = templatesResult.GetValue();
-
-                // sort alphabetically by display name (but putting Standard first) because they could be in any order
-                std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
-                {
-                    if (arg1.m_displayName == "Standard")
-                    {
-                        return true;
-                    }
-                    else if (arg2.m_displayName == "Standard")
-                    {
-                        return false;
-                    }
-                    else
-                    {
-                        return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
-                    }
-                });
-
-                for (int index = 0; index < m_templates.size(); ++index)
-                {
-                    ProjectTemplateInfo projectTemplate = m_templates.at(index);
-                    QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
-                    QFileInfo doesPreviewExist(projectPreviewPath);
-                    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
-                    {
-                        projectPreviewPath = ":/DefaultTemplate.png";
-                    }
-                    TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
-                    templateButton->setCheckable(true);
-                    templateButton->setProperty(k_templateIndexProperty, index);
-                    
-                    m_projectTemplateButtonGroup->addButton(templateButton);
-
-                    flowLayout->addWidget(templateButton);
-                }
-
-                // Select the first project template (default selection).
-                SelectProjectTemplate(0, /*blockSignals=*/true);
-            }
             containerLayout->addWidget(templatesScrollArea);
         }
         projectTemplateWidget->setLayout(containerLayout);
@@ -166,8 +123,60 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
+    void NewProjectSettingsScreen::AddTemplateButtons()
+    {
+        auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+        {
+            m_templates = templatesResult.GetValue();
+
+            // sort alphabetically by display name (but putting Standard first) because they could be in any order
+            std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
+            {
+                if (arg1.m_displayName == "Standard")
+                {
+                    return true;
+                }
+                else if (arg2.m_displayName == "Standard")
+                {
+                    return false;
+                }
+                else
+                {
+                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                }
+            });
+
+            for (int index = 0; index < m_templates.size(); ++index)
+            {
+                ProjectTemplateInfo projectTemplate = m_templates.at(index);
+                QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
+                QFileInfo doesPreviewExist(projectPreviewPath);
+                if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+                {
+                    projectPreviewPath = ":/DefaultTemplate.png";
+                }
+                TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
+                templateButton->setCheckable(true);
+                templateButton->setProperty(k_templateIndexProperty, index);
+                
+                m_projectTemplateButtonGroup->addButton(templateButton);
+
+                m_templateFlowLayout->addWidget(templateButton);
+            }
+
+            // Select the first project template (default selection).
+            SelectProjectTemplate(0, /*blockSignals=*/true);
+        }
+    }
+
     void NewProjectSettingsScreen::NotifyCurrentScreen()
     {
+        if (m_templates.isEmpty())
+        {
+            AddTemplateButtons();
+        }
+
         if (!m_templates.isEmpty())
         {
             UpdateTemplateDetails(m_templates.first());
@@ -209,7 +218,6 @@ namespace O3DE::ProjectManager
             m_templateIncludedGems->setObjectName("includedGems");
             templateDetailsLayout->addWidget(m_templateIncludedGems);
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
             QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
@@ -221,11 +229,10 @@ namespace O3DE::ProjectManager
 
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
             connect(configureGemsButton, &QPushButton::clicked, this, [=]()
-                    {
-                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
-                    });
+                {
+                    emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
+                });
             templateDetailsLayout->addWidget(configureGemsButton);
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED 
         }
         projectTemplateDetails->setLayout(templateDetailsLayout);
         return projectTemplateDetails;

@@ -78,7 +78,7 @@ namespace AZStd
     // Variant assignment operator #3
     template <class... Types>
     template <class T, enable_if_t<!is_same<remove_cvref_t<T>, variant<Types...>>::value, int>, class Alternative, size_t Index, enable_if_t<is_assignable<Alternative&, T>::value && is_constructible<Alternative, T>::value, int>>
-    inline auto variant<Types...>::operator=(T&& arg) -> variant&
+    inline constexpr auto variant<Types...>::operator=(T&& arg) -> variant&
     {
         m_impl.template assign<Index>(AZStd::forward<T>(arg));
         return *this;
@@ -88,7 +88,7 @@ namespace AZStd
     // Variant emplace #1
     template <class... Types>
     template <class T, class... Args, size_t Index, enable_if_t<is_constructible<T, Args...>::value, int> >
-    inline T& variant<Types...>::emplace(Args&&... args)
+    inline constexpr T& variant<Types...>::emplace(Args&&... args)
     {
         return m_impl.template emplace<Index>(AZStd::forward<Args>(args)...);
     }
@@ -96,7 +96,7 @@ namespace AZStd
     // Variant emplace #2
     template <class... Types>
     template <class T, class U, class... Args, size_t Index, enable_if_t<is_constructible<T, std::initializer_list<U>&, Args...>::value, int>>
-    inline T& variant<Types...>::emplace(std::initializer_list<U> il, Args&&... args)
+    inline constexpr T& variant<Types...>::emplace(std::initializer_list<U> il, Args&&... args)
     {
         return m_impl.template emplace<Index>(il, AZStd::forward<Args>(args)...);
     }
@@ -104,7 +104,7 @@ namespace AZStd
     // Variant emplace #3
     template <class... Types>
     template <size_t Index, class... Args, enable_if_t<(Index < variant_size<variant<Types...>>::value), int>, class Alternative, enable_if_t<is_constructible<Alternative, Args...>::value, int>>
-    inline Alternative& variant<Types...>::emplace(Args&&... args)
+    inline constexpr Alternative& variant<Types...>::emplace(Args&&... args)
     {
         return m_impl.template emplace<Index>(AZStd::forward<Args>(args)...);
     }
@@ -112,7 +112,7 @@ namespace AZStd
     // Variant emplace #4
     template <class... Types>
     template <size_t Index, class U, class... Args, enable_if_t<(Index < variant_size<variant<Types...>>::value), int>, class Alternative, enable_if_t<is_constructible<Alternative, std::initializer_list<U>&, Args...>::value, int>>
-    inline Alternative& variant<Types...>::emplace(std::initializer_list<U> il, Args&&... args)
+    inline constexpr Alternative& variant<Types...>::emplace(std::initializer_list<U> il, Args&&... args)
     {
         return m_impl.template emplace<Index>(il, AZStd::forward<Args>(args)...);
     }
@@ -131,7 +131,7 @@ namespace AZStd
 
     template <class... Types>
     template <bool Placeholder, enable_if_t<conjunction<bool_constant<Placeholder && is_swappable<Types>::value && is_move_constructible<Types>::value>...>::value, bool>>
-    inline void variant<Types...>::swap(variant& other)
+    inline constexpr void variant<Types...>::swap(variant& other)
     {
         m_impl.swap(other.m_impl);
     }
@@ -284,7 +284,7 @@ namespace AZStd
     }
 
     template <typename... Types>
-    inline void swap(variant<Types...>& lhs, variant<Types...>& rhs)
+    inline constexpr void swap(variant<Types...>& lhs, variant<Types...>& rhs)
     {
         lhs.swap(rhs);
     }

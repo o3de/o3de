@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AssetAliasesSourceData",
+    "ClassData": {
+        "AssetPaths": [
+            {
+                "Name": "MeshletsParentPassTemplate",
+                "Path": "Passes/MeshletsParent.pass"
+            },
+            {
+                "Name": "MeshletsComputePassTemplate",
+                "Path": "Passes/MeshletsCompute.pass"
+            },
+            {
+                "Name": "MeshletsRenderPassTemplate",
+                "Path": "Passes/MeshletsRender.pass"
+            }
+        ]
+    }
+}

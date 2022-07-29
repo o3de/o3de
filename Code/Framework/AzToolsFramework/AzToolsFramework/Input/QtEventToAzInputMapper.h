@@ -32,16 +32,20 @@ class QWheelEvent;
 
 namespace AzToolsFramework
 {
-    enum class CursorInputMode {
+    enum class CursorInputMode
+    {
         CursorModeNone,
-        CursorModeCaptured,   //!< Sets whether or not the cursor should be constrained to the source widget and invisible.
-                              //!< Internally, this will reset the cursor position after each move event to ensure movement
-                              //!< events don't allow the cursor to escape. This can be used for typical camera controls
-                              //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
-        CursorModeWrapped,    //!< Flags whether the curser is going to wrap around the soruce widget.
-        CursorModeWrappedX,   //!< Flags whether the curser is going to wrap around the soruce widget only on the left and right side.
-        CursorModeWrappedY    //!< Flags whether the curser is going to wrap around the soruce widget only on the top and bottom side.
+        CursorModeCaptured, //!< Sets whether or not the cursor should be constrained to the source widget and invisible.
+                            //!< Internally, this will reset the cursor position after each move event to ensure movement
+                            //!< events don't allow the cursor to escape. This can be used for typical camera controls
+                            //!< like a dolly or rotation, where mouse movement is important but cursor location is not.
+        CursorModeWrapped, //!< Flags whether the cursor is going to wrap around the source widget.
+        CursorModeWrappedX, //!< Flags whether the cursor is going to wrap around the source widget only on the left and right side.
+        CursorModeWrappedY //!< Flags whether the cursor is going to wrap around the source widget only on the top and bottom side.
     };
+
+    AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(const AzFramework::ViewportId viewportId);
+    AzFramework::InputDeviceId GetSyntheticMouseDeviceId(const AzFramework::ViewportId viewportId);
 
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
@@ -96,20 +100,20 @@ namespace AzToolsFramework
         template<class TInputChannel>
         TInputChannel* GetInputChannel(const AzFramework::InputChannelId& id)
         {
-            auto channelIt = m_channels.find(id);
-            if (channelIt != m_channels.end())
+            if (auto channelIt = m_channels.find(id); channelIt != m_channels.end())
             {
                 return static_cast<TInputChannel*>(channelIt->second);
             }
+
             return nullptr;
         }
 
         // Adds channels from the specified channel container to our input channel ID -> input channel lookup table.
         // Used for rapid lookup.
-        template <class TContainer>
-        void AddChannels(const TContainer& container)
+        template<class TContainer>
+        void AddChannels(TContainer& container)
         {
-            for (const auto& channelData : container)
+            for (auto& channelData : container)
             {
                 // Break const as we're taking these input channels from devices we own.
                 m_channels.emplace(channelData.first, const_cast<AzFramework::InputChannel*>(channelData.second));
@@ -157,7 +161,9 @@ namespace AzToolsFramework
         // Handle mouse move events.
         void HandleMouseMoveEvent(const QPoint& globalCursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
-        void HandleKeyEvent(QKeyEvent* keyEvent);
+        void HandleKeyEvent(
+            QKeyEvent* keyEvent,
+            const AZStd::function<void(const AzFramework::InputChannel* channel, QEvent* event)>& notifyUpdateChannelFn);
         // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
 
@@ -171,8 +177,6 @@ namespace AzToolsFramework
         // Populates m_highPriorityKeys.
         void InitializeHighPriorityKeys();
 
-        // The current keyboard modifier state used by our synthetic key input channels.
-        AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
         // A lookup table for Qt key -> AZ input channel.
         AZStd::unordered_map<Qt::Key, AzFramework::InputChannelId> m_keyMappings;
         // A lookup table for Qt mouse button -> AZ input channel.

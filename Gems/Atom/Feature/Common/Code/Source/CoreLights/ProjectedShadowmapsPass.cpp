@@ -25,6 +25,9 @@ namespace AZ
         ProjectedShadowmapsPass::ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
+            // Pass has it's own logic for managing children, forgo ParentPass logic
+            m_flags.m_createChildren = false;
+
             const RPI::RasterPassData* passData = RPI::PassUtils::GetPassData<RPI::RasterPassData>(descriptor);
             if (passData)
             {
@@ -99,9 +102,6 @@ namespace AZ
                 pass->SetViewportScissor(viewport, scissor);
                 return;
             }
-
-            const uint32_t baseSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-            const RHI::Size imageSize = { baseSize, baseSize, 1 };
 
             const size_t shadowmapCount = m_sizes.size();
             SetChildrenCount(shadowmapCount);

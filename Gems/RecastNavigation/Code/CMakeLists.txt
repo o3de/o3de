@@ -37,6 +37,11 @@ get_property(
     PROPERTY COMPILE_OPTIONS
 )
 include(${pal_dir}/PAL_recast_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+# Include compiler settings for Recast libraries
+set(common_platform_dir "${CMAKE_CURRENT_LIST_DIR}/Platform/Common")
+include(${common_platform_dir}/${PAL_TRAIT_COMPILER_ID}/PAL_recast_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake)
+
 set_property(
     DIRECTORY
     APPEND
@@ -49,12 +54,36 @@ set_property(
     PROPERTY COMPILE_OPTIONS ${compile_options}
 )
 unset(compile_options)
-set(RECAST_FETCHCONTENT_FOLDER "Gems/RecastNavigation/External")
-set_property(TARGET DebugUtils PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET Detour PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET DetourCrowd PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET DetourTileCache PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
-set_property(TARGET Recast PROPERTY FOLDER ${RECAST_FETCHCONTENT_FOLDER})
+
+# Place external recast libraries under RecastNavigation gem.
+get_property(recastnavigation_gem_root GLOBAL PROPERTY "@GEMROOT:RecastNavigation@")
+ly_get_engine_relative_source_dir(${recastnavigation_gem_root} relative_recastnavigation_gem_root)
+set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+foreach(recastLibrary ${recastLibraries})
+    set_property(TARGET ${recastLibrary} PROPERTY FOLDER "${relative_recastnavigation_gem_root}/External")
+endforeach()
+
+# Export external recast navigation targets for installers.
+set_property(DIRECTORY APPEND PROPERTY O3DE_SUBDIRECTORY_INSTALL_CODE [[
+    set(recastLibraries DebugUtils;Detour;DetourCrowd;DetourTileCache;Recast)
+    foreach(recastLibrary ${recastLibraries})
+        add_library(RecastNavigation::${recastLibrary} STATIC IMPORTED GLOBAL)
+
+        set_target_properties(RecastNavigation::${recastLibrary} 
+            PROPERTIES 
+                IMPORTED_LOCATION 
+                    "${LY_ROOT_FOLDER}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${recastLibrary}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+        target_compile_definitions(RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                DT_POLYREF64)
+
+        ly_target_include_system_directories(TARGET RecastNavigation::${recastLibrary} 
+            INTERFACE 
+                "${LY_ROOT_FOLDER}/include/recastnavigation")
+    endforeach()
+]]
+)
 
 # The RecastNavigation.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
@@ -68,7 +97,9 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         INTERFACE
-           AZ::AzCore
+            AZ::AzCore
+            RecastNavigation::Detour
+            RecastNavigation::Recast
 )
 
 # The RecastNavigation.Private.Object target is an internal target
@@ -160,9 +191,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 Gem::RecastNavigation.Private.Object
-                RecastNavigation::DebugUtils
-                RecastNavigation::Detour
-                RecastNavigation::Recast
                 Gem::LmbrCentral.Static
                 Gem::DebugDraw.Static
     )
@@ -248,7 +276,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
+                        AZ::AzToolsFramework
                         Gem::RecastNavigation.Private.Object
+                        Gem::RecastNavigation.Editor.Private.Object
+                        Gem::RecastNavigation.API
+                        Gem::LmbrCentral.API
                         Gem::PhysX.Mocks
             )
 

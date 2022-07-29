@@ -87,7 +87,8 @@ namespace Multiplayer
         bool HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message);
         bool HandleEntityDeleteMessage(EntityReplicator* entityReplicator, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
         bool HandleEntityUpdateMessage(AzNetworking::IConnection* invokingConnection, const AzNetworking::IPacketHeader& packetHeader, const NetworkEntityUpdateMessage& updateMessage);
-        bool HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message);
+        bool HandleEntityRpcMessages(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcVector& rpcVector);
+        bool HandleEntityResetMessages(AzNetworking::IConnection* invokingConnection, const NetEntityIdsForReset& resetIds);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 
@@ -122,6 +123,7 @@ namespace Multiplayer
 
         void SendEntityUpdateMessages(EntityReplicatorList& replicatorList);
         void SendEntityRpcs(RpcMessages& rpcMessages, bool reliable);
+        void SendEntityResets();
 
         void MigrateEntityInternal(NetEntityId entityId);
         void OnEntityExitDomain(const ConstNetworkEntityHandle& entityHandle);
@@ -179,10 +181,11 @@ namespace Multiplayer
         EntityReplicatorMap m_entityReplicatorMap;
 
         //! The set of entities that we have sent creation messages for, but have not received confirmation back that the create has occurred
-        AZStd::unordered_set<NetEntityId> m_remoteEntitiesPendingCreation;
+        NetEntityIdSet m_remoteEntitiesPendingCreation;
         AZStd::deque<NetEntityId> m_entitiesPendingActivation;
-        AZStd::set<NetEntityId> m_replicatorsPendingRemoval;
-        AZStd::unordered_set<NetEntityId> m_replicatorsPendingSend;
+        NetEntityIdSet m_replicatorsPendingRemoval;
+        NetEntityIdSet m_replicatorsPendingSend;
+        NetEntityIdSet m_replicatorsPendingReset;
 
         // Deferred RPC Sends
         RpcMessages m_deferredRpcMessagesReliable;

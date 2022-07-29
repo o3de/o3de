@@ -93,22 +93,20 @@ namespace AZ
             auto& device = static_cast<Device&>(swapchain.GetDevice());
             // First search among the existing queues if they support presentation for the format of the swapchain
             VkPhysicalDevice vkPhysicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice()).GetNativePhysicalDevice();
-            auto supportsPresentation = [&swapchain, &vkPhysicalDevice](uint32_t familyIndex)
+            auto supportsPresentation = [&swapchain, &device, &vkPhysicalDevice](uint32_t familyIndex)
             {
                 VkBool32 supported = VK_FALSE;
-                AssertSuccess(vkGetPhysicalDeviceSurfaceSupportKHR(
-                    vkPhysicalDevice,
-                    familyIndex,
-                    swapchain.GetSurface().GetNativeSurface(),
-                    &supported));
+                AssertSuccess(device.GetContext().GetPhysicalDeviceSurfaceSupportKHR(
+                    vkPhysicalDevice, familyIndex, swapchain.GetSurface().GetNativeSurface(), &supported));
                 return supported == VK_TRUE;
             };
 
-            for (const auto& commandQueue : m_commandQueues)
+            for (uint32_t i = 0; i < m_commandQueues.size(); i++)
             {
-                if (supportsPresentation(commandQueue->GetQueueDescriptor().m_familyIndex))
+                if (supportsPresentation(m_commandQueues[i]->GetQueueDescriptor().m_familyIndex))
                 {
-                    return *commandQueue;
+                    m_presentationQueueIndex = i;
+                    return *m_commandQueues[i];
                 }
             }
 
@@ -123,7 +121,8 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Failed to find a queue suitable for presentation");
-            }          
+            }
+            m_presentationQueueIndex = commandQueueIndex;
             return *m_commandQueues[commandQueueIndex];
         }
 
@@ -377,6 +376,12 @@ namespace AZ
 
                 rhiMetrics.PushSample(AZ_CRC_CE("Present"), static_cast<double>(presentDuration));
             }
+        }
+
+        CommandQueue& CommandQueueContext::GetPresentationCommandQueue() const
+        {
+            AZ_Assert(m_presentationQueueIndex != InvalidIndex, "Invalid presentation queue index");
+            return *m_commandQueues[m_presentationQueueIndex];
         }
     }
 }

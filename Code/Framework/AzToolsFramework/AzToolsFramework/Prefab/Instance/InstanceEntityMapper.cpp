@@ -6,10 +6,13 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
-
 #include <AzCore/Interface/Interface.h>
+
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 
 namespace AzToolsFramework
 {

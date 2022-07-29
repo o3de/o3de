@@ -16,6 +16,7 @@ class QMenuBar;
 namespace AzToolsFramework
 {
     class MenuManagerInterface;
+    class MenuManagerInternalInterface;
 
     class EditorMenuBar
     {
@@ -26,17 +27,26 @@ namespace AzToolsFramework
 
         void AddMenu(int sortKey, AZStd::string menuIdentifier);
         
+        // Returns whether the menu queried is contained in this menu.
+        bool ContainsMenu(const AZStd::string& menuIdentifier) const;
+
+        // Returns the sort key for the queried menu, or 0 if it's not found.
+        AZStd::optional<int> GetMenuSortKey(const AZStd::string& menuIdentifier) const;
+        
         // Returns the pointer to the menu bar.
         QMenuBar* GetMenuBar();
         const QMenuBar* GetMenuBar() const;
-
-    private:
+        
+        // Clears the menu bar and creates a new one from the EditorMenuBar information.
         void RefreshMenuBar();
 
+    private:
         QMenuBar* m_menuBar = nullptr;
         AZStd::multimap<int, AZStd::string> m_menus;
+        AZStd::map<AZStd::string, int> m_menuToSortKeyMap;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

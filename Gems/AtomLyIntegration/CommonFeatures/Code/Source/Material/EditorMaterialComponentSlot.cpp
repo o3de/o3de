@@ -126,7 +126,7 @@ namespace AZ
                     ->Method("SetAssetId", &EditorMaterialComponentSlot::SetAssetId)
                     ->Method("Clear", &EditorMaterialComponentSlot::Clear)
                     ->Method("ClearMaterial", &EditorMaterialComponentSlot::ClearMaterial)
-                    ->Method("ClearProperties", &EditorMaterialComponentSlot::ClearProperties, "ClearOverrides") // deprecates ClearOverrides
+                    ->Method("ClearProperties", &EditorMaterialComponentSlot::ClearProperties)
                     ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
                     ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
                     ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
@@ -134,7 +134,36 @@ namespace AZ
                     ->Method("ExportMaterial", &EditorMaterialComponentSlot::ExportMaterial)
                     ;
             }
-        };
+        }
+
+        EditorMaterialComponentSlot::EditorMaterialComponentSlot(
+            const AZ::EntityId& entityId, const MaterialAssignmentId& materialAssignmentId)
+            : m_entityId(entityId)
+            , m_id(materialAssignmentId)
+        {
+            bool isOverridden = false;
+            MaterialComponentRequestBus::EventResult(
+                isOverridden, m_entityId, &MaterialComponentRequestBus::Events::IsMaterialAssetIdOverridden, m_id);
+
+            AZ::Data::AssetId assetId = {};
+            MaterialComponentRequestBus::EventResult(assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_id);
+            if (assetId.IsValid())
+            {
+                AZ::Data::AssetBus::Handler::BusConnect(assetId);
+                if (isOverridden)
+                {
+                    m_materialAsset = AZ::Data::Asset<AZ::RPI::MaterialAsset>(assetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid());
+                }
+            }
+
+            EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
+        }
+
+        EditorMaterialComponentSlot::~EditorMaterialComponentSlot()
+        {
+            EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
+            AZ::Data::AssetBus::Handler::BusDisconnect();
+        }
 
         AZStd::vector<char> EditorMaterialComponentSlot::GetPreviewPixmapData() const
         {
@@ -150,9 +179,7 @@ namespace AZ
             {
                 if (m_updatePreview)
                 {
-                    EditorMaterialSystemComponentRequestBus::Broadcast(
-                        &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
-                    m_updatePreview = false;
+                    UpdatePreview();
                 }
                 return {};
             }
@@ -167,7 +194,7 @@ namespace AZ
         {
             AZ::Data::AssetId assetId = {};
             MaterialComponentRequestBus::EventResult(
-                assetId, m_entityId, &MaterialComponentRequestBus::Events::GetActiveMaterialAssetId, m_id);
+                assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_id);
             return assetId;
         }
 
@@ -182,7 +209,7 @@ namespace AZ
         AZStd::string EditorMaterialComponentSlot::GetLabel() const
         {
             AZStd::string label;
-            MaterialComponentRequestBus::EventResult(label, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialSlotLabel, m_id);
+            MaterialComponentRequestBus::EventResult(label, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialLabel, m_id);
             return label;
         }
 
@@ -207,7 +234,7 @@ namespace AZ
         void EditorMaterialComponentSlot::Clear()
         {
             MaterialComponentRequestBus::Event(
-                m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_id, MaterialPropertyOverrideMap());
+                m_entityId, &MaterialComponentRequestBus::Events::SetPropertyValues, m_id, MaterialPropertyOverrideMap());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetModelUvOverrides, m_id, AZ::RPI::MaterialModelUvOverrideMap());
             SetAsset({});
@@ -221,7 +248,7 @@ namespace AZ
         void EditorMaterialComponentSlot::ClearProperties()
         {
             MaterialComponentRequestBus::Event(
-                m_entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_id, MaterialPropertyOverrideMap());
+                m_entityId, &MaterialComponentRequestBus::Events::SetPropertyValues, m_id, MaterialPropertyOverrideMap());
             MaterialComponentRequestBus::Event(
                 m_entityId, &MaterialComponentRequestBus::Events::SetModelUvOverrides, m_id, AZ::RPI::MaterialModelUvOverrideMap());
             OnDataChanged({ m_entityId }, false);
@@ -337,7 +364,7 @@ namespace AZ
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
                     MaterialComponentRequestBus::Event(
-                        entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_id, MaterialPropertyOverrideMap());
+                        entityId, &MaterialComponentRequestBus::Events::SetPropertyValues, m_id, MaterialPropertyOverrideMap());
                     MaterialComponentRequestBus::Event(
                         entityId, &MaterialComponentRequestBus::Events::SetModelUvOverrides, m_id,
                         AZ::RPI::MaterialModelUvOverrideMap());
@@ -350,7 +377,7 @@ namespace AZ
                 for (const AZ::EntityId& entityId : entityIdsToEdit)
                 {
                     MaterialComponentRequestBus::Event(
-                        entityId, &MaterialComponentRequestBus::Events::SetPropertyOverrides, m_id, MaterialPropertyOverrideMap());
+                        entityId, &MaterialComponentRequestBus::Events::SetPropertyValues, m_id, MaterialPropertyOverrideMap());
                     MaterialComponentRequestBus::Event(
                         entityId, &MaterialComponentRequestBus::Events::SetModelUvOverrides, m_id,
                         AZ::RPI::MaterialModelUvOverrideMap());
@@ -361,13 +388,13 @@ namespace AZ
             menu.exec(QCursor::pos());
         }
 
-        void EditorMaterialComponentSlot::OnMaterialChangedFromRPE() const
+        void EditorMaterialComponentSlot::OnMaterialChangedFromRPE()
         {
             // Because this function is being from an edit context attribute it will automatically be applied to all selected entities
             OnDataChanged({ m_entityId }, true);
         }
 
-        void EditorMaterialComponentSlot::OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset) const
+        void EditorMaterialComponentSlot::OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset)
         {
             // Handle undo, update configuration, and refresh the inspector to display the new values
             AzToolsFramework::ScopedUndoBatch undoBatch("Material slot changed.");
@@ -380,7 +407,7 @@ namespace AZ
                 if (updateAsset)
                 {
                     MaterialComponentRequestBus::Event(
-                        entityId, &MaterialComponentRequestBus::Events::SetMaterialOverride, m_id, m_materialAsset.GetId());
+                        entityId, &MaterialComponentRequestBus::Events::SetMaterialAssetId, m_id, m_materialAsset.GetId());
                 }
 
                 EditorMaterialSystemComponentRequestBus::Broadcast(
@@ -391,8 +418,45 @@ namespace AZ
 
             m_updatePreview = false;
 
+            // Reconnect the asset bus to the current active material asset ID so that the preview can be refreshed if the asset changes
+            AZ::Data::AssetId assetId = {};
+            MaterialComponentRequestBus::EventResult(assetId, m_entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, m_id);
+            if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(assetId))
+            {
+                AZ::Data::AssetBus::Handler::BusDisconnect();
+                if (assetId.IsValid())
+                {
+                    AZ::Data::AssetBus::Handler::BusConnect(assetId);
+                }
+            }
+
+            // Refresh the attributes and values for the inspector UI
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        }
+
+        void EditorMaterialComponentSlot::OnRenderMaterialPreviewReady(
+            [[maybe_unused]] const AZ::EntityId& entityId,
+            [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+            [[maybe_unused]] const QPixmap& pixmap)
+        {
+            if (entityId == m_entityId && materialAssignmentId == m_id)
+            {
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            }
+        }
+
+        void EditorMaterialComponentSlot::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            UpdatePreview();
+        }
+
+        void EditorMaterialComponentSlot::UpdatePreview() const
+        {
+            m_updatePreview = false;
+            EditorMaterialSystemComponentRequestBus::Broadcast(
+                &EditorMaterialSystemComponentRequestBus::Events::RenderMaterialPreview, m_entityId, m_id);
         }
     } // namespace Render
 } // namespace AZ
