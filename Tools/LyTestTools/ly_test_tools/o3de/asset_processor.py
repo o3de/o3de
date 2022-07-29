@@ -209,7 +209,7 @@ class AssetProcessor(object):
                     logger.debug(f"Read port type {port_type} : {port}")
                     return True
                 except Exception as ex:  # intentionally broad
-                    logger.warning(f"Failed to read port type {port_type} : {port} from file", exc_info=ex)
+                    logger.debug(f"Failed to read port type {port_type} : {port} from file", exc_info=ex)
             return False
 
         # the timeout needs to be large enough to load all the dynamic libraries the AP-GUI loads since the control port
@@ -274,7 +274,7 @@ class AssetProcessor(object):
                             logger.debug(f"Found new connect port for {port_name}: {host}:{new_connect_port}")
                             connect_port = new_connect_port
                     except Exception as read_exception:  # Purposefully broad
-                        logger.warning(f"Failed to read port data for {port_name}: {host}:{new_connect_port}",
+                        logger.debug(f"Failed to read port data for {port_name}: {host}:{new_connect_port}",
                                        exc_info=read_exception)
             return False
 
@@ -655,9 +655,8 @@ class AssetProcessor(object):
     def check_copy_logs(self):
         if self._temp_asset_root and self._failed_log_root:
             source_path = os.path.join(self._temp_asset_root, "logs")
-            dest_path = os.path.join(self._failed_log_root,
-                                     f"{self._function_name + '.' if self._function_name else ''}"
-                                     f"{int(round(time.time() * 1000))}")
+            failed_log_folder = f"{self._function_name}." if self._function_name else ''
+            dest_path = os.path.join(self._failed_log_root, f"{failed_log_folder}{int(round(time.time() * 1000))}")
             logger.debug(f"Copying {source_path} to {dest_path}")
             shutil.copytree(source_path, dest_path)
 
