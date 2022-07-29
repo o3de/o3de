@@ -119,7 +119,7 @@ namespace Terrain
         m_zBounds = {};
     }
     
-    void TerrainFeatureProcessor::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion [[maybe_unused]], TerrainDataChangedMask dataChangedMask)
+    void TerrainFeatureProcessor::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
         {

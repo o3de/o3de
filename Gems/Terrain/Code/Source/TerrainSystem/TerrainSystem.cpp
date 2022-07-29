@@ -1280,14 +1280,16 @@ void TerrainSystem::SubdivideRegionForJobs(
         subdivisionsY, maxNumJobs);
 }
 
-bool TerrainSystem::ContainedAabbTouchesXYEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb)
+bool TerrainSystem::ContainedAabbTouchesEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb)
 {
     return outerAabb.Contains(innerAabb) &&
         (
             outerAabb.GetMin().GetX() == innerAabb.GetMin().GetX() ||
             outerAabb.GetMin().GetY() == innerAabb.GetMin().GetY() ||
+            outerAabb.GetMin().GetZ() == innerAabb.GetMin().GetZ() ||
             outerAabb.GetMax().GetX() == innerAabb.GetMax().GetX() ||
-            outerAabb.GetMax().GetY() == innerAabb.GetMax().GetY()
+            outerAabb.GetMax().GetY() == innerAabb.GetMax().GetY() ||
+            outerAabb.GetMax().GetZ() == innerAabb.GetMax().GetZ()
         );
 }
 
@@ -1414,7 +1416,7 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
                 m_terrainHeightDirty = true;
                 m_terrainSurfacesDirty = true;
 
-                if (ContainedAabbTouchesXYEdge(m_cachedAreaBounds, areaData.m_areaBounds))
+                if (ContainedAabbTouchesEdge(m_cachedAreaBounds, areaData.m_areaBounds))
                 {
                     RecalculateCachedBounds();
                 }
@@ -1441,12 +1443,19 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
 
     RefreshRegion(expandedAabb, changeMask);
 
-    if (ContainedAabbTouchesXYEdge(m_cachedAreaBounds, oldAabb))
+    // Check to see which axis the aabbs changed in
+    bool xDiff = oldAabb.GetMin().GetX() != newAabb.GetMin().GetX() || oldAabb.GetMax().GetX() != newAabb.GetMax().GetX();
+    bool yDiff = oldAabb.GetMin().GetY() != newAabb.GetMin().GetY() || oldAabb.GetMax().GetY() != newAabb.GetMax().GetY();
+    bool zDiff = oldAabb.GetMin().GetZ() != newAabb.GetMin().GetZ() || oldAabb.GetMax().GetZ() != newAabb.GetMax().GetZ();
+
+    if ((xDiff && (m_cachedAreaBounds.GetMin().GetX() == oldAabb.GetMin().GetX() || m_cachedAreaBounds.GetMax().GetX() == oldAabb.GetMax().GetX())) ||
+        (yDiff && (m_cachedAreaBounds.GetMin().GetY() == oldAabb.GetMin().GetY() || m_cachedAreaBounds.GetMax().GetY() == oldAabb.GetMax().GetY())) ||
+        (zDiff && (m_cachedAreaBounds.GetMin().GetZ() == oldAabb.GetMin().GetZ() || m_cachedAreaBounds.GetMax().GetZ() == oldAabb.GetMax().GetZ())))
     {
-        // Old aabb is on the edge of the bounds, so moving it will require a full refresh
+        // Old aabb is on the edge of the bounds in at least one axis, and moved on that axis, so it will require a full refresh
         RecalculateCachedBounds();
     }
-    else if (!m_cachedAreaBounds.Contains(newAabb))
+    else if(!m_cachedAreaBounds.Contains(newAabb))
     {
         // Old Aabb was inside the bounds and new aabb is outside the bounds, so just add it.
         m_cachedAreaBounds.AddAabb(newAabb);
@@ -1478,26 +1487,27 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
         terrainSettingsChanged = true;
         m_terrainSettingsDirty = false;
+        m_dirtyRegion = ClampZBoundsToHeightBounds(m_cachedAreaBounds);
 
         // This needs to happen before the "system active" check below, because activating the system will cause the various
         // terrain layer areas to request the current world bounds.
         if (m_requestedSettings.m_heightRange != m_requestedSettings.m_heightRange)
         {
-            m_dirtyRegion = m_cachedAreaBounds;
             m_terrainHeightDirty = true;
             m_terrainSurfacesDirty = true;
             m_currentSettings.m_heightRange = m_requestedSettings.m_heightRange;
+
+            // Add the cached area bounds clamped to the new range, so both the old and new range are included.
+            m_dirtyRegion.AddAabb(ClampZBoundsToHeightBounds(m_cachedAreaBounds));
         }
 
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
-            m_dirtyRegion = m_cachedAreaBounds;
             m_terrainHeightDirty = true;
         }
 
         if (m_requestedSettings.m_surfaceDataQueryResolution != m_currentSettings.m_surfaceDataQueryResolution)
         {
-            m_dirtyRegion = m_cachedAreaBounds;
             m_terrainSurfacesDirty = true;
         }
 

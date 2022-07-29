@@ -200,7 +200,7 @@ namespace Terrain
             int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
             int32_t& subdivisionsX, int32_t& subdivisionsY);
 
-        static bool ContainedAabbTouchesXYEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb);
+        static bool ContainedAabbTouchesEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb);
 
         //! This performs the logic for QueryRegion, but also accepts x and y index offsets so that the subregions for QueryRegionAsync
         //! can pass the correct x and y indices down to the subregion perPositionCallbacks.
