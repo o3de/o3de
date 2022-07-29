@@ -97,8 +97,6 @@ namespace Terrain
 
         void CachePasses();
 
-        bool ClipmapFeatureIsEnabled() const;
-
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
@@ -120,7 +118,5 @@ namespace Terrain
         bool m_terrainBoundsNeedUpdate{ false };
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;
-        // Used to check whether we need to initialize the clipmap manager.
-        TerrainMacroClipmapGenerationPass* m_clipmapPass = nullptr;
     };
 }
