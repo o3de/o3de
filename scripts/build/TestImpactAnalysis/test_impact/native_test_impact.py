@@ -27,7 +27,7 @@ class NativeTestImpact(BaseTestImpact):
     @property
     def runtime_type(self):
         """
-        The runtime this TestImpact supports. Must be implemented by subclass
-        Current options are "native" or "python"
+        The runtime this TestImpact supports. Must be implemented by subclass.
+        Current options are "native" or "python".
         """
         return self._runtime_type
