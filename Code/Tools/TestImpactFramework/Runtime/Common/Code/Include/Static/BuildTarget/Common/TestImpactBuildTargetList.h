@@ -18,7 +18,7 @@
 
 namespace TestImpact
 {
-    template<typename TestTarget, typename ProductionTarget>
+    template<typename ProductionTarget, typename TestTarget>
     class BuildTargetList
     {
     public:
@@ -51,22 +51,22 @@ namespace TestImpact
         TargetList<ProductionTarget> m_productionTargets;
     };
 
-    template<typename TestTarget, typename ProductionTarget>
-    BuildTargetList<TestTarget, ProductionTarget>::BuildTargetList(
+    template<typename ProductionTarget, typename TestTarget>
+    BuildTargetList<ProductionTarget, TestTarget>::BuildTargetList(
         TargetList<TestTarget>&& testTargetList, TargetList<ProductionTarget>&& productionTargetList)
         : m_testTargets(AZStd::move(testTargetList))
         , m_productionTargets(AZStd::move(productionTargetList))
     {
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    size_t BuildTargetList<TestTarget, ProductionTarget>::GetNumTargets() const
+    template<typename ProductionTarget, typename TestTarget>
+    size_t BuildTargetList<ProductionTarget, TestTarget>::GetNumTargets() const
     {
         return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    OptionalBuildTarget<TestTarget, ProductionTarget> BuildTargetList<TestTarget, ProductionTarget>::GetBuildTarget(const AZStd::string& name) const
+    template<typename ProductionTarget, typename TestTarget>
+    OptionalBuildTarget<TestTarget, ProductionTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTarget(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name);
             testTarget != nullptr)
@@ -82,8 +82,8 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    BuildTarget<TestTarget, ProductionTarget> BuildTargetList<TestTarget, ProductionTarget>::GetBuildTargetOrThrow(
+    template<typename ProductionTarget, typename TestTarget>
+    BuildTarget<TestTarget, ProductionTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTargetOrThrow(
         const AZStd::string& name) const
     {
         auto buildTarget = GetBuildTarget(name);
@@ -91,14 +91,14 @@ namespace TestImpact
         return buildTarget.value();
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    const TargetList<TestTarget>& BuildTargetList<TestTarget, ProductionTarget>::GetTestTargetList() const
+    template<typename ProductionTarget, typename TestTarget>
+    const TargetList<TestTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetTestTargetList() const
     {
         return m_testTargets;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    const TargetList<ProductionTarget>& BuildTargetList<TestTarget, ProductionTarget>::GetProductionTargetList() const
+    template<typename ProductionTarget, typename TestTarget>
+    const TargetList<ProductionTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetProductionTargetList() const
     {
         return m_productionTargets;
     }

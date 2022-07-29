@@ -29,9 +29,9 @@ namespace TestImpact
     {
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
-        DynamicDependencyMap(const BuildTargetList<TestTarget, ProductionTarget>* buildTargetList);
+        DynamicDependencyMap(const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList);
 
-        const BuildTargetList<TestTarget, ProductionTarget>* GetBuildTargets() const;
+        const BuildTargetList<ProductionTarget, TestTarget>* GetBuildTargets() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.
@@ -106,11 +106,11 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
         //! The list of build targets (both test and production) in the repository.
-        const BuildTargetList<TestTarget, ProductionTarget>* m_buildTargets;
+        const BuildTargetList<ProductionTarget, TestTarget>* m_buildTargets;
     };
 
     template<typename TestTarget, typename ProductionTarget>
-    DynamicDependencyMap<TestTarget, ProductionTarget>::DynamicDependencyMap(const BuildTargetList<TestTarget, ProductionTarget>* buildTargetList)
+    DynamicDependencyMap<TestTarget, ProductionTarget>::DynamicDependencyMap(const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList)
         : m_buildTargets(buildTargetList)
     {
         const auto mapBuildTargetSources = [this](const auto* target)
@@ -152,7 +152,7 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    const BuildTargetList<TestTarget, ProductionTarget>* DynamicDependencyMap<TestTarget, ProductionTarget>::GetBuildTargets() const
+    const BuildTargetList<ProductionTarget, TestTarget>* DynamicDependencyMap<TestTarget, ProductionTarget>::GetBuildTargets() const
     {
         return m_buildTargets;
     }

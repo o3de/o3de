@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
+#include <TestImpactFramework/TestImpactConfiguration.h>
 
-#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Artifact/TestImpactArtifactException.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
-#include <BuildTarget/Common/TestImpactBuildTarget.h>
-#include <Target/Native/TestImpactNativeProductionTarget.h>
-#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Common/TestImpactTargetListCompiler.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestImpactTestTargetExclusionList.h>
@@ -26,31 +25,91 @@
 
 namespace TestImpact
 {
-    //! Construct a build target list from the build target descriptors and test target metas.
-    AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
-        SuiteType suiteFilter,
+    //!
+    AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
+
+    //!
+    template<typename ProductionTarget, typename TestTarget, typename TestTargetMetaMap>
+    AZStd::unique_ptr<BuildTargetList<ProductionTarget, TestTarget>> ConstructBuildTargetList(
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
-        const TestTargetMetaConfig& testTargetMetaConfig);
+        TestTargetMetaMap&& testTargetMetaMap)
+    {
+        auto targetDescriptors = ReadTargetDescriptorFiles(buildTargetDescriptorConfig);
+        auto buildTargets = CompileTargetLists<ProductionTarget, TestTarget, TestTargetMetaMap>(
+            AZStd::move(targetDescriptors), AZStd::move(testTargetMetaMap));
+        auto&& [productionTargets, testTargets] = buildTargets;
+        return AZStd::make_unique<BuildTargetList<ProductionTarget, TestTarget>>(
+            AZStd::move(testTargets), AZStd::move(productionTargets));
+    }
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
-    AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> ConstructTestTargetExcludeList(
-        const TargetList<NativeTestTarget>& testTargets,
-        const AZStd::vector<ExcludedTarget>& excludedTestTargets);
+    template<typename TestTarget>
+    AZStd::unique_ptr<TestTargetExclusionList<TestTarget>> ConstructTestTargetExcludeList(
+        const TargetList<TestTarget>& testTargets,
+        const AZStd::vector<ExcludedTarget>& excludedTestTargets)
+    {
+        AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
+        for (const auto& excludedTestTarget : excludedTestTargets)
+        {
+            if (const auto* testTarget = testTargets.GetTarget(excludedTestTarget.m_name); testTarget != nullptr)
+            {
+                testTargetExcludeList[testTarget] = excludedTestTarget.m_excludedTests;
+            }
+        }
+
+        return AZStd::make_unique<TestTargetExclusionList<TestTarget>>(AZStd::move(testTargetExcludeList));
+    }
 
     //! Selects the test targets from the specified list of test targets that are not in the specified test target exclusion list.
     //! @param testTargetExcludeList The test target exclusion list to lookup.
     //! @param testTargets The list of test targets to select from.
     //! @returns The subset of test targets in the specified list that are not on the target exclude list.
-    AZStd::pair<
-        AZStd::vector<const NativeTestTarget*>,
-        AZStd::vector<const NativeTestTarget*>>
+    template<typename TestTarget>
+    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>>
     SelectTestTargetsByExcludeList(
-        const TestTargetExclusionList<NativeTestTarget>& testTargetExcludeList,
-        const AZStd::vector<const NativeTestTarget*>& testTargets);
+        const TestTargetExclusionList<TestTarget>& testTargetExcludeList, const AZStd::vector<const TestTarget*>& testTargets)
+    {
+        AZStd::vector<const TestTarget*> includedTestTargets;
+        AZStd::vector<const TestTarget*> excludedTestTargets;
+
+        if (testTargetExcludeList.IsEmpty())
+        {
+            return { testTargets, {} };
+        }
+
+        for (const auto& testTarget : testTargets)
+        {
+            if (const auto* excludedTests = testTargetExcludeList.GetExcludedTestsForTarget(testTarget);
+                excludedTests != nullptr && excludedTests->empty())
+            {
+                // If the test filter is empty, the entire suite is excluded
+                excludedTestTargets.push_back(testTarget);
+            }
+            else
+            {
+                includedTestTargets.push_back(testTarget);
+            }
+        }
+
+        return { includedTestTargets, excludedTestTargets };
+    }
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(
-        const AZStd::vector<const NativeTestTarget*>& testTargets);
+    template<typename TestTarget>
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
+    {
+        AZStd::vector<AZStd::string> testNames;
+        AZStd::transform(
+            testTargets.begin(),
+            testTargets.end(),
+            AZStd::back_inserter(testNames),
+            [](const TestTarget* testTarget)
+            {
+                return testTarget->GetName();
+            });
+
+        return testNames;
+    }
 
     //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

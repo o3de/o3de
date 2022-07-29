@@ -53,6 +53,9 @@ namespace TestImpact
 
         ~PythonRuntime();
 
+        //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
+        bool HasImpactAnalysisData() const;
+
     private:
         PythonRuntimeConfig m_config;
         RepoPath m_sparTiaFile;

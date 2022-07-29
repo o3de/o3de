@@ -42,6 +42,7 @@ set(FILES
     Include/Static/Target/Common/TestImpactTarget.h
     Include/Static/Target/Common/TestImpactTargetList.h
     Include/Static/Target/Common/TestImpactTargetException.h
+    Include/Static/Target/Common/TestImpactTargetListCompiler.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerException.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerBase.h
     Include/Static/TestRunner/Common/TestImpactTestRunner.h
@@ -66,6 +67,8 @@ set(FILES
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Include/Static/TestImpactTestTargetExclusionList.h
+    Include/Static/TestImpactRuntimeUtils.cpp
+    Include/Static/TestImpactRuntimeUtils.h
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp

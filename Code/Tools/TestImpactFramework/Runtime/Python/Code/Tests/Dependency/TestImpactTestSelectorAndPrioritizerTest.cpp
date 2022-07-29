@@ -25,7 +25,7 @@
 //    {
 //    public:
 //    protected:
-//        using NativeBuildTargetList = TestImpact::BuildTargetList<NativeTestTarget, NativeProductionTarget>; 
+//        using NativeBuildTargetList = TestImpact::BuildTargetList<NativeProductionTarget, NativeTestTarget>; 
 //        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>;
 //        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>;
 //

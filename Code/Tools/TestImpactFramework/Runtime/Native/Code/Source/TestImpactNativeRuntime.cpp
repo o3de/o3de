@@ -10,7 +10,8 @@
 #include <TestImpactFramework/Native/TestImpactNativeRuntime.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
-#include <TestImpactNativeRuntimeUtils.h>
+#include <TestImpactRuntimeUtils.h>
+#include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
@@ -244,6 +245,12 @@ namespace TestImpact
         return sequenceReport;
     }
 
+    NativeTestTargetMetaMap ReadNativeTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile)
+    {
+        const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
+        return NativeTestTargetMetaMapFactory(masterTestListData, suiteFilter);
+    }
+
     NativeRuntime::NativeRuntime(
         NativeRuntimeConfig&& config,
         const AZStd::optional<RepoPath>& dataFile,
@@ -268,7 +275,9 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the build targets from the build target descriptors
-        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_commonConfig.m_buildTargetDescriptor, m_config.m_commonConfig.m_testTargetMeta);
+        m_buildTargets = ConstructBuildTargetList<NativeProductionTarget, NativeTestTarget, NativeTestTargetMetaMap>(
+            m_config.m_commonConfig.m_buildTargetDescriptor,
+            ReadNativeTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile));
 
         // Construct the dynamic dependency map from the build targets
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());

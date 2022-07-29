@@ -233,7 +233,7 @@ namespace TestImpact
         Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
-        AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> m_buildTargets;
+        AZStd::unique_ptr<BuildTargetList<NativeProductionTarget, NativeTestTarget>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<NativeTestEngine> m_testEngine;

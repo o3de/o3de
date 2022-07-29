@@ -58,7 +58,7 @@ namespace TestImpact
         return autogenSources;
     }
 
-    TargetDescriptor NativeTargetDescriptorFactory(
+    TargetDescriptor TargetDescriptorFactory(
         const AZStd::string& buildTargetData,
         const AZStd::vector<AZStd::string>& staticSourceExtensionIncludes,
         const AZStd::vector<AZStd::string>& autogenInputExtensionIncludes,
