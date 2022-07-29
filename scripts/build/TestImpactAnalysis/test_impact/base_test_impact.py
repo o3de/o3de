@@ -29,11 +29,11 @@ ARG_SOURCE_BRANCH = 'src_branch'
 ARG_DESTINATION_BRANCH = 'dst_branch'
 ARG_COMMIT = 'commit'
 ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
-ARG_INTEGRATION_POLICY = "integration_policy"
-ARG_TEST_FAILURE_POLICY = "test_failure_policy"
-ARG_CHANGE_LIST = 'changelist'
-ARG_SEQUENCE = 'sequence'
-ARG_REPORT = 'report'
+ARG_INTEGRATION_POLICY = RuntimeArgs.COMMON_IPOLICY.driver_argument
+ARG_TEST_FAILURE_POLICY = RuntimeArgs.COMMON_FPOLICY.driver_argument
+ARG_CHANGE_LIST = RuntimeArgs.COMMON_CHANGELIST.driver_argument
+ARG_SEQUENCE = RuntimeArgs.COMMON_SEQUENCE.driver_argument
+ARG_REPORT = RuntimeArgs.COMMON_REPORT.driver_argument
 
 # Sequence types as constants
 TIA_NOWRITE = 'tianowrite'
