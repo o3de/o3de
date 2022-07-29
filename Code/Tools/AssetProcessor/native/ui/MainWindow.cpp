@@ -602,7 +602,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
         ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
         ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());        
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());
     }
 }
 
@@ -1892,6 +1892,12 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                 });
             }
         }
+    });
+
+    menu.addAction("Reprocess Source Asset", this, [this, &item]()
+    {
+        QString pathToSource = FindAbsoluteFilePath(item);
+        m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(pathToSource);
     });
 
     // Only completed items will be available in the assets tab.
