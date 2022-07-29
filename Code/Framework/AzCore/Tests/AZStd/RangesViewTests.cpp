@@ -18,6 +18,7 @@
 #include <AzCore/std/ranges/join_view.h>
 #include <AzCore/std/ranges/join_with_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
+#include <AzCore/std/ranges/reverse_view.h>
 #include <AzCore/std/ranges/single_view.h>
 #include <AzCore/std/ranges/split_view.h>
 #include <AzCore/std/ranges/subrange.h>
@@ -689,5 +690,42 @@ namespace UnitTest
         EXPECT_TRUE(filterViewPredicate('a'));
         EXPECT_FALSE(filterViewPredicate(' '));
         EXPECT_FALSE(filterViewPredicate('\n'));
+    }
+
+    TEST_F(RangesViewTestFixture, ReverseView_CanIterateOverBidirectionalRange)
+    {
+        constexpr AZStd::string_view expectedString = "nuS,nooM,dlroW,olleH";
+        constexpr AZStd::string_view testString = "Hello,World,Moon,Sun";
+
+        const AZStd::ranges::reverse_view testReverseView(testString);
+        EXPECT_EQ(testString.size(), testReverseView.size());
+
+        AZStd::string resultString{ testReverseView.begin(), testReverseView.end() };
+        EXPECT_EQ(expectedString, resultString);
+    }
+
+    TEST_F(RangesViewTestFixture, ReverseView_ReverseOfReverse_ReturnsOriginalView)
+    {
+        constexpr AZStd::string_view testString = "Hello,World,Moon,Sun";
+
+        AZStd::string resultString = AZStd::views::reverse(testString) | AZStd::views::reverse;
+        EXPECT_EQ(testString, resultString);
+    }
+
+    TEST_F(RangesViewTestFixture, ReverseView_SubrangeOfReverseIterators_ReturnsSubrangeOfOriginalIterators)
+    {
+        constexpr AZStd::string_view testString = "Hello,World,Moon,Sun";
+
+        using namespace AZStd::literals::string_view_literals;
+        // form a subrange of reverse iterators to "World"
+        auto testSubrange = AZStd::ranges::subrange(testString.begin() + 6, testString.begin() + 11);
+        EXPECT_TRUE(AZStd::ranges::equal(testSubrange, "World"_sv));
+
+        auto testSubrangeOfReverse = testSubrange | AZStd::views::reverse;
+        EXPECT_TRUE(AZStd::ranges::equal(testSubrangeOfReverse, "dlroW"_sv));
+
+        auto testSubrangeOfReverseReverse = testSubrangeOfReverse | AZStd::views::reverse;
+        static_assert(AZStd::same_as<decltype(testSubrange), decltype(testSubrangeOfReverseReverse)>);
+        EXPECT_TRUE(AZStd::ranges::equal(testSubrangeOfReverseReverse, "World"_sv));
     }
 }

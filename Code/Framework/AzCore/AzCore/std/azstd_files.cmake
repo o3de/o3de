@@ -53,6 +53,7 @@ set(FILES
     ranges/ranges_algorithm.h
     ranges/ranges_functional.h
     ranges/ref_view.h
+    ranges/reverse_view.h
     ranges/single_view.h
     ranges/subrange.h
     ranges/split_view.h
