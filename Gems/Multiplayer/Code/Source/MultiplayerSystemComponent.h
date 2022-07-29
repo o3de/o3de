@@ -189,7 +189,14 @@ namespace Multiplayer
         bool m_spawnNetboundEntities = false;
 
         // Store player information if they connect before there is a level and IPlayerSpawner available
-        AZStd::vector<AZStd::pair<int, MultiplayerAgentDatum>> m_playersWaitingToBeSpawned;
+        struct PlayerWaitingToBeSpawned
+        {
+            uint64_t userId;
+            MultiplayerAgentDatum agent;
+            AzNetworking::IConnection* connection;
+        };
+
+        AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
