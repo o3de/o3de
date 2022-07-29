@@ -98,6 +98,9 @@
     }
   },
   "python": {
-
+    "target": {
+      "exclude": [
+      ]
+    }
   }
 }
