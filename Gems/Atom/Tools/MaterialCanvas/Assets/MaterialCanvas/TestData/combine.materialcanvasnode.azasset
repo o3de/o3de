@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Combine",
+        "category": "Math Functions",
+        "title": "combine",
         "inputSlots": [
             {
                 "name": "inX",
@@ -16,6 +16,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -28,6 +31,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -40,6 +46,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -52,6 +61,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -62,7 +74,10 @@
                 "description": "Value",
                 "supportedDataTypes": [
                     "float4"
-                ]
+                ],
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTTYPE(NODEID_inX, NODEID_inY, NODEID_inZ, NODEID_inW);" ]
+                }
             }
         ]
     }

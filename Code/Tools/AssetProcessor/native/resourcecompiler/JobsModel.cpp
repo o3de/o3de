@@ -86,7 +86,7 @@ namespace AssetProcessor
                 case ColumnCompleted:
                     return tr("Completed");
                 case ColumnProcessDuration:
-                    return tr("Last Process Duration");
+                    return tr("Last Processing Job Duration");
                 default:
                     break;
                 }
@@ -360,7 +360,7 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                static constexpr int numTokensExpected = 4;
+                static constexpr int numTokensExpected = 5;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
@@ -511,7 +511,7 @@ namespace AssetProcessor
         }
     }
 
-    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration)
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, int durationMs)
     {
         QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
 
@@ -519,7 +519,7 @@ namespace AssetProcessor
         {
             unsigned int jobIndex = iter.value();
             CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
-            jobInfo->m_processDuration = duration;
+            jobInfo->m_processDuration = QTime::fromMSecsSinceStartOfDay(durationMs);
             Q_EMIT dataChanged(
                 index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
         }

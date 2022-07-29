@@ -13,7 +13,7 @@
                 "supportedDataTypes": [
                     "color"
                 ],
-                "defaultColor": {
+                "defaultValue": {
                     "$type": "Color",
                     "Value": [
                         0.0,
@@ -21,6 +21,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -32,7 +35,7 @@
                 "supportedDataTypes": [
                     "color"
                 ],
-                "defaultColor": {
+                "defaultValue": {
                     "$type": "Color",
                     "Value": [
                         0.0,
@@ -40,6 +43,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;" ]
                 }
             }
         ]

@@ -151,6 +151,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::CopyItem& copyItem)
         {
+            ValidateSubmitItem(copyItem);
+
             switch (copyItem.m_type)
             {
 
@@ -296,6 +298,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DispatchItem& dispatchItem)
         {
+            ValidateSubmitItem(dispatchItem);
+
             if (!CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
@@ -323,6 +327,8 @@ namespace AZ
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
+            ValidateSubmitItem(dispatchRaysItem);
+
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
 
             // manually clear the Dispatch bindings and pipeline state since it is shared with the ray tracing pipeline
@@ -404,6 +410,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DrawItem& drawItem)
         {
+            ValidateSubmitItem(drawItem);
+
             if (!CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");

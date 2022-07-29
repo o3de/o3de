@@ -725,13 +725,11 @@ bool CAxisHelper::HitTest(const Matrix34& worldTM, const SGizmoParameters& setup
     // Calc sizes.
     //////////////////////////////////////////////////////////////////////////
     float headOfs[8];
-    float headScl[8];
+    
     headOfs[MOVE_MODE] = 0;
-    headScl[MOVE_MODE] = 0.07f * m_fScreenScale;
     headOfs[ROTATE_MODE] = 0;
-    headScl[ROTATE_MODE] = 0.01f * m_fScreenScale;
     headOfs[SCALE_MODE] = 0;
-    headScl[SCALE_MODE] = 0.01f * m_fScreenScale;
+    
     if (m_nModeFlags == (MOVE_MODE | ROTATE_MODE | SCALE_MODE))
     {
         headOfs[ROTATE_MODE] += 0.05f * m_fScreenScale;

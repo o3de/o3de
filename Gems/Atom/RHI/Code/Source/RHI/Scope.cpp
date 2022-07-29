@@ -59,7 +59,7 @@ namespace AZ
             m_frameGraph = nullptr;
             m_index.Reset();
             m_graphNodeIndex.Reset();
-            m_estimatedItemCount = 0;
+            m_estimatedItemCount = 1;
             m_hardwareQueueClass = HardwareQueueClass::Graphics;
             m_producersByQueueLast.fill(nullptr);
             m_producersByQueue.fill(nullptr);

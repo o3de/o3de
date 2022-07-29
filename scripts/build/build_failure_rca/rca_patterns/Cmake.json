@@ -1,0 +1,18 @@
+{
+    "indications": [
+      {
+        "name": "CMake Error",
+        "description": "CMake error",
+        "comment": "CMake error, see log for more details",
+        "single_line": true,
+        "find_all": true,
+        "log_patterns": [
+          "^.*CMake Error at .*CMakeLists.txt.*$"
+        ],
+        "log_testcases": [
+          "CMake Error at CMakeLists.txt"
+        ],
+        "owners": []
+      }
+    ]
+  }

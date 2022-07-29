@@ -226,7 +226,11 @@ namespace AssetProcessor
         }
         else
         {
-            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            QString statKey = QString("ProcessJob,%1,%2,%3,%4")
+                                  .arg(jobEntry.m_databaseSourceName)
+                                  .arg(jobEntry.m_jobKey)
+                                  .arg(jobEntry.m_platformInfo.m_identifier.c_str())
+                                  .arg(jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
 
             if (status == JobStatus::InProgress)
             {
@@ -247,8 +251,7 @@ namespace AssetProcessor
 
                 if (operationDuration)
                 {
-                    Q_EMIT JobProcessDurationChanged(
-                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<int>(operationDuration.value()));
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
@@ -3752,7 +3755,7 @@ namespace AssetProcessor
                 QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
                 AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
             }
 
             AssetProcessor::SetThreadLocalJobId(0);
@@ -3940,6 +3943,9 @@ namespace AssetProcessor
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
+
+        // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
+        Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
@@ -5026,8 +5032,7 @@ namespace AssetProcessor
                         entry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                         {
-                            container.push_back();
-                            container.back() = AZStd::move(entry);
+                            container.emplace_back() = AZStd::move(entry);
                             return true; // return true to keep iterating over further rows.
                         });
 

@@ -143,7 +143,7 @@ namespace Multiplayer
                         AZ_Warning("Multiplayer Property", false,
                             "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
                             "The entity with id %s doesn't exist, please provide a valid entity id.",
-                            id.ToString().c_str())
+                            id.ToString().c_str());
                         return nullptr;
                     }
 
@@ -153,11 +153,36 @@ namespace Multiplayer
                         AZ_Warning("Multiplayer Property", false,
                             "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
                             "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
-                            entity->GetName().c_str(), id.ToString().c_str())
+                            entity->GetName().c_str(), id.ToString().c_str());
                         return nullptr;
                     }
 
                     return &mpComponent->m_endpointDisonnectedEvent;
+                })
+                ->Method("ClearAllEntities", [](AZ::EntityId id)
+                {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("Multiplayer Property", false,
+                            "MultiplayerSystemComponent MarkForRemoval failed."
+                            "The entity with id %s doesn't exist, please provide a valid entity id.",
+                            id.ToString().c_str());
+                        return;
+                    }
+
+                    MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
+                    if (!mpComponent)
+                    {
+                        AZ_Warning("Multiplayer Property", false,
+                            "MultiplayerSystemComponent MarkForRemoval failed."
+                            "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to "
+                            "this entity.",
+                            entity->GetName().c_str(), id.ToString().c_str());
+                        return;
+                    }
+
+                    mpComponent->GetNetworkEntityManager()->ClearAllEntities();
                 })
                 ->Attribute(
                     AZ::Script::Attributes::AzEventDescription,
@@ -976,7 +1001,6 @@ namespace Multiplayer
                 EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
             }
         }
-        
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
