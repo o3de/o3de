@@ -11,7 +11,6 @@
 
 #include <TestImpactRuntimeConfigurationFactory.h>
 
-#include <AzCore/JSON/document.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 
@@ -45,7 +44,6 @@ namespace TestImpact
             "file",
             "file",
             "bin",
-            "exclude",
             "regular",
             "instrumented",
             "shard",
@@ -63,7 +61,9 @@ namespace TestImpact
             "build_target_descriptor",
             "dependency_graph_data",
             "test_target_meta",
-            "gem_target"
+            "gem_target",
+            "target",
+            "tests",
         };
 
         enum
@@ -91,7 +91,6 @@ namespace TestImpact
             TestTargetMetaFile,
             GemTargetFile,
             BinaryFile,
-            TargetExclude,
             RegularTargetExcludeFilter,
             InstrumentedTargetExcludeFilter,
             TestSharding,
@@ -109,8 +108,33 @@ namespace TestImpact
             BuildTargetDescriptor,
             DependencyGraphData,
             TestTargetMeta,
-            GemTarget
+            GemTarget,
+            ExcludedTargetName,
+            ExcludedTargetTests,
         };
+    } // namespace Config
+
+    ExcludedTargets ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes)
+    {
+        ExcludedTargets targetExcludeList;
+        targetExcludeList.reserve(testExcludes.Size());
+        for (const auto& testExclude : testExcludes)
+        {
+            ExcludedTarget excludedTarget;
+            excludedTarget.m_name = testExclude[Config::Keys[Config::ExcludedTargetName]].GetString();
+            if (testExclude.HasMember(Config::Keys[Config::ExcludedTargetTests]))
+            {
+                const auto& excludedTests = testExclude[Config::Keys[Config::ExcludedTargetTests]].GetArray();
+                for (const auto& excludedTest : excludedTests)
+                {
+                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
+                }
+            }
+
+            targetExcludeList.push_back(excludedTarget);
+        }
+
+        return targetExcludeList;
     }
 
     //! Returns an absolute path for a path relative to the specified root.

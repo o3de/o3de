@@ -54,7 +54,10 @@ namespace TestImpact
         ~PythonRuntime();
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
-        bool HasImpactAnalysisData() const;
+        bool HasImpactAnalysisData() const
+        {
+            return false;
+        }
 
     private:
         PythonRuntimeConfig m_config;
@@ -66,13 +69,11 @@ namespace TestImpact
         Policy::IntegrityFailure m_integrationFailurePolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
-        AZStd::unique_ptr<BuildTargetList<PythonTestTarget, PythonProductionTarget>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap<PythonTestTarget, PythonProductionTarget>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<PythonTestTarget, PythonProductionTarget>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<BuildTargetList<PythonProductionTarget, PythonTestTarget>> m_buildTargets;
+        AZStd::unique_ptr<DynamicDependencyMap<PythonProductionTarget, PythonTestTarget>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<PythonProductionTarget, PythonTestTarget>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<PythonTestEngine> m_testEngine;
-        AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_regularTestTargetExcludeList;
-        AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_instrumentedTestTargetExcludeList;
-        AZStd::unordered_set<const PythonTestTarget*> m_testTargetShardList;
+        AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_testTargetExcludeList;
         AZStd::unordered_set<const PythonTestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;
     };

@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap PythonTestTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -47,6 +47,11 @@ namespace TestImpact
         PythonTestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
 
+        if (masterTestList.Parse(masterTestListData.c_str()).HasParseError())
+        {
+            throw TestImpact::ArtifactException("Could not parse test meta-data");
+        }
+
         const auto tests = masterTestList[Keys[PythonKey]][Keys[TestKey]][Keys[TestsKey]].GetArray();
         for (const auto& test : tests)
         {
@@ -60,11 +65,11 @@ namespace TestImpact
                 {
                     testMeta.m_suiteMeta.m_name = suiteName;
                     testMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
-                    testMeta.m_scriptPath = test[Keys[ScriptKey]].GetString();
+                    testMeta.m_scriptPath = suite[Keys[ScriptKey]].GetString();
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
                     AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
-                    AZ_TestImpact_Eval(!testMeta.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
+                    //AZ_TestImpact_Eval(!testMeta.m_scriptPath.empty(), ArtifactException, "Test script field cannot be empty");
                     testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
                     break;
                 }

@@ -87,6 +87,8 @@ namespace TestImpact
         AZStd::vector<AZStd::string> m_excludedTests; //!< Specific tests to exclude (if empty, all tests are excluded).
     };
 
+    using ExcludedTargets = AZStd::vector<ExcludedTarget>;
+
     struct RuntimeConfig
     {
         ConfigMeta m_meta;

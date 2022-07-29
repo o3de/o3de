@@ -299,9 +299,10 @@ namespace TestImpact
         {
             // Construct using data from config file.
             m_regularTestTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedRegularTestTargets);
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedTargets.m_excludedRegularTestTargets);
             m_instrumentedTestTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedInstrumentedTestTargets);
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(),
+                m_config.m_target.m_excludedTargets.m_excludedInstrumentedTestTargets);
         }
 
         // Construct the test engine with the workspace path and launcher binaries

@@ -12,7 +12,6 @@
 #include <TestImpactRuntimeConfigurationFactory.h>
 #include <TestImpactNativeRuntimeConfigurationFactory.h>
 
-#include <AzCore/JSON/document.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/optional.h>
 
@@ -29,8 +28,6 @@ namespace TestImpact
             "test_runner",
             "bin",
             "instrumentation",
-            "target",
-            "tests",
             "dir",
             "exclude",
             "regular",
@@ -53,8 +50,6 @@ namespace TestImpact
             TestRunner,
             BinaryFile,
             TestInstrumentation,
-            ExcludedTargetName,
-            ExcludedTargetTests,
             Directory,
             TargetExclude,
             RegularTargetExcludeFilter,
@@ -78,36 +73,13 @@ namespace TestImpact
         return testEngineConfig;
     }
 
-    AZStd::vector<ExcludedTarget> ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes)
-    {
-        AZStd::vector<ExcludedTarget> targetExcludeList;
-        targetExcludeList.reserve(testExcludes.Size());
-        for (const auto& testExclude : testExcludes)
-        {
-            ExcludedTarget excludedTarget;
-            excludedTarget.m_name = testExclude[Config::Keys[Config::ExcludedTargetName]].GetString();
-            if (testExclude.HasMember(Config::Keys[Config::ExcludedTargetTests]))
-            {
-                const auto& excludedTests = testExclude[Config::Keys[Config::ExcludedTargetTests]].GetArray();
-                for (const auto& excludedTest : excludedTests)
-                {
-                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
-                }
-            }
-
-            targetExcludeList.push_back(excludedTarget);
-        }
-
-        return targetExcludeList;
-    }
-
     NativeTargetConfig ParseTargetConfig(const rapidjson::Value& target)
     {
         NativeTargetConfig targetConfig;
         targetConfig.m_outputDirectory = target[Config::Keys[Config::Directory]].GetString();
         const auto& testExcludes = target[Config::Keys[Config::TargetExclude]];
-        targetConfig.m_excludedRegularTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::RegularTargetExcludeFilter]].GetArray());
-        targetConfig.m_excludedInstrumentedTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::InstrumentedTargetExcludeFilter]].GetArray());
+        targetConfig.m_excludedTargets.m_excludedRegularTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::RegularTargetExcludeFilter]].GetArray());
+        targetConfig.m_excludedTargets.m_excludedInstrumentedTestTargets = ParseTargetExcludeList(testExcludes[Config::Keys[Config::InstrumentedTargetExcludeFilter]].GetArray());
 
         const auto& testShards =  target[Config::Keys[Config::TestSharding]].GetArray();
         targetConfig.m_shardedTestTargets.reserve(testShards.Size());

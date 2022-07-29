@@ -12,9 +12,16 @@
 
 namespace TestImpact
 {
+    //! Build target configuration.
+    struct PythonTargetConfig
+    {
+        ExcludedTargets m_excludedTargets; 
+    };
+
     //! Python runtime configuration.
     struct PythonRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
+        PythonTargetConfig m_target;
     };
 } // namespace TestImpact
