@@ -32,7 +32,8 @@ namespace AZ
                 AZStd::vector<Task>&& tasks,
                 AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
                 size_t linkCount,
-                TaskGraph* parent);
+                TaskGraph* parent,
+                const char* parentLabel);
 
             AZStd::vector<Task>& Tasks() noexcept
             {
@@ -53,6 +54,7 @@ namespace AZ
             // The pointer to the parent graph is set only if it is retained
             TaskGraph* m_parent = nullptr;
             AZStd::atomic<uint32_t> m_remaining;
+            const char* m_parentLabel;
         };
 
         class TaskWorker;

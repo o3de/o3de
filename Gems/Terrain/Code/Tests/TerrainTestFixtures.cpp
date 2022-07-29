@@ -11,7 +11,9 @@
 
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
+#include <Atom/RPI.Public/RPISystem.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Scene/SceneSystemComponent.h>
 #include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <GradientSignal/Components/GradientTransformComponent.h>
 #include <GradientSignal/Components/RandomGradientComponent.h>
@@ -44,6 +46,7 @@ namespace UnitTest
         AddDynamicModulePaths({ "LmbrCentral", "SurfaceData", "GradientSignal" });
 
         AddComponentDescriptors({
+            AzFramework::SceneSystemComponent::CreateDescriptor(),
             AzFramework::TransformComponent::CreateDescriptor(),
 
             Terrain::TerrainHeightGradientListComponent::CreateDescriptor(),
@@ -78,6 +81,12 @@ namespace UnitTest
         SurfaceData::SurfaceDataProviderRequestBus::GetOrCreateContext();
         SurfaceData::SurfaceDataModifierRequestBus::GetOrCreateContext();
         LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
+
+        // Call the AZ::RPI::RPISystem reflection for use with the terrain rendering component unit tests.
+        auto serializeContext = AZ::ReflectionEnvironment::GetReflectionManager()
+            ? AZ::ReflectionEnvironment::GetReflectionManager()->GetReflectContext<AZ::SerializeContext>()
+            : nullptr;
+        AZ::RPI::RPISystem::Reflect(serializeContext);
     }
 
     void TerrainBaseFixture::SetupCoreSystems()

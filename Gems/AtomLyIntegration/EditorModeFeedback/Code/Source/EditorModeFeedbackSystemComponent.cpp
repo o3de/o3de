@@ -133,7 +133,7 @@ namespace AZ
             // Purge the draw packets for all registered 
             if (mode == AzToolsFramework::ViewportEditorMode::Focus)
             {
-                if (auto* focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
+                if (AZ::Interface<AzToolsFramework::FocusModeInterface>::Get())
                 {
                     m_enabled = true;
                 }

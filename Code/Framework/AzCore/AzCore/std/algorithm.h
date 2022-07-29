@@ -566,6 +566,9 @@ namespace AZStd
     // Since AZStd code doesn't need it constexpr at the moment, the std:: version will be used
     using std::rotate;
 
+    // nth-element
+    using std::nth_element;
+
     //////////////////////////////////////////////////////////////////////////
     // Heap
     // \todo move to heap.h

@@ -71,7 +71,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> CreateTestSphereEntity(float shapeRadius);
 
         // Create and activate an entity with a gradient component of the requested type, initialized with test data.
-        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds);
+        AZStd::unique_ptr<AZ::Entity> BuildTestConstantGradient(float shapeHalfBounds, float value = 0.75f);
         AZStd::unique_ptr<AZ::Entity> BuildTestImageGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestPerlinGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestRandomGradient(float shapeHalfBounds);
@@ -110,6 +110,7 @@ namespace UnitTest
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
+        void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler);
     };
 
 #ifdef HAVE_BENCHMARK

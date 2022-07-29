@@ -244,6 +244,7 @@ namespace TestImpact
     Runtime::Runtime(
         RuntimeConfig&& config,
         AZStd::optional<RepoPath> dataFile,
+        AZStd::vector<AZStd::string> testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -268,8 +269,19 @@ namespace TestImpact
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
-        // Construct the target exclude list from the target configuration data
-        m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
+        // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
+        if (!testsToExclude.empty())
+        {
+            // Construct using data from excludeTestFile
+            m_testTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetTestTargetList(), testsToExclude);
+        }
+        else
+        {
+            // Construct using data from config file.
+            m_testTargetExcludeList =
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
+        }
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<TestEngine>(
