@@ -8,6 +8,7 @@
 
 #include <TestImpactFramework/TestImpactConsoleMain.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 

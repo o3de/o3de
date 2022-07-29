@@ -6,7 +6,14 @@
  *
  */
 
+#pragma once
+
+#include <TestRunner/Python/TestImpactPythonTestRunner.h>
+
 namespace TestImpact
 {
-
+    PythonTestRunner::PythonTestRunner()
+        : TestRunnerWithCoverage(1)
+    {
+    }
 } // namespace TestImpact
