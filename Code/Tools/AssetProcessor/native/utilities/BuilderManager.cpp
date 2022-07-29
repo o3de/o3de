@@ -17,6 +17,9 @@
 
 namespace AssetProcessor
 {
+    //! Time in milliseconds to wait after each message pump cycle
+    constexpr int IdleBuilderPumpingDelayMs = 100;
+
     BuilderManager::BuilderManager(ConnectionManager* connectionManager)
     {
         using namespace AZStd::placeholders;
@@ -30,7 +33,7 @@ namespace AssetProcessor
                 while (!m_quitListener.WasQuitRequested())
                 {
                     PumpIdleBuilders();
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(s_IdleBuilderPumpingDelayMS));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(IdleBuilderPumpingDelayMs));
                 }
             });
 

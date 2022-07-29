@@ -19,14 +19,9 @@
 namespace AssetProcessor
 {
     //! Amount of time in milliseconds to wait between checking the status of the AssetBuilder process and pumping the stdout/err pipes
-    constexpr int s_MaximumSleepTimeMS = 10;
-
-    //! Time in milliseconds to wait after each message pump cycle
-    constexpr int s_IdleBuilderPumpingDelayMS = 100;
-
-    constexpr int s_MillisecondsInASecond = 1000;
-
-    constexpr const char* s_buildersFolderName = "Builders";
+    constexpr int MaximumSleepTimeMs = 10;
+    constexpr int MillisecondsInASecond = 1000;
+    constexpr const char* BuildersFolderName = "Builders";
 
     bool Builder::IsConnected() const
     {
@@ -53,11 +48,11 @@ namespace AssetProcessor
 
             while (!result)
             {
-                result = m_connectionEvent.try_acquire_for(AZStd::chrono::milliseconds(s_MaximumSleepTimeMS));
+                result = m_connectionEvent.try_acquire_for(AZStd::chrono::milliseconds(MaximumSleepTimeMs));
 
                 PumpCommunicator();
 
-                if (ticker.elapsed() > m_startupWaitTimeS * s_MillisecondsInASecond || m_quitListener.WasQuitRequested() || !IsRunning())
+                if (ticker.elapsed() > m_startupWaitTimeS * MillisecondsInASecond || m_quitListener.WasQuitRequested() || !IsRunning())
                 {
                     break;
                 }
@@ -146,7 +141,7 @@ namespace AssetProcessor
 
         // Construct the Builders subfolder path
         AZStd::string buildersFolder;
-        AzFramework::StringFunc::Path::Join(applicationDir.toUtf8().constData(), s_buildersFolderName, buildersFolder);
+        AzFramework::StringFunc::Path::Join(applicationDir.toUtf8().constData(), BuildersFolderName, buildersFolder);
 
         // Construct the full exe for the builder.exe
         const AZStd::string fullExePathString =
@@ -279,11 +274,11 @@ namespace AssetProcessor
 
         while (!finishedOK)
         {
-            finishedOK = waitEvent->try_acquire_for(AZStd::chrono::milliseconds(s_MaximumSleepTimeMS));
+            finishedOK = waitEvent->try_acquire_for(AZStd::chrono::milliseconds(MaximumSleepTimeMs));
 
             PumpCommunicator();
 
-            if (!IsValid() || ticker.elapsed() > processTimeoutLimitInSeconds * s_MillisecondsInASecond ||
+            if (!IsValid() || ticker.elapsed() > processTimeoutLimitInSeconds * MillisecondsInASecond ||
                 (jobCancelListener && jobCancelListener->IsCancelled()))
             {
                 break;
