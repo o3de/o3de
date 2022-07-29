@@ -165,7 +165,7 @@ class TestTIAFNativeUnitTests():
 class TestTIAFPythonUnitTests():
 
     @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\python")])
-    def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir):
+    def test_create_PythonTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
         tiaf_args['s3_bucket'] = bucket_name
