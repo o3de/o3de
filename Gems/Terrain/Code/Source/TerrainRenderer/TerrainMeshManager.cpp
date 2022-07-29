@@ -1035,9 +1035,9 @@ namespace Terrain
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // For now only create a small patch of terrain data for ray tracing around the origin as a test case.
-        AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
-        AZ::Aabb updateBounds = bounds.GetClamped(raytracingBounds);
-        if (updateBounds.GetXExtent() <= 0 || updateBounds.GetYExtent() <= 0)
+        const AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
+        const AZ::Aabb updateBounds = bounds.GetClamped(raytracingBounds);
+        if (updateBounds.GetXExtent() <= 0.0f || updateBounds.GetYExtent() <= 0.0f)
         {
             // No raytracing data to update.
             return;
@@ -1084,8 +1084,6 @@ namespace Terrain
         uint32_t xMax = xMin + request.m_samplesX;
         uint32_t yMin = aznumeric_cast<uint32_t>((updateBounds.GetMin().GetY() - raytracingBounds.GetMin().GetY()) / request.m_vertexSpacing);
         uint32_t yMax = yMin + request.m_samplesY;
-
-        AZ_Assert(xMin < 100000 && xMax < 100000 && yMin < 100000 && yMax < 100000, "");
 
         constexpr uint32_t RayTracingVertices1D = RayTracingQuads1D + 1;
         float zExtent = m_worldHeightBounds.m_max - m_worldHeightBounds.m_min;

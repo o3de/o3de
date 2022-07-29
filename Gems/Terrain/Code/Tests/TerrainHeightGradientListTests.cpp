@@ -164,7 +164,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
     const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
     ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
-    //ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
 
     ActivateEntity(entity.get());
 

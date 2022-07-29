@@ -32,8 +32,8 @@ namespace AzFramework
 
             static void Reflect(AZ::ReflectContext* context);
 
-            float m_min = 0.0;
-            float m_max = 0.0;
+            float m_min = 0.0f;
+            float m_max = 0.0f;
 
             bool IsValid()
             {
@@ -42,7 +42,7 @@ namespace AzFramework
 
             static FloatRange CreateNull()
             {
-                return { 0.0, -1.0 };
+                return { 0.0f, -1.0f };
             }
 
             bool operator==(const FloatRange& other) const
