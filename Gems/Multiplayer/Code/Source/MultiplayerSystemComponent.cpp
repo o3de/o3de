@@ -884,17 +884,33 @@ namespace Multiplayer
                 IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
                 if (spawner)
                 {
-                    ServerToClientConnectionData* connectionData =
-                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                    IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow();
-                    if (replicationWindow)
+                    // Check if this disconnected player was waiting to be spawned, and therefore, doesn't have a controlled player entity yet.
+                    bool playerSpawned = true;
+                    for (auto it = m_playersWaitingToBeSpawned.begin(); it != m_playersWaitingToBeSpawned.end(); ++it)
                     {
-                        const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
-                        spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                        if (it->connection && it->connection->GetConnectionId() == connection->GetConnectionId())
+                        {
+                            m_playersWaitingToBeSpawned.erase(it--);
+                            playerSpawned = false;
+                            break;
+                        }
                     }
-                    else
+
+                    // Alert IMultiplayerSpawner that our spawned player has left.
+                    if (playerSpawned)
                     {
-                        AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                        ServerToClientConnectionData* connectionData =
+                            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
+                        IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow();
+                        if (replicationWindow)
+                        {
+                            const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
+                            spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                        }
+                        else
+                        {
+                            AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                        }   
                     }
                 }
                 else
@@ -945,6 +961,8 @@ namespace Multiplayer
         {
             return;
         }
+
+        m_playersWaitingToBeSpawned.clear();
 
         if (m_agentType != MultiplayerAgentType::Uninitialized && multiplayerType != MultiplayerAgentType::Uninitialized)
         {
