@@ -19,8 +19,8 @@ namespace AzToolsFramework
         if (IsNewActionManagerEnabled())
         {
             m_actionManager = AZStd::make_unique<ActionManager>();
-            m_menuManager = AZStd::make_unique<MenuManager>();
-            m_toolBarManager = AZStd::make_unique<ToolBarManager>();
+            m_menuManager = AZStd::make_unique<MenuManager>(&m_defaultParentObject);
+            m_toolBarManager = AZStd::make_unique<ToolBarManager>(&m_defaultParentObject);
         }
     }
 

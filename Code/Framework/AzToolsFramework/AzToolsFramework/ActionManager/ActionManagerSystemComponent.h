@@ -41,6 +41,8 @@ namespace AzToolsFramework
         AZStd::unique_ptr<ActionManager> m_actionManager = nullptr;
         AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
         AZStd::unique_ptr<ToolBarManager> m_toolBarManager = nullptr;
+
+        QWidget m_defaultParentObject;
     };
 
 } // namespace AzToolsFramework

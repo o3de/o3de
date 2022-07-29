@@ -34,7 +34,7 @@ namespace AzToolsFramework
         EditorToolBar();
         explicit EditorToolBar(const AZStd::string& name);
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
         
         // Add Menu Items
         void AddAction(int sortKey, AZStd::string actionIdentifier);
@@ -89,6 +89,8 @@ namespace AzToolsFramework
         AZStd::multimap<int, ToolBarItem> m_toolBarItems;
         AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
         AZStd::map<AZStd::string, int> m_widgetToSortKeyMap;
+
+        inline static QWidget* m_defaultParentWidget;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

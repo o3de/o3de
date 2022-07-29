@@ -18,13 +18,13 @@
 namespace AzToolsFramework
 {
     EditorToolBar::EditorToolBar()
-        : m_toolBar(new QToolBar(""))
+        : m_toolBar(new QToolBar("", m_defaultParentWidget))
     {
         m_toolBar->setMovable(false);
     }
 
     EditorToolBar::EditorToolBar(const AZStd::string& name)
-        : m_toolBar(new QToolBar(name.c_str()))
+        : m_toolBar(new QToolBar(name.c_str(), m_defaultParentWidget))
     {
         m_toolBar->setMovable(false);
     }
@@ -207,7 +207,7 @@ namespace AzToolsFramework
                         toolButton->setMenu(subMenu);
                         toolButton->setDefaultAction(action);
 
-                        m_widgetAction = new QWidgetAction(nullptr);
+                        m_widgetAction = new QWidgetAction(m_defaultParentWidget);
                         m_widgetAction->setDefaultWidget(toolButton);
                     }
                 }
@@ -220,8 +220,10 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorToolBar::Initialize()
+    void EditorToolBar::Initialize(QWidget* defaultParentWidget)
     {
+        m_defaultParentWidget = defaultParentWidget;
+
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "EditorToolBar - Could not retrieve instance of ActionManagerInterface");
 

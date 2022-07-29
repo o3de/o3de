@@ -12,7 +12,7 @@
 
 namespace AzToolsFramework
 {
-    MenuManager::MenuManager()
+    MenuManager::MenuManager(QWidget* defaultParentWidget)
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "MenuManager - Could not retrieve instance of ActionManagerInterface");
@@ -26,7 +26,7 @@ namespace AzToolsFramework
         AZ::SystemTickBus::Handler::BusConnect();
         ActionManagerNotificationBus::Handler::BusConnect();
 
-        EditorMenu::Initialize();
+        EditorMenu::Initialize(defaultParentWidget);
         EditorMenuBar::Initialize();
     }
 

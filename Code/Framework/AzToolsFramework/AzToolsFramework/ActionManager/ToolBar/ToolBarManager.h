@@ -30,7 +30,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        ToolBarManager();
+        ToolBarManager(QWidget* defaultParentWidget);
         virtual ~ToolBarManager();
 
     private:

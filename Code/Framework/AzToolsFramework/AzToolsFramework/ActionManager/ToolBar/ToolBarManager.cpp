@@ -14,7 +14,7 @@
 
 namespace AzToolsFramework
 {
-    ToolBarManager::ToolBarManager()
+    ToolBarManager::ToolBarManager(QWidget* defaultParentWidget)
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "ToolBarManager - Could not retrieve instance of ActionManagerInterface");
@@ -28,7 +28,7 @@ namespace AzToolsFramework
         AZ::SystemTickBus::Handler::BusConnect();
         ActionManagerNotificationBus::Handler::BusConnect();
 
-        EditorToolBar::Initialize();
+        EditorToolBar::Initialize(defaultParentWidget);
     }
 
     ToolBarManager::~ToolBarManager()

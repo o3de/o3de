@@ -199,14 +199,16 @@ namespace AzToolsFramework
         {
             if (QWidget* widget = m_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(m_identifier))
             {
-                m_widgetAction = new QWidgetAction(nullptr);
+                m_widgetAction = new QWidgetAction(m_defaultParentWidget);
                 m_widgetAction->setDefaultWidget(widget);
             }
         }
     }
 
-    void EditorMenu::Initialize()
+    void EditorMenu::Initialize(QWidget* defaultParentWidget)
     {
+        m_defaultParentWidget = defaultParentWidget;
+
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
 

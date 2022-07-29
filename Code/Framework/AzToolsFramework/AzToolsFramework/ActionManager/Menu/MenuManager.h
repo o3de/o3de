@@ -30,7 +30,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager();
+        MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
     private:
