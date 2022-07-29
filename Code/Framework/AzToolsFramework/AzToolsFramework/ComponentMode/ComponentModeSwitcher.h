@@ -30,7 +30,6 @@ namespace AzToolsFramework
             Remove
         };
 
-        // Struct containing relevant information about component for the switcher
         struct ComponentData
         {
             ComponentData() = default;
@@ -71,13 +70,12 @@ namespace AzToolsFramework
                 return m_addedComponents.size();
             };
 
-            ComponentData* GetActiveComponent() const
+            // Returns a null pointer if not in component mode
+            AZ::Component* GetActiveComponent() const
             {
                 return m_activeSwitcherComponent;
             };
 
-            // Handler for the entering component mode.
-            
 
         private:
             // Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
@@ -111,7 +109,7 @@ namespace AzToolsFramework
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
             // Member variables
-            ComponentData* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
+            AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
 
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements.
             EntityIdList m_entityIds; //!< List of entities active in the switcher.

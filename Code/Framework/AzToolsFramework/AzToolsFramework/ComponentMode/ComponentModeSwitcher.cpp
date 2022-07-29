@@ -266,6 +266,8 @@ namespace AzToolsFramework::ComponentModeFramework
                 &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                 m_switcherId,
                 m_transformButtonId);
+
+            m_activeSwitcherComponent = nullptr;
         }
     }
 
@@ -292,7 +294,7 @@ namespace AzToolsFramework::ComponentModeFramework
                         &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                         m_switcherId,
                         componentData.m_buttonId);
-                    m_activeSwitcherComponent = &componentData;
+                    m_activeSwitcherComponent = componentData.m_component;
                 }
             }
         }
