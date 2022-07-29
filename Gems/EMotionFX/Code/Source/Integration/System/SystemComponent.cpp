@@ -949,6 +949,7 @@ namespace EMotionFX
                           AZ::SerializeContext* serializeContext = nullptr;
                           AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
                           animGraph->SaveToFile(outFilePath, serializeContext);
+                          delete animGraph;
                       }
                   } });
         }

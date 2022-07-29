@@ -49,6 +49,7 @@ namespace AzToolsFramework
 
             //! Set unique asset browser name, used to persist tree expansion states
             void SetName(const QString& name);
+            QString& GetName(){ return m_name; }
 
             // O3DE_DEPRECATED
             void LoadState(const QString& name);
