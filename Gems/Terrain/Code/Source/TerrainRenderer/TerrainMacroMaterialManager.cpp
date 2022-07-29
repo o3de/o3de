@@ -256,8 +256,9 @@ namespace Terrain
         UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);
         UpdateImageIndex(shaderData.m_normalMapId, macroMaterialData.m_normalImage);
 
-        MacroMaterialMetaData& metaData = m_materialData.GetElement<1>(materialHandle.GetIndex());
-        metaData.m_priority = macroMaterialData.m_priority;
+        MacroMaterialPriority& priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
+        priority.m_priority = macroMaterialData.m_priority;
+        priority.m_hash = uint32_t(AZ::u64(macroMaterialData.m_entityId) >> 32) ^ uint32_t(AZ::u64(macroMaterialData.m_entityId) & 0xFFFFFFFF);
 
         m_bufferNeedsUpdate = true;
     }
@@ -265,7 +266,8 @@ namespace Terrain
     void TerrainMacroMaterialManager::AddMacroMaterialToTile(MaterialHandle newMaterialHandle, TileHandle tileHandle)
     {
         TileMaterials& tileMaterials = m_materialRefGridShaderData.at(tileHandle.GetIndex());
-        int32_t newPriority = m_materialData.GetElement<1>(newMaterialHandle.GetIndex()).m_priority;
+
+        MacroMaterialPriority& newPriority = m_materialData.GetElement<1>(newMaterialHandle.GetIndex());
 
         for (uint16_t materialIndex = 0; materialIndex < MacroMaterialsPerTile; ++materialIndex)
         {
@@ -282,9 +284,9 @@ namespace Terrain
             }
             else
             {
-                // Check the priority. If it's less than the material being added, insert.
-                int32_t priority = m_materialData.GetElement<1>(materialHandle.GetIndex()).m_priority;
-                if (priority < newPriority)
+                // Check the priority. If the new material's priority is greater, insert.
+                MacroMaterialPriority& priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
+                if (newPriority > priority)
                 {
                     MaterialHandle temphandle = newMaterialHandle;
                     for (; materialIndex < MacroMaterialsPerTile; ++materialIndex)
@@ -320,7 +322,7 @@ namespace Terrain
         if (lastEntry != MaterialHandle::Null)
         {
             lastEntry = MaterialHandle::Null;
-            int32_t lastPriority = 0;
+            MacroMaterialPriority lastPriority;
 
             // Check all the macro materials to see if any overlap this tile. Since the tile was full, when a macro material
             // was removed, there may be a macro material that can be placed in the empty spot.
@@ -340,9 +342,9 @@ namespace Terrain
                 }
 
                 MacroMaterialShaderData& shaderData = m_materialData.GetElement<0>(materialHandle.GetIndex());
-                int32_t priority = m_materialData.GetElement<1>(materialHandle.GetIndex()).m_priority;
+                MacroMaterialPriority priority = m_materialData.GetElement<1>(materialHandle.GetIndex());
 
-                if (shaderData.Overlaps(tileMin, tileMax) && (lastEntry == MaterialHandle::Null || lastPriority < priority))
+                if (shaderData.Overlaps(tileMin, tileMax) && (lastEntry == MaterialHandle::Null || priority > lastPriority))
                 {
                     lastEntry = materialHandle;
                     lastPriority = priority;

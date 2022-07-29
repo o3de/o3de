@@ -39,6 +39,7 @@ class PersistentStorageS3(PersistentStorage):
         self.s3_bucket = s3_bucket
         self.root_dir = root_dir
         self.branch = branch
+        self._s3 = boto3.client('s3')
         self._retrieve_historic_data(config)
         
     def _store_historic_data(self, historic_data_json: str):
@@ -51,7 +52,7 @@ class PersistentStorageS3(PersistentStorage):
         try:
             data = BytesIO(zlib.compress(bytes(historic_data_json, "UTF-8")))
             logger.info(f"Uploading historic data to location '{self._historic_data_key}'...")
-            self._bucket.upload_fileobj(data, self._historic_data_key, ExtraArgs={'ACL': 'bucket-owner-full-control'})
+            self._s3.upload_fileobj(data, Bucket=self.s3_bucket, Key=self._historic_data_key, ExtraArgs={'ACL': 'bucket-owner-full-control'})
             logger.info("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
             logger.error(f"There was a problem with the s3 bucket: {e}")
@@ -73,33 +74,32 @@ class PersistentStorageS3(PersistentStorage):
             historic_data_file = f"historic_data.{object_extension}"
 
             # The location of the data is in the form <root_dir>/<branch>/<config>/<suite> so the build config of each branch gets its own historic data
-            self._historic_data_dir = f"{self.root_dir}/{self.branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
+            self._historic_data_dir = f"{self.root_dir}/{self.branch}/{config[self.COMMON_CONFIG_KEY][self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
             self._historic_data_key = f"{self._historic_data_dir}/{historic_data_file}"
             
             logger.info(f"Attempting to retrieve historic data for branch '{self.branch}' at location '{self._historic_data_key}' on bucket '{self.s3_bucket}'...")
-            self._s3 = boto3.resource("s3")
-            self._bucket = self._s3.Bucket(self.s3_bucket)
+            object = self._s3.get_object(Bucket=self.s3_bucket, Key=self._historic_data_key)
 
-            # There is only one historic_data.json.zip in the specified location
-            for object in self._bucket.objects.filter(Prefix=self._historic_data_key):
-                logger.info(f"Historic data found for branch '{self.branch}'.")
+            logger.info(f"Historic data found for branch '{self.branch}'.")
 
-                # Archive the existing object with the name of the existing last commit hash
-                #archive_key = f"{self._historic_data_dir}/archive/{self._last_commit_hash}.{object_extension}"
-                #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
-                #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
-                #logger.info(f"Archiving complete.")
+            # Archive the existing object with the name of the existing last commit hash
+            #archive_key = f"{self._historic_data_dir}/archive/{self._last_commit_hash}.{object_extension}"
+            #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
+            #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+            #logger.info(f"Archiving complete.")
 
-                # Decode the historic data object into raw bytes and unpack into memory/disk
-                decoded_data = self._decode(object)
-                self._unpack_historic_data(decoded_data)
-
-                return
+            # Decode the historic data object into raw bytes and unpack into memory/disk
+            decoded_data = self._decode(object)
+            self._unpack_historic_data(decoded_data)
+            return
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
         except botocore.exceptions.BotoCoreError as e:
             raise SystemError(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
+            if(e.response['Error']['Code'] == 'NoSuchKey'):
+                logger.info("Error, no historic data found for this branch with key.")
+                return
             raise SystemError(f"There was a problem with the s3 client: {e}")
 
     def _decode(self, s3_object):
