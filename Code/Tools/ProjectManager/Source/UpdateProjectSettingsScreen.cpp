@@ -153,7 +153,7 @@ namespace O3DE::ProjectManager
                         QString("%1 (%2)").arg(engineInfo.m_name, engineInfo.m_path),
                         QStringList{ engineInfo.m_path, engineInfo.m_name });
 
-                    if (!enginePath.isEmpty() && enginePath == engineInfo.m_path)
+                    if (!enginePath.isEmpty() && QDir(enginePath) == QDir(engineInfo.m_path))
                     {
                         combobox->setCurrentIndex(index);
                     }
