@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
@@ -51,7 +52,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -148,7 +148,6 @@ namespace AZ
                     AZ::SceneAPI::SceneCore::LoadingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::GenerationComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::ExportingComponent::Reflect(context);
-                    AZ::SceneAPI::SceneCore::RCExportingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::SceneSystemComponent::Reflect(context);
                     // Register group interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IGroup, AZ::SceneAPI::DataTypes::IManifestObject>()->Version(1);
@@ -199,8 +198,6 @@ namespace AZ
                 // there's an application.
                 if (g_componentDescriptors.empty())
                 {
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::MaterialExporterComponent::CreateDescriptor());
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::RCMaterialExporterComponent::CreateDescriptor());
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
                         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Handler::RegisterComponentDescriptor, descriptor);
