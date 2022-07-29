@@ -35,6 +35,9 @@ namespace AZ
         //! If empty, all settings within the associated registry will be tracked
         void SetTrackingFilter(TrackingFilterCallback filterCallback);
 
+        //! Gets setting registry being tracked
+        AZ::SettingsRegistryInterface& GetSettingsRegistry();
+
         //! Returns the last origin associated with the given key
         bool FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key);
 

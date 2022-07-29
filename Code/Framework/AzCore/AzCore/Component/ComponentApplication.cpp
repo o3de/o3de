@@ -519,6 +519,7 @@ namespace AZ
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
+            m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
         }
     }
@@ -562,6 +563,7 @@ namespace AZ
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SettingsRegistryUnavailable", R"({})");
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorPendingDestruction", R"({})");
         }
+        m_settingsRegistryOriginTracker.reset();
         m_settingsRegistry.reset();
 
         // Unregister the Name Dictionary with the AZ Interface system and reset it

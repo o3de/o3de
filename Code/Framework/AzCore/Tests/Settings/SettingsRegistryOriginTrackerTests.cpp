@@ -19,7 +19,8 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/containers/deque.h>
-
+#include <AzCore/JSON/document.h>
+#include <AzCore/JSON/writer.h>
 
 #include <AZTestShared/Utils/Utils.h>
 
@@ -49,12 +50,20 @@ namespace SettingsRegistryOriginTrackerTests
         SettingsRegistryOriginTrackerFixture()
             : ScopedAllocatorSetupFixture(CreateAllocatorDescriptorForFixture())
         {
-            AZ::NameDictionary::Create();
+            if (!AZ::NameDictionary::IsReady())
+            {
+                AZ::NameDictionary::Create();
+                m_createdNameDictionary = true;
+            }
         }
 
         ~SettingsRegistryOriginTrackerFixture()
         {
-            AZ::NameDictionary::Destroy();
+            if (m_createdNameDictionary)
+            {
+                AZ::NameDictionary::Destroy();
+                m_createdNameDictionary = false;
+            }
         }
 
         void SetUp() override
@@ -90,22 +99,26 @@ namespace SettingsRegistryOriginTrackerTests
 
         void CheckOriginsAtPath(const AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack& expected, AZStd::string_view path = "")
         {
-            int counter = 0;
-            auto callback = [&](AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin origin)
+            AZStd::vector<AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin> originArray;
+            auto GetOrigins = [&originArray](AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin origin)
             {
-                auto expectedOrigin = expected.at(counter);
-                EXPECT_EQ(expectedOrigin, origin);
-                counter += 1;
+                originArray.push_back(origin);
                 return true;
             };
-            m_originTracker->VisitOrigins(path, callback);
-            EXPECT_EQ(counter, expected.size());
+            m_originTracker->VisitOrigins(path, GetOrigins);
+            for (const auto& settingsRegistryOrigin : expected)
+            {
+                EXPECT_THAT(originArray, ::testing::Contains(settingsRegistryOrigin));
+                std::cout << "hi";
+            }
+            EXPECT_EQ(expected.size(), originArray.size());
         }
 
     protected:
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
         AZStd::unique_ptr<AZ::SettingsRegistryOriginTracker> m_originTracker;
         AZ::Test::ScopedAutoTempDirectory m_testFolder;
+        bool m_createdNameDictionary;
     };
 
    TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFile_TracksOrigin_Successful)
@@ -162,6 +175,13 @@ namespace SettingsRegistryOriginTrackerTests
                }
                )"
            },
+           { filePath2.String(), "/O3DE/Settings/ObjectValue", R"(
+               {
+                   "StringKey1": "Hello",
+                   "BoolKey1": true,
+                   "IntKey2": 9001
+               }
+               )" },
            { filePath2.String(), "/O3DE/Settings/ObjectValue/IntKey2", "9001" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/StringKey1", "\"Hello\"" },
@@ -246,10 +266,20 @@ namespace SettingsRegistryOriginTrackerTests
                  R"(
                {
                    "StringKey1": "Hello",
-                   "BoolKey1": true
+                   "BoolKey1": true,
+                   "IntKey2": 9001
                }
                )"
            },
+           { filePath2.String(),
+             "/O3DE/Settings/ObjectValue",
+             R"(
+               {
+                   "StringKey1": "Hello",
+                   "BoolKey1": true,
+                   "IntKey2": 9001
+               }
+               )" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/StringKey1", "\"Hello\"" },
            { filePath2.String(), "/O3DE/Settings/ObjectValue/IntKey2", "9001" }
@@ -298,6 +328,15 @@ namespace SettingsRegistryOriginTrackerTests
               }
               )"
            },
+           { filePath2.String(),
+             "/O3DE/ObjectValue",
+             R"(
+              {
+                   "StringKey1": "Hi",
+                   "BoolKey1": true,
+                   "IntKey2": 9001
+              }
+              )" },
            { filePath2.String(), "/O3DE/ObjectValue/IntKey2", "9001" },
            { filePath1.String(), "/O3DE/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/ObjectValue/StringKey1", "\"Hello\"" },
@@ -339,7 +378,6 @@ namespace SettingsRegistryOriginTrackerTests
                 m_registry->MergeSettingsFile(filePath2.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
             }
         };
-
         auto testNotifier = m_registry->RegisterNotifier(callback);
         m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedO3DEOriginStack =
@@ -361,9 +399,8 @@ namespace SettingsRegistryOriginTrackerTests
             { filePath1.String(), "/O3DE/baz", R"("yes")" },
             { filePath2.String(), "/O3DE/baz", R"("no")"},
         };
-
         AZStd::vector<AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin> originArray;
-        auto GetOrigins  = [&originArray](AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin origin)
+        auto GetOrigins = [&originArray](AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin origin)
         {
             originArray.push_back(origin);
             return true;
@@ -373,5 +410,147 @@ namespace SettingsRegistryOriginTrackerTests
         {
             EXPECT_THAT(originArray, ::testing::Contains(settingsRegistryOrigin));
         }
+    }
+
+    TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFiles_LargeInput_Successful)
+    {
+        auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+        int numIterations = 3;
+        for (int i = 0; i < numIterations; i++)
+        {
+            AZ::IO::FixedMaxPath filePath = tempRootFolder / AZStd::string::format("file%d.setreg", i);
+            ASSERT_TRUE(CreateTestFile(filePath, AZStd::string::format(R"(
+                {
+                    "O3DE": {
+                        "persistentKey": %d,
+                        "changingKey%d": true
+                    }
+                }
+            )",i, i)));
+            m_registry->MergeSettingsFile(filePath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        }
+        rapidjson::Document expectedO3DEOriginValue;
+        expectedO3DEOriginValue.SetObject();
+        expectedO3DEOriginValue.AddMember("persistentKey", 0, expectedO3DEOriginValue.GetAllocator());
+        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedO3DEOriginStack;
+        for (int i = 0; i < numIterations; i++)
+        {
+            AZ::IO::FixedMaxPath filePath = tempRootFolder / AZStd::string::format("file%d.setreg", i);
+            rapidjson::Value& persistentKeyValue = expectedO3DEOriginValue["persistentKey"];
+            persistentKeyValue.SetInt(i);
+            AZStd::string changingKeyString = AZStd::string::format("changingKey%d", i);
+            rapidjson::Value changingKey(changingKeyString.c_str(), expectedO3DEOriginValue.GetAllocator());
+            expectedO3DEOriginValue.AddMember(changingKey, true, expectedO3DEOriginValue.GetAllocator());
+            rapidjson::StringBuffer expectedO3DEOriginValueBuffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(expectedO3DEOriginValueBuffer);
+            expectedO3DEOriginValue.Accept(writer);
+            AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin o3deOrigin{ filePath.String(),
+                                                                                           "/O3DE",
+                                                                                  expectedO3DEOriginValueBuffer.GetString() };
+            AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin persistentKeyOrigin{ filePath.String(),
+                                                                              "/O3DE/persistentKey",
+                                                                              AZStd::string::format("%d", i) };
+            AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin changingKeyOrigin{ filePath.String(),
+                                                                                AZStd::string::format("/O3DE/changingKey%d", i),
+                                                                                "true" };
+            expectedO3DEOriginStack.emplace_back(o3deOrigin);
+            expectedO3DEOriginStack.emplace_back(changingKeyOrigin);
+            expectedO3DEOriginStack.emplace_back(persistentKeyOrigin);
+        }
+        CheckOriginsAtPath(expectedO3DEOriginStack, "/O3DE");
+    }
+
+    TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFiles_IncludeTrackingFilter_Successful)
+    {
+        auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+        AZ::IO::FixedMaxPath filePath1 = tempRootFolder / "folder1" / "file1.json";
+        AZ::IO::FixedMaxPath filePath2 = tempRootFolder / "folder2" / "file2.json";
+        ASSERT_TRUE(CreateTestFile(filePath1, R"(
+           {
+               "O3DE": {
+                    "ObjectValue": {
+                        "StringKey1": "Hello",
+                        "BoolKey1": true
+                    }
+               }
+           }
+       )"));
+        ASSERT_TRUE(CreateTestFile(filePath2, R"(
+           {
+               "O3DE": {
+                    "ObjectValue": {
+                        "IntKey2": 9001,
+                    },
+               }
+           }
+      )"));
+        auto trackingFilterCallback = [](AZStd::string_view keyPath)
+        {
+            if (keyPath.contains("IntKey2"))
+            {
+                return false;
+            }
+            return true;
+        };
+        m_originTracker->SetTrackingFilter(trackingFilterCallback);
+        m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_registry->MergeSettingsFile(filePath2.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedObjectValueOriginStack = {
+            { filePath1.String(),
+              "/O3DE/ObjectValue",
+              R"(
+              {
+                   "StringKey1": "Hello",
+                   "BoolKey1": true
+              }
+              )" },
+            { filePath2.String(),
+              "/O3DE/ObjectValue",
+              R"(
+              {
+                   "StringKey1": "Hello",
+                   "BoolKey1": true,
+                   "IntKey2": 9001
+              }
+              )" },
+            { filePath1.String(), "/O3DE/ObjectValue/BoolKey1", "true" },
+            { filePath1.String(), "/O3DE/ObjectValue/StringKey1", "\"Hello\"" }
+        };
+        CheckOriginsAtPath(expectedObjectValueOriginStack, "/O3DE/ObjectValue");
+    }
+
+    TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFiles_FindLastOrigin_Successful)
+    {
+        auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+        AZ::IO::FixedMaxPath filePath1 = tempRootFolder / "folder1" / "file1.setreg";
+        AZ::IO::FixedMaxPath filePath2 = tempRootFolder / "folder2" / "file2.setreg";
+        ASSERT_TRUE(CreateTestFile(filePath1, R"(
+            {
+                "O3DE": {
+                    "foo": 1,
+                    "bar": true,
+                    "baz": "yes"
+                }
+            }
+        )"));
+        ASSERT_TRUE(CreateTestFile(filePath2, R"(
+            {
+                "O3DE": {
+                    "foo": 3,
+                    "baz": "no"
+                }
+            }
+        )"));
+        m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        m_registry->MergeSettingsFile(filePath2.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
+        AZ::IO::Path lastFooOriginPath;
+        ASSERT_TRUE(m_originTracker->FindLastOrigin(lastFooOriginPath, "/O3DE/foo"));
+        EXPECT_EQ(filePath2, lastFooOriginPath);
+        AZ::IO::Path lastBarOriginPath;
+        ASSERT_TRUE(m_originTracker->FindLastOrigin(lastBarOriginPath, "/O3DE/bar"));
+        EXPECT_EQ(filePath1, lastBarOriginPath);
+        AZ::IO::Path lastBazOriginPath;
+        ASSERT_TRUE(m_originTracker->FindLastOrigin(lastBazOriginPath, "/O3DE/baz"));
+        EXPECT_EQ(filePath2, lastBazOriginPath);
     }
 }

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/ranges/filter_view.h>
@@ -33,6 +34,11 @@ namespace AZ
     void SettingsRegistryOriginTracker::SetTrackingFilter(TrackingFilterCallback filterCallback)
     {
         m_trackingFilter = AZStd::move(filterCallback);
+    }
+
+    AZ::SettingsRegistryInterface& SettingsRegistryOriginTracker::GetSettingsRegistry()
+    {
+        return m_settingsRegistry;
     }
 
     SettingsRegistryOriginTracker::SettingsNotificationHandler::~SettingsNotificationHandler() = default;
@@ -72,16 +78,16 @@ namespace AZ
     {
         auto populateOriginPath = [&](const AZ::Dom::Path&, const SettingsRegistryOriginStack& stack)
         {
-            if (originPath.empty() && !stack.empty())
+            if (!stack.empty())
             {
-                originPath = stack.back().m_originFilePath;
+                originPath = stack.front().m_originFilePath;
                 return false;
             }
             return true;
         };
         AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
-        m_settingsOriginPrefixTree.VisitPath(
-            jsonPath, populateOriginPath, AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific);
+        AZ::Dom::PrefixTreeTraversalFlags traversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific;
+        m_settingsOriginPrefixTree.VisitPath(jsonPath, populateOriginPath, traversalFlags);
         return !originPath.empty();
     }
 

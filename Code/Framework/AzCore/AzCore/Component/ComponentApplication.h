@@ -382,6 +382,7 @@ namespace AZ
         // ConsoleFunctorHandle is responsible for unregistering the Settings Registry Console
         // from the m_console member when it goes out of scope
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryConsoleFunctors;
+        AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryOriginTrackerConsoleFunctors;
 
 #if !defined(_RELEASE)
         Debug::BudgetTracker m_budgetTracker;
