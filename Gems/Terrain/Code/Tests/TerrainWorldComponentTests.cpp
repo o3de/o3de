@@ -60,8 +60,8 @@ TEST_F(TerrainWorldComponentTest, ComponentCreatesAndActivatesTerrainSystem)
 TEST_F(TerrainWorldComponentTest, WorldMinAndMaxAffectTerrainSystem)
 {
     // Verify that the Z component of the Terrain World Component's World Min and World Max set the Terrain System's min/max.
-    // Generally the z min/max should be returned with GetTerrainHeightBounds, but those values should also be reflected in 
-    // GetTerrainAabb as the aabb's min/max z.
+    // The z min/max should be returned with GetTerrainHeightBounds, and since there are no terrain areas, the aabb returned
+    // from worldBounds should be invalid.
 
     Terrain::TerrainWorldConfig config;
     config.m_minHeight = -345.0f;
@@ -79,8 +79,7 @@ TEST_F(TerrainWorldComponentTest, WorldMinAndMaxAffectTerrainSystem)
 
     EXPECT_NEAR(config.m_minHeight, heightBounds.m_min, 0.001f);
     EXPECT_NEAR(config.m_maxHeight, heightBounds.m_max, 0.001f);
-    EXPECT_NEAR(config.m_minHeight, worldBounds.GetMin().GetZ(), 0.001f);
-    EXPECT_NEAR(config.m_maxHeight, worldBounds.GetMax().GetZ(), 0.001f);
+    EXPECT_FALSE(worldBounds.IsValid());
 
     entity.reset();
 }

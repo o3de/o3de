@@ -31,7 +31,7 @@ namespace Terrain
         auto arrayFloatToSingleValue = [&](const char* oldName, const char* newName, auto& dataRef, uint32_t index)
         {
             rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember(oldName);
-            if (itr != inputValue.MemberEnd())
+            if (itr != inputValue.MemberEnd() && itr->value.IsArray())
             {
                 dataRef = itr->value.GetArray()[index].GetFloat();
             }
@@ -155,7 +155,7 @@ namespace Terrain
 
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainHeightBounds,
-            AzFramework::Terrain::FloatRange({ m_configuration.m_minHeight, m_configuration.m_minHeight }));
+            AzFramework::Terrain::FloatRange({ m_configuration.m_minHeight, m_configuration.m_maxHeight }));
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainHeightQueryResolution, m_configuration.m_heightQueryResolution);
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(

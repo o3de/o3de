@@ -272,7 +272,7 @@ namespace Terrain
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         void RecalculateCachedBounds();
-        void UpdateCachedBoundsZ();
+        AZ::Aabb ClampZBoundsToHeightBounds(const AZ::Aabb& aabb) const;
 
         struct TerrainSystemSettings
         {
@@ -289,7 +289,7 @@ namespace Terrain
         bool m_terrainHeightDirty = false;
         bool m_terrainSurfacesDirty = false;
         AZ::Aabb m_dirtyRegion;
-        mutable AZ::Aabb m_cachedAreaBounds;
+        AZ::Aabb m_cachedAreaBounds;
 
         // Cached data for each terrain area to use when looking up terrain data.
         struct TerrainAreaData

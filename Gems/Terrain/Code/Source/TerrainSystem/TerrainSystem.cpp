@@ -88,6 +88,7 @@ void TerrainSystem::Activate()
     m_terrainSettingsDirty = true;
     m_terrainSurfacesDirty = true;
     m_requestedSettings.m_systemActive = true;
+    m_cachedAreaBounds = AZ::Aabb::CreateNull();
 
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -177,7 +178,7 @@ void TerrainSystem::SetTerrainSurfaceDataQueryResolution(float queryResolution)
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
 {
-    return m_cachedAreaBounds;
+    return ClampZBoundsToHeightBounds(m_cachedAreaBounds);
 }
 
 AzFramework::Terrain::FloatRange TerrainSystem::GetTerrainHeightBounds() const
@@ -282,16 +283,19 @@ void TerrainSystem::RecalculateCachedBounds()
     {
         m_cachedAreaBounds.AddAabb(area.m_areaBounds);
     }
-    UpdateCachedBoundsZ();
 }
 
-void TerrainSystem::UpdateCachedBoundsZ()
+AZ::Aabb TerrainSystem::ClampZBoundsToHeightBounds(const AZ::Aabb& aabb) const
 {
-    AZ::Vector3 min = m_cachedAreaBounds.GetMin();
-    AZ::Vector3 max = m_cachedAreaBounds.GetMax();
-    min.SetZ(m_currentSettings.m_heightRange.m_min);
-    max.SetZ(m_currentSettings.m_heightRange.m_max);
-    m_cachedAreaBounds.Set(min, max);
+    if (!aabb.IsValid())
+    {
+        return aabb; // Don't try to clamp invalid aabbs
+    }
+    AZ::Vector3 min = aabb.GetMin();
+    AZ::Vector3 max = aabb.GetMax();
+    min.SetZ(AZ::GetClamp<float>(min.GetZ(), m_currentSettings.m_heightRange.m_min, m_currentSettings.m_heightRange.m_max));
+    max.SetZ(AZ::GetClamp<float>(max.GetZ(), m_currentSettings.m_heightRange.m_min, m_currentSettings.m_heightRange.m_max));
+    return AZ::Aabb::CreateFromMinMax(min, max);
 }
 
 // Generate positions to be queried based on the sampler type.
@@ -308,13 +312,14 @@ void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>&
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
             {
-                // If the query position isn't within the world bounds, we'll place that position 4x into the query list
-                // instead of the normal bilinear positions, because we don't want to interpolate between partially inside and
-                // partially outside. We just want to give it a min height and "terrain doesn't exist".
-                outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
+                AZ::Vector2 normalizedDelta;
+                AZ::Vector2 pos0;
+                ClampPosition(position.GetX(), position.GetY(), queryResolution, pos0, normalizedDelta);
+                const AZ::Vector2 pos1(pos0.GetX() + queryResolution, pos0.GetY() + queryResolution);
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -1389,7 +1394,6 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
     m_terrainHeightDirty = true;
     m_terrainSurfacesDirty = true;
     m_cachedAreaBounds.AddAabb(aabb);
-    UpdateCachedBoundsZ();
 }
 
 void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
@@ -1446,7 +1450,6 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
     {
         // Old Aabb was inside the bounds and new aabb is outside the bounds, so just add it.
         m_cachedAreaBounds.AddAabb(newAabb);
-        UpdateCachedBoundsZ();
     }
 
 }
@@ -1521,7 +1524,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
         // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will
         // cause the data to become dirty again.
-        AZ::Aabb dirtyRegion = m_dirtyRegion;
+        AZ::Aabb dirtyRegion = ClampZBoundsToHeightBounds(m_dirtyRegion);
         m_terrainHeightDirty = false;
         m_terrainSurfacesDirty = false;
         m_dirtyRegion = AZ::Aabb::CreateNull();
