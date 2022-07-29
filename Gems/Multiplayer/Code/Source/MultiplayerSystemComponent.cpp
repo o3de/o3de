@@ -597,7 +597,7 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::Client;
-                auto preActivationCallback = [this, connection](const INetworkEntityManager::EntityList& entityList)
+                auto preActivationCallback = [connection](const INetworkEntityManager::EntityList& entityList)
                 {
                     EnableAutonomousControl(entityList, connection->GetConnectionId());
                 };
@@ -605,18 +605,7 @@ namespace Multiplayer
                 controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum, preActivationCallback);
                 if (controlledEntity.Exists())
                 {
-                    ServerToClientConnectionData* connectionData =
-                        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                    AZStd::unique_ptr<IReplicationWindow> window =
-                        AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-                    connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
-                    connectionData->SetControlledEntity(controlledEntity);
-
-                    // If this is a migrate or rejoin, immediately ready the connection for updates
-                    if (packet.GetTemporaryUserId() != 0)
-                    {
-                        connectionData->SetCanSendUpdates(true);
-                    }
+                    StartServerToClientReplication(packet.GetTemporaryUserId(), controlledEntity, connection);
                 }
                 else
                 {
@@ -995,7 +984,7 @@ namespace Multiplayer
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
                 const int userId = 0;
-                auto preActivationCallback = [this](const INetworkEntityManager::EntityList& entityList)
+                auto preActivationCallback = [](const INetworkEntityManager::EntityList& entityList)
                 {
                     EnableAutonomousControl(entityList, InvalidConnectionId);
                 };
@@ -1305,7 +1294,7 @@ namespace Multiplayer
 
         for (const auto& playerWaitingToBeSpawned : m_playersWaitingToBeSpawned)
         {
-            auto preActivationCallback = [this, playerWaitingToBeSpawned](const INetworkEntityManager::EntityList& entityList)
+            auto preActivationCallback = [playerWaitingToBeSpawned](const INetworkEntityManager::EntityList& entityList)
             {
                 const ConnectionId connectionId = playerWaitingToBeSpawned.connection ? playerWaitingToBeSpawned.connection->GetConnectionId() : InvalidConnectionId;
                 EnableAutonomousControl(entityList, connectionId);
@@ -1321,22 +1310,25 @@ namespace Multiplayer
             if ((GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
                 && playerWaitingToBeSpawned.agent.m_agentType == MultiplayerAgentType::Client)
             {
-                ServerToClientConnectionData* connectionData =
-                    reinterpret_cast<ServerToClientConnectionData*>(playerWaitingToBeSpawned.connection->GetUserData());
-                AZStd::unique_ptr<IReplicationWindow> window =
-                    AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, playerWaitingToBeSpawned.connection);
-                connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
-                connectionData->SetControlledEntity(controlledEntity);
-
-                // If this is a migrate or rejoin, immediately ready the connection for updates
-                if (playerWaitingToBeSpawned.userId != 0)
-                {
-                    connectionData->SetCanSendUpdates(true);
-                }
+                StartServerToClientReplication(playerWaitingToBeSpawned.userId, controlledEntity, playerWaitingToBeSpawned.connection);
             }
         }
 
         m_playersWaitingToBeSpawned.clear();
+    }
+
+    void MultiplayerSystemComponent::StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, IConnection* connection)
+    {
+        ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
+        AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+        connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+        connectionData->SetControlledEntity(controlledEntity);
+
+        // If this is a migrate or rejoin, immediately ready the connection for updates
+        if (userId != 0)
+        {
+            connectionData->SetCanSendUpdates(true);
+        }
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
