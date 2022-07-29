@@ -54,7 +54,7 @@ class TestPythonAssetProcessing(object):
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
         testFile = os.path.join(test_directory, 'AssetBuilder_test_case.py')
-        editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile])
+        editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={request.node.name}"])
 
         with editor.start():
             editorlog_file = os.path.join(editor.workspace.paths.project_log(), 'Editor.log')

@@ -887,6 +887,7 @@ class EditorTestSuite:
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
             "--runpythontest", test_filename,
+            f"-pythontestcase={request.node.name}",
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
@@ -971,15 +972,16 @@ class EditorTestSuite:
         results = {}
 
         # We create a file containing a semicolon separated list for the Editor to read
-        temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-        for test_spec in test_spec_list[:-1]:
-            temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)
-                                    .replace('\\', '\\\\')+';')
-        # The last entry does not have a semicolon
-        temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
-                                .replace('\\', '\\\\'))
-        temp_batched_file.flush()
-        temp_batched_file.close()
+        temp_batched_file = tempfile.NamedTemporaryFile(
+        mode='w', delete=False, suffix='.txt')
+        test_cases = []
+        for test_spec in test_spec_list:
+            regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))
+            split_test_case_name = str.split(regex_result.group(1), ".")[-2:]
+            test_case_info = {"fixture": split_test_case_name[0], "test_case": split_test_case_name[1], "script_path" : editor_utils.get_testcase_module_filepath(test_spec.test_module)
+                                    .replace('\\', '/')}
+            test_cases.append(test_case_info)
+        temp_batched_file.write(json.dumps(test_cases))
 
         cmdline = [
             "--runpythontest", temp_batched_file.name,
