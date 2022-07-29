@@ -14,7 +14,7 @@
 namespace AzToolsFramework
 {
     EditorMenuBar::EditorMenuBar()
-        : m_menuBar(new QMenuBar())
+        : m_menuBar(new QMenuBar(m_defaultParentWidget))
     {
     }
     
@@ -63,8 +63,10 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorMenuBar::Initialize()
+    void EditorMenuBar::Initialize(QWidget* defaultParentWidget)
     {
+        m_defaultParentWidget = defaultParentWidget;
+
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorMenuBar - Could not retrieve instance of MenuManagerInterface");
 

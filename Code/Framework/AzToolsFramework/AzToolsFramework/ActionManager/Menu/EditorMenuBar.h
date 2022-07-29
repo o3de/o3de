@@ -23,7 +23,7 @@ namespace AzToolsFramework
     public:
         EditorMenuBar();
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
 
         void AddMenu(int sortKey, AZStd::string menuIdentifier);
         
@@ -44,6 +44,8 @@ namespace AzToolsFramework
         QMenuBar* m_menuBar = nullptr;
         AZStd::multimap<int, AZStd::string> m_menus;
         AZStd::map<AZStd::string, int> m_menuToSortKeyMap;
+
+        inline static QWidget* m_defaultParentWidget = nullptr;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
         inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
