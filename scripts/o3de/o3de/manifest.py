@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import pathlib
-import shutil
 import hashlib
 
 from o3de import validation, utils
@@ -309,21 +308,25 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
     return []
 
 def get_project_engine_path(project_path: pathlib.Path) -> pathlib.Path or None:
+    # first check if the project has an engine field in project.json that
+    # refers to a registered engine
     project_object = get_project_json_data(project_path=project_path)
     if project_object:
         engine_name = project_object.get('engine', '')
         if engine_name:
             engine_path = get_registered(engine_name=engine_name)
             if engine_path:
-                return engine_path.as_posix()
+                return engine_path
     
-    engine_paths = get_manifest_engines()
+    # check if the project is registered in an engine.json 
+    # in a parent folder
     resolved_project_path = pathlib.Path(project_path).resolve()
-    for engine_path in engine_paths:
+    engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), resolved_project_path)
+    if engine_path:
         projects = get_engine_projects(engine_path)
         for engine_project_path in projects:
             if resolved_project_path.samefile(pathlib.Path(engine_project_path).resolve()):
-                return engine_path.as_posix()
+                return engine_path
 
     return None
 

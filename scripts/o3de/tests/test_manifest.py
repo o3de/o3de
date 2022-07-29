@@ -11,7 +11,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import manifest
+from o3de import manifest, utils
 
 
 TEST_GEM_JSON_PAYLOAD = '''
@@ -325,6 +325,10 @@ class TestManifestProjects:
                 '', 
                 {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
                 pathlib.Path('C:/engine1')),
+            pytest.param(pathlib.Path('C:/project1'), 
+                '', 
+                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+                None),
         ]
     )
     def test_get_project_engines(self, project_path, project_engine_name, 
@@ -341,6 +345,13 @@ class TestManifestProjects:
         def get_manifest_engines():
             return list(engines.values())
 
+        def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                                            max_scan_up_range: int=0) -> pathlib.Path or None:
+            for engine_path in engines.values():
+                if engine_path in start_path.parents:
+                    return engine_path
+            return None
+
         def get_engine_projects(engine_path:pathlib.Path = None) -> list:
             return [project_path] if engine_path in project_path.parents else []
 
@@ -348,8 +359,9 @@ class TestManifestProjects:
             patch('o3de.manifest.get_registered', side_effect=get_registered) as _2, \
             patch('o3de.manifest.get_manifest_engines', side_effect=get_manifest_engines) as _3, \
             patch('o3de.manifest.get_engine_projects', side_effect=get_engine_projects) as _4, \
-            patch('pathlib.Path.resolve', self.resolve) as _5, \
-            patch('pathlib.Path.samefile', self.samefile) as _6:
+            patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir_containing_file) as _5, \
+            patch('pathlib.Path.resolve', self.resolve) as _6, \
+            patch('pathlib.Path.samefile', self.samefile) as _7:
 
             engine_path = manifest.get_project_engine_path(project_path)
-            assert engine_path == expected_engine_path.as_posix()
+            assert engine_path == expected_engine_path

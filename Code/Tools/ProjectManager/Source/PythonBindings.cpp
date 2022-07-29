@@ -515,7 +515,8 @@ namespace O3DE::ProjectManager
             // if a valid registered object is not found None is returned
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
             {
-                engineInfo = EngineInfoFromPath(enginePathResult);
+                // request a posix path so it looks like what is in o3de_manifest.json
+                engineInfo = EngineInfoFromPath(enginePathResult.attr("as_posix")());
             }
         });
 
@@ -940,7 +941,8 @@ namespace O3DE::ProjectManager
                 auto enginePathResult = m_manifest.attr("get_project_engine_path")(path);
                 if (!pybind11::isinstance<pybind11::none>(enginePathResult))
                 {
-                    projectInfo.m_enginePath = Py_To_String(enginePathResult);
+                    // request a posix path so it looks like what is in o3de_manifest.json
+                    projectInfo.m_enginePath = Py_To_String(enginePathResult.attr("as_posix")());
                 }
             }
             catch ([[maybe_unused]] const std::exception& e)
