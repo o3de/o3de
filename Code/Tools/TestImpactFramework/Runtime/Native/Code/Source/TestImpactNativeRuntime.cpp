@@ -280,11 +280,11 @@ namespace TestImpact
             ReadNativeTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile));
 
         // Construct the dynamic dependency map from the build targets
-        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());
+        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer =
-            AZStd::make_unique<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
+            AZStd::make_unique<TestSelectorAndPrioritizer<NativeProductionTarget, NativeTestTarget>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
         if (!testsToExclude.empty())
@@ -403,7 +403,7 @@ namespace TestImpact
     //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
     //! test engine instrumented run jobs.
     SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
-        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>* dynamicDependencyMap,
         const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         const RepoPath& repoRoot)
@@ -475,7 +475,7 @@ namespace TestImpact
 
     //! Updates the dynamic dependency map and serializes the entire map to disk.
     [[nodiscard]] AZStd::optional<bool> UpdateAndSerializeDynamicDependencyMap(
-        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>* dynamicDependencyMap,
         const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::IntegrityFailure integrationFailurePolicy,

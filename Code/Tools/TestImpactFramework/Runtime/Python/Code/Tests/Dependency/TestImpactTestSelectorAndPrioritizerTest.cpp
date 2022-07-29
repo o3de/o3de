@@ -26,8 +26,8 @@
 //    public:
 //    protected:
 //        using NativeBuildTargetList = TestImpact::BuildTargetList<NativeProductionTarget, NativeTestTarget>; 
-//        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>;
-//        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>;
+//        using NativeDynamicDependencyMap = TestImpact::DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>;
+//        using NativeTestSelectorAndPrioritizer = TestImpact::TestSelectorAndPrioritizer<NativeProductionTarget, NativeTestTarget>;
 //
 //        AZStd::unique_ptr<NativeBuildTargetList> m_buildTargets;
 //        AZStd::unique_ptr<NativeDynamicDependencyMap> m_dynamicDependencyMap;

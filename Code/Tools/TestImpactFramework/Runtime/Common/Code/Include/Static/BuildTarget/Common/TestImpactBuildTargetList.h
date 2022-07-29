@@ -32,11 +32,11 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalBuildTarget<TestTarget, ProductionTarget> GetBuildTarget(const AZStd::string& name) const;
+        OptionalBuildTarget<ProductionTarget, TestTarget> GetBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        BuildTarget<TestTarget, ProductionTarget> GetBuildTargetOrThrow(const AZStd::string& name) const;
+        BuildTarget<ProductionTarget, TestTarget> GetBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of test targets in the repository.
         const TargetList<TestTarget>& GetTestTargetList() const;
@@ -66,7 +66,7 @@ namespace TestImpact
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    OptionalBuildTarget<TestTarget, ProductionTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTarget(const AZStd::string& name) const
+    OptionalBuildTarget<ProductionTarget, TestTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTarget(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name);
             testTarget != nullptr)
@@ -83,7 +83,7 @@ namespace TestImpact
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    BuildTarget<TestTarget, ProductionTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTargetOrThrow(
+    BuildTarget<ProductionTarget, TestTarget> BuildTargetList<ProductionTarget, TestTarget>::GetBuildTargetOrThrow(
         const AZStd::string& name) const
     {
         auto buildTarget = GetBuildTarget(name);

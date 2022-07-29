@@ -36,10 +36,10 @@
 //            suiteFilter, m_config.m_commonConfig.m_buildTargetDescriptor, m_config.m_commonConfig.m_testTargetMeta);
 //
 //        // Construct the dynamic dependency map from the build targets
-//        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());
+//        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>>(m_buildTargets.get());
 //
 //        // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
-//        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>>(
+//        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer<NativeProductionTarget, NativeTestTarget>>(
 //            m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 //
 //        // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data

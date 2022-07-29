@@ -234,8 +234,8 @@ namespace TestImpact
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<BuildTargetList<NativeProductionTarget, NativeTestTarget>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeProductionTarget, NativeTestTarget>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<NativeTestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_instrumentedTestTargetExcludeList;
