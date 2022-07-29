@@ -14,7 +14,7 @@
 namespace TestImpact
 {
     AZStd::tuple<TargetList<NativeProductionTarget>, TargetList<NativeTestTarget>> CompileTargetLists(
-        AZStd::vector<AZStd::tuple<TargetDescriptor, NativeTargetDescriptor>>&& buildTargetDescriptors,
+        AZStd::vector<TargetDescriptor>&& buildTargetDescriptors,
         NativeTestTargetMetaMap&& nativeTestTargetMetaMap)
     {
         AZ_TestImpact_Eval(!buildTargetDescriptors.empty(), ArtifactException, "Build target descriptor list cannot be null");
@@ -23,21 +23,18 @@ namespace TestImpact
         AZStd::vector<NativeProductionTarget> productionTargets;
         AZStd::vector<NativeTestTarget> testTargets;
 
-        for (auto&& buildTargetDescriptor : buildTargetDescriptors)
+        for (auto&& descriptor : buildTargetDescriptors)
         {
-            auto&& [descriptor, nativeDescriptor] = buildTargetDescriptor;
-
             // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
             if (auto&& testTargetMeta = nativeTestTargetMetaMap.find(descriptor.m_name); testTargetMeta != nativeTestTargetMetaMap.end())
             {
                 testTargets.emplace_back(
                     AZStd::move(descriptor),
-                    AZStd::move(nativeDescriptor),
                     AZStd::move(testTargetMeta->second));
             }
             else
             {
-                productionTargets.emplace_back(AZStd::move(descriptor), AZStd::move(nativeDescriptor));
+                productionTargets.emplace_back(AZStd::move(descriptor));
             }
         }
 

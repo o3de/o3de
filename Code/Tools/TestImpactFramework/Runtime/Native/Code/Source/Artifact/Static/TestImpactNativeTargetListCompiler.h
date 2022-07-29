@@ -27,6 +27,6 @@ namespace TestImpact
     //! @return A tuple containing the production artifacts and test artifacts.
     AZStd::tuple<TargetList<NativeProductionTarget>, TargetList<NativeTestTarget>>
     CompileTargetLists(
-        AZStd::vector<AZStd::tuple<TargetDescriptor, NativeTargetDescriptor>>&& buildTargetDescriptors,
+        AZStd::vector<TargetDescriptor>&& buildTargetDescriptors,
         NativeTestTargetMetaMap&& nativeTestTargetMetaMap);
 } // namespace TestImpact

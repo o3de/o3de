@@ -11,8 +11,8 @@
 namespace TestImpact
 {
     NativeTestTarget::NativeTestTarget(
-        TargetDescriptor&& descriptor, NativeTargetDescriptor&& nativeDescriptor, NativeTestTargetMeta&& testMetaData)
-        : NativeTarget(AZStd::move(descriptor), AZStd::move(nativeDescriptor))
+        TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData)
+        : Target(AZStd::move(descriptor))
         , m_testMetaData(AZStd::move(testMetaData))
     {
     }

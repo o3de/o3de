@@ -29,4 +29,9 @@ namespace TestImpact
     {
         return m_descriptor.m_sources;
     }
+
+    const AZStd::string& Target::GetOutputName() const
+    {
+        return m_descriptor.m_outputName;
+    }
 } // namespace TestImpact

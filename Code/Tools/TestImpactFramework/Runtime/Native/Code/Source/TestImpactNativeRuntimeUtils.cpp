@@ -10,8 +10,8 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactNativeRuntimeUtils.h>
+#include <Artifact/Factory/TestImpactTargetDescriptorFactory.h>
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
-#include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
 #include <Artifact/Static/TestImpactNativeTargetListCompiler.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
 
@@ -25,23 +25,23 @@ namespace TestImpact
         return NativeTestTargetMetaMapFactory(masterTestListData, suiteFilter);
     }
 
-    AZStd::vector<AZStd::tuple<TargetDescriptor, NativeTargetDescriptor>> ReadNativeTargetDescriptorFiles(
+    AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
     {
-        AZStd::vector<AZStd::tuple<TargetDescriptor, NativeTargetDescriptor>> nativeTargetDescriptors;
+        AZStd::vector<TargetDescriptor> descriptors;
         for (const auto& NativeTargetDescriptorFile :
              std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
             const auto NativeTargetDescriptorContents = ReadFileContents<RuntimeException>(NativeTargetDescriptorFile.path().string().c_str());
-            auto nativeTargetDescriptor = NativeTargetDescriptorsFactory(
+            auto nativeTargetDescriptor = NativeTargetDescriptorFactory(
                 NativeTargetDescriptorContents,
                 buildTargetDescriptorConfig.m_staticInclusionFilters,
                 buildTargetDescriptorConfig.m_inputInclusionFilters,
                 buildTargetDescriptorConfig.m_inputOutputPairer);
-            nativeTargetDescriptors.emplace_back(AZStd::move(nativeTargetDescriptor));
+            descriptors.emplace_back(AZStd::move(nativeTargetDescriptor));
         }
 
-        return nativeTargetDescriptors;
+        return descriptors;
     }
 
     AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
@@ -50,7 +50,7 @@ namespace TestImpact
         const TestTargetMetaConfig& testTargetMetaConfig)
     {
         auto nativeTestTargetMetaMap = ReadNativeTestTargetMetaMapFile(suiteFilter, testTargetMetaConfig.m_metaFile);
-        auto nativeTargetDescriptors = ReadNativeTargetDescriptorFiles(buildTargetDescriptorConfig);
+        auto nativeTargetDescriptors = ReadTargetDescriptorFiles(buildTargetDescriptorConfig);
         auto buildTargets = CompileTargetLists(AZStd::move(nativeTargetDescriptors), AZStd::move(nativeTestTargetMetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
         return AZStd::make_unique<BuildTargetList<NativeTestTarget, NativeProductionTarget>>(

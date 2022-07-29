@@ -28,6 +28,9 @@ namespace TestImpact
         //! Returns the build target's sources.
         const TargetSources& GetSources() const;
 
+        //! Returns the build target's compiled binary name.
+        const AZStd::string& GetOutputName() const;
+
     private:
        TargetDescriptor m_descriptor;
     };

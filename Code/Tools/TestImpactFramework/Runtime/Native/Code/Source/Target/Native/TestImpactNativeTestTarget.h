@@ -9,18 +9,17 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
-#include <Target/Native/TestImpactNativeTarget.h>
+#include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for native test targets (build targets containing test code and no production code).
-    class NativeTestTarget
-        : public NativeTarget
+    class NativeTestTarget : public Target
     {
     public:
-        NativeTestTarget(TargetDescriptor&& descriptor, NativeTargetDescriptor&& nativeDescriptor, NativeTestTargetMeta&& testMetaData);
+        NativeTestTarget(TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData);
 
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;

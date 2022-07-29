@@ -6,7 +6,7 @@
  *
  */
 
-#include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
+#include <Artifact/Factory/TestImpactTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>
@@ -58,7 +58,7 @@ namespace TestImpact
         return autogenSources;
     }
 
-    AZStd::tuple<TargetDescriptor, NativeTargetDescriptor> NativeTargetDescriptorsFactory(
+    TargetDescriptor NativeTargetDescriptorFactory(
         const AZStd::string& buildTargetData,
         const AZStd::vector<AZStd::string>& staticSourceExtensionIncludes,
         const AZStd::vector<AZStd::string>& autogenInputExtensionIncludes,
@@ -91,8 +91,7 @@ namespace TestImpact
 
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
 
-        AZStd::tuple<TargetDescriptor, NativeTargetDescriptor> descriptors;
-        auto& [targetDescriptor, nativeTargetDescriptor] = descriptors;
+        TargetDescriptor descriptor;
         rapidjson::Document buildTarget;
 
         if (buildTarget.Parse(buildTargetData.c_str()).HasParseError())
@@ -101,19 +100,19 @@ namespace TestImpact
         }
 
         const auto& target = buildTarget[Keys[TargetKey]];
-        targetDescriptor.m_name = target[Keys[NameKey]].GetString();
-        nativeTargetDescriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
-        targetDescriptor.m_path = target["path"].GetString();
+        descriptor.m_name = target[Keys[NameKey]].GetString();
+        descriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
+        descriptor.m_path = target["path"].GetString();
 
-        AZ_TestImpact_Eval(!targetDescriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
-        AZ_TestImpact_Eval(!nativeTargetDescriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
-        AZ_TestImpact_Eval(!targetDescriptor.m_path.empty(), ArtifactException, "Target path cannot be empty");
+        AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
+        AZ_TestImpact_Eval(!descriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
+        AZ_TestImpact_Eval(!descriptor.m_path.empty(), ArtifactException, "Target path cannot be empty");
 
         const auto& sources = buildTarget[Keys[SourcesKey]];
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();
         if (!staticSources.Empty())
         {
-            targetDescriptor.m_sources.m_staticSources = AZStd::vector<RepoPath>();
+            descriptor.m_sources.m_staticSources = AZStd::vector<RepoPath>();
 
             for (const auto& source : staticSources)
             {
@@ -122,7 +121,7 @@ namespace TestImpact
                         staticSourceExtensionIncludes.begin(), staticSourceExtensionIncludes.end(), sourcePath.Extension().Native()) !=
                     staticSourceExtensionIncludes.end())
                 {
-                    targetDescriptor.m_sources.m_staticSources.emplace_back(AZStd::move(sourcePath));
+                    descriptor.m_sources.m_staticSources.emplace_back(AZStd::move(sourcePath));
                 }
             }
         }
@@ -155,9 +154,9 @@ namespace TestImpact
                 outputPaths.emplace_back(AZStd::move(RepoPath(source.GetString())));
             }
 
-            targetDescriptor.m_sources.m_autogenSources = PairAutogenSources(inputPaths, outputPaths, autogenMatcher);
+            descriptor.m_sources.m_autogenSources = PairAutogenSources(inputPaths, outputPaths, autogenMatcher);
         }
 
-        return descriptors;
+        return descriptor;
     }
 } // namespace TestImpact

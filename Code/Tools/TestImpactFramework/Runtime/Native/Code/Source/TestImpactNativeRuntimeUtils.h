@@ -13,7 +13,6 @@
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
 
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
-#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
