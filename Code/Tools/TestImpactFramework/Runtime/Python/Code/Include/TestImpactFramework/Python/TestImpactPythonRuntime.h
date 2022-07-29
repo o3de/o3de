@@ -72,7 +72,6 @@ namespace TestImpact
         AZStd::unique_ptr<BuildTargetList<PythonProductionTarget, PythonTestTarget>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<PythonProductionTarget, PythonTestTarget>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer<PythonProductionTarget, PythonTestTarget>> m_testSelectorAndPrioritizer;
-        AZStd::unique_ptr<PythonTestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList<PythonTestTarget>> m_testTargetExcludeList;
         AZStd::unordered_set<const PythonTestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;

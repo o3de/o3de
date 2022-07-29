@@ -15,6 +15,8 @@ set(FILES
     Source/Target/Python/TestImpactPythonProductionTarget.h
     Source/Target/Python/TestImpactPythonTestTarget.cpp
     Source/Target/Python/TestImpactPythonTestTarget.h
+    Source/Target/Python/TestImpactPythonTargetListCompiler.cpp
+    Source/Target/Python/TestImpactPythonTargetListCompiler.h
     Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
     Source/TestRunner/Python/TestImpactPythonTestRunner.h
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp

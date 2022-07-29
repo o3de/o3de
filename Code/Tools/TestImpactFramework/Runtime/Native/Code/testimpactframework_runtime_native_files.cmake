@@ -15,6 +15,8 @@ set(FILES
     Source/Target/Native/TestImpactNativeProductionTarget.h
     Source/Target/Native/TestImpactNativeTestTarget.cpp
     Source/Target/Native/TestImpactNativeTestTarget.h
+    Source/Target/Native/TestImpactNativeTargetListCompiler.cpp
+    Source/Target/Native/TestImpactNativeTargetListCompiler.h
     Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
     Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h

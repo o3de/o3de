@@ -17,8 +17,9 @@
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-#include <Target/Native/TestImpactNativeTestTarget.h>
 #include <Target/Native/TestImpactNativeProductionTarget.h>
+#include <Target/Native/TestImpactNativeTargetListCompiler.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
 
 #include <AzCore/IO/SystemFile.h>
@@ -275,9 +276,13 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the build targets from the build target descriptors
-        m_buildTargets = ConstructBuildTargetList<NativeProductionTarget, NativeTestTarget, NativeTestTargetMetaMap>(
-            m_config.m_commonConfig.m_buildTargetDescriptor,
+        auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
+        auto buildTargets = CompileNativeTargetLists(
+            AZStd::move(targetDescriptors),
             ReadNativeTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile));
+        auto&& [productionTargets, testTargets] = buildTargets;
+        m_buildTargets = AZStd::make_unique<BuildTargetList<NativeProductionTarget, NativeTestTarget>>(
+            AZStd::move(testTargets), AZStd::move(productionTargets));
 
         // Construct the dynamic dependency map from the build targets
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>>(m_buildTargets.get());

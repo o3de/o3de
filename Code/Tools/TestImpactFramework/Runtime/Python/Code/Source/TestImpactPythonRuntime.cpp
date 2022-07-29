@@ -13,6 +13,7 @@
 #include <Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
 #include <Target/Python/TestImpactPythonProductionTarget.h>
+#include <Target/Python/TestImpactPythonTargetListCompiler.h>
 #include <Target/Python/TestImpactPythonTestTarget.h>
 
 #include <TestImpactRuntimeUtils.h>
@@ -45,9 +46,13 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
     {
         // Construct the build targets from the build target descriptors
-        m_buildTargets = ConstructBuildTargetList<PythonProductionTarget, PythonTestTarget, PythonTestTargetMetaMap>(
-            m_config.m_commonConfig.m_buildTargetDescriptor,
+        auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
+        auto buildTargets = CompilePythonTargetLists(
+            AZStd::move(targetDescriptors),
             ReadPythonTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile));
+        auto&& [productionTargets, testTargets] = buildTargets;
+        m_buildTargets = AZStd::make_unique<BuildTargetList<PythonProductionTarget, PythonTestTarget>>(
+            AZStd::move(testTargets), AZStd::move(productionTargets));
 
         // Construct the dynamic dependency map from the build targets
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<PythonProductionTarget, PythonTestTarget>>(m_buildTargets.get());

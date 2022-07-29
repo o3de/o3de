@@ -9,12 +9,7 @@
 #pragma once
 
 #include <Artifact/TestImpactArtifactException.h>
-#include <Artifact/Static/TestImpactTargetDescriptor.h>
-#include <Target/Common/TestImpactTargetList.h>
-
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/tuple.h>
+#include <Target/Python/TestImpactPythonTargetListCompiler.h>
 
 namespace TestImpact
 {
@@ -23,28 +18,27 @@ namespace TestImpact
     //! @param buildTargets The list of build target artifacts to be sorted into production and test artifact types.
     //! @param NativeTestTargetMetaMap The map of test target meta artifacts containing the additional meta-data about each test target.
     //! @return A tuple containing the production artifacts and test artifacts.
-    template<typename ProductionTarget, typename TestTarget, typename TestTargetMetaMap>
-    AZStd::tuple<TargetList<ProductionTarget>, TargetList<TestTarget>>
-    CompileTargetLists(
-        AZStd::vector<TargetDescriptor>&& buildTargetDescriptors, TestTargetMetaMap&& testTargetMetaMap)
+    AZStd::tuple<TargetList<PythonProductionTarget>, TargetList<PythonTestTarget>> CompilePythonTargetLists(
+        AZStd::vector<TargetDescriptor>&& buildTargetDescriptors, PythonTestTargetMetaMap&& testTargetMetaMap)
     {
         AZ_TestImpact_Eval(!buildTargetDescriptors.empty(), ArtifactException, "Build target descriptor list cannot be null");
         AZ_TestImpact_Eval(!testTargetMetaMap.empty(), ArtifactException, "Test target meta map cannot be null");
 
-        AZStd::vector<ProductionTarget> productionTargets;
-        AZStd::vector<TestTarget> testTargets;
+        AZStd::vector<PythonProductionTarget> productionTargets;
+        AZStd::vector<PythonTestTarget> testTargets;
 
         for (auto&& descriptor : buildTargetDescriptors)
         {
-            // If this build target has an associated test artifact then it is a test target, otherwise it is a production target
-            if (auto&& testTargetMeta = testTargetMetaMap.find(descriptor.m_name); testTargetMeta != testTargetMetaMap.end())
-            {
-                testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta->second));
-            }
-            else
-            {
-                productionTargets.emplace_back(AZStd::move(descriptor));
-            }
+            productionTargets.emplace_back(AZStd::move(descriptor));
+        }
+
+        for (auto&& testTargetMeta : testTargetMetaMap)
+        {
+            TargetDescriptor descriptor;
+            descriptor.m_name = testTargetMeta.first;
+            descriptor.m_sources.m_staticSources.push_back(testTargetMeta.second.m_scriptPath);
+
+            testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta.second));
         }
 
         return { { AZStd::move(productionTargets) }, { AZStd::move(testTargets) } };

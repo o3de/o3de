@@ -16,7 +16,6 @@
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
-#include <Target/Common/TestImpactTargetListCompiler.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 #include <TestImpactTestTargetExclusionList.h>
@@ -27,20 +26,6 @@ namespace TestImpact
 {
     //!
     AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
-
-    //!
-    template<typename ProductionTarget, typename TestTarget, typename TestTargetMetaMap>
-    AZStd::unique_ptr<BuildTargetList<ProductionTarget, TestTarget>> ConstructBuildTargetList(
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
-        TestTargetMetaMap&& testTargetMetaMap)
-    {
-        auto targetDescriptors = ReadTargetDescriptorFiles(buildTargetDescriptorConfig);
-        auto buildTargets = CompileTargetLists<ProductionTarget, TestTarget, TestTargetMetaMap>(
-            AZStd::move(targetDescriptors), AZStd::move(testTargetMetaMap));
-        auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<BuildTargetList<ProductionTarget, TestTarget>>(
-            AZStd::move(testTargets), AZStd::move(productionTargets));
-    }
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
     template<typename TestTarget>

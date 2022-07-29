@@ -42,7 +42,6 @@ set(FILES
     Include/Static/Target/Common/TestImpactTarget.h
     Include/Static/Target/Common/TestImpactTargetList.h
     Include/Static/Target/Common/TestImpactTargetException.h
-    Include/Static/Target/Common/TestImpactTargetListCompiler.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerException.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerBase.h
     Include/Static/TestRunner/Common/TestImpactTestRunner.h
