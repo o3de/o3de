@@ -82,10 +82,8 @@ namespace AZ
             {
                 const auto& nodeName = graph.GetNodeName(index);
 
-                return AZStd::string(nodeName.GetName(), nodeName.GetNameLength())
-                                                        .append("_")
-                                                        .append(sceneNodeGroup.GetName())
-                                                        .append(SceneAPI::Utilities::OptimizedMeshSuffix);
+                return AZStd::string::format(
+                    "%s_%s%s", nodeName.GetName(), sceneNodeGroup.GetName().c_str(), SceneAPI::Utilities::OptimizedMeshSuffix.data());
             }
 
             AZStd::vector<AZStd::string> SceneGraphSelector::GenerateTargetNodes(
