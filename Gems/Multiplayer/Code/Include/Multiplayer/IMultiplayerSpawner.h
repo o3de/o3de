@@ -41,7 +41,7 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
-        //! Callback to inject logic after the network player entity is created, but before the it's components are activated
+        //! Callback to inject logic after the network player entity is created, but before its components are activated
         using EntityPreActivationCallback = AZStd::function<void(const INetworkEntityManager::EntityList& entityList)>;
 
         //! Invoked when a Client connects/ClientHost starts a session to determine what autonomous Prefab should be spawned where
