@@ -7,19 +7,21 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Sequence
 import uuid
 from pathlib import PurePath, Path
 import json
 import subprocess
 import re
 import os
-from test_impact import RuntimeArgs
+from .runtime_args import CommonRuntimeArgs
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_tools import get_logger
 
 logger = get_logger(__file__)
 
+# Constants to access our argument dictionary for the values of different arguments. Not guarunteed to be in dictionary in all cases.
 ARG_S3_BUCKET = 's3_bucket'
 ARG_SUITE = 'suite'
 ARG_CONFIG = 'config'
@@ -27,6 +29,18 @@ ARG_SOURCE_BRANCH = 'src_branch'
 ARG_DESTINATION_BRANCH = 'dst_branch'
 ARG_COMMIT = 'commit'
 ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
+ARG_INTEGRATION_POLICY = "integration_policy"
+ARG_TEST_FAILURE_POLICY = "test_failure_policy"
+ARG_CHANGE_LIST = 'changelist'
+ARG_SEQUENCE = 'sequence'
+ARG_REPORT = 'report'
+
+# Sequence types as constants
+TIA_NOWRITE = 'tianowrite'
+TIA_SEED = 'seed'
+TIA_ON = 'tia'
+TIA_REGULAR = 'regular'
+    
 
 
 class BaseTestImpact(ABC):
@@ -94,29 +108,29 @@ class BaseTestImpact(ABC):
                 if self._has_change_list:
                     if self._is_source_of_truth_branch:
                         # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
-                        sequence_type = "tia"
+                        sequence_type = TIA_ON
                     else:
                         # Use TIA no-write sequence (regular subset of tests) for non coverage updating branches
-                        sequence_type = "tianowrite"
+                        sequence_type = TIA_NOWRITE
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        args['integration_policy'] = "continue"
-                    args['change_list'] = self._change_list_path
+                        args[ARG_INTEGRATION_POLICY] = "continue"
+                    args[ARG_CHANGE_LIST] = self._change_list_path
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
-                        sequence_type = "seed"
+                        sequence_type = TIA_SEED
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
-                        args['test_failure_policy'] = "continue"
+                        args[ARG_TEST_FAILURE_POLICY] = "continue"
                     else:
                         # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
-                        sequence_type = "regular"
+                        sequence_type = TIA_REGULAR
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        args['integration_policy'] = "continue"
+                        args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
-        args['sequence'] = sequence_type
+        args[ARG_SEQUENCE] = sequence_type
         self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
-        args['report'] = self._report_file
+        args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(
             args, self._runtime_args)
 
