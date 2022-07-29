@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 import editor_python_test_tools.pyside_utils as pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
-from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.utils import Report, Tracer
 from editor_python_test_tools.utils import TestHelper as helper
 import scripting_utils.scripting_tools as scripting_tools
@@ -96,37 +95,6 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
             scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], deactivated_dict["name"], ENTITY_TO_DEACTIVATE_PATH)
 
         helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
-
-    def validate_entity_exist(self, entity_name: str, test_tuple: tuple):
-        """
-        Validate the entity with the given name exists in the level
-        :return: entity: editor entity object
-        """
-        entity = EditorEntity.find_editor_entity(entity_name)
-        Report.critical_result(test_tuple, entity.id.IsValid())
-        return entity
-
-    def validate_start_state(self, entity: EditorEntity, expected_state: str):
-        """
-        Validate that the starting state of the entity is correct, if it isn't then attempt to rectify and recheck.
-        :return: bool: Whether state is set as expected
-        """
-        state_options = {
-            "active": azlmbr.globals.property.EditorEntityStartStatus_StartActive,
-            "inactive": azlmbr.globals.property.EditorEntityStartStatus_StartInactive,
-            "editor": azlmbr.globals.property.EditorEntityStartStatus_EditorOnly,
-        }
-        if expected_state.lower() not in state_options.keys():
-            raise ValueError(f"{expected_state} is an invalid option; valid options: active, inactive, or editor.")
-
-        state = entity.get_start_status()
-        if state != state_options[expected_state]:
-            # If state fails to set, set_start_status will assert
-            entity.set_start_status(expected_state)
-            state = entity.get_start_status()
-
-        #return the start state that we were able to set the entity to
-        return state == state_options[expected_state]
 
     def validate_entities_in_level(self):
 
