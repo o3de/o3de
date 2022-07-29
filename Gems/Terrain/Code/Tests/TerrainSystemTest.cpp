@@ -238,7 +238,8 @@ namespace UnitTest
         // Create and activate the terrain system with our testing defaults for world bounds and query resolution.
         auto terrainSystem = CreateAndActivateTerrainSystem();
 
-        AZ::Aabb worldBounds = terrainSystem->GetTerrainAabb();
+        // Create an arbitrary world bounds to tests since the bounds of the terrain system will be 0 with no terrain areas.
+        AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -10.0f), AZ::Vector3(10.0f, 10.0f, 10.0f));
 
         // Loop through several points within the world bounds, including on the edges, and verify that they all return false for
         // terrainExists with default heights and normals.
