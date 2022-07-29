@@ -15,7 +15,11 @@
 #include "ProductDependencyTreeItemData.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
-#include <ui/SourceAssetTreeFilterModel.h>
+#include <native/ui/BuilderData.h>
+#include <native/ui/BuilderDataItem.h>
+#include <native/ui/BuilderInfoPatternsModel.h>
+#include <native/ui/BuilderInfoMetricsModel.h>
+#include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzCore/JSON/stringbuffer.h>
@@ -166,6 +170,7 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , m_fileSystemWatcher(new QFileSystemWatcher(this))
     , m_builderList(new BuilderListModel(this))
     , m_builderListSortFilterProxy(new BuilderListSortFilterProxy(this))
+    , m_builderInfoPatterns(new AssetProcessor::BuilderInfoPatternsModel(this))
 {
     ui->setupUi(this);
 
@@ -485,11 +490,21 @@ void MainWindow::Activate()
     m_jobsModel->PopulateJobsFromDatabase();
 
     // Builders Tab:
-
+    m_builderData = new BuilderData(m_sharedDbConnection, this);
     m_builderListSortFilterProxy->setDynamicSortFilter(true);
     m_builderListSortFilterProxy->setSourceModel(m_builderList);
     m_builderListSortFilterProxy->sort(0);
     ui->builderList->setModel(m_builderListSortFilterProxy);
+    ui->builderInfoPatternsTableView->setModel(m_builderInfoPatterns);
+    m_builderInfoMetrics = new BuilderInfoMetricsModel(m_builderData, this);
+    m_builderInfoMetricsSort = new BuilderInfoMetricsSortModel(this);
+    m_builderInfoMetricsSort->setSourceModel(m_builderInfoMetrics);
+    m_builderInfoMetricsSort->setSortRole(aznumeric_cast<int>(BuilderInfoMetricsModel::Role::SortRole));
+    ui->builderInfoMetricsTreeView->setModel(m_builderInfoMetricsSort);
+    ui->builderInfoMetricsTreeView->setColumnWidth(0, 400);
+    ui->builderInfoMetricsTreeView->setColumnWidth(1, 70);
+    ui->builderInfoMetricsTreeView->setColumnWidth(2, 150);
+    ui->builderInfoMetricsTreeView->setColumnWidth(3, 150);
     connect(ui->builderList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::BuilderTabSelectionChanged);
     connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, [this]()
     {
@@ -502,7 +517,23 @@ void MainWindow::Activate()
                 m_builderListSortFilterProxy->sort(0);
             }
         }
+
+        if (m_builderInfoMetrics)
+        {
+            m_builderInfoMetrics->Reset();
+        }
     });
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessorManager::JobProcessDurationChanged,
+        m_builderData,
+        &BuilderData::OnProcessJobDurationChanged);
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessorManager::CreateJobsDurationChanged,
+        m_builderData,
+        &BuilderData::OnCreateJobsDurationChanged);
+    connect(m_builderData, &BuilderData::DurationChanged, m_builderInfoMetrics, &BuilderInfoMetricsModel::OnDurationChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
@@ -562,28 +593,16 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 
         AZ_Assert(index.isValid(), "BuilderTabSelectionChanged index out of bounds");
 
-        const auto& builder = builders[index.row()];
-        QString patternString;
-
-        for (const auto& pattern : builder.m_patterns)
-        {
-            patternString.append("\n\t");
-            patternString.append(pattern.ToString().c_str());
-        }
-
-        ui->builderDetails->setPlainText(
-            QString("Name: %1\n"
-                    "Type: %2\n"
-                    "Fingerprint: %3\n"
-                    "Version Number: %4\n"
-                    "BusId: %5\n"
-                    "Patterns: %6")
-                .arg(builder.m_name.c_str())
-                .arg(builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External")
-                .arg(builder.m_analysisFingerprint.c_str())
-                .arg(builder.m_version)
-                .arg(builder.m_busId.ToString<QString>())
-                .arg(patternString));
+        const auto builder = builders[index.row()];
+        m_builderInfoPatterns->Reset(builder);
+        m_builderInfoMetrics->OnBuilderSelectionChanged(builder);
+        ui->builderInfoMetricsTreeView->expandToDepth(0);
+        ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
+        ui->builderInfoHeaderValueType->setText(
+            builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
+        ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
+        ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());        
     }
 }
 
