@@ -8,32 +8,29 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactPythonTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <Target/Common/TestImpactTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
-    //! Build target specialization for python test targets (build targets containing test code and no production code).
-    class PythonTestTarget
-        : public Target
+    //! Build target specialization for native test targets (build targets containing test code and no production code).
+    class PythonTestTarget : public Target
     {
     public:
-        using Descriptor = PythonTestTargetDescriptor;
+        PythonTestTarget(TargetDescriptor&& descriptor, PythonTestTargetMeta&& testMetaData);
 
-        PythonTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
-
-        //! Returns the test script target suite.
+        //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
-
-        //! Returns the path in the source tree to the test script.
-        const RepoPath& GetScriptPath() const;
 
         //! Returns the test run timeout.
         AZStd::chrono::milliseconds GetTimeout() const;
 
+        //! Returns the path to the script to execute this test.
+        const RepoPath& GetScriptPath() const;
+
     private:
-        AZStd::unique_ptr<Descriptor> m_descriptor;
+        PythonTestTargetMeta m_testMetaData;
     };
 } // namespace TestImpact

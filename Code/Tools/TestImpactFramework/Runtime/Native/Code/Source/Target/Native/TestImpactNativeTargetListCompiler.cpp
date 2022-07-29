@@ -6,8 +6,8 @@
  *
  */
 
-#include <Artifact/Static/TestImpactNativeTargetListCompiler.h>
 #include <Artifact/TestImpactArtifactException.h>
+#include <Target/Native/TestImpactNativeTargetListCompiler.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 

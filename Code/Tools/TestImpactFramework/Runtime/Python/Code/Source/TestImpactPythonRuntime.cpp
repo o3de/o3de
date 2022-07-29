@@ -8,6 +8,8 @@
 
 #include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
 
+#include <TestImpactPythonRuntimeUtils.h>
+
 namespace TestImpact
 {
     PythonRuntime::PythonRuntime(
@@ -20,14 +22,14 @@ namespace TestImpact
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::IntegrityFailure integrationFailurePolicy,
-        Policy::TargetOutputCapture targetOutputCapturey)
-        //: m_config(AZStd::move(config))
-        //, m_suiteFilter(suiteFilter)
-        //, m_executionFailurePolicy(executionFailurePolicy)
-        //, m_failedTestCoveragePolicy(failedTestCoveragePolicy)
-        //, m_testFailurePolicy(testFailurePolicy)
-        //, m_integrationFailurePolicy(integrationFailurePolicy)
-        //, m_targetOutputCapture(targetOutputCapture)
+        Policy::TargetOutputCapture targetOutputCapture)
+        : m_config(AZStd::move(config))
+        , m_suiteFilter(suiteFilter)
+        , m_executionFailurePolicy(executionFailurePolicy)
+        , m_failedTestCoveragePolicy(failedTestCoveragePolicy)
+        , m_testFailurePolicy(testFailurePolicy)
+        , m_integrationFailurePolicy(integrationFailurePolicy)
+        , m_targetOutputCapture(targetOutputCapture)
     {
         // Construct the build targets from the build target descriptors
         m_buildTargets = ConstructPythonBuildTargetList(

@@ -8,19 +8,21 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTargetDescriptor.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
 #include <Artifact/Static/TestImpactTestSuiteMeta.h>
+
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
-    struct PythonTestTargetDescriptor
-        : public TargetDescriptor
+    struct PythonTestTargetMeta
     {
-        PythonTestTargetDescriptor() = default;
-        PythonTestTargetDescriptor(TargetDescriptor&& targetDescriptor, TestSuiteMeta&& testSuiteMeta, const RepoPath& scriptPath);
-
-        TestSuiteMeta m_testSuiteMeta; //<! The meta-data about this target's test suite.
+        TestSuiteMeta m_suiteMeta; //<! The meta-data about this target's test suite.
         RepoPath m_scriptPath; //!< Path to the Python script for this test (relative to repository root).
     };
+
+    //! Map between test target name and test target meta-data.
+    using PythonTestTargetMetaMap = AZStd::unordered_map<AZStd::string, PythonTestTargetMeta>;
 } // namespace TestImpact

@@ -1,0 +1,24 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
+#include <Target/Python/TestImpactPythonProductionTarget.h>
+#include <Target/Python/TestImpactPythonTestTarget.h>
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
+namespace TestImpact
+{
+    //! Construct a build target list from the build target descriptors and test target metas.
+    AZStd::unique_ptr<BuildTargetList<PythonTestTarget, PythonProductionTarget>> ConstructPythonBuildTargetList(
+        SuiteType suiteFilter,
+        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const TestTargetMetaConfig& testTargetMetaConfig);
+} // namespace TestImpact

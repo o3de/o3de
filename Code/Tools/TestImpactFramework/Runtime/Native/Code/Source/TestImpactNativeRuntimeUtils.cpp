@@ -12,7 +12,7 @@
 #include <TestImpactNativeRuntimeUtils.h>
 #include <Artifact/Factory/TestImpactTargetDescriptorFactory.h>
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
-#include <Artifact/Static/TestImpactNativeTargetListCompiler.h>
+#include <Target/Native/TestImpactNativeTargetListCompiler.h>
 #include <Target/Native/TestImpactNativeTestTarget.h>
 
 #include <filesystem>

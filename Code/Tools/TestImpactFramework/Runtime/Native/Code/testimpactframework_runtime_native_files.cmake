@@ -11,12 +11,12 @@ set(FILES
     Include/TestImpactFramework/Native/TestImpactNativeConfiguration.h
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h
-    Source/Artifact/Static/TestImpactNativeTargetListCompiler.cpp
-    Source/Artifact/Static/TestImpactNativeTargetListCompiler.h
     Source/Artifact/Static/TestImpactNativeTestTargetMeta.h
     Source/Target/Native/TestImpactNativeProductionTarget.h
     Source/Target/Native/TestImpactNativeTestTarget.cpp
     Source/Target/Native/TestImpactNativeTestTarget.h
+    Source/Target/Native/TestImpactNativeTargetListCompiler.cpp
+    Source/Target/Native/TestImpactNativeTargetListCompiler.h
     Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
     Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
