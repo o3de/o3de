@@ -384,14 +384,14 @@ namespace AzToolsFramework::Prefab
                 return linkId;
             }
 
-            for (auto instanceIter = ++climbUpResult.second.rbegin(); instanceIter != climbUpResult.second.rend(); ++instanceIter)
-            {
-                prefix.append("/Instances/");
-                prefix.append((*instanceIter)->get().GetInstanceAlias());
-            }
-
             if (!climbUpResult.second.empty())
             {
+                for (auto instanceIter = ++climbUpResult.second.rbegin(); instanceIter != climbUpResult.second.rend(); ++instanceIter)
+                {
+                    prefix.append("/Instances/");
+                    prefix.append((*instanceIter)->get().GetInstanceAlias());
+                }
+
                 linkId = climbUpResult.second.back()->get().GetLinkId();
             }
         }
