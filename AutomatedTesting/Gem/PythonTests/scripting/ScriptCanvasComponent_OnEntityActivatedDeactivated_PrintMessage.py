@@ -34,6 +34,7 @@ deactivated_dict = {
 }
 ENTITY_TO_ACTIVATE_PATH = "Configuration|Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate"
 ENTITY_TO_DEACTIVATE_PATH = "Configuration|Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate"
+WAIT_ONE_SECOND = 1.0
 # fmt: off
 class Tests():
     controller_exists    = ("Successfully found controller entity",  "Failed to find controller entity")
@@ -62,8 +63,8 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
      3) Validate the entities
      4) Start the Tracer
      5) Enter Game Mode
-     6) Validate Print message
-     7) Exit game mode
+     6) Wait one second for graph timers then exit game mode
+     7) Validate Print message
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -88,17 +89,11 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
         """
         entity = scripting_tools.create_entity_with_sc_component_asset(entity_dict["name"], entity_dict["path"])
-        editor_entity = EditorEntity.find_editor_entity(entity_dict["name"])
-        editor_entity.set_start_status(entity_dict["status"])
+        scripting_tools.change_entity_start_status(entity_dict["name"], entity_dict["status"])
 
         if entity_dict["name"] == "Controller":
-            activated_entity = EditorEntity.find_editor_entity(activated_dict["name"])
-            sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
-            sc_component.set_component_property_value(ENTITY_TO_ACTIVATE_PATH, activated_entity.id)
-
-            deactivated_entity = EditorEntity.find_editor_entity(deactivated_dict["name"])
-            sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
-            sc_component.set_component_property_value(ENTITY_TO_DEACTIVATE_PATH, deactivated_entity.id)
+            scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], activated_dict["name"], ENTITY_TO_ACTIVATE_PATH)
+            scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], deactivated_dict["name"], ENTITY_TO_DEACTIVATE_PATH)
 
         helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
 
@@ -128,24 +123,25 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
         if state != state_options[expected_state]:
             # If state fails to set, set_start_status will assert
             entity.set_start_status(expected_state)
-        return True
+            state = entity.get_start_status()
+
+        #return the start state that we were able to set the entity to
+        return state == state_options[expected_state]
 
     def validate_entities_in_level(self):
-        controller = self.validate_entity_exist(controller_dict["name"], Tests.controller_exists)
-        state1_correct = self.validate_start_state(controller, controller_dict["status"])
 
-        act_tester = self.validate_entity_exist(activated_dict["name"], Tests.activated_exists)
-        state2_correct = self.validate_start_state(act_tester, activated_dict["status"])
+        controller = scripting_tools.validate_entity_exists_by_name(controller_dict["name"], Tests.controller_exists)
+        state1_correct = scripting_tools.validate_entity_start_state_by_name(controller, controller_dict["status"])
 
-        deac_tester = self.validate_entity_exist(deactivated_dict["name"], Tests.deactivated_exists)
-        state3_correct = self.validate_start_state(deac_tester, deactivated_dict["status"])
+        act_tester = scripting_tools.validate_entity_exists_by_name(activated_dict["name"], Tests.activated_exists)
+        state2_correct = scripting_tools.validate_entity_start_state_by_name(act_tester, activated_dict["status"])
+
+        deac_tester = scripting_tools.validate_entity_exists_by_name(deactivated_dict["name"], Tests.deactivated_exists)
+        state3_correct = scripting_tools.validate_entity_start_state_by_name(deac_tester, deactivated_dict["status"])
 
         all_states_correct = state1_correct and state2_correct and state3_correct
         Report.critical_result(Tests.start_states_correct, all_states_correct)
 
-    def locate_expected_lines(self, line_list: list, section_tracer):
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-        return all(line in found_lines for line in line_list)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -168,13 +164,17 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
             # 5) Enter Game Mode
             helper.enter_game_mode(Tests.game_mode_entered)
 
-            # 6) Validate Print message
-            helper.wait_for_condition(lambda: self.locate_expected_lines(EXPECTED_LINES, section_tracer), WAIT_TIME_3)
+            # 6 Wait one second for graph timers then exit game mode
+            general.idle_wait(WAIT_ONE_SECOND)
+            helper.exit_game_mode(Tests.game_mode_exited)
 
-        Report.result(Tests.lines_found, self.locate_expected_lines(EXPECTED_LINES, section_tracer))
+            # 7) Validate Print message
+            found_expected_lines = scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES)
+            helper.wait_for_condition(lambda: found_expected_lines is not None, WAIT_TIME_3)
 
-        # 7) Exit game mode
-        helper.exit_game_mode(Tests.game_mode_exited)
+        Report.result(Tests.lines_found, found_expected_lines)
+
+
 
 test = ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage()
 test.run_test()
