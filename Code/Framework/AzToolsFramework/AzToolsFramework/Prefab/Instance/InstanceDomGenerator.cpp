@@ -29,12 +29,6 @@ namespace AzToolsFramework
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            AZ_Assert(m_prefabFocusInterface != nullptr,
-                "Prefab - InstanceDomGenerator::Initialize - "
-                "Prefab Focus Interface could not be found. "
-                "Check that it is being correctly initialized.");
-
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceDomGenerator::Initialize - "
@@ -44,14 +38,20 @@ namespace AzToolsFramework
 
         void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()
         {
-            m_prefabSystemComponentInterface = nullptr;
-            m_prefabFocusInterface = nullptr;
-
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
         bool InstanceDomGenerator::GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom)
         {
+            if (!m_prefabFocusInterface)
+            {
+                m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+                AZ_Assert(m_prefabFocusInterface != nullptr,
+                    "Prefab - InstanceDomGenerator::Initialize - "
+                    "Prefab Focus Interface could not be found. "
+                    "Check that it is being correctly initialized.");
+            }
+            
             // Retrieve focused instance
             auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
             Instance* targetInstance = nullptr;

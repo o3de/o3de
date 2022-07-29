@@ -42,6 +42,8 @@ namespace AzToolsFramework
     {
         void PrefabPublicHandler::RegisterPrefabPublicHandlerInterface()
         {
+            m_prefabFocusHandler.RegisterPrefabFocusHandlerInterface();
+
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceEntityMapperInterface");
 
@@ -60,7 +62,6 @@ namespace AzToolsFramework
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface, "Could not get PrefabSystemComponentInterface on PrefabPublicHandler construction.");
 
-            m_prefabFocusHandler.RegisterPrefabFocusHandlerInterface();
             m_prefabUndoCache.Initialize();
 
             AZ::Interface<PrefabPublicInterface>::Register(this);
