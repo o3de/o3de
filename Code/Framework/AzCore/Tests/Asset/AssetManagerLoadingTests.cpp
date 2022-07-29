@@ -2966,6 +2966,8 @@ namespace UnitTest
         static inline const AZ::Uuid DependentPreloadAssetId{ "{9E0AE541-0080-4ADA-B4F4-A0F25D0A6D1A}" };
         static inline const AZ::Uuid NestedDependentPreloadBlockingAssetId{ "{FED70BCD-2846-4CBA-84D1-ED24DA7FCD4B}" };
 
+        static inline const AZ::Uuid RootWithSynchronizerAssetId{ "{6470ED30-D530-4023-9DEB-AC1E40062A2B}" };
+
         DataDrivenHandlerAndCatalog* m_assetHandlerAndCatalog;
         LoadAssetDataSynchronizer m_loadDataSynchronizer;
 
@@ -3006,6 +3008,9 @@ namespace UnitTest
             m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(NestedDependentPreloadBlockingAssetId,
                 "DependentPreloadBlockingAsset.txt", 0, false, false, &m_loadDataSynchronizer);
 
+            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, "RootWithSynchronizerAsset.txt", 0, false, false, &m_loadDataSynchronizer)
+                ->AddPreload(NestedDependentPreloadBlockingAssetId);
+
             AZStd::vector<AssetType> types;
             m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
             for (const auto& type : types)
@@ -3028,6 +3033,12 @@ namespace UnitTest
             rootAsset.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(
                 DependentPreloadAssetId, AssetLoadBehavior::PreLoad);
             EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("RootAsset.txt", &rootAsset, m_serializeContext));
+
+            AssetWithAssetReference rootAssetWithSynchronizer;
+            rootAssetWithSynchronizer.m_asset = AssetManager::Instance().FindAsset<AssetWithAssetReference>(
+                NestedDependentPreloadBlockingAssetId, AssetLoadBehavior::PreLoad);
+            EXPECT_TRUE(
+                m_streamerWrapper->WriteMemoryFile("RootWithSynchronizerAsset.txt", &rootAssetWithSynchronizer, m_serializeContext));
         }
 
         void TearDown() override
@@ -3169,6 +3180,99 @@ namespace UnitTest
         EXPECT_FALSE(timedOut);
         EXPECT_TRUE(dependentAsset.IsReady());
         EXPECT_TRUE(nestedDependentAsset.IsReady());
+    }
+
+    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest)
+    {
+        // Regression test - there was a bug where rapid reloads could get stuck due to the owning container being invalidated
+        // Note that for this bug to occur, the loaded asset needs to have dependencies
+        // Order of events to reproduce:
+        // 1) Asset is loaded
+        // 2) Reload occurs
+        // 3) Another reload begins
+        // 4) Old asset is reassigned
+        // 4a) Old asset ref count hits 0
+        // 4b) Old asset triggers OnAssetUnused
+        // 4c) Container is released <-- This is where the bug happens, which should not occur with the fix
+        // 5) Reload stalls because container is gone
+
+        AZStd::atomic_bool running = true;
+        using SignalType = AZStd::unique_ptr<AZStd::binary_semaphore>;
+
+        // Start up a thread to dispatch queued events in the background
+        AZStd::thread eventThread(
+            [&running]()
+            {
+                while (running)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
+            });
+
+        struct ReloadHandler : AZ::Data::AssetBus::Handler
+        {
+            ReloadHandler(SignalType& reloadSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+                : m_asset(asset), m_reloadSignal(reloadSignal)
+            {
+                BusConnect(asset.GetId());
+            }
+
+            ~ReloadHandler()
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReloaded(Asset<AssetData> asset) override
+            {
+                m_reloadedAsset = asset;
+                m_reloadSignal->release(); // Signal the reload has finished
+            }
+
+            AZ::Data::Asset<AZ::Data::AssetData> m_reloadedAsset;
+            AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+            SignalType& m_reloadSignal;
+        };
+        
+        SignalType reloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+
+        // 1) Load the asset
+        ReloadHandler reloadHandler(
+            reloadSignal,
+            AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+
+        m_loadDataSynchronizer.m_readyToLoad = true;
+        m_loadDataSynchronizer.m_condition.notify_all();
+
+        reloadHandler.m_asset.BlockUntilLoadComplete();
+
+        ASSERT_TRUE(reloadHandler.m_asset.IsReady());
+
+        // 2) Start a reload which will complete
+        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+        reloadSignal->acquire(); // Wait until reload is done
+
+        // 3) Start another reload
+        m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the reload from progressing too far
+        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default); // Start another reload
+
+        // 4) Reassign the asset, which should cause the old asset to be unloaded
+        reloadHandler.m_asset = reloadHandler.m_reloadedAsset;
+
+        // Resume loading
+        m_loadDataSynchronizer.m_readyToLoad = true;
+        m_loadDataSynchronizer.m_condition.notify_all();
+
+        // 5) If the bug is still active, this will fail because the asset can never finish loading
+        EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+        
+        // Shut down the event thread
+        running = false;
+
+        if (eventThread.joinable())
+        {
+            eventThread.join();
+        }
     }
 
     using AssetManagerErrorTests = AssetManagerTests;

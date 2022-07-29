@@ -31,6 +31,124 @@
 
 namespace AZ::SerializeContextTools
 {
+    inline namespace Streams
+    {
+        // Using an inline namespace for the Function Object Stream
+
+        /*
+        * Implementation of the GenericStream interface
+        * that uses a function object for writing
+        */
+        class FunctorStream
+            : public AZ::IO::GenericStream
+        {
+        public:
+            using WriteCallback = AZStd::function<AZ::IO::SizeType(AZStd::span<AZStd::byte const>)>;
+            FunctorStream() = default;
+            FunctorStream(WriteCallback writeCallback);
+
+            bool IsOpen() const override;
+            bool CanSeek() const override;
+            bool CanRead() const override;
+            bool CanWrite() const override;
+            void Seek(AZ::IO::OffsetType, SeekMode) override;
+            AZ::IO::SizeType Read(AZ::IO::SizeType, void*) override;
+            AZ::IO::SizeType Write(AZ::IO::SizeType bytes, const void* iBuffer) override;
+            AZ::IO::SizeType GetCurPos() const override;
+            AZ::IO::SizeType GetLength() const override;
+            AZ::IO::OpenMode GetModeFlags() const override;
+            const char* GetFilename() const override;
+        private:
+            WriteCallback m_streamWriter;
+        };
+
+        FunctorStream::FunctorStream(WriteCallback writeCallback)
+            : m_streamWriter { AZStd::move(writeCallback)}
+        {}
+
+        bool FunctorStream::IsOpen() const
+        {
+            return static_cast<bool>(m_streamWriter);
+        }
+        bool FunctorStream::CanSeek() const
+        {
+            return false;
+        }
+        bool FunctorStream::CanRead() const
+        {
+            return false;
+        }
+
+        bool FunctorStream::CanWrite() const
+        {
+            return true;
+        }
+
+        void FunctorStream::Seek(AZ::IO::OffsetType, SeekMode)
+        {
+            AZ_Assert(false, "Cannot seek in stdout stream");
+        }
+
+        AZ::IO::SizeType FunctorStream::Read(AZ::IO::SizeType, void*)
+        {
+            AZ_Assert(false, "The stdout file handle cannot be read from");
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::Write(AZ::IO::SizeType bytes, const void* iBuffer)
+        {
+            if (m_streamWriter)
+            {
+                return m_streamWriter(AZStd::span(reinterpret_cast<const AZStd::byte*>(iBuffer), bytes));
+            }
+
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::GetCurPos() const
+        {
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::GetLength() const
+        {
+            return 0;
+        }
+
+        AZ::IO::OpenMode FunctorStream::GetModeFlags() const
+        {
+            return AZ::IO::OpenMode::ModeWrite;
+        }
+
+        const char* FunctorStream::GetFilename() const
+        {
+            return "<function object>";
+        }
+    }
+} // namespace AZ::SerializeContextTools::inline Stream
+
+
+namespace AZ::SerializeContextTools
+{
+    static auto GetWriteBypassStdoutCapturerFunctor(Application& application)
+    {
+        return [&application](AZStd::span<AZStd::byte const> outputBytes)
+        {
+            // If the application is currently capturing stdout, use stdout capturer to write
+            // directly to the file descriptor of stdout
+            if (AZ::IO::FileDescriptorCapturer* stdoutCapturer = application.GetStdoutCapturer();
+                stdoutCapturer != nullptr)
+            {
+                return stdoutCapturer->WriteBypassingCapture(outputBytes.data(), aznumeric_caster(outputBytes.size()));
+            }
+            else
+            {
+                constexpr int StdoutDescriptor = 1;
+                return AZ::IO::PosixInternal::Write(StdoutDescriptor, outputBytes.data(), aznumeric_caster(outputBytes.size()));
+            }
+        };
+    }
+
     bool Dumper::DumpFiles(Application& application)
     {
         SerializeContext* sc = application.GetSerializeContext();
@@ -151,9 +269,10 @@ namespace AZ::SerializeContextTools
 
     bool Dumper::DumpTypes(Application& application)
     {
-        // outputStream defaults to a stdout stream
+        // outputStream defaults to writing to stdout
         AZ::IO::SystemFile systemFile;
-        AZStd::variant<AZ::IO::StdoutStream, AZ::IO::SystemFileStream> outputStream;
+        AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
+            GetWriteBypassStdoutCapturerFunctor(application));
 
         AZ::CommandLine& commandLine = *application.GetAzCommandLine();
         // If the output-file parameter has been supplied open the file path using FileIOStream
@@ -320,9 +439,10 @@ namespace AZ::SerializeContextTools
 
     bool Dumper::CreateType(Application& application)
     {
-        // outputStream defaults to a stdout stream
+        // outputStream defaults to writing to stdout
         AZ::IO::SystemFile systemFile;
-        AZStd::variant<AZ::IO::StdoutStream, AZ::IO::SystemFileStream> outputStream;
+        AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
+            GetWriteBypassStdoutCapturerFunctor(application));
 
         AZ::CommandLine& commandLine = *application.GetAzCommandLine();
         // If the output-file parameter has been supplied open the file path using FileIOStream
@@ -561,8 +681,10 @@ namespace AZ::SerializeContextTools
             rapidjson::Value(rapidjson::StringRef("Deprecated")) : rapidjson::Value(classData->m_version), document.GetAllocator());
 
         auto systemComponentIt = AZStd::lower_bound(systemComponents.begin(), systemComponents.end(), classData->m_typeId);
-        bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
+        const bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
         classNode.AddMember("IsSystemComponent", isSystemComponent, document.GetAllocator());
+        const bool isComponent = isSystemComponent || (classData->m_azRtti != nullptr && classData->m_azRtti->IsTypeOf<AZ::Component>());
+        classNode.AddMember("IsComponent", isComponent, document.GetAllocator());
         classNode.AddMember("IsPrimitive", Utilities::IsSerializationPrimitive(genericClassInfo ? genericClassInfo->GetGenericTypeId() : classData->m_typeId), document.GetAllocator());
         classNode.AddMember("IsContainer", classData->m_container != nullptr, document.GetAllocator());
         if (genericClassInfo)

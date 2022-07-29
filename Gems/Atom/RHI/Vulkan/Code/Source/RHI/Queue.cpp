@@ -23,7 +23,8 @@ namespace AZ
             Base::Init(deviceBase);
             m_descriptor = descriptor;
 
-            vkGetDeviceQueue(device.GetNativeDevice(), m_descriptor.m_familyIndex, descriptor.m_queueIndex, &m_nativeQueue);
+            device.GetContext().GetDeviceQueue(
+                device.GetNativeDevice(), m_descriptor.m_familyIndex, descriptor.m_queueIndex, &m_nativeQueue);
             SetName(GetName());
             return RHI::ResultCode::Success;
         }
@@ -88,7 +89,9 @@ namespace AZ
                 fenceToSignal->Reset();
                 nativeFence = fenceToSignal->GetNativeFence();
             }
-            const VkResult result = vkQueueSubmit(m_nativeQueue, submitCount, submitCount ? &submitInfo : nullptr, nativeFence);
+            const VkResult result = static_cast<Device&>(GetDevice())
+                                        .GetContext()
+                                        .QueueSubmit(m_nativeQueue, submitCount, submitCount ? &submitInfo : nullptr, nativeFence);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -106,7 +109,15 @@ namespace AZ
         {
             if (m_nativeQueue != VK_NULL_HANDLE)
             {
-                AssertSuccess(vkQueueWaitIdle(m_nativeQueue));
+                VkResult result = static_cast<Device&>(GetDevice()).GetContext().QueueWaitIdle(m_nativeQueue);
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+                if (result == VK_ERROR_DEVICE_LOST)
+                {
+                    AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetDevice().GetLastExecutingScope().data());
+                    GetDevice().SetDeviceRemoved();
+                }
+#endif
+                AssertSuccess(result);
             }
         }
 
@@ -125,12 +136,13 @@ namespace AZ
 
         void Queue::BeginDebugLabel(const char* label, const AZ::Color color)
         {
-            Debug::BeginQueueDebugLabel(m_nativeQueue, label, color);
+            Debug::BeginQueueDebugLabel(
+                static_cast<Device&>(m_descriptor.m_commandQueue->GetDevice()).GetContext(), m_nativeQueue, label, color);
         }
 
         void Queue::EndDebugLabel()
         {
-            Debug::EndQueueDebugLabel(m_nativeQueue);
+            Debug::EndQueueDebugLabel(static_cast<Device&>(m_descriptor.m_commandQueue->GetDevice()).GetContext(), m_nativeQueue);
         }
 
         void Queue::SetNameInternal(const AZStd::string_view& name)

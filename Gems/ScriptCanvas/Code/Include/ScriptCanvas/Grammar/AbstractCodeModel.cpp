@@ -1296,7 +1296,7 @@ namespace ScriptCanvas
                     CreateUserFunctionDefinition(node, *entrySlot);
                     return true;
                 }
-                else if (auto exitSlot = nodeling->GetExitSlot())
+                else if (nodeling->GetExitSlot())
                 {
                     auto displayName = nodeling->GetDisplayName();
                     if (m_uniqueOutNames.contains(displayName))
@@ -2998,7 +2998,7 @@ namespace ScriptCanvas
                     m_activeDefaultObject.insert(&node);
                 }
             }
-            else if (auto functionCallNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
+            else if (azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
             {
                 AddError(node.GetEntityId(), nullptr, "FunctionCallNode failed to return latest SubgraphInterface");
             }

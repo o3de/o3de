@@ -158,7 +158,7 @@ void VectorElement::layout(QWidget* element, QAbstractSpinBox* spinBox, QLabel* 
 
 QRect VectorElement::editFieldRect(const QProxyStyle* style, const QStyleOptionComplex* option, const QWidget* widget, const SpinBox::Config& config)
 {
-    if (auto spinBoxOption = qstyleoption_cast<const QStyleOptionSpinBox *>(option))
+    if (qstyleoption_cast<const QStyleOptionSpinBox *>(option))
     {
         auto rect = SpinBox::editFieldRect(style, option, widget, config);
 

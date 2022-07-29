@@ -1,0 +1,72 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{1358C4AE-81E0-5CCE-B74E-5D9F7ECE11AB}",
+            "name": "ModifiedFBXFile",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Cube"
+                ]
+            },
+            "export method": 2,
+            "PrimitiveAssetParams": {
+                "PrimitiveShapeTarget": 2
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "CommentRule",
+                        "comment": "Custom PhysXMesh"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "ModifiedFBXFile",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.Cube"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{17653FE1-7152-5592-AE2B-F805D16166BF}"
+        },
+        {
+            "$type": "ActorGroup",
+            "name": "ModifiedFBXFile",
+            "selectedRootBone": "RootNode",
+            "id": "{803DDD78-D743-4888-9A26-EC94BA9C8C17}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "ActorScaleRule",
+                        "scaleFactor": 2.0
+                    },
+                    {
+                        "$type": "CommentRule",
+                        "comment": "CustomActors"
+                    }
+                ]
+            }
+        }
+    ]
+}

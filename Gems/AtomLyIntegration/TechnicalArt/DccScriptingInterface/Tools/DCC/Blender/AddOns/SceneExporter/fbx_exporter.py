@@ -10,7 +10,6 @@
 # -------------------------------------------------------------------------
 import bpy
 from pathlib import Path
-from . import ui
 from . import utils
 from . import o3de_utils
 from . import constants
@@ -54,6 +53,15 @@ def amimation_export_options():
         bake_anim_force_startend_keying_option = False
         bpy.types.Scene.file_menu_animation_export = False
         return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
+    elif bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
+        # Set Animation Options
+        bake_anim_option = False
+        bake_anim_use_all_bones = False
+        bake_anim_use_nla_strips_option = False
+        bake_anim_use_all_actions_option = False
+        bake_anim_force_startend_keying_option = False
+        bpy.types.Scene.file_menu_animation_export = False
+        return bake_anim_option, bake_anim_use_all_bones, bake_anim_use_nla_strips_option, bake_anim_use_all_actions_option, bake_anim_force_startend_keying_option
 
     if bpy.types.Scene.file_menu_animation_export:
         bake_anim_option = True
@@ -75,6 +83,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
     This function will send to selected .FBX to an O3DE Project Path
     @param fbx_file_path this is the o3de project path where the selected meshe(s)
     will be exported as an .fbx
+    @param file_name A custom file name string
     """
     # Export file path Var
     export_file_path = ''
@@ -151,6 +160,10 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_metadata=True,
             axis_forward='-Z',
             axis_up='Y')
-        ui.message_box("3D Model Exported!", "O3DE Tools", "LIGHT")
+        
+        transforms_status = utils.check_selected_transforms()
+        # Show export status
+        bpy.types.Scene.pop_up_notes = f'{file_name} Exported! Freeze Transforms: {transforms_status}'
+        bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
-            utils.ReplaceStoredPaths()
+            utils.replace_stored_paths()

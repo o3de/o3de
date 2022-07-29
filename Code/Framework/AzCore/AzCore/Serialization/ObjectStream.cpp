@@ -273,8 +273,7 @@ namespace AZ
 
                 nextLevel = false;
 
-                elementNode.m_subElements.push_back();
-                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.back();
+                SerializeContext::DataElementNode& childNode = elementNode.m_subElements.emplace_back();
                 // we might need to copy the element name, if it's deleted after the read element
                 // otherwise it will be left dangling
                 childNode.m_element = AZStd::move(childElement);
@@ -1764,8 +1763,7 @@ namespace AZ
             }
             else if (GetType() == ST_JSON)
             {
-                m_jsonWriteValues.push_back();
-                rapidjson::Value& classObject = m_jsonWriteValues.back();
+                rapidjson::Value& classObject = m_jsonWriteValues.emplace_back();
                 classObject.SetObject();
                 // element name
                 if (element.m_name)
@@ -1800,8 +1798,7 @@ namespace AZ
                     AZ_Assert(element.m_dataSize == 0, "We can't serialize values for %s(0x%x), value=%s without a serializer to do DataToText()!", element.m_name ? element.m_name : "NULL", element.m_nameCrc, idBuffer);
                 }
                 // Add child fields array
-                m_jsonWriteValues.push_back();
-                m_jsonWriteValues.back().SetArray();
+                m_jsonWriteValues.emplace_back().SetArray();
             }
             else /*ST_BINARY*/
             {
@@ -1972,8 +1969,7 @@ namespace AZ
                     m_jsonDoc->SetObject();
                     m_jsonDoc->AddMember("name", "ObjectStream", m_jsonDoc->GetAllocator());
                     m_jsonDoc->AddMember("version", m_version, m_jsonDoc->GetAllocator());
-                    m_jsonWriteValues.push_back();
-                    m_jsonWriteValues.back().SetArray();
+                    m_jsonWriteValues.emplace_back().SetArray();
                 }
                 else
                 {

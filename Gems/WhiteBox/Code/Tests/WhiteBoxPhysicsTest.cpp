@@ -29,6 +29,7 @@ namespace UnitTest
         // AZ::Test::GemTestEnvironment overrides ...
         void AddGemsAndComponents() override;
         AZ::ComponentApplication* CreateApplicationInstance() override;
+        void PostSystemEntityActivate() override;
 
     public:
         EditorWhiteBoxPhysicsTestEnvironment() = default;
@@ -49,6 +50,11 @@ namespace UnitTest
     {
         // Using ToolsTestApplication to have AzFramework and AzToolsFramework components.
         return aznew UnitTest::ToolsTestApplication("EditorWhiteBoxPhysics");
+    }
+
+    void EditorWhiteBoxPhysicsTestEnvironment::PostSystemEntityActivate()
+    {
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
     }
 
     class WhiteBoxPhysicsFixture : public ::testing::Test
