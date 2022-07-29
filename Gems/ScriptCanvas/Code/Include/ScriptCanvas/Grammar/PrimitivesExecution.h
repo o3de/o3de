@@ -87,6 +87,7 @@ namespace ScriptCanvas
 
             VariableConstPtr m_value;
             AZStd::vector<AZ::Crc32> m_smallOperations;
+            AZStd::vector<AZStd::pair<const Slot*, OutputAssignmentConstPtr>> m_output;
         };
 
         struct ExecutionChild

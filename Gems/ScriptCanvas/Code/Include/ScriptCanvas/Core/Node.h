@@ -437,7 +437,7 @@ namespace ScriptCanvas
         AZStd::string m_name = "";
         AZStd::string m_toolTip = "";
         AZStd::string m_nodeStyle = "";
-        AZ::Crc32 m_nodeLexicalId;
+        AZ::Crc32 m_nodeLexicalId = AZ_CRC_CE("NONE");
         struct IteratorCache
         {
         public:

@@ -173,10 +173,8 @@ namespace ScriptCanvas
             void WriteReturnValueInitialization(Grammar::ExecutionTreeConstPtr execution);
             void WriteStaticInitializerInput(IsLeadingCommaRequired commaRequired);
             void WriteSwitchEnd(Grammar::Symbol symbol);
-            void WriteVariableRead(Grammar::ExecutionInput variable);
             void WriteVariableRead(Grammar::VariableConstPtr variable);
             void WriteVariableReadConvertible(const Grammar::ConversionByIndex& conversions, size_t index, Grammar::VariableConstPtr source);
-            void WriteVariableReference(Grammar::ExecutionInput variable);
             void WriteVariableReference(Grammar::VariableConstPtr variable);
             void WriteVariableWrite(Grammar::ExecutionTreeConstPtr execution, const AZStd::vector<AZStd::pair<const Slot*, Grammar::OutputAssignmentConstPtr>>& output);
             void WriteWrittenMathExpression(Grammar::ExecutionTreeConstPtr execution);

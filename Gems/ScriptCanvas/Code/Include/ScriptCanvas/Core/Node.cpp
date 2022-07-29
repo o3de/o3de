@@ -435,6 +435,7 @@ namespace ScriptCanvas
                 ->Field("Name", &Node::m_name)
                 ->Field("ToolTip", &Node::m_toolTip)
                 ->Field("Style", &Node::m_nodeStyle)
+                ->Field("LexicalId", &Node::m_nodeLexicalId)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())

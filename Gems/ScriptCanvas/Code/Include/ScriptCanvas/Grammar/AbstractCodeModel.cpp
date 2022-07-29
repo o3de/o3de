@@ -1580,7 +1580,9 @@ namespace ScriptCanvas
                     const auto mostRecentOutputNodeOnThread = outputSource->GetId().m_node;
 
                     // TODO: Make a for loop to loop back through all connected small operator nodes
-                    if (outputSCNode->GetNodeName() == "++")
+                    // TODO: Change this so that it checks for only small operators when more lexicalId nodes are added
+                    AZ::Crc32 lexicalId = outputSCNode->GetNodeLexicalId();
+                    if (lexicalId != AZ_CRC_CE("NONE"))
                     {
                         auto slots = outputSCNode->GetAllSlots();
                         Slot firstSlot = *slots.front();
@@ -1588,10 +1590,11 @@ namespace ScriptCanvas
                         
                         if (!connectedNodes.empty())
                         {
-                            variableData->m_smallOperations.emplace_back(outputSCNode->GetNodeLexicalId());
                             outputSCNode = connectedNodes.front().first;
-                            variableData->m_value = outputSource->GetChild(0).m_output[0].second->m_source;
-                            return variableData;
+                            if (outputSCNode == mostRecentOutputNodeOnThread)
+                            {
+                                variableData->m_smallOperations.emplace_back(lexicalId);
+                            }
                         }
                         
                     }
@@ -1601,6 +1604,7 @@ namespace ScriptCanvas
                         if (!IsPropertyExtractionSlot(outputSource, outputSlot) && (IsVariableGet(outputSource) || IsVariableSet(outputSource)))
                         {
                             variableData->m_value = outputSource->GetChild(0).m_output[0].second->m_source;
+                            variableData->m_output.emplace_back(outputSource->GetChild(0).m_output[0]);
                             return variableData;
                         }
 
@@ -1626,6 +1630,7 @@ namespace ScriptCanvas
                                         }
 
                                         variableData->m_value = sourceOutputVarPair.second->m_source;
+                                        variableData->m_output.emplace_back(sourceOutputVarPair);
                                         return variableData;
                                     }
                                 }
@@ -4420,10 +4425,102 @@ namespace ScriptCanvas
             {
                 if (auto sourceVariableOperationData = ParseConnectedInputData(input, execution, nodes, FirstNode::Parent))
                 {
-                    auto& sourceVariable = sourceVariableOperationData->m_value;
-                    auto& sourceSmallOperations = sourceVariableOperationData->m_smallOperations;
-                    execution->AddInput({ &input, sourceVariable, DebugDataSource::FromOtherSlot(input.GetId(), input.GetDataType(), sourceVariable->m_sourceSlotId), sourceSmallOperations });
-                    CheckConversion(execution->ModConversions(), sourceVariable, execution->GetInputCount() - 1, input.GetDataType());
+                    if (!sourceVariableOperationData->m_smallOperations.empty())
+                    {
+                        Node* node = aznew Node();
+
+                        ExecutionSlotConfiguration inexconf;
+                        inexconf.m_name = "Exexution in";
+                        inexconf.SetConnectionType(ConnectionType::Input);
+                        node->AddSlot(inexconf);
+
+                        ExecutionSlotConfiguration outexconf;
+                        outexconf.m_name = "Exexution out";
+                        outexconf.SetConnectionType(ConnectionType::Output);
+                        SlotId outexid = node->AddSlot(outexconf);
+                        Slot* outexslot = node->GetSlot(outexid);
+
+                        DataSlotConfiguration indatconf1;
+                        indatconf1.m_name = "Data in 1";
+                        indatconf1.SetConnectionType(ConnectionType::Input);
+                        SlotId indatslotid1 = node->AddSlot(indatconf1);
+                        Slot* indatslot1 = node->GetSlot(indatslotid1);
+
+                        DataSlotConfiguration indatconf2;
+                        indatconf2.m_name = "Data in 2";
+                        indatconf2.SetConnectionType(ConnectionType::Input);
+                        node->AddSlot(indatconf2);
+                        SlotId indatslotid2 = node->AddSlot(indatconf2);
+                        Slot* indatslot2 = node->GetSlot(indatslotid2);
+
+                        DataSlotConfiguration outdat;
+                        outdat.m_name = "Data out";
+                        outdat.SetConnectionType(ConnectionType::Output);
+                        SlotId outdatid = node->AddSlot(outdat);
+                        Slot* outdatslot = node->GetSlot(outdatid);
+
+                        auto executionBeforeOperator = execution->ModParent();
+                        executionBeforeOperator->ClearChildren();
+                        ExecutionTreePtr executionOperator = CreateChild(executionBeforeOperator, node, outexslot);
+                        executionBeforeOperator->AddChild({ executionBeforeOperator->GetId().m_slot, sourceVariableOperationData->m_output, executionOperator });
+
+                        VariablePtr variable;
+
+                        switch (sourceVariableOperationData->m_smallOperations[0])
+                        {
+                        case (AZ_CRC_CE("Increment")):
+                            executionOperator->SetSymbol(Symbol::OperatorAddition);
+                            executionOperator->AddInput(
+                                { indatslot1, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            variable = AddMemberVariable(Datum(1.0), "one");
+                            executionOperator->AddInput({ indatslot2, variable, DebugDataSource::FromInternal() });
+                            break;
+                        case (AZ_CRC_CE("Decrement")):
+                            executionOperator->SetSymbol(Symbol::OperatorAddition);
+                            executionOperator->AddInput(
+                                { indatslot1, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            variable = AddMemberVariable(Datum(-1.0), "negativeOne");
+                            executionOperator->AddInput({ indatslot2, variable, DebugDataSource::FromInternal() });
+                            break;
+                        case (AZ_CRC_CE("Double")):
+                            executionOperator->SetSymbol(Symbol::OperatorMultiplication);
+                            executionOperator->AddInput(
+                                { indatslot1, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            variable = AddMemberVariable(Datum(2.0), "two");
+                            executionOperator->AddInput({ indatslot2, variable, DebugDataSource::FromInternal() });
+                            break;
+                        case (AZ_CRC_CE("Negative")):
+                            executionOperator->SetSymbol(Symbol::OperatorMultiplication);
+                            executionOperator->AddInput(
+                                { indatslot1, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            variable = AddMemberVariable(Datum(-1.0), "two");
+                            executionOperator->AddInput({ indatslot2, variable, DebugDataSource::FromInternal() });
+                            break;
+                        case (AZ_CRC_CE("Square")):
+                            executionOperator->SetSymbol(Symbol::OperatorMultiplication);
+                            executionOperator->AddInput(
+                                { indatslot1, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            executionOperator->AddInput(
+                                { indatslot2, sourceVariableOperationData->m_value, DebugDataSource::FromInternal() });
+                            break;
+                        };
+
+                        execution->ClearInput();
+                        executionOperator->AddChild({ outexslot, executionBeforeOperator->GetChild(0).m_output, execution });   // This may cause issues with multiple children
+                        execution->SetParent(executionOperator);
+                        execution->AddInput({ outdatslot, executionBeforeOperator->GetChild(0).m_output[0].second->m_source, DebugDataSource::FromInternal() });
+
+                    }
+                    execution->AddInput(
+                        { &input,
+                          sourceVariableOperationData->m_value,
+                                          DebugDataSource::FromOtherSlot(
+                                              input.GetId(), input.GetDataType(), sourceVariableOperationData->m_value->m_sourceSlotId) });
+                    CheckConversion(
+                        execution->ModConversions(),
+                        sourceVariableOperationData->m_value,
+                        execution->GetInputCount() - 1,
+                        input.GetDataType());
                 }
                 else
                 {
