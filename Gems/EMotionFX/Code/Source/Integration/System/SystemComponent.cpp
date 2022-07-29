@@ -952,6 +952,27 @@ namespace EMotionFX
                           delete animGraph;
                       }
                   } });
+
+            creators.push_back(
+                { "MotionSet_Creator",
+                  "MotionSet",
+                  QIcon(),
+                  [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                      AZStd::string outFilePath;
+                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          fullSourceFolderNameInCallback, "NewMotionSet.motionset", outFilePath);
+
+                      AZ::IO::PathView filePath = outFilePath.c_str();
+                      AZStd::string motionSetName = filePath.Stem().Native();
+                      EMotionFX::MotionSet* motionSet = aznew EMotionFX::MotionSet(motionSetName.c_str(), /*parentSet=*/nullptr);
+                      motionSet->SetFilename(outFilePath.c_str());
+                      AZ::SerializeContext* serializeContext = nullptr;
+                      AZ::ComponentApplicationBus::BroadcastResult(
+                          serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                      motionSet->SaveToFile(outFilePath, serializeContext);
+                      delete motionSet;
+                  } });
         }
 
         bool SystemComponent::HandlesSource(AZStd::string_view fileName) const
