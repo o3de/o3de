@@ -285,7 +285,6 @@ namespace AZ::Reflection
                 AZStd::fixed_string<128> labelAttributeBuffer;
 
                 AZStd::string_view descriptionAttributeValue;
-                AZStd::fixed_string<128> descriptionAttributeBuffer;
 
                 DocumentPropertyEditor::PropertyEditorSystemInterface* propertyEditorSystem =
                     AZ::Interface<DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
