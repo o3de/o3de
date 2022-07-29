@@ -82,8 +82,7 @@ namespace AssetProcessor
 
         AZStd::mutex m_buildersMutex;
 
-        //! Map of builders, keyed by the builder's unique ID.  Must be locked before accessing
-        //AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Builder>> m_builders;
+        //! List of builders.  Must be locked before accessing
         BuilderList m_builderList;
 
         // Track debug output generated per builder.
