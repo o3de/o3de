@@ -47,7 +47,7 @@ public:
     static CStartupLogoDialog* instance() { return s_pLogoWindow; }
 
 protected:
-    virtual void focusOutEvent(QFocusEvent* event) override;
+    virtual void focusOutEvent([[maybe_unused]] QFocusEvent* event) override;
 
 private:
     void SetInfo(const char* text);

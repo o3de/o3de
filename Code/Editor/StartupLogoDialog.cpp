@@ -14,7 +14,6 @@
 // Qt
 #include <QPainter>
 #include <QThread>
-#include <qdialog.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_StartupLogoDialog.h>
