@@ -95,10 +95,13 @@ namespace AZ
                         for (uint32_t attachmentIndex = 0; attachmentIndex < pass->GetOutputCount(); ++attachmentIndex)
                         {
                             RPI::Ptr<RPI::PassAttachment> attachment = pass->GetOutputBinding(attachmentIndex).GetAttachment();
-                            RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+                            if (attachment)
+                            {
+                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
 
-                            sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                            sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                            }
                         }
 
                         // set the output scale on the PassSrg
@@ -113,7 +116,7 @@ namespace AZ
                         for (uint32_t attachmentIndex = 0; attachmentIndex < parentPass->GetInputOutputCount(); ++attachmentIndex)
                         {
                             RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetInputOutputBinding(attachmentIndex).GetAttachment();
-                            if (attachment->m_name == Name("IrradianceImage"))
+                            if (attachment && attachment->m_name == Name("IrradianceImage"))
                             {
                                 irradianceImageAttachment = attachment;
                                 break;
