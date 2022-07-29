@@ -199,15 +199,9 @@ namespace AzToolsFramework
             existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
             PrefabDomValueReference instancesFileReference = PrefabDomUtils::GetInstancesValue(loadedDomFromFile);
             PrefabDomValueReference instancesTemplateReference = PrefabDomUtils::GetInstancesValue(existingTemplateDom);
-            if (!RemoveStaleLinksOnReload(instancesFileReference, instancesTemplateReference))
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::ReloadTemplateFromFile - "
-                    "Removing nested instance from target Template '%u' from Prefab file '%.*s' failed.",
-                    loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
-                return;
-            }
+
+            RemoveStaleLinksOnReload(instancesFileReference, instancesTemplateReference);
+
             if (instancesFileReference.has_value())
             {
                 PrefabDomValue& instances = instancesFileReference->get();
@@ -234,23 +228,14 @@ namespace AzToolsFramework
             progressedFilePathsSet.erase(relativePath);
         }
 
-        bool PrefabLoader::RemoveStaleLinksOnReload(
+        void PrefabLoader::RemoveStaleLinksOnReload(
             PrefabDomValueReference instancesFileReference, PrefabDomValueReference instancesTemplateReference)
         {
-            if (!instancesFileReference.has_value() || !instancesTemplateReference.has_value())
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::RemoveStaleLinksOnReload - "
-                    "Can't get instance values from references passed in.");
-                return;
-            }
-            PrefabDomValue& fileInstances = instancesFileReference->get();
             PrefabDomValue& templateInstances = instancesTemplateReference->get();
             for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
                  instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
             {
-                if (!fileInstances.HasMember(instanceIterator->name))
+                if (instancesFileReference.has_value() == false || instancesFileReference->get().HasMember(instanceIterator->name))
                 {
                     PrefabDomValue& nestedTemplateDom = instanceIterator->value;
                     PrefabDomValueReference instanceLinkIdReference =
@@ -262,13 +247,12 @@ namespace AzToolsFramework
                             "PrefabLoader::RemoveLinkOnReload - "
                             "Can't get '%s' Uint64 value in Instance value '%s' of Template's Prefab DOM from file.",
                             PrefabDomUtils::LinkIdName, instanceIterator->name.GetString());
-                        return false;
+                        return;
                     }
                     LinkId instanceLinkId = instanceLinkIdReference->get().GetUint64();
                     m_prefabSystemComponentInterface->RemoveLink(instanceLinkId);
                 }
             }
-            return true;
         }
 
         bool PrefabLoader::ReloadNestedInstance(
