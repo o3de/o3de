@@ -301,18 +301,13 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
         {
             if(wasSuccessful)
             {
-                // Mark the save as successful, so the prompt to save won't show up
-                // next time the scene settings window is opened.
-                m_rootDisplay->HandleSaveWasSuccessful();
-                // Make sure information on the current document is cleared out, so
-                // if a new file is immediately opened, it won't show stale info.
-                m_assetImporterDocument->GetScene()->GetManifest().Clear();
-                m_assetImporterDocument->ClearScene();
-
                 m_isClosed = true;
-                // Close the pane, instead of this window, because this window is automatically
-                // docked in this pane. If it's closed, the pane will be there, but empty.
-                QtViewPaneManager::instance()->ClosePane(LyViewPane::SceneSettings);
+
+                // Delete the parent, because this window is nested inside another, dockable window.
+                // Just deleting this will leave the dockable window open.
+                // Requesting the panel that this is docked in to close, will result in issues on some re-open states,
+                // if only the panel is closed, then the next time it's opened, the scene settings won't be correctly loaded.
+                this->parent()->deleteLater();
             }
             else
             {
