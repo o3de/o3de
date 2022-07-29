@@ -18,11 +18,11 @@ namespace O3DE::ProjectManager
         if (auto engineInfoOutcome = PythonBindingsInterface::Get()->GetEngineInfo(); engineInfoOutcome)
         {
             auto engineInfo = engineInfoOutcome.GetValue<EngineInfo>();
-            setWindowTitle(QString("%1 %2 Project Manager").arg(engineInfo.m_name.toUpper(), engineInfo.m_version));
+            setWindowTitle(QString("%1 %2 %3").arg(engineInfo.m_name.toUpper(), engineInfo.m_version, tr("Project Manager")));
         }
         else
         {
-            setWindowTitle("O3DE Project Manager");
+            setWindowTitle(QString("O3DE %1").arg(tr("Project Manager")));
         }
 
         ScreensCtrl* screensCtrl = new ScreensCtrl();
