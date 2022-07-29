@@ -11,6 +11,7 @@
 #include <Atom/RHI/PoolAllocator.h>
 #include <RHI/CommandList.h>
 #include <RHI/HeapAllocator.h>
+#include <RHI/TileAllocator.h>
 
 namespace AZ
 {
@@ -19,36 +20,6 @@ namespace AZ
         class Device;
         class Image;
         class StreamingImagePoolResolver;
-
- /*       class ImageAllocator
-        {
-        public:
-            ImageAllocator() = default;
-            ImageAllocator(const ImageAllocator&) = delete;
-
-            using Descriptor = HeapAllocator::Descriptor;
-
-            void Init(const Descriptor& descriptor);
-
-            void Shutdown();
-
-            void GarbageCollect();
-
-            MemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0);
-
-            void DeAllocate(const MemoryView& memory);
-
-            float ComputeFragmentation() const;
-
-        private:
-            Descriptor m_descriptor;
-            
-            HeapAllocator m_heapPageAllocator;
-            // for allocate tile from heap page
-            TileAllocator m_tileAllocator;
-
-            AZStd::mutex m_subAllocatorMutex;
-        };*/
 
         class StreamingImagePool final
             : public RHI::StreamingImagePool
@@ -67,8 +38,6 @@ namespace AZ
         private:
             StreamingImagePool() = default;
 
-            D3D12_RESOURCE_ALLOCATION_INFO GetAllocationInfo(const RHI::ImageDescriptor& imageDescriptor, uint32_t residentMipLevel);
-
             //////////////////////////////////////////////////////////////////////////
             // RHI::StreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
@@ -81,10 +50,13 @@ namespace AZ
             // RHI::ResourcePool
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
-            /// As streaming image tiles are allocated from a pool allocator, fragmentation will remain 0 for
-            /// the streaming image pool
+
+            //streaming images are either committed resource or using tiles from heap pages. So there are no fragmentation
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
+
+            // whether can use heap tiles for an image 
+            bool ShouldUseTileHeap(const RHI::ImageDescriptor& imageDescriptor) const;
 
             void AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
             void DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
@@ -96,16 +68,27 @@ namespace AZ
             // Packed mips occupy a dedicated set of tiles.
             void AllocatePackedImageTiles(Image& image);
 
-            RHI::Ptr<ID3D12Heap> m_heap;
+            // Memory usage of this pool.
+            // Only GPU memory usage data is set in this class
+            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
 
+            // whether to enable tiled resource
+            bool m_enableTileResource = false;
+
+            // mutex to protect tile allocation and de-allocation from any threads
             AZStd::mutex m_tileMutex;
-            //RHI::PoolAllocator m_tileAllocator;
 
             // for allocate heap page
             HeapAllocator m_heapPageAllocator;
+
             // for allocate tile from heap page
             TileAllocator m_tileAllocator;
-            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
+
+            // The default tile for null tiles.
+            // This is for resources when there are not enough of gpu memory
+            // from https://docs.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_tiled_resources_tier
+            // "GPU reads or writes to NULL mappings are undefined. Applications are encouraged to workaround this limitation by repeatedly mapping the same page to everywhere a NULL mapping would've been used."
+            HeapTiles m_defaultTile;
         };
     }
 }

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <RHI/HeapAllocator.h>
+#include <RHI/TileAllocator.h>
 #include <RHI/MemoryView.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Allocator.h>
@@ -141,6 +141,9 @@ namespace AZ
 
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
             //////////////////////////////////////////////////////////////////////////
+
+            // Calculate the size of all the tiles allocated for this image and save the number in m_residentSizeInBytes
+            void UpdateResidentTilesSizeInBytes(uint32_t sizePerTile);
 
             void GenerateSubresourceLayouts();
             

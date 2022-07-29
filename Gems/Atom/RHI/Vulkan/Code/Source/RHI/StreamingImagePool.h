@@ -65,7 +65,7 @@ namespace AZ
             void WaitFinishUploading(const Image& image);
 
             MemoryAllocator m_memoryAllocator;
-            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
+            RHI::HeapMemoryUsage& m_memoryAllocatorUsage;
         };
     }
 }

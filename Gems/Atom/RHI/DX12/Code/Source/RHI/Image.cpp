@@ -49,6 +49,27 @@ namespace AZ
             imageStats->m_sizeInBytes = m_residentSizeInBytes;
         }
 
+        void Image::UpdateResidentTilesSizeInBytes(uint32_t sizePerTile)
+        {
+            if (IsTiled())
+            {
+                uint32_t tileCount = 0;
+                for (const auto& heapTilesGroups : m_heapTiles)
+                {
+                    for (const auto& heapTiles: heapTilesGroups.second)
+                    {
+                        tileCount += heapTiles.m_totalTileCount;
+                    }
+                }
+
+                m_residentSizeInBytes = tileCount * sizePerTile;
+            }
+            else
+            {
+                AZ_Assert(IsTiled(), "Size won't be updated for non-tiled image ");
+            }
+        }
+
         void Image::GenerateSubresourceLayouts()
         {
             for (uint16_t mipSlice = 0; mipSlice < GetDescriptor().m_mipLevels; ++mipSlice)
