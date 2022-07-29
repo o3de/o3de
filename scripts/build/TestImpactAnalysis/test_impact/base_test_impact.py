@@ -14,7 +14,7 @@ import json
 import subprocess
 import re
 import os
-from .runtime_args import CommonRuntimeArgs
+from test_impact import RuntimeArgs
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_tools import get_logger
@@ -143,7 +143,7 @@ class BaseTestImpact(ABC):
         """
 
         for argument in RuntimeArgs:
-            value = args.get(argument.py_arg)
+            value = args.get(argument.driver_argument)
             if value:
                 runtime_args.append(f"{argument.runtime_arg}{value}")
                 logger.info(f"{argument.message}{value}")
