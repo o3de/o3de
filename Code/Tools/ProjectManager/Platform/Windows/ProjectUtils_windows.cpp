@@ -167,6 +167,7 @@ namespace O3DE::ProjectManager
         {
             AZ::IO::FixedMaxPath editorPath;
             AZ::IO::FixedMaxPath fixedProjectPath{ projectPath };
+
             // First attempt to launch the Editor.exe within the project build directory if it exists
             AZ::IO::FixedMaxPath buildPathSetregPath = fixedProjectPath
                 / AZ::SettingsRegistryInterface::DevUserRegistryFolder
@@ -208,22 +209,17 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            // Attempt to find the Editor in the specified engine's bin folder
+            // No Editor executable was found in the project build folder so if this project uses a
+            // different engine we must find the Editor executable for that engine
             if(auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath.Native().data()); engineResult)
             {
                 auto engineInfo = engineResult.GetValue<EngineInfo>();
                 if (!engineInfo.m_thisEngine)
                 {
                     AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toUtf8().constData() };
-                    // first try the default sdk path
+                    // try the default sdk path
+                    // in the future we may be able to use additional .setreg entries to locate an alternate binary path
                     if (editorPath = (fixedEnginePath / "bin" / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Default" / "Editor").
-                        ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-                        AZ::IO::SystemFile::Exists(editorPath.c_str()))
-                    {
-                        return editorPath;
-                    }
-                    // next try the default build path
-                    else if (editorPath = (fixedEnginePath / "build" / "windows_vs2019" / "bin" / "profile" / "Editor").
                         ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                         AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
