@@ -10,6 +10,7 @@
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/std/algorithm.h>
 #include <RHI/Conversion.h>
 #include <RHI/Scope.h>
 #include <RHI/Semaphore.h>
@@ -99,6 +100,28 @@ namespace AZ
 
             VkPipelineStageFlags srcPipelineStageFlags = prevScopeAttachment ? GetResourcePipelineStateFlags(*prevScopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             VkAccessFlags srcAccessFlags = prevScopeAttachment ? GetResourceAccessFlags(*prevScopeAttachment) : 0;
+
+            // this makes vkCmdClearColorImage is apart of this resource barrier
+            if constexpr (AZStd::is_same_v<ResourceScopeAttachment, RHI::ImageScopeAttachment>)
+            {
+                const auto& bindingDescriptor = scopeAttachment.GetDescriptor();
+                const auto& usageAndAccess = scopeAttachment.GetUsageAndAccess();
+                const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+                const bool isClearActionStencil =
+                    bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+
+                if ((isClearAction || isClearActionStencil) &&
+                    AZStd::any_of(
+                        usageAndAccess.begin(),
+                        usageAndAccess.end(),
+                        [](auto& usage)
+                        {
+                            return usage.m_usage == RHI::ScopeAttachmentUsage::Shader;
+                        }))
+                {
+                    srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+                }
+            }
 
             auto subresourceRange = GetSubresourceRange(scopeAttachment);
             auto subresourceOwnerList = resource.GetOwnerQueue(&subresourceRange);
