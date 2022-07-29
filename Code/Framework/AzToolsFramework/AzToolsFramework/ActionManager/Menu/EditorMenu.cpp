@@ -128,6 +128,7 @@ namespace AzToolsFramework
     AZStd::optional<int> EditorMenu::GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const
     {
         auto widgetIterator = m_widgetToSortKeyMap.find(widgetActionIdentifier);
+
         if (widgetIterator == m_widgetToSortKeyMap.end())
         {
             return AZStd::nullopt;

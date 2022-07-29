@@ -12,6 +12,7 @@
 #include <AzCore/std/string/string.h>
 
 class QMenuBar;
+class QWidget;
 
 namespace AzToolsFramework
 {
@@ -44,7 +45,7 @@ namespace AzToolsFramework
         QMenuBar* m_menuBar = nullptr;
         AZStd::multimap<int, AZStd::string> m_menus;
         AZStd::map<AZStd::string, int> m_menuToSortKeyMap;
-
+        
         inline static QWidget* m_defaultParentWidget = nullptr;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;

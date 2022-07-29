@@ -1017,7 +1017,7 @@ QWidget* EditorActionsHandler::CreatePlayControlsLabel()
 {
     QLabel* label = new QLabel(m_mainWindow);
     label->setText("Play Controls");
-    return static_cast<QWidget*>(label);
+    return label;
 }
 
 QWidget* EditorActionsHandler::CreateDocsSearchWidget()

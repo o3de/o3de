@@ -27,7 +27,7 @@ namespace AzToolsFramework
         ActionManagerNotificationBus::Handler::BusConnect();
 
         EditorMenu::Initialize(defaultParentWidget);
-        EditorMenuBar::Initialize();
+        EditorMenuBar::Initialize(defaultParentWidget);
     }
 
     MenuManager::~MenuManager()
