@@ -255,12 +255,12 @@ class TestImpact:
         try:
             with open(config_file, "r") as config_data:
                 config = json.load(config_data)
-                self._repo_dir = config["repo"]["root"]
+                self._repo_dir = config["common"]["repo"]["root"]
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = pathlib.Path(config["repo"]["tiaf_bin"])
+                self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
+                self._tiaf_bin = pathlib.Path(config["common"]["repo"]["tiaf_bin"])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -270,9 +270,9 @@ class TestImpact:
                         f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
-                self._active_workspace = config["workspace"]["active"]["root"]
-                self._historic_workspace = config["workspace"]["historic"]["root"]
-                self._temp_workspace = config["workspace"]["temp"]["root"]
+                self._active_workspace = config["common"]["workspace"]["active"]["root"]
+                self._historic_workspace = config["common"]["workspace"]["historic"]["root"]
+                self._temp_workspace = config["common"]["workspace"]["temp"]["root"]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
