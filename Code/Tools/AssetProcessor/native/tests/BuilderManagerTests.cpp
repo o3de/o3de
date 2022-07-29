@@ -61,7 +61,7 @@ namespace UnitTests
 
     TestBuilderManager::TestBuilderManager(ConnectionManager* connectionManager): BuilderManager(connectionManager)
     {
-        AddNewBuilder();
+        TestBuilderManager::AddNewBuilder(BuilderPurpose::CreateJobs);
     }
 
     int TestBuilderManager::GetBuilderCreationCount() const
@@ -69,12 +69,13 @@ namespace UnitTests
         return m_connectionCounter;
     }
 
-    AZStd::shared_ptr<AssetProcessor::Builder> TestBuilderManager::AddNewBuilder()
+    AZStd::shared_ptr<AssetProcessor::Builder> TestBuilderManager::AddNewBuilder(BuilderPurpose purpose)
     {
         auto uuid = AZ::Uuid::CreateRandom();
+        auto builder = AZStd::make_shared<TestBuilder>(m_quitListener, uuid, ++m_connectionCounter);
 
-        m_builders[uuid] = AZStd::make_shared<TestBuilder>(m_quitListener, uuid, ++m_connectionCounter);
+        m_builderList.AddBuilder(builder, purpose);
 
-        return m_builders[uuid];
+        return builder;
     }
 }

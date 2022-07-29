@@ -34,8 +34,8 @@ namespace UnitTests
         int GetBuilderCreationCount() const;
 
     protected:
-        AZStd::shared_ptr<AssetProcessor::Builder> AddNewBuilder() override;
-        
+        AZStd::shared_ptr<AssetProcessor::Builder> AddNewBuilder(BuilderPurpose purpose) override;
+
         int m_connectionCounter = 0;
     };
 }
