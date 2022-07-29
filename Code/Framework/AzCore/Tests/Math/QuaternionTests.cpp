@@ -525,19 +525,22 @@ namespace UnitTest
         EXPECT_THAT(angle, testing::FloatEq(-AZ::Constants::HalfPi));
     }
 
-    struct EulerTestArgs {
+    struct EulerTestArgs
+    {
         AZ::Vector3 euler;
         AZ::Quaternion result;
     };
 
     using AngleRadianTestFixtureXYZ = ::testing::TestWithParam<EulerTestArgs>;
 
-    TEST_P(AngleRadianTestFixtureXYZ, EulerRadiansXYZ) {
+    TEST_P(AngleRadianTestFixtureXYZ, EulerRadiansXYZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansXYZ(param.euler), IsClose(param.result));
     }
 
-     TEST_P(AngleRadianTestFixtureXYZ, EulerDegreesXYZ) {
+    TEST_P(AngleRadianTestFixtureXYZ, EulerDegreesXYZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesXYZ(Vector3RadToDeg(param.euler)), IsClose(param.result));
     }
@@ -576,12 +579,14 @@ namespace UnitTest
 
     using AngleRadianTestFixtureYXZ = ::testing::TestWithParam<EulerTestArgs>;
 
-    TEST_P(AngleRadianTestFixtureYXZ, EulerRadiansYXZ) {
+    TEST_P(AngleRadianTestFixtureYXZ, EulerRadiansYXZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansYXZ(param.euler), IsClose(param.result));
     }
 
-    TEST_P(AngleRadianTestFixtureYXZ, EulerDegreesYXZ) {
+    TEST_P(AngleRadianTestFixtureYXZ, EulerDegreesYXZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesYXZ(Vector3RadToDeg(param.euler)), IsClose(param.result));
     }
@@ -621,12 +626,14 @@ namespace UnitTest
 
     using AngleRadianTestFixtureZYX = ::testing::TestWithParam<EulerTestArgs>;
 
-    TEST_P(AngleRadianTestFixtureZYX, EulerRadiansYXZ) {
+    TEST_P(AngleRadianTestFixtureZYX, EulerRadiansYXZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerRadiansZYX(param.euler), IsClose(param.result));
     }
 
-    TEST_P(AngleRadianTestFixtureZYX, EulerDegreesYXZ) {
+    TEST_P(AngleRadianTestFixtureZYX, EulerDegreesYXZ)
+    {
         auto& param = GetParam();
         EXPECT_THAT(AZ::Quaternion::CreateFromEulerDegreesZYX(Vector3RadToDeg(param.euler)), IsClose(param.result));
     }
@@ -663,4 +670,4 @@ namespace UnitTest
                 AZ::Quaternion::CreateRotationX(-Constants::QuarterPi)}
         ));
 
-}
+} // namespace UnitTest
