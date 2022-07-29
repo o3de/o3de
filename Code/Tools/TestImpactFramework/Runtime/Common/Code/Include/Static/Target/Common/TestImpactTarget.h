@@ -16,7 +16,7 @@ namespace TestImpact
     class Target
     {
     public:
-        Target(TargetDescriptor* descriptor);
+        Target(TargetDescriptor&& descriptor);
         virtual ~Target() = default;
 
         //! Returns the build target name.
@@ -29,6 +29,6 @@ namespace TestImpact
         const TargetSources& GetSources() const;
 
     private:
-        const TargetDescriptor* m_descriptor;
+       TargetDescriptor m_descriptor;
     };
 } // namespace TestImpact

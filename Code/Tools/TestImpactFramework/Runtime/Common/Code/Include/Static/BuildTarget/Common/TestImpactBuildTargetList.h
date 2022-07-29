@@ -22,10 +22,9 @@ namespace TestImpact
     class BuildTargetList
     {
     public:
-        //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
+        //! Constructs the list of production and test targets in the respository.
         BuildTargetList(
-            AZStd::vector<AZStd::unique_ptr<typename TestTarget::Descriptor>>&& testTargetDescriptors,
-            AZStd::vector<AZStd::unique_ptr<typename ProductionTarget::Descriptor>>&& productionTargetDescriptors);
+            TargetList<TestTarget>&& testTargetList, TargetList<ProductionTarget>&& productionTargetList);
 
         //! Gets the total number of production and test targets in the repository.
         size_t GetNumTargets() const;
@@ -54,10 +53,9 @@ namespace TestImpact
 
     template<typename TestTarget, typename ProductionTarget>
     BuildTargetList<TestTarget, ProductionTarget>::BuildTargetList(
-        AZStd::vector<AZStd::unique_ptr<typename TestTarget::Descriptor>>&& testTargetDescriptors,
-        AZStd::vector<AZStd::unique_ptr<typename ProductionTarget::Descriptor>>&& productionTargetDescriptors)
-        : m_testTargets(AZStd::move(testTargetDescriptors))
-        , m_productionTargets(AZStd::move(productionTargetDescriptors))
+        TargetList<TestTarget>&& testTargetList, TargetList<ProductionTarget>&& productionTargetList)
+        : m_testTargets(AZStd::move(testTargetList))
+        , m_productionTargets(AZStd::move(productionTargetList))
     {
     }
 

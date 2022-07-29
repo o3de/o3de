@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <Artifact/Static/TestImpactTargetDescriptor.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Target/Common/TestImpactTarget.h>
 
@@ -19,11 +20,11 @@ namespace TestImpact
         : public Target
     {
     public:
-        NativeTarget(NativeTargetDescriptor* descriptor);
+        NativeTarget(TargetDescriptor&& descriptor, NativeTargetDescriptor&& nativeDescriptor);
 
         //! Returns the build target's compiled binary name.
         const AZStd::string& GetOutputName() const;
     private:
-        const NativeTargetDescriptor* m_descriptor;
+        NativeTargetDescriptor m_nativeDescriptor;
     };
 } // namespace TestImpact

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
 #include <Target/native/TestImpactNativeTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -20,10 +19,6 @@ namespace TestImpact
         : public NativeTarget
     {
     public:
-        using Descriptor = NativeProductionTargetDescriptor;
-        NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor);
-
-    private:
-        AZStd::unique_ptr<Descriptor> m_descriptor;
+        using NativeTarget::NativeTarget;
     };
 } // namespace TestImpact

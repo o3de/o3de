@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 #include <Target/Native/TestImpactNativeTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -20,9 +20,7 @@ namespace TestImpact
         : public NativeTarget
     {
     public:
-        using Descriptor = NativeTestTargetDescriptor;
-
-        NativeTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
+        NativeTestTarget(TargetDescriptor&& descriptor, NativeTargetDescriptor&& nativeDescriptor, NativeTestTargetMeta&& testMetaData);
 
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
@@ -37,6 +35,6 @@ namespace TestImpact
         LaunchMethod GetLaunchMethod() const;
 
     private:
-        AZStd::unique_ptr<Descriptor> m_descriptor;
+        NativeTestTargetMeta m_testMetaData;
     };
 } // namespace TestImpact

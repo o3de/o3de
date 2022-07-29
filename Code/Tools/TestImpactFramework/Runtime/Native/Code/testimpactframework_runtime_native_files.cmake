@@ -13,18 +13,12 @@ set(FILES
     Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h
-    Source/Artifact/Static/TestImpactNativeTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactNativeTargetDescriptor.h
-    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.cpp
-    Source/Artifact/Static/TestImpactNativeTargetDescriptorCompiler.h
-    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactNativeProductionTargetDescriptor.h
+    Source/Artifact/Static/TestImpactNativeTargetListCompiler.cpp
+    Source/Artifact/Static/TestImpactNativeTargetListCompiler.h
     Source/Artifact/Static/TestImpactNativeTestTargetMeta.h
-    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.cpp
-    Source/Artifact/Static/TestImpactNativeTestTargetDescriptor.h
     Source/Target/Native/TestImpactNativeTarget.cpp
     Source/Target/Native/TestImpactNativeTarget.h
-    Source/Target/Native/TestImpactNativeProductionTarget.cpp
     Source/Target/Native/TestImpactNativeProductionTarget.h
     Source/Target/Native/TestImpactNativeTestTarget.cpp
     Source/Target/Native/TestImpactNativeTestTarget.h

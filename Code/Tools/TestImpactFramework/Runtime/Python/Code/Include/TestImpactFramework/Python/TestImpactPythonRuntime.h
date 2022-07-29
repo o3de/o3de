@@ -18,6 +18,7 @@ namespace TestImpact
     class PythonTestEngine;
     class PythonTestTarget;
     class PythonProductionTarget;
+    class SourceCoveringTestsList;
 
     template<typename TestTarget, typename ProdutionTarget>
     class ChangeDependencyList;
@@ -51,9 +52,6 @@ namespace TestImpact
             Policy::TargetOutputCapture targetOutputCapture);
 
         ~PythonRuntime();
-
-        //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
-        bool HasImpactAnalysisData() const;
 
     private:
         PythonRuntimeConfig m_config;

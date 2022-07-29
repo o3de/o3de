@@ -8,17 +8,13 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTargetDescriptor.h>
+#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
     //! Artifact produced by the build system for each build target. Contains source and output information about said targets.
     struct NativeTargetDescriptor
-        : public TargetDescriptor
     {
-        NativeTargetDescriptor() = default;
-        NativeTargetDescriptor(TargetDescriptor&& targetDescriptor, const AZStd::string& outputName);
-
         AZStd::string m_outputName; //!< Output name (sans extension) of build target binary.
     };
 } // namespace TestImpact
