@@ -50,7 +50,7 @@ namespace UnitTest
             AZ::NameDictionary::Destroy();
         }
 
-        static const AZStd::unordered_map<AZ::Name::Hash, AZ::Internal::NameData*>& GetDictionary()
+        static const auto& GetDictionary()
         {
             return AZ::NameDictionary::Instance().m_dictionary;
         }
@@ -303,8 +303,9 @@ namespace UnitTest
         {
             auto& globalDictionary = NameDictionaryTester::GetDictionary();
             // Workaround VS2022 17.3 issue with incorrect detection of unused lambda captures assigning the nameString reference to a same type
-            auto it = AZStd::find_if(globalDictionary.begin(), globalDictionary.end(), [&nameString = nameString](AZStd::pair<AZ::Name::Hash, AZ::Internal::NameData*> entry) {
-                return entry.second->GetName() == nameString;
+            auto it = AZStd::find_if(globalDictionary.begin(), globalDictionary.end(), [&nameString = nameString](const AZStd::pair<AZ::Name::Hash, AZ::NameDictionary::ScopedNameDataWrapper>& entry)
+            {
+                return entry.second.m_nameData->GetName() == nameString;
             });
             EXPECT_TRUE(it != globalDictionary.end()) << "Can't find '" << nameString.data() << "' in local dictionary.";
         }

@@ -203,7 +203,7 @@ namespace AZ
             }
             AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
             m_view = name;
-            if (!NameDictionary::IsReady(false))
+            if (!NameDictionary::IsReady())
             {
                 // Link ourselves into the deferred list if we're not already in there
                 if (!m_supportsDeferredLoad)

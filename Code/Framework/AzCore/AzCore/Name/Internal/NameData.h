@@ -43,12 +43,15 @@ namespace AZ
             template <typename T>
             friend struct AZStd::IntrusivePtrCountPolicy;
 
-            AZStd::atomic_int m_useCount = {0};
+            AZStd::atomic_int m_useCount{ 0 };
             AZStd::string m_name;
             Hash m_hash;
 
             // TODO: We should be able to change this to a normal bool after introducing name dictionary garbage collection
-            AZStd::atomic<bool> m_hashCollision = false; // Tracks whether the hash has been involved in a collision
+            AZStd::atomic<bool> m_hashCollision{ false }; // Tracks whether the hash has been involved in a collision
+            //! Stores a pointer to the name dictionary that created the NameData
+            //! if the the name dictionary is destroyed, set back to nullptr
+            NameDictionary* m_nameDictionary{};
         };
     }
 }
