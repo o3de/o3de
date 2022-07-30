@@ -29,6 +29,10 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
+    AZ_CVAR(int, editorsv_servertype, 1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "0: opens dedicated server. 1: starts client server.");
+
+
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Whether Editor launching a local server to connect to is supported");
     AZ_CVAR(bool, editorsv_launch, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -472,6 +476,12 @@ namespace Multiplayer
             return;
         }
 
+        if (editorsv_servertype == 1)
+        {
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(33450, false);
+            return;
+        }
+
         AZ_Assert(m_preAliasedSpawnablesForServer.empty(), "MultiplayerEditorSystemComponent already has pre-aliased spawnables! Please update code to clean-up the table between entering and existing play mode.")
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusConnect();
     }
@@ -482,6 +492,11 @@ namespace Multiplayer
         if (!editorsv_enabled || !mpTools)
         {
             // Early out if Editor server is not enabled.
+            return;
+        }
+
+        if (editorsv_servertype == 1)
+        {
             return;
         }
 
