@@ -29,7 +29,8 @@ class IMultiplayerSpawnerMock : public Multiplayer::IMultiplayerSpawner
             [[maybe_unused]] EntityPreActivationCallback preActivationCallback) override
         {
             ++m_playerCount;
-            return Multiplayer::NetworkEntityHandle();
+            ++m_playerEntityRequestedCount;
+            return m_networkEntityHandle;
         }
 
         void OnPlayerLeave(
@@ -39,7 +40,9 @@ class IMultiplayerSpawnerMock : public Multiplayer::IMultiplayerSpawner
         {
             --m_playerCount;
         }
-    
+
         int32_t m_playerCount = 0;
+        int32_t m_playerEntityRequestedCount = 0;
+        Multiplayer::NetworkEntityHandle m_networkEntityHandle;
     };
 
