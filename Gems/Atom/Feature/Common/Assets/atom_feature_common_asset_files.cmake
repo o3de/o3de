@@ -456,8 +456,8 @@ set(FILES
     Shaders/PostProcessing/DiffuseSpecularMerge.shader
     Shaders/PostProcessing/DisplayMapper.azsl
     Shaders/PostProcessing/DisplayMapper.shader
-    Shaders/PostProcessing/DisplayMapperOnlyGammaCorrection.azsl
-    Shaders/PostProcessing/DisplayMapperOnlyGammaCorrection.shader
+    Shaders/PostProcessing/DisplayMapperSRGB.azsl
+    Shaders/PostProcessing/DisplayMapperSRGB.shader
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.azsl
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.shader
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.azsl

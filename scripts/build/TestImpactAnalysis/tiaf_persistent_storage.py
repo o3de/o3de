@@ -16,6 +16,7 @@ logger = get_logger(__file__)
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):
 
+    COMMON_CONFIG_KEY = "common"
     WORKSPACE_KEY = "workspace"
     HISTORIC_SEQUENCES_KEY = "historic_sequences"
     ACTIVE_KEY = "active"
@@ -49,10 +50,10 @@ class PersistentStorage(ABC):
         try:
             # The runtime expects the coverage data to be in the location specified in the config file (unless overridden with 
             # the --datafile command line argument, which the TIAF scripts do not do)
-            self._active_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
+            self._active_workspace = pathlib.Path(config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
             self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
-            unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
-            previous_test_run_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+            unpacked_coverage_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
+            previous_test_run_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
 
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
