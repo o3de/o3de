@@ -73,7 +73,7 @@
   "native": {
     "test_engine": {
       "test_runner": {
-          "bin": "${test_runner_bin}"
+          "bin": "${native_test_runner_bin}"
       },
       "instrumentation": {
         "bin": "${instrumentation_bin}"
@@ -98,6 +98,11 @@
     }
   },
   "python": {
+    "test_engine": {
+      "test_runner": {
+          "bin": "${python_cmd}"
+      }
+    },
     "target": {
       "exclude": [
       ]

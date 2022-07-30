@@ -11,6 +11,7 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
 #include <TestImpactFramework/TestImpactConfiguration.h>
+#include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <Artifact/TestImpactArtifactException.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>

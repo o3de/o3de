@@ -21,6 +21,9 @@ namespace TestImpact
             "exclude",
             "python",
             "target",
+            "test_engine",
+            "test_runner",
+            "python_cmd",
         };
 
         enum
@@ -28,8 +31,18 @@ namespace TestImpact
             TargetExclude,
             Python,
             TargetConfig,
+            TestEngine,
+            TestRunner,
+            PythonCmd,
         };
     } // namespace Config
+
+    PythonTestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
+    {
+        PythonTestEngineConfig testEngineConfig;
+        testEngineConfig.m_testRunner.m_pythonCmd = testEngine[Config::Keys[Config::TestRunner]][Config::Keys[Config::PythonCmd]].GetString();
+        return testEngineConfig;
+    }
 
     PythonTargetConfig ParseTargetConfig(const rapidjson::Value& target)
     {
@@ -50,6 +63,7 @@ namespace TestImpact
 
         PythonRuntimeConfig runtimeConfig;
         runtimeConfig.m_commonConfig = RuntimeConfigurationFactory(configurationData);
+        runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TestEngine]]);
         runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TargetConfig]]);
 
         return runtimeConfig;

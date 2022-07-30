@@ -9,14 +9,15 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
 
+#include <TestImpactRuntimeUtils.h>
 #include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
 #include <Target/Python/TestImpactPythonProductionTarget.h>
 #include <Target/Python/TestImpactPythonTargetListCompiler.h>
 #include <Target/Python/TestImpactPythonTestTarget.h>
+#include <TestEngine/Python/TestImpactPythonTestEngine.h>
 
-#include <TestImpactRuntimeUtils.h>
 
 namespace TestImpact
 {
@@ -74,6 +75,16 @@ namespace TestImpact
             m_testTargetExcludeList = ConstructTestTargetExcludeList(
                 m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedTargets);
         }
+
+        // Construct the test engine with the workspace path and launcher binaries
+        //m_testEngine = AZStd::make_unique<PythonTestEngine>(
+        //    m_config.m_commonConfig.m_repo.m_root,
+        //    m_config.m_target.m_outputDirectory,
+        //    m_config.m_commonConfig.m_workspace.m_temp.m_enumerationCacheDirectory,
+        //    m_config.m_commonConfig.m_workspace.m_temp.m_artifactDirectory,
+        //    m_config.m_testEngine.m_testRunner.m_binary,
+        //    m_config.m_testEngine.m_instrumentation.m_binary,
+        //    m_maxConcurrency);
     }
 
     PythonRuntime::~PythonRuntime() = default;

@@ -8,7 +8,6 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/Native/TestImpactNativeRuntime.h>
-#include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
 #include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>

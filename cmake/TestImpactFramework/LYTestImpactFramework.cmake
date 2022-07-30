@@ -406,7 +406,10 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     endif()
 
     # Testrunner binary
-    set(test_runner_bin $<TARGET_FILE:AzTestRunner>)
+    set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
+
+    # Python command
+    set(python_cmd "${LY_ROOT_FOLDER}/python/python.cmd")
 
     # Repository root
     set(repo_dir ${LY_ROOT_FOLDER})
