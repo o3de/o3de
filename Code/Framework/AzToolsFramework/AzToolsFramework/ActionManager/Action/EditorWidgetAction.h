@@ -37,9 +37,6 @@ namespace AzToolsFramework
         QWidget* GenerateWidget() const;
 
     private:
-        QAction* m_action = nullptr;
-        QIcon m_icon;
-
         AZStd::string m_identifier;
         AZStd::string m_name;
         AZStd::string m_category;
