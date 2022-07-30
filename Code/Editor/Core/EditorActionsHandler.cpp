@@ -42,6 +42,7 @@ static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3d
 static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
+static constexpr AZStd::string_view UndoRedoUpdaterIdentifier = "o3de.updater.onUndoRedo";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
@@ -150,6 +151,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(UndoRedoUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -473,7 +475,8 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        // TODO - trigger update when the undo stack changes
+        // Trigger update after every undo or redo operation
+        m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.undo");
     }
 
     // Redo
@@ -494,7 +497,7 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        m_actionManagerInterface->InstallEnabledStateCallback(
+        auto outcome = m_actionManagerInterface->InstallEnabledStateCallback(
             "o3de.action.edit.redo",
             []() -> bool
             {
@@ -502,7 +505,8 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        // TODO - trigger update when the undo stack changes
+        // Trigger update after every undo or redo operation
+        m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.redo");
     }
 
     // Angle Snapping
@@ -1249,6 +1253,32 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
     m_actionManagerInterface->TriggerActionUpdater(EntitySelectionChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::AfterUndoRedo()
+{
+    // Wait one frame for the undo stack to actually be updated.
+    QTimer::singleShot(
+        0,
+        nullptr,
+        [actionManagerInterface = m_actionManagerInterface]()
+        {
+            actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
+        }
+    );
+}
+
+void EditorActionsHandler::OnEndUndo([[maybe_unused]] const char* label, [[maybe_unused]] bool changed)
+{
+    // Wait one frame for the undo stack to actually be updated.
+    QTimer::singleShot(
+        0,
+        nullptr,
+        [actionManagerInterface = m_actionManagerInterface]()
+        {
+            actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
+        }
+    );
 }
 
 void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)

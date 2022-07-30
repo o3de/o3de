@@ -62,6 +62,8 @@ private:
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
         const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
+    virtual void AfterUndoRedo() override;
+    void OnEndUndo(const char* label, bool changed) override;
 
     // ViewportSettingsNotificationBus overrides ...
     void OnGridSnappingChanged(bool enabled) override;
