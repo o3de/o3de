@@ -10,13 +10,16 @@
 set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
 # Name of test impact framework console static library target
-set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
+set(LY_TEST_IMPACT_CONSOLE_NATIVE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
 
 # Name of test impact framework python coverage gem target
 set(LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET "PythonCoverage.Editor.Static")
 
-# Name of test impact framework console target
-set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console.Native")
+# Name of test impact framework native console target
+set(LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET "TestImpact.Frontend.Console.Native")
+
+# Name of test impact framework native console target
+set(LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET "TestImpact.Frontend.Console.Python")
 
 # Directory for test impact artifacts and data
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
@@ -438,8 +441,11 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
 
-    # Test impact analysis framework binary
-    set(tiaf_bin "$<TARGET_FILE:${LY_TEST_IMPACT_CONSOLE_TARGET}>")
+    # Test impact analysis framework native runtime binary
+    set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+
+    # Test impact analysis framework python runtime binary
+    set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
     
     # Substitute config file template with above vars
     ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)

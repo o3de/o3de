@@ -23,6 +23,7 @@ namespace TestImpact
         {
             "common",
             "root",
+            "build",
             "platform",
             "relative_paths",
             "artifact_dir",
@@ -70,6 +71,7 @@ namespace TestImpact
         {
             Common,
             Root,
+            Build,
             PlatformName,
             RelativePaths,
             ArtifactDir,
@@ -154,6 +156,7 @@ namespace TestImpact
     {
         RepoConfig repoConfig;
         repoConfig.m_root = repo[Config::Keys[Config::Root]].GetString();
+        repoConfig.m_build = repo[Config::Keys[Config::Build]].GetString();
         return repoConfig;
     }
 

@@ -27,6 +27,7 @@ namespace TestImpact
     struct RepoConfig
     {
         RepoPath m_root; //!< The absolute path to the repository root.
+        RepoPath m_build; //!< The absolute path to the build configuration's binary output directory.
     };
 
     //! Test impact analysis framework workspace configuration.

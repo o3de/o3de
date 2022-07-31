@@ -40,10 +40,7 @@ namespace TestImpact
 
         ~PythonRuntime();
 
-        bool HasImpactAnalysisData() const
-        {
-            return false;
-        }
+        bool HasImpactAnalysisData() const;
 
     private:
         PythonRuntimeConfig m_config;

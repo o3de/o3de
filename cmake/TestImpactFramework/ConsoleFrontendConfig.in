@@ -10,7 +10,7 @@
     },
     "repo": {
       "root": "${repo_dir}",
-      "tiaf_bin": "${tiaf_bin}"
+      "build": "${bin_dir}"
     },
     "workspace": {
       "temp": {
@@ -71,6 +71,7 @@
     }
   },
   "native": {
+    "runtime_bin": "${native_runtime_bin}",
     "test_engine": {
       "test_runner": {
           "bin": "${native_test_runner_bin}"
@@ -98,6 +99,7 @@
     }
   },
   "python": {
+    "runtime_bin": "${python_runtime_bin}",
     "test_engine": {
       "test_runner": {
           "bin": "${python_cmd}"

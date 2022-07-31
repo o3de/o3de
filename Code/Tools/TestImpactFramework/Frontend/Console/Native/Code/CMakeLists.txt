@@ -28,7 +28,7 @@ ly_add_target(
 
 ly_add_target(
     NAME TestImpact.Frontend.Console.Native EXECUTABLE
-    OUTPUT_NAME tiaf
+    OUTPUT_NAME tiaf_native
     NAMESPACE AZ
     FILES_CMAKE
         testimpactframework_frontend_console_native_files.cmake
