@@ -61,10 +61,10 @@ namespace AssetProcessor
     }
 
     AZStd::shared_ptr<BuilderDataItem> BuilderDataItem::UpdateOrInsertEntry(
-        JobType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
+        TaskType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
     {
-        //! only allowed to insert from builder, with a valid JobType
-        if (m_itemType != ItemType::Builder || entryjobType >= JobType::Max)
+        //! only allowed to insert from builder, with a valid TaskType
+        if (m_itemType != ItemType::Builder || entryjobType >= TaskType::Max)
         {
             return nullptr;
         }
@@ -99,7 +99,7 @@ namespace AssetProcessor
             return false;
         }
 
-        for (int jobTypeIndex = 0; jobTypeIndex < aznumeric_cast<int>(JobType::Max); ++jobTypeIndex)
+        for (int jobTypeIndex = 0; jobTypeIndex < aznumeric_cast<int>(TaskType::Max); ++jobTypeIndex)
         {
             const AZStd::string& jobTypeDisplayName =
                 jobTypeIndex < jobTypeDisplayNames.size() ? jobTypeDisplayNames[jobTypeIndex] : invalidJobTypeDisplayName;
@@ -108,12 +108,12 @@ namespace AssetProcessor
                 AZ_Warning(
                     "Asset Processor",
                     false,
-                    "Invalid job type name. Job type indexed %d in scoped enum JobType does not have a matching display name in "
+                    "Invalid job type name. Job type indexed %d in scoped enum TaskType does not have a matching display name in "
                     "jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderDataItem.cpp.",
                     jobTypeIndex);
             }
 
-            m_children.emplace_back(new BuilderDataItem(ItemType::JobType, jobTypeDisplayName, 0, 0, builderWeakPointer));
+            m_children.emplace_back(new BuilderDataItem(ItemType::TaskType, jobTypeDisplayName, 0, 0, builderWeakPointer));
         }
 
         return true;

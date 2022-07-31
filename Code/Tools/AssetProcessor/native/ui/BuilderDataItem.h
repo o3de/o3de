@@ -19,7 +19,7 @@ namespace AssetProcessor
     class BuilderDataItem
     {
     public:
-        enum class JobType
+        enum class TaskType
         {
             CreateJobs,
             ProcessJob,
@@ -30,7 +30,7 @@ namespace AssetProcessor
         {
             InvisibleRoot,
             Builder,
-            JobType,
+            TaskType,
             Entry,
             Max
         };
@@ -47,10 +47,10 @@ namespace AssetProcessor
         int GetRow() const; 
         //! This method is only called on InvisibleRoot: set the passed-in builder as the only child.
         bool SetBuilderChild(AZStd::shared_ptr<BuilderDataItem> builder);
-        //! This method is only called on Builder: create JobType children.
+        //! This method is only called on Builder: create TaskType children.
         bool InitializeBuilder(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer);
         AZStd::shared_ptr<BuilderDataItem> UpdateOrInsertEntry(
-            JobType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
+            TaskType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
     private:
         void UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff);
 
