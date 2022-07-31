@@ -14,6 +14,7 @@
 #include <TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
 
 namespace TestImpact
 {
@@ -57,7 +58,8 @@ namespace TestImpact
         DeleteFiles(m_artifactDir, "*.xml");
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<PythonTestTarget, TestCaseCoverage>>> PythonTestEngine::
+    TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+        PythonTestEngine::
         InstrumentedRun(
         const AZStd::vector<const PythonTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
@@ -81,5 +83,12 @@ namespace TestImpact
             globalTimeout,
             callback,
             AZStd::nullopt);
+    }
+
+    TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+    PythonTestEngine::NullRun(
+        const AZStd::vector<const PythonTestTarget*>& testTargets) const
+    {
+
     }
 } // namespace TestImpact

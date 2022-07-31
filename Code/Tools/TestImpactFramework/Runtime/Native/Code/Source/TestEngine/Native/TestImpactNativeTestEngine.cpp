@@ -148,7 +148,7 @@ namespace TestImpact
         DeleteFiles(m_artifactDir, "*.xml");
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> NativeTestEngine::RegularRun(
+    TestEngineRegularRunResult<NativeTestTarget> NativeTestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -174,7 +174,7 @@ namespace TestImpact
             );
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>> NativeTestEngine::InstrumentedRun(
+    TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage> NativeTestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,

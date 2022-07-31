@@ -27,7 +27,7 @@ namespace TestImpact
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
     class NativeRegularTestRunner;
-
+    
     //! Provides the front end for performing test enumerations and test runs.
     class NativeTestEngine
     {
@@ -79,7 +79,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>>
+        [[nodiscard]] TestEngineRegularRunResult<NativeTestTarget>
         RegularRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -99,7 +99,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>>
+        [[nodiscard]] TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>
         InstrumentedRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,

@@ -17,6 +17,12 @@
 
 namespace TestImpact
 {
+    template<typename TestTarget>
+    class TestEngineRegularRun;
+
+    template<typename TestTarget, typename Coverage>
+    class TestEngineInstrumentedRun;
+
     //! Callback for when a given test engine job has failed and requires determination of the error code it returned.
     template<typename TestJobRunner> 
     using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
@@ -24,6 +30,12 @@ namespace TestImpact
     //! Callback for when a given test engine job completes.
     template<typename TestTarget>
     using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<TestTarget>& testJob)>;
+
+    template<typename TestTarget>
+    using TestEngineRegularRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<TestTarget>>>;
+
+    template<typename TestTarget, typename Coverage>
+    using TestEngineInstrumentedRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<TestTarget, Coverage>>>;
 
     // Calculate the sequence result by analyzing the state of the test targets that were run.
     template<typename TestEngineJobType>

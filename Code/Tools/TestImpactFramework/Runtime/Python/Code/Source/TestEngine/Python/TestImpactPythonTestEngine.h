@@ -24,6 +24,7 @@ namespace TestImpact
     class PythonTestRunJobInfoGenerator;
     class PythonTestEnumerator;
     class PythonTestRunner;
+    class PythonNullTestRunner;
 
     //! Provides the front end for performing test enumerations and test runs.
     class PythonTestEngine
@@ -36,7 +37,8 @@ namespace TestImpact
         ~PythonTestEngine();
 
         //!
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<PythonTestTarget, TestCaseCoverage>>> InstrumentedRun(
+        [[nodiscard]] TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+        InstrumentedRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::TestFailure testFailurePolicy,
@@ -45,12 +47,17 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
 
+        //!
+        [[nodiscard]] TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+        NullRun(const AZStd::vector<const PythonTestTarget*>& testTargets) const;
+
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
         void DeleteArtifactXmls() const;
 
         AZStd::unique_ptr<PythonTestRunJobInfoGenerator> m_testJobInfoGenerator;
         AZStd::unique_ptr<PythonTestRunner> m_testRunner;
+        AZStd::unique_ptr<PythonNullTestRunner> m_nullTestRunner;
         RepoPath m_artifactDir;
     };
 } // namespace TestImpact
