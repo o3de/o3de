@@ -24,6 +24,8 @@ namespace AZ
     class SettingsRegistryOriginTracker
     {
     public:
+        AZ_TYPE_INFO(SettingsRegistryOriginTracker, "{F6E3B4E5-F8CF-43D8-8609-BC322D9D08C5}");
+
         explicit SettingsRegistryOriginTracker(AZ::SettingsRegistryInterface& registry);
         ~SettingsRegistryOriginTracker();
 
@@ -107,4 +109,4 @@ namespace AZ
         //! Stack containing vectors of keys being added or modified while a file is being merged
         TrackingFilterCallback m_trackingFilter;
     };
-};
+}

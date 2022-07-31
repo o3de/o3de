@@ -473,6 +473,12 @@ namespace AZ
 
         m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
 
+        // Register the Settings Registry Origin Tracker with the AZ Interface system
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
+        }
+
         // Add the Command Line arguments into the SettingsRegistry
         SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
 
