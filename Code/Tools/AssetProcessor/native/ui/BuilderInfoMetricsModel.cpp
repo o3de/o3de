@@ -213,15 +213,19 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        auto sharedParentitem = parentItem.lock();
-        if (sharedParentitem == rootItem || sharedParentitem == nullptr)
+        auto sharedParentItem = parentItem.lock();
+        if (sharedParentItem == rootItem || sharedParentItem == nullptr || rootItem == nullptr)
         {
             return QModelIndex();
         }
 
-        QModelIndex parentIndex = createIndex(sharedParentitem->GetRow(), 0, sharedParentitem.get());
-        Q_ASSERT(checkIndex(parentIndex));
-        return parentIndex;
+        QModelIndex parentIndex = createIndex(sharedParentItem->GetRow(), 0, sharedParentItem.get());
+        if (checkIndex(parentIndex))
+        {
+            return parentIndex;
+        }
+        AZ_Warning("BuilderInfoMetricsModel", false, "invalid parent in BuilderInfoMetricsModel for %s", sharedParentItem->GetName());
+        return QModelIndex();
     }
 
     void BuilderInfoMetricsModel::OnDurationChanged(BuilderDataItem* item)
