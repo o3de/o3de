@@ -44,7 +44,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
-    static QPixmap CreateIconMask(AZStd::string buttonIcon)
+    [[maybe_unused]] static QPixmap CreateIconMask(AZStd::string buttonIcon)
     {
         auto buttonPixmap = QPixmap(QString(buttonIcon.c_str()));
         auto mask = buttonPixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
@@ -58,10 +58,8 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         QAction* action = new QAction();
         action->setCheckable(false);
+        action->setIcon(QIcon(QString(button->m_icon.c_str())));
 
-        auto buttonPixmap = CreateIconMask(button->m_icon);
-        action->setIcon(QIcon(buttonPixmap));
-        
         if (!action)
         {
             return;
@@ -147,9 +145,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
-            auto buttonPixmap = CreateIconMask((*buttonIt)->m_icon);
+            QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
 
-            m_activeButton->setIcon(QIcon(buttonPixmap));
+            m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
         }
 
