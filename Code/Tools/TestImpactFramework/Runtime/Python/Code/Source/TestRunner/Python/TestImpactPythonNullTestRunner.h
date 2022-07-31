@@ -29,12 +29,12 @@ namespace TestImpact
 
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
             const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
-            [[maybe_unused]] StdOutputRouting stdOutRouting,
-            [[maybe_unused]] StdErrorRouting stdErrRouting,
-            [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-            [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
+            StdOutputRouting stdOutRouting,
+            StdErrorRouting stdErrRouting,
+            AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-            [[maybe_unused]] AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
+            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
 
     protected:
         JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override;

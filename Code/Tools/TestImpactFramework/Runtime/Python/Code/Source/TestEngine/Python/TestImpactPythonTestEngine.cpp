@@ -87,8 +87,8 @@ namespace TestImpact
 
     TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
     PythonTestEngine::NullRun(
-        const AZStd::vector<const PythonTestTarget*>& testTargets) const
+        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets) const
     {
-
+        return { TestSequenceResult::Success, {} };
     }
 } // namespace TestImpact

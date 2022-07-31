@@ -44,7 +44,25 @@ namespace TestImpact
         {
             const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
             {
-                return PayloadGenerator(jobDataMap);
+                typename TestJobRunner::PayloadMap runs;
+                for (const auto& [jobId, jobData] : jobDataMap)
+                {
+                    const auto& [meta, jobInfo] = jobData;
+                    if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
+                    {
+                        if (auto outcome = PayloadFactory(*jobInfo, meta); outcome.IsSuccess())
+                        {
+                            runs[jobId] = AZStd::move(outcome.TakeValue());
+                        }
+                        else
+                        {
+                            runs[jobId] = AZStd::nullopt;
+                            AZ_Printf("RunTests", outcome.GetError().c_str());
+                        }
+                    }
+                }
+
+                return runs;
             };
 
             return this->m_jobRunner.Execute(
@@ -58,29 +76,8 @@ namespace TestImpact
         }
 
     protected:
-        virtual typename TestJobRunner::PayloadMap PayloadGenerator(const typename TestJobRunner::JobDataMap& jobDataMap)
-        {
-            typename TestJobRunner::PayloadMap runs;
-            for (const auto& [jobId, jobData] : jobDataMap)
-            {
-                const auto& [meta, jobInfo] = jobData;
-                if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
-                {
-                    if (auto outcome = PayloadFactory(*jobInfo, meta); outcome.IsSuccess())
-                    {
-                        runs[jobId] = AZStd::move(outcome.TakeValue());
-                    }
-                    else
-                    {
-                        runs[jobId] = AZStd::nullopt;
-                        AZ_Printf("RunTests", outcome.GetError().c_str());
-                    }
-                }
-            }
 
-            return runs;
-        }
-
-        virtual typename TestJobRunner::JobPayloadOutcome PayloadFactory(const typename TestJobRunner::JobInfo& jobData, const JobMeta& jobMeta) = 0;
+        virtual typename TestJobRunner::JobPayloadOutcome PayloadFactory(
+            [[maybe_unused]] const typename TestJobRunner::JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) = 0;
     };
 } // namespace TestImpact

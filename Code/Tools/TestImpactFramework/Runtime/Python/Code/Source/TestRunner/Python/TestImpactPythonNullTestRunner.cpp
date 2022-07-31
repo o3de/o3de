@@ -17,12 +17,42 @@ namespace TestImpact
     {
     }
 
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonNullTestRunner::TestJobRunner::Job>> PythonNullTestRunner::RunTests(
+        [[maybe_unused]] const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+        [[maybe_unused]] StdOutputRouting stdOutRouting,
+        [[maybe_unused]] StdErrorRouting stdErrRouting,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
+        [[maybe_unused]] AZStd::optional<TestJobRunner::JobCallback> clientCallback,
+        [[maybe_unused]] AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
+    {
+        AZStd::vector<Job> jobs;
+        jobs.reserve(jobInfos.size());
+
+        for (auto& jobInfo : jobInfos)
+        {
+            if (auto outcome = PayloadFactory(jobInfo, {}); outcome.IsSuccess())
+            {
+                JobMeta meta;
+                meta.m_result = JobResult::ExecutedWithSuccess;
+                Job job(jobInfo, JobMeta{}, outcome.TakeValue());
+                jobs.push_back(job);
+            }
+            else
+            {
+                JobMeta meta;
+                meta.m_result = JobResult::FailedToExecute;
+                Job job(jobInfo, JobMeta{}, {});
+                jobs.push_back(job);
+            }
+        }
+
+        return { ProcessSchedulerResult::Graceful, jobs };
+    }
+
     PythonNullTestRunner::JobPayloadOutcome PythonNullTestRunner::PayloadFactory(
         [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
     {
-        // TODO:
-        // 
-
         return AZ::Failure(AZStd::string("Not implemented"));
     }
 } // namespace TestImpact
