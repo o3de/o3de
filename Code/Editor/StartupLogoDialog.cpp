@@ -78,7 +78,7 @@ CStartupLogoDialog::~CStartupLogoDialog()
     s_pLogoWindow = nullptr;
 }
 
-void CStartupLogoDialog::focusOutEvent(QFocusEvent* event)
+void CStartupLogoDialog::focusOutEvent([[maybe_unused]] QFocusEvent*)
 {
     if (m_dialogType == About)
     {
