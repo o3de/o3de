@@ -20,7 +20,6 @@ namespace ScriptCanvasEditor
     class EditorAssetSystemComponent
         : public AZ::Component
         , public EditorAssetConversionBus::Handler
-        , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(EditorAssetSystemComponent, "{2FB1C848-B863-4562-9C4B-01E18BD61583}");
@@ -38,11 +37,6 @@ namespace ScriptCanvasEditor
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
-        
-        ////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler...
-        void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUuid, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
         ////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
