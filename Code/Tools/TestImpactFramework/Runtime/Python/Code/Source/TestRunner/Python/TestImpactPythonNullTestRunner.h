@@ -24,38 +24,19 @@ namespace TestImpact
     {
     public:
         using TestRunnerWithCoverage = TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>;
-        PythonNullTestRunner();
-    };
 
-    template<>
-    inline PythonNullTestRunner::JobPayloadOutcome PayloadFactory(
-        const PythonNullTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
-    {
-        //AZStd::optional<TestRun> run;
-        //try
-        //{
-        //    run = TestRun(
-        //        JUnit::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
-        //        jobMeta.m_duration.value());
-        //
-        //    // Python tests have a separate coverage file per test case so we will attempt to parse each enumerated test case coverage
-        //    TestCaseCoverage coverage;
-        //    for (const auto& testSuite : run->GetTestSuites())
-        //    {
-        //        for (const auto& testCase : testSuite.m_tests)
-        //        {
-        //            const RepoPath covergeFile = jobData.GetCoverageArtifactPath() / RepoPath(AZStd::string::format("%s.pycoverage", testCase.m_name.c_str()));
-        //            coverage.emplace(
-        //                testCase.m_name,
-        //                TestCoverage(PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestRunnerException>(covergeFile))));
-        //        }
-        //    }
-        //
-        //    return AZ::Success(PythonTestRunner::JobPayload{ run, AZStd::move(coverage) });
-        //}
-        //catch (const Exception& e)
-        //{
-            return AZ::Failure(AZStd::string(e.what()));
-        //}
+        PythonNullTestRunner();
+
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
+            const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+            [[maybe_unused]] StdOutputRouting stdOutRouting,
+            [[maybe_unused]] StdErrorRouting stdErrRouting,
+            [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
+            [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
+            AZStd::optional<TestJobRunner::JobCallback> clientCallback,
+            [[maybe_unused]] AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
+
+    protected:
+        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override;
     };
 } // namespace TestImpact
