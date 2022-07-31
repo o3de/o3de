@@ -35,7 +35,7 @@ namespace UnitTest
         EXPECT_THAT(AZ::Vector3(AZ::Vector2(1.0f, 3.0f)), IsClose(AZ::Vector3(1.0f, 3.0f,0.0f)));
         EXPECT_THAT(AZ::Vector3(AZ::Vector2(1.0f, 3.0f), 6.0f), IsClose(AZ::Vector3(1.0f, 3.0f,6.0f)));
         EXPECT_THAT(AZ::Vector3(AZ::Vector4(1.0f, 3.0f, 5.0f, 2.0f)), IsClose(AZ::Vector3(1.0f, 3.0f, 5.0f)));
-        EXPECT_THAT(AZ::Vector3(Simd::Vec3::LoadImmediate(1.0f, 2.0f, 4.0f)), IsClose(AZ::Vector3(1.0f, 2.0f, 4.0f)));
+        EXPECT_THAT(AZ::Vector3(AZ::Simd::Vec3::LoadImmediate(1.0f, 2.0f, 4.0f)), IsClose(AZ::Vector3(1.0f, 2.0f, 4.0f)));
 
     }
 
