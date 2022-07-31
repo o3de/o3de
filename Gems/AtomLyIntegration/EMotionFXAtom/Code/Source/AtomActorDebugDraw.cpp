@@ -179,6 +179,11 @@ namespace AZ::Render
             RenderTrajectoryPath(debugDisplay, instance, renderActorSettings.m_trajectoryHeadColor, renderActorSettings.m_trajectoryPathColor);
         }
 
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RootMotion))
+        {
+            RenderRootMotion(debugDisplay, instance, AZ::Colors::Red);
+        }
+
         // Render vertex normal, face normal, tagent and wireframe.
         const bool renderVertexNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::VertexNormals);
         const bool renderFaceNormals = CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::FaceNormals);
@@ -1208,5 +1213,21 @@ namespace AZ::Render
             oldLeft = vertices[2];
             oldRight = vertices[3];
         }
+    }
+
+    void AtomActorDebugDraw::RenderRootMotion(AzFramework::DebugDisplayRequests* debugDisplay,
+        const EMotionFX::ActorInstance* actorInstance,
+        const AZ::Color& rootColor)
+    {
+        const AZ::Transform actorTransform = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+
+        // Render two circle around the character position.
+        debugDisplay->SetColor(rootColor);
+        debugDisplay->DrawCircle(actorTransform.GetTranslation(), 1.0f);
+        debugDisplay->DrawCircle(actorTransform.GetTranslation(), 0.05f);
+
+        // Render the character facing direction.
+        const AZ::Vector3 forward = actorTransform.GetBasisY();
+        debugDisplay->DrawArrow(actorTransform.GetTranslation(), actorTransform.GetTranslation() + forward);
     }
 } // namespace AZ::Render

@@ -66,12 +66,15 @@ namespace Multiplayer
         void OnEditorServerProcessCrash() override;
         //! @}
 
-        void DrawConnectionStatus(AzNetworking::ConnectionState connectionState);
+        void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
+        void DrawConnectionStatusLine(const char* line, const AZ::Color& color);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;
+        AzNetworking::IpAddress m_hostIpAddress;
+        int m_currentConnectionsDrawCount = 0;
     };
 }

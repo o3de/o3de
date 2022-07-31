@@ -60,7 +60,7 @@ namespace AZ
             if (m_nativeDescriptorPool != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, nullptr);
+                device.GetContext().DestroyDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, nullptr);
                 m_nativeDescriptorPool = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -71,7 +71,7 @@ namespace AZ
             if (m_nativeDescriptorPool != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkResetDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, 0);
+                device.GetContext().ResetDescriptorPool(device.GetNativeDevice(), m_nativeDescriptorPool, 0);
             }
         }
 
@@ -87,7 +87,8 @@ namespace AZ
             createInfo.pPoolSizes = m_descriptor.m_descriptorPoolSizes.empty() ? nullptr : m_descriptor.m_descriptorPoolSizes.data();
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreateDescriptorPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorPool);
+            const VkResult result =
+                device.GetContext().CreateDescriptorPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorPool);
             AssertSuccess(result);
 
             return ConvertResult(result);
