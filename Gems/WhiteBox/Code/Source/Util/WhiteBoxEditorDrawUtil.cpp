@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include "Util/WhiteBoxEditorDrawUtil.h"
 #include "ViewportSelection/EditorSelectionUtil.h"
 #include "WhiteBox/WhiteBoxToolApi.h"

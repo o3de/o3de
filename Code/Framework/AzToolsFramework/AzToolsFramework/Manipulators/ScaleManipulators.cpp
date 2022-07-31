@@ -158,20 +158,18 @@ namespace AzToolsFramework
         m_lineBoundWidth = lineBoundWidth;
     }
 
-    AZStd::vector<BaseManipulator*> ScaleManipulators::GetManipulators()
+    void ScaleManipulators::VisitManipulators(const ManipulatorVisitCallback&& callback)
     {
-        AZStd::vector<BaseManipulator*> manipulators;
-        for (auto& mainpulator : m_axisScaleManipulators)
+        for (auto& manipulator : m_axisScaleManipulators)
         {
-            if (mainpulator)
+            if (manipulator)
             {
-                manipulators.emplace_back(mainpulator.get());
+                callback(manipulator);
             }
         }
         if (m_uniformScaleManipulator)
         {
-            manipulators.emplace_back(m_uniformScaleManipulator.get());
+            callback(m_uniformScaleManipulator);
         }
-        return manipulators;
     }
 } // namespace AzToolsFramework

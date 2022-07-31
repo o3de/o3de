@@ -7,15 +7,11 @@
  */
 
 #include "EditorWhiteBoxTransformMode.h"
-#include "AzCore/std/smart_ptr/make_shared.h"
 #include "EditorWhiteBoxComponentModeCommon.h"
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Util/WhiteBoxEditorDrawUtil.h"
 
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Quaternion.h>
-#include <AzCore/std/base.h>
-#include <AzCore/std/optional.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Manipulators/LinearManipulator.h>
@@ -146,9 +142,8 @@ namespace WhiteBox
                 .SetTip(SwitchToTranslationModeDesc)
                 .SetEntityComponentIdPair(entityComponentIdPair)
                 .SetCallback(
-                    [cluserId = m_transformClusterId, buttonId = m_transformTranslateButtonId]()
+                    [clusterId = m_transformClusterId, buttonId = m_transformTranslateButtonId]()
                     {
-                        
                             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                                 AzToolsFramework::ViewportUi::DefaultViewportId,
                                 [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
@@ -157,7 +152,7 @@ namespace WhiteBox
                                     {
                                         event->PressButton(clusterId, buttonId);
                                     },
-                                cluserId,
+                                clusterId,
                                 buttonId);
                     }),
             AzToolsFramework::ActionOverride()
@@ -167,7 +162,7 @@ namespace WhiteBox
                 .SetTip(SwitchToRotationModeDesc)
                 .SetEntityComponentIdPair(entityComponentIdPair)
                 .SetCallback(
-                    [cluserId = m_transformClusterId, buttonId = m_transformRotateButtonId]()
+                    [clusterId = m_transformClusterId, buttonId = m_transformRotateButtonId]()
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -177,7 +172,7 @@ namespace WhiteBox
                                     {
                                         event->PressButton(clusterId, buttonId);
                                     },
-                            cluserId,
+                            clusterId,
                             buttonId);
                     }),
             AzToolsFramework::ActionOverride()
@@ -187,7 +182,7 @@ namespace WhiteBox
                 .SetTip(SwitchToScaleModeDesc)
                 .SetEntityComponentIdPair(entityComponentIdPair)
                 .SetCallback(
-                    [cluserId = m_transformClusterId, buttonId = m_transformScaleButtonId]()
+                    [clusterId = m_transformClusterId, buttonId = m_transformScaleButtonId]()
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -197,7 +192,7 @@ namespace WhiteBox
                                     {
                                         event->PressButton(clusterId, buttonId);
                                     },
-                            cluserId,
+                            clusterId,
                             buttonId);
                     })
         };
@@ -282,23 +277,14 @@ namespace WhiteBox
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-        const bool mouseOverMainpulator = ([&]() 
-            {
-                if(m_manipulator) 
-                {
-                    for(auto& manipulator: m_manipulator->GetManipulators()) 
-                    {
-                        if(manipulator->MouseOver()) 
-                        {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-        )();
+        bool mouseOverManipulator = false;
+        if(m_manipulator) {
+            m_manipulator->VisitManipulators([&mouseOverManipulator](auto manipulator) {
+                mouseOverManipulator = manipulator->MouseOver() || mouseOverManipulator;
+            });
+        }
 
-        auto closestIntersection = mouseOverMainpulator
+        auto closestIntersection = mouseOverManipulator
             ? GeometryIntersection::None
             : FindClosestGeometryIntersection(edgeIntersection, polygonIntersection, vertexIntersection);
         m_polygonIntersection.reset();
@@ -381,7 +367,6 @@ namespace WhiteBox
         default:
             break;
         }
-        
     }
 
     void TransformMode::UpdateTransformHandles(WhiteBoxMesh* mesh)

@@ -13,12 +13,10 @@
 #include "Viewport/WhiteBoxManipulatorViews.h"
 
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <WhiteBox/WhiteBoxToolApi.h>
 
 namespace AZ
@@ -85,6 +83,7 @@ namespace WhiteBox
             const AZStd::optional<VertexIntersection>& vertexIntersection);
 
     private:
+        //! shared data that is used between the different transformation modes Translation/Rotation/Scale.
         struct VertexTransformSelection
         {
             AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();

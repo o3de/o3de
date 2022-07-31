@@ -238,28 +238,28 @@ namespace AzToolsFramework
             m_surfaceManipulator->SetNonUniformScale(nonUniformScale);
         }
     }
-    AZStd::vector<BaseManipulator*> TranslationManipulators::GetManipulators()
+
+    void TranslationManipulators::VisitManipulators(const ManipulatorVisitCallback&& callback)
     {
         AZStd::vector<BaseManipulator*> manipulators;
-        for (auto& mainpulator : m_linearManipulators)
+        for (auto& manipulator : m_linearManipulators)
         {
-            if (mainpulator)
+            if (manipulator)
             {
-                manipulators.emplace_back(mainpulator.get());
+                callback(manipulator);
             }
         }
-        for (auto& mainpulator : m_planarManipulators)
+        for (auto& manipulator : m_planarManipulators)
         {
-            if (mainpulator)
+            if (manipulator)
             {
-                manipulators.emplace_back(mainpulator.get());
+                callback(manipulator);
             }
         }
         if (m_surfaceManipulator)
         {
-            manipulators.emplace_back(m_surfaceManipulator.get());
+            callback(m_surfaceManipulator);
         }
-        return manipulators;
     }
 
     void TranslationManipulators::SetAxes(

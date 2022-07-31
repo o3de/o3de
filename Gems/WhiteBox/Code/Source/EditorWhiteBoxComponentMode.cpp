@@ -64,7 +64,7 @@ namespace WhiteBox
         EditorWhiteBoxComponentNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
         // default behavior for querying modifier keys (ask the QApplication)
-        m_keyboardMofifierQueryFn = []()
+        m_keyboardModifierQueryFn = []()
         {
             return AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         };
@@ -322,7 +322,7 @@ namespace WhiteBox
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const auto modifiers = m_keyboardMofifierQueryFn();
+        const auto modifiers = m_keyboardModifierQueryFn();
 
         // handle mode switch
         {
@@ -468,7 +468,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::OverrideKeyboardModifierQuery(
         const KeyboardModifierQueryFn& keyboardModifierQueryFn)
     {
-        m_keyboardMofifierQueryFn = keyboardModifierQueryFn;
+        m_keyboardModifierQueryFn = keyboardModifierQueryFn;
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(

@@ -44,7 +44,7 @@ namespace AzToolsFramework
 
         //! Sets the bound width to use for the circle (torus) of an angular manipulator.
         void SetCircleBoundWidth(float circleBoundWidth);
-        virtual AZStd::vector<BaseManipulator*> GetManipulators() override;
+        virtual void VisitManipulators(const ManipulatorVisitCallback&& callback) override;
 
     private:
         AZ_DISABLE_COPY_MOVE(RotationManipulators)

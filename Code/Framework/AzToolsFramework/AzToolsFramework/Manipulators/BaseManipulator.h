@@ -301,7 +301,11 @@ namespace AzToolsFramework
         void SetLocalPosition(const AZ::Vector3& localPosition);
         void SetLocalOrientation(const AZ::Quaternion& localOrientation);
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
-        virtual AZStd::vector<BaseManipulator*> GetManipulators() = 0;
+        
+        //! Callback function that is used to visit every manipulator in this group of Manipulators
+        using ManipulatorVisitCallback = AZStd::function<void(const AZStd::shared_ptr<BaseManipulator>&)>;
+
+        virtual void VisitManipulators(const ManipulatorVisitCallback&& callback) = 0;
 
     protected:
         //! Common processing for base manipulator type - Implement for all
