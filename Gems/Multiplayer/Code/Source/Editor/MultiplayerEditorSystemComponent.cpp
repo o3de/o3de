@@ -400,6 +400,13 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
+        if (m_serverProcessWatcher && !m_serverProcessWatcher->IsProcessRunning())
+        {
+            AZ::TickBus::Handler::BusDisconnect();
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorServerProcessCrash);
+            AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process crashed.")
+        }
+
         if (m_serverProcessTracePrinter)
         {
             m_serverProcessTracePrinter->Pump();

@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -60,6 +61,8 @@ namespace Multiplayer
         //! Notification when the Editor multiplayer play mode is over; therefore ending the multiplayer simulation.
         virtual void OnPlayModeEnd() {}
 
+        //! Notification when the server process launched by the editor has crashed (no longer running).
+        virtual void OnEditorServerProcessCrash(){}
     };
     using MultiplayerEditorServerNotificationBus = AZ::EBus<MultiplayerEditorServerNotifications>;
 } // namespace Multiplayer
