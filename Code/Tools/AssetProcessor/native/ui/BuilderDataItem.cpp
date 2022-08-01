@@ -75,8 +75,8 @@ namespace AssetProcessor
             return nullptr;
         }
 
-        m_children.push_back(itemToBeInserted);
-        m_childNameToIndex[itemToBeInserted->GetName()] = aznumeric_cast<int>(m_children.size() - 1);
+        m_childNameToIndex[itemToBeInserted->GetName()] = aznumeric_cast<int>(m_children.size());
+        m_children.push_back(AZStd::move(itemToBeInserted));
         return m_children.back();
     }
 
