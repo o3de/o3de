@@ -105,9 +105,11 @@ namespace PhysX
         const AzPhysics::RigidBodyConfiguration& baseConfig,
         const RigidBodyConfiguration& physxSpecificConfig,
         AzPhysics::SceneHandle sceneHandle)
-        : m_physxSpecificConfiguration(physxSpecificConfig)
+        : m_configuration(baseConfig)
+        , m_physxSpecificConfiguration(physxSpecificConfig)
+        , m_attachedSceneHandle(sceneHandle)
     {
-        RigidBodyComponent::RigidBodyComponent(baseConfig, sceneHandle);
+        InitPhysicsTickHandler();
     }
 
     void RigidBodyComponent::Init()
