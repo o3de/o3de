@@ -126,10 +126,11 @@ namespace PythonCoverage
             return;
         }
 
-        contents = m_parentScriptPath + "\n";
-        contents += m_testFixture + "\n";
-        contents = m_testCase + "\n";
+        contents += m_parentScriptPath + "\n";
         contents += m_scriptPath + "\n";
+        contents += m_testFixture + "\n";
+        contents += m_testCase + "\n";
+
         for (const auto& coveringModule : coveringModules)
         {
             contents += AZStd::string::format("%s\n", coveringModule.c_str());
@@ -245,7 +246,7 @@ namespace PythonCoverage
         m_testCase = testCaseMatches[3];
         m_entityComponents.clear();
         m_scriptPath = filename;
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", m_testCase);
+        const auto coverageFile = m_coverageDir / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
         m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }
