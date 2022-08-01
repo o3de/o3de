@@ -160,8 +160,6 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#pragma optimize("", off)
-
 static const char O3DEEditorClassName[] = "O3DEEditorClass";
 static const char O3DEApplicationName[] = "O3DEApplication";
 
@@ -4032,8 +4030,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
     return ret;
 }
-#pragma optimize("", on)
-
 
 AZ_DECLARE_MODULE_INITIALIZATION
 
