@@ -6,7 +6,8 @@
  */
 
 #include <ProjectUtils.h>
-#include <ProjectManagerDefs.h>
+#include <PythonBindingsInterface.h>
+
 #include <QProcessEnvironment>
 #include <QDir>
 

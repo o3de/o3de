@@ -6,7 +6,6 @@
  */
 
 #include <ProjectUtils.h>
-
 #include <PythonBindingsInterface.h>
 
 #include <QDir>
