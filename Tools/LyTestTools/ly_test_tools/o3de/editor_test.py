@@ -885,9 +885,13 @@ class EditorTestSuite:
         test_result = None
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))            
+        class_name = str.split(regex_result.group(1), ".")[-1:] 
+        test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
         cmdline = [
             "--runpythontest", test_filename,
-            f"-pythontestcase={request.node.name}",
+            f"-pythontestcase={test_case_name}",
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
@@ -974,14 +978,16 @@ class EditorTestSuite:
         # We create a files containing a semicolon separated scipts and test cases for the Editor to read
         test_script_list = ""
         test_case_list = ""
+
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
         for test_spec in test_spec_list:
             # Test script
             test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
 
             # Test case
-            regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))
-            class_name = str.split(regex_result.group(1), ".")[-2:]
-            test_case_list += f"{class_name[0]}.{class_name[1]};"
+            regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))            
+            class_name = str.split(regex_result.group(1), ".")[-1:]
+            test_case_list += f"{'::'.join([test_case_prefix, class_name[0]])};"
 
         # Remove the trailing semicolon from the last entry
         test_script_list = test_script_list[:-1]
