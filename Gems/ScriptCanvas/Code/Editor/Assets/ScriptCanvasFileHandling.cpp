@@ -156,24 +156,31 @@ namespace ScriptCanvasFileHandlingCpp
 
         for (auto& dependentAsset : dependentAssets)
         {
-            // check the root if it is loaded already, and if not skip the load step, just add the value to the dependences at this step
-            if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset))
+            // do not count locally defined functions as dependencies
+            if (!result.m_source.AnyEquals(dependentAsset))
             {
-                result.m_dependencies.push_back(*sourceTreeOptional);
-            }
-            else
-            {
-                auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset);
-                if (!loadDependentOutcome.IsSuccess())
+                // check at the level root if the dependency is loaded already...
+                if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset))
                 {
-                    return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
-                        , dependentAsset.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                    // ...and if so, skip the load step, just add the value to the dependences at this step...
+                    result.m_dependencies.push_back(*sourceTreeOptional);
+                }
+                else
+                {
+                    // ...and if not, load and add the value to the dependences at this step...
+                    auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset);
+                    if (!loadDependentOutcome.IsSuccess())
+                    {
+                        return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s: %s"
+                            , dependentAsset.ToString().c_str(), loadDependentOutcome.GetError().c_str()));
+                    }
+
+                    result.m_dependencies.push_back(loadDependentOutcome.TakeValue());
                 }
 
-                result.m_dependencies.push_back(loadDependentOutcome.TakeValue());
+                // ...and in either case, assign the parents to properly get back to the root when necessary.
+                result.m_dependencies.back().AssignParents(result);
             }
-
-            result.m_dependencies.back().AssignParents(result);
         }
 
         return AZ::Success(result);

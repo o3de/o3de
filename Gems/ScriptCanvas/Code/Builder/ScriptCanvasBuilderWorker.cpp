@@ -45,6 +45,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Creating Job: %s", fullPath.c_str());
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+        const_cast<Worker*>(this)->m_sourceUuid = request.m_sourceFileUUID;
 
         const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
@@ -120,7 +121,7 @@ namespace ScriptCanvasBuilder
             if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
             {
                 const auto* subgraphAsset = reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
-                if (subgraphAsset->GetId().IsValid())
+                if (subgraphAsset->GetId().IsValid() && subgraphAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = subgraphAsset->GetId().m_guid;
@@ -132,7 +133,7 @@ namespace ScriptCanvasBuilder
             else if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>>())
             {
                 const auto* eventAsset = reinterpret_cast<AZ::Data::Asset<const ScriptEvents::ScriptEventsAsset>*>(instancePointer);
-                if (eventAsset->GetId().IsValid())
+                if (eventAsset->GetId().IsValid() && eventAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = eventAsset->GetId().m_guid;

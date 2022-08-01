@@ -885,10 +885,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedDivideByNumber)
     RunUnitTestGraph("LY_SC_UnitTest_DivideByNumber");
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedUseLocallyDefinedFunction)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_UseLocallyDefinedFunction", ExecutionMode::Interpreted);
-}
+// move to in-editor test
+// TEST_F(ScriptCanvasTestFixture, InterpretedUseLocallyDefinedFunction)
+// {
+//     RunUnitTestGraph("LY_SC_UnitTest_UseLocallyDefinedFunction", ExecutionMode::Interpreted);
+//}
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPathologicalFlowOfControl)
 {

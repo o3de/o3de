@@ -1634,7 +1634,7 @@ namespace ScriptCanvas
                     {
                         if (IsUserFunctionCallLocallyDefined(execution))
                         {
-                            m_dotLua.Write("%s%.*s", lexicalScope.m_namespaces.back().c_str(),
+                            m_dotLua.Write("%s%.*s", m_tableName.c_str(),
                                 aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
                         }
                         else

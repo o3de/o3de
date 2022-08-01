@@ -90,8 +90,7 @@ namespace ParsingUtilitiesCpp
             m_result += GetSymbolName(execution->GetSymbol());
             m_result += "]";
 
-            size_t childCount = execution->GetChildrenCount();
-
+            const size_t childCount = execution->GetChildrenCount();
             if (childCount != 0)
             {
                 m_result += AZStd::string::format(" # children: %zu", childCount);
@@ -101,6 +100,40 @@ namespace ParsingUtilitiesCpp
             {
                 m_result += " <<<< MARKER <<<< ";
             }
+
+            const auto inputCount = execution->GetInputCount();
+            if (inputCount != 0)
+            {
+                for (size_t inputIdx = 0; inputIdx != inputCount; ++inputIdx)
+                {
+                    m_result += " Input:\n";
+
+                    for (int i = 0; i < level; ++i)
+                    {
+                        m_result += "\t";
+                    }
+
+                    auto& input = execution->GetInput(inputIdx);
+                    if (input.m_slot && input.m_value)
+                    {
+                        m_result += AZStd::string::format
+                            ( "%2d: Slot Name: %s, Type: %s, Value: %s"
+                            , inputIdx
+                            , input.m_slot->GetName().c_str()
+                            , Data::GetName(input.m_value->m_datum.GetType()).c_str()
+                            , input.m_value->m_datum.ToString().c_str());
+                    }
+                    else if (input.m_value)
+                    {
+                        m_result += AZStd::string::format
+                            ( "%2d:, Value Name: %s, Type: %s, Value: %s"
+                            , inputIdx
+                            , input.m_value->m_name.c_str()
+                            , Data::GetName(input.m_value->m_datum.GetType()).c_str()
+                            , input.m_value->m_datum.ToString().c_str());
+                    }
+                }
+            }            
         }
 
         void EvaluateChildPre(ExecutionTreeConstPtr, const Slot*, size_t, int)
@@ -1103,6 +1136,12 @@ namespace ScriptCanvas
 
             const auto& source = model.GetSource();
 
+            auto assetId = functionCallNode->GetAssetId();
+            if (source.m_assetId.m_guid == assetId.m_guid)
+            {
+                return true;
+            }
+
             // move check later after testing
             AZ::IO::Path nodeSourcePath = functionCallNode->GetAssetHint();
             nodeSourcePath = nodeSourcePath.MakePreferred().ReplaceExtension();
@@ -1114,14 +1153,7 @@ namespace ScriptCanvas
                 return true;
             }
 
-            auto assetId = functionCallNode->GetAssetId();
-            if (source.m_assetId.m_guid == assetId.m_guid)
-            {
-                return true;
-            }
-
-            // just for unit tests, can NOT be submitted
-            return true;
+            return false;
         }
 
         bool IsUserFunctionCallLocallyDefined(const ExecutionTreeConstPtr& execution)
