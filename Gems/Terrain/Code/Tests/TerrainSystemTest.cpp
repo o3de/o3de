@@ -925,6 +925,74 @@ namespace UnitTest
         EXPECT_NEAR(tagWeight.m_weight, tagWeight1.m_weight, 0.01f);
     }
 
+    TEST_F(TerrainSystemTest, GetSurfacePointAndIndividualQueriesProduceSameResults)
+    {
+        // Verify that the height / normal / surface weights returned from GetSurfacePoint matches the results
+        // that we get from individually querying GetHeight, GetNormal, and GetSurfaceWeights.
+        // We don't need to validate all combinations because we have separate unit tests that validate equivalent results between
+        // the different variations of each individual API. The transitive property means that if those are equal and the results here
+        // are equal, then all the combinations will be equal as well.
+
+        // Set up the arbitrary terrain world parameters that we'll use for verifying our queries match.
+        const float terrainSize = 32.0f;
+        const float terrainQueryResolution = 1.0f;
+        const uint32_t terrainNumSurfaces = 3;
+        const AZ::Aabb terrainWorldBounds =
+            AZ::Aabb::CreateFromMinMax(AZ::Vector3(-terrainSize / 2.0f), AZ::Vector3(terrainSize / 2.0f));
+
+        // Set up the query bounds and step size to use for selecting the points to query and compare.
+        const AZ::Aabb queryBounds = terrainWorldBounds;
+        const AZ::Vector2 queryStepSize = AZ::Vector2(terrainQueryResolution / 2.0f);
+
+        CreateTestTerrainSystem(terrainWorldBounds, terrainQueryResolution, terrainNumSurfaces);
+
+        for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
+        {
+            for (float y = queryBounds.GetMin().GetY(); y < queryBounds.GetMax().GetY(); y += queryStepSize.GetY())
+            {
+                for (float x = queryBounds.GetMin().GetX(); y < queryBounds.GetMax().GetX(); y += queryStepSize.GetX())
+                {
+                    AZ::Vector3 queryPosition(x, y, 0.0f);
+
+                    // GetHeight
+                    float expectedHeight = terrainWorldBounds.GetMin().GetZ();
+                    bool heightExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        expectedHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeight, queryPosition, sampler, &heightExists);
+
+                    // GetNormal
+                    AZ::Vector3 expectedNormal = AZ::Vector3::CreateAxisZ();
+                    bool normalExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                        expectedNormal, &AzFramework::Terrain::TerrainDataRequests::GetNormal, queryPosition, sampler, &normalExists);
+
+                    // GetSurfaceWeights
+                    AzFramework::SurfaceData::SurfaceTagWeightList expectedWeights;
+                    bool weightsExist = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                        &AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeights,
+                        queryPosition, expectedWeights, sampler, &weightsExist);
+
+                    // GetSurfacePoint
+                    AzFramework::SurfaceData::SurfacePoint surfacePoint;
+                    bool pointExists = false;
+                    AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+                        &AzFramework::Terrain::TerrainDataRequests::GetSurfacePoint, queryPosition, surfacePoint, sampler, &pointExists);
+
+                    // Verify that all the results match.
+                    EXPECT_EQ(heightExists, pointExists);
+                    EXPECT_EQ(expectedHeight, surfacePoint.m_position.GetZ());
+                    EXPECT_THAT(expectedNormal, UnitTest::IsClose(surfacePoint.m_normal));
+                    EXPECT_EQ(expectedWeights, surfacePoint.m_surfaceTags);
+                }
+            }
+        }
+
+        DestroyTestTerrainSystem();
+    }
+
     TEST_F(TerrainSystemTest, TerrainProcessHeightsFromListWithBilinearSamplers)
     {
         // This repeats the same test as TerrainHeightQueriesWithBilinearSamplersUseQueryGridToInterpolate
