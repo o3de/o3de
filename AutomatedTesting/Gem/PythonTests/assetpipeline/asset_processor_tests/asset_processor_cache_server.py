@@ -80,7 +80,7 @@ class TestsAssetProcessorGUI_Windows(object):
                 if name.startswith(prefix):
                     fingerprint = name[(len(prefix)):]
                     result[fingerprint] = name
-        return result
+        return result, files
 
     def cycle_asset_processor(self, asset_processor, cache_mode, cache_folder, cache_pattern_name):
         """
@@ -152,8 +152,8 @@ class TestsAssetProcessorGUI_Windows(object):
         assert os.path.exists(product_asset_b), "{product_asset_b} does not exist"
 
         # make sure the product asset archive was created
-        results = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
-        assert len(results.keys()) == 1, f"{results} should have exactly one entry"
+        results, files = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        assert len(results.keys()) == 1, f"{results} should have exactly one entry; found files {files}"
 
         # 5. Make a local change
         # Modify contents of test asset in project folder
@@ -174,5 +174,5 @@ class TestsAssetProcessorGUI_Windows(object):
         # Result(s):
         # 1. The client's change is now the definitive edition of the source asset
         # 2. The cache was updated with the local client change
-        results = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
-        assert len(results.keys()) == 2, f"{results} should have exactly two entries"
+        results, files = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        assert len(results.keys()) == 2, f"{results} should have exactly two entries; found files {files}"
