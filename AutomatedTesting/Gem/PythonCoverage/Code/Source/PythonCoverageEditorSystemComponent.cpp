@@ -6,14 +6,15 @@
  *
  */
 
+#include <PythonCoverageEditorSystemComponent.h>
+
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include <PythonCoverageEditorSystemComponent.h>
+#include <AzCore/std/string/regex.h>
 
 namespace PythonCoverage
 {
@@ -99,9 +100,7 @@ namespace PythonCoverage
             AZ_Error(LogCallSite, false, "Could not parse test impact analysis framework config file data, JSON has errors");
             return m_coverageState;
         }
-
-        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
-
+        
         // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
 
@@ -125,8 +124,11 @@ namespace PythonCoverage
             return;
         }
 
-        contents = testCase + "\n";
+        contents += m_parentScriptPath + "\n";
         contents += m_scriptPath + "\n";
+        contents += m_testFixture + "\n";
+        contents += m_testCase + "\n";
+
         for (const auto& coveringModule : coveringModules)
         {
             contents += AZStd::string::format("%s\n", coveringModule.c_str());
@@ -214,7 +216,7 @@ namespace PythonCoverage
             WriteCoverageFile();
             m_coverageState = CoverageState::Idle;
         }
-        
+
         if (testCase.empty())
         {
             // We need to be able to pinpoint the coverage data to the specific test case names otherwise we will not be able
@@ -223,9 +225,26 @@ namespace PythonCoverage
             return;
         }
 
+        const auto matcherPattern = AZStd::regex("(.*)::(.*)::(.*)");
+        const auto strTestCase = AZStd::string(testCase);
+        AZStd::smatch testCaseMatches;
+        if (!AZStd::regex_search(strTestCase, testCaseMatches, matcherPattern))
+        {
+            AZ_Error(
+                LogCallSite,
+                false,
+                "The test case name '%s' did not comply to the format expected by the coverage gem "
+                "'parent_script_path::fixture_name::test_case_name', coverage data gathering will be disabled for this test",
+                strTestCase.c_str());
+            return;
+        }
+
+        m_parentScriptPath = testCaseMatches[1];
+        m_testFixture = testCaseMatches[2];
+        m_testCase = testCaseMatches[3];
         m_entityComponents.clear();
         m_scriptPath = filename;
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
+        const auto coverageFile = m_coverageDir / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
         m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }

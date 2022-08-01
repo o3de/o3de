@@ -105,12 +105,10 @@
           "bin": "${python_cmd}"
       }
     },
-    "artifact" {
-      "coverage": {
-        "fixture_placeholder": "PlaceholderFixture",
-        "test_case_placeholder": "PlaceholderTestCase"
+    "artifact": { 
+      "result": {
+        "external_run_output": "${PYTEST_XML_OUTPUT_DIR}"
       }
-    },
     "target": {
       "exclude": [
       ]
