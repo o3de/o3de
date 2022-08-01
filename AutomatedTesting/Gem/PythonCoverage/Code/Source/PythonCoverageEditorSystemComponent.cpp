@@ -16,8 +16,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
 
-#pragma optimize("", off)
-
 namespace PythonCoverage
 {
     static constexpr const char* const LogCallSite = "PythonCoverageEditorSystemComponent";
@@ -252,5 +250,3 @@ namespace PythonCoverage
         m_coverageState = CoverageState::Gathering;
     }
 } // namespace PythonCoverage
-
-#pragma optimize("", on)
