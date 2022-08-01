@@ -12,9 +12,6 @@
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     namespace Components
@@ -80,21 +77,5 @@ namespace AzToolsFramework
                 jsonRegistration->Serializer<SelectionComponentSerializer>()->HandlesType<SelectionComponent>();
             }
         }
-
-        void SelectionComponent::Activate()
-        {
-            int i;
-            i = 0;
-        }
-
-        void SelectionComponent::Deactivate()
-        {
-            int i;
-            i = 0;
-        }
-
     } // namespace Components
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

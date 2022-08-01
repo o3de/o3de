@@ -14,16 +14,14 @@ namespace AzToolsFramework
 {
     namespace Components
     {
+        // @deprecated - SelectionComponent has been deprecated and is no longer instantiated.
+        // This type is being retained to handle legacy data serialization.
         class SelectionComponent : public EditorComponentBase
         {
         public:
             AZ_COMPONENT(SelectionComponent, "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}", EditorComponentBase)
             SelectionComponent() = default;
             ~SelectionComponent() override = default;
-
-            // delete me
-            void Activate() override;
-            void Deactivate() override;
 
         private:
             static void Reflect(AZ::ReflectContext* context);
