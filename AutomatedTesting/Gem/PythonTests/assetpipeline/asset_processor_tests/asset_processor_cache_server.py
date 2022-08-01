@@ -70,6 +70,18 @@ class TestsAssetProcessorGUI_Windows(object):
                     return sha1.hexdigest()
                 sha1.update(data)
 
+    def find_archive_parts(self, path, prefix):
+        """
+        Finds the files that start with a certain prefix inside a path folder
+        """
+        result = {}
+        for _, _, files in os.walk(path):
+            for name in files:
+                if name.startswith(prefix):
+                    fingerprint = name[(len(prefix)):]
+                    result[fingerprint] = name
+        return result
+
     def cycle_asset_processor(self, asset_processor, cache_mode, cache_folder, cache_pattern_name):
         """
         This launches the Asset Processor with the Asset Cache Server mode either enabled or inactive
@@ -138,7 +150,10 @@ class TestsAssetProcessorGUI_Windows(object):
         # check that product entries exist (sanity checks)
         assert os.path.exists(product_asset_a), "{product_asset_a} does not exist"
         assert os.path.exists(product_asset_b), "{product_asset_b} does not exist"
-        assert os.path.exists(asset_cache_target_folder), "{asset_cache_target_folder} archive folder does not exist"
+
+        # make sure the product asset archive was created
+        results = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        assert len(results.keys()) == 1, f"{results} should have exactly one entry"
 
         # 5. Make a local change
         # Modify contents of test asset in project folder
@@ -159,7 +174,5 @@ class TestsAssetProcessorGUI_Windows(object):
         # Result(s):
         # 1. The client's change is now the definitive edition of the source asset
         # 2. The cache was updated with the local client change
-        target_archive_a = os.path.join(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_1169097851.zip')
-        target_archive_b = os.path.join(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_1169097851.zip')
-        assert os.path.exists(target_archive_a), "{target_archive_a} does not exist"
-        assert os.path.exists(target_archive_b), "{target_archive_b} does not exist"
+        results = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        assert len(results.keys()) == 2, f"{results} should have exactly two entries"
