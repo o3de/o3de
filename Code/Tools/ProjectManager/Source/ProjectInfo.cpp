@@ -45,6 +45,14 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
+        if (m_engineName != rhs.m_engineName)
+        {
+            return false;
+        }
+        if (m_enginePath != rhs.m_enginePath)
+        {
+            return false;
+        }
         if (m_displayName != rhs.m_displayName)
         {
             return false;
