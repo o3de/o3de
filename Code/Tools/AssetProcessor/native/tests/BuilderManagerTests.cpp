@@ -28,10 +28,10 @@ namespace UnitTests
         ASSERT_EQ(bm.GetBuilderCreationCount(), 1);
 
         // Save off the uuid of the CreateJobs builder for later
-        auto createJobsBuilderUuid = bm.GetBuilder(BuilderPurpose::CreateJobs)->GetUuid();
+        auto createJobsBuilderUuid = bm.GetBuilder(AssetProcessor::BuilderPurpose::CreateJobs)->GetUuid();
 
         constexpr int NumberOfBuilders = 15;
-        AZStd::vector<BuilderRef> builders;
+        AZStd::vector<AssetProcessor::BuilderRef> builders;
 
         for (int i = 0; i < NumberOfBuilders; ++i)
         {
@@ -61,7 +61,7 @@ namespace UnitTests
 
     TestBuilderManager::TestBuilderManager(ConnectionManager* connectionManager): BuilderManager(connectionManager)
     {
-        TestBuilderManager::AddNewBuilder(BuilderPurpose::CreateJobs);
+        TestBuilderManager::AddNewBuilder(AssetProcessor::BuilderPurpose::CreateJobs);
     }
 
     int TestBuilderManager::GetBuilderCreationCount() const
@@ -69,7 +69,7 @@ namespace UnitTests
         return m_connectionCounter;
     }
 
-    AZStd::shared_ptr<AssetProcessor::Builder> TestBuilderManager::AddNewBuilder(BuilderPurpose purpose)
+    AZStd::shared_ptr<AssetProcessor::Builder> TestBuilderManager::AddNewBuilder(AssetProcessor::BuilderPurpose purpose)
     {
         auto uuid = AZ::Uuid::CreateRandom();
         auto builder = AZStd::make_shared<TestBuilder>(m_quitListener, uuid, ++m_connectionCounter);

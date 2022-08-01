@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/parallel/binary_semaphore.h>
 #include <utilities/assetUtils.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
