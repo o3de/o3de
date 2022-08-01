@@ -10,6 +10,6 @@
 #include <Atom/RHI.Loader/Glad/Vulkan_Platform.h>
 #include <glad/vulkan.h>
 
-#define VK_EXTENSION_SUPPORTED(_Extension) (GLAD_VK_ ## _Extension == 1)
+#define VK_EXTENSION_SUPPORTED(_Extension) (VK_ ## _Extension == 1)
 #define VK_INSTANCE_EXTENSION_SUPPORTED(_Extension) VK_EXTENSION_SUPPORTED(_Extension)
 #define VK_DEVICE_EXTENSION_SUPPORTED(_Extension) VK_EXTENSION_SUPPORTED(_Extension)

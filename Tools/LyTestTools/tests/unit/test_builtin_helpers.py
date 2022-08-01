@@ -130,7 +130,7 @@ class TestBuiltinHelpers(object):
 
         assert setup_test == mock_workspace
         assert mock_setup.call_count == 1
-        mock_workspace.artifact_manager.set_test_name.assert_called_with(
+        mock_workspace.artifact_manager.set_dest_path.assert_called_with(
             test_name=mock_test_name, amount=mock_test_amount)
 
         # Teardown not tested separately due to patched MockedAbstractResourceLocator creating a StopIteration error on Linux
