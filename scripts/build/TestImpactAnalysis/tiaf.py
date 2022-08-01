@@ -72,6 +72,8 @@ class TestImpact:
 
                 # Historic Data Handling:
                 # This flag is used to help handle our corner cases if we have historic data.
+                # NOTE: need to draft in failing tests or only update upon success otherwise reruns for failed runs will have the same last commit
+                # hash as the commit and generate an empty changelist
                 self._can_rerun_with_instrumentation = True
                 if self._persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
@@ -253,12 +255,12 @@ class TestImpact:
         try:
             with open(config_file, "r") as config_data:
                 config = json.load(config_data)
-                self._repo_dir = config["repo"]["root"]
+                self._repo_dir = config["common"]["repo"]["root"]
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = pathlib.Path(config["repo"]["tiaf_bin"])
+                self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
+                self._tiaf_bin = pathlib.Path(config["common"]["repo"]["tiaf_bin"])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -268,9 +270,9 @@ class TestImpact:
                         f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
-                self._active_workspace = config["workspace"]["active"]["root"]
-                self._historic_workspace = config["workspace"]["historic"]["root"]
-                self._temp_workspace = config["workspace"]["temp"]["root"]
+                self._active_workspace = config["common"]["workspace"]["active"]["root"]
+                self._historic_workspace = config["common"]["workspace"]["historic"]["root"]
+                self._temp_workspace = config["common"]["workspace"]["temp"]["root"]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
@@ -404,7 +406,6 @@ class TestImpact:
 
         @return: Runtime results in a dictionary.
         """
-
         unpacked_args = " ".join(self._runtime_args)
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run(
@@ -417,6 +418,9 @@ class TestImpact:
             # Get the sequence report the runtime generated
             with open(self._report_file) as json_file:
                 report = json.load(json_file)
+
+            # Grab the list of failing test targets for this sequence
+            test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and self._persistent_storage:

@@ -25,6 +25,7 @@ namespace AZ::Reflection
     {
         const Name Handler = Name::FromStringLiteral("Handler");
         const Name Label = Name::FromStringLiteral("Label");
+        const Name Description = Name::FromStringLiteral("Description");
         const Name SerializedPath = Name::FromStringLiteral("SerializedPath");
         const Name Container = Name::FromStringLiteral("Container");
         const Name ParentContainer = Name::FromStringLiteral("ParentContainer");
@@ -283,6 +284,8 @@ namespace AZ::Reflection
                 AZStd::string_view labelAttributeValue;
                 AZStd::fixed_string<128> labelAttributeBuffer;
 
+                AZStd::string_view descriptionAttributeValue;
+
                 DocumentPropertyEditor::PropertyEditorSystemInterface* propertyEditorSystem =
                     AZ::Interface<DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
                 AZ_Assert(propertyEditorSystem != nullptr, "LegacyReflectionBridge: Unable to retrieve PropertyEditorSystem");
@@ -376,6 +379,10 @@ namespace AZ::Reflection
                                 {
                                     labelAttributeValue = elementEditData->m_name;
                                 }
+                                if (elementEditData->m_description)
+                                {
+                                    descriptionAttributeValue = elementEditData->m_description;
+                                }
                             }
 
                             for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
@@ -409,6 +416,11 @@ namespace AZ::Reflection
                             {
                                 labelAttributeValue = nodeData.m_classData->m_name;
                             }
+                        }
+
+                        if (!isParentAttribute && descriptionAttributeValue.empty() && nodeData.m_classData->m_editData->m_description)
+                        {
+                            descriptionAttributeValue = nodeData.m_classData->m_editData->m_description;
                         }
 
                         for (auto it = nodeData.m_classData->m_attributes.begin(); it != nodeData.m_classData->m_attributes.end(); ++it)
@@ -458,6 +470,12 @@ namespace AZ::Reflection
                     const bool shouldCopy = !labelAttributeBuffer.empty();
                     nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::Label, Dom::Value(labelAttributeValue, shouldCopy) });
                 }
+
+                if (!descriptionAttributeValue.empty())
+                {
+                    nodeData.m_cachedAttributes.push_back( { group, DescriptorAttributes::Description, Dom::Value(descriptionAttributeValue, false) });
+                }
+
                 nodeData.m_cachedAttributes.push_back({ group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueType.GetName(),
                                                         AZ::Dom::Utils::TypeIdToDomValue(nodeData.m_typeId) });
                 if (nodeData.m_classData->m_container)

@@ -305,7 +305,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     {
         return;
     }
-
+    bool calledFromAssetBrowser = treeView->GetName() == "AssetBrowserTreeView_main" ? true : false;
     size_t numOfEntries = entries.size();
 
     AZStd::string fullFilePath;
@@ -426,23 +426,38 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
-            // Add Rename option
-            menu->addAction(QObject::tr("Rename asset"), [treeView]()
+            if (calledFromAssetBrowser)
             {
-                treeView->RenameEntry();
-            })->setShortcut(Qt::Key_F2);
+                // Add Rename option
+                menu->addAction(
+                        QObject::tr("Rename asset"),
+                        [treeView]()
+                        {
+                            treeView->RenameEntry();
+                        })
+                    ->setShortcut(Qt::Key_F2);
+            }
         }
 
-        // Add Delete option
-        menu->addAction(QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""), [treeView]()
+        if (calledFromAssetBrowser)
         {
-            treeView->DeleteEntries();
-        })->setShortcut(QKeySequence::Delete);
-        // Add Duplicate option
-        menu->addAction(QObject::tr("Duplicate asset"), [treeView]()
-        {
-            treeView->DuplicateEntries();
-        })->setShortcut(QKeySequence("Ctrl+D"));
+            // Add Delete option
+            menu->addAction(
+                    QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
+                    [treeView]()
+                    {
+                        treeView->DeleteEntries();
+                    })
+                ->setShortcut(QKeySequence::Delete);
+            // Add Duplicate option
+            menu->addAction(
+                    QObject::tr("Duplicate asset"),
+                    [treeView]()
+                    {
+                        treeView->DuplicateEntries();
+                    })
+                ->setShortcut(QKeySequence("Ctrl+D"));
+        }
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
