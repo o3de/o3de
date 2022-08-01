@@ -48,6 +48,10 @@ namespace AssetProcessor
     class SourceAssetTreeModel;
     class ProductDependencyTreeItem;
     class JobEntry;
+    class BuilderData;
+    class BuilderInfoPatternsModel;
+    class BuilderInfoMetricsModel;
+    class BuilderInfoMetricsSortModel;
 }
 
 class MainWindow
@@ -155,8 +159,13 @@ private:
     int m_createJobCount = 0;
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
-    BuilderListModel* m_builderList;
-    BuilderListSortFilterProxy* m_builderListSortFilterProxy;
+
+    AssetProcessor::BuilderData* m_builderData = nullptr;
+    BuilderListModel* m_builderList = nullptr;
+    BuilderListSortFilterProxy* m_builderListSortFilterProxy = nullptr;
+    AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns = nullptr;
+    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics = nullptr;
+    AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);

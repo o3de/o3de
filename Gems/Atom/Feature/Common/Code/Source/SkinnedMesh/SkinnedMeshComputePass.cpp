@@ -44,7 +44,7 @@ namespace AZ
         {
             if (m_skinnedMeshFeatureProcessor)
             {
-                frameGraph.SetEstimatedItemCount(m_skinnedMeshFeatureProcessor->GetSkinningDispatchCount());
+                m_skinnedMeshFeatureProcessor->SetupSkinningScope(frameGraph);
             }
 
             ComputePass::SetupFrameGraphDependencies(frameGraph);

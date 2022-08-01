@@ -72,6 +72,8 @@ class TestImpact:
 
                 # Historic Data Handling:
                 # This flag is used to help handle our corner cases if we have historic data.
+                # NOTE: need to draft in failing tests or only update upon success otherwise reruns for failed runs will have the same last commit
+                # hash as the commit and generate an empty changelist
                 self._can_rerun_with_instrumentation = True
                 if self._persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
@@ -149,7 +151,7 @@ class TestImpact:
         # Exclude tests
         exclude_file = args.get('exclude_file')
         if exclude_file:
-            runtime_args.append(f"--exclude_file={exclude_file}")
+            runtime_args.append(f"--exclude={exclude_file}")
             logger.info(
                 f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
         else:
@@ -253,12 +255,12 @@ class TestImpact:
         try:
             with open(config_file, "r") as config_data:
                 config = json.load(config_data)
-                self._repo_dir = config["repo"]["root"]
+                self._repo_dir = config["common"]["repo"]["root"]
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = pathlib.Path(config["repo"]["tiaf_bin"])
+                self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
+                self._tiaf_bin = pathlib.Path(config["common"]["repo"]["tiaf_bin"])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -268,14 +270,18 @@ class TestImpact:
                         f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
-                self._active_workspace = config["workspace"]["active"]["root"]
-                self._historic_workspace = config["workspace"]["historic"]["root"]
-                self._temp_workspace = config["workspace"]["temp"]["root"]
+                self._active_workspace = config["common"]["workspace"]["active"]["root"]
+                self._historic_workspace = config["common"]["workspace"]["historic"]["root"]
+                self._temp_workspace = config["common"]["workspace"]["temp"]["root"]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
             logger.error(f"The config does not contain the key {str(e)}.")
             return None
+        except json.JSONDecodeError as e:
+            logger.error("The config file doesn not contain valid JSON")
+            raise SystemError(
+                "Config file does not contain valid JSON, stopping TIAF")
 
     def _attempt_to_generate_change_list(self):
         """
@@ -400,7 +406,6 @@ class TestImpact:
 
         @return: Runtime results in a dictionary.
         """
-
         unpacked_args = " ".join(self._runtime_args)
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run(
@@ -413,6 +418,9 @@ class TestImpact:
             # Get the sequence report the runtime generated
             with open(self._report_file) as json_file:
                 report = json.load(json_file)
+
+            # Grab the list of failing test targets for this sequence
+            test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and self._persistent_storage:
@@ -440,3 +448,68 @@ class TestImpact:
         if self._persistent_storage:
             return self._persistent_storage.has_historic_data
         return False
+
+    @property
+    def source_branch(self):
+        """
+        The source branch for this TIAF run.
+        """
+        return self._src_branch
+
+    @property
+    def destination_branch(self):
+        """
+        The destination branch for this TIAF run.
+        """
+        return self._dst_branch
+
+    @property
+    def destination_commit(self):
+        """
+        The destination commit for this TIAF run.
+        Destination commit is the commit that is being built.
+        """
+        return self._dst_commit
+
+    @property
+    def source_commit(self):
+        """
+        The source commit for this TIAF run.
+        Source commit is the commit that we compare to for PR builds.
+        """
+        return self._src_commit
+
+    @property
+    def runtime_args(self):
+        """
+        The arguments to be passed to the TIAF runtime.
+        """
+        return self._runtime_args
+
+    @property
+    def has_change_list(self):
+        """
+        True if a change list has been generated for this TIAF run.
+        """
+        return self._has_change_list
+
+    @property
+    def instance_id(self):
+        """
+        The instance id of this TestImpact object.
+        """
+        return self._instance_id
+
+    @property
+    def test_suite(self):
+        """
+        The test suite being executed.
+        """
+        return self._suite
+
+    @property
+    def source_of_truth_branch(self):
+        """
+        The source of truth branch for this TIAF run.
+        """
+        return self._source_of_truth_branch

@@ -40,19 +40,6 @@ AZ_CVAR(
 
 namespace AzToolsFramework
 {
-    // helper method used by both the view and row widgets to empty layouts
-    static void DestroyLayoutContents(QLayout* layout)
-    {
-        while (auto layoutItem = layout->takeAt(0))
-        {
-            auto subWidget = layoutItem->widget();
-            if (subWidget)
-            {
-                subWidget->deleteLater();
-            }
-            delete layoutItem;
-        }
-    }
 
     DPELayout::DPELayout(int depth, QWidget* parentWidget)
         : QHBoxLayout(parentWidget)
@@ -235,23 +222,23 @@ namespace AzToolsFramework
 
     void DPERowWidget::Clear()
     {
-        DocumentPropertyEditor* dpe = GetDPE();
-        // propertyHandlers own their widgets, so don't destroy them here. Set them free!
-        for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
-             propertyWidgetIter != endIter; ++propertyWidgetIter)
+        if (!m_widgetToPropertyHandler.empty())
         {
-            QWidget* propertyWidget = propertyWidgetIter->first;
-            auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
-            m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
-            m_columnLayout->removeWidget(propertyWidget);
-
-            propertyWidgetIter->first->setParent(nullptr);
-            if (dpe)
+            DocumentPropertyEditor* dpe = GetDPE();
+            // propertyHandlers own their widgets, so don't destroy them here. Set them free!
+            for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
+                 propertyWidgetIter != endIter; ++propertyWidgetIter)
             {
+                QWidget* propertyWidget = propertyWidgetIter->first;
+                auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
+                m_domOrderedChildren.erase(toRemove, m_domOrderedChildren.end());
+                m_columnLayout->removeWidget(propertyWidget);
+
+                propertyWidgetIter->first->setParent(nullptr);
                 dpe->ReleaseHandler(AZStd::move(propertyWidgetIter->second));
             }
+            m_widgetToPropertyHandler.clear();
         }
-        m_widgetToPropertyHandler.clear();
 
         // delete all remaining child widgets, this will also remove them from their layout
         for (auto entry : m_domOrderedChildren)
@@ -321,6 +308,14 @@ namespace AzToolsFramework
             {
                 auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
                 auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
+                auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(childValue).value_or("");
+
+                // if this row doesn't already have a tooltip, use the first valid
+                // tooltip from a child PropertyEditor (like the RPE)
+                if (!descriptionString.empty() && toolTip().isEmpty())
+                {
+                    setToolTip(QString::fromUtf8(descriptionString.data()));
+                }
 
                 // if we found a valid handler, grab its widget to add to the column layout
                 if (handlerId)
@@ -329,6 +324,12 @@ namespace AzToolsFramework
                     auto handler = dpeSystem->CreateHandlerInstance(handlerId);
                     handler->SetValueFromDom(childValue);
                     addedWidget = handler->GetWidget();
+
+                    // only set the widget's tooltip if it doesn't already have its own
+                    if (!descriptionString.empty() && addedWidget->toolTip().isEmpty())
+                    {
+                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data()));
+                    }
                     m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
                 }
             }
@@ -441,7 +442,7 @@ namespace AzToolsFramework
                     GetDPE()->RemoveExpanderStateForRow(rowToRemove);
                 }
 
-                (*childIterator)->deleteLater(); // deleting the widget also automatically removes it from the layout
+                delete (*childIterator); // deleting the widget also automatically removes it from the layout
                 m_domOrderedChildren.erase(childIterator);
 
                 // check if the last row widget child was removed, and hide the expander if necessary
@@ -645,7 +646,12 @@ namespace AzToolsFramework
         m_handlerCleanupTimer->setInterval(0);
         connect(m_handlerCleanupTimer, &QTimer::timeout, this, &DocumentPropertyEditor::CleanupReleasedHandlers);
 
-        m_spawnDebugView = ed_showDPEDebugView;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("ed_showDPEDebugView", m_spawnDebugView);
+        }
+
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }
 
     DocumentPropertyEditor::~DocumentPropertyEditor()
@@ -683,11 +689,9 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::Clear()
     {
-        DestroyLayoutContents(m_layout);
-
         for (auto row : m_domOrderedRows)
         {
-            row->deleteLater();
+            delete row;
         }
 
         m_domOrderedRows.clear();

@@ -199,3 +199,16 @@ QToolButton#serverAddressToolButton {
     border-image: url(":/Browse_on.png") 0 0 0 0 stretch stretch;
     padding: 0 0 0 0;
 }
+
+QPushButton#removeButton {
+    background-color: transparent;
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    padding: 0 0 0 0;
+}
+
+QWidget#SharedCachePage {
+    background-color: rgba(34, 34, 34, 0.5);
+    border: none;
+}
