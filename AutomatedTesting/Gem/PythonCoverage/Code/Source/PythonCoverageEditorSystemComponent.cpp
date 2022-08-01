@@ -100,7 +100,9 @@ namespace PythonCoverage
             AZ_Error(LogCallSite, false, "Could not parse test impact analysis framework config file data, JSON has errors");
             return m_coverageState;
         }
-        
+
+        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
+
         // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
 
