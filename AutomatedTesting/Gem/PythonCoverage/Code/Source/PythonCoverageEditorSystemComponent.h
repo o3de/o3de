@@ -79,6 +79,7 @@ namespace PythonCoverage
         AZStd::unordered_map<AZ::Uuid, AZStd::string> m_moduleComponents; //!< Map of component IDs to module names for all modules.
         AZ::IO::Path m_coverageDir; //!< Directory to write coverage data to.
         AZ::IO::Path m_coverageFile; //!< Full file path to write coverage data to.
+        AZStd::string m_scriptPath; //!< Path to the Python test script being executed.
         AZStd::string m_testCase; //!< Name of current test case that coverage data is being gathered for.
     };
 } // namespace PythonCoverage
