@@ -97,35 +97,48 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         AZ::Entity* entity = nullptr;
 
+        auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
+        const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+
         // currently only handling when on entity is selected at once
-        if (!newlySelectedEntityIds.empty() && newlySelectedEntityIds.size() == 1)
+        
+        if (!newlySelectedEntityIds.empty())
         {
-            AZ::ComponentApplicationBus::BroadcastResult(
-                entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(newlySelectedEntityIds.front()));
-
-            if (entity)
+            for (auto entityId : newlySelectedEntityIds)
             {
-                auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
-                const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(newlySelectedEntityIds.front()));
 
-                /* if two or more entities are selected, ensure the only components
-                that remain on the switcher are common to all entities*/
-                if (selectedEntityIds.size() > 1)
+                if (entity)
                 {
-                    RemoveExclusiveComponents(*entity);
-                    return;
-                }
+                    /* if two or more entities are selected, ensure the only components
+                    that remain on the switcher are common to all entities*/
+                    if (selectedEntityIds.size() > 1 && m_addedComponents.size() != 0)
+                    {
+                        RemoveNonCommonComponents(*entity);
+                        continue;
+                    }
 
-                for (const auto& entityComponent : entity->GetComponents())
-                {
-                    const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
-                    AddComponentButton(entityComponentIdPair);
+                    for (const auto& entityComponent : entity->GetComponents())
+                    {
+                        const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
+                        AddComponentButton(entityComponentIdPair);
+                    }
                 }
             }
         }
         else if (!newlyDeselectedEntityIds.empty())
         {
+            //CLear the switcher then add the components back if entities are still selected
             ClearSwitcher();
+
+            if (selectedEntityIds.size() >= 1)
+            {
+                for (auto entityId : selectedEntityIds)
+                {
+                    UpdateSwitcherOnEntitySelectionChange(EntityIdList{ entityId }, EntityIdList{});
+                }
+            }
         }
     }
 
@@ -292,7 +305,7 @@ namespace AzToolsFramework::ComponentModeFramework
         }
     }
 
-    void ComponentModeSwitcher::RemoveExclusiveComponents(const AZ::Entity& entity)
+    void ComponentModeSwitcher::RemoveNonCommonComponents(const AZ::Entity& entity)
     {
         // get all component Ids associated with entity, identify which ones to remove and then remove them
         AZStd::set<AZ::TypeId> componentIds;

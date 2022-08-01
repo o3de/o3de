@@ -83,7 +83,7 @@ namespace AzToolsFramework
             //! Clears all buttons from switcher.
             void ClearSwitcher();
             void ActivateComponentMode(const ViewportUi::ButtonId);
-            void RemoveExclusiveComponents(const AZ::Entity&);
+            void RemoveNonCommonComponents(const AZ::Entity&);
 
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(
