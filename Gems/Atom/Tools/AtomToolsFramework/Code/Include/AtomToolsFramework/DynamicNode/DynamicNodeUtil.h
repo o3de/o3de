@@ -9,6 +9,9 @@
 #pragma once
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 
 namespace AtomToolsFramework
 {
