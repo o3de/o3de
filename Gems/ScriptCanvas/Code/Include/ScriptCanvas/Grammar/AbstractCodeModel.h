@@ -384,6 +384,8 @@ namespace ScriptCanvas
 
             void ParseInputDatum(ExecutionTreePtr execution, const Slot& input);
 
+            void ParseSmallOperators(ExecutionTreePtr execution, VariableOperatorData* variableData);
+
             bool ParseInputThisPointer(ExecutionTreePtr execution);
 
             void ParseMetaData(ExecutionTreePtr execution);
