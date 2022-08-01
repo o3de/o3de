@@ -15,9 +15,9 @@
         },
         "inputSlots": [
             {
-                "name": "inWorldPositionOffset",
-                "displayName": "World Position Offset",
-                "description": "World Position Offset",
+                "name": "inPositionOffset",
+                "displayName": "Position Offset",
+                "description": "Position Offset",
                 "supportedDataTypes": [
                     "float",
                     "float2",

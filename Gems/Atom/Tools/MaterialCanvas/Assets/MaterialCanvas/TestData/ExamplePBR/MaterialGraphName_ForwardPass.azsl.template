@@ -61,11 +61,11 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    // GENERATED_INSTRUCTIONS_BEGIN: inWorldPositionOffset
-    float4 inWorldPositionOffset = float3(0.0, 0.0, 0.0, 0.0);
+    // GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float4 inPositionOffset = float3(0.0, 0.0, 0.0, 0.0);
     // GENERATED_INSTRUCTIONS_END
 
-    VertexHelper(IN, OUT, worldPosition + inWorldPositionOffset.xyz);
+    VertexHelper(IN, OUT, worldPosition + inPositionOffset.xyz);
 
     return OUT;
 }
