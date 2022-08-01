@@ -25,7 +25,7 @@ namespace TestImpact
         using TestRunner<NativeTestRunJobData<TestRunJobData>>::TestRunner;
 
     protected:
-        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override
         {
             try
             {

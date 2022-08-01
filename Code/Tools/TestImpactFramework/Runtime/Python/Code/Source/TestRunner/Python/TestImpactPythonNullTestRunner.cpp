@@ -31,7 +31,7 @@ namespace TestImpact
 
         for (auto& jobInfo : jobInfos)
         {
-            if (auto outcome = PayloadFactory(jobInfo, {}); outcome.IsSuccess())
+            if (auto outcome = PayloadExtractor(jobInfo, {}); outcome.IsSuccess())
             {
                 JobMeta meta;
                 meta.m_result = JobResult::ExecutedWithSuccess;
@@ -50,7 +50,7 @@ namespace TestImpact
         return { ProcessSchedulerResult::Graceful, jobs };
     }
 
-    PythonNullTestRunner::JobPayloadOutcome PythonNullTestRunner::PayloadFactory(
+    PythonNullTestRunner::JobPayloadOutcome PythonNullTestRunner::PayloadExtractor(
         [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
     {
         return AZ::Failure(AZStd::string("Not implemented"));

@@ -31,7 +31,7 @@ namespace TestImpact
         using TestEnumerator<NativeTestEnumerationJobData>::TestEnumerator;
 
     protected:
-        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) override
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) override
         {
             try
             {

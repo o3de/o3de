@@ -111,35 +111,9 @@ namespace TestImpact
                 }
             }
 
-            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
+            const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
             {
-                typename TestJobRunner::PayloadMap enumerations;
-                for (const auto& [jobId, jobData] : jobDataMap)
-                {
-                    const auto& [meta, jobInfo] = jobData;
-                    if (meta.m_result == JobResult::ExecutedWithSuccess)
-                    {
-                        if (auto outcome = PayloadFactory(*jobInfo, meta); outcome.IsSuccess())
-                        {
-                            const auto& enumeration = (enumerations[jobId] = AZStd::move(outcome.TakeValue()));
-
-                            // Write out the enumeration to a cache file if we have a cache write policy for this job
-                            if (jobInfo->GetCache().has_value() &&
-                                jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Write)
-                            {
-                                WriteFileContents<TestRunnerException>(
-                                    SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
-                            }
-                        }
-                        else
-                        {
-                            AZ_Warning("Enumerate", false, outcome.GetError().c_str());
-                            enumerations[jobId] = AZStd::nullopt;
-                        }
-                    }
-                }
-
-                return enumerations;
+                return PayloadMapProducer(jobDataMap);
             };
 
             // Generate the enumeration results for the jobs that weren't cached
@@ -163,7 +137,37 @@ namespace TestImpact
         }
 
     protected:
+        virtual typename TestJobRunner::PayloadMap PayloadMapProducer(const typename TestJobRunner::JobDataMap& jobDataMap)
+        {
+            typename TestJobRunner::PayloadMap enumerations;
+            for (const auto& [jobId, jobData] : jobDataMap)
+            {
+                const auto& [meta, jobInfo] = jobData;
+                if (meta.m_result == JobResult::ExecutedWithSuccess)
+                {
+                    if (auto outcome = PayloadExtractor(*jobInfo, meta); outcome.IsSuccess())
+                    {
+                        const auto& enumeration = (enumerations[jobId] = AZStd::move(outcome.TakeValue()));
+
+                        // Write out the enumeration to a cache file if we have a cache write policy for this job
+                        if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Write)
+                        {
+                            WriteFileContents<TestRunnerException>(
+                                SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("Enumerate", false, outcome.GetError().c_str());
+                        enumerations[jobId] = AZStd::nullopt;
+                    }
+                }
+            }
+
+            return enumerations;
+        }
+
         virtual typename TestJobRunner::JobPayloadOutcome
-          PayloadFactory([[maybe_unused]] const typename TestJobRunner::JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) = 0;
+          PayloadExtractor([[maybe_unused]] const typename TestJobRunner::JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) = 0;
     };
 } // namespace TestImpact

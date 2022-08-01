@@ -17,7 +17,7 @@ namespace TestImpact
     {
     }
 
-    PythonTestRunner::JobPayloadOutcome PythonTestRunner::PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta)
+    PythonTestRunner::JobPayloadOutcome PythonTestRunner::PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;
         try

@@ -37,6 +37,6 @@ namespace TestImpact
             AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
 
     protected:
-        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override;
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
     };
 } // namespace TestImpact

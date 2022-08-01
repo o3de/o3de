@@ -27,7 +27,7 @@ namespace TestImpact
         using TestImpact::TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
 
     protected:
-        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override
         {
             AZStd::optional<TestRun> run;
             try

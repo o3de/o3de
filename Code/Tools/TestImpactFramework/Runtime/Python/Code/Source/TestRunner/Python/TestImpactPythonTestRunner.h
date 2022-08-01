@@ -27,6 +27,6 @@ namespace TestImpact
         PythonTestRunner();
 
     protected:
-        JobPayloadOutcome PayloadFactory(const JobInfo& jobData, const JobMeta& jobMeta) override;
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
     };
 } // namespace TestImpact
