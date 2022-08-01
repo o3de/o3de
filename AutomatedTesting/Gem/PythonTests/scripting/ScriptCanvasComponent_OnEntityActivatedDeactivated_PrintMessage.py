@@ -77,22 +77,28 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
     def setup_level_entities(self):
 
-        self.create_entity_with_start_status(activated_dict)
-        self.create_entity_with_start_status(deactivated_dict)
-        self.create_entity_with_start_status(controller_dict)
+        activated_entity = scripting_tools.create_entity_with_sc_component_asset(activated_dict["name"], activated_dict["path"])
+        scripting_tools.change_entity_start_status(activated_dict["name"], activated_dict["status"])
+        helper.wait_for_condition(lambda: activated_entity is not None, WAIT_TIME_3)
 
-    def create_entity_with_start_status(self, entity_dict: dict):
+        deactivated_entity = scripting_tools.create_entity_with_sc_component_asset(deactivated_dict["name"], deactivated_dict["path"])
+        scripting_tools.change_entity_start_status(deactivated_dict["name"], deactivated_dict["status"])
+        helper.wait_for_condition(lambda: deactivated_entity is not None, WAIT_TIME_3)
+
+        self.setup_controller_entity(controller_dict)
+
+    def setup_controller_entity(self, entity_dict: dict):
         """
-        Create entities and configure their activation status and variables. We call two different libraries to modify the
-        entity. Hydra editor utils to create the entity and editor entity utils to drill into its properties to change values.
+        create entity using hydra and editor entity library but also drill into its exposed variables and set values.
 
         """
         entity = scripting_tools.create_entity_with_sc_component_asset(entity_dict["name"], entity_dict["path"])
         scripting_tools.change_entity_start_status(entity_dict["name"], entity_dict["status"])
 
-        if entity_dict["name"] == "Controller":
-            scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], activated_dict["name"], ENTITY_TO_ACTIVATE_PATH)
-            scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], deactivated_dict["name"], ENTITY_TO_DEACTIVATE_PATH)
+        scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], activated_dict["name"],
+                                                         ENTITY_TO_ACTIVATE_PATH)
+        scripting_tools.change_entity_sc_variable_entity(entity_dict["name"], deactivated_dict["name"],
+                                                         ENTITY_TO_DEACTIVATE_PATH)
 
         helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
 

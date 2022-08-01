@@ -15,7 +15,6 @@ from editor_python_test_tools.editor_entity_utils import EditorEntity
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
-import azlmbr.globals.property as GlobalVars
 import azlmbr.legacy.general as general
 import azlmbr.scriptcanvas as scriptcanvas
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
@@ -25,7 +24,7 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
                                                  VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
                                                  SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
                                                  NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
 
 
 class Tests():
@@ -527,25 +526,19 @@ def validate_entity_start_state_by_name(entity_name, expected_state):
     param expected_state: the expected start state of the entity
     """
 
-    state_options = {
-        "active": 0,
-        "inactive": 1,
-        "editor": 2,
-    }
-
     entity = EditorEntity.find_editor_entity(entity_name)
 
-    if expected_state.lower() not in state_options.keys():
+    if expected_state.lower() not in ENTITY_STATES.keys():
         raise ValueError(f"{expected_state} is an invalid option; valid options: active, inactive, or editor.")
 
     state = entity.get_start_status()
-    if state != state_options[expected_state]:
+    if state != ENTITY_STATES[expected_state]:
         # If state fails to set, set_start_status will assert
         entity.set_start_status(expected_state)
         state = entity.get_start_status()
 
     # return the start state that we were able to set the entity to
-    return state == state_options[expected_state]
+    return state == ENTITY_STATES[expected_state]
 
 def validate_entity_exists_by_name(entity_name, test_results):
     """
