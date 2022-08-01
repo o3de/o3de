@@ -79,16 +79,17 @@ namespace ScriptCanvasFileHandlingCpp
             return AZStd::nullopt;
         }
 
-        bool IsLoading(ScriptCanvas::SourceHandle dependency, AZStd::vector<AZStd::string>& path)
+        bool IsLoading(ScriptCanvas::SourceHandle dependency, AZStd::string& path)
         {
-            path.push_back(m_source.RelativePath().c_str());
-
+            path += m_source.RelativePath().c_str();
+            
             if (m_source.AnyEquals(dependency))
             {
                 return true;
             }
             else if (m_parent)
             {
+                path += " =>\n";
                 return m_parent->IsLoading(dependency, path);
             }
             else
@@ -179,10 +180,10 @@ namespace ScriptCanvasFileHandlingCpp
             if (!result.m_source.AnyEquals(dependentAsset.m_source))
             {
                 // check for circular dependencies...
-                AZStd::vector<AZStd::string> path;
+                AZStd::string path;
                 if (result.IsLoading(dependentAsset.m_source, path))
                 {
-                    return AZ::Failure(AZStd::string::format("LoadEditorAsset tree failed to load. Circular dependency detected: %s", "put path here"));
+                    return AZ::Failure(AZStd::string::format("LoadEditorAsset tree failed to load. Circular dependency detected: %s", path.c_str()));
                 }
                 // check at the level root if the dependency is loaded already...
                 else if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset.m_source))
