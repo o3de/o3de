@@ -62,12 +62,12 @@ namespace AzToolsFramework
             };
 
             // Returns a null pointer if not in component mode
-            AZ::Component* GetActiveComponent() const
+            const AZ::Component* GetActiveComponent() const
             {
                 return m_activeSwitcherComponent;
             };
 
-            ComponentData* GetActiveComponent()
+            AZ::Component* GetActiveComponent()
             {
                 return m_activeSwitcherComponent;
             };
@@ -85,18 +85,6 @@ namespace AzToolsFramework
             void ClearSwitcher();
             void ActivateComponentMode(const ViewportUi::ButtonId);
             void RemoveNonCommonComponents(const AZ::Entity&);
-            // Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
-            void AddSwitcherButton(ComponentData&, const char* componentName, const char* iconStr);
-            // Adds component button to switcher.
-            void AddComponentButton(const AZ::EntityComponentIdPair);
-            // Removes component button from switcher.
-            void RemoveComponentButton(const AZ::EntityComponentIdPair);
-            // Add or remove component buttons to/from the switcher based on entities selected.
-            void UpdateSwitcherOnEntitySelectionChange(const EntityIdList newlyselectedEntityIds, const EntityIdList newlydeselectedEntityIds);
-            // Uses ComponentModeSystemRequestBus to initiate component mode.
-            void ActivateComponentMode(const ViewportUi::ButtonId);
-            // Removes swticher buttons that are not common to all selected entities.
-            void RemoveExclusiveComponents(const AZ::Entity&);
 
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(

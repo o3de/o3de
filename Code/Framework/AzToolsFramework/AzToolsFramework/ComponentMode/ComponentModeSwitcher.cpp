@@ -6,6 +6,9 @@
  *
  */
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -100,14 +103,13 @@ namespace AzToolsFramework::ComponentModeFramework
         auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
         const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
 
-        // currently only handling when on entity is selected at once
         
         if (!newlySelectedEntityIds.empty())
         {
             for (auto entityId : newlySelectedEntityIds)
             {
                 AZ::ComponentApplicationBus::BroadcastResult(
-                    entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(newlySelectedEntityIds.front()));
+                    entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(entityId));
 
                 if (entity)
                 {
@@ -116,7 +118,16 @@ namespace AzToolsFramework::ComponentModeFramework
                     if (selectedEntityIds.size() > 1 && m_addedComponents.size() != 0)
                     {
                         RemoveNonCommonComponents(*entity);
-                        continue;
+                        // if components have been removed from the switcher and there is nothing left on the switcher
+                        // then there are no common components in the selection
+                        if (m_addedComponents.size() == 0)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
 
                     for (const auto& entityComponent : entity->GetComponents())
@@ -134,10 +145,7 @@ namespace AzToolsFramework::ComponentModeFramework
 
             if (selectedEntityIds.size() >= 1)
             {
-                for (auto entityId : selectedEntityIds)
-                {
-                    UpdateSwitcherOnEntitySelectionChange(EntityIdList{ entityId }, EntityIdList{});
-                }
+                UpdateSwitcherOnEntitySelectionChange( selectedEntityIds, EntityIdList{});
             }
         }
     }
@@ -300,7 +308,7 @@ namespace AzToolsFramework::ComponentModeFramework
                      &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                      m_switcherId,
                      componentDataIt->m_buttonId);
-                 m_activeSwitcherComponent = componentDataIt;
+                 m_activeSwitcherComponent = componentDataIt->m_component;
             }
         }
     }
@@ -379,3 +387,5 @@ namespace AzToolsFramework::ComponentModeFramework
         UpdateSwitcherOnEntitySelectionChange(newlySelectedEntities, newlyDeselectedEntities);
     }
 } // namespace AzToolsFramework::ComponentModeFramework
+#pragma optimize("", on)
+#pragma inline_depth()
