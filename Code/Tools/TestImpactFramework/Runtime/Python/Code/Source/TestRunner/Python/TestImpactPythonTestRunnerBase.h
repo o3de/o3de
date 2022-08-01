@@ -13,14 +13,14 @@
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
-#include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 #include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/TestImpactTestRunnerWithCoverage.h>
+#include <TestRunner/Python/Run/TestImpactPythonTestCoverage.h>
 
 namespace TestImpact
 {
     class PythonTestRunnerBase
-        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>
+        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, PythonTestCaseCoverage>
     {
     public:
         PythonTestRunnerBase(const RepoPath& artifactDir);

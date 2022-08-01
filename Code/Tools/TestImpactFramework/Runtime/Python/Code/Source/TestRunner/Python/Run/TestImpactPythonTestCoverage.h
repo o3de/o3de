@@ -16,12 +16,12 @@ namespace TestImpact
     class PythonTestCaseCoverage
     {
     public:
-        PythonTestCaseCoverage(const AZStd::string& parentTarget, TestCaseCoverage&& testCaseCoverage);
+        PythonTestCaseCoverage(const AZStd::string& parentScript, TestCaseCoverage&& testCaseCoverage);
 
-        const AZStd::string& GetParentTarget() const;
+        const AZStd::string& GetParentScript() const;
         const TestCaseCoverage& GetTestCaseCoverage() const;
     private:
-        AZStd::string m_parentTarget;
+        AZStd::string m_parentScript;
         TestCaseCoverage m_testCaseCoverage;
     };
 } // namespace TestImpact

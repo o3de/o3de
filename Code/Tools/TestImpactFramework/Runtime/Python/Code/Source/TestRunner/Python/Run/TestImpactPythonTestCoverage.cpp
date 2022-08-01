@@ -10,15 +10,15 @@
 
 namespace TestImpact
 {
-    PythonTestCaseCoverage::PythonTestCaseCoverage(const AZStd::string& parentTarget, TestCaseCoverage&& testCaseCoverage)
-        : m_parentTarget(parentTarget)
+    PythonTestCaseCoverage::PythonTestCaseCoverage(const AZStd::string& parentScript, TestCaseCoverage&& testCaseCoverage)
+        : m_parentScript(parentScript)
         , m_testCaseCoverage(AZStd::move(testCaseCoverage))
     {
     }
 
-    const AZStd::string& PythonTestCaseCoverage::GetParentTarget() const
+    const AZStd::string& PythonTestCaseCoverage::GetParentScript() const
     {
-        return m_parentTarget;
+        return m_parentScript;
     }
 
     const TestCaseCoverage& PythonTestCaseCoverage::GetTestCaseCoverage() const
