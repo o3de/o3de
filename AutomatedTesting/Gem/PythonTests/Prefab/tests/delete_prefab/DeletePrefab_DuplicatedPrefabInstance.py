@@ -42,14 +42,14 @@ def DeletePrefab_DuplicatedPrefabInstance():
     general.undo()
     PrefabWaiter.wait_for_propagation()
     child_ids = duplicate_car_parent_id.get_children_ids()
-    assert duplicate_car_id in child_ids, \
+    assert duplicate_car_id in child_ids and len(child_ids) == 2, \
         "Undo Failed: Failed to find restored prefab instance after Undo."
 
     # Redo the prefab delete
     general.redo()
     PrefabWaiter.wait_for_propagation()
     child_ids = duplicate_car_parent_id.get_children_ids()
-    assert duplicate_car_id not in child_ids, \
+    assert duplicate_car_id not in child_ids and len(child_ids) == 1, \
         "Redo Failed: Instance was still found after redo of instance deletion."
 
 
