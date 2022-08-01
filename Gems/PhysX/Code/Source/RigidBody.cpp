@@ -56,8 +56,8 @@ namespace PhysX
         {
             serializeContext->Class<PhysX::RigidBodyConfiguration>()
                 ->Version(1)
-                ->Field("SolverPositionIterations", &RigidBodyConfiguration::m_solverPositionIterations)
-                ->Field("SolverVelocityIterations", &RigidBodyConfiguration::m_solverVelocityIterations)
+                ->Field("SolverPositionIterations", &PhysX::RigidBodyConfiguration::m_solverPositionIterations)
+                ->Field("SolverVelocityIterations", &PhysX::RigidBodyConfiguration::m_solverVelocityIterations)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -66,14 +66,14 @@ namespace PhysX
                     "Additional Rigid Body settings specific to PhysX.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &RigidBodyConfiguration::m_solverPositionIterations,
+                        &PhysX::RigidBodyConfiguration::m_solverPositionIterations,
                         "Solver Position Iterations",
                         "Higher values can improve stability at the cost of performance.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &RigidBodyConfiguration::m_solverVelocityIterations,
+                        &PhysX::RigidBodyConfiguration::m_solverVelocityIterations,
                         "Solver Velocity Iterations",
                         "Higher values can improve stability at the cost of performance.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)

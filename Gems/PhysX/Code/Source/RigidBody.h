@@ -32,6 +32,7 @@ namespace PhysX
         AZ_RTTI(PhysX::RigidBodyConfiguration, "{006A06B1-E2E9-47DF-A49D-C60CAB3727C4}");
 
         RigidBodyConfiguration() = default;
+        virtual ~RigidBodyConfiguration() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
