@@ -37,6 +37,7 @@
 
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
+static constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier = "o3de.updater.onAngleSnappingStateChanged";
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
 static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
@@ -147,6 +148,7 @@ void EditorActionsHandler::InitializeActionContext()
 
 void EditorActionsHandler::InitializeActionUpdaters()
 {
+    m_actionManagerInterface->RegisterActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
@@ -519,7 +521,7 @@ void EditorActionsHandler::InitializeActions()
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier,
-            "o3de.action.edit.snap.angleSnapping",
+            "o3de.action.edit.snap.toggleAngleSnapping",
             actionProperties,
             []()
             {
@@ -531,7 +533,8 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        // TODO - trigger update when the angle snapping changes?
+        // Trigger update when the angle snapping setting changes
+        m_actionManagerInterface->AddActionToUpdater(AngleSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.toggleAngleSnapping");
     }
 
     // Grid Snapping
@@ -544,7 +547,7 @@ void EditorActionsHandler::InitializeActions()
 
         m_actionManagerInterface->RegisterCheckableAction(
             EditorMainWindowActionContextIdentifier,
-            "o3de.action.edit.snap.gridSnapping",
+            "o3de.action.edit.snap.toggleGridSnapping",
             actionProperties,
             []()
             {
@@ -556,7 +559,8 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        m_actionManagerInterface->AddActionToUpdater(GridSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.gridSnapping");
+        // Trigger update when the grid snapping setting changes
+        m_actionManagerInterface->AddActionToUpdater(GridSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.toggleGridSnapping");
     }
 
     // Global Preferences
@@ -1061,8 +1065,8 @@ void EditorActionsHandler::InitializeMenus()
         {
             m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifySnapMenuIdentifier, 100);
             {
-                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.angleSnapping", 100);
-                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.gridSnapping", 200);
+                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 100);
+                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 200);
             }
             m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifyModesMenuIdentifier, 200);
         }
@@ -1279,6 +1283,11 @@ void EditorActionsHandler::OnEndUndo([[maybe_unused]] const char* label, [[maybe
             actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
         }
     );
+}
+
+void EditorActionsHandler::OnAngleSnappingChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
 }
 
 void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)

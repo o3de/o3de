@@ -66,6 +66,7 @@ private:
     void OnEndUndo(const char* label, bool changed) override;
 
     // ViewportSettingsNotificationBus overrides ...
+    void OnAngleSnappingChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
 
     // Recent Files
