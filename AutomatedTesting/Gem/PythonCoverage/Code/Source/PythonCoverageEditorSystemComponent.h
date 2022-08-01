@@ -81,5 +81,6 @@ namespace PythonCoverage
         AZ::IO::Path m_coverageFile; //!< Full file path to write coverage data to.
         AZStd::string m_scriptPath; //!< Path to the Python test script being executed.
         AZStd::string m_testCase; //!< Name of current test case that coverage data is being gathered for.
+        AZStd::string m_placeholderTestCase; //!< Placeholder name to use when the test case isn't specified.
     };
 } // namespace PythonCoverage

@@ -109,6 +109,11 @@ namespace PythonCoverage
         const AZ::IO::Path artifactRelativeDir = tempConfig["relative_paths"]["artifact_dir"].GetString();
         m_coverageDir = tempWorkspaceRootDir / artifactRelativeDir;
 
+        // Placeholder name to use for when the test case isn't specified
+        const auto& pythonArtifactCoverageConfig = configurationFile["python"]["artifact"]["coverage"];
+        m_placeholderTestCase = AZStd::string(pythonArtifactCoverageConfig["fixture_placeholder"].GetString()) + "." +
+            AZStd::string(pythonArtifactCoverageConfig["test_case_placeholder"].GetString());
+
         // Everything is good to go, await the first python test case
         m_coverageState = CoverageState::Idle;
         return m_coverageState;
@@ -223,8 +228,8 @@ namespace PythonCoverage
         {
             // We need to be able to pinpoint the coverage data to the specific test case names otherwise we will not be able
             // to specify which specific tests should be run in the future (filename does not necessarily equate to test case name)
-            AZ_Error(LogCallSite, false, "No test case specified, coverage data gathering will be disabled for this test");
-            return;
+            AZ_Warning(LogCallSite, false, "No test case specified, placeholder test case name will be used for this test");
+            m_testCase = m_placeholderTestCase;
         }
 
         m_scriptPath = filename;
