@@ -197,8 +197,10 @@ namespace AzToolsFramework
 
             case ToolBarItemType::ActionAndSubMenu:
                 {
-                    if (QAction* action = m_actionManagerInternalInterface->GetAction(m_identifier);
-                        QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier))
+                    QAction* action = m_actionManagerInternalInterface->GetAction(m_identifier);
+                    QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(m_subMenuIdentifier);
+
+                    if (action && subMenu)
                     {
                         QToolButton* toolButton = new QToolButton(toolBar);
 
