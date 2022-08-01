@@ -23,6 +23,8 @@ set(FILES
     Source/TestRunner/Python/TestImpactPythonTestRunner.h
     Source/TestRunner/Python/TestImpactPythonNullTestRunner.cpp
     Source/TestRunner/Python/TestImpactPythonNullTestRunner.h
+    Source/TestRunner/Python/Run/TestImpactPythonTestCoverage.cpp
+    Source/TestRunner/Python/Run/TestImpactPythonTestCoverage.h
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h
     Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp

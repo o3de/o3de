@@ -25,7 +25,9 @@ namespace TestImpact
     {
         PayloadMap runs;
 
-
+        // 1. Get all pycoverage files in artifact dir
+        // 2. For each coverage file:
+        //      
 
         return runs;
     }
