@@ -509,6 +509,7 @@ namespace WhiteBox
             settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
             if (hasTransformMode)
             {
+                //TODO: this is a temporary icon
                 m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Align_to_Object");
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                     AzToolsFramework::ViewportUi::DefaultViewportId,
