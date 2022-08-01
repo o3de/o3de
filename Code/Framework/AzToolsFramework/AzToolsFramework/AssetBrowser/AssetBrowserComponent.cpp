@@ -68,6 +68,8 @@ namespace AzToolsFramework
             AZ::TickBus::Handler::BusConnect();
             AssetSystemBus::Handler::BusConnect();
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            AssetBrowserFileCreationNotificationBus::Handler::BusConnect(
+                AssetBrowserFileCreationNotifications::FileCreationNotificationBusId);
 
             using namespace Thumbnailer;
             ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(FolderThumbnailCache));
@@ -95,6 +97,8 @@ namespace AzToolsFramework
                 m_thread.join(); // wait for the thread to finish
                 m_thread = AZStd::thread(); // destroy
             }
+            AssetBrowserFileCreationNotificationBus::Handler::BusDisconnect(
+                AssetBrowserFileCreationNotifications::FileCreationNotificationBusId);
             AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AssetDatabaseLocationNotificationBus::Handler::BusDisconnect();
             AssetBrowserComponentRequestBus::Handler::BusDisconnect();
@@ -267,6 +271,15 @@ namespace AzToolsFramework
             return SourceFileDetails();
         }
 
+        void AssetBrowserComponent::HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId)
+        {
+            if (assetPath.empty())
+            {
+                return;
+            }
+
+            m_assetBrowserModel->HandleAssetCreatedInEditor(assetPath, creatorBusId);
+        }
 
         void AssetBrowserComponent::AddFile(const AZ::s64& fileId) 
         {
