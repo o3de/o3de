@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/IO/FileOperations.h>
@@ -26,8 +27,9 @@
 #include <Editor/View/Windows/MainWindow.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <LyViewPaneNames.h>
+#include <QFileInfo>
+#include <QDir>
 #include <QMenu>
-#include <QMessageBox>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -195,6 +197,67 @@ namespace ScriptCanvasEditor
 
         // not one of our types.
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
+    }
+
+    void SystemComponent::AddSourceFileCreators
+        ( [[maybe_unused]] const char* fullSourceFolderName
+        , [[maybe_unused]] const AZ::Uuid& sourceUUID
+        , AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+    {
+        auto scriptCavnasAssetCreator = [](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+        {
+            const AZStd::string defaultFilename = "NewScript";
+            const AZStd::string scriptCanvasExtension = ScriptCanvasEditor::SourceDescription::GetFileExtension();
+
+            AZStd::string fullFilepath;
+            AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
+                , defaultFilename.c_str()
+                , scriptCanvasExtension.c_str()
+                , fullFilepath);
+
+            int fileCounter = 0;
+            while (AZ::IO::FileIOBase::GetInstance()->Exists(fullFilepath.c_str()))
+            {
+                fileCounter++;
+                const AZStd::string incrementalFilename = defaultFilename + AZStd::to_string(fileCounter);
+
+                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
+                    , incrementalFilename.c_str()
+                    , scriptCanvasExtension.c_str()
+                    , fullFilepath);
+            }
+
+            const AZ::IO::Path fullAzFilePath = fullFilepath;
+            const ScriptCanvas::DataPtr graph = EditorGraph::Create();
+            SourceHandle source = SourceHandle::FromRelativePath(graph, fullAzFilePath.RelativePath());
+            source = SourceHandle::MarkAbsolutePath(source, fullAzFilePath);
+
+            AZ::IO::FileIOStream fileStream(fullAzFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            if (fileStream.IsOpen())
+            {
+                auto serializeResult = Serialize(*source.Data(), fileStream);
+                if (!serializeResult)
+                {
+                    AZ_Error("ScriptCanvasCreator", false, "Failed to save new ScriptCanvas file: %s", serializeResult.m_errors.c_str());
+                }
+                else
+                {
+                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId
+                        , &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor
+                        , source.AbsolutePath().Native()
+                        , AZ::Crc32());
+                }
+
+                fileStream.Close();
+            }
+            else
+            {
+                AZ_Error("ScriptCanvasCreator", false, "Asset creation failed because file failed to open: %s", fullAzFilePath.c_str());
+            }
+        };
+
+        creators.push_back({ "ScriptCanvas_creator", "ScriptCanvas Graph", QIcon(), scriptCavnasAssetCreator });
     }
 
     void SystemComponent::AddSourceFileOpeners
