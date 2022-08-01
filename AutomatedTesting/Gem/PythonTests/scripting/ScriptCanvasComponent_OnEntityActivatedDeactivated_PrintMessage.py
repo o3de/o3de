@@ -45,7 +45,6 @@ class Tests():
     game_mode_exited     = ("Successfully exited game mode", "Failed to exit game mode")
 # fmt: on
 
-
 class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     """
     Summary:
@@ -59,7 +58,7 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     Test Steps:
      1) Create temp level
      2) Create all the entities we need for the test
-     3) Validate the entities
+     3) Validate the entities were created and configured
      4) Start the Tracer
      5) Enter Game Mode
      6) Wait one second for graph timers then exit game mode
@@ -102,19 +101,24 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
         helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
 
-    def validate_entities_in_level(self):
+    def validate_entity_state(self, entity_tuple, test):
+        """
+        Function to make sure the entities created for this test were properly added to the level
 
-        controller = scripting_tools.validate_entity_exists_by_name(controller_dict["name"], Tests.controller_exists)
-        state1_correct = scripting_tools.validate_entity_start_state_by_name(controller, controller_dict["status"])
+        """
 
-        act_tester = scripting_tools.validate_entity_exists_by_name(activated_dict["name"], Tests.activated_exists)
-        state2_correct = scripting_tools.validate_entity_start_state_by_name(act_tester, activated_dict["status"])
+        entity = scripting_tools.validate_entity_exists_by_name(entity_tuple["name"], test)
+        state_correct = scripting_tools.validate_entity_start_state_by_name(entity_tuple["name"], entity_tuple["status"])
 
-        deac_tester = scripting_tools.validate_entity_exists_by_name(deactivated_dict["name"], Tests.deactivated_exists)
-        state3_correct = scripting_tools.validate_entity_start_state_by_name(deac_tester, deactivated_dict["status"])
+        return state_correct
 
-        all_states_correct = state1_correct and state2_correct and state3_correct
-        Report.critical_result(Tests.start_states_correct, all_states_correct)
+    def validate_test_entities(self):
+
+        entities_valid = (self.validate_entity_state(activated_dict, Tests.activated_exists) and
+                        self.validate_entity_state(deactivated_dict, Tests.deactivated_exists) and
+                        self.validate_entity_state(controller_dict, Tests.controller_exists))
+
+        Report.critical_result(Tests.start_states_correct, entities_valid)
 
 
     @pyside_utils.wrap_async
@@ -129,8 +133,8 @@ class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
         # 2) create all the entities we need for the test
         self.setup_level_entities()
 
-        # 3) Validate the entities
-        self.validate_entities_in_level()
+        # 3) Validate the entities were created and configured
+        self.validate_test_entities()
 
         # 4) Start the Tracer
         with Tracer() as section_tracer:
