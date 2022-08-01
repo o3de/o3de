@@ -2057,7 +2057,7 @@ namespace ScriptCanvas
             {
                 m_class = classIter->second;
             }
-            else
+            else if (m_type.GetAZType() != AZ::Uuid::CreateString(k_ExecutionStateAzTypeIdString))
             {
                 AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
