@@ -100,7 +100,7 @@ namespace PythonCoverage
             return m_coverageState;
         }
 
-        const auto& tempConfig = configurationFile["workspace"]["temp"];
+        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
 
         // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
@@ -125,6 +125,8 @@ namespace PythonCoverage
             return;
         }
 
+        contents = testCase + "\n";
+        contents += m_scriptPath + "\n";
         for (const auto& coveringModule : coveringModules)
         {
             contents += AZStd::string::format("%s\n", coveringModule.c_str());
@@ -199,7 +201,7 @@ namespace PythonCoverage
         return coveringModuleOutputNames;
     }
     
-    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest([[maybe_unused]]AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
         if (m_coverageState == CoverageState::Disabled)
         {
@@ -221,15 +223,10 @@ namespace PythonCoverage
             return;
         }
 
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
-
-        // If this is a different python script we clear the existing entity components and start afresh
-        if (m_coverageFile != coverageFile)
-        {
-            m_coverageFile = coverageFile;
-        }
-
         m_entityComponents.clear();
+        m_scriptPath = filename;
+        const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
+        m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }
 } // namespace PythonCoverage
