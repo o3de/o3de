@@ -160,7 +160,7 @@ namespace AZ
 
             // The map of heap tiles allocated for each subresources
             // Note: the tiles allocated for each subreource may come from mutiple heap pages 
-            AZStd::map<uint32_t, AZStd::vector<HeapTiles>> m_heapTiles;
+            AZStd::unordered_map<uint32_t, AZStd::vector<HeapTiles>> m_heapTiles;
 
             // Tracking the actual mip level data uploaded. It's also used for invalidate image view. 
             uint32_t m_streamedMipLevel = 0;

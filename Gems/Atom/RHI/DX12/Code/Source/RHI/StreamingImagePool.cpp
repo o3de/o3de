@@ -127,6 +127,11 @@ namespace AZ
             return static_cast<StreamingImagePoolResolver*>(Base::GetResolver());
         }
 
+        RHI::HeapMemoryUsage& StreamingImagePool::GetDeviceHeapMemoryUsage()
+        {
+            return m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+        }
+
         RHI::ResultCode StreamingImagePool::InitInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
@@ -142,12 +147,11 @@ namespace AZ
 
             if (m_enableTileResource)
             {
-                m_memoryAllocatorUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
                                 
                 HeapAllocator::Descriptor heapPageAllocatorDesc;
                 heapPageAllocatorDesc.m_device = &device;
                 // Heap allocator updates total resident memory
-                heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage;};
+                heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &GetDeviceHeapMemoryUsage();};
                 heapPageAllocatorDesc.m_pageSizeInBytes = TileSizeInBytes * 256; // 16M per page, 256 tiles
                 heapPageAllocatorDesc.m_resourceTypeFlags = ResourceTypeFlags::Image; 
                 heapPageAllocatorDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
@@ -160,7 +164,7 @@ namespace AZ
                 TileAllocator::Descriptor tileAllocatorDesc;
                 tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
                 // Tile allocator updates used resident memory
-                tileAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage;};
+                tileAllocatorDesc.m_getHeapMemoryUsageFunction = heapPageAllocatorDesc.m_getHeapMemoryUsageFunction;
                 m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
 
                 // allocate one tile for default tile
@@ -426,11 +430,11 @@ namespace AZ
             {
                 // The committed image would allocate heap from the entire image
                 // We would only need to update memory usage once at creating time and when resource is shutdown
-                RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
                 D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
                 GetDevice().GetImageAllocationInfo(request.m_descriptor, allocationInfo);
-                if (!memoryUsage.CanAllocate(allocationInfo.SizeInBytes))
+                auto& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+                if (!memoryAllocatorUsage.CanAllocate(allocationInfo.SizeInBytes))
                 {
                     return RHI::ResultCode::OutOfMemory;
                 }
@@ -444,8 +448,8 @@ namespace AZ
                 else
                 {
                     // Update memory usage for committed resource
-                    memoryUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
-                    memoryUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
+                    memoryAllocatorUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
+                    memoryAllocatorUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
                     image.m_residentSizeInBytes = allocationInfo.SizeInBytes;
                 }
             }
@@ -510,10 +514,10 @@ namespace AZ
             }
             else
             {
-                RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-                memoryUsage.m_totalResidentInBytes -= image.m_residentSizeInBytes;
-                memoryUsage.m_usedResidentInBytes -= image.m_residentSizeInBytes;
-                memoryUsage.Validate();
+                auto& memoryAllocatorUsage = GetDeviceHeapMemoryUsage();
+                memoryAllocatorUsage.m_totalResidentInBytes -= image.m_residentSizeInBytes;
+                memoryAllocatorUsage.m_usedResidentInBytes -= image.m_residentSizeInBytes;
+                memoryAllocatorUsage.Validate();
             }
 
             GetDevice().QueueForRelease(image.m_memoryView);

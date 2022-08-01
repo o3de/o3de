@@ -9,66 +9,63 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! a structure to represent continous number of tiles 
+    struct PageTileSpan
     {
-        //! a structure to represent continous number of tiles (tile group)
-        struct Tiles
-        {
-        public:
-            struct Compare {
-                bool operator()(const Tiles& a, const Tiles& b) const {
-                  return a.m_offset < b.m_offset;
-                }
-            };
-
-            Tiles(uint32_t offset, uint32_t count)
-                : m_offset(offset)
-                , m_tileCount(count)
-            {
+    public:
+        struct Compare {
+            bool operator()(const PageTileSpan& a, const PageTileSpan& b) const {
+                return a.m_offset < b.m_offset;
             }
-            // offset by tile
-            uint32_t m_offset;
-            // tile count
-            uint32_t m_tileCount;
-
         };
 
-        //! This allocator allocates tile groups from a page which is aligned by tiles.
-        class PageTileAllocator
+        PageTileSpan(uint32_t offset, uint32_t count)
+            : m_offset(offset)
+            , m_tileCount(count)
         {
-        public:
-            void Init(uint32_t totalTileCount);
+        }
+        // offset by tile
+        uint32_t m_offset;
+        // tile count
+        uint32_t m_tileCount;
 
-            //! Allocate tiles. It returns tiles which are avaliable.
-            //! It may return tiles which less than desired count
-            //! @param tileCount Desired tile count to be allocated
-            //! @param allocatedTileCount Actual tile count was allocated
-            AZStd::vector<Tiles> TryAllocate(uint32_t tileCount, /*out*/ uint32_t& allocatedTileCount);
+    };
 
-            //! DeAllocate multiple group of tiles 
-            void DeAllocate(const AZStd::vector<Tiles>& tiles);
+    //! This allocator allocates tile groups from a page which is aligned by tiles.
+    class PageTileAllocator
+    {
+    public:
+        void Init(uint32_t totalTileCount);
 
-            //! DeAllocate one group of tiles. If the tiles are adjacented to the tiles in the freelist, they would be merged
-            void DeAllocate(Tiles tiles);
+        //! Allocate tiles. It returns tiles which are avaliable.
+        //! It may return tiles which less than desired count
+        //! @param tileCount Desired tile count to be allocated
+        //! @param allocatedTileCount Actual tile count was allocated
+        AZStd::vector<PageTileSpan> TryAllocate(uint32_t tileCount, /*out*/ uint32_t& allocatedTileCount);
 
-            uint32_t GetFreeTileCount() const;
-            uint32_t GetUsedTileCount() const;
-            uint32_t GetTotalTileCount() const;
+        //! DeAllocate multiple group of tiles 
+        void DeAllocate(const AZStd::vector<PageTileSpan>& tiles);
 
-            //! Returns whether all tiles in this page are avaliable
-            bool IsPageFree() const;
+        //! DeAllocate one group of tiles. If the tiles are adjacented to the tiles in the freelist, they would be merged
+        void DeAllocate(PageTileSpan tiles);
 
-            //! Get tile groups in free list
-            const AZStd::vector<Tiles>& GetFreeList() const;
+        uint32_t GetFreeTileCount() const;
+        uint32_t GetUsedTileCount() const;
+        uint32_t GetTotalTileCount() const;
 
-        private:
-            uint32_t m_allocatedTileCount = 0;
-            uint32_t m_totalTileCount = 0;
+        //! Returns whether all tiles in this page are avaliable
+        bool IsPageFree() const;
 
-            //list of free tile groups; tile groups are in ascending order based on their offsets
-            AZStd::vector<Tiles> m_freeList;
-        };
-    }
+        //! Get tile groups in free list
+        const AZStd::vector<PageTileSpan>& GetFreeList() const;
+
+    private:
+        uint32_t m_allocatedTileCount = 0;
+        uint32_t m_totalTileCount = 0;
+
+        //list of free tile groups; tile groups are in ascending order based on their offsets
+        AZStd::vector<PageTileSpan> m_freeList;
+    };
 }

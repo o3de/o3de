@@ -243,9 +243,9 @@ namespace AZ
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
             uint64_t fenceValue = 0;
 
-            // Use th mutex in following scope so it won't have dead lock issue when the request has m_waitForUpload set to true
+            // Use the mutex in following scope so it won't have dead lock issue when the request has m_waitForUpload set to true
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_copyQueueMutex);
+                AZStd::scoped_lock lock{m_copyQueueMutex};
 
                 // cache the request until request was processed
                 m_imageExpandRequests.push(request);
@@ -274,7 +274,7 @@ namespace AZ
                     uint16_t imageMipLevels = cachedRequest.m_image->GetDescriptor().m_mipLevels;
 
                     // Variables for split subresource slice. 
-                    // If a subresource slice pitch is large than one staging size, we may split the slice by rows.
+                    // If a subresource slice pitch is larger than one staging size, we may split the slice by rows.
                     // And using the CopyTextureRegion to only copy a section of the subresource 
                     bool needSplitSlice = false;
                     uint32_t rowsPerSplit = 0;
@@ -302,10 +302,10 @@ namespace AZ
                         // The final staging size for each CopyTextureRegion command
                         uint32_t stagingSize = stagingSlicePitch;
 
-                        // Prepare for spliting this subresource if needed
+                        // Prepare for splitting this subresource if needed
                         if (stagingSlicePitch > m_descriptor.m_stagingSizeInBytes)
                         {
-                            // Calculate minimum size of one row of this subresrouce
+                            // Calculate minimum size of one row of this subresource
                             uint32_t minSize = RHI::AlignUp(stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                             if (minSize > m_descriptor.m_stagingSizeInBytes)
                             {
@@ -381,7 +381,7 @@ namespace AZ
                         }
                         else
                         {
-                            // Each subresource need to be split.
+                            // Each subresource needs to be split.
                             for (const auto& subresource : cachedRequest.m_mipSlices[sliceIndex].m_subresources)
                             {
                                 // The copy destination is same for each subresource.
@@ -478,7 +478,7 @@ namespace AZ
                     }
 
                     // remove the request from the queue
-                    AZStd::lock_guard<AZStd::mutex> lock(m_copyQueueMutex);
+                    AZStd::scoped_lock lock{m_copyQueueMutex};
                     m_imageExpandRequests.pop();
 
                     return 0;
@@ -529,7 +529,7 @@ namespace AZ
 
         void AsyncUploadQueue::QueueTileMapping(const CommandList::TileMapRequest& request)
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_copyQueueMutex);
+            AZStd::scoped_lock lock{m_copyQueueMutex};
             m_tileMapRequests.push(request);
 
             const CommandList::TileMapRequest& cachedRequest = m_tileMapRequests.back();
@@ -542,7 +542,7 @@ namespace AZ
                 UpdateTileMap(dx12CommandQueue, cachedRequest);
                                 
                 // remove the request from the queue
-                AZStd::lock_guard<AZStd::mutex> lock(m_copyQueueMutex);
+                AZStd::scoped_lock lock{m_copyQueueMutex};
                 m_tileMapRequests.pop();
             });
         }

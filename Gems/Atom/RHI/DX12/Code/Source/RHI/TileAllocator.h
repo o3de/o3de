@@ -18,7 +18,7 @@ namespace AZ
         struct HeapTiles
         {
             RHI::Ptr<Heap> m_heap;
-            AZStd::vector<RHI::Tiles> m_tilesList;
+            AZStd::vector<RHI::PageTileSpan> m_tilesList;
             uint32_t m_totalTileCount = 0;
         };
 
@@ -89,7 +89,7 @@ namespace AZ
             // Allocated tile count
             uint32_t m_allocatedTileCount = 0;
             // The total tile count from all allocated heaps
-            uint32_t m_totleTileCount = 0;
+            uint32_t m_totalTileCount = 0;
 
             HeapAllocator* m_heapAllocator = nullptr;
         };

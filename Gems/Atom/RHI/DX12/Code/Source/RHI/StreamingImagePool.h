@@ -68,9 +68,8 @@ namespace AZ
             // Packed mips occupy a dedicated set of tiles.
             void AllocatePackedImageTiles(Image& image);
 
-            // Memory usage of this pool.
-            // Only GPU memory usage data is set in this class
-            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
+            // Get the data reference of device heap memory usage 
+            RHI::HeapMemoryUsage& GetDeviceHeapMemoryUsage();
 
             // whether to enable tiled resource
             bool m_enableTileResource = false;

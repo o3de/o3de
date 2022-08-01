@@ -23,10 +23,10 @@ namespace UnitTest
             : RHITestFixture()
         {}
 
-        // Return ture if there is no overlapping between all the input tile groups
-        bool ValidateTilesNotOverlap(const AZStd::vector<RHI::Tiles>& tilesList)
+        // Return true if there is no overlapping between all the input tile groups
+        bool ValidateTilesNotOverlap(const AZStd::vector<RHI::PageTileSpan>& tilesList)
         {
-            AZStd::set<RHI::Tiles, RHI::Tiles::Compare> sortedTilesList;
+            AZStd::set<RHI::PageTileSpan, RHI::PageTileSpan::Compare> sortedTilesList;
 
             for (const auto& tiles : tilesList)
             {
@@ -49,7 +49,7 @@ namespace UnitTest
             return true;
         }
 
-        uint32_t GetTileCount(const AZStd::vector<RHI::Tiles>& tilesList)
+        uint32_t GetTileCount(const AZStd::vector<RHI::PageTileSpan>& tilesList)
         {
             uint32_t tileCount = 0;
             for (const auto& tiles : tilesList)
@@ -74,7 +74,7 @@ namespace UnitTest
         uint32_t allocated = 0;
         uint32_t requested = 24;
 
-        AZStd::vector<RHI::Tiles> tilesList = allocator.TryAllocate(requested, allocated);
+        AZStd::vector<RHI::PageTileSpan> tilesList = allocator.TryAllocate(requested, allocated);
         ASSERT_TRUE(allocated == requested);
         ASSERT_TRUE(tilesList.size() == 1);
         ASSERT_TRUE(tilesList.front().m_tileCount == requested);
@@ -100,7 +100,7 @@ namespace UnitTest
         uint32_t allocated = 0;
         uint32_t requested = 24;
 
-        AZStd::vector<RHI::Tiles> tilesList = allocator.TryAllocate(requested, allocated);
+        AZStd::vector<RHI::PageTileSpan> tilesList = allocator.TryAllocate(requested, allocated);
 
         ASSERT_TRUE(allocated == pageTileCount);
         ASSERT_TRUE(tilesList.front().m_tileCount == allocated);
@@ -127,7 +127,7 @@ namespace UnitTest
 
         AZ::SimpleLcgRandom random(AZStd::GetTimeNowMicroSecond());
 
-        AZStd::vector<RHI::Tiles> allocatedTilesList;
+        AZStd::vector<RHI::PageTileSpan> allocatedTilesList;
 
         while (allocationCount-- != 0)
         {
@@ -136,7 +136,7 @@ namespace UnitTest
             {
                 uint32_t requested = random.GetRandom() % (pageTileCount + 10);
                 uint32_t allocated = 0;
-                AZStd::vector<RHI::Tiles> tilesList = allocator.TryAllocate(requested, allocated);
+                AZStd::vector<RHI::PageTileSpan> tilesList = allocator.TryAllocate(requested, allocated);
                 allocatedTilesList.insert(AZStd::end(allocatedTilesList), AZStd::begin(tilesList), AZStd::end(tilesList));
 
                 ASSERT_TRUE(allocated <= requested);
@@ -147,7 +147,7 @@ namespace UnitTest
             {
                 // select some tile groups from the list
                 uint32_t count = random.GetRandom() % allocatedTilesList.size() + 1;
-                AZStd::vector<RHI::Tiles> tilesToBeRemoved;
+                AZStd::vector<RHI::PageTileSpan> tilesToBeRemoved;
                 for (uint32_t i = 0; i < count; i++)
                 {
                     uint32_t position = (random.GetRandom() % allocatedTilesList.size());

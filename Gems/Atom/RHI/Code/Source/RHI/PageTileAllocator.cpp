@@ -15,19 +15,19 @@ namespace AZ
         {
             m_totalTileCount = totalTileCount;
             m_allocatedTileCount = 0;
-            m_freeList.push_back(Tiles(0, totalTileCount));
+            m_freeList.push_back(PageTileSpan(0, totalTileCount));
         }
 
-        AZStd::vector<Tiles> PageTileAllocator::TryAllocate(uint32_t tileCount, uint32_t& allocatedTileCount)
+        AZStd::vector<PageTileSpan> PageTileAllocator::TryAllocate(uint32_t tileCount, uint32_t& allocatedTileCount)
         {
             allocatedTileCount = 0;
-            AZStd::vector<Tiles> allocatedTiles;
+            AZStd::vector<PageTileSpan> allocatedTiles;
 
             // Allocate desired amount of tiles or until the free list is empty
             while (allocatedTileCount < tileCount && m_freeList.size())
             {
                 uint32_t tileNeeded = tileCount-allocatedTileCount;
-                Tiles tiles = m_freeList.back();
+                PageTileSpan tiles = m_freeList.back();
                 
                 if (tiles.m_tileCount <= tileNeeded)
                 {
@@ -54,7 +54,7 @@ namespace AZ
             return allocatedTiles;
         }
 
-        void PageTileAllocator::DeAllocate(const AZStd::vector<Tiles>& tilesList)
+        void PageTileAllocator::DeAllocate(const AZStd::vector<PageTileSpan>& tilesList)
         {
             for (auto tiles : tilesList)
             {
@@ -62,24 +62,24 @@ namespace AZ
             }
         }
 
-        void PageTileAllocator::DeAllocate(Tiles tiles)
+        void PageTileAllocator::DeAllocate(PageTileSpan tiles)
         {
             // update tile count before the tiles get changed
             m_allocatedTileCount -= tiles.m_tileCount;
 
-            auto itr = AZStd::upper_bound(AZStd::begin(m_freeList), AZStd::end(m_freeList), tiles, Tiles::Compare());
+            auto itr = AZStd::upper_bound(AZStd::begin(m_freeList), AZStd::end(m_freeList), tiles, PageTileSpan::Compare());
 
             int64_t pos = itr - m_freeList.begin();
 
             if (pos > 0)
             {
                 // check if the tile can merge with the element in front of 
-                auto front = m_freeList.at(pos - 1);
-                if (front.m_offset + front.m_tileCount == tiles.m_offset)
+                auto before = m_freeList.at(pos - 1);
+                if (before.m_offset + before.m_tileCount == tiles.m_offset)
                 {
-                    tiles.m_offset = front.m_offset;
-                    tiles.m_tileCount += front.m_tileCount;
-                    // remvoe front 
+                    tiles.m_offset = before.m_offset;
+                    tiles.m_tileCount += before.m_tileCount;
+                    // remove before 
                     m_freeList.erase(m_freeList.begin()+pos-1);
                     // update insert position 
                     pos -= 1;
@@ -93,7 +93,7 @@ namespace AZ
                 if (tiles.m_offset + tiles.m_tileCount == after.m_offset)
                 {
                     tiles.m_tileCount += after.m_tileCount;
-                    // remvoe the following element
+                    // remove the following element
                     m_freeList.erase(m_freeList.begin()+pos);
                 }
             }
@@ -121,7 +121,7 @@ namespace AZ
             return m_allocatedTileCount == 0;
         }
 
-        const AZStd::vector<Tiles>& PageTileAllocator::GetFreeList() const
+        const AZStd::vector<PageTileSpan>& PageTileAllocator::GetFreeList() const
         {
             return m_freeList;
         }

@@ -74,7 +74,7 @@ namespace AZ
             AZ_Assert(allocatedTileCount == tileCount, "Implementation error: imcomplete allocation");
 
             m_allocatedTileCount += tileCount;
-            AZ_Assert(m_allocatedTileCount <= m_totleTileCount, "Implementation error: tile count error.");
+            AZ_Assert(m_allocatedTileCount <= m_totalTileCount, "Implementation error: tile count error.");
             
             RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
             heapMemoryUsage->m_usedResidentInBytes += tileCount * m_descriptor.m_tileSizeInBytes;
@@ -87,7 +87,7 @@ namespace AZ
             AZStd::vector<HeapTiles> tilesList;
             
             // Create new pages if there aren't enough free tiles available
-            uint32_t freeTileCount = m_totleTileCount - m_allocatedTileCount;
+            uint32_t freeTileCount = m_totalTileCount - m_allocatedTileCount;
             if (freeTileCount < tileCount)
             {
                 uint32_t newPageCount = (tileCount - freeTileCount + m_tileCountPerPage - 1)/m_tileCountPerPage;
@@ -108,7 +108,7 @@ namespace AZ
 
                     // add page to free list
                     m_freeList.insert(heap);
-                    m_totleTileCount += m_tileCountPerPage;
+                    m_totalTileCount += m_tileCountPerPage;
                 }
             }
 
@@ -162,7 +162,7 @@ namespace AZ
                     m_freeList.erase(itr->first);
                     m_heapAllocator->DeAllocate(itr->first.get());
                     itr = m_pageContexts.erase(itr);
-                    m_totleTileCount -= m_tileCountPerPage;
+                    m_totalTileCount -= m_tileCountPerPage;
                 }
                 else
                 {
@@ -179,7 +179,7 @@ namespace AZ
         {
             GarbageCollect();
 
-            AZ_Assert(m_allocatedTileCount == 0 && m_pageContexts.size() == 0 && m_freeList.size() == 0 && m_totleTileCount == 0,
+            AZ_Assert(m_allocatedTileCount == 0 && m_pageContexts.size() == 0 && m_freeList.size() == 0 && m_totalTileCount == 0,
                 "Image resources which are using tiles are not released");
         }
         
@@ -190,7 +190,7 @@ namespace AZ
 
         uint32_t TileAllocator::GetTotalTileCount() const
         {
-            return m_totleTileCount;
+            return m_totalTileCount;
         }
 
         const TileAllocator::Descriptor& TileAllocator::GetDescriptor() const
@@ -210,7 +210,7 @@ namespace AZ
                     this,
                     opName,
                     m_allocatedTileCount,
-                    m_totleTileCount,
+                    m_totalTileCount,
                     heapMemoryUsage->m_usedResidentInBytes.load(),
                     heapMemoryUsage->m_totalResidentInBytes.load(),
                     heapMemoryUsage->m_budgetInBytes);
