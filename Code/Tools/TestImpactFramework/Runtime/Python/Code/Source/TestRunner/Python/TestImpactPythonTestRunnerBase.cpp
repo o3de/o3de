@@ -14,13 +14,19 @@
 
 namespace TestImpact
 {
-    class PythonTestRunner
-        : public PythonTestRunnerBase
+    PythonTestRunnerBase::PythonTestRunnerBase(const RepoPath& artifactDir)
+        : TestRunnerWithCoverage(1)
+        , m_artifactDir(artifactDir)
     {
-    public:
-        using PythonTestRunnerBase::PythonTestRunnerBase;
+    }
 
-    protected:
-        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
-    };
+    typename PythonTestRunnerBase::PayloadMap PythonTestRunnerBase::PayloadMapProducer(
+        [[maybe_unused]] const typename PythonTestRunnerBase::JobDataMap& jobDataMap)
+    {
+        PayloadMap runs;
+
+
+
+        return runs;
+    }
 } // namespace TestImpact

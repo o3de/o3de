@@ -65,6 +65,9 @@ namespace TestImpact
     //! Deletes the specified file.
     void DeleteFile(const RepoPath& file);
 
+    //! Returns the list of files in the specified path that match the specified pattern.
+    AZStd::vector<AZStd::string> ListFiles(const RepoPath& path, const AZStd::string& pattern);
+
     //! Counts the number files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for counting.

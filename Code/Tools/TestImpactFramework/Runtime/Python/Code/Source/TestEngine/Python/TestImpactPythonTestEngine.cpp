@@ -46,7 +46,7 @@ namespace TestImpact
     PythonTestEngine::PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
               AZStd::move(repoDir), AZStd::move(pythonBinary), AZStd::move(buildDir), artifactDir))
-        , m_testRunner(AZStd::make_unique<PythonTestRunner>())
+        , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
         , m_artifactDir(artifactDir)
     {
     }

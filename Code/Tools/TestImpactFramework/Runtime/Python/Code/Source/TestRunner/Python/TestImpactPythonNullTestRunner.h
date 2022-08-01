@@ -10,22 +10,15 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
-#include <TestRunner/Common/TestImpactTestRunnerException.h>
-#include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
-#include <TestRunner/Common/Run/TestImpactTestCoverage.h>
-#include <TestRunner/Common/TestImpactTestRunnerWithCoverage.h>
+#include <TestRunner/Python/TestImpactPythonTestRunnerBase.h>
 
 namespace TestImpact
 {
     class PythonNullTestRunner
-        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>
+        : public PythonTestRunnerBase
     {
     public:
-        using TestRunnerWithCoverage = TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>;
-
-        PythonNullTestRunner();
+        using PythonTestRunnerBase::PythonTestRunnerBase;
 
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
             const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,

@@ -12,11 +12,6 @@
 
 namespace TestImpact
 {
-    PythonTestRunner::PythonTestRunner()
-        : TestRunnerWithCoverage(1)
-    {
-    }
-
     PythonTestRunner::JobPayloadOutcome PythonTestRunner::PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;

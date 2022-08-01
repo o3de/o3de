@@ -12,11 +12,6 @@
 
 namespace TestImpact
 {
-    PythonNullTestRunner::PythonNullTestRunner()
-        : TestRunnerWithCoverage(1)
-    {
-    }
-
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<PythonNullTestRunner::TestJobRunner::Job>> PythonNullTestRunner::RunTests(
         [[maybe_unused]] const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
         [[maybe_unused]] StdOutputRouting stdOutRouting,
