@@ -28,7 +28,7 @@ namespace AZ
             if (m_nativeSurface != VK_NULL_HANDLE)
             {
                 Instance& instance = Instance::GetInstance();
-                vkDestroySurfaceKHR(instance.GetNativeInstance(), m_nativeSurface, nullptr);
+                instance.GetContext().DestroySurfaceKHR(instance.GetNativeInstance(), m_nativeSurface, nullptr);
                 m_nativeSurface = VK_NULL_HANDLE;
             }
         }

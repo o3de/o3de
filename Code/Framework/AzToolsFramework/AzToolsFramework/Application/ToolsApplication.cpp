@@ -74,6 +74,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
@@ -296,6 +297,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
                 azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
                 azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::Script::LuaEditorSystemComponent>(),
             });
 
         return components;
