@@ -1487,7 +1487,10 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
         terrainSettingsChanged = true;
         m_terrainSettingsDirty = false;
-        m_dirtyRegion = ClampZBoundsToHeightBounds(m_cachedAreaBounds);
+        if (m_currentSettings.m_heightRange.IsValid())
+        {
+            m_dirtyRegion = ClampZBoundsToHeightBounds(m_cachedAreaBounds);
+        }
 
         // This needs to happen before the "system active" check below, because activating the system will cause the various
         // terrain layer areas to request the current world bounds.
