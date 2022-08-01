@@ -226,7 +226,11 @@ namespace AssetProcessor
         }
         else
         {
-            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            QString statKey = QString("ProcessJob,%1,%2,%3,%4")
+                                  .arg(jobEntry.m_databaseSourceName)
+                                  .arg(jobEntry.m_jobKey)
+                                  .arg(jobEntry.m_platformInfo.m_identifier.c_str())
+                                  .arg(jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
 
             if (status == JobStatus::InProgress)
             {
@@ -247,8 +251,7 @@ namespace AssetProcessor
 
                 if (operationDuration)
                 {
-                    Q_EMIT JobProcessDurationChanged(
-                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<int>(operationDuration.value()));
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
@@ -3940,6 +3943,9 @@ namespace AssetProcessor
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
+
+        // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
+        Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
@@ -4651,6 +4657,15 @@ namespace AssetProcessor
             AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to add source to the database!!!");
             return;
         }
+    }
+
+    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderId() const
+    {
+        if (!m_platformConfig)
+        {
+            return AZStd::nullopt;
+        }
+        return m_platformConfig->GetIntermediateAssetsScanFolderId();
     }
 
     void AssetProcessorManager::CheckAssetProcessorIdleState()

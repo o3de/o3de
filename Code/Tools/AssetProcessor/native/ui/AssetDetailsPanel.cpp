@@ -29,6 +29,9 @@ namespace AssetProcessor
         QTreeView* sourceTreeView,
         SourceAssetTreeModel* sourceAssetTreeModel,
         AssetTreeFilterModel* sourceFilterModel,
+        QTreeView* intermediateTreeView,
+        SourceAssetTreeModel* intermediateAssetTreeModel,
+        AssetTreeFilterModel* intermediateFilterModel,
         QTreeView* productTreeView,
         ProductAssetTreeModel* productAssetTreeModel,
         AssetTreeFilterModel* productFilterModel,
@@ -37,6 +40,11 @@ namespace AssetProcessor
         m_sourceTreeView = sourceTreeView;
         m_sourceTreeModel = sourceAssetTreeModel;
         m_sourceFilterModel = sourceFilterModel;
+
+        m_intermediateTreeView = intermediateTreeView;
+        m_intermediateTreeModel = intermediateAssetTreeModel;
+        m_intermediateFilterModel = intermediateFilterModel;
+
         m_productTreeView = productTreeView;
         m_productTreeModel = productAssetTreeModel;
         m_productFilterModel = productFilterModel;
@@ -45,22 +53,49 @@ namespace AssetProcessor
 
     void AssetDetailsPanel::GoToSource(const AZStd::string& source)
     {
-        if (!m_sourceTreeModel || !m_sourceTreeView || !m_assetsTab || !m_sourceFilterModel)
+        if (!m_sourceTreeModel || !m_sourceTreeView || !m_assetsTab || !m_sourceFilterModel ||
+            !m_intermediateTreeView || !m_intermediateTreeModel || !m_intermediateFilterModel)
         {
             return;
         }
-        m_assetsTab->setCurrentIndex(static_cast<int>(MainWindow::AssetTabIndex::Source));
-        QModelIndex goToIndex = m_sourceTreeModel->GetIndexForSource(source);
+        
+        AssetDatabaseConnection assetDatabaseConnection;
+        assetDatabaseConnection.OpenDatabase();
+        
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceDetails;
+        assetDatabaseConnection.QuerySourceBySourceName(
+            source.c_str(),
+            [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+            {
+                sourceDetails = sourceEntry;
+                return false;
+            });
+
+        bool isIntermediate = false;
+        if(m_intermediateAssetFolderId.has_value())
+        {
+            isIntermediate = sourceDetails.m_scanFolderPK == m_intermediateAssetFolderId.value();
+        }
+
+        int assetTabIndex = static_cast<int>(
+            isIntermediate ? MainWindow::AssetTabIndex::Intermediate : MainWindow::AssetTabIndex::Source);
+        m_assetsTab->setCurrentIndex(assetTabIndex);
+
+        QTreeView* treeView = isIntermediate ? m_intermediateTreeView : m_sourceTreeView;
+        SourceAssetTreeModel* treeModel = isIntermediate ? m_intermediateTreeModel : m_sourceTreeModel;
+        AssetTreeFilterModel* filterModel = isIntermediate ? m_intermediateFilterModel : m_sourceFilterModel;
+
+        QModelIndex goToIndex = treeModel->GetIndexForSource(source);
         // Make sure this index is visible, even if a search is active.
-        m_sourceFilterModel->ForceModelIndexVisible(goToIndex);
-        QModelIndex filterIndex = m_sourceFilterModel->mapFromSource(goToIndex);
+        filterModel->ForceModelIndexVisible(goToIndex);
+        QModelIndex filterIndex = filterModel->mapFromSource(goToIndex);
         // Some tables, like the source dependencies table, may have wildcards or links to files that don't exist.
         if (!filterIndex.isValid())
         {
             return;
         }
-        m_sourceTreeView->scrollTo(filterIndex, QAbstractItemView::ScrollHint::EnsureVisible);
-        m_sourceTreeView->selectionModel()->setCurrentIndex(filterIndex, AssetTreeModel::GetAssetTreeSelectionFlags());
+        treeView->scrollTo(filterIndex, QAbstractItemView::ScrollHint::EnsureVisible);
+        treeView->selectionModel()->setCurrentIndex(filterIndex, AssetTreeModel::GetAssetTreeSelectionFlags());
     }
 
     void AssetDetailsPanel::GoToProduct(const AZStd::string& product)

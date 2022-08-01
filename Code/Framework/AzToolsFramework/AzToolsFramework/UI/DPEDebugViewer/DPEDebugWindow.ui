@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>600</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
            <enum>QAbstractItemView::SelectItems</enum>
           </property>
           <property name="rootIsDecorated">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="uniformRowHeights">
            <bool>true</bool>
@@ -75,7 +75,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>600</width>
      <height>22</height>
     </rect>
    </property>

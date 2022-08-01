@@ -92,7 +92,8 @@ namespace PhysX
         float GetMaximumSpeed() const override;
         void SetMaximumSpeed(float maximumSpeed) override;
         AZ::Vector3 GetVelocity() const override;
-        void AddVelocity(const AZ::Vector3& velocity) override;
+        void AddVelocityForTick(const AZ::Vector3& velocity) override;
+        void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) override;
         bool IsPresent() const override { return IsPhysicsEnabled(); }
         Physics::Character* GetCharacter() override;
 
@@ -137,13 +138,15 @@ namespace PhysX
         // Cleans up all references and events used with the physics character controller.
         void DestroyController();
 
-        void OnPreSimulate(float deltaTime);
+        void OnPostSimulate(float deltaTime);
+        void OnSceneSimulationStart(float physicsTimestep);
 
         AZStd::unique_ptr<Physics::CharacterConfiguration> m_characterConfig;
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfig;
         AzPhysics::SimulatedBodyHandle m_controllerBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
+        AzPhysics::SystemEvents::OnPostsimulateEvent::Handler m_postSimulateHandler;
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneSimulationStartHandler;
         AzPhysics::SceneEvents::OnSimulationBodyRemoved::Handler m_onSimulatedBodyRemovedHandler;
     };
 } // namespace PhysX
