@@ -12,6 +12,8 @@
 
 Commonly used global constants and default values.
 """
+# -------------------------------------------------------------------------
+# standard imports
 import os
 import sys
 from pathlib import Path
@@ -68,6 +70,7 @@ PATH_DCCSI_LOG_PATH = (f'{PATH_USER_O3DE}\\Cache\\log' +
 # it is suggested that in a future iteration, these are moved from
 # a dccsi nested location, to a location in user home o3de
 
+# path string constructor
 PATH_DCCSI_PYTHON_LIB = (f'{_PATH_DCCSIG.as_posix()}' +
                          f'\\3rdParty\\Python\\Lib' +
                          f'\\{sys.version_info[0]}.x' +
