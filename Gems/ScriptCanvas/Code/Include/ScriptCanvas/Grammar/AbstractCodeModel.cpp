@@ -2966,7 +2966,9 @@ namespace ScriptCanvas
                 {
                     auto& dependencies = dependencyOutcome.GetValue();
 
-                    // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined.
+                    // #functions2 This search needs to recurse, and ignore the graphs in which the functions are defined, do this after the
+                    // editor executed unit tests are restored
+                    // 
                     // This layer of dependencies will only be one step deep.
                     // Currently, this problem is only detected by the asset processor
                     if (dependencies.userSubgraphs.find(m_source.m_namespacePath) != dependencies.userSubgraphs.end())
