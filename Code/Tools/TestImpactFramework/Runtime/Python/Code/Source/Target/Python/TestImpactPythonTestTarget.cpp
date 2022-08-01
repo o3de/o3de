@@ -30,4 +30,9 @@ namespace TestImpact
     {
         return m_testMetaData.m_scriptPath;
     }
+
+    const AZStd::string& PythonTestTarget::GetCommand() const
+    {
+        return m_testMetaData.m_testCommand;
+    }
 } // namespace TestImpact

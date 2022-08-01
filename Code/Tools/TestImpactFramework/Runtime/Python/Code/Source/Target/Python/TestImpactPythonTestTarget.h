@@ -30,6 +30,9 @@ namespace TestImpact
         //! Returns the path to the script to execute this test.
         const RepoPath& GetScriptPath() const;
 
+        //! Returns the command to execute this test.
+        const AZStd::string& GetCommand() const;
+
     private:
         PythonTestTargetMeta m_testMetaData;
     };

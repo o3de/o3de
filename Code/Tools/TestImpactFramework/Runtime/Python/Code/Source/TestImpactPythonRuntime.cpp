@@ -18,13 +18,20 @@
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 
+#include <AzCore/std/string/regex.h>
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile)
+    PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile, const AZStd::string& buildType)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
-        return PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
+        auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
+        for (auto& [name, meta] : testTargetMetaMap)
+        {
+            meta.m_testCommand = AZStd::regex_replace(meta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType); 
+        }
+
+        return testTargetMetaMap;
     }
 
     PythonRuntime::PythonRuntime(
@@ -50,7 +57,7 @@ namespace TestImpact
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
         auto buildTargets = CompilePythonTargetLists(
             AZStd::move(targetDescriptors),
-            ReadPythonTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile));
+            ReadPythonTestTargetMetaMapFile(suiteFilter, m_config.m_commonConfig.m_testTargetMeta.m_metaFile, m_config.m_commonConfig.m_meta.m_buildConfig));
         auto&& [productionTargets, testTargets] = buildTargets;
         m_buildTargets = AZStd::make_unique<BuildTargetList<PythonProductionTarget, PythonTestTarget>>(
             AZStd::move(testTargets), AZStd::move(productionTargets));

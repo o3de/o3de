@@ -21,6 +21,7 @@ namespace TestImpact
     struct ConfigMeta
     {
         AZStd::string m_platform; //!< The platform for which the configuration pertains to.
+        AZStd::string m_buildConfig; //!< The build configuration of the binaries.
     };
 
     //! Repository configuration.

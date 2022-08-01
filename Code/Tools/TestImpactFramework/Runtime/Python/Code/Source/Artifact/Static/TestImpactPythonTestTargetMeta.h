@@ -21,6 +21,7 @@ namespace TestImpact
     {
         TestSuiteMeta m_suiteMeta; //<! The meta-data about this target's test suite.
         RepoPath m_scriptPath; //!< Path to the Python script for this test (relative to repository root).
+        AZStd::string m_testCommand; //!< Command string to execute this test.
     };
 
     //! Map between test target name and test target meta-data.

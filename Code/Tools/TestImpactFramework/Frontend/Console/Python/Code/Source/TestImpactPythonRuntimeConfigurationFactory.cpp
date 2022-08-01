@@ -23,7 +23,7 @@ namespace TestImpact
             "target",
             "test_engine",
             "test_runner",
-            "python_cmd",
+            "bin",
         };
 
         enum

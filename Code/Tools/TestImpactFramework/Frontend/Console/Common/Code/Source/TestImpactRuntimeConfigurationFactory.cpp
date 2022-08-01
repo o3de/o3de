@@ -25,6 +25,7 @@ namespace TestImpact
             "root",
             "build",
             "platform",
+            "build_config",
             "relative_paths",
             "artifact_dir",
             "enumeration_cache_dir",
@@ -73,6 +74,7 @@ namespace TestImpact
             Root,
             Build,
             PlatformName,
+            BuildConfig,
             RelativePaths,
             ArtifactDir,
             EnumerationCacheDir,
@@ -149,6 +151,7 @@ namespace TestImpact
     {
         ConfigMeta configMeta;
         configMeta.m_platform = meta[Config::Keys[Config::PlatformName]].GetString();
+        configMeta.m_buildConfig = meta[Config::Keys[Config::BuildConfig]].GetString();
         return configMeta;
     }
 
