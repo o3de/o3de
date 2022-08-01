@@ -14,10 +14,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
 namespace AzToolsFramework::ComponentModeFramework
-
 {
     // ComponentData constructor to fill in component info
     ComponentData::ComponentData(AZ::EntityComponentIdPair pairId)
@@ -25,10 +22,8 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         AZ::ComponentApplicationBus::BroadcastResult(
             m_entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(pairId.GetEntityId()));
-        AZ::ComponentId componentId = pairId.GetComponentId();
 
-        m_component = m_entity->FindComponent(componentId);
-
+        m_component = m_entity->FindComponent(pairId.GetComponentId());
         m_componentName = AzToolsFramework::GetFriendlyComponentName(m_component);
 
         AzToolsFramework::EditorRequestBus::BroadcastResult(
@@ -44,15 +39,14 @@ namespace AzToolsFramework::ComponentModeFramework
         EntityCompositionNotificationBus::Handler::BusConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
 
-
-        // Create the switcher
+        // create the switcher
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_switcherId,
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
             ViewportUi::Alignment::TopLeft);
 
-        // Initial Transform button
+        // initial transform button
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_transformButtonId,
             ViewportUi::DefaultViewportId,
@@ -67,7 +61,7 @@ namespace AzToolsFramework::ComponentModeFramework
             m_switcherId,
             m_transformButtonId);
 
-        // Handler
+        // create handler for switcher buttons to activate component mode on click
         auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
         {
             ViewportUi::ViewportUiRequestBus::Event(
@@ -79,8 +73,8 @@ namespace AzToolsFramework::ComponentModeFramework
             ActivateComponentMode(buttonId);
         };
 
+        // register the SwitcherEventHandler which is defined in ComponentModeSwitcher
         m_handler = AZ::Event<ViewportUi::ButtonId>::Handler(handlerFunc);
-        // Registers the SwitcherEventHandler which is defined in ComponentModeSwitcher
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler,
@@ -90,71 +84,84 @@ namespace AzToolsFramework::ComponentModeFramework
 
     ComponentModeSwitcher::~ComponentModeSwitcher()
     {
-        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
-        EntityCompositionNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
+        EntityCompositionNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveSwitcher, m_switcherId);
     }
 
     void ComponentModeSwitcher::UpdateSwitcherOnEntitySelectionChange(
-        [[maybe_unused]] const EntityIdList newlySelectedEntityIds, [[maybe_unused]] const EntityIdList newlyDeselectedEntityIds)
+        [[maybe_unused]] const EntityIdList& newlySelectedEntityIds, [[maybe_unused]] const EntityIdList& newlyDeselectedEntityIds)
     {
         AZ::Entity* entity = nullptr;
 
-        // Currently only handling one new entity selection at a time
-        if (!newlySelectedEntityIds.empty() && newlySelectedEntityIds.size() == 1)
-        {
-            AZ::ComponentApplicationBus::BroadcastResult(
-                entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(newlySelectedEntityIds.front()));
+        auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
+        const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
 
-            if (entity)
-            {
-                EntityIdList selectedEntityIds;
-                ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        // currently only handling when on entity is selected at once
         
-                if (selectedEntityIds.size() > 1)
-                {
-                    RemoveExclusiveComponents(*entity);
-                    return;
-                }
+        if (!newlySelectedEntityIds.empty())
+        {
+            for (auto entityId : newlySelectedEntityIds)
+            {
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(newlySelectedEntityIds.front()));
 
-                for (const auto& entityComponent : entity->GetComponents())
+                if (entity)
                 {
-                    // Find if the component has a component mode using GetNumOfEventHandlers
-                    const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
-                    AddComponentButton(entityComponentIdPair);
+                    /* if two or more entities are selected, ensure the only components
+                    that remain on the switcher are common to all entities*/
+                    if (selectedEntityIds.size() > 1 && m_addedComponents.size() != 0)
+                    {
+                        RemoveNonCommonComponents(*entity);
+                        continue;
+                    }
+
+                    for (const auto& entityComponent : entity->GetComponents())
+                    {
+                        const auto entityComponentIdPair = AZ::EntityComponentIdPair(entity->GetId(), entityComponent->GetId());
+                        AddComponentButton(entityComponentIdPair);
+                    }
                 }
             }
         }
         else if (!newlyDeselectedEntityIds.empty())
         {
-            AZStd::vector<AZ::EntityComponentIdPair> pairIdsToRemove;
-            for (auto componentDataIt : m_addedComponents)
+            //CLear the switcher then add the components back if entities are still selected
+            ClearSwitcher();
+
+            if (selectedEntityIds.size() >= 1)
             {
-                pairIdsToRemove.push_back(componentDataIt.m_pairId);
+                for (auto entityId : selectedEntityIds)
+                {
+                    UpdateSwitcherOnEntitySelectionChange(EntityIdList{ entityId }, EntityIdList{});
+                }
             }
-            for (auto pairId : pairIdsToRemove)
-            {
-                RemoveComponentButton(pairId);
-            }
-            //v.erase(std::remove_if(v.begin(), v.end(), is_odd), v.end());
+        }
+    }
+
+    void ComponentModeSwitcher::ClearSwitcher()
+    {
+        for (AZStd::vector<ComponentData>::reverse_iterator it = m_addedComponents.rbegin(); it != m_addedComponents.rend(); ++it)
+        {
+            RemoveComponentButton(it->m_pairId);
         }
     }
 
     void ComponentModeSwitcher::AddComponentButton(const AZ::EntityComponentIdPair pairId)
     {
-        // Check if the component has a component mode.
-        const auto numHandlers = AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::GetNumOfEventHandlers(pairId);
-        if (numHandlers < 1)
+        // check if the component has a component mode
+        const auto handlerCount = AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequestBus::GetNumOfEventHandlers(pairId);
+        if (handlerCount < 1)
         {
             return;
         }
 
         ComponentData newComponentData = ComponentData(pairId);
 
-        // If the component has not already been added as a button, add the button
+        // if the component has not already been added as a button, add the button
         if (auto componentDataIt = AZStd::find_if(
                 m_addedComponents.begin(),
                 m_addedComponents.end(),
@@ -164,12 +171,12 @@ namespace AzToolsFramework::ComponentModeFramework
                 });
             componentDataIt == m_addedComponents.end())
         {
-            AddSwitcherButton(newComponentData, newComponentData.m_componentName.c_str(), newComponentData.m_iconPath.c_str());
+            AddSwitcherButton(newComponentData);
             m_addedComponents.push_back(newComponentData);
         }
     }
 
-    void ComponentModeSwitcher::AddSwitcherButton(ComponentData& componentData, const char* componentName, const char* iconPath)
+    void ComponentModeSwitcher::AddSwitcherButton(ComponentData& componentData)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -177,12 +184,12 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
             m_switcherId,
-            iconPath,
-            componentName);
+            componentData.m_iconPath.c_str(),
+            componentData.m_componentName.c_str());
 
         componentData.m_buttonId = buttonId;
 
-        AZStd::string buttonTooltip = AZStd::string::format(" Enter %s component mode", componentData.m_componentName.c_str());
+        AZStd::string buttonTooltip = AZStd::string::format("Enter %s Edit mode", componentData.m_componentName.c_str());
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -194,13 +201,13 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::RemoveComponentButton(const AZ::EntityComponentIdPair pairId)
     {
-        // find pairId in m_whatever, call bus to remove
+        // find pairId in m_addedComponents, call ViewportUiRequestBus to remove
         if (auto componentDataIt = AZStd::find_if(
                 m_addedComponents.begin(),
                 m_addedComponents.end(),
-                [pairId](const ComponentData& componentInfo)
+                [pairId](const ComponentData& componentData)
                 {
-                    return componentInfo.m_pairId == pairId;
+                    return componentData.m_pairId == pairId;
                 });
             componentDataIt != m_addedComponents.end())
         {
@@ -216,9 +223,6 @@ namespace AzToolsFramework::ComponentModeFramework
 
     void ComponentModeSwitcher::ActivateComponentMode(const ViewportUi::ButtonId buttonId)
     {
-        bool inComponentMode;
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
         ComponentData* component = nullptr;
 
         // find component associated with button Id
@@ -234,6 +238,10 @@ namespace AzToolsFramework::ComponentModeFramework
             component = componentDataIt;
         }
 
+        bool inComponentMode;
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+
         // if already in component mode, end current mode and switch active button to the selected component
         if (inComponentMode)
         {
@@ -241,13 +249,10 @@ namespace AzToolsFramework::ComponentModeFramework
                 &ComponentModeSystemRequests::EndComponentMode);
 
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
-                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                m_switcherId,
-                buttonId);
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
         }
 
-        // if the newly active button is not the transform button (no component mode associated), emter component mode 
+        // if the newly active button is not the transform button (no component mode associated), emter component mode
         if (buttonId != m_transformButtonId)
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
@@ -256,7 +261,7 @@ namespace AzToolsFramework::ComponentModeFramework
     }
 
     void ComponentModeSwitcher::OnEditorModeDeactivated(
-        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
         if (mode == ViewportEditorMode::Component)
         {
@@ -266,77 +271,70 @@ namespace AzToolsFramework::ComponentModeFramework
                 &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                 m_switcherId,
                 m_transformButtonId);
-
-            m_activeSwitcherComponent = nullptr;
         }
     }
 
     void ComponentModeSwitcher::OnEditorModeActivated(
-        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
     {
-
         // if the user enters component mode not using the switcher, the switcher should still switch buttons
         if (mode == ViewportEditorMode::Component)
         {
-            for (auto componentData : m_addedComponents)
+             if (auto componentDataIt = AZStd::find_if(
+                    m_addedComponents.begin(),
+                    m_addedComponents.end(),
+                    [](const ComponentData& componentData)
+                    {
+                        bool isComponentActive;
+                        ComponentModeSystemRequestBus::BroadcastResult(
+                            isComponentActive,
+                            &ComponentModeSystemRequestBus::Events::AddedToComponentMode,
+                            componentData.m_pairId,
+                            componentData.m_component->GetUnderlyingComponentType());
+                        return isComponentActive;
+                    });
+                componentDataIt != m_addedComponents.end())
             {
-                bool isComponentActive;
-                ComponentModeSystemRequestBus::BroadcastResult(
-                    isComponentActive,
-                    &ComponentModeSystemRequestBus::Events::AddedToComponentMode,
-                    componentData.m_pairId,
-                    componentData.m_component->GetUnderlyingComponentType());
-
-                if (isComponentActive)
-                {
-                    ViewportUi::ViewportUiRequestBus::Event(
-                        ViewportUi::DefaultViewportId,
-                        &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                        m_switcherId,
-                        componentData.m_buttonId);
-                    m_activeSwitcherComponent = componentData.m_component;
-                }
+                 ViewportUi::ViewportUiRequestBus::Event(
+                     ViewportUi::DefaultViewportId,
+                     &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+                     m_switcherId,
+                     componentDataIt->m_buttonId);
+                 m_activeSwitcherComponent = componentDataIt;
             }
         }
     }
 
-    void ComponentModeSwitcher::RemoveExclusiveComponents(const AZ::Entity& entity)
+    void ComponentModeSwitcher::RemoveNonCommonComponents(const AZ::Entity& entity)
     {
-        // Get all component Ids associated with entity, identify which ones to remove and then remove them
+        // get all component Ids associated with entity, identify which ones to remove and then remove them
         AZStd::set<AZ::TypeId> componentIds;
         for (const auto& entityComponent : entity.GetComponents())
         {
             componentIds.insert(entityComponent->RTTI_GetType());
         }
 
-        AZStd::vector<AZ::EntityComponentIdPair> pairsToRemove;
-        for (auto switcherComponent: m_addedComponents)
+        for (AZStd::vector<ComponentData>::reverse_iterator it = m_addedComponents.rbegin(); it != m_addedComponents.rend(); ++it)
         {
-            if (!componentIds.contains(switcherComponent.m_component->RTTI_GetType()))
+            if(!componentIds.contains(it->m_component->RTTI_GetType()))
             {
-                pairsToRemove.push_back(switcherComponent.m_pairId);
+                RemoveComponentButton(it->m_pairId);
             }
-        }
-        for (auto pairId : pairsToRemove)
-        {
-            RemoveComponentButton(pairId);
         }
     }
 
     void ComponentModeSwitcher::OnEntityComponentDisabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
     {
-        auto pairId = AZ::EntityComponentIdPair(entityId, componentId);
-        RemoveComponentButton(pairId);
+        RemoveComponentButton(AZ::EntityComponentIdPair(entityId, componentId));
     }
 
     void ComponentModeSwitcher::OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
     {
-        auto pairId = AZ::EntityComponentIdPair(entityId, componentId);
-        AddComponentButton(pairId);
+        AddComponentButton(AZ::EntityComponentIdPair(entityId, componentId));
     }
 
     void ComponentModeSwitcher::OnEntityComponentAdded(
-        [[maybe_unused]] const AZ::EntityId& entity, [[maybe_unused]] const AZ::ComponentId& component)
+        const AZ::EntityId& entity, const AZ::ComponentId& component)
     {
         // when a component is added to an entity set a staging member variable to the entityComponentIdPair
         m_componentModePair = AZ::EntityComponentIdPair(entity, component);
@@ -344,7 +342,7 @@ namespace AzToolsFramework::ComponentModeFramework
     }
 
     void ComponentModeSwitcher::OnEntityComponentRemoved(
-        [[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId)
+        const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
     {
         m_componentModePair = AZ::EntityComponentIdPair(entityId, componentId);
         m_addOrRemove = AddOrRemoveComponent::Remove;
@@ -368,9 +366,8 @@ namespace AzToolsFramework::ComponentModeFramework
     }
 
     void ComponentModeSwitcher::AfterEntitySelectionChanged(
-        [[maybe_unused]] const EntityIdList& newlySelectedEntities, [[maybe_unused]] const EntityIdList& newlyDeselectedEntities)
+        const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities)
     {
- 
         // when the selected entity switches, switch back to the transform button
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId,
@@ -380,9 +377,5 @@ namespace AzToolsFramework::ComponentModeFramework
 
         // Send a list of selected and deselected entities to the switcher to deal with updating the switcher view
         UpdateSwitcherOnEntitySelectionChange(newlySelectedEntities, newlyDeselectedEntities);
-
     }
-
 } // namespace AzToolsFramework::ComponentModeFramework
-#pragma optimize("", on)
-#pragma inline_depth()

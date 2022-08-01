@@ -27,7 +27,6 @@ set(FILES
     ComponentModeTestFixture.cpp
     ComponentModeTestFixture.h
     ComponentModeTests.cpp
-    ComponentModeSwitcherTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
@@ -159,7 +158,6 @@ set(FILES
     Viewport/ViewportEditorModeTests.cpp
     Viewport/ViewportScreenTests.cpp
     Viewport/ViewportUiClusterTests.cpp
-    Viewport/ViewportUiSwitcherTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp

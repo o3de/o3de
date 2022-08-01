@@ -118,9 +118,6 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
     };
 
-    //! Exposed to the viewport manager
-    //ViewportUi::ButtonId RegisterSwitcherButton(ViewportUi::SwitcherId switcherId, const char* name, const char* iconName);
-
     //! Grouping of viewport ui related state for aligning transforms to a grid.
     struct SnappingCluster
     {
