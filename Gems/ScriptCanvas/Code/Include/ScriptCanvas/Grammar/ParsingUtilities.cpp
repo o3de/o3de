@@ -101,6 +101,7 @@ namespace ParsingUtilitiesCpp
                 m_result += " <<<< MARKER <<<< ";
             }
 
+#if defined(ACM_PRINT_INPUT)
             const auto inputCount = execution->GetInputCount();
             if (inputCount != 0)
             {
@@ -133,7 +134,8 @@ namespace ParsingUtilitiesCpp
                             , input.m_value->m_datum.ToString().c_str());
                     }
                 }
-            }            
+            }
+#endif
         }
 
         void EvaluateChildPre(ExecutionTreeConstPtr, const Slot*, size_t, int)
