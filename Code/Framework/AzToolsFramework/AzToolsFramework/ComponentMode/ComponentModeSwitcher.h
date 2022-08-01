@@ -61,12 +61,13 @@ namespace AzToolsFramework
                 return m_addedComponents.size();
             };
 
-            const ComponentData* GetActiveComponent() const
+            // Returns a null pointer if not in component mode
+            const AZ::Component* GetActiveComponent() const
             {
                 return m_activeSwitcherComponent;
             };
 
-            ComponentData* GetActiveComponent()
+            AZ::Component* GetActiveComponent()
             {
                 return m_activeSwitcherComponent;
             };
@@ -103,7 +104,7 @@ namespace AzToolsFramework
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
             // Member variables
-            ComponentData* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
+            AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
 
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements.
             EntityIdList m_entityIds; //!< List of entities active in the switcher.
