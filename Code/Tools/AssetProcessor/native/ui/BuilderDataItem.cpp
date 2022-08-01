@@ -30,9 +30,9 @@ namespace AssetProcessor
         return aznumeric_cast<int>(m_children.size());
     }
 
-    const char* BuilderDataItem::GetName() const
+    const AZStd::string& BuilderDataItem::GetName() const
     {
-        return m_name.c_str();
+        return m_name;
     }
 
     AZ::s64 BuilderDataItem::GetJobCount() const
@@ -43,6 +43,11 @@ namespace AssetProcessor
     AZ::s64 BuilderDataItem::GetTotalDuration() const
     {
         return m_totalDuration;
+    }
+
+    BuilderDataItem::ItemType BuilderDataItem::GetItemType() const
+    {
+        return m_itemType;
     }
 
     AZStd::shared_ptr<BuilderDataItem> BuilderDataItem::GetChild(int row) const
@@ -60,17 +65,33 @@ namespace AssetProcessor
         return m_parent;
     }
 
+    AZStd::shared_ptr<BuilderDataItem> BuilderDataItem::InsertChild(AZStd::shared_ptr<BuilderDataItem>&& itemToBeInserted)
+    {
+        //! It's the caller's responsibility to ensure the builder has a unique name
+        if (m_itemType != ItemType::InvisibleRoot ||
+            (itemToBeInserted->GetItemType() != ItemType::InvisibleRoot && itemToBeInserted->GetItemType() != ItemType::Builder) ||
+            itemToBeInserted->GetParent().lock().get() != this || m_childNameToIndex.contains(itemToBeInserted->GetName()))
+        {
+            return nullptr;
+        }
+
+        m_children.push_back(itemToBeInserted);
+        m_childNameToIndex[itemToBeInserted->GetName()] = aznumeric_cast<int>(m_children.size() - 1);
+        return m_children.back();
+    }
+
+
     AZStd::shared_ptr<BuilderDataItem> BuilderDataItem::UpdateOrInsertEntry(
-        TaskType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
+        TaskType entryTaskType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
     {
         //! only allowed to insert from builder, with a valid TaskType
-        if (m_itemType != ItemType::Builder || entryjobType >= TaskType::Max)
+        if (m_itemType != ItemType::Builder || entryTaskType >= TaskType::Max)
         {
             return nullptr;
         }
 
         // jobType is either CreateJobs or ProcessJob
-        const auto& jobType = m_children[aznumeric_cast<int>(entryjobType)];
+        const auto& jobType = m_children[aznumeric_cast<int>(entryTaskType)];
 
         AZStd::shared_ptr<BuilderDataItem> entry = nullptr;
         if (jobType->m_childNameToIndex.contains(entryName))
@@ -79,7 +100,7 @@ namespace AssetProcessor
             AZ::s64 jobCountDiff = entryJobCount - entry->m_jobCount;
             AZ::s64 totalDurationDiff = entryTotalDuration - entry->m_totalDuration;
             entry->m_jobCount = entryJobCount;
-            entry->m_totalDuration= entryTotalDuration;
+            entry->m_totalDuration = entryTotalDuration;
             jobType->UpdateMetrics(jobCountDiff, totalDurationDiff);
         }
         else
@@ -92,7 +113,8 @@ namespace AssetProcessor
 
         return entry;
     }
-    bool BuilderDataItem::InitializeBuilder(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer)
+
+    bool BuilderDataItem::InsertTaskTypesAsChildren(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer)
     {
         if (m_itemType != ItemType::Builder)
         {
@@ -118,8 +140,14 @@ namespace AssetProcessor
 
         return true;
     }
+
     void BuilderDataItem::UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff)
     {
+        if (m_itemType == ItemType::InvisibleRoot)
+        {
+            return;
+        }
+
         m_jobCount += jobCountDiff;
         m_totalDuration += totalDurationDiff;
         if (auto sharedParent = m_parent.lock())
@@ -141,17 +169,6 @@ namespace AssetProcessor
                 ++index;
             }
         }
-        return 0;
-    }
-    bool BuilderDataItem::SetBuilderChild(AZStd::shared_ptr<BuilderDataItem> builder)
-    {
-        if (m_itemType != ItemType::InvisibleRoot)
-        {
-            return false;
-        }
-
-        m_children.resize(1);
-        m_children[0] = builder;
-        return true;
+        return -1;
     }
 }
