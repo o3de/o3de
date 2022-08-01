@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Split",
+        "category": "Math Functions",
+        "title": "split",
         "inputSlots": [
             {
                 "name": "inValue",
@@ -25,6 +25,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -39,6 +42,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;" ]
                 }
             },
             {
@@ -51,6 +57,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;" ]
                 }
             },
             {
@@ -63,6 +72,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;" ]
                 }
             },
             {
@@ -75,6 +87,9 @@
                 "defaultValue": {
                     "$type": "float",
                     "Value": 1.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.w;" ]
                 }
             }
        ]

@@ -497,9 +497,9 @@ namespace PhysX
     {
         m_physicsSystemConfigChanged.Disconnect();
 
-        s_overlapBuffer.swap({});
-        s_rayCastBuffer.swap({});
-        s_sweepBuffer.swap({});
+        s_overlapBuffer = {};
+        s_rayCastBuffer = {};
+        s_sweepBuffer = {};
 
         for (auto& simulatedBody : m_simulatedBodies)
         {
@@ -542,7 +542,7 @@ namespace PhysX
 
         {
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationStartEvent::Signaled");
-            m_sceneSimuationStartEvent.Signal(m_sceneHandle, deltatime);
+            m_sceneSimulationStartEvent.Signal(m_sceneHandle, deltatime);
         }
 
         m_currentDeltaTime = deltatime;
@@ -607,7 +607,7 @@ namespace PhysX
 
         {
             AZ_PROFILE_SCOPE(Physics, "OnSceneSimulationFinishedEvent::Signaled");
-            m_sceneSimuationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
+            m_sceneSimulationFinishEvent.Signal(m_sceneHandle, m_currentDeltaTime);
         }
 
         UpdateAzProfilerDataPoints();
