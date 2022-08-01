@@ -12,6 +12,7 @@ import sys
 import os
 import pytest
 import logging
+import re
 import sqlite3
 pytest.importorskip('ly_test_tools')
 
@@ -54,7 +55,10 @@ class TestPythonAssetProcessing(object):
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
         testFile = os.path.join(test_directory, 'AssetBuilder_test_case.py')
-        editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={request.node.name}"])
+        regex_result = re.search("\<class \'(.*)\'\>", str(request.node.cls))
+        class_name = str.split(regex_result.group(1), ".")[:-1][1]
+        compiled_test_case_name = ".".join([class_name, request.node.originalname])
+        editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={compiled_test_case_name}"])
 
         with editor.start():
             editorlog_file = os.path.join(editor.workspace.paths.project_log(), 'Editor.log')
