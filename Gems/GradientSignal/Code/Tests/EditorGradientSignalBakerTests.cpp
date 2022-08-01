@@ -181,6 +181,12 @@ namespace UnitTest
         TestBakeImage(".png", GradientSignal::OutputFormat::R8, AZ::Vector2(10.0f), true, inputBounds);
     }
 
+    TEST_F(EditorGradientSignalBakerTestsFixture, NonSquareOutputResolution)
+    {
+        // Verify we support output resolutions where the width isn't equal to the height
+        TestBakeImage(".png", GradientSignal::OutputFormat::R8, AZ::Vector2(13.0f, 37.0f));
+    }
+
     TEST_F(EditorGradientSignalBakerTestsFixture, BakedImage_PNG_R8)
     {
         TestBakeImage(".png", GradientSignal::OutputFormat::R8);

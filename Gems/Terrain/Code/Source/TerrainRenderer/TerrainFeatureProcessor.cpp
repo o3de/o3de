@@ -103,7 +103,7 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
-        if (ClipmapFeatureIsEnabled())
+        if (m_clipmapManager.IsClipmapEnabled())
         {
             m_clipmapManager.Reset();
         }
@@ -245,7 +245,7 @@ namespace Terrain
                 m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
 
-            if (ClipmapFeatureIsEnabled())
+            if (m_clipmapManager.IsClipmapEnabled())
             {
                 if (m_clipmapManager.IsInitialized())
                 {
@@ -263,7 +263,7 @@ namespace Terrain
             m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
-            if (ClipmapFeatureIsEnabled())
+            if (m_clipmapManager.IsClipmapEnabled())
             {
                 m_clipmapManager.Reset();
             }
@@ -310,7 +310,7 @@ namespace Terrain
                     m_detailMaterialManager.Update(cameraPosition, m_terrainSrg);
                 }
 
-                if (ClipmapFeatureIsEnabled())
+                if (m_clipmapManager.IsClipmapEnabled())
                 {
                     if (m_clipmapManager.IsInitialized())
                     {
@@ -383,7 +383,6 @@ namespace Terrain
     void TerrainFeatureProcessor::CachePasses()
     {
         m_passes.clear();
-        m_clipmapPass = nullptr;
 
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
@@ -409,9 +408,6 @@ namespace Terrain
                 return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
             }
         );
-
-        auto clipmapPassFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("TerrainMacroClipmapGenerationPass"), GetParentScene());
-        m_clipmapPass = static_cast<TerrainMacroClipmapGenerationPass*>(AZ::RPI::PassSystemInterface::Get()->FindFirstPass(clipmapPassFilter));
     }
 
     const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> TerrainFeatureProcessor::GetTerrainShaderResourceGroup() const
@@ -427,10 +423,5 @@ namespace Terrain
     const TerrainClipmapManager& TerrainFeatureProcessor::GetClipmapManager() const
     {
         return m_clipmapManager;
-    }
-
-    bool TerrainFeatureProcessor::ClipmapFeatureIsEnabled() const
-    {
-        return m_clipmapPass && m_clipmapPass->ClipmapFeatureIsEnabled();
     }
 }
