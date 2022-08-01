@@ -73,51 +73,51 @@ namespace MaterialCanvas
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
 
+        // Convert the document file name into one that can be used as a symbol in graph template files.
         AZStd::string GetGraphNamePrefixFromDocumentName() const;
 
+        // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 
+        // Get a list of all of the graph nodes sorted in execution order based on input connections.
         AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
 
-        // Perform string substitutions on a container of strings.
+        // Perform a search and replace operation on all of the strings stored in a container.
         void ReplaceStringsInContainer(
             const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
 
-        // Slots with special types, like color, need to be converted into a type compatible with shader code.
+        // Convert special slot type names, like color, into one compatible with AZSL shader code.
         AZStd::string ConvertSlotTypeToAZSL(const AZStd::string& slotTypeName) const;
 
-        // Disconnected input and property slots need to have their values converted into a format that can be injected into the shader.
+        // Convert a stored slot value into a string representation that can be injected into AZSL shader code.
         AZStd::string ConvertSlotValueToAZSL(const AZStd::any& slotValue) const;
 
-        // Each instruction block needs to have name substitutions performed on it. Variable names need to be unique per
-        // node and will be prepended with the node ID. Slot types and values will be determined based on connections and
-        // then substituted.
-        void ReplaceStringsInSlotInstructions(
-            GraphModel::ConstNodePtr node, GraphModel::ConstSlotPtr slot, AZStd::vector<AZStd::string>& instructionsForSlot) const;
+        // Determine if instructions contained on an input node should be used as part of code generation based on node connections.
+        bool ShouldUseInstructionsFromInputNode(
+            GraphModel::ConstNodePtr outputNode,
+            GraphModel::ConstNodePtr inputNode,
+            const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        void AddSlotInstructions(
-            GraphModel::ConstNodePtr node,
-            const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
-            AZStd::vector<AZStd::string>& instructions) const;
+        // Collect instructions from a slot and perform substitutions based on node and slot types, names, values, and connections.
+        AZStd::vector<AZStd::string> GetInstructionsFromSlot(
+            GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
+
+        // Generate AZSL instructions for an output node by evaluating all of the sorted graph nodes for connections to input slots
+        AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
+            GraphModel::ConstNodePtr outputNode,
+            const AZStd::vector<GraphModel::ConstNodePtr>& sortedNodes,
+            const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
         using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
 
+        // Search for marked up blocks of text from a template and replace lines between them with lines provided by a function.
         void ReplaceLinesInTemplateBlock(
             const AZStd::string& blockBeginToken,
             const AZStd::string& blockEndToken,
             const LineGenerationFn& lineGenerationFn,
-            AZStd::vector<AZStd::string>& lines) const;
+            AZStd::vector<AZStd::string>& templateLines) const;
 
-        bool ShouldUseInstructionsFromInputNode(
-            GraphModel::ConstNodePtr targetNode,
-            GraphModel::ConstNodePtr inputNode,
-            const AZStd::vector<AZStd::string>& inputSlotNames) const;
-
-        AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
-            GraphModel::ConstNodePtr targetNode,
-            const AZStd::vector<GraphModel::ConstNodePtr>& nodes,
-            const AZStd::vector<AZStd::string>& inputSlotNames) const;
-
+        // Evaluate the graph nodes, slots, values, and settings to generate and export shaders, material types, and materials.
         bool CompileGraph() const;
 
         AZ::Entity* m_sceneEntity = {};

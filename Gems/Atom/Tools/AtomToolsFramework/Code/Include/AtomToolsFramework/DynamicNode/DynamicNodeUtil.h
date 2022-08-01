@@ -14,6 +14,7 @@ namespace AtomToolsFramework
 {
     using SettingsVisitorFn = AZStd::function<void(const DynamicNodeSettingsMap&)>;
 
+    // Visit the dynamic node and all of its slot configurations calling the visitor function for their settings maps.
     void VisitDynamicNodeSettings(const DynamicNodeConfig& nodeConfig, const SettingsVisitorFn& visitorFn);
 
     // Build a unique set of settings found on a node or slot configuration.

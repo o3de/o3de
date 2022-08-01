@@ -239,7 +239,33 @@ namespace GraphModel
         return m_id;
     }
 
-    bool Node::HasIncomingConnectionFromNode(ConstNodePtr node) const
+    bool Node::HasInputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasOutputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
     {
         if (node)
         {
@@ -250,7 +276,7 @@ namespace GraphModel
                 {
                     for (const auto& connection : slot->GetConnections())
                     {
-                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasIncomingConnectionFromNode(node))
+                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node))
                         {
                             return true;
                         }
@@ -261,7 +287,7 @@ namespace GraphModel
         return false;
     }
 
-    bool Node::HasOutgoingConnectionToNode(ConstNodePtr node) const
+    bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
     {
         if (node)
         {
@@ -272,7 +298,7 @@ namespace GraphModel
                 {
                     for (const auto& connection : slot->GetConnections())
                     {
-                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutgoingConnectionToNode(node))
+                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node))
                         {
                             return true;
                         }

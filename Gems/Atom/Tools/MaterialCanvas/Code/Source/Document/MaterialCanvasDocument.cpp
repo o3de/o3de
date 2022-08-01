@@ -376,47 +376,49 @@ namespace MaterialCanvas
 
     AZStd::string MaterialCanvasDocument::GetGraphNamePrefixFromDocumentName() const
     {
-        // The document name will be used to replace file and symbol names in template files
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
         AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
 
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZ::StringFunc::Replace(documentName, "-", "_");
+
         return AZ::RPI::AssetUtils::SanitizeFileName(documentName);
     }
 
-    AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const
+    AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const
     {
-        // Create the path and file name for the file generated from the template using the document path and name
-        AZStd::string outputFullName;
-        AZ::StringFunc::Path::GetFullFileName(templatePath.c_str(), outputFullName);
-        AZStd::string outputPath = m_absolutePath;
-        AZ::StringFunc::Path::ReplaceFullName(outputPath, outputFullName.c_str());
-        AZ::StringFunc::Replace(outputPath, "MaterialGraphName", GetGraphNamePrefixFromDocumentName().c_str());
-        AZ::StringFunc::Replace(outputPath, ".template", "");
-        return outputPath;
+        AZStd::string templateInputFileName;
+        AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), templateInputFileName);
+        AZ::StringFunc::Replace(templateInputFileName, ".template", "");
+
+        AZStd::string templateOuputPath = m_absolutePath;
+        AZ::StringFunc::Path::ReplaceFullName(templateOuputPath, templateInputFileName.c_str());
+
+        AZ::StringFunc::Replace(templateOuputPath, "MaterialGraphName", GetGraphNamePrefixFromDocumentName().c_str());
+
+        return templateOuputPath;
     }
 
     AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetNodesInExecutionOrder() const
     {
-        AZStd::vector<GraphModel::ConstNodePtr> nodes;
-        nodes.reserve(m_graph->GetNodes().size());
+        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
+        sortedNodes.reserve(m_graph->GetNodes().size());
 
         for (const auto& nodePair : m_graph->GetNodes())
         {
-            nodes.push_back(nodePair.second);
+            sortedNodes.push_back(nodePair.second);
         }
 
         AZStd::sort(
-            nodes.begin(),
-            nodes.end(),
+            sortedNodes.begin(),
+            sortedNodes.end(),
             [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
             {
-                return nodeB->HasIncomingConnectionFromNode(nodeA);
+                return nodeB->HasInputConnectionFromNode(nodeA);
             });
 
-        return nodes;
+        return sortedNodes;
     }
 
     void MaterialCanvasDocument::ReplaceStringsInContainer(
@@ -471,14 +473,40 @@ namespace MaterialCanvas
         return AZStd::string();
     }
 
-    void MaterialCanvasDocument::ReplaceStringsInSlotInstructions(
-        GraphModel::ConstNodePtr node,
-        GraphModel::ConstSlotPtr slot,
-        AZStd::vector<AZStd::string>& instructionsForSlot) const
+    bool MaterialCanvasDocument::ShouldUseInstructionsFromInputNode(
+        GraphModel::ConstNodePtr outputNode, GraphModel::ConstNodePtr inputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
-        // Input slots will replace the value with the name of the variable from the connected slot if one is set.
-        if (slot && !slot->GetConnections().empty())
+        for (const auto& inputSlotName : inputSlotNames)
         {
+            if (const auto slot = outputNode->GetSlot(inputSlotName))
+            {
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetSourceNode() == inputNode ||
+                            connection->GetSourceNode()->HasInputConnectionFromNode(inputNode))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromSlot(
+        GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
+    {
+        AZStd::vector<AZStd::string> instructionsForSlot;
+
+        auto slot = node->GetSlot(slotConfig.m_name);
+        if (slot && (slot->GetSlotDirection() != GraphModel::SlotDirection::Output || !slot->GetConnections().empty()))
+        {
+            AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "instructions", instructionsForSlot);
+
+            // Input slots will replace the value with the name of the variable from the connected slot if one is set.
             for (const auto& connection : slot->GetConnections())
             {
                 auto sourceSlot = connection->GetSourceSlot();
@@ -492,51 +520,99 @@ namespace MaterialCanvas
                     break;
                 }
             }
+
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
         }
 
-        ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-        ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-        ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-        ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
+        return instructionsForSlot;
     }
 
-    void MaterialCanvasDocument::AddSlotInstructions(
-        GraphModel::ConstNodePtr node,
-        const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
-        AZStd::vector<AZStd::string>& instructions) const
+    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromConnectedNodes(
+        GraphModel::ConstNodePtr outputNode,
+        const AZStd::vector<GraphModel::ConstNodePtr>& sortedNodes,
+        const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
-        auto slot = node->GetSlot(slotConfig.m_name);
-        if (slot && (slot->GetSlotDirection() != GraphModel::SlotDirection::Output || !slot->GetConnections().empty()))
+        AZStd::vector<AZStd::string> instructions;
+
+        for (const auto& inputNode : sortedNodes)
         {
-            AZStd::vector<AZStd::string> instructionsForSlot;
-            AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "instructions", instructionsForSlot);
-            ReplaceStringsInSlotInstructions(node, slot, instructionsForSlot);
-            instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+            if (inputNode != outputNode && !ShouldUseInstructionsFromInputNode(outputNode, inputNode, inputSlotNames))
+            {
+                continue;
+            }
+
+            auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
+            if (!dynamicNode)
+            {
+                continue;
+            }
+
+            const auto& nodeConfig = dynamicNode->GetConfig();
+
+            for (const auto& slotConfig : nodeConfig.m_propertySlots)
+            {
+                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
+                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+            }
+
+            for (const auto& slotConfig : nodeConfig.m_inputSlots)
+            {
+                // If the current node is also the output node, do not generate instructions unless it is for one of the expected input
+                // slots.
+                if (inputNode == outputNode &&
+                    AZStd::find(inputSlotNames.begin(), inputSlotNames.end(), slotConfig.m_name) == inputSlotNames.end())
+                {
+                    continue;
+                }
+
+                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
+                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+            }
+
+            for (const auto& slotConfig : nodeConfig.m_outputSlots)
+            {
+                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
+                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+            }
+
+            // Gather and insert instructions provided by the node.
+            // We might need separate blocks of instructions that can be processed before or after the slots are processed.
+            AZStd::vector<AZStd::string> instructionsForNode;
+            AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
+            instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
+
+        return instructions;
     }
 
     void MaterialCanvasDocument::ReplaceLinesInTemplateBlock(
         const AZStd::string& blockBeginToken,
         const AZStd::string& blockEndToken,
         const LineGenerationFn& lineGenerationFn,
-        AZStd::vector<AZStd::string>& lines) const
+        AZStd::vector<AZStd::string>& templateLines) const
     {
         auto blockBeginItr = AZStd::find_if(
-            lines.begin(),
-            lines.end(),
+            templateLines.begin(),
+            templateLines.end(),
             [&blockBeginToken](const AZStd::string& line)
             {
                 return AZ::StringFunc::Contains(line, blockBeginToken);
             });
 
-        while (blockBeginItr != lines.end())
+        while (blockBeginItr != templateLines.end())
         {
+            AZ_TracePrintf("MaterialCanvasDocument", "*blockBegin: %s\n", (*blockBeginItr).c_str());
+
             // We have to insert one line at a time because AZStd::vector does not include a standard
             // range insert that returns an iterator
             for (const auto& lineToInsert : lineGenerationFn(*blockBeginItr))
             {
                 ++blockBeginItr;
-                blockBeginItr = lines.insert(blockBeginItr, lineToInsert);
+                blockBeginItr = templateLines.insert(blockBeginItr, lineToInsert);
                 AZ_TracePrintf("MaterialCanvasDocument", "lineToInsert: %s\n", lineToInsert.c_str());
             }
             ++blockBeginItr;
@@ -544,119 +620,26 @@ namespace MaterialCanvas
             // From the last line that was inserted, locate the end of the insertion block
             auto blockEndItr = AZStd::find_if(
                 blockBeginItr,
-                lines.end(),
+                templateLines.end(),
                 [&blockEndToken](const AZStd::string& line)
                 {
                     return AZ::StringFunc::Contains(line, blockEndToken);
                 });
 
+            AZ_TracePrintf("MaterialCanvasDocument", "*blockEnd: %s\n", (*blockEndItr).c_str());
+
             // Erase any pre-existing lines the template might have had between the begin and end blocks
-            blockEndItr = lines.erase(blockBeginItr, blockEndItr);
+            blockEndItr = templateLines.erase(blockBeginItr, blockEndItr);
 
             // Search for another insertion point
             blockBeginItr = AZStd::find_if(
                 blockEndItr,
-                lines.end(),
+                templateLines.end(),
                 [&blockBeginToken](const AZStd::string& line)
                 {
                     return AZ::StringFunc::Contains(line, blockBeginToken);
                 });
         }
-    }
-
-    bool MaterialCanvasDocument::ShouldUseInstructionsFromInputNode(
-        GraphModel::ConstNodePtr targetNode, GraphModel::ConstNodePtr inputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
-    {
-        for (const auto& inputSlotName : inputSlotNames)
-        {
-            if (const auto slot = targetNode->GetSlot(inputSlotName))
-            {
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetSourceNode() == inputNode ||
-                            connection->GetSourceNode()->HasIncomingConnectionFromNode(inputNode))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromConnectedNodes(
-        GraphModel::ConstNodePtr targetNode,
-        const AZStd::vector<GraphModel::ConstNodePtr>& nodes,
-        const AZStd::vector<AZStd::string>& inputSlotNames) const
-    {
-        AZStd::vector<AZStd::string> instructions;
-
-        for (const auto& node : nodes)
-        {
-            if (node != targetNode && !ShouldUseInstructionsFromInputNode(targetNode, node, inputSlotNames))
-            {
-                continue;
-            }
-
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(node.get()))
-            {
-                const auto& nodeConfig = dynamicNode->GetConfig();
-
-                // Prescan to see if this node has any output connections
-                // Generally speaking, we can ignore the node if there are no output connections but we're just trying to gather data
-                // now.
-                bool hasOutputConnections = false;
-                for (const auto& slotConfig : nodeConfig.m_outputSlots)
-                {
-                    auto slot = dynamicNode->GetSlot(slotConfig.m_name);
-                    if (slot && !slot->GetConnections().empty())
-                    {
-                        hasOutputConnections = true;
-                        break;
-                    }
-                }
-
-                if (hasOutputConnections)
-                {
-                    for (const auto& slotConfig : nodeConfig.m_propertySlots)
-                    {
-                        // Write out any property slot data if there were any connections
-                        AddSlotInstructions(node, slotConfig, instructions);
-                    }
-                }
-
-                for (const auto& slotConfig : nodeConfig.m_inputSlots)
-                {
-                    if (node == targetNode &&
-                        AZStd::find(inputSlotNames.begin(), inputSlotNames.end(), slotConfig.m_name) == inputSlotNames.end())
-                    {
-                        continue;
-                    }
-
-                    // For now, this will always generate all input slot instructions but can potentially be optimized to eliminate
-                    // instructions that result in temporary variables that just pass through to other variables.
-                    AddSlotInstructions(node, slotConfig, instructions);
-                }
-
-                for (const auto& slotConfig : nodeConfig.m_outputSlots)
-                {
-                    // If an output slot has any connections assume that we're going to use any configured instructions
-                    AddSlotInstructions(node, slotConfig, instructions);
-                }
-
-                // Gather and insert instructions provided by the node.
-                // We might need separate blocks of instructions that can be processed before or after the slots are processed.
-                AZStd::vector<AZStd::string> instructionsForNode;
-                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-                ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForNode);
-                instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
-            }
-        }
-
-        return instructions;
     }
 
     bool MaterialCanvasDocument::CompileGraph() const
@@ -673,15 +656,13 @@ namespace MaterialCanvas
 
         AZ_TracePrintf("MaterialCanvasDocument", "Dumping data scraped from traversing material graph.\n");
 
-        AZStd::vector<GraphModel::ConstNodePtr> nodes = GetNodesInExecutionOrder();
+        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes = GetNodesInExecutionOrder();
 
-        for (const auto& node : nodes)
+        // Traverse all graph nodes and slots to collect global settings like include files and class definitions
+        for (const auto& curretNode : sortedNodes)
         {
-            AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", node->GetTitle());
-
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(node.get()))
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(curretNode.get()))
             {
-                // Gather all of the global settings usually associated with a material canvas note to hand slot.
                 AtomToolsFramework::VisitDynamicNodeSettings(
                     dynamicNode->GetConfig(),
                     [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
@@ -693,28 +674,15 @@ namespace MaterialCanvas
             }
         }
 
-        for (const auto& includePath : includePaths)
+        // Traverse all graph nodes and slots searching for settings to generate files from templates
+        for (const auto& curretNode : sortedNodes)
         {
-            AZ_UNUSED(includePath);
-            AZ_TracePrintf("MaterialCanvasDocument", "includePath: %s\n", includePath.c_str());
-        }
+            AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", curretNode->GetTitle());
 
-        for (const auto& classDefinition : classDefinitions)
-        {
-            AZ_UNUSED(classDefinition);
-            AZ_TracePrintf("MaterialCanvasDocument", "classDefinition: %s\n", classDefinition.c_str());
-        }
-
-        for (const auto& functionDefinition : functionDefinitions)
-        {
-            AZ_UNUSED(functionDefinition);
-            AZ_TracePrintf("MaterialCanvasDocument", "functionDefinition: %s\n", functionDefinition.c_str());
-        }
-
-        for (const auto& node : nodes)
-        {
+            // Visit all of the settings for this node to collect template paths for files that need to be generated
             AZStd::set<AZStd::string> templatePaths;
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(node.get()))
+
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(curretNode.get()))
             {
                 AtomToolsFramework::VisitDynamicNodeSettings(
                     dynamicNode->GetConfig(),
@@ -724,33 +692,37 @@ namespace MaterialCanvas
                     });
             }
 
+            // Attempt to resolve every template file, replacing tokens, injecting lines, updating settings, and outputting the final result
             for (const auto& templatePath : templatePaths)
             {
                 AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
 
                 // Remove any aliases to resolve the absolute path to the template file
-                const AZStd::string resolvedPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+                const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
 
-                // Load the template file so that we can do symbol substitution and inject any code or data
-                if (auto result = AZ::Utils::ReadFile(resolvedPath))
+                // Attempt to load the template file to do symbol substitution and inject any code or data
+                if (auto result = AZ::Utils::ReadFile(templateInputPath))
                 {
-                    // Tokenize lines from the template file so that we can search for injection points by line
-                    AZStd::vector<AZStd::string> lines;
-                    AZ::StringFunc::Tokenize(result.GetValue(), lines, '\n', true, true);
+                    // Tokenize the entire template file into individual lines that can be evaluated, removed, replaced, and have content
+                    // injected between them
+                    AZStd::vector<AZStd::string> templateLines;
+                    AZ::StringFunc::Tokenize(result.GetValue(), templateLines, '\n', true, true);
 
-                    // Substitute all references to the generic graph name with the document name
-                    ReplaceStringsInContainer("MaterialGraphName", GetGraphNamePrefixFromDocumentName(), lines);
+                    // Substitute all references to the placeholder graph name with one generated from the document name
+                    ReplaceStringsInContainer("MaterialGraphName", GetGraphNamePrefixFromDocumentName(), templateLines);
 
+                    // Inject include files found while traversing the graph into any include file blocks in the template.
                     ReplaceLinesInTemplateBlock(
                         "GENERATED_INCLUDES_BEGIN",
                         "GENERATED_INCLUDES_END",
                         [&includePaths]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
-                            // Include paths will need to be normalized and converted to include statements
+                            // Include file paths will need to be specified as or converted to include statements.
                             return AZStd::vector<AZStd::string>(includePaths.begin(), includePaths.end());
                         },
-                        lines);
+                        templateLines);
 
+                    // Inject class definitions found while traversing the graph.
                     ReplaceLinesInTemplateBlock(
                         "GENERATED_CLASSES_BEGIN",
                         "GENERATED_CLASSES_END",
@@ -758,8 +730,9 @@ namespace MaterialCanvas
                         {
                             return classDefinitions;
                         },
-                        lines);
+                        templateLines);
 
+                    // Inject function definitions found while traversing the graph.
                     ReplaceLinesInTemplateBlock(
                         "GENERATED_FUNCTIONS_BEGIN",
                         "GENERATED_FUNCTIONS_END",
@@ -767,8 +740,13 @@ namespace MaterialCanvas
                         {
                             return functionDefinitions;
                         },
-                        lines);
+                        templateLines);
 
+                    // Inject shader code instructions stitched together by traversing the graph from each of the input slots on the current
+                    // node. The GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to
+                    // required variables in the shader. Instructions will only be generated for the current node and nodes connected to the
+                    // specified inputs. This will allow multiple GENERATED_INSTRUCTIONS blocks with different inputs to be specified in
+                    // multiple locations across multiple files from a single graph.
                     ReplaceLinesInTemplateBlock(
                         "GENERATED_INSTRUCTIONS_BEGIN",
                         "GENERATED_INSTRUCTIONS_END",
@@ -776,17 +754,17 @@ namespace MaterialCanvas
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
                             AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
-                            return GetInstructionsFromConnectedNodes(node, nodes, inputSlotNames);
+                            return GetInstructionsFromConnectedNodes(curretNode, sortedNodes, inputSlotNames);
                         },
-                        lines);
+                        templateLines);
 
                     // After everything has been substituted and inserted, save the file.
-                    AZStd::string output;
-                    AZ::StringFunc::Join(output, lines, '\n');
+                    AZStd::string templateOuputPathText;
+                    AZ::StringFunc::Join(templateOuputPathText, templateLines, '\n');
 
-                    const AZStd::string outputPath = GetOutputPathFromTemplatePath(resolvedPath);
-                    AZ::Utils::WriteFile(output, outputPath);
-                    m_generatedFiles.push_back(outputPath);
+                    const AZStd::string templateOuputPath = GetOutputPathFromTemplatePath(templateInputPath);
+                    AZ::Utils::WriteFile(templateOuputPathText, templateOuputPath);
+                    m_generatedFiles.push_back(templateOuputPath);
                 }
             }
         }
