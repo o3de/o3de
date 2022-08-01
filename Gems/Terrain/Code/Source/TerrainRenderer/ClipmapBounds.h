@@ -118,10 +118,12 @@ namespace Terrain
         //! The biggest possible number of regions can return when calling UpdateCenter();
         static constexpr uint32_t MaxUpdateRegions = 6;
 
-        //! Takes in a single world space region and transforms it into 0-4 regions in the clipmap clamped
+        //! Takes in a single world space aabb and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
         ClipmapBoundsRegionList TransformRegion(AZ::Aabb worldSpaceRegion);
-        
+        //! Takes in a single world space min and max 2d bounds and transforms it into 0-4 regions in the clipmap clamped
+        //! to the bounds of the clipmap.
+        ClipmapBoundsRegionList TransformRegion(const AZ::Vector2& worldSpaceMin, const AZ::Vector2& worldSpaceMax);
         //! Takes in a single unscaled clipmap space region and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
         ClipmapBoundsRegionList TransformRegion(Aabb2i clipSpaceRegion);
@@ -144,6 +146,13 @@ namespace Terrain
         Vector2i GetModCenter() const;
     private:
 
+        enum class RoundMode
+        {
+            Average,
+            Floor,
+            Ceil,
+        };
+
         //! Returns the center point snapped to a multiple of m_clipmapUpdateMultiple. This isn't
         //! a simple rounding operation. The value returned will only be different from the current
         //! center if the value passed in is greater than m_clipmapUpdateMultiple away from the center.
@@ -153,7 +162,7 @@ namespace Terrain
         Aabb2i GetLocalBounds() const;
 
         //! Applies scale and averages a world space vector to get a clip space vector.
-        Vector2i GetClipSpaceVector(const AZ::Vector2& worldSpaceVector) const;
+        Vector2i GetClipSpaceVector(const AZ::Vector2& worldSpaceVector, RoundMode roundMode = RoundMode::Average) const;
 
         //! Applies inverse scale to get a world aabb from clip space aabb.
         AZ::Aabb GetWorldSpaceAabb(const Aabb2i& clipSpaceAabb) const;

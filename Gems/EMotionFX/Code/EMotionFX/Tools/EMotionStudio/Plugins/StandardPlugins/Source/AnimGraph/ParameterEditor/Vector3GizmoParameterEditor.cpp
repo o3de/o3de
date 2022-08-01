@@ -23,7 +23,7 @@ namespace EMStudio
     Vector3GizmoParameterEditor::Vector3GizmoParameterEditor(EMotionFX::AnimGraph* animGraph, const EMotionFX::ValueParameter* valueParameter, const AZStd::vector<MCore::Attribute*>& attributes)
         : ValueParameterEditor(animGraph, valueParameter, attributes)
         , m_currentValue(0.0f, 0.0f, 0.0f)
-        , m_gizmoButton(nullptr)
+        , m_gizmoButton()
         , m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::Identity(), AZ::Vector3::CreateOne())
     {
@@ -32,6 +32,10 @@ namespace EMStudio
 
     Vector3GizmoParameterEditor::~Vector3GizmoParameterEditor()
     {
+        if (m_translationManipulators.Registered())
+        {
+            m_translationManipulators.Unregister();
+        }
     }
 
     void Vector3GizmoParameterEditor::Reflect(AZ::ReflectContext* context)
@@ -79,6 +83,7 @@ namespace EMStudio
             const EMotionFX::Vector3Parameter* parameter = static_cast<const EMotionFX::Vector3Parameter*>(m_valueParameter);
             m_currentValue = parameter->GetDefaultValue();
         }
+        m_translationManipulators.SetLocalPosition(m_currentValue);
     }
 
     void Vector3GizmoParameterEditor::setIsReadOnly(bool isReadOnly)
@@ -101,23 +106,17 @@ namespace EMStudio
 
         // Setup the translation manipulator
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
-        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(
-            [this](const AzToolsFramework::LinearManipulator::Action& action)
+        auto mouseMoveHandlerFn = [this](const auto& action) {
+            SetValue(action.LocalPosition());
+            if (m_manipulatorCallback)
             {
-                OnManipulatorMoved(action.LocalPosition());
-            });
-
-        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(
-            [this](const AzToolsFramework::PlanarManipulator::Action& action)
-            {
-                OnManipulatorMoved(action.LocalPosition());
-            });
-
-        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(
-            [this](const AzToolsFramework::SurfaceManipulator::Action& action)
-            {
-                OnManipulatorMoved(action.LocalPosition());
-            });
+                m_manipulatorCallback();
+            }
+        };
+        
+        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(mouseMoveHandlerFn);
+        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(mouseMoveHandlerFn);
+        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(mouseMoveHandlerFn);
 
         return m_gizmoButton;
     }
@@ -125,7 +124,7 @@ namespace EMStudio
     void Vector3GizmoParameterEditor::SetValue(const AZ::Vector3& value)
     {
         m_currentValue = value;
-        UpdateAnimGraphInstanceAttributes();
+        OnValueChanged();
     }
 
     AZ::Vector3 Vector3GizmoParameterEditor::GetMinValue() const
@@ -142,16 +141,12 @@ namespace EMStudio
 
     void Vector3GizmoParameterEditor::OnValueChanged()
     {
-        UpdateAnimGraphInstanceAttributes();
-    }
-
-    void Vector3GizmoParameterEditor::UpdateAnimGraphInstanceAttributes()
-    {
         for (MCore::Attribute* attribute : m_attributes)
         {
             MCore::AttributeVector3* typedAttribute = static_cast<MCore::AttributeVector3*>(attribute);
             typedAttribute->SetValue(m_currentValue);
         }
+        m_translationManipulators.SetLocalPosition(m_currentValue);
     }
 
     void Vector3GizmoParameterEditor::ToggleTranslationGizmo()
@@ -177,13 +172,4 @@ namespace EMStudio
 
     }
 
-    void Vector3GizmoParameterEditor::OnManipulatorMoved(const AZ::Vector3& position)
-    {
-        m_translationManipulators.SetLocalPosition(position);
-        SetValue(position);
-        if (m_manipulatorCallback)
-        {
-            m_manipulatorCallback();
-        }
-    }
 }

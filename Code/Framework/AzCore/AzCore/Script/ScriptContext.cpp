@@ -3855,8 +3855,7 @@ LUA_API const Node* lua_getDummyNode()
                             const BehaviorEBusHandler::BusForwarderEvent& e = events[iEvent];
                             if (strcmp(fieldName, e.m_name) == 0)
                             {
-                                m_hooks.push_back();
-                                HookUserData* userData = &m_hooks.back();
+                                HookUserData* userData = &m_hooks.emplace_back();
 
                                 // make the object, cache the function, find the pushers for each argument
                                 userData->m_luaHandler = this;
@@ -5205,7 +5204,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 BindClassMethodAndProperties(behaviorClass);
 
-                if (AZ::Attribute* eventHandlerCreationFunctionAttribute = FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
+                if (FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
                 {
                     BindEventSupport();
                 }
@@ -5696,7 +5695,7 @@ LUA_API const Node* lua_getDummyNode()
                     lua_pushfstring(thread, "Failed to load script %s.", debugName);
                 }
 
-                AZ_Warning("LuaContext",false, "Failed to load script: %s", lua_tostring(lua, -1));
+                AZ_Warning("LuaContext",false, "Failed to load script: %s", debugName);
 
                 return false;
             }

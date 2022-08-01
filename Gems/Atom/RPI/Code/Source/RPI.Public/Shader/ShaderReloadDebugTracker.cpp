@@ -75,7 +75,12 @@ namespace AZ
 
         ShaderReloadDebugTracker::ScopedSection::~ScopedSection()
         {
-            ShaderReloadDebugTracker::EndSection("%s", m_sectionName.c_str());
+#ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
+            if (m_shouldEndSection)
+            {
+                ShaderReloadDebugTracker::EndSection("%s", m_sectionName.c_str());
+            }
+#endif
         }
 
     } // namespace RPI

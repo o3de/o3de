@@ -38,6 +38,7 @@ namespace Terrain
         bool m_normalFlipX = false;
         bool m_normalFlipY = false;
         float m_normalFactor = 1.0f;
+        int32_t m_priority = 0;
     };
 
     class TerrainMacroMaterialComponent

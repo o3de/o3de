@@ -423,8 +423,7 @@ namespace AZ::Render
                 uint16_t shadowIndex = shadowProperty.m_shadowId.GetIndex();
                 FilterParameter& filterData = m_shadowData.GetElement<FilterParamIndex>(shadowIndex);
 
-                shadowmapSizes.push_back();
-                ProjectedShadowmapsPass::ShadowmapSizeWithIndices& sizeWithIndices = shadowmapSizes.back();
+                ProjectedShadowmapsPass::ShadowmapSizeWithIndices& sizeWithIndices = shadowmapSizes.emplace_back();
                 sizeWithIndices.m_size = static_cast<ShadowmapSize>(filterData.m_shadowmapSize);
                 sizeWithIndices.m_shadowIndexInSrg = shadowIndex;
             }

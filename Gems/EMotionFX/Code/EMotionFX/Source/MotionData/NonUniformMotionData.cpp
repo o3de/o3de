@@ -1204,6 +1204,70 @@ namespace EMotionFX
     }
 #endif
 
+    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation)
+    {
+        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex, transitionZeroXAxis, transitionZeroYAxis, extractRotation);
+
+        if (sampleJointDataIndex == rootJointDataIndex)
+        {
+            return;
+        }
+
+        if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
+        {
+            m_jointData[rootJointDataIndex].m_positionTrack = m_jointData[sampleJointDataIndex].m_positionTrack;
+            if (extractRotation)
+            {
+                m_jointData[rootJointDataIndex].m_rotationTrack = m_jointData[sampleJointDataIndex].m_rotationTrack;
+            }
+
+            for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
+            {
+                // Zero out transition movement based on settings.
+                if (transitionZeroXAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetX(0);
+                }
+                if (transitionZeroYAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetY(0);
+                }
+                m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetZ(0);
+
+                // Compensation in samples.
+                const float x = transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
+                const float y = transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
+                const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
+                m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
+
+                if (extractRotation)
+                {
+                    const AZ::Quaternion sampleJointRotation = m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].ToQuaternion();
+
+                    // Final root rotation only keeps the rotation around Z-axis
+                    const AZ::Vector3 rootRotEuler = AZ::ConvertQuaternionToEulerRadians(sampleJointRotation);
+                    const AZ::Quaternion finalRootRotation = AZ::ConvertEulerRadiansToQuaternion(AZ::Vector3(0, 0, rootRotEuler.GetZ()));
+
+                    // Calculate the final sample rotation
+                    const AZ::Quaternion finalSampleRotation = finalRootRotation.GetInverseFull() * sampleJointRotation;
+
+                    m_jointData[rootJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalRootRotation);
+                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalSampleRotation);
+                }
+            }
+        }
+
+        if (m_morphData.size() > sampleJointDataIndex && m_morphData.size() > rootJointDataIndex)
+        {
+            m_morphData[rootJointDataIndex] = m_morphData[sampleJointDataIndex];
+        }
+
+        if (m_floatData.size() > sampleJointDataIndex && m_floatData.size() > rootJointDataIndex)
+        {
+            m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
+        }
+    }
+
     Transform NonUniformMotionData::SampleJointTransform(float sampleTime, size_t jointDataIndex) const
     {
         return Transform

@@ -11,17 +11,18 @@
 
 static const uint InvalidMacroMaterialRef = 0x0000FFFF;
 
-void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal)
+void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal, out bool hasNormal)
 {
     macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    hasNormal = false;
 
     // ------- Macro Data -------
-    uint2 macroGridResolution = TerrainSrg::GetMacroGridResolution();
+    int macroGridResolution = TerrainSrg::m_macroMaterialGridInfo.m_tileCount1D;
     float macroTileSize = TerrainSrg::m_macroMaterialGridInfo.m_tileSize;
-    float2 macroGridOffset = TerrainSrg::m_macroMaterialGridInfo.m_offset;
-    uint2 macroGridPosition = (worldPosition - macroGridOffset) / macroTileSize;
+    int2 macroTileWorldCoord = int2(floor(worldPosition / macroTileSize));
+    uint2 macroLocalCoord = ((macroTileWorldCoord % macroGridResolution) + macroGridResolution) % macroGridResolution;
 
-    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
+    uint macroTileIndex = macroGridResolution * macroLocalCoord.y + macroLocalCoord.x;
     static const uint NumMacroMaterialsPerTile = 4;
 
     TerrainSrg::MacroMaterialRefs refs = TerrainSrg::m_macroMaterialGridRefs[macroTileIndex];
@@ -63,7 +64,8 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
             macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
 
-        if (macroMaterialData.m_normalMapId != 0xFFFF)
+        hasNormal = macroMaterialData.m_normalMapId != 0xFFFF;
+        if (hasNormal)
         {
             bool flipX = macroMaterialData.m_flags & 1;
             bool flipY = macroMaterialData.m_flags & 2;

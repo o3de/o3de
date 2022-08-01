@@ -14,6 +14,8 @@ set(FILES
     Source/Allocators.h
     Source/BlendTreeMotionMatchNode.cpp
     Source/BlendTreeMotionMatchNode.h
+    Source/CsvSerializers.cpp
+    Source/CsvSerializers.h
     Source/EventData.cpp
     Source/EventData.h
     Source/Frame.cpp
@@ -25,6 +27,8 @@ set(FILES
     Source/FeatureMatrixMinMaxScaler.cpp
     Source/FeatureMatrixMinMaxScaler.h
     Source/FeatureMatrixTransformer.h
+    Source/FeatureAngularVelocity.cpp
+    Source/FeatureAngularVelocity.h
     Source/FeaturePosition.cpp
     Source/FeaturePosition.h
     Source/FeatureSchema.cpp

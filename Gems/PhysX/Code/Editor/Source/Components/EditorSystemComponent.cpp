@@ -47,17 +47,17 @@ namespace PhysX
 
     void EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PhysXEditorService"));
+        provided.push_back(AZ_CRC_CE("PhysicsEditorService"));
     }
 
     void EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXEditorService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsEditorService"));
     }
 
     void EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("PhysXService"));
+        required.push_back(AZ_CRC_CE("PhysicsService"));
         required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 

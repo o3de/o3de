@@ -139,7 +139,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path EBusSendEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusSenderPath) / GetBusName();
+        AZStd::string fileName = GetBusName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void EBusSendEventPaletteTreeItem::GenerateTranslationData()
@@ -356,7 +357,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path EBusHandleEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusHandlerPath) / GetBusName();
+        AZStd::string fileName = GetBusName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void EBusHandleEventPaletteTreeItem::GenerateTranslationData()

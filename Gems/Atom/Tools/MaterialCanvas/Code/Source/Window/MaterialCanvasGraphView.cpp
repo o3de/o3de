@@ -37,23 +37,17 @@ namespace MaterialCanvas
             MaterialCanvasDocumentRequestBus::EventResult(
                 activeGraphId, m_documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
         }
-        SetActiveGraphId(activeGraphId);
+        SetActiveGraphId(activeGraphId, m_documentId == documentId);
     }
 
     void MaterialCanvasGraphView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        if (m_documentId == documentId)
-        {
-            SetActiveGraphId(GraphCanvas::GraphId());
-        }
+        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
     }
 
     void MaterialCanvasGraphView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        if (m_documentId == documentId)
-        {
-            SetActiveGraphId(GraphCanvas::GraphId());
-        }
+        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
     }
 } // namespace MaterialCanvas
 

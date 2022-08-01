@@ -31,6 +31,11 @@ namespace AZ
             }
         }
 
+        void SlowClearPass::SetClearValue(float red, float green, float blue, float alpha)
+        {
+            m_clearValue = RHI::ClearValue::CreateVector4Float(red, green, blue, alpha);
+        }
+
         void SlowClearPass::InitializeInternal()
         {
             RenderPass::InitializeInternal();

@@ -11,6 +11,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
+#include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
@@ -54,6 +55,7 @@ namespace Terrain
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetMeshConfiguration(const MeshConfiguration& config);
+        void SetClipmapConfiguration(const ClipmapConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;

@@ -54,9 +54,6 @@
 
 namespace UnitTest
 {
-    using namespace AZStd;
-    using namespace UnitTestInternal;
-
 #if !AZ_UNIT_TEST_SKIP_STD_VECTOR_AND_ARRAY_TESTS
 
     struct MyCtorClass
@@ -175,7 +172,7 @@ namespace UnitTest
     {
         // VectorContainerTest-Begin
 
-        typedef vector<int> vector_int_type;
+        using vector_int_type = AZStd::vector<int>;
         //////////////////////////////////////////////////////////////////////////////////////////
         // Vector functionality
 
@@ -184,13 +181,13 @@ namespace UnitTest
         AZ_TEST_VALIDATE_EMPTY_VECTOR(int_vector_default);
 
         // Default vector (non-integral type).
-        vector<MyClass> myclass_vector_default;
+        AZStd::vector<UnitTestInternal::MyClass> myclass_vector_default;
         AZ_TEST_VALIDATE_EMPTY_VECTOR(myclass_vector_default);
 
         // Create a vector (using fill ctor, with memset optimization to set the values)
-        vector<char> char_vector(10, 'A');
+        AZStd::vector<char> char_vector(10, 'A');
         AZ_TEST_VALIDATE_VECTOR(char_vector, 10);
-        for (vector<char>::iterator iter = char_vector.begin(); iter != char_vector.end(); ++iter)
+        for (AZStd::vector<char>::iterator iter = char_vector.begin(); iter != char_vector.end(); ++iter)
         {
             AZ_TEST_ASSERT(*iter == 'A');
         }
@@ -203,12 +200,12 @@ namespace UnitTest
             AZ_TEST_ASSERT(int_vector.validate_iterator(iter));
             AZ_TEST_ASSERT(*iter == 55);
         }
-        AZ_TEST_ASSERT(int_vector.validate_iterator(int_vector.end()) == isf_valid);
+        AZ_TEST_ASSERT(int_vector.validate_iterator(int_vector.end()) == AZStd::isf_valid);
 
         // Fill ctor non-intergral type
-        vector<MyClass> myclass_vector(22, MyClass(11));
+        AZStd::vector<UnitTestInternal::MyClass> myclass_vector(22, UnitTestInternal::MyClass(11));
         AZ_TEST_VALIDATE_VECTOR(myclass_vector, 22);
-        for (vector<MyClass>::iterator iter = myclass_vector.begin(); iter != myclass_vector.end(); ++iter)
+        for (AZStd::vector<UnitTestInternal::MyClass>::iterator iter = myclass_vector.begin(); iter != myclass_vector.end(); ++iter)
         {
             AZ_TEST_ASSERT(iter->m_data == 11);
         }
@@ -254,7 +251,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 55);
 
         // push back
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 11);
 
         // pop back
@@ -273,7 +270,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 100);
 
         // push back with capacity and change capacity!
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 12);
         AZ_TEST_ASSERT(int_vector1.capacity() >= 12);
 
@@ -343,8 +340,8 @@ namespace UnitTest
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
-        // swap rvalue reference binding to temporary
-        int_vector1.swap(vector_int_type());
+        // empty variable via default constructor
+        int_vector1 = {};
         AZ_TEST_VALIDATE_EMPTY_VECTOR(int_vector1);
 
 
@@ -362,9 +359,9 @@ namespace UnitTest
         AZ_TEST_ASSERT(((AZStd::size_t)int_vector.data() % 4) == 0); // default int alignment
 
         // make sure every vector allocation is aligned.
-        vector<MyClass> aligned_vector(5, 99);
-        AZ_TEST_ASSERT(((AZStd::size_t)aligned_vector.data() & (alignment_of<MyClass>::value - 1)) == 0);
-        AZ_TEST_ASSERT(((AZStd::size_t)&aligned_vector[0] & (alignment_of<MyClass>::value - 1)) == 0);
+        AZStd::vector<UnitTestInternal::MyClass> aligned_vector(5, 99);
+        AZ_TEST_ASSERT(((AZStd::size_t)aligned_vector.data() & (AZStd::alignment_of<UnitTestInternal::MyClass>::value - 1)) == 0);
+        AZ_TEST_ASSERT(((AZStd::size_t)&aligned_vector[0] & (AZStd::alignment_of<UnitTestInternal::MyClass>::value - 1)) == 0);
 
         // reverse iterators
         int_vector.clear();
@@ -386,7 +383,7 @@ namespace UnitTest
         }
 
         // resize_no_construct test (it technically behaves like reserve that updates the size of the container)
-        vector<MyCtorClass> myCtorClassArray;
+        AZStd::vector<MyCtorClass> myCtorClassArray;
         AZ_TEST_ASSERT(MyCtorClass::s_numConstructedObjects == 0);
         myCtorClassArray.resize_no_construct(10);
         AZ_TEST_ASSERT(myCtorClassArray.size() == 10);
@@ -403,14 +400,14 @@ namespace UnitTest
 
         //////////////////////////////////////////////////////////////////////////////////////////
         // Vector allocator tests
-        typedef static_buffer_allocator<16*1024, 1> static_buffer_16KB;
+        using static_buffer_16KB = AZStd::static_buffer_allocator<16 * 1024, 1>;
         static_buffer_16KB myMemoryManager1;
         static_buffer_16KB myMemoryManager2;
-        typedef allocator_ref<static_buffer_16KB> static_allocator_ref_type;
+        using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB>;
         static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
         static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
 
-        typedef vector<int, static_allocator_ref_type > IntVectorMyAllocator;
+        using IntVectorMyAllocator = AZStd::vector<int, static_allocator_ref_type >;
         IntVectorMyAllocator int_vector10(100, 13, allocator1); /// Allocate 100 elements using memory manager 1
         AZ_TEST_VALIDATE_VECTOR(int_vector10, 100);
         AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == 100 * sizeof(int));
@@ -480,7 +477,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_moved_vector.data() == data);
 
         myclass_vector.clear();
-        myclass_vector.push_back(MyClass(23));
+        myclass_vector.push_back(UnitTestInternal::MyClass(23));
         AZ_TEST_ASSERT(myclass_vector.size() == 1);
         AZ_TEST_ASSERT(myclass_vector[0].m_data == 23);
         AZ_TEST_ASSERT(myclass_vector[0].m_isMoved == true); // the compiler should move the class automatically
@@ -510,7 +507,7 @@ namespace UnitTest
         move_only_vector.push_back(4);
 
         AZStd::vector<VectorMoveOnly> result_move_only_vector{ AZStd::make_move_iterator(move_only_vector.begin()), AZStd::make_move_iterator(move_only_vector.end()) };
-        
+
         for (const auto& move_only1 : move_only_vector)
         {
             EXPECT_EQ(0, move_only1.m_num);
@@ -534,15 +531,15 @@ namespace UnitTest
         // Fixed Vector functionality
 
         // Default vector (integral type).
-        fixed_vector<int, 50> int_vector_default;
+        AZStd::fixed_vector<int, 50> int_vector_default;
         AZ_TEST_VALIDATE_VECTOR_0(int_vector_default);
 
         // Default vector (non-integral type).
-        fixed_vector<MyClass, 10> myclass_vector_default;
+        AZStd::fixed_vector<UnitTestInternal::MyClass, 10> myclass_vector_default;
         AZ_TEST_VALIDATE_VECTOR_0(myclass_vector_default);
 
         // Create a vector (using fill ctor, with memset optimization to set the values)
-        typedef fixed_vector<char, 10> char_10_type;
+        using char_10_type = AZStd::fixed_vector<char, 10>;
         char_10_type char_vector(10, 'A');
         AZ_TEST_VALIDATE_VECTOR(char_vector, 10);
         for (char_10_type::iterator iter = char_vector.begin(); iter != char_vector.end(); ++iter)
@@ -551,7 +548,7 @@ namespace UnitTest
         }
 
         // Fill ctor with out memset optimization. validate iterators too.
-        typedef fixed_vector<int, 50> int_50_t;
+        using int_50_t = AZStd::fixed_vector<int, 50>;
         int_50_t int_vector(33, 55);
         AZ_TEST_VALIDATE_VECTOR(int_vector, 33);
         for (int_50_t::iterator iter = int_vector.begin(); iter != int_vector.end(); ++iter)
@@ -559,11 +556,11 @@ namespace UnitTest
             AZ_TEST_ASSERT(int_vector.validate_iterator(iter));
             AZ_TEST_ASSERT(*iter == 55);
         }
-        AZ_TEST_ASSERT(int_vector.validate_iterator(int_vector.end()) == isf_valid);
+        AZ_TEST_ASSERT(int_vector.validate_iterator(int_vector.end()) == AZStd::isf_valid);
 
         // Fill ctor non-intergral type
-        typedef fixed_vector<MyClass, 22> myclass_22_t;
-        myclass_22_t myclass_vector(22, MyClass(11));
+        using myclass_22_t = AZStd::fixed_vector<UnitTestInternal::MyClass, 22>;
+        myclass_22_t myclass_vector(22, UnitTestInternal::MyClass(11));
         AZ_TEST_VALIDATE_VECTOR(myclass_vector, 22);
         for (myclass_22_t::iterator iter = myclass_vector.begin(); iter != myclass_vector.end(); ++iter)
         {
@@ -606,7 +603,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 55);
 
         // push back
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 11);
 
         // pop back
@@ -678,9 +675,9 @@ namespace UnitTest
         AZ_TEST_ASSERT(((AZStd::size_t)int_vector.data() % 4) == 0); // default int alignment
 
         // make sure every vector allocation is aligned. My class is aligned on 32 bytes.
-        myclass_vector_default.push_back(MyClass(10));
-        AZ_TEST_ASSERT(((AZStd::size_t)myclass_vector_default.data() & (alignment_of<MyClass>::value - 1)) == 0);
-        AZ_TEST_ASSERT(((AZStd::size_t)&myclass_vector_default[0] & (alignment_of<MyClass>::value - 1)) == 0);
+        myclass_vector_default.push_back(UnitTestInternal::MyClass(10));
+        AZ_TEST_ASSERT(((AZStd::size_t)myclass_vector_default.data() & (AZStd::alignment_of<UnitTestInternal::MyClass>::value - 1)) == 0);
+        AZ_TEST_ASSERT(((AZStd::size_t)&myclass_vector_default[0] & (AZStd::alignment_of<UnitTestInternal::MyClass>::value - 1)) == 0);
 
         // reverse iterators
 
@@ -716,8 +713,8 @@ namespace UnitTest
         // Test dealing with fixed_vectors with big sizes.
         // Have to heap allocated since they wont fit in the stack
         constexpr int bigFixedVectorSize = 10000000; // enough to make it fail without the fix
-        AZStd::unique_ptr<fixed_vector<char, bigFixedVectorSize>> big_fixed_vector0 = AZStd::make_unique<fixed_vector<char, bigFixedVectorSize>>();
-        AZStd::unique_ptr<fixed_vector<char, bigFixedVectorSize>> big_fixed_vector1 = AZStd::make_unique<fixed_vector<char, bigFixedVectorSize>>();
+        AZStd::unique_ptr<AZStd::fixed_vector<char, bigFixedVectorSize>> big_fixed_vector0 = AZStd::make_unique<AZStd::fixed_vector<char, bigFixedVectorSize>>();
+        AZStd::unique_ptr<AZStd::fixed_vector<char, bigFixedVectorSize>> big_fixed_vector1 = AZStd::make_unique<AZStd::fixed_vector<char, bigFixedVectorSize>>();
 
         big_fixed_vector0->insert(big_fixed_vector0->end(), bigFixedVectorSize, 0);
         big_fixed_vector1->insert(big_fixed_vector1->end(), bigFixedVectorSize, 1);
@@ -829,9 +826,9 @@ namespace UnitTest
 
     TEST_F(Arrays, VectorSwap)
     {
-        vector<void*> vec1(42, nullptr);
-        vector<void*> vec2(3, reinterpret_cast<void*>((intptr_t)0xdeadbeef));
-        vector<void*> vec3(3, reinterpret_cast<void*>((intptr_t)0xcdcdcdcd));
+        AZStd::vector<void*> vec1(42, nullptr);
+        AZStd::vector<void*> vec2(3, reinterpret_cast<void*>((intptr_t)0xdeadbeef));
+        AZStd::vector<void*> vec3(3, reinterpret_cast<void*>((intptr_t)0xcdcdcdcd));
 
         vec1.swap(vec2);
         EXPECT_EQ(3, vec1.size());
@@ -851,7 +848,7 @@ namespace UnitTest
     TEST_F(Arrays, Array)
     {
         // ArrayContainerTest-Begin
-        array<int, 10> myArr = {
+        AZStd::array<int, 10> myArr = {
             {1, 2, 3, 4}
         };
         AZ_TEST_ASSERT(myArr.empty() == false);
@@ -864,13 +861,13 @@ namespace UnitTest
 
         using iteratorType = int;
         auto testValue = myArr;
-        reverse_iterator<iteratorType*> rend = testValue.rend();
-        reverse_iterator<const iteratorType*> crend1 = testValue.rend();
-        reverse_iterator<const iteratorType*> crend2 = testValue.crend();
+        AZStd::reverse_iterator<iteratorType*> rend = testValue.rend();
+        AZStd::reverse_iterator<const iteratorType*> crend1 = testValue.rend();
+        AZStd::reverse_iterator<const iteratorType*> crend2 = testValue.crend();
 
-        reverse_iterator<iteratorType*> rbegin = testValue.rbegin();
-        reverse_iterator<const iteratorType*> crbegin1 = testValue.rbegin();
-        reverse_iterator<const iteratorType*> crbegin2 = testValue.crbegin();
+        AZStd::reverse_iterator<iteratorType*> rbegin = testValue.rbegin();
+        AZStd::reverse_iterator<const iteratorType*> crbegin1 = testValue.rbegin();
+        AZStd::reverse_iterator<const iteratorType*> crbegin2 = testValue.crbegin();
 
         AZ_TEST_ASSERT(rend == crend1);
         AZ_TEST_ASSERT(crend1 == crend2);
@@ -880,7 +877,7 @@ namespace UnitTest
 
         AZ_TEST_ASSERT(rbegin != rend);
 
-        array<int, 10> myArr1 = {
+        AZStd::array<int, 10> myArr1 = {
             {10, 11, 12, 13}
         };
         AZ_TEST_ASSERT(myArr != myArr1);
@@ -905,7 +902,7 @@ namespace UnitTest
     TEST_F(Arrays, ZeroLengthArray)
     {
         // ArrayContainerTest-Begin
-        array<int, 0> myArr;
+        AZStd::array<int, 0> myArr;
         EXPECT_TRUE(myArr.empty());
         EXPECT_EQ(0, myArr.size());
         EXPECT_EQ(0, myArr.max_size());
@@ -916,7 +913,7 @@ namespace UnitTest
         myArr[0];
         AZ_TEST_STOP_TRACE_SUPPRESSION(4);
 
-        array<int, 0> myArr2;
+        AZStd::array<int, 0> myArr2;
         EXPECT_EQ(myArr, myArr2);
 
         myArr.data();
@@ -961,10 +958,10 @@ namespace UnitTest
 
             bool m_moved;
             int m_data;
-            vector<int>     m_intVector;
+            AZStd::vector<int> m_intVector;
         };
 
-        typedef vector<MyDeepClass>  deep_vector_type;
+        using deep_vector_type = AZStd::vector<MyDeepClass>;
         deep_vector_type deep_vec_1;
         AZ_TEST_VALIDATE_EMPTY_VECTOR(deep_vec_1);
 
@@ -990,13 +987,13 @@ namespace UnitTest
         AZ_TEST_ASSERT(deep_vec_2.back().m_intVector.size() == 10);
 
         // insert with unitialized_copy
-        deep_vec_2.insert(prev(deep_vec_2.end()), MyDeepClass(200));
+        deep_vec_2.insert(AZStd::prev(deep_vec_2.end()), MyDeepClass(200));
         AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 12);
         AZ_TEST_ASSERT(deep_vec_2.back().m_data == 100);
         AZ_TEST_ASSERT(deep_vec_2.back().m_intVector.size() == 10);
 
         // insert with uninitilized_copy and move
-        deep_vec_2.insert(prev(deep_vec_2.end(), 2), MyDeepClass(300));
+        deep_vec_2.insert(AZStd::prev(deep_vec_2.end(), 2), MyDeepClass(300));
         AZ_TEST_VALIDATE_VECTOR(deep_vec_2, 13);
         AZ_TEST_ASSERT(deep_vec_2.back().m_data == 100);
         AZ_TEST_ASSERT(deep_vec_2.back().m_intVector.size() == 10);
@@ -1009,4 +1006,10 @@ namespace UnitTest
     }
 #endif // AZ_UNIT_TEST_SKIP_STD_VECTOR_AND_ARRAY_TESTS
 
+    TEST_F(Arrays, Vector_DeductionGuide_Compiles)
+    {
+        constexpr AZStd::string_view testView;
+        AZStd::vector testVec(testView.begin(), testView.end());
+        EXPECT_TRUE(testVec.empty());
+    }
 }

@@ -82,6 +82,15 @@ namespace RecastNavigation
         {
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
             {
+                {
+                    NavMeshQuery::LockGuard lock(*m_navObject);
+                    // If a tile at the location already exists, remove it before updating the data.
+                    if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                    {
+                        lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                    }
+                }
+
                 if (tile->IsEmpty())
                 {
                     continue;
@@ -90,15 +99,6 @@ namespace RecastNavigation
                 // Given geometry create Recast tile structure.
                 NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
                     m_configuration, m_context.get());
-
-                {
-                    NavMeshQuery::LockGuard lock(*m_navObject);
-                    // If a tile at the location already exists, remove it before update the data.
-                    if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
-                    {
-                        lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
-                    }
-                }
 
                 // A tile might have no geometry at all if no objects were found there.
                 if (navigationTileData.IsValid())
@@ -397,7 +397,7 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: OnReceivedAllNewTiles");
 
-            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation Tile Processing Wait");
             m_taskGraph.Reset();
 
             AZStd::vector<AZ::TaskToken> tileTaskTokens;

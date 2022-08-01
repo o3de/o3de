@@ -149,7 +149,7 @@ namespace AzToolsFramework
                 }
             case MenuItemType::SubMenu:
                 {
-                    if (QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
+                    if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(elem.second.m_identifier))
                     {
                         m_menu->addMenu(menu);
                     }
@@ -197,6 +197,9 @@ namespace AzToolsFramework
 
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
+
+        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInternalInterface, "EditorMenu - Could not retrieve instance of MenuManagerInternalInterface");
     }
 
 } // namespace AzToolsFramework

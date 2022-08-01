@@ -125,6 +125,31 @@ SHAPER_TYPE = {
     'pq': 7,
 }
 
+# Hair Lighting Model
+HAIR_LIGHTING_MODEL = {
+    'GGX': 0,
+    'Marschner': 1,
+    'Kajiya': 2,
+}
+
+# Physical Sky Intensity Mode
+PHYSICAL_SKY_INTENSITY_MODE = {
+    'Ev100': 4,
+    'Nit': 3,
+}
+
+# PostFX Layer Category as defined in
+# ./Gems/AtomLyIntegration/CommonFeatures/Assets/PostProcess/default.postfxlayercategories
+POSTFX_LAYER_CATEGORY = {
+    'FrontEnd': 1000000,
+    'Cinematics': 2000000,
+    'Gameplay': 3000000,
+    'Camera': 4000000,
+    'Volume': 5000000,
+    'Level': 6000000,
+    'Default': 2147483647,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -246,6 +271,8 @@ class AtomComponentProperties:
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'CubeMap Capture'
@@ -600,6 +627,62 @@ class AtomComponentProperties:
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'Hair Asset' Asset.id of the hair TressFX asset.
+          - 'Enable Area Lights' (bool default True)
+          - 'Enable Azimuth' Azimuth Contribution (bool default True)
+          - 'Enable Directional Lights' (bool default True)
+          - 'Enable IBL' imaged-based lighting for hair (bool default True)
+          - 'Enable Longitude' Longitude Contribution (bool default True)
+          - 'Enable Marschner R' (bool default True)
+          - 'Enable Marschner TRT' (bool default True)
+          - 'Enable Marschner TT' (bool default True)
+          - 'Enable Punctual Lights' (bool default True)
+          - 'Enable Shadows' (bool default True)
+          - 'Hair Lighting Model' simulation algorithm selected from atom_constants.py HAIR_LIGHTING_MODEL (default 'Marschner')
+          - 'Base Albedo Asset' Asset.id of the base albedo texture asset (streamingimage or supported texture format)
+          - 'Base Color' base color of the hair (math.Color RGBA, default 255,255,255,161)
+          - 'Enable Hair LOD' Level of Detail usage for the hair (bool default False)
+          - 'Enable Hair LOD(Shadow)' Level of Detail usage for the shadow of hair (bool default False)
+          - 'Enable Strand Tangent' (bool default False)
+          - 'Enable Strand UV' usage of Strand Albedo (bool default False)
+          - 'Enable Thin Tip' end of the hair will narrow or be squared off (bool default True)
+          - 'Fiber Radius' Diameter of the fiber (float 0.0 to 0.01, default 0.002)
+          - 'Fiber Spacing' spacing between the fibers (float 0.0.to 1.0, default 0.4)
+          - 'Fiber ratio' extent to which the hair strand will taper (float 0.01 to 1.0, default 0.06)
+          - 'Hair Cuticle Angle' determins how the light refraction behaves (float radians 0.05 to 0.15, default 0.08)
+          - 'Hair Ex1' Specular power to use for the calculated specular root value (float 0.0 to 100.0, default 14.4)
+          - 'Hair Ex2' Specular power to use for the calculated specular tip value (float 0.0 to 100.0, default 11.8)
+          - 'Hair Kdiffuse' Diffuse coefficient, think of it as a gain value (float 0.0 to 1.0, deafult 0.22)
+          - 'Hair Ks1' Primary specular reflection coefficient (float 0.0 to 1.0, default 0.001)
+          - 'Hair Ks2' Secondary specular reflection coefficient (float 0.0 to 1.0, default 0.136)
+          - 'Hair Roughness' (float 0.4 to 0.9, default 0.65)
+          - 'Hair Shadow Alpha' attenuate hair shadows based on depth into strands (float 0.0 to 1.0, default 0.35)
+          - 'LOD End Distance' Distance in centimeters where LOD will be its maximum reduction/multiplier (float 0.0 to inf, default 5.0)
+          - 'LOD Start Distance' Distance to begin LOD in centimeters camera to hair. (float 0.0 to inf, default 1.0)
+          - 'Mat Tip Color' blend from root to tip (math.Color RGBA, default 255,255,255,161)
+          - 'Max LOD Reduction' Maximum amount of reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Max LOD Strand Width Multiplier' Maximum amount the strand width would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Max Shadow Fibers' shadow attenuation calculation cutoff (int 0 to 100, default 50)
+          - 'Shadow LOD End Distance' Distance where shadow LOD should be at its maximum (float 0.0 to inf, default 5.0)
+          - 'Shadow LOD Start Distance' Distance to begin shadow LOD (float 0.0 to inf, default 1.0)
+          - 'Shadow Max LOD Reduction' max reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Shadow Max LOD Strand Width Multiplier' max amount the shadow width cast by the strand would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Strand Albedo Asset' Asset.id of the texture asset used for strands (streamingimage)
+          - 'Strand UVTiling Factor' Amount of tiling to use (float 0.0 to 10.0, default 1.0)
+          - 'Tip Percentage' amount of lerp blend between Base Scalp Albedo and Mat Tip Color (float 0.0 default to 1.0)
+          - 'Clamp Velocity' limits the displacement of hair segments per frame (float 1.0 to 24.0, default 20.0)
+          - 'Damping' smooths out the motion of the hair (float 0.0 to 1.0, default 0.08)
+          - 'Global Constraint Range' global shape stiffness (float 0.0 to 1.0, default 0.308)
+          - 'Global Constraint Stiffness' stiffness of a strand (float 0.0 to 1.0, default 0.408)
+          - 'Gravity Magnitude' gravitational pseudo value approximating force on strands (float 0.0 to 1.0 default 0.19)
+          - 'Length Constraint Iterations' simulation time (iterations) toward keeping the global hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Iterations' more simulation time (iterations) toward keeping the local hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Stiffness' Controls the stiffness of a strand (float 0.0 to 1.0, default 0.908)
+          - 'Tip Separation' Forces the tips of the strands away from each other (float 0.0 to 1.0, default 0.1)
+          - 'Vsp Accel Threshold' Velocity Shock Propagation acceleration threshold (float 0.0 to 10.0, default 1.208)
+          - 'Vsp Coeffs' Velocity Shock Propagation (float 0.0 to 1.0, default 0.758)
+          - 'Wind Angle Radians' (float radians 0.0 to 1.0, default 0.698)
+          - 'Wind Direction' (math.Vector3 XYZ world space default 0.0, 1.0, 0.0)
+          - 'Wind Magnitude' wind multiplier (float 0.0 default to 1.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -607,6 +690,62 @@ class AtomComponentProperties:
             'name': 'Atom Hair',
             'requires': [AtomComponentProperties.actor()],
             'Hair Asset': 'Controller|Configuration|Hair Asset',
+            'Enable Area Lights': 'Controller|Configuration|Hair Global Settings|Enable Area Lights',
+            'Enable Azimuth': 'Controller|Configuration|Hair Global Settings|Enable Azimuth',
+            'Enable Directional Lights': 'Controller|Configuration|Hair Global Settings|Enable Directional Lights',
+            'Enable IBL': 'Controller|Configuration|Hair Global Settings|Enable IBL',
+            'Enable Longitude': 'Controller|Configuration|Hair Global Settings|Enable Longitude',
+            'Enable Marschner R': 'Controller|Configuration|Hair Global Settings|Enable Marschner R',
+            'Enable Marschner TRT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TRT',
+            'Enable Marschner TT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TT',
+            'Enable Punctual Lights': 'Controller|Configuration|Hair Global Settings|Enable Punctual Lights',
+            'Enable Shadows': 'Controller|Configuration|Hair Global Settings|Enable Shadows',
+            'Hair Lighting Model': 'Controller|Configuration|Hair Global Settings|Hair Lighting Model',
+            'Base Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Base Albedo Asset',
+            'Base Color': 'Controller|Configuration|TressFX Render Settings|Base Color',
+            'Enable Hair LOD': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD',
+            'Enable Hair LOD(Shadow)': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD(Shadow)',
+            'Enable Strand Tangent': 'Controller|Configuration|TressFX Render Settings|Enable Strand Tangent',
+            'Enable Strand UV': 'Controller|Configuration|TressFX Render Settings|Enable Strand UV',
+            'Enable Thin Tip': 'Controller|Configuration|TressFX Render Settings|Enable Thin Tip',
+            'Fiber Radius': 'Controller|Configuration|TressFX Render Settings|Fiber Radius',
+            'Fiber Spacing': 'Controller|Configuration|TressFX Render Settings|Fiber Spacing',
+            'Fiber ratio': 'Controller|Configuration|TressFX Render Settings|Fiber ratio',
+            'Hair Cuticle Angle': 'Controller|Configuration|TressFX Render Settings|Hair Cuticle Angle',
+            'Hair Ex1': 'Controller|Configuration|TressFX Render Settings|Hair Ex1',
+            'Hair Ex2': 'Controller|Configuration|TressFX Render Settings|Hair Ex2',
+            'Hair Kdiffuse': 'Controller|Configuration|TressFX Render Settings|Hair Kdiffuse',
+            'Hair Ks1': 'Controller|Configuration|TressFX Render Settings|Hair Ks1',
+            'Hair Ks2': 'Controller|Configuration|TressFX Render Settings|Hair Ks2',
+            'Hair Roughness': 'Controller|Configuration|TressFX Render Settings|Hair Roughness',
+            'Hair Shadow Alpha': 'Controller|Configuration|TressFX Render Settings|Hair Shadow Alpha',
+            'LOD End Distance': 'Controller|Configuration|TressFX Render Settings|LOD End Distance',
+            'LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|LOD Start Distance',
+            'Mat Tip Color': 'Controller|Configuration|TressFX Render Settings|Mat Tip Color',
+            'Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Max LOD Reduction',
+            'Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Max LOD Strand Width Multiplier',
+            'Max Shadow Fibers': 'Controller|Configuration|TressFX Render Settings|Max Shadow Fibers',
+            'Shadow LOD End Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD End Distance',
+            'Shadow LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD Start Distance',
+            'Shadow Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Reduction',
+            'Shadow Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Strand Width Multiplier',
+            'Strand Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Strand Albedo Asset',
+            'Strand UVTiling Factor': 'Controller|Configuration|TressFX Render Settings|Strand UVTiling Factor',
+            'Tip Percentage': 'Controller|Configuration|TressFX Render Settings|Tip Percentage',
+            'Clamp Velocity': 'Controller|Configuration|TressFX Sim Settings|Clamp Velocity',
+            'Damping': 'Controller|Configuration|TressFX Sim Settings|Damping',
+            'Global Constraint Range': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Range',
+            'Global Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Stiffness',
+            'Gravity Magnitude': 'Controller|Configuration|TressFX Sim Settings|Gravity Magnitude',
+            'Length Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Length Constraint Iterations',
+            'Local Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Iterations',
+            'Local Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Stiffness',
+            'Tip Separation': 'Controller|Configuration|TressFX Sim Settings|Tip Separation',
+            'Vsp Accel Threshold': 'Controller|Configuration|TressFX Sim Settings|Vsp Accel Threshold',
+            'Vsp Coeffs': 'Controller|Configuration|TressFX Sim Settings|Vsp Coeffs',
+            'Wind Angle Radians': 'Controller|Configuration|TressFX Sim Settings|Wind Angle Radians',
+            'Wind Direction': 'Controller|Configuration|TressFX Sim Settings|Wind Direction',
+            'Wind Magnitude': 'Controller|Configuration|TressFX Sim Settings|Wind Magnitude',
         }
         return properties[property]
 
@@ -855,13 +994,30 @@ class AtomComponentProperties:
     def physical_sky(property: str = 'name') -> str:
         """
         Physical Sky component properties.
-        - 'Sky Intensity' float that determines sky intensity value, default value is 4.
+        - 'Intensity Mode' Specifying the light unit type (emum, Ev100, Nit, default Ev100).
+        - 'Sky Intensity' Brightness of the sky (float, range -4.0 - 11.0, default 4.0).
+        - 'Sun Intensity' Brightness of the sun (float, range -4.0 - 11.0, default 8.0).
+        - 'Turbidity' A measure of the aerosol content in the air (int, range 1-10, default of 1).
+        - 'Sun Radius Factor' A factor for Physical sun radius in millions of km. 1 unit is 695,508 km
+         (float, range 0.1 - 2, default 1.0). /n
+        - 'Enable Fog' Toggle fog on or off (bool, default False).
+        - 'Fog Color' Color of the fog (math.Color(float x, float y, float z, float a) where ranges are 0 to 255).
+        - 'Fog Top Height' Height of the fog upwards from the horizon (float, range 0.0 - 0.5 default 0.01).
+        - 'Fog Bottom Height' Height of the fog downwards from the horizon (float, range 0.0 - 0.3 default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Physical Sky',
+            'Intensity Mode': 'Controller|Configuration|Intensity Mode',
             'Sky Intensity': 'Controller|Configuration|Sky Intensity',
+            'Sun Intensity': 'Controller|Configuration|Sun Intensity',
+            'Turbidity': 'Controller|Configuration|Turbidity',
+            'Sun Radius Factor': 'Controller|Configuration|Sun Radius Factor',
+            'Enable Fog': 'Controller|Configuration|Fog|Enable Fog',
+            'Fog Color': 'Controller|Configuration|Fog|Fog Color',
+            'Fog Top Height': 'Controller|Configuration|Fog|Fog Top Height',
+            'Fog Bottom Height': 'Controller|Configuration|Fog|Fog Bottom Height',
         }
         return properties[property]
 
@@ -869,11 +1025,23 @@ class AtomComponentProperties:
     def postfx_layer(property: str = 'name') -> str:
         """
         PostFX Layer component properties.
+          - 'Layer Category' frequency at which the settings will be applied from atom_constants.py POSTFX_LAYER_CATEGORY
+          - 'Priority' this will take over other settings with the same frequency. lower takes precedence (int)
+          - 'Weight' how much these settings override previous settings. (float 0.0 to default 1.0)
+          - 'Select Camera Tags Only' property container list of tags.
+            Only cameras with these tags will include this effect.
+          - 'Excluded Camera Tags' property container list of tags.
+            Cameras with these tags will not be included in the effect.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Layer',
+            'Layer Category': 'Controller|Configuration|Layer Category',
+            'Priority': 'Controller|Configuration|Priority',
+            'Weight': 'Controller|Configuration|Weight',
+            'Select Camera Tags Only': 'Controller|Configuration|Select Camera Tags Only',
+            'Excluded Camera Tags': 'Controller|Configuration|Excluded Camera Tags',
         }
         return properties[property]
 
@@ -882,13 +1050,44 @@ class AtomComponentProperties:
         """
         PostFX Gradient Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Gradient Entity Id' a separate entity id containing a gradient component.
+          - 'Opacity' factor multiplied by the current gradient before mixing. (float 0.0 to 1.0)
+          - 'Invert Input' swap the gradient input order black/white behave oppositely (bool)
+          - 'Enable Levels' toggle the application of input/output levels (bool)
+          - 'Input Max' adjustment to the white point for the input
+            treating more of the gradient as max value. (float 0.0 to default 1.0)
+          - 'Input Min' adjustment to the black point for the input
+            treating more of the gradient as min value. (float 0.0 default to 1.0)
+          - 'Input Mid' adjustment to the midtone point for the input
+            effecting all values of the gradient to be more toward min or max. (float 0.0 to 10.0, default 1.0)
+          - 'Output Max' adjusts the output white point of the effective gradient after input levels are applied
+            (float 0.0 to default 1.0)
+          - 'Output Min' adjusts the output black point of the effective gradient after input levels are applied
+            (float 0.0 default to 1.0)
+          - 'Enable Transform' toggle the ability to apply transform to the gradient input (bool)
+          - 'Scale' adjusts the gradient size (Vector3 default 1.0,1.0,1.0)
+          - 'Rotate' rotates the gradient (Vector3 rotation degrees; default 0.0,0.0,0.0)
+          - 'Translate' moves the gradient position (Vector3 default 0.0,0.0,0.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Gradient Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Gradient Entity Id': 'Controller|Configuration|Gradient Sampler|Gradient Entity Id',
+            'Opacity': 'Controller|Configuration|Gradient Sampler|Opacity',
+            'Invert Input': 'Controller|Configuration|Gradient Sampler|Advanced|Invert Input',
+            'Enable Levels': 'Controller|Configuration|Gradient Sampler|Enable Levels',
+            'Input Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Max',
+            'Input Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Min',
+            'Input Mid': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Mid',
+            'Output Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Max',
+            'Output Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Min',
+            'Enable Transform': 'Controller|Configuration|Gradient Sampler|Enable Transform',
+            'Scale': 'Controller|Configuration|Gradient Sampler|Enable Transform|Scale',
+            'Rotate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Rotate',
+            'Translate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Translate',
         }
         return properties[property]
 
@@ -912,8 +1111,9 @@ class AtomComponentProperties:
         """
         PostFX Shape Weight Modifier component properties. Requires PostFX Layer and one of 'shapes' listed.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'shapes' a list of supported shapes as component names. 'Tube Shape' is also supported but requires 'Spline'.
+          - 'Fall-off Distance' Distance from the shape to smoothly transition the PostFX.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -922,6 +1122,7 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
                        'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
+            'Fall-off Distance': 'Controller|Configuration|Fall-off Distance',
         }
         return properties[property]
 

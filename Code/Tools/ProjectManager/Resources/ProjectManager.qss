@@ -82,7 +82,8 @@ QTabBar::tab:focus {
 /************** General (Forms) **************/
 
 #formLineEditWidget,
-#formBrowseEditWidget {
+#formBrowseEditWidget, 
+#formComboBoxWidget {
     max-width: 890px;
 }
 
@@ -144,6 +145,35 @@ QTabBar::tab:focus {
 #formFrame QLineEdit:disabled {
     color: #AAAAAA
 }
+
+#formFrame QComboBox {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    color:red;
+    min-width:810px;
+    max-width:810px;
+    line-height: 26px;
+    font-size: 18px;
+    height: 26px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#formFrame QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    padding-right:20px;
+    min-width: 24px;
+    max-width: 24px;
+    width:24px;
+}
+
+#formFrame QComboBox QListView::item {
+    line-height: 30px;
+    font-size: 18px;
+    height: 40px;
+}
+
 
 
 #formErrorLabel {
@@ -476,12 +506,12 @@ QTabBar::tab:focus {
 #projectButton  {
     min-width: 210px;
     max-width: 210px;
-    min-height: 310px;
-    max-height: 310px;
+    min-height: 324px;
+    max-height: 324px;
 }
 
-#projectButton > Frame {
-    margin-top:6px;
+#projectButton > QFrame {
+    margin-top:8px;
 }
 
 #projectButton QLabel {
@@ -489,6 +519,17 @@ QTabBar::tab:focus {
     font-size:14px;
     qproperty-indent: 0;
     margin:0;
+}
+
+#projectButton QLabel#thisEngineLabel, 
+#projectButton QLabel#otherEngineLabel {
+    font-weight:normal;
+    font-size:12px;
+    color: #eee;
+}
+
+#projectButton QLabel#otherEngineLabel {
+    color: #dd0;
 }
 
 #labelButton QPushButton {
@@ -601,6 +642,19 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#RefreshButton {
+    background:transparent url(:/Refresh.svg) no-repeat center center;
+    qproperty-flat: true;
+    max-width:24px;
+    min-width:24px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#RefreshButton:hover {
+    background:transparent url(:/Refresh_Hover.svg) no-repeat center center;
+}
+
 #gemCatalogMenuButton {
     qproperty-flat: true;
     max-width:36px;
@@ -619,14 +673,6 @@ QProgressBar::chunk {
     margin:0;
     padding: 0px;
     background-color: #444444;
-}
-
-#gemCatalogMenuButton {
-    qproperty-flat: true;
-    max-width:36px;
-    min-width:36px;
-    max-height:24px;
-    min-height:24px;
 }
 
 #adjustableHeaderWidget QHeaderView::section { 
@@ -743,6 +789,26 @@ QProgressBar::chunk {
 #GemCatalogFilterCategoryTitle {
     font-size: 12px;
     font-weight: 600;
+    color: #ffffff;
+}
+
+#GemCatalogFilterWidget #FilterByLabel {
+    color: #ffffff;
+}
+#GemCatalogFilterWidget QLabel {
+    color: #ffffff;
+}
+
+#GemCatalogFilterWidget #CountLabel {
+    font-size: 12px; 
+    background-color: #333333; 
+    border-radius: 3px; 
+    color: #94D2FF;
+}
+
+#GemCatalogFilterWidget QCheckbox {
+    color: #ffffff;
+    font-size: 12px;
 }
 
 /************** Engine **************/

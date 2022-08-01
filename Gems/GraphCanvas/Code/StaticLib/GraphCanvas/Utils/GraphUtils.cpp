@@ -492,6 +492,22 @@ namespace GraphCanvas
     }
 
     ///////////////////////////
+    // ScopedGraphUndoBatch
+    ///////////////////////////
+
+    ScopedGraphUndoBatch::ScopedGraphUndoBatch(const GraphId& graphId)
+        : m_graphId(graphId)
+    {
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestPushPreventUndoStateUpdate);
+    }
+
+    ScopedGraphUndoBatch::~ScopedGraphUndoBatch()
+    {
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestPopPreventUndoStateUpdate);
+        GraphModelRequestBus::Event(m_graphId, &GraphModelRequests::RequestUndoPoint);
+    }
+
+    ///////////////////////////
     // NodeFocusCyclingHelper
     ///////////////////////////
 

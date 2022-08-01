@@ -103,7 +103,10 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
-        m_clipmapManager.Reset();
+        if (m_clipmapManager.IsClipmapEnabled())
+        {
+            m_clipmapManager.Reset();
+        }
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -269,13 +272,16 @@ namespace Terrain
                 m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
 
-            if (m_clipmapManager.IsInitialized())
+            if (m_clipmapManager.IsClipmapEnabled())
             {
-                m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
-            }
-            else
-            {
-                m_clipmapManager.Initialize(m_terrainSrg);
+                if (m_clipmapManager.IsInitialized())
+                {
+                    m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
+                }
+                else
+                {
+                    m_clipmapManager.Initialize(m_terrainSrg);
+                }
             }
             m_meshManager.SetMaterial(m_materialInstance);
         }
@@ -284,7 +290,10 @@ namespace Terrain
             m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
-            m_clipmapManager.Reset();
+            if (m_clipmapManager.IsClipmapEnabled())
+            {
+                m_clipmapManager.Reset();
+            }
         }
     }
 
@@ -320,7 +329,7 @@ namespace Terrain
 
                 if (m_macroMaterialManager.IsInitialized())
                 {
-                    m_macroMaterialManager.Update(m_terrainSrg);
+                    m_macroMaterialManager.Update(mainView, m_terrainSrg);
                 }
 
                 if (m_detailMaterialManager.IsInitialized())
@@ -328,9 +337,12 @@ namespace Terrain
                     m_detailMaterialManager.Update(cameraPosition, m_terrainSrg);
                 }
 
-                if (m_clipmapManager.IsInitialized())
+                if (m_clipmapManager.IsClipmapEnabled())
                 {
-                    m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
+                    if (m_clipmapManager.IsInitialized())
+                    {
+                        m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
+                    }
                 }
             }
             if (m_imageArrayHandler->IsInitialized())
@@ -387,11 +399,18 @@ namespace Terrain
     void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
         m_meshManager.SetConfiguration(config);
+        m_macroMaterialManager.SetRenderDistance(config.m_renderDistance);
+    }
+
+    void TerrainFeatureProcessor::SetClipmapConfiguration(const ClipmapConfiguration& config)
+    {
+        m_clipmapManager.SetConfiguration(config);
     }
     
     void TerrainFeatureProcessor::CachePasses()
     {
         m_passes.clear();
+
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
