@@ -1562,14 +1562,13 @@ namespace ScriptCanvas
 
         VariableOperatorData* AbstractCodeModel::FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const
         {
-            
+            VariableOperatorData* variableData = aznew VariableOperatorData;
 
             ExecutionTreeConstPtr outputChild = executionWithInput;
             ExecutionTreeConstPtr outputSource = firstNode == FirstNode::Self ? outputChild : outputChild->GetParent();
 
             while (outputSource)
             {
-                VariableOperatorData* variableData = aznew VariableOperatorData;
                 // check every connected SC Node
                 for (const auto& scNodeAndOutputSlot : scriptCanvasNodesConnectedToInput)
                 {
@@ -1581,7 +1580,6 @@ namespace ScriptCanvas
                     const auto mostRecentOutputNodeOnThread = outputSource->GetId().m_node;
 
                     // TODO: Change this so that it checks for only small operators when more lexicalId nodes are added
-
                     AZ::Crc32 lexicalId = outputSCNode->GetNodeLexicalId();
                     while (lexicalId != AZ_CRC_CE("NONE"))
                     {
@@ -1605,6 +1603,7 @@ namespace ScriptCanvas
                         {
                             variableData->m_value = outputSource->GetChild(0).m_output[0].second->m_source;
                             variableData->m_output.push_back(outputSource->GetChild(0).m_output[0]);
+                            
                             return variableData;
                         }
 
@@ -1636,6 +1635,10 @@ namespace ScriptCanvas
                                 }
                             }
                         }
+                    }
+                    else
+                    {
+                        variableData->m_smallOperations.clear();
                     }
                 }
 
@@ -4475,32 +4478,34 @@ namespace ScriptCanvas
                 ExecutionTreePtr executionOperator = CreateChild(executionBeforeOperator, {}, {});
                 executionBeforeOperator->AddChild({ {}, variableData->m_output, executionOperator });
 
-                VariablePtr variable;
+                auto variable = AZStd::make_shared<Variable>();
+                variable->m_isMember = false;
+                variable->m_source = executionOperator;
 
                 switch (operation)
                 {
                 case (AZ_CRC_CE("Increment")):
                     executionOperator->SetSymbol(Symbol::OperatorAddition);
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    variable = AddMemberVariable(Datum(1.0), "one");
+                    variable->m_datum = Datum(1.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Decrement")):
-                    executionOperator->SetSymbol(Symbol::OperatorAddition);
+                    executionOperator->SetSymbol(Symbol::OperatorSubraction);
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    variable = AddMemberVariable(Datum(-1.0), "negativeOne");
+                    variable->m_datum = Datum(1.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Double")):
                     executionOperator->SetSymbol(Symbol::OperatorMultiplication);
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    variable = AddMemberVariable(Datum(2.0), "two");
+                    variable->m_datum = Datum(2.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Negative")):
                     executionOperator->SetSymbol(Symbol::OperatorMultiplication);
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    variable = AddMemberVariable(Datum(-1.0), "two");
+                    variable->m_datum = Datum(-1.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Square")):
@@ -4517,8 +4522,7 @@ namespace ScriptCanvas
                 };
 
                 execution->ClearInput();
-                executionOperator->AddChild(
-                    { {}, executionBeforeOperator->GetChild(0).m_output, execution }); // This may cause issues with multiple children
+                executionOperator->AddChild({ {}, execution->GetParent()->GetChild(0).m_output, execution }); // This may cause issues with multiple children
                 execution->SetParent(executionOperator);
             }
         }
