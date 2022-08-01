@@ -8,6 +8,7 @@
 
 set(FILES
     Include/GradientSignal/Editor/EditorGradientBakerComponent.h
+    Include/GradientSignal/Editor/EditorGradientBakerRequestBus.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.inl
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
