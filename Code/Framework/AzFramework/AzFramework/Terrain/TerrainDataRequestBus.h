@@ -35,7 +35,7 @@ namespace AzFramework
             float m_min = 0.0f;
             float m_max = 0.0f;
 
-            bool IsValid()
+            bool IsValid() const
             {
                 return m_min <= m_max;
             }
@@ -307,14 +307,14 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
-            //! Get the terrain raycast entity context id.
+            //! Get the terrain ray cast entity context id.
             virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
 
             //! Given a ray, return the closest intersection with terrain.
             virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
             //! Asynchronous versions of the various 'Query*' API functions declared above.
-            //! It's the responsibility of the caller to ensure all callbacks are threadsafe.
+            //! It's the responsibility of the caller to ensure all callbacks are thread-safe.
             virtual AZStd::shared_ptr<TerrainJobContext> QueryListAsync(
                 const AZStd::span<const AZ::Vector3>& inPositions,
                 TerrainDataMask requestedData,
