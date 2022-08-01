@@ -107,6 +107,10 @@ namespace AZ::Render
             const EMotionFX::ActorInstance* actorInstance,
             const AZ::Color& headColor,
             const AZ::Color& pathColor);
+        void RenderRootMotion(
+            AzFramework::DebugDisplayRequests* debugDisplay,
+            const EMotionFX::ActorInstance* actorInstance,
+            const AZ::Color& rootColor);
         // Return a non-owning trajectory path pointer.
         TrajectoryTracePath* FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance);
         EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.

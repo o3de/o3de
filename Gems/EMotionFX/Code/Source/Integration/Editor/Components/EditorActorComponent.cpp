@@ -438,8 +438,13 @@ namespace EMotionFX
             if (!IsValidAttachment(GetEntityId(), m_attachmentTarget))
             {
                 AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies! Attachment cannot be performed.");
+                m_attachmentTarget.SetInvalid();
+                m_attachmentJointName.clear();
             }
-            CheckAttachToEntity();
+            else
+            {
+                CheckAttachToEntity();
+            }
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 

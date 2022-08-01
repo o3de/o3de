@@ -77,7 +77,7 @@ class PersistentStorageS3(PersistentStorage):
             historic_data_file = f"historic_data.{object_extension}"
 
             # The location of the data is in the form <root_dir>/<branch>/<config>/<suite> so the build config of each branch gets its own historic data
-            self._historic_data_dir = f"{self.root_dir}/{self.branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
+            self._historic_data_dir = f"{self.root_dir}/{self.branch}/{config[self.COMMON_CONFIG_KEY][self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
             self._historic_data_key = f"{self._historic_data_dir}/{historic_data_file}"
 
             logger.info(

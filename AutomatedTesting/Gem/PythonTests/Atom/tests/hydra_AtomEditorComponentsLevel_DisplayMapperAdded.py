@@ -164,11 +164,8 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
 
         for operation_type in DISPLAY_MAPPER_OPERATION_TYPE.keys():
             # 5. Set the Display Mapper Operation Type enumerated in DISPLAY_MAPPER_OPERATION_TYPE for each type
-            # Type property cannot be set currently. as a workaround we are calling an ebus to set the operation type
-            # display_mapper_component.set_component_property_value(
-            #     AtomComponentProperties.display_mapper('Type'), DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
-            render.DisplayMapperComponentRequestBus(
-                bus.Broadcast, "SetDisplayMapperOperationType", DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
+            display_mapper_component.set_component_property_value(
+                AtomComponentProperties.display_mapper('Type'), DISPLAY_MAPPER_OPERATION_TYPE[operation_type])
             general.idle_wait_frames(3)
             set_type = render.DisplayMapperComponentRequestBus(bus.Broadcast, "GetDisplayMapperOperationType")
             Report.info(f"DiplayMapperOperationType: {set_type}")
@@ -371,11 +368,14 @@ def AtomEditorComponentsLevel_DisplayMapper_AddedToEntity():
         cinema_limit_white_presets = [48.0, 184.3200073, 368.6400146, 737.2800293]
         for preset in DISPLAY_MAPPER_PRESET.keys():
             # 19. Select and load each preset
-            # Preset Selection cannot be set or loaded currently; as a workaround we are calling an ebus to load preset
-            # A fix is in progress
-            # display_mapper_component.set_component_property_value(
-            #     AtomComponentProperties.display_mapper('Preset Selection'), DISPLAY_MAPPER_PRESET[preset])
-            render.DisplayMapperComponentRequestBus(bus.Broadcast, "LoadPreset", DISPLAY_MAPPER_PRESET[preset])
+            display_mapper_component.set_component_property_value(
+                AtomComponentProperties.display_mapper('Preset Selection'), DISPLAY_MAPPER_PRESET[preset])
+            general.idle_wait_frames(1)
+            render.DisplayMapperComponentRequestBus(
+                bus.Broadcast,
+                "LoadPreset",
+                display_mapper_component.get_component_property_value(
+                    AtomComponentProperties.display_mapper('Preset Selection')))
             general.idle_wait_frames(1)
             # check some value to confirm preset loaded
             test_preset = (f"Preset {preset} loaded expected value",

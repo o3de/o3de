@@ -57,6 +57,11 @@ namespace LmbrCentral
         ContainerChanged();
     }
 
+    AZStd::string EditorTubeShapeComponentMode::GetComponentModeName() const
+    {
+        return "Tube Shape Edit Mode";
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EditorTubeShapeComponentMode::PopulateActionsImpl()
     {
         return AZStd::vector<AzToolsFramework::ActionOverride>
