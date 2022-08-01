@@ -1372,7 +1372,9 @@ namespace AZ::Data
 
             // Make sure the asset instance we're releasing is the same as the one for the container
             // Sometimes old references (from before a reload) are released which should not cancel newer loads
-            if (itr->second->GetRootAsset()->GetCreationToken() == asset->GetCreationToken())
+            const Asset<AssetData>& rootAsset = itr->second->GetRootAsset();
+
+            if (!rootAsset || (rootAsset && rootAsset->GetCreationToken() == asset->GetCreationToken()))
             {
                 itr->second->ClearRootAsset();
 
