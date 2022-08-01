@@ -10,6 +10,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Console/Console.h>
@@ -126,9 +127,20 @@ namespace Terrain
 
     void TerrainClipmapManager::SetConfiguration(const ClipmapConfiguration& config)
     {
+        AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useClipmap" }, AZ::RPI::ShaderOptionValue{ config.m_clipmapEnabled });
+
         if (!m_isInitialized)
         {
             m_config = config;
+            return;
+        }
+
+        if (!config.m_clipmapEnabled)
+        {
+            ClearMacroClipmapImages();
+            ClearMacroClipmapGpuBuffer();
+            m_config = config;
+
             return;
         }
 
@@ -221,6 +233,11 @@ namespace Terrain
             m_clipmapData.m_extendedClipmapMarginSize = aznumeric_cast<float>(m_config.m_extendedClipmapMarginSize);
             m_clipmapData.m_clipmapBlendSize = aznumeric_cast<float>(m_config.m_clipmapBlendSize);
         }
+    }
+
+    bool TerrainClipmapManager::IsClipmapEnabled() const
+    {
+        return m_config.m_clipmapEnabled;
     }
 
     void TerrainClipmapManager::Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
