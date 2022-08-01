@@ -123,21 +123,18 @@ namespace PythonCoverage
     {
         AZStd::string contents;
 
-        // Compile the coverage for all test cases in this script
-        for (const auto& [testCase, entityComponents] : m_entityComponentMap)
+        // Compile the coverage for this test case
+        const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(m_entityComponents);
+        if (coveringModules.empty())
         {
-            const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(entityComponents);
-            if (coveringModules.empty())
-            {
-                return;
-            }
+            return;
+        }
 
-            contents = testCase + "\n";
-            contents += m_scriptPath + "\n";
-            for (const auto& coveringModule : coveringModules)
-            {
-                contents += AZStd::string::format(" %s\n", coveringModule.c_str());
-            }
+        contents = testCase + "\n";
+        contents += m_scriptPath + "\n";
+        for (const auto& coveringModule : coveringModules)
+        {
+            contents += AZStd::string::format("%s\n", coveringModule.c_str());
         }
     
         AZ::IO::SystemFile file;
@@ -183,14 +180,13 @@ namespace PythonCoverage
     
         if (entity)
         {
-            auto& entityComponents = m_entityComponentMap[m_testCase];
             for (const auto& entityComponent : entity->GetComponents())
             {
                 const auto componentTypeId = entityComponent->GetUnderlyingComponentType();
                 AZ::ComponentDescriptor* componentDescriptor = nullptr;
                 AZ::ComponentDescriptorBus::EventResult(
                     componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
-                entityComponents[componentTypeId] = componentDescriptor;
+                m_entityComponents[componentTypeId] = componentDescriptor;
             }
         }
     }
@@ -232,17 +228,10 @@ namespace PythonCoverage
             m_testCase = m_placeholderTestCase;
         }
 
+        m_entityComponents.clear();
         m_scriptPath = filename;
         const auto coverageFile = m_coverageDir / AZStd::string::format("%.*s.pycoverage", AZ_STRING_ARG(testCase));
-
-        // If this is a different python script we clear the existing entity components and start afresh
-        if (m_coverageFile != coverageFile)
-        {
-            m_entityComponentMap.clear();
-            m_coverageFile = coverageFile;
-        }
-
-        m_testCase = testCase;
+        m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }
 } // namespace PythonCoverage
