@@ -98,11 +98,11 @@
     }
   },
   "python": {
-    "artifact" {
+    "artifact": {  
       "coverage": {
         "fixture_placeholder": "PlaceholderFixture",
         "test_case_placeholder": "PlaceholderTestCase"
       }
-    },
+    }
   }
 }
