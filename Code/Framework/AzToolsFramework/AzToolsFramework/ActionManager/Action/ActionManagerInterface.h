@@ -22,6 +22,8 @@ namespace AzToolsFramework
     using ActionManagerBooleanResult = AZ::Outcome<bool, AZStd::string>;
     using ActionManagerGetterResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
+    //! Action Context Properties object.
+    //! Used to streamline registration of an Action Context.
     struct ActionContextProperties
     {
         AZ_RTTI(ActionContextProperties, "{74694A62-E3FF-43EE-98DF-D66731DC2286}");
@@ -29,9 +31,11 @@ namespace AzToolsFramework
         ActionContextProperties() = default;
         virtual ~ActionContextProperties() = default;
 
-        AZStd::string m_name = "";
+        AZStd::string m_name = ""; //!< The friendly name for the Action Context.
     };
-
+    
+    //! Action Properties object.
+    //! Used to streamline registration of an Action.
     struct ActionProperties
     {
         AZ_RTTI(ActionProperties, "{B84A0BDD-4D15-4078-B6AE-240F825358F7}");
@@ -39,14 +43,16 @@ namespace AzToolsFramework
         ActionProperties() = default;
         virtual ~ActionProperties() = default;
 
-        AZStd::string m_name = "";
-        AZStd::string m_description = "";
-        AZStd::string m_category = "";
-        AZStd::string m_iconPath = "";
-        bool m_hideFromMenusWhenDisabled = true;
-        bool m_hideFromToolBarsWhenDisabled = false;
+        AZStd::string m_name = ""; //!< The friendly name for the Action. Used in menu items and tooltips.
+        AZStd::string m_description = ""; //!< The description for the Action.
+        AZStd::string m_category = ""; //!< The category for the Action to be used in UI.
+        AZStd::string m_iconPath = ""; //!< The qrc path to the icon to be used in UI.
+        bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
+        bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
     };
 
+    //! Widget Action Properties object.
+    //! Used to streamline registration of a Widget Action.
     struct WidgetActionProperties
     {
         AZ_RTTI(WidgetActionProperties, "{9A72C602-ABAA-4010-8806-4EEA32D5F716}");
@@ -54,8 +60,8 @@ namespace AzToolsFramework
         WidgetActionProperties() = default;
         virtual ~WidgetActionProperties() = default;
 
-        AZStd::string m_name = "";
-        AZStd::string m_category = "";
+        AZStd::string m_name = ""; //!< The friendly name for the Widget Action.
+        AZStd::string m_category = ""; //!< The category for the Widget Action to be used in UI.
     };
 
     //! ActionManagerInterface
@@ -275,7 +281,7 @@ namespace AzToolsFramework
         //! Is is on the caller to handle its lifetime correctly.
         //! @param widgetActionIdentifier The identifier for the widget action to retrieve.
         //! @return A raw pointer to the QWidget, or nullptr if the action could not be found.
-        virtual QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) const = 0;
+        virtual QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

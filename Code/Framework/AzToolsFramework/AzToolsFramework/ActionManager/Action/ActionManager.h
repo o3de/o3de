@@ -81,7 +81,7 @@ namespace AzToolsFramework
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) const override;
         bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const override;
         bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const override;
-        QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) const override;
+        QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;
 
         void ClearActionContextMap();
 

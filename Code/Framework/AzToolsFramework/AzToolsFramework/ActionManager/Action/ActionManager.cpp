@@ -530,7 +530,7 @@ namespace AzToolsFramework
         return actionIterator->second.GetHideFromToolBarsWhenDisabled();
     }
 
-    QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) const
+    QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier)
     {
         auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
         if (widgetActionIterator == m_widgetActions.end())
