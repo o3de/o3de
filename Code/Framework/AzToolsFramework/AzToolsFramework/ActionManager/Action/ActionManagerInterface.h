@@ -31,7 +31,7 @@ namespace AzToolsFramework
         ActionContextProperties() = default;
         virtual ~ActionContextProperties() = default;
 
-        AZStd::string m_name = ""; //!< The friendly name for the Action Context.
+        AZStd::string m_name; //!< The friendly name for the Action Context.
     };
     
     //! Action Properties object.
@@ -43,10 +43,10 @@ namespace AzToolsFramework
         ActionProperties() = default;
         virtual ~ActionProperties() = default;
 
-        AZStd::string m_name = ""; //!< The friendly name for the Action. Used in menu items and tooltips.
-        AZStd::string m_description = ""; //!< The description for the Action.
-        AZStd::string m_category = ""; //!< The category for the Action to be used in UI.
-        AZStd::string m_iconPath = ""; //!< The qrc path to the icon to be used in UI.
+        AZStd::string m_name; //!< The friendly name for the Action. Used in menu items and tooltips.
+        AZStd::string m_description; //!< The description for the Action.
+        AZStd::string m_category; //!< The category for the Action to be used in UI.
+        AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
         bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
         bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
     };
@@ -60,8 +60,8 @@ namespace AzToolsFramework
         WidgetActionProperties() = default;
         virtual ~WidgetActionProperties() = default;
 
-        AZStd::string m_name = ""; //!< The friendly name for the Widget Action.
-        AZStd::string m_category = ""; //!< The category for the Widget Action to be used in UI.
+        AZStd::string m_name; //!< The friendly name for the Widget Action.
+        AZStd::string m_category; //!< The category for the Widget Action to be used in UI.
     };
 
     //! ActionManagerInterface
