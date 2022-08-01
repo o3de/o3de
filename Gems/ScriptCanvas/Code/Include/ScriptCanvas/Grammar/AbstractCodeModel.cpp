@@ -1562,20 +1562,21 @@ namespace ScriptCanvas
 
         VariableOperatorData* AbstractCodeModel::FindConnectedInputInScope(ExecutionTreePtr executionWithInput, const EndpointsResolved& scriptCanvasNodesConnectedToInput, FirstNode firstNode) const
         {
-            VariableOperatorData* variableData = aznew VariableOperatorData;
+            
 
             ExecutionTreeConstPtr outputChild = executionWithInput;
             ExecutionTreeConstPtr outputSource = firstNode == FirstNode::Self ? outputChild : outputChild->GetParent();
 
             while (outputSource)
             {
+                VariableOperatorData* variableData = aznew VariableOperatorData;
                 // check every connected SC Node
                 for (const auto& scNodeAndOutputSlot : scriptCanvasNodesConnectedToInput)
                 {
 
                     auto outputSCNode = scNodeAndOutputSlot.first;
 
-                    const auto outputSlot = scNodeAndOutputSlot.second;
+                    auto outputSlot = scNodeAndOutputSlot.second;
 
                     const auto mostRecentOutputNodeOnThread = outputSource->GetId().m_node;
 
@@ -1591,6 +1592,7 @@ namespace ScriptCanvas
                         if (!connectedNodes.empty())
                         {
                             outputSCNode = connectedNodes.front().first;
+                            outputSlot = connectedNodes.front().second;
                             variableData->m_smallOperations.push_front(lexicalId);
                             lexicalId = outputSCNode->GetNodeLexicalId();
                         }
