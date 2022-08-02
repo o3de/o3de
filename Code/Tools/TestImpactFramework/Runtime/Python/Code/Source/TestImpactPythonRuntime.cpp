@@ -12,6 +12,7 @@
 #include <TestImpactRuntimeUtils.h>
 #include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h>
+#include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
 #include <Target/Python/TestImpactPythonProductionTarget.h>
 #include <Target/Python/TestImpactPythonTargetListCompiler.h>
@@ -22,6 +23,8 @@
 
 namespace TestImpact
 {
+    static const char* const LogCallSite = "TestImpact";
+
     PythonTestTargetMetaMap ReadPythonTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile, const AZStd::string& buildType)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
@@ -89,6 +92,58 @@ namespace TestImpact
             m_config.m_testEngine.m_testRunner.m_pythonCmd,
             m_config.m_commonConfig.m_repo.m_build,
             m_config.m_commonConfig.m_workspace.m_temp.m_artifactDirectory);
+
+        try
+        {
+            if (dataFile.has_value())
+            {
+                m_sparTiaFile = dataFile.value().String();
+            }
+            else
+            {
+                m_sparTiaFile = m_config.m_commonConfig.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) /
+                    m_config.m_commonConfig.m_workspace.m_active.m_sparTiaFile;
+            }
+
+            // Populate the dynamic dependency map with the existing source coverage data (if any)
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
+            const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
+            if (tiaData.GetNumSources())
+            {
+                m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
+                m_hasImpactAnalysisData = true;
+
+                // Enumerate new test targets
+                // const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                // if (!testTargetsWithNoEnumeration.empty())
+                //{
+                //    m_testEngine->UpdateEnumerationCache(
+                //        testTargetsWithNoEnumeration,
+                //        Policy::ExecutionFailure::Ignore,
+                //        Policy::TestFailure::Continue,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt);
+                //}
+            }
+        }
+        catch (const DependencyException& e)
+        {
+            if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            {
+                throw RuntimeException(e.what());
+            }
+        }
+        catch ([[maybe_unused]] const Exception& e)
+        {
+            AZ_Printf(
+                LogCallSite,
+                AZStd::string::format(
+                    "No test impact analysis data found for suite '%s' at %s\n",
+                    SuiteTypeAsString(m_suiteFilter).c_str(),
+                    m_sparTiaFile.c_str())
+                    .c_str());
+        }
     }
 
     PythonRuntime::~PythonRuntime() = default;

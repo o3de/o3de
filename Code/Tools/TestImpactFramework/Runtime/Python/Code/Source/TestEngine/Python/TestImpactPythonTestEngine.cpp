@@ -40,7 +40,7 @@ namespace TestImpact
     template<>
     struct TestJobRunnerTrait<PythonTestRunner>
     {
-        using TestEngineJobType = TestEngineInstrumentedRun<PythonTestTarget, TestCaseCoverage>;
+        using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
     };
 
     PythonTestEngine::PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
@@ -58,16 +58,16 @@ namespace TestImpact
         DeleteFiles(m_artifactDir, "*.xml");
     }
 
-    TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+    TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
         PythonTestEngine::
         InstrumentedRun(
-        const AZStd::vector<const PythonTestTarget*>& testTargets,
-        Policy::ExecutionFailure executionFailurePolicy,
-        Policy::TestFailure testFailurePolicy,
-        Policy::TargetOutputCapture targetOutputCapture,
-        AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
+        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
+        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
+        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
         DeleteArtifactXmls();
 
@@ -85,7 +85,7 @@ namespace TestImpact
             AZStd::nullopt);
     }
 
-    TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+    TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
     PythonTestEngine::NullRun(
         [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets) const
     {

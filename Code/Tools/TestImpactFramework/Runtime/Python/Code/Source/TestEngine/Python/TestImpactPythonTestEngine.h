@@ -14,6 +14,7 @@
 #include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/TestImpactTestEngine.h>
+#include <TestRunner/Python/Run/TestImpactPythonTestCoverage.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -30,14 +31,15 @@ namespace TestImpact
     class PythonTestEngine
     {
     public:
-
+        using TestTargetType = PythonTestTarget;
+        using TestCaseCoverageType = PythonTestCaseCoverage;
         //!
         PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
 
         ~PythonTestEngine();
 
         //!
-        [[nodiscard]] TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
         InstrumentedRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -48,7 +50,7 @@ namespace TestImpact
             AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
 
         //!
-        [[nodiscard]] TestEngineInstrumentedRunResult<PythonTestTarget, TestCaseCoverage>
+        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
         NullRun(const AZStd::vector<const PythonTestTarget*>& testTargets) const;
 
     private:
