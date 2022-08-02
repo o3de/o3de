@@ -54,7 +54,7 @@ namespace ONNX
     private:
         // Converts vector of output values into vector of probabilities.
         template<typename T>
-        static void softmax(T& input);
+        static void Softmax(T& input);
 
         // Hook into gametick - used to run realtime inference demo.
         // The only thing that's in here is a call to Run() i.e. 1 inference run happens per tick.

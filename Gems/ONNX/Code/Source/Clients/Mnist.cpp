@@ -11,7 +11,7 @@
 namespace ONNX
 {
     template<typename T>
-    static void MNIST::softmax(T& input)
+    static void MNIST::Softmax(T& input)
     {
         const float rowmax = *std::max_element(input.begin(), input.end());
         std::vector<float> y(input.size());
@@ -28,7 +28,7 @@ namespace ONNX
 
     std::ptrdiff_t MNIST::GetResult()
     {
-        softmax(m_output);
+        Softmax(m_output);
         m_result = std::distance(m_output.begin(), std::max_element(m_output.begin(), m_output.end()));
         return m_result;
     }
