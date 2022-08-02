@@ -14,7 +14,7 @@ import editor_python_test_tools.hydra_editor_utils as hydra
 import scripting_utils.scripting_tools as scripting_tools
 import azlmbr.legacy.general as general
 import azlmbr.paths as paths
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3)
 
 TEST_ENTITY_NAME = "test_entity"

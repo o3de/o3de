@@ -9,7 +9,7 @@ import PySide2.QtCore as QtCore
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import scripting_utils.scripting_tools as scripting_tools
 from scripting_utils.scripting_constants import (WAIT_TIME_3, SCRIPT_CANVAS_UI, VARIABLE_TYPES, GRAPH_VARIABLES_QT)
 

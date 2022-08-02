@@ -45,7 +45,6 @@ namespace AssetProcessor
 
         BuilderInfoMetricsModel(BuilderData* builderData, QObject* parent = nullptr);
         void Reset();
-        void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
 
         // QAbstractItemModel
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
