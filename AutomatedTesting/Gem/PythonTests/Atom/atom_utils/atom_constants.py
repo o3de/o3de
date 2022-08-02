@@ -132,6 +132,12 @@ HAIR_LIGHTING_MODEL = {
     'Kajiya': 2,
 }
 
+# Physical Sky Intensity Mode
+PHYSICAL_SKY_INTENSITY_MODE = {
+    'Ev100': 4,
+    'Nit': 3,
+}
+
 # PostFX Layer Category as defined in
 # ./Gems/AtomLyIntegration/CommonFeatures/Assets/PostProcess/default.postfxlayercategories
 POSTFX_LAYER_CATEGORY = {
@@ -827,13 +833,15 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
+          - 'Cubemap Texture': Asset.id for the texture used in cubemap rendering (File Type *.exr.streamingimage).
+          - 'Exposure': Light exposure value for HDRi Skybox projection ('float', range -5.0 - 5.0, default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
             'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -988,13 +996,30 @@ class AtomComponentProperties:
     def physical_sky(property: str = 'name') -> str:
         """
         Physical Sky component properties.
-        - 'Sky Intensity' float that determines sky intensity value, default value is 4.
+        - 'Intensity Mode' Specifying the light unit type (emum, Ev100, Nit, default Ev100).
+        - 'Sky Intensity' Brightness of the sky (float, range -4.0 - 11.0, default 4.0).
+        - 'Sun Intensity' Brightness of the sun (float, range -4.0 - 11.0, default 8.0).
+        - 'Turbidity' A measure of the aerosol content in the air (int, range 1-10, default of 1).
+        - 'Sun Radius Factor' A factor for Physical sun radius in millions of km. 1 unit is 695,508 km
+         (float, range 0.1 - 2, default 1.0). /n
+        - 'Enable Fog' Toggle fog on or off (bool, default False).
+        - 'Fog Color' Color of the fog (math.Color(float x, float y, float z, float a) where ranges are 0 to 255).
+        - 'Fog Top Height' Height of the fog upwards from the horizon (float, range 0.0 - 0.5 default 0.01).
+        - 'Fog Bottom Height' Height of the fog downwards from the horizon (float, range 0.0 - 0.3 default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Physical Sky',
+            'Intensity Mode': 'Controller|Configuration|Intensity Mode',
             'Sky Intensity': 'Controller|Configuration|Sky Intensity',
+            'Sun Intensity': 'Controller|Configuration|Sun Intensity',
+            'Turbidity': 'Controller|Configuration|Turbidity',
+            'Sun Radius Factor': 'Controller|Configuration|Sun Radius Factor',
+            'Enable Fog': 'Controller|Configuration|Fog|Enable Fog',
+            'Fog Color': 'Controller|Configuration|Fog|Fog Color',
+            'Fog Top Height': 'Controller|Configuration|Fog|Fog Top Height',
+            'Fog Bottom Height': 'Controller|Configuration|Fog|Fog Bottom Height',
         }
         return properties[property]
 
