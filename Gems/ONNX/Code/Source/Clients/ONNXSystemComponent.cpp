@@ -238,7 +238,7 @@ namespace ONNX
         MNIST::InitSettings modelInitSettings;
         modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettings.m_outputShape = { 1, 10 };
-        modelInitSettings.m_modelName = "MNIST_Fold1 (Realtime)";
+        modelInitSettings.m_modelName = "MNIST (Realtime)";
 
         m_mnist->Load(modelInitSettings);
 
@@ -257,7 +257,7 @@ namespace ONNX
             MNIST::InitSettings modelInitSettingsCuda;
             modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
             modelInitSettingsCuda.m_outputShape = { 1, 10 };
-            modelInitSettingsCuda.m_modelName = "MNIST_Fold1 CUDA (Realtime)";
+            modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
             modelInitSettingsCuda.m_cudaEnable = true;
 
             m_mnistCuda->Load(modelInitSettingsCuda);
