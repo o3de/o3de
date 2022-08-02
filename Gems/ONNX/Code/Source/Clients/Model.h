@@ -34,7 +34,7 @@ namespace ONNX
         struct InitSettings
         {
             //! Source of onnx model file.
-            std::wstring m_modelFile = std::wstring{ W_GEM_ASSETS_PATH } + std::wstring{ L"/model.onnx" };
+            AZStd::wstring m_modelFile = (std::wstring{ W_GEM_ASSETS_PATH } + std::wstring{ L"/model.onnx" }).c_str();
             AZStd::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
             AZStd::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
             AZStd::vector<int64_t> m_outputShape; //!< Specifies dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.

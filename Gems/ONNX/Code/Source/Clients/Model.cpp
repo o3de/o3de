@@ -15,7 +15,7 @@ namespace ONNX
         // If no model name is provided, will default to the name of the onnx model file.
         if (initSettings.m_modelName.empty())
         {
-            std::filesystem::path filepath = std::filesystem::path(initSettings.m_modelFile).stem().c_str();
+            std::filesystem::path filepath = std::filesystem::path(initSettings.m_modelFile.c_str()).stem().c_str();
             std::string filestring = filepath.string();
             AZ::StringFunc::Path::GetFileName(filestring.c_str(), m_modelName);
         }
