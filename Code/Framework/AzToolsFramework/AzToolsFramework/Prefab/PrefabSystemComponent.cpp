@@ -1018,7 +1018,8 @@ namespace AzToolsFramework
             PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
             if(!instanceValue)
             {
-                PrefabDomValueReference templateInstancesReference = PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::InstancesName);
+                PrefabDomValueReference templateInstancesReference =
+                    PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::InstancesName);
                 PrefabDomValue& templateInstances = templateInstancesReference->get();
                 PrefabDomValue instanceObject;
                 instanceObject.SetObject();
