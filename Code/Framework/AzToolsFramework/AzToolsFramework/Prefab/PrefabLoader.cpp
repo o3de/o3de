@@ -235,7 +235,7 @@ namespace AzToolsFramework
             for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
                  instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
             {
-                if (instancesFileReference.has_value() == false || instancesFileReference->get().HasMember(instanceIterator->name))
+                if (!instancesFileReference.has_value() || !instancesFileReference->get().HasMember(instanceIterator->name))
                 {
                     PrefabDomValue& nestedTemplateDom = instanceIterator->value;
                     PrefabDomValueReference instanceLinkIdReference =
