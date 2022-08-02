@@ -651,7 +651,8 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 
         const auto builder = builders[index.row()];
         m_builderInfoPatterns->Reset(builder);
-        m_builderInfoMetrics->OnBuilderSelectionChanged(builder);
+        ui->builderInfoMetricsTreeView->setRootIndex(
+            m_builderInfoMetricsSort->mapFromSource(m_builderInfoMetrics->index(m_builderData->m_builderGuidToIndex[builder.m_busId], 0)));
         ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
         ui->builderInfoHeaderValueType->setText(

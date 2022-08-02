@@ -61,28 +61,6 @@ namespace AssetProcessor
         endResetModel();
     }
 
-    void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
-    {
-        beginResetModel();
-        
-        if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
-        {
-            m_data->m_currentSelectedBuilderIndex = m_data->m_builderGuidToIndex[builder.m_busId];
-            m_data->m_root->SetBuilderChild(m_data->m_singleBuilderMetrics[m_data->m_currentSelectedBuilderIndex]);
-        }
-        else
-        {
-            AZ_Warning(
-                "Asset Processor",
-                false,
-                "BuilderInfoMetricsModel cannot find the GUID of the builder selected by the user (%s) in itself. No metrics will be "
-                "shown in the builder tab.",
-                builder.m_busId.ToString<AZStd::string>().c_str());
-            m_data->m_currentSelectedBuilderIndex = aznumeric_cast<int>(BuilderData::BuilderSelection::Invalid);
-        }
-        
-        endResetModel();
-    }
 
     QModelIndex BuilderInfoMetricsModel::index(int row, int column, const QModelIndex& parent) const
     {
@@ -113,7 +91,7 @@ namespace AssetProcessor
         BuilderDataItem* const parentItem =
             parent.isValid() ? static_cast<BuilderDataItem*>(parent.internalPointer()) : m_data->m_root.get();
 
-        if (!parentItem)
+        if (!parentItem || parent.column() > 0)
         {
             return 0;
         }
@@ -152,7 +130,7 @@ namespace AssetProcessor
             switch (index.column())
             {
             case aznumeric_cast<int>(Column::Name):
-                return item->GetName();
+                return item->GetName().c_str();
             case aznumeric_cast<int>(Column::JobCount):
                 return item->GetJobCount();
             case aznumeric_cast<int>(Column::AverageDuration):
@@ -213,13 +191,19 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        auto sharedParentitem = parentItem.lock();
-        if (sharedParentitem == rootItem || sharedParentitem == nullptr)
+        auto sharedParentItem = parentItem.lock();
+        if (sharedParentItem == rootItem || sharedParentItem == nullptr)
         {
             return QModelIndex();
         }
 
-        QModelIndex parentIndex = createIndex(sharedParentitem->GetRow(), 0, sharedParentitem.get());
+        int rowNum = sharedParentItem->GetRow();
+        if (rowNum < 0)
+        {
+            return QModelIndex();
+        }
+
+        QModelIndex parentIndex = createIndex(rowNum, 0, sharedParentItem.get());
         Q_ASSERT(checkIndex(parentIndex));
         return parentIndex;
     }
@@ -229,6 +213,11 @@ namespace AssetProcessor
         while (item)
         {
             const int rowNum = item->GetRow();
+            if (rowNum < 0)
+            {
+                return;
+            }
+
             dataChanged(
                 createIndex(rowNum, aznumeric_cast<int>(Column::JobCount), item),
                 createIndex(rowNum, aznumeric_cast<int>(Column::AverageDuration), item));
