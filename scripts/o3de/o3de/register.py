@@ -21,6 +21,8 @@ import sys
 import urllib.parse
 import urllib.request
 
+import re
+
 from o3de import get_registration, manifest, repo, utils, validation
 
 logger = logging.getLogger('o3de.register')
@@ -492,6 +494,18 @@ def register_repo(json_data: dict,
         return 0
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
+
+    if parsed_uri.netloc in ['github.com']:
+        pattern = r"^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+?)(.git)*$"
+        matches = re.search(pattern, r"{}".format(repo_uri))
+        editedurl = f'https://api.github.com/repos/{matches.group(4)}/{matches.group(5)}/contents/repo.json'
+        logger.warning(f'GitHub re {editedurl}.')
+        with urllib.request.urlopen(editedurl) as url:
+            data = json.loads(url.read().decode())
+            dlurl = data['download_url']
+            parsed_uri = urllib.parse.urlparse(dlurl)
+            logger.warning(f'GitHub data {dlurl}.')
+        logger.warning(f'GitHub link {repo_uri}.')
 
     result = utils.download_file(parsed_uri, cache_file, True)
     if result == 0:
