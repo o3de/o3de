@@ -229,10 +229,10 @@ namespace ONNX
 
         m_mnist = AZStd::make_unique<MNIST>();
 
-        std::vector<float> input(m_mnist->m_imageSize);
+        AZStd::vector<float> input(m_mnist->m_imageSize);
         m_mnist->m_input = input;
 
-        std::vector<float> output(10);
+        AZStd::vector<float> output(10);
         m_mnist->m_output = output;
 
         MNIST::InitSettings modelInitSettings;

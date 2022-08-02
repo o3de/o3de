@@ -50,7 +50,7 @@ namespace ONNX
         //! Executes the inference using the loaded model.
         //! Input and output vectors are used to generate their respective tensors.
         //! Output is mutated directly.
-        void Run(std::vector<float>& input, std::vector<float>& output);
+        void Run(AZStd::vector<float>& input, AZStd::vector<float>& output);
 
         float m_delta = 0.0f; //!< Runtime in ms of latest inference.
 

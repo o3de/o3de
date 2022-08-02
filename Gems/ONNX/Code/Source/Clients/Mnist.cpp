@@ -96,9 +96,9 @@ namespace ONNX
         // Initialises and loads the mnist model.
         // The same instance of the model is used for all runs.
         MNIST mnist;
-        std::vector<float> input(mnist.m_imageSize);
+        AZStd::vector<float> input(mnist.m_imageSize);
         mnist.m_input = input;
-        std::vector<float> output(10);
+        AZStd::vector<float> output(10);
         mnist.m_output = output;
 
         MNIST::InitSettings modelInitSettings;

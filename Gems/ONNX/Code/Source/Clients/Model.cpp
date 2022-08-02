@@ -61,7 +61,7 @@ namespace ONNX
         }
     }
 
-    void Model::Run(std::vector<float>& input, std::vector<float>& output)
+    void Model::Run(AZStd::vector<float>& input, AZStd::vector<float>& output)
     {
         m_timer.Stamp(); // Start timing of inference.
 

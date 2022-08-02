@@ -45,8 +45,8 @@ namespace ONNX
         int m_imageHeight = 28;
         int m_imageSize = 784;
 
-        std::vector<float> m_input; //!< This is the input that gets passed into Run(). A binary representation of the pixels in the image.
-        std::vector<float> m_output; //!< This is the output that gets passed into Run().
+        AZStd::vector<float> m_input; //!< This is the input that gets passed into Run(). A binary representation of the pixels in the image.
+        AZStd::vector<float> m_output; //!< This is the output that gets passed into Run().
         int64_t m_result{
             0
         }; //!< This will be the digit with the highest probability from the inference (what the model thinks the input number was).
