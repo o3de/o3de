@@ -134,9 +134,12 @@ namespace RemoteTools
         m_entryRegistry[key].m_name = name;
         m_entryRegistry[key].m_ip = AzNetworking::IpAddress(RemoteServerAddress, port, AzNetworking::ProtocolType::Tcp);
 
-        AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
-            name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
-        netInterface->SetTimeoutMs(AZ::TimeMs(0));
+        if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
+        {
+            AzNetworking::INetworkInterface* netInterface = networking->CreateNetworkInterface(
+                name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+            netInterface->SetTimeoutMs(AZ::TimeMs(0));
+        }
 
         if (!m_joinThread->IsRunning())
         {
@@ -158,10 +161,13 @@ namespace RemoteTools
         AzFramework::RemoteToolsEndpointInfo& ti = ret.first->second;
         ti.SetInfo("Self", key, SelfNetworkId);
 
-        AzNetworking::INetworkInterface* netInterface = AZ::Interface<AzNetworking::INetworking>::Get()->CreateNetworkInterface(
-            name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
-        netInterface->SetTimeoutMs(AZ::TimeMs(0));
-        netInterface->Listen(port);
+        if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
+        {
+            AzNetworking::INetworkInterface* netInterface = networking->CreateNetworkInterface(
+                name, AzNetworking::ProtocolType::Tcp, AzNetworking::TrustZone::ExternalClientToServer, *this);
+            netInterface->SetTimeoutMs(AZ::TimeMs(0));
+            netInterface->Listen(port);
+        }
     }
 
     const AzFramework::ReceivedRemoteToolsMessages* RemoteToolsSystemComponent::GetReceivedMessages(AZ::Crc32 key) const
