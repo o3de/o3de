@@ -344,7 +344,7 @@ namespace AZStd::ranges
         }
 
     private:
-        // On MSVC The friend functions are can only access the sentinel struct members
+        // On MSVC The friend functions can only access the sentinel struct members
         // The iterator struct which is a friend of the sentinel struct is NOT a friend
         // of the friend functions
         // So a shim is added to provide access to the iterator m_current member
