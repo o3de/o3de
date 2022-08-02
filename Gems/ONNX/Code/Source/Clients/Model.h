@@ -36,8 +36,8 @@ namespace ONNX
             //! Source of onnx model file.
             std::wstring m_modelFile = std::wstring{ W_GEM_ASSETS_PATH } + std::wstring{ L"/model.onnx" };
             std::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
-            std::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
-            std::vector<int64_t> m_outputShape; //!< Specifies dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
+            AZStd::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
+            AZStd::vector<int64_t> m_outputShape; //!< Specifies dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
             bool m_cudaEnable = false; //!< Toggle to create a CUDA session on gpu, if disabled normal cpu session created.
         };
         //! Initialises necessary params in order to run inference.
@@ -60,10 +60,10 @@ namespace ONNX
         AZ::Debug::Timer m_timer; // Timer instance that is used within Run() to calculate inference runtime, and obtain the value in m_delta.
         Ort::MemoryInfo m_memoryInfo{ nullptr }; // Created by Load() and holds information about the memory allocator used by the instance and the memory type. These are set to OrtDeviceAllocator and OrtMemTypeCpu for both CPU and GPU execution (contrary to how it may seem this is the correct MemType for CUDA as well).
         Ort::Session m_session{ nullptr }; // Created by Load(), and is unique to the model.onnx file used - created using the Ort::Env and SessionOptions which are used to specify CPU or CUDA execution.
-        std::vector<int64_t> m_inputShape; // Dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
+        AZStd::vector<int64_t> m_inputShape; // Dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
         size_t m_inputCount; // The number of inputs in the model.onnx file. Corresponds with the number of input names.
         AZStd::vector<const char*> m_inputNames; // A vector of the input names extracted from the model.onnx file.
-        std::vector<int64_t> m_outputShape; // Dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
+        AZStd::vector<int64_t> m_outputShape; // Dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
         size_t m_outputCount; // The number of outputs in the model.onnx file. Corresponds with the number of output names.
         AZStd::vector<const char*> m_outputNames; // A vector of the output names extracted from the model.onnx file.
     };
