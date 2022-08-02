@@ -10,14 +10,17 @@
 
 namespace ONNX
 {
-    void Model::Load(InitSettings& initSettings)
+    void Model::Load(const InitSettings& initSettings)
     {
         // If no model name is provided, will default to the name of the onnx model file.
         if (initSettings.m_modelName.empty())
         {
-            initSettings.m_modelName = std::filesystem::path(initSettings.m_modelFile).stem().string();
+            m_modelName = std::filesystem::path(initSettings.m_modelFile).stem().string();
         }
-        m_modelName = initSettings.m_modelName;
+        else
+        {
+            m_modelName = initSettings.m_modelName;
+        }
 
         // Grabs environment created on init of system component.
         Ort::Env* m_env;

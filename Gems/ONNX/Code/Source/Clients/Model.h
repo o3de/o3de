@@ -45,7 +45,7 @@ namespace ONNX
         //! Creates the session, memory info, and extracts input and output names and count from onnx model file.
         //! Only needs to be executed once, inferences using the same onnx model file can be run by providing different input/output params to
         //! Run().
-        void Load(InitSettings& m_init_settings);
+        void Load(const InitSettings& m_init_settings);
 
         //! Executes the inference using the loaded model.
         //! Input and output vectors are used to generate their respective tensors.
