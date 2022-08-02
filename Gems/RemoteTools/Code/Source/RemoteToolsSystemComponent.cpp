@@ -253,8 +253,7 @@ namespace RemoteTools
                 entry.m_tmpInboundBuffer.clear();
                 entry.m_tmpInboundBufferPos = 0;
 
-                 m_entryRegistry[key].m_endpointChangedEvent.Signal(desiredTargetID, oldTargetID);
-
+                m_entryRegistry[key].m_endpointChangedEvent.Signal(desiredTargetID, oldTargetID);
 
                 if (ti.IsValid() && ti.IsOnline())
                 {

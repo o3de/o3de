@@ -59,6 +59,7 @@ namespace UnitTest
 
     TEST_F(RemoteToolsTests, TEST_RemoteToolsEmptyRegistry)
     {
+        EXPECT_NE(m_remoteTools, nullptr);
         EXPECT_EQ(m_remoteTools->GetReceivedMessages(TestToolsKey), nullptr);
         AzFramework::RemoteToolsEndpointContainer endpointContainer;
 
@@ -75,6 +76,7 @@ namespace UnitTest
 
     TEST_F(RemoteToolsTests, TEST_RemoteToolsHost)
     {
+        EXPECT_NE(m_remoteTools, nullptr);
         m_remoteTools->RegisterToolingServiceHost(TestToolsKey, AZ::Name("Test"), 6999);
         EXPECT_EQ(m_remoteTools->GetReceivedMessages(TestToolsKey), nullptr);
         AzFramework::RemoteToolsEndpointContainer endpointContainer;
@@ -95,6 +97,7 @@ namespace UnitTest
             m_remoteTools->SendRemoteToolsMessage(endpointInfo, msg);
         }
         const AzFramework::ReceivedRemoteToolsMessages* receiveMsgs = m_remoteTools->GetReceivedMessages(TestToolsKey);
+        EXPECT_NE(receiveMsgs, nullptr);
         EXPECT_EQ(receiveMsgs->size(), 1);
         m_remoteTools->ClearReceivedMessages(TestToolsKey);
     }
