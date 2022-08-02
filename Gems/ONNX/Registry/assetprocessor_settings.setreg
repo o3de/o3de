@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "ScanFolder ONNX/Assets": {
+                    "watch": "@GEMROOT:ONNX@/Assets",
+                    "recursive": 1,
+                    "order": 101
+                },
+                "ScanFolder ONNX/Registry": {
+                    "watch": "@GEMROOT:ONNX@/Registry",
+                    "recursive": 1,
+                    "order": 102
+                }
+            }
+        }
+    }
+}
