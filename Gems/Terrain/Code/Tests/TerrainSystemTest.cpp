@@ -762,10 +762,10 @@ namespace UnitTest
         auto heightMockFunction = [](AZ::Vector3& position, bool& terrainExists)
         {
             const float heights[4][4] = {
-                1.0f, 0.0f, 4.0f, 1.0f,
-                2.0f, 2.0f, 2.0f, 2.0f,
-                0.0f, 2.0f, 2.0f, 0.0f,
-                1.0f, 2.0f, 2.0f, 1.0f
+                { 1.0f, 0.0f, 4.0f, 1.0f },
+                { 2.0f, 2.0f, 2.0f, 2.0f },
+                { 0.0f, 2.0f, 2.0f, 0.0f },
+                { 1.0f, 2.0f, 2.0f, 1.0f }
             };
 
             terrainExists = true;
