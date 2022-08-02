@@ -13,7 +13,7 @@ namespace ONNX
     template<typename T>
     static void MNIST::softmax(T& input)
     {
-        float rowmax = *std::max_element(input.begin(), input.end());
+        const float rowmax = *std::max_element(input.begin(), input.end());
         std::vector<float> y(input.size());
         float sum = 0.0f;
         for (size_t i = 0; i != input.size(); ++i)
