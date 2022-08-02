@@ -673,7 +673,7 @@ namespace AzFramework
         }
 
         // poll modifiers during a cursor event (cursor movement)
-        if (const auto* input = AZStd::get_if<CursorEvent>(&state.m_inputEvent))
+        if (AZStd::get_if<CursorEvent>(&state.m_inputEvent))
         {
             if (state.m_modifiers.IsActive(GetCorrespondingModifierKeyMask(m_orbitChannelId)))
             {
@@ -748,7 +748,7 @@ namespace AzFramework
     bool OrbitScrollDollyCameraInput::HandleEvents(
         const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto* scroll = AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
+        if (AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
         {
             BeginActivation();
         }
@@ -835,7 +835,7 @@ namespace AzFramework
     bool LookScrollTranslationCameraInput::HandleEvents(
         const InputState& state, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
     {
-        if (const auto* scroll = AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
+        if (AZStd::get_if<ScrollEvent>(&state.m_inputEvent))
         {
             BeginActivation();
         }

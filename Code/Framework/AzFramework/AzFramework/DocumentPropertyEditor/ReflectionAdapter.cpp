@@ -457,7 +457,9 @@ namespace AZ::DocumentPropertyEditor
     {
         m_instance = instance;
         m_typeId = AZStd::move(typeId);
-        NotifyResetDocument();
+
+        // new top-value, do a full reset
+        NotifyResetDocument(DocumentResetType::HardReset);
     }
 
     void ReflectionAdapter::InvokeChangeNotify(const AZ::Dom::Value& domNode)

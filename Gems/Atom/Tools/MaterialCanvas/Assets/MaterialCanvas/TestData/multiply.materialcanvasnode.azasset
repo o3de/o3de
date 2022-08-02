@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Multiply",
+        "category": "Math Functions",
+        "title": "multiply",
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -25,6 +25,9 @@
                         1.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -46,6 +49,9 @@
                         1.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -65,6 +71,9 @@
                         1.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue1 * NODEID_inValue2;" ]
                 }
             }
         ]

@@ -44,6 +44,7 @@ Constants for Asset Editor
 SAVE_ASSET_AS = "SaveAssetAs"
 DEFAULT_SCRIPT_EVENT = "EventName"
 DEFAULT_METHOD_NAME = "MethodName"
+PARAMETER_NAME = "ParameterName"
 
 """
 Constants for QtWidgets.
@@ -65,6 +66,7 @@ PARAMETERS_QT = "Parameters"
 """
 General constants
 """
+BASE_LEVEL_NAME = "Base"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
 WAIT_FRAMES = 200

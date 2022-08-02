@@ -85,7 +85,8 @@ namespace AZ::SerializeContextTools
 
                 // If the "dumptypes" or "createtype" supplied attempt to load the editor gem dependencies
                 if (m_commandLine.GetNumMiscValues() > 0 &&
-                    (m_commandLine.GetMiscValue(0) == "dumptypes" || m_commandLine.GetMiscValue(0) == "createtype"))
+                    (m_commandLine.GetMiscValue(0) == "dumptypes" || m_commandLine.GetMiscValue(0) == "createtype"
+                        || m_commandLine.GetMiscValue(0) == "dumpsc"))
                 {
                     projectSpecializations.Append("editor");
                 }

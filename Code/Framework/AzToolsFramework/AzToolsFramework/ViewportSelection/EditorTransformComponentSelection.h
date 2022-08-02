@@ -41,6 +41,9 @@ namespace AzToolsFramework
     {
         class ComponentModeSwitcher;
     }
+    
+    class ActionManagerInterface;
+    class MenuManagerInterface;
 
     class EditorVisibleEntityDataCacheInterface;
 
@@ -213,6 +216,7 @@ namespace AzToolsFramework
 
         void SetupBoxSelect();
 
+        // Legacy ActionManager
         void RegisterActions();
         void UnregisterActions();
 
@@ -262,6 +266,7 @@ namespace AzToolsFramework
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
+        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -357,6 +362,9 @@ namespace AzToolsFramework
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; //! < Viewport UI switcher for showing component mode components.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
+
+        ActionManagerInterface* m_actionManagerInterface = nullptr;
+        MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

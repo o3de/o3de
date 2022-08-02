@@ -126,6 +126,7 @@ namespace AzFramework
         void SetWindowTitle(const AZStd::string& title) override;
         WindowSize GetClientAreaSize() const override;
         void ResizeClientArea(WindowSize clientAreaSize) override;
+        bool SupportsClientAreaResize() const override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
@@ -134,6 +135,9 @@ namespace AzFramework
         uint32_t GetSyncInterval() const override;
         bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
+
+        //! Get whether the default window supports client area resizing.
+        static bool SupportsClientAreaResizeOfDefaultWindow();
 
         //! Get the full screen state of the default window.
         //! \return True if the default window is currently in full screen, false otherwise.
@@ -172,6 +176,7 @@ namespace AzFramework
             virtual void SetWindowTitle(const AZStd::string& title);
             virtual WindowSize GetClientAreaSize() const;
             virtual void ResizeClientArea(WindowSize clientAreaSize);
+            virtual bool SupportsClientAreaResize() const;
             virtual bool GetFullScreenState() const;
             virtual void SetFullScreenState(bool fullScreenState);
             virtual bool CanToggleFullScreenState() const;

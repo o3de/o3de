@@ -1,6 +1,15 @@
 ProductName: single_mesh_multiple_materials.dbgsg
 debugSceneGraphVersion: 1
 single_mesh_multiple_materials
+Node Name: RootNode
+Node Path: RootNode
+Node Type: RootBoneData
+	WorldTransform:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: Torus
 Node Path: RootNode.Torus
 Node Type: MeshData

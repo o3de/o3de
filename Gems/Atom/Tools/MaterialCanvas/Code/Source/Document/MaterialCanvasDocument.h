@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/GraphContext.h>
+#include <GraphModel/Model/Node.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
@@ -52,6 +53,7 @@ namespace MaterialCanvas
 
         // MaterialCanvasDocumentRequestBus::Handler overrides...
         GraphCanvas::GraphId GetGraphId() const override;
+        const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -70,11 +72,16 @@ namespace MaterialCanvas
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
 
+        bool CompareNodeExecutionOrder(GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB) const;
+        AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
+        bool CompileGraph() const;
+
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
         bool m_modified = {};
+        mutable AZStd::vector<AZStd::string> m_generatedFiles;
     };
 } // namespace MaterialCanvas

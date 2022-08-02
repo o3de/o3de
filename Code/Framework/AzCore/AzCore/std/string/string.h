@@ -91,7 +91,9 @@ namespace AZStd
 
         inline static constexpr size_type npos = size_type(-1);
 
-        inline basic_string(const Allocator& alloc = Allocator())
+        // Constructors and Assignment operators
+        // https://eel.is/c++draft/strings#string.cons
+        inline constexpr basic_string(const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
         {
             Traits::assign(m_storage.first().GetData()[0], Element());
@@ -150,6 +152,11 @@ namespace AZStd
         {
         }
 
+        basic_string(AZStd::basic_string_view<Element, Traits> view, size_type pos, size_type n, const Allocator& alloc = Allocator())
+            : basic_string(view.substr(pos, n), alloc)
+        {
+        }
+
         // C++23 overload to prevent initializing a string_view via a nullptr or integer type
         constexpr basic_string(AZStd::nullptr_t) = delete;
 
@@ -159,7 +166,7 @@ namespace AZStd
             deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
         }
 
-        operator AZStd::basic_string_view<Element, Traits>() const
+        constexpr operator AZStd::basic_string_view<Element, Traits>() const
         {
             return AZStd::basic_string_view<Element, Traits>(data(), size());
         }
@@ -1877,6 +1884,21 @@ namespace AZStd
         }
 #endif
     };
+
+    // AZStd::basic_string deduction guides
+    template<class InputIt, class Alloc = allocator>
+    basic_string(InputIt, InputIt, Alloc = Alloc())-> basic_string<typename iterator_traits<InputIt>::value_type,
+        AZStd::char_traits<typename iterator_traits<InputIt>::value_type>,
+        Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, const Alloc& = Alloc()) ->
+        basic_string<CharT,Traits, Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, typename allocator_traits<Alloc>::size_type,
+        typename allocator_traits<Alloc>::size_type, const Alloc& = Alloc()) ->
+        basic_string<CharT, Traits, Alloc>;
 
     template<class Element, class Traits, class Allocator>
     inline void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)
