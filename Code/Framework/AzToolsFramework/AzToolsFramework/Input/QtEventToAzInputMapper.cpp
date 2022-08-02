@@ -527,41 +527,33 @@ namespace AzToolsFramework
         case CursorInputMode::CursorModeWrapped:
             {
                 bool wrapped = false;
-                QPoint screenPos(globalCursorPosition);
+                QPoint wrappedPosition(globalCursorPosition);
                 switch (m_cursorMode)
                 {
                 case CursorInputMode::CursorModeWrappedX:
-                    wrapped = WrapCursorX(widgetRect, screenPos);
+                    wrapped = WrapCursorX(widgetRect, wrappedPosition);
                     break;
                 case CursorInputMode::CursorModeWrappedY:
-                    wrapped = WrapCursorY(widgetRect, screenPos);
+                    wrapped = WrapCursorY(widgetRect, wrappedPosition);
                     break;
                 case CursorInputMode::CursorModeWrapped:
-                    wrapped = WrapCursorX(widgetRect, screenPos);
-                    wrapped = WrapCursorY(widgetRect, screenPos) || wrapped;
+                    wrapped = WrapCursorX(widgetRect, wrappedPosition);
+                    wrapped = WrapCursorY(widgetRect, wrappedPosition) || wrapped;
                     break;
                 default:
                     // this should never happen
                     AZ_Assert(false, "Invalid Curosr Mode: %i.", m_cursorMode);
                     break;
                 }
-
-                if (wrapped)
+                if(wrapped) 
                 {
-                    //m_previousGlobalCursorPosition = screenPos;
-                    AzQtComponents::SetCursorPos(screenPos);
-                    AZ_Printf("debug", "wrapped: x:%d y:%d \n", screenPos.x(), screenPos.y());
-                }
-                else
+                    AzQtComponents::SetCursorPos(wrappedPosition);
+                    m_previousGlobalCursorPosition = wrappedPosition - cursorDelta;
+                } 
+                else 
                 {
-                    const QPoint screenDelta = globalCursorPosition - screenPos;
-                    m_previousGlobalCursorPosition = globalCursorPosition - screenDelta;
-                    
-                   
+                    m_previousGlobalCursorPosition = globalCursorPosition;
                 }
-                //AZ_Printf("debug", "previousGlobalCursorPosiion: x:%d y:%d \n", m_previousGlobalCursorPosition.x(), m_previousGlobalCursorPosition.y());
-                //AZ_Printf("debug", "globalCursorPosition: x:%d y:%d \n", globalCursorPosition.x(), globalCursorPosition.y());
-                AZ_Printf("debug", "screenPos: x:%d y:%d \n", screenPos.x(), screenPos.y());
             }
             break;
         case CursorInputMode::CursorModeNone:
