@@ -1,0 +1,49 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+
+struct PixelGeometryData
+{
+    float3 positionWS;
+    float3 vertexNormal;
+    float2 uv[UvSetCount];
+    float3 tangents[UvSetCount];
+    float3 bitangents[UvSetCount];
+    bool isFrontFace;
+};
+
+PixelGeometryData EvaluatePixelGeometry(VSOutput IN, bool isFrontFace)
+{
+    PixelGeometryData geoData;
+
+    geoData.positionWS = IN.m_worldPosition;
+    geoData.vertexNormal = normalize(IN.m_normal);
+
+    geoData.tangents[0] = IN.m_tangent;
+    geoData.tangents[1] = IN.m_tangent;
+
+    geoData.bitangents[0] = IN.m_bitangent;
+    geoData.bitangents[1] = IN.m_bitangent;
+
+    geoData.uv = IN.m_uv;
+    geoData.isFrontFace = isFrontFace;
+
+    if (o_normal_useTexture)
+    {
+        for (int i = 0; i != UvSetCount; ++i)
+        {
+            EvaluateTangentFrame(geoData.vertexNormal, IN.m_worldPosition, isFrontFace, IN.m_uv[i], i,
+                IN.m_tangent, IN.m_bitangent, geoData.tangents[i], geoData.bitangents[i]);
+        }
+    }
+
+    return geoData;
+}

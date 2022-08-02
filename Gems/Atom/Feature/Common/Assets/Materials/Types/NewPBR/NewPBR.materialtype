@@ -1,0 +1,75 @@
+{
+    "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 1,
+    "versionUpdates": [
+        {
+            "toVersion": 1,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
+            ]
+        }
+    ],
+    "propertyLayout": {
+        "propertyGroups": [
+            {
+                "$import": "../MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/MetallicPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/SpecularPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/NormalPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/UvPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/GeneralCommonPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            {
+                "$import": "../MaterialInputs/EmissivePropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "./NewPBR_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "./NewPBR_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Shaders/MotionVector/MeshMotionVector.shader",
+            "tag": "MeshMotionVector"
+        }
+    ],
+    "functors": [
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

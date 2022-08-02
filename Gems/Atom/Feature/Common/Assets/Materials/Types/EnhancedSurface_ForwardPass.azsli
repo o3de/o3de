@@ -65,9 +65,6 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     float2 detailUv[UvSetCount] = { IN.m_uv0, IN.m_uv1 };
     TransformDetailUvs(detailUv, OUT.m_detailUv);
     
-    // Shadow coords will be calculated in the pixel shader in this case
-    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
-
     float3x3 objectToWorldIT = GetNormalToWorld();
     ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
