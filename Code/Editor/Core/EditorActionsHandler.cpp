@@ -99,6 +99,7 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     InitializeActionContext();
     InitializeActionUpdaters();
     InitializeActions();
+    InitializeWidgetActions();
     InitializeMenus();
     InitializeToolBars();
 
@@ -751,6 +752,57 @@ void EditorActionsHandler::InitializeActions()
 
 }
 
+void EditorActionsHandler::InitializeWidgetActions()
+{
+    // Help - Search Documentation Widget
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Search Documentation";
+        widgetActionProperties.m_category = "Help";
+
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.help.searchDocumentation",
+            widgetActionProperties,
+            [&]()
+            {
+                return CreateDocsSearchWidget();
+            }
+        );
+    }
+
+    // Expander
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Expander";
+        widgetActionProperties.m_category = "Widgets";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.expander",
+            widgetActionProperties,
+            [&]()
+            {
+                return CreateExpander();
+            }
+        );
+    }
+
+    // Play Controls - Label
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Play Controls Label";
+        widgetActionProperties.m_category = "Game";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.game.playControlsLabel",
+            widgetActionProperties,
+            [&]()
+            {
+                return CreatePlayControlsLabel();
+            }
+        );
+    }
+}
+
 void EditorActionsHandler::InitializeMenus()
 {
     // Register MenuBar
@@ -899,13 +951,9 @@ void EditorActionsHandler::InitializeMenus()
         }
     }
 
-    // Help - Search Documentation Widget
-    {
-        m_menuManagerInterface->AddWidgetToMenu(HelpMenuIdentifier, CreateDocsSearchWidget(), 100);
-    }
-
     // Help
     {
+        m_menuManagerInterface->AddWidgetToMenu(HelpMenuIdentifier, "o3de.widgetAction.help.searchDocumentation", 100);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.tutorials", 200);
         m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpDocumentationMenuIdentifier, 300);
         {
@@ -948,12 +996,12 @@ void EditorActionsHandler::InitializeToolBars()
 
     // Play Controls
     {
-        m_toolBarManagerInterface->AddWidgetToToolBar(PlayControlsToolBarIdentifier, CreateExpander(), 0);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 100);
-        m_toolBarManagerInterface->AddWidgetToToolBar(PlayControlsToolBarIdentifier, CreateLabel("Play Controls"), 200);
-        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.play", PlayGameMenuIdentifier, 300);
-        m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 400);
-        m_toolBarManagerInterface->AddActionToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 500);
+        m_toolBarManagerInterface->AddWidgetToToolBar(PlayControlsToolBarIdentifier, "o3de.widgetAction.expander", 100);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 200);
+        m_toolBarManagerInterface->AddWidgetToToolBar(PlayControlsToolBarIdentifier, "o3de.widgetAction.game.playControlsLabel", 300);
+        m_toolBarManagerInterface->AddActionWithSubMenuToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.play", PlayGameMenuIdentifier, 400);
+        m_toolBarManagerInterface->AddSeparatorToToolBar(PlayControlsToolBarIdentifier, 500);
+        m_toolBarManagerInterface->AddActionToToolBar(PlayControlsToolBarIdentifier, "o3de.action.game.simulate", 600);
     }
 }
 
@@ -965,11 +1013,11 @@ QWidget* EditorActionsHandler::CreateExpander()
     return expander;
 }
 
-QWidget* EditorActionsHandler::CreateLabel(const AZStd::string& text)
+QWidget* EditorActionsHandler::CreatePlayControlsLabel()
 {
     QLabel* label = new QLabel(m_mainWindow);
-    label->setText(text.c_str());
-    return static_cast<QWidget*>(label);
+    label->setText("Play Controls");
+    return label;
 }
 
 QWidget* EditorActionsHandler::CreateDocsSearchWidget()

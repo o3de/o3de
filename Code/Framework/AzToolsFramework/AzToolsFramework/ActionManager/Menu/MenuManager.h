@@ -30,7 +30,7 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager();
+        MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
     private:
@@ -49,11 +49,12 @@ namespace AzToolsFramework
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddWidgetToMenu(
-            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) override;
+            const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddMenuToMenuBar(
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerIntegerResult GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
+        MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
 
         // MenuManagerInterface overrides ...
