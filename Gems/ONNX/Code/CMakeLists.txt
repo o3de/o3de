@@ -53,7 +53,6 @@ ly_add_target(
         PRIVATE
             Include
             Source
-            Assets/rsz_twoV2.png
             ${Onnx_INCLUDE_DIR}
     BUILD_DEPENDENCIES
         PUBLIC
