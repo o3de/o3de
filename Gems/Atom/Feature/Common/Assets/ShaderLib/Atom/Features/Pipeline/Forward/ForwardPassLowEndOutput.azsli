@@ -9,14 +9,13 @@
 #pragma once
 
 
-#define PIXEL_GEOMETRY_DATA_IS_NEW_PBR     1
-
-struct PixelGeometryData
+struct ForwardPassOutput
 {
-    float3 positionWS;
-    float3 vertexNormal;
-    float2 uv[UvSetCount];
-    float3 tangents[UvSetCount];
-    float3 bitangents[UvSetCount];
-    bool isFrontFace;
+    float4 m_color  : SV_Target0;
+};
+
+struct ForwardPassOutputWithDepth
+{
+    float4 m_color  : SV_Target0;
+    float m_depth : SV_Depth;
 };

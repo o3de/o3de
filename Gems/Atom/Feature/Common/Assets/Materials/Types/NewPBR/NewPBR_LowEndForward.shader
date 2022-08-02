@@ -1,5 +1,5 @@
 {
-    "Source" : "./NewPBR_ForwardPass.azsl",
+    "Source" : "./NewPBR_LowEndForward.azsl",
 
     "Definitions": ["QUALITY_LOW_END=1"],
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "NewPBR_PixelGeometryData.azsli"
 

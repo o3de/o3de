@@ -35,11 +35,11 @@
       "EntryPoints":
       [
         {
-          "name": "NewPbr_ForwardPassVS",
+          "name": "VertexShader",
           "type": "Vertex"
         },
         {
-          "name": "NewPbr_ForwardPassPS",
+          "name": "PixelShader",
           "type": "Fragment"
         }
       ]

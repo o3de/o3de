@@ -7,102 +7,17 @@
  */
 
 
-// Forward Pass SRG + Output
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+// --- Shader Compile Options ---
+#include "NewPBR_CompileOptions.azsli"
 
 
-// ---------- New PBR ----------
-
-// Options
-#define ENABLE_CLEAR_COAT       0
-#define ENABLE_TRANSMISSION     0
-#define FORCE_OPAQUE            1
-
-#include <Atom/Features/ShaderQualityOptions.azsli>
-#include <Atom/Features/PBR/LightingOptions.azsli>
-
-// Object SRG
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-
-// Material Definition & SRG
-#include "NewPBR_Common.azsli"
-
-COMMON_OPTIONS_BASE_COLOR()
-COMMON_OPTIONS_ROUGHNESS()
-COMMON_OPTIONS_METALLIC()
-COMMON_OPTIONS_SPECULAR_F0()
-COMMON_OPTIONS_NORMAL()
-COMMON_OPTIONS_OCCLUSION()
-COMMON_OPTIONS_EMISSIVE()
-
-// Shader Stitching
-#include "NewPBR_VertexData.azsli"
-#include "NewPBR_Vertex.azsli"
-
-#include "NewPBR_PixelGeometryData.azsli"
-#include "NewPBR_PixelGeometry.azsli"
-
-#include "NewPBR_SurfaceData.azsli"
-#include "NewPBR_Surface.azsli"
-
-#include "NewPBR_LightingData.azsli"
-#include "NewPBR_LightingModel.azsli"
-#include "NewPBR_Lighting.azsli"
+// --- Pass SRG ---
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 
-// ---------- Vertex Shader ----------
-
-VSOutput NewPbr_ForwardPassVS(VSInput IN)
-{
-    VSOutput OUT = EvaluateVertexGeometry(IN);
-    return OUT;
-}
+// --- Material ---
+#include "NewPBR.azsli"
 
 
-// ---------- Pixel Shader ----------
-
-[earlydepthstencil]
-ForwardPassOutput NewPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
-{
-    // ------- Geometry -> Surface -> Lighting -------
-
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
-
-    Surface surface = EvaluateSurface(geoData);
-
-    LightingData lightingData = EvaluateLighting(surface, IN.m_position);
-
-    // ------- Output -------
-
-    ForwardPassOutput OUT;
-
-#ifdef UNIFIED_FORWARD_OUTPUT
-
-    OUT.m_color.rgb = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb;
-    OUT.m_color.a = 1.0;
-
-#else
-
-    OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
-    OUT.m_diffuseColor.a = 1.0;
-
-    OUT.m_specularColor.rgb = lightingData.specularLighting;
-    OUT.m_specularColor.a = 1.0;
-
-    OUT.m_specularF0.rgb = surface.specularF0;
-    OUT.m_specularF0.a = surface.roughnessLinear;
-
-    OUT.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
-    OUT.m_albedo.a = lightingData.specularOcclusion;
-
-    OUT.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
-    OUT.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
-
-    DebugModifyOutput(OUT.m_diffuseColor, OUT.m_specularColor, OUT.m_albedo, OUT.m_specularF0, surface.normal,
-                    geoData.tangents[MaterialSrg::m_normalMapUvIndex], geoData.bitangents[MaterialSrg::m_normalMapUvIndex],
-                    surface.baseColor, surface.albedo, surface.roughnessLinear, surface.metallic);
-#endif
-
-    return OUT;
-}
+// --- Vertex + Pixel Shader ---
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>

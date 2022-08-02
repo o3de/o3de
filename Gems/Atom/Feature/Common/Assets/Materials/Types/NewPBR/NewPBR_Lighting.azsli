@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #include <Atom/Features/PBR/Lights/Lights.azsli>
 #include <Atom/Features/PBR/Lights/Ibl.azsli>
 #include <Atom/Features/PBR/Decals.azsli>

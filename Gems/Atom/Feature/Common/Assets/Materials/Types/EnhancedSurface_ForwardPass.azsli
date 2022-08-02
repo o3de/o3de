@@ -7,10 +7,10 @@
  */
 
 // SRGs
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 // Pass Output
-#include <Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli>
+#include <Atom/Features/Pipeline/Forward/ForwardSubsurfacePassOutput.azsli>
 
 // Utility
 #include <Atom/Features/ColorManagement/TransformColor.azsli>

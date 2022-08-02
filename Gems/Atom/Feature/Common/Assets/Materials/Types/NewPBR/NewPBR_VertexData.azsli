@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #define VERTEX_DATA_IS_NEW_PBR     1
 
 struct VSInput

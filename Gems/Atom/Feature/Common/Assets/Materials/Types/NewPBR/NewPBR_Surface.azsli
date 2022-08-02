@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #include <Atom/Features/MatrixUtility.azsli>
 
 Surface EvaluateSurface_NewPBR(

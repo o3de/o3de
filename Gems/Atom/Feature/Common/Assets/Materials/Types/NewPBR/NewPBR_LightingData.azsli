@@ -8,6 +8,7 @@
 
 #pragma once
 
+
 #include <viewsrg.srgi>
 #include <Atom/Features/Debug.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
