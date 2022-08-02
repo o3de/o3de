@@ -30,7 +30,7 @@ namespace AzToolsFramework
             Remove
         };
 
-        //! Struct containing relevant information about component for the switcher
+        //! Struct containing relevant information about component for the switcher.
         struct ComponentData
         {
             ComponentData() = default;
