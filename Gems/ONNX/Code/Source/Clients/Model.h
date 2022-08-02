@@ -53,7 +53,7 @@ namespace ONNX
         //! Output is mutated directly.
         void Run(std::vector<float>& input, std::vector<float>& output);
 
-        float m_delta; //!< Runtime in ms of latest inference.
+        float m_delta = 0.0f; //!< Runtime in ms of latest inference.
 
     protected:
         bool m_cudaEnable; // Holds state of whether inferencing of the model instance will be run on gpu using CUDA, run on CPU by default.
