@@ -72,7 +72,7 @@ namespace AZ
     NameDictionary& NameDictionary::Instance()
     {
         auto nameDictionary = AZ::Interface<AZ::NameDictionary>::Get();
-        AZ_Assert(nameDictionary != nullptr, "A NameDictionary has not been registered yet.");
+        AZ_Assert(nameDictionary != nullptr, "A NameDictionary has not been globally registered with the AZ::Interface<AZ::NameDictionary>.");
 
         return *nameDictionary;
     }
@@ -160,7 +160,6 @@ namespace AZ
             {
                 m_deferredHead.m_nextName = &deferredName;
                 deferredName.m_previousName = &m_deferredHead;
-                deferredName.m_linkedToDictionary = true;
             }
         }
     }

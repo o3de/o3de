@@ -398,10 +398,6 @@ namespace AZ
     ComponentApplication::ComponentApplication()
         : ComponentApplication(0, nullptr)
     {
-        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
-        {
-            Interface<ComponentApplicationRequests>::Register(this);
-        }
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)

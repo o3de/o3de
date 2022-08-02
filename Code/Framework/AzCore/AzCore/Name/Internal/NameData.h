@@ -16,6 +16,7 @@
 
 namespace AZ
 {
+    class Name;
     class NameDictionary;
 
     namespace Internal
@@ -23,6 +24,7 @@ namespace AZ
         class NameData final
         {
             friend NameDictionary;
+            friend Name;
         public:
             AZ_CLASS_ALLOCATOR(NameData, AZ::SystemAllocator, 0);
 
