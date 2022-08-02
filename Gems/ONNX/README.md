@@ -2,7 +2,7 @@
 
 This is an experimental gem implementing [ONNX Runtime](https://onnxruntime.ai/) in O3DE and demoing it using inference examples from the MNIST dataset with an Editor dashboard displaying inference statistics. Image decoding is done using a modified version of [uPNG](https://github.com/elanthis/upng).
 
-![Image of ONNX dashboard](/Docs/Images/ImGuiDashboard.png)
+![Image of ONNX Dashboard](https://user-images.githubusercontent.com/108667365/182392987-e39a38af-169e-47a8-b14d-c18c431386ee.png)
 
 ## Setup
 
