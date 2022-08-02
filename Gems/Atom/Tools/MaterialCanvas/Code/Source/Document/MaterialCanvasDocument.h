@@ -55,6 +55,10 @@ namespace MaterialCanvas
         // MaterialCanvasDocumentRequestBus::Handler overrides...
         GraphCanvas::GraphId GetGraphId() const override;
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
+        AZStd::string GetGraphName() const override;
+        bool CompileGraph() const override;
+        void QueueCompileGraph() const override;
+        bool IsCompileGraphQueued() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -72,9 +76,6 @@ namespace MaterialCanvas
 
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
-
-        // Convert the document file name into one that can be used as a symbol in graph template files.
-        AZStd::string GetGraphNamePrefixFromDocumentName() const;
 
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
@@ -117,15 +118,13 @@ namespace MaterialCanvas
             const LineGenerationFn& lineGenerationFn,
             AZStd::vector<AZStd::string>& templateLines) const;
 
-        // Evaluate the graph nodes, slots, values, and settings to generate and export shaders, material types, and materials.
-        bool CompileGraph() const;
-
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
         bool m_modified = {};
+        mutable bool m_compileGraphQueued = {};
         mutable AZStd::vector<AZStd::string> m_generatedFiles;
     };
 } // namespace MaterialCanvas

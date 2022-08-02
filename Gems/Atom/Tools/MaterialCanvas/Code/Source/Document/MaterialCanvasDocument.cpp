@@ -18,6 +18,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialCanvasDocument.h>
+#include <Document/MaterialCanvasDocumentNotificationBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphModel/Model/Connection.h>
@@ -52,7 +53,11 @@ namespace MaterialCanvas
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialcanvas")
                 ->Event("GetGraphId", &MaterialCanvasDocumentRequests::GetGraphId)
-                ;
+                ->Event("GetGeneratedFilePaths", &MaterialCanvasDocumentRequests::GetGeneratedFilePaths)
+                ->Event("GetGraphName", &MaterialCanvasDocumentRequests::GetGraphName)
+                ->Event("CompileGraph", &MaterialCanvasDocumentRequests::CompileGraph)
+                ->Event("QueueCompileGraph", &MaterialCanvasDocumentRequests::QueueCompileGraph)
+                ->Event("IsCompileGraphQueued", &MaterialCanvasDocumentRequests::IsCompileGraphQueued);
         }
     }
 
@@ -174,7 +179,7 @@ namespace MaterialCanvas
         CreateGraph(graph);
         m_modified = false;
 
-        CompileGraph();
+        QueueCompileGraph();
         return OpenSucceeded();
     }
 
@@ -194,7 +199,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        CompileGraph();
+        QueueCompileGraph();
         return SaveSucceeded();
     }
 
@@ -214,7 +219,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        CompileGraph();
+        QueueCompileGraph();
         return SaveSucceeded();
     }
 
@@ -234,7 +239,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        CompileGraph();
+        QueueCompileGraph();
         return SaveSucceeded();
     }
 
@@ -267,7 +272,7 @@ namespace MaterialCanvas
                 [this, redoState]() { RestoreGraphState(redoState); });
 
             m_modified = true;
-            CompileGraph();
+            QueueCompileGraph();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -289,6 +294,7 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::Clear()
     {
         DestroyGraph();
+        m_compileGraphQueued = false;
         m_graphStateForUndoRedo.clear();
         m_modified = false;
 
@@ -341,7 +347,7 @@ namespace MaterialCanvas
         CreateGraph(graph);
 
         m_modified = true;
-        CompileGraph();
+        QueueCompileGraph();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -374,7 +380,7 @@ namespace MaterialCanvas
         GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
     }
 
-    AZStd::string MaterialCanvasDocument::GetGraphNamePrefixFromDocumentName() const
+    AZStd::string MaterialCanvasDocument::GetGraphName() const
     {
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
@@ -395,7 +401,7 @@ namespace MaterialCanvas
         AZStd::string templateOuputPath = m_absolutePath;
         AZ::StringFunc::Path::ReplaceFullName(templateOuputPath, templateInputFileName.c_str());
 
-        AZ::StringFunc::Replace(templateOuputPath, "MaterialGraphName", GetGraphNamePrefixFromDocumentName().c_str());
+        AZ::StringFunc::Replace(templateOuputPath, "MaterialGraphName", GetGraphName().c_str());
 
         return templateOuputPath;
     }
@@ -644,7 +650,13 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::CompileGraph() const
     {
+        m_compileGraphQueued = false;
         m_generatedFiles.clear();
+
+        if (!IsOpen())
+        {
+            return false;
+        }
 
         // All slots and nodes will be visited to collect all of the unique include paths.
         AZStd::set<AZStd::string> includePaths;
@@ -659,9 +671,9 @@ namespace MaterialCanvas
         AZStd::vector<GraphModel::ConstNodePtr> sortedNodes = GetNodesInExecutionOrder();
 
         // Traverse all graph nodes and slots to collect global settings like include files and class definitions
-        for (const auto& curretNode : sortedNodes)
+        for (const auto& currentNode : sortedNodes)
         {
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(curretNode.get()))
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
                 AtomToolsFramework::VisitDynamicNodeSettings(
                     dynamicNode->GetConfig(),
@@ -675,14 +687,14 @@ namespace MaterialCanvas
         }
 
         // Traverse all graph nodes and slots searching for settings to generate files from templates
-        for (const auto& curretNode : sortedNodes)
+        for (const auto& currentNode : sortedNodes)
         {
-            AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", curretNode->GetTitle());
+            AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", currentNode->GetTitle());
 
             // Visit all of the settings for this node to collect template paths for files that need to be generated
             AZStd::set<AZStd::string> templatePaths;
 
-            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(curretNode.get()))
+            if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
                 AtomToolsFramework::VisitDynamicNodeSettings(
                     dynamicNode->GetConfig(),
@@ -709,7 +721,7 @@ namespace MaterialCanvas
                     AZ::StringFunc::Tokenize(result.GetValue(), templateLines, '\n', true, true);
 
                     // Substitute all references to the placeholder graph name with one generated from the document name
-                    ReplaceStringsInContainer("MaterialGraphName", GetGraphNamePrefixFromDocumentName(), templateLines);
+                    ReplaceStringsInContainer("MaterialGraphName", GetGraphName(), templateLines);
 
                     // Inject include files found while traversing the graph into any include file blocks in the template.
                     ReplaceLinesInTemplateBlock(
@@ -754,7 +766,7 @@ namespace MaterialCanvas
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
                             AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
-                            return GetInstructionsFromConnectedNodes(curretNode, sortedNodes, inputSlotNames);
+                            return GetInstructionsFromConnectedNodes(currentNode, sortedNodes, inputSlotNames);
                         },
                         templateLines);
 
@@ -769,6 +781,24 @@ namespace MaterialCanvas
             }
         }
 
+        MaterialCanvasDocumentNotificationBus::Event(
+            m_toolId, &MaterialCanvasDocumentNotificationBus::Events::OnCompileGraphCompleted, m_id);
         return true;
+    }
+
+    void MaterialCanvasDocument::QueueCompileGraph() const
+    {
+        if (IsOpen() && !m_compileGraphQueued)
+        {
+            m_compileGraphQueued = true;
+            AZ::SystemTickBus::QueueFunction([id = m_id](){
+                MaterialCanvasDocumentRequestBus::Event(id, &MaterialCanvasDocumentRequestBus::Events::CompileGraph);
+            });
+        }
+    }
+
+    bool MaterialCanvasDocument::IsCompileGraphQueued() const
+    {
+        return m_compileGraphQueued;
     }
 } // namespace MaterialCanvas
