@@ -7,10 +7,6 @@
  */
 
 
-// --- Shader Compile Options ---
-#include "NewPBR_CompileOptions.azsli"
-
-
 // --- Pass SRG ---
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 

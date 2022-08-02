@@ -9,9 +9,3 @@
 #pragma once
 
 
-#define ENABLE_CLEAR_COAT       0
-#define ENABLE_TRANSMISSION     0
-#define FORCE_OPAQUE            1
-
-#include <Atom/Features/ShaderQualityOptions.azsli>
-#include <Atom/Features/PBR/LightingOptions.azsli>
