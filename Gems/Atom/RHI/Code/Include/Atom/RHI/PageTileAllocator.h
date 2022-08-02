@@ -21,15 +21,17 @@ namespace AZ::RHI
             }
         };
 
+        PageTileSpan() = default;
+
         PageTileSpan(uint32_t offset, uint32_t count)
             : m_offset(offset)
             , m_tileCount(count)
         {
         }
         // offset by tile
-        uint32_t m_offset;
+        uint32_t m_offset = 0;
         // tile count
-        uint32_t m_tileCount;
+        uint32_t m_tileCount = 0;
 
     };
 
@@ -37,6 +39,8 @@ namespace AZ::RHI
     class PageTileAllocator
     {
     public:
+        PageTileAllocator() = default;
+
         void Init(uint32_t totalTileCount);
 
         //! Allocate tiles. It returns tiles which are avaliable.

@@ -38,9 +38,6 @@ namespace AZ
                 m_heapFlags |= D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES;
             }
 
-            // no need to initialize the heap
-            m_heapFlags |= D3D12_HEAP_FLAG_CREATE_NOT_ZEROED;
-
             // heap type for default or upload or readback
             m_heapType = ConvertHeapType(descriptor.m_heapMemoryLevel, descriptor.m_hostMemoryAccess);
         }

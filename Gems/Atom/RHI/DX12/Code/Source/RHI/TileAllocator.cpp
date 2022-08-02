@@ -198,7 +198,7 @@ namespace AZ
             return m_descriptor;
         }
 
-        void TileAllocator::DebugPrintInfo(const char* opName) const
+        void TileAllocator::DebugPrintInfo([[maybe_unused]] const char* opName) const
         {
             if (TileAllocatorOutputDebugInfo)
             {
