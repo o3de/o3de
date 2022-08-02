@@ -34,6 +34,7 @@ namespace TestImpact
     struct PythonRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
+        WorkspaceConfig m_workspace;
         PythonTestEngineConfig m_testEngine;
         PythonTargetConfig m_target;
     };

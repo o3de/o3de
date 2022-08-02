@@ -59,7 +59,6 @@ namespace TestImpact
             "artifacts",
             "meta",
             "repo",
-            "workspace",
             "build_target_descriptor",
             "dependency_graph_data",
             "test_target_meta",
@@ -108,7 +107,6 @@ namespace TestImpact
             Artifacts,
             Meta,
             Repository,
-            Workspace,
             BuildTargetDescriptor,
             DependencyGraphData,
             TestTargetMeta,
@@ -257,7 +255,6 @@ namespace TestImpact
         const auto& staticArtifacts = configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Artifacts]][Config::Keys[Config::StaticArtifacts]];
         runtimeConfig.m_meta = ParseConfigMeta(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Meta]]);
         runtimeConfig.m_repo = ParseRepoConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Repository]]);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Common]][Config::Keys[Config::Workspace]]);
         runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);

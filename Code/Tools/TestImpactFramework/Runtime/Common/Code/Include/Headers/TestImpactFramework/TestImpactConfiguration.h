@@ -95,7 +95,6 @@ namespace TestImpact
     {
         ConfigMeta m_meta;
         RepoConfig m_repo;
-        WorkspaceConfig m_workspace;
         BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;

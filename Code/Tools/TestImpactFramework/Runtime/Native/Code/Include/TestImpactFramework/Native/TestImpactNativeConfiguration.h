@@ -56,6 +56,7 @@ namespace TestImpact
     struct NativeRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
+        WorkspaceConfig m_workspace;    
         NativeTestEngineConfig m_testEngine;
         NativeTargetConfig m_target;
     };

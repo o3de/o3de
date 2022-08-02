@@ -24,6 +24,7 @@ namespace TestImpact
             "test_engine",
             "test_runner",
             "bin",
+            "workspace",
         };
 
         enum
@@ -34,6 +35,7 @@ namespace TestImpact
             TestEngine,
             TestRunner,
             PythonCmd,
+            Workspace,
         };
     } // namespace Config
 
@@ -63,6 +65,7 @@ namespace TestImpact
 
         PythonRuntimeConfig runtimeConfig;
         runtimeConfig.m_commonConfig = RuntimeConfigurationFactory(configurationData);
+        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::Workspace]]);
         runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TestEngine]]);
         runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TargetConfig]]);
 

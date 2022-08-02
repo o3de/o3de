@@ -102,7 +102,7 @@ namespace PythonCoverage
             return m_coverageState;
         }
 
-        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
+        const auto& tempConfig = configurationFile["python"]["workspace"]["temp"];
 
         // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();

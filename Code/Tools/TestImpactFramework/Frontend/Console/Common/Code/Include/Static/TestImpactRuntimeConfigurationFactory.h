@@ -16,6 +16,15 @@ namespace TestImpact
     //!
     ExcludedTargets ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes);
 
+    //!
+    WorkspaceConfig::Temp ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace);
+
+    //!
+    WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace);
+
+    //!
+    WorkspaceConfig ParseWorkspaceConfig(const rapidjson::Value& workspace);
+
     //! Parses the common configuration data (in JSON format) and returns the constructed runtime configuration.
     RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData);
 } // namespace TestImpact
