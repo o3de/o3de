@@ -78,10 +78,19 @@ namespace TestImpact
                                  AZStd::string&& stdOutDelta,
                                  [[maybe_unused]] AZStd::string&& stdErrDelta)
         {
-            AZ_Printf("%s", stdOutDelta.c_str());
+            if (!stdOutDelta.empty())
+            {
+                AZ_Printf("StdOut", stdOutDelta.c_str());
+            }
+
+            if (!stdErrDelta.empty())
+            {
+                AZ_Printf("StdError", stdErrDelta.c_str());
+            }
+
             return TestImpact::ProcessCallbackResult::Continue;
         };
-
+    
         return GenerateJobInfosAndRunTests(
             m_testRunner.get(),
             m_testJobInfoGenerator.get(),
