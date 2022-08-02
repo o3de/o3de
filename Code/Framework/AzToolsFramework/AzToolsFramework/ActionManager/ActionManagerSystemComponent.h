@@ -25,7 +25,7 @@ namespace AzToolsFramework
         AZ_COMPONENT(ActionManagerSystemComponent, "{47925132-7373-42EE-9131-F405EE4B0F1A}");
 
         ActionManagerSystemComponent() = default;
-        virtual ~ActionManagerSystemComponent() = default;
+        virtual ~ActionManagerSystemComponent();
 
         // AZ::Component overrides ...
         void Init() override;
@@ -42,7 +42,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
         AZStd::unique_ptr<ToolBarManager> m_toolBarManager = nullptr;
 
-        QWidget m_defaultParentObject;
+        QWidget* m_defaultParentObject = nullptr;
     };
 
 } // namespace AzToolsFramework

@@ -39,7 +39,7 @@ namespace UnitTest
         AzToolsFramework::ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;
 
         QWidget* m_widget = nullptr;
-        QWidget m_defaultParentWidget;
+        QWidget* m_defaultParentWidget = nullptr;
 
     private:
         AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;

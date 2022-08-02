@@ -14,13 +14,24 @@
 
 namespace AzToolsFramework
 {
+    ActionManagerSystemComponent::~ActionManagerSystemComponent()
+    {
+        if (m_defaultParentObject)
+        {
+            delete m_defaultParentObject;
+            m_defaultParentObject = nullptr;
+        }
+    }
+
     void ActionManagerSystemComponent::Init()
     {
         if (IsNewActionManagerEnabled())
         {
+            m_defaultParentObject = new QWidget();
+
             m_actionManager = AZStd::make_unique<ActionManager>();
-            m_menuManager = AZStd::make_unique<MenuManager>(&m_defaultParentObject);
-            m_toolBarManager = AZStd::make_unique<ToolBarManager>(&m_defaultParentObject);
+            m_menuManager = AZStd::make_unique<MenuManager>(m_defaultParentObject);
+            m_toolBarManager = AZStd::make_unique<ToolBarManager>(m_defaultParentObject);
         }
     }
 
