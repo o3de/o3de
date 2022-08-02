@@ -93,9 +93,8 @@ namespace AzToolsFramework::ComponentModeFramework
     }
 
     void ComponentModeSwitcher::UpdateSwitcherOnEntitySelectionChange(
-        [[maybe_unused]] const EntityIdList& newlySelectedEntityIds, [[maybe_unused]] const EntityIdList& newlyDeselectedEntityIds)
+        const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
-        AZ::Entity* entity = nullptr;
 
         auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
         const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
@@ -103,8 +102,10 @@ namespace AzToolsFramework::ComponentModeFramework
         
         if (!newlySelectedEntityIds.empty())
         {
+            
             for (auto entityId : newlySelectedEntityIds)
             {
+                AZ::Entity* entity = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(
                     entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(entityId));
 
