@@ -415,22 +415,22 @@ namespace UnitTest
         EXPECT_THAT(v1, IsClose(AZ::Vector4(6.0f, 9.0f, -1.5f, 7.5f)));
     }
 
-    struct AngleTestArgs
+    struct Vector4AngleTestArgs
     {
         AZ::Vector4 current;
         AZ::Vector4 target;
         float angle;
     };
 
-    using AngleTestFixture = ::testing::TestWithParam<AngleTestArgs>;
+    using Vector4AngleTestFixture = ::testing::TestWithParam<Vector4AngleTestArgs>;
 
-    TEST_P(AngleTestFixture, TestAngle)
+    TEST_P(Vector4AngleTestFixture, TestAngle)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.Angle(param.target), param.angle);
     }
 
-    TEST_P(AngleTestFixture, TestAngleSafe)
+    TEST_P(Vector4AngleTestFixture, TestAngleSafe)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.AngleSafe(param.target), param.angle);
@@ -438,47 +438,47 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(
         MATH_Vector4,
-        AngleTestFixture,
+        Vector4AngleTestFixture,
         ::testing::Values(
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, AZ::Constants::HalfPi },
-            AngleTestArgs{ AZ::Vector4{ 42.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 23.0f, 0.0f, 0.0f }, AZ::Constants::HalfPi },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, 0.0f, 0.0f, 0.0f }, AZ::Constants::Pi },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Constants::QuarterPi },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, -1.0f, 0.0f, 0.0f }, AZ::Constants::Pi }));
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, AZ::Constants::HalfPi },
+            Vector4AngleTestArgs{ AZ::Vector4{ 42.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 23.0f, 0.0f, 0.0f }, AZ::Constants::HalfPi },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, 0.0f, 0.0f, 0.0f }, AZ::Constants::Pi },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Constants::QuarterPi },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, -1.0f, 0.0f, 0.0f }, AZ::Constants::Pi }));
 
-    using AngleDegTestFixture = ::testing::TestWithParam<AngleTestArgs>;
+    using Vector4AngleDegTestFixture = ::testing::TestWithParam<Vector4AngleTestArgs>;
 
-    TEST_P(AngleDegTestFixture, TestAngleDeg)
+    TEST_P(Vector4AngleDegTestFixture, TestAngleDeg)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.AngleDeg(param.target), param.angle);
     }
 
-    TEST_P(AngleDegTestFixture, TestAngleDegSafe)
+    TEST_P(Vector4AngleDegTestFixture, TestAngleDegSafe)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.AngleSafeDeg(param.target), param.angle);
     }
     INSTANTIATE_TEST_CASE_P(
         MATH_Vector4,
-        AngleDegTestFixture,
+        Vector4AngleDegTestFixture,
         ::testing::Values(
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, 90.f },
-            AngleTestArgs{ AZ::Vector4{ 42.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 23.0f, 0.0f, 0.0f }, 90.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, 0.0f, 0.0f, 0.0f }, 180.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, 45.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, -1.0f, 0.0f, 0.0f }, 180.f }));
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, 90.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 42.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 23.0f, 0.0f, 0.0f }, 90.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, 0.0f, 0.0f, 0.0f }, 180.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, 45.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 1.0f, 0.0f, 0.0f }, AZ::Vector4{ -1.0f, -1.0f, 0.0f, 0.0f }, 180.f }));
 
-    using AngleSafeInvalidAngleTestFixture = ::testing::TestWithParam<AngleTestArgs>;
-    TEST_P(AngleSafeInvalidAngleTestFixture, TestInvalidAngle)
+    using AngleSafeInvalidVector4AngleTestFixture = ::testing::TestWithParam<Vector4AngleTestArgs>;
+    TEST_P(AngleSafeInvalidVector4AngleTestFixture, TestInvalidAngle)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.AngleSafe(param.target), param.angle);
     }
 
-    TEST_P(AngleSafeInvalidAngleTestFixture, TestInvalidAngleDeg)
+    TEST_P(AngleSafeInvalidVector4AngleTestFixture, TestInvalidAngleDeg)
     {
         auto& param = GetParam();
         EXPECT_FLOAT_EQ(param.current.AngleSafeDeg(param.target), param.angle);
@@ -486,11 +486,11 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(
         MATH_Vector4,
-        AngleSafeInvalidAngleTestFixture,
+        AngleSafeInvalidVector4AngleTestFixture,
         ::testing::Values(
-            AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 323432.0f, 0.0f, 0.0f }, 0.f },
-            AngleTestArgs{ AZ::Vector4{ 323432.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f }));
+            Vector4AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 1.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 1.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 323432.0f, 0.0f, 0.0f }, 0.f },
+            Vector4AngleTestArgs{ AZ::Vector4{ 323432.0f, 0.0f, 0.0f, 0.0f }, AZ::Vector4{ 0.0f, 0.0f, 0.0f, 0.0f }, 0.f }));
 } // namespace UnitTest
