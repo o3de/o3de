@@ -80,8 +80,8 @@ namespace PythonCoverage
         AZ::IO::Path m_coverageDir; //!< Directory to write coverage data to.
         AZ::IO::Path m_coverageFile; //!< Full file path to write coverage data to.
         AZStd::string m_scriptPath; //!< Path to the Python test script being executed.
-        AZStd::string m_parentScriptPath; //!< Path to the parent Python script all test case siblings belong
-                                          //!< to (used to ID the python test target).
+        //! Path to the parent Python script all test case siblings belong to (used to ID the python test target).
+        AZStd::string m_parentScriptPath; 
         AZStd::string m_testFixture; //!< Name of the test fixture this test case belongs to.
         AZStd::string m_testCase; //!< Name of current test case that coverage data is being gathered for.
     };

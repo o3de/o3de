@@ -15,6 +15,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace PythonCoverage
 {
@@ -126,10 +127,8 @@ namespace PythonCoverage
             return;
         }
 
-        contents += m_parentScriptPath + "\n";
-        contents += m_scriptPath + "\n";
-        contents += m_testFixture + "\n";
-        contents += m_testCase + "\n";
+        contents = AZStd::string::format(
+            "%s\n%s\n%s\n%s\n", m_parentScriptPath.c_str(), m_scriptPath.c_str(), m_testFixture.c_str(), m_testCase.c_str());
 
         for (const auto& coveringModule : coveringModules)
         {
@@ -204,6 +203,16 @@ namespace PythonCoverage
     
         return coveringModuleOutputNames;
     }
+
+    AZStd::string CompileParentFolderName(const AZStd::string& parentScriptPath)
+    {
+        // Compile a unique folder name based on the aprent script path
+        auto parentfolder = parentScriptPath;
+        AZ::StringFunc::Replace(parentfolder, '/', '_');
+        AZ::StringFunc::Replace(parentfolder, '\\', '_');
+        AZ::StringFunc::Replace(parentfolder, '.', '_');
+        return parentfolder;
+    }
     
     void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
@@ -246,8 +255,9 @@ namespace PythonCoverage
         m_testCase = testCaseMatches[3];
         m_entityComponents.clear();
         m_scriptPath = filename;
-        const auto coverageFile = m_coverageDir / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
+        const auto coverageFile = m_coverageDir / CompileParentFolderName(m_parentScriptPath) / AZStd::string::format("%s.pycoverage", m_testCase.c_str());
         m_coverageFile = coverageFile;
         m_coverageState = CoverageState::Gathering;
     }
 } // namespace PythonCoverage
+
