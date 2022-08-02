@@ -9,7 +9,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import Report
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 import azlmbr.editor as editor

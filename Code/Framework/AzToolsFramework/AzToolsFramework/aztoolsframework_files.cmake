@@ -17,6 +17,8 @@ set(FILES
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorWidgetAction.cpp
+    ActionManager/Action/EditorWidgetAction.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -846,6 +848,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.ui
     Input/QtEventToAzInputMapper.h
     Input/QtEventToAzInputMapper.cpp
+    Script/LuaEditorSystemComponent.h
+    Script/LuaEditorSystemComponent.cpp
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp

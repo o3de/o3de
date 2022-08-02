@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
 import os
 import json
 from io import BytesIO
@@ -31,14 +32,14 @@ class LocalStorageQueryTool(StorageQueryTool):
             if self._action == self.Action.CREATE:
                 logger.info('Creating file')
                 self._put(file=self._file,
-                            storage_location=self._full_address)
+                          storage_location=self._full_address)
             elif self._action == self.Action.READ:
                 logger.info('Opening file')
                 self._access(file=self._full_address)
             elif self._action == self.Action.UPDATE:
                 logger.info('Updating File')
                 self._update(file=self._file,
-                                storage_location=self._full_address)
+                             storage_location=self._full_address)
             elif self._action == self.Action.DELETE:
                 logger.info("Deleting File")
                 self._delete(file=self._full_address)

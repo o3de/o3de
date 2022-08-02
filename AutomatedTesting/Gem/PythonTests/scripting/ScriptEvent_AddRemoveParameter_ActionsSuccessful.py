@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 from PySide2 import QtWidgets
 from editor_python_test_tools.utils import Report
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import scripting_utils.scripting_tools as tools
 import azlmbr.legacy.general as general
 from scripting_utils.scripting_constants import (ASSET_EDITOR_UI, SCRIPT_EVENT_FILE_PATH)

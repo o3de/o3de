@@ -93,12 +93,12 @@ set(project_build_path_template [[
 )
 
 #! ly_generate_project_build_path_setreg: Generates a .setreg file that contains an absolute path to the ${CMAKE_BINARY_DIR}
-#  This allows locate the directory where the project it's binaries are built to be located within the engine.
+#  This allows us to locate the directory where the project binaries are built to be located within the engine.
 #  Which are the shared libraries and launcher executables
-#  When an a pre-built engine application runs from a directory other than the project build directory, it needs
+#  When a pre-built engine application runs from a directory other than the project build directory, it needs
 #  to be able to locate the project build directory to determine the list of gems that the project depends on to load
 #  as well the location of those gems.
-#  For example if the project uses an external gem not associated with the engine, that gem's dlls/so/dylib files
+#  For example, if the project uses an external gem not associated with the engine, that gem's dlls/so/dylib files
 #  would be located within the project build directory and the engine SDK binary directory would need that info
 
 # NOTE: This only needed for non-monolithic host platforms.
@@ -107,9 +107,8 @@ set(project_build_path_template [[
 #       can only run on the host platform
 # \arg:project_real_path Full path to the o3de project directory
 function(ly_generate_project_build_path_setreg project_real_path)
-    # The build path isn't needed on non-monolithic platforms
-    # Nor on any non-host platforms
-    if (LY_MONOLITHIC_GAME OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    # The build path isn't needed on any non-host platforms
+    if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
         return()
     endif()
 
