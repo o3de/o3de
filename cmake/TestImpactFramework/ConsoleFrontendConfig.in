@@ -12,28 +12,6 @@
       "root": "${repo_dir}",
       "build": "${bin_dir}"
     },
-    "workspace": {
-      "temp": {
-        "root": "${temp_dir}",
-        "relative_paths": {
-          "artifact_dir": "RuntimeArtifact",
-          "enumeration_cache_dir": "EnumerationCache"
-        }
-      },
-      "active": {
-        "root": "${active_dir}",
-        "relative_paths": {
-          "test_impact_data_file": "TestImpactData.spartia",
-          "previous_test_run_data_file": "PreviousTestRunData.json"
-        }
-      },
-      "historic": {
-        "root": "${historic_dir}",
-        "relative_paths": {
-          "data": "historic_data.json"
-        }
-      }
-    },
     "artifacts": {
       "static": {
         "build_target_descriptor": {
@@ -71,6 +49,28 @@
     }
   },
   "native": {
+    "workspace": {
+      "temp": {
+        "root": "${native_temp_dir}",
+        "relative_paths": {
+          "artifact_dir": "RuntimeArtifact",
+          "enumeration_cache_dir": "EnumerationCache"
+        }
+      },
+      "active": {
+        "root": "${native_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${native_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
+      }
+    },
     "runtime_bin": "${native_runtime_bin}",
     "test_engine": {
       "test_runner": {
@@ -99,6 +99,28 @@
     }
   },
   "python": {
+    "workspace": {
+      "temp": {
+        "root": "${python_temp_dir}",
+        "relative_paths": {
+          "artifact_dir": "RuntimeArtifact",
+          "enumeration_cache_dir": "EnumerationCache"
+        }
+      },
+      "active": {
+        "root": "${python_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${python_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
+      }
+    },
     "runtime_bin": "${python_runtime_bin}",
     "test_engine": {
       "test_runner": {

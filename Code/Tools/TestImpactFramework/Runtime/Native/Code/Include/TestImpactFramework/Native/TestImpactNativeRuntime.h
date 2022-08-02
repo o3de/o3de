@@ -123,6 +123,11 @@ namespace TestImpact
         bool HasImpactAnalysisData() const;
 
     private:
+        using RuntimeConfig = NativeRuntimeConfig;
+        using TestEngine = NativeTestEngine;
+        using ProductionTarget = NativeProductionTarget;
+        using TestTarget = NativeTestTarget;
+
         //! Updates the test enumeration cache for test targets that had sources modified by a given change list.
         //! @param changeDependencyList The resolved change dependency list generated for the change list.
         //void EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList);
@@ -132,7 +137,7 @@ namespace TestImpact
         //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
         //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
         //! @returns The pair of selected test targets and discarded test targets.
-        AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> SelectCoveringTestTargets(
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargets(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
@@ -153,7 +158,7 @@ namespace TestImpact
         ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
             Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const;
 
-        NativeRuntimeConfig m_config;
+        RuntimeConfig m_config;
         RepoPath m_sparTiaFile;
         SuiteType m_suiteFilter;
         Policy::ExecutionFailure m_executionFailurePolicy;
@@ -163,14 +168,14 @@ namespace TestImpact
         Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
-        AZStd::unique_ptr<BuildTargetList<NativeProductionTarget, NativeTestTarget>> m_buildTargets;
-        AZStd::unique_ptr<DynamicDependencyMap<NativeProductionTarget, NativeTestTarget>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeProductionTarget, NativeTestTarget>> m_testSelectorAndPrioritizer;
-        AZStd::unique_ptr<NativeTestEngine> m_testEngine;
-        AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_regularTestTargetExcludeList;
-        AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_instrumentedTestTargetExcludeList;
-        AZStd::unordered_set<const NativeTestTarget*> m_testTargetShardList;
-        AZStd::unordered_set<const NativeTestTarget*> m_previouslyFailingTestTargets;
+        AZStd::unique_ptr<BuildTargetList<ProductionTarget, TestTarget>> m_buildTargets;
+        AZStd::unique_ptr<DynamicDependencyMap<ProductionTarget, TestTarget>> m_dynamicDependencyMap;
+        AZStd::unique_ptr<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<TestEngine> m_testEngine;
+        AZStd::unique_ptr<TestTargetExclusionList<TestTarget>> m_regularTestTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList<TestTarget>> m_instrumentedTestTargetExcludeList;
+        AZStd::unordered_set<const TestTarget*> m_testTargetShardList;
+        AZStd::unordered_set<const TestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;
     };
 } // namespace TestImpact

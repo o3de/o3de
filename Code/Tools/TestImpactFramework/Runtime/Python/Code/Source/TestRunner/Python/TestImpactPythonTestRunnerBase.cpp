@@ -31,8 +31,8 @@ namespace TestImpact
         //      Create module coverages with this test case covering
         //      Add module coverages to map key's vector of module coverages
         // 3. Walk the map:
-        //      Create a PythonTestCaseCoverage for each entry
-        //      Add the PythonTestCaseCoverage to the payload map
+        //      Create a PythonTestCoverage for each entry
+        //      Add the PythonTestCoverage to the payload map
 
 
         /*

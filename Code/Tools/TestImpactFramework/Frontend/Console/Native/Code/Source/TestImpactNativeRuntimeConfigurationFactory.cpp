@@ -135,7 +135,7 @@ namespace TestImpact
 
         NativeRuntimeConfig runtimeConfig;
         runtimeConfig.m_commonConfig = RuntimeConfigurationFactory(configurationData);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::Workspace]]);
+        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Native]][Config::Keys[Config::Workspace]]);
         runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::Native]][Config::Keys[Config::TestEngine]]);
         runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::Native]][Config::Keys[Config::TargetConfig]]);
 

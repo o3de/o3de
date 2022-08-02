@@ -63,6 +63,7 @@ namespace TestImpact
         InstrumentedRun(
         [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
         [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
+        [[maybe_unused]] Policy::IntegrityFailure integrityFailurePolicy,
         [[maybe_unused]] Policy::TestFailure testFailurePolicy,
         [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -70,6 +71,16 @@ namespace TestImpact
         [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
         DeleteArtifactXmls();
+
+        const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
+                                 [[maybe_unused]] const AZStd::string& stdOutput,
+                                 [[maybe_unused]] const AZStd::string& stdError,
+                                 AZStd::string&& stdOutDelta,
+                                 [[maybe_unused]] AZStd::string&& stdErrDelta)
+        {
+            AZ_Printf("%s", stdOutDelta.c_str());
+            return TestImpact::ProcessCallbackResult::Continue;
+        };
 
         return GenerateJobInfosAndRunTests(
             m_testRunner.get(),
@@ -82,13 +93,38 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             callback,
-            AZStd::nullopt);
+            stdPrint);
     }
 
     TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
     PythonTestEngine::NullRun(
-        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets) const
+        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
+        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
+        [[maybe_unused]] Policy::IntegrityFailure integrityFailurePolicy,
+        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
+        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+        [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
+        const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
+                                 [[maybe_unused]] const AZStd::string& stdOutput,
+                                 [[maybe_unused]] const AZStd::string& stdError,
+                                 AZStd::string&& stdOutDelta,
+                                 [[maybe_unused]] AZStd::string&& stdErrDelta)
+        {
+            AZ_Printf("%s", stdOutDelta.c_str());
+            return TestImpact::ProcessCallbackResult::Continue;
+        };
+
+        m_nullTestRunner->RunTests(
+            m_testJobInfoGenerator->GenerateJobInfos(testTargets),
+            StdOutputRouting::ToParent,
+            StdErrorRouting::ToParent,
+            testTargetTimeout,
+            globalTimeout,
+            AZStd::nullopt,
+            stdPrint);
         return { TestSequenceResult::Success, {} };
     }
 } // namespace TestImpact

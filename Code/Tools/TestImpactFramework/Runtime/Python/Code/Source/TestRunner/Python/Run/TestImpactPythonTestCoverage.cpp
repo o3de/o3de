@@ -10,19 +10,55 @@
 
 namespace TestImpact
 {
-    PythonTestCaseCoverage::PythonTestCaseCoverage(const AZStd::string& parentScript, TestCaseCoverage&& testCaseCoverage)
-        : m_parentScript(parentScript)
-        , m_testCaseCoverage(AZStd::move(testCaseCoverage))
+
+    PythonTestCoverage::PythonTestCoverage(const PythonTestCoverage& other)
+        : TestCoverage(other)
+        , m_parentScript(other.m_parentScript)
     {
     }
 
-    const AZStd::string& PythonTestCaseCoverage::GetParentScript() const
+    PythonTestCoverage::PythonTestCoverage(PythonTestCoverage&& other) noexcept
+        : TestCoverage(AZStd::move(other))
+        , m_parentScript(AZStd::move(other.m_parentScript))
+    {
+    }
+
+    PythonTestCoverage::PythonTestCoverage(const AZStd::string& parentScript, AZStd::vector<ModuleCoverage>&& moduleCoverages)
+        : TestCoverage(AZStd::move(moduleCoverages))
+        , m_parentScript(parentScript)
+    {
+    }
+
+    PythonTestCoverage::PythonTestCoverage(const AZStd::string& parentScript, const AZStd::vector<ModuleCoverage>& moduleCoverages)
+        : TestCoverage(moduleCoverages)
+        , m_parentScript(parentScript)
+    {
+    }
+
+    PythonTestCoverage& PythonTestCoverage::operator=(const PythonTestCoverage& other)
+    {
+        if (this != &other)
+        {
+            TestCoverage::operator=(other);
+            m_parentScript = other.m_parentScript;
+        }
+
+        return *this;
+    }
+
+    PythonTestCoverage& PythonTestCoverage::operator=(PythonTestCoverage&& other) noexcept
+    {
+        if (this != &other)
+        {
+            TestCoverage::operator=(AZStd::move(other));
+            m_parentScript = AZStd::move(other.m_parentScript);
+        }
+
+        return *this;
+    }
+
+    const AZStd::string& PythonTestCoverage::GetParentScript() const
     {
         return m_parentScript;
-    }
-
-    const TestCaseCoverage& PythonTestCaseCoverage::GetTestCaseCoverage() const
-    {
-        return m_testCaseCoverage;
     }
 } // namespace TestImpact

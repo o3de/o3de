@@ -13,15 +13,20 @@
 namespace TestImpact
 {
     //! Representation of per test case coverage results.
-    class PythonTestCaseCoverage
+    class PythonTestCoverage
+        : public TestCoverage
     {
     public:
-        PythonTestCaseCoverage(const AZStd::string& parentScript, TestCaseCoverage&& testCaseCoverage);
+        PythonTestCoverage(const PythonTestCoverage&);
+        PythonTestCoverage(PythonTestCoverage&&) noexcept;
+        PythonTestCoverage(const AZStd::string& parentScript, AZStd::vector<ModuleCoverage>&& moduleCoverages);
+        PythonTestCoverage(const AZStd::string& parentScript, const AZStd::vector<ModuleCoverage>& moduleCoverages);
+
+        PythonTestCoverage& operator=(const PythonTestCoverage&);
+        PythonTestCoverage& operator=(PythonTestCoverage&&) noexcept;
 
         const AZStd::string& GetParentScript() const;
-        const TestCaseCoverage& GetTestCaseCoverage() const;
     private:
         AZStd::string m_parentScript;
-        TestCaseCoverage m_testCaseCoverage;
     };
 } // namespace TestImpact

@@ -20,7 +20,7 @@
 namespace TestImpact
 {
     class PythonTestRunnerBase
-        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, PythonTestCaseCoverage>
+        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, PythonTestCoverage>
     {
     public:
         PythonTestRunnerBase(const RepoPath& artifactDir);

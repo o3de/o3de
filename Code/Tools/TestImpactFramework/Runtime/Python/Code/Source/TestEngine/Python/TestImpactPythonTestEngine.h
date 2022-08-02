@@ -32,7 +32,7 @@ namespace TestImpact
     {
     public:
         using TestTargetType = PythonTestTarget;
-        using TestCaseCoverageType = PythonTestCaseCoverage;
+        using TestCaseCoverageType = PythonTestCoverage;
         //!
         PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
 
@@ -43,6 +43,7 @@ namespace TestImpact
         InstrumentedRun(
             const AZStd::vector<const PythonTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
+            Policy::IntegrityFailure integrityFailurePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
@@ -50,8 +51,15 @@ namespace TestImpact
             AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
 
         //!
-        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType>
-        NullRun(const AZStd::vector<const PythonTestTarget*>& testTargets) const;
+        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType> NullRun(
+            const AZStd::vector<const PythonTestTarget*>& testTargets,
+            Policy::ExecutionFailure executionFailurePolicy,
+            Policy::IntegrityFailure integrityFailurePolicy,
+            Policy::TestFailure testFailurePolicy,
+            Policy::TargetOutputCapture targetOutputCapture,
+            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
+            AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.

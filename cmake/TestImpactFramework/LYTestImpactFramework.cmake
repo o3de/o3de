@@ -421,14 +421,23 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Test impact framework output binary dir
     set(bin_dir ${BIN_DIR})
     
-    # Temp dir
-    set(temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
+    # Native temp dir
+    set(native_temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}/Native")
 
-    # Active persistent data dir
-    set(active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/active")
+    # Native active persistent data dir
+    set(native_active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Native/active")
 
-    # Historic persistent data dir
-    set(historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/historic")
+    # Native historic persistent data dir
+    set(native_historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Native/historic")
+
+    # Python temp dir
+    set(python_temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}/Python")
+
+    # Python active persistent data dir
+    set(python_active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Python/active")
+
+    # Python historic persistent data dir
+    set(python_historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Python/historic")
 
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
