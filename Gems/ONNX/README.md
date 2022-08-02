@@ -22,8 +22,9 @@ This is an experimental gem implementing [ONNX Runtime](https://onnxruntime.ai/)
 
 ## Modifying uPNG:
 
-1. Go into *Code/Source/Clients/upng/upng.c*
-2. Modify ***lines 1172-1176*** as follows:
+1. Change the extension of *Code/Source/Clients/upng/upng.c* to *Code/Source/Clients/upng/upng.cpp*
+2. Go into *Code/Source/Clients/upng/upng.cpp*
+3. Modify ***lines 1172-1176*** as follows:
 ```diff
 -	file = fopen(filename, "rb");
 -	if (file == NULL) {
