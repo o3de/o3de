@@ -83,7 +83,7 @@ namespace AzToolsFramework
             AZ_RTTI(ToolBarItem, "{B0DE0795-2C3F-4ABC-AAAB-1A68604EF33E}");
 
             explicit ToolBarItem(
-                QToolBar* toolBar,
+                QToolBar* toolBar = nullptr,
                 ToolBarItemType type = ToolBarItemType::Separator,
                 AZStd::string identifier = AZStd::string(),
                 AZStd::string subMenuIdentifier = AZStd::string()
@@ -93,6 +93,7 @@ namespace AzToolsFramework
 
             AZStd::string m_identifier;
             AZStd::string m_subMenuIdentifier;
+
             QWidgetAction* m_widgetAction = nullptr;
         };
 

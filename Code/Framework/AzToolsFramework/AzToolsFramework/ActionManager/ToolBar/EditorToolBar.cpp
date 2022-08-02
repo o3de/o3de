@@ -45,16 +45,13 @@ namespace AzToolsFramework
         if (!m_actionToSortKeyMap.contains(actionIdentifier))
         {
             m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-            m_toolBarItems.insert(
-                {
-                    sortKey,
-                    ToolBarItem(
-                        m_toolBar, 
-                        ToolBarItemType::ActionAndSubMenu,
-                        AZStd::move(actionIdentifier),
-                        AZStd::move(subMenuIdentifier)
-                    )
-                }
+            m_toolBarItems[sortKey].emplace_back(
+                ToolBarItem(
+                    m_toolBar, 
+                    ToolBarItemType::ActionAndSubMenu,
+                    AZStd::move(actionIdentifier),
+                    AZStd::move(subMenuIdentifier)
+                )
             );
         }
     }
@@ -140,33 +137,34 @@ namespace AzToolsFramework
             {
                 switch (toolBarItem.m_type)
                 {
-                case ToolBarItemType::Action:
-                    {
-                        if (QAction* action = m_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
+                    case ToolBarItemType::Action:
                         {
-                            if (!action->isEnabled() &&
-                                m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                            if (QAction* action = m_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
                             {
-                                continue;
-                            }
+                                if (!action->isEnabled() &&
+                                    m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                                {
+                                    continue;
+                                }
 
-                        m_toolBar->addAction(action);
-                    }
+                                m_toolBar->addAction(action);
+                            }
+                        }
+                        break;
+                    case ToolBarItemType::Separator:
+                        {
+                            m_toolBar->addSeparator();
+                        }
+                        break;
+                    case ToolBarItemType::ActionAndSubMenu:
+                    case ToolBarItemType::Widget:
+                        {
+                            m_toolBar->addAction(toolBarItem.m_widgetAction);
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                break;
-            case ToolBarItemType::Separator:
-                {
-                    m_toolBar->addSeparator();
-                }
-                break;
-            case ToolBarItemType::ActionAndSubMenu:
-            case ToolBarItemType::Widget:
-                {
-                    m_toolBar->addAction(elem.second.m_widgetAction);
-                }
-                break;
-            default:
-                break;
             }
         }
     }
@@ -241,7 +239,8 @@ namespace AzToolsFramework
         {
             serializeContext->Class<ToolBarItem>()
                 ->Field("Type", &ToolBarItem::m_type)
-                ->Field("Identifier", &ToolBarItem::m_identifier);
+                ->Field("Identifier", &ToolBarItem::m_identifier)
+                ->Field("SubMenu", &ToolBarItem::m_subMenuIdentifier);
 
             serializeContext->RegisterGenericType<AZStd::multimap<int, ToolBarItem>>();
 
