@@ -55,7 +55,6 @@ ly_add_target(
             Source
             Assets/rsz_twoV2.png
             ${Onnx_INCLUDE_DIR}
-            # ${CUDAToolkit_INCLUDE_DIRS}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
