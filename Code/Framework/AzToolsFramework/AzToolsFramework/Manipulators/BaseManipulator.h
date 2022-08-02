@@ -303,14 +303,13 @@ namespace AzToolsFramework
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
         
         //! Callback function that is used to visit every manipulator in this group of Manipulators
-        using ManipulatorVisitCallback = AZStd::function<void(const AZStd::shared_ptr<BaseManipulator>&)>;
+        using ManipulatorVisitCallback = AZStd::function<void(BaseManipulator*)>;
 
-        virtual void VisitManipulators(const ManipulatorVisitCallback&& callback) = 0;
-
-    protected:
         //! Common processing for base manipulator type - Implement for all
         //! individual manipulators used in an aggregate manipulator.
-        virtual void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) = 0;
+        virtual void ProcessManipulators(const ManipulatorVisitCallback&) = 0;
+
+    protected:
 
         //!@{
         //! Allows implementers to perform additional logic when updating the location of the manipulator group.

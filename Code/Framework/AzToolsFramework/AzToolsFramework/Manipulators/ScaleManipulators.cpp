@@ -157,19 +157,4 @@ namespace AzToolsFramework
     {
         m_lineBoundWidth = lineBoundWidth;
     }
-
-    void ScaleManipulators::VisitManipulators(const ManipulatorVisitCallback&& callback)
-    {
-        for (auto& manipulator : m_axisScaleManipulators)
-        {
-            if (manipulator)
-            {
-                callback(manipulator);
-            }
-        }
-        if (m_uniformScaleManipulator)
-        {
-            callback(m_uniformScaleManipulator);
-        }
-    }
 } // namespace AzToolsFramework

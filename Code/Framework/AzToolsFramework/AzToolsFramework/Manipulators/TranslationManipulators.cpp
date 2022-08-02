@@ -239,29 +239,6 @@ namespace AzToolsFramework
         }
     }
 
-    void TranslationManipulators::VisitManipulators(const ManipulatorVisitCallback&& callback)
-    {
-        AZStd::vector<BaseManipulator*> manipulators;
-        for (auto& manipulator : m_linearManipulators)
-        {
-            if (manipulator)
-            {
-                callback(manipulator);
-            }
-        }
-        for (auto& manipulator : m_planarManipulators)
-        {
-            if (manipulator)
-            {
-                callback(manipulator);
-            }
-        }
-        if (m_surfaceManipulator)
-        {
-            callback(m_surfaceManipulator);
-        }
-    }
-
     void TranslationManipulators::SetAxes(
         const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3 /*= AZ::Vector3::CreateAxisZ()*/)
     {

@@ -159,19 +159,4 @@ namespace AzToolsFramework
         m_circleBoundWidth = circleBoundWidth;
     }
 
-    void RotationManipulators::VisitManipulators(const ManipulatorVisitCallback&& callback)
-    {
-        for (auto& manipulator : m_localAngularManipulators)
-        {
-            if (manipulator)
-            {
-                callback(manipulator);
-            }
-        }
-        if (m_viewAngularManipulator)
-        {
-            callback(m_viewAngularManipulator);
-        }
-    }
-
 } // namespace AzToolsFramework

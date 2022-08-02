@@ -43,13 +43,12 @@ namespace AzToolsFramework
 
         //! Sets the bound width to use for the line/axis of a linear manipulator.
         void SetLineBoundWidth(float lineBoundWidth);
-        virtual void VisitManipulators(const ManipulatorVisitCallback&& callback) override;
+
+        // Manipulators
+        void ProcessManipulators(const ManipulatorVisitCallback&) override;
 
     private:
         AZ_DISABLE_COPY_MOVE(ScaleManipulators)
-
-        // Manipulators
-        void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
 
         AZStd::array<AZStd::shared_ptr<LinearManipulator>, 3> m_axisScaleManipulators;
         AZStd::shared_ptr<LinearManipulator> m_uniformScaleManipulator;

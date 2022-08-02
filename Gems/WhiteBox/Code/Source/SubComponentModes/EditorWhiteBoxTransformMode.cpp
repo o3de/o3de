@@ -278,10 +278,13 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         bool mouseOverManipulator = false;
-        if(m_manipulator) {
-            m_manipulator->VisitManipulators([&mouseOverManipulator](auto manipulator) {
-                mouseOverManipulator = manipulator->MouseOver() || mouseOverManipulator;
-            });
+        if (m_manipulator)
+        {
+            m_manipulator->ProcessManipulators(
+                [&mouseOverManipulator](auto manipulator)
+                {
+                        mouseOverManipulator = manipulator->MouseOver() || mouseOverManipulator;
+                });
         }
 
         auto closestIntersection = mouseOverManipulator
