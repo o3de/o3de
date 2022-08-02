@@ -55,6 +55,7 @@
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
+        "Gems/ONNX",
         "Gems/PhysX",
         "Gems/PhysXDebug",
         "Gems/Prefab/PrefabBuilder",
