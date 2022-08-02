@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Features/ShaderQualityOptions.azsli>
+
 #ifdef UNIFIED_FORWARD_OUTPUT
 
 struct ForwardPassOutput

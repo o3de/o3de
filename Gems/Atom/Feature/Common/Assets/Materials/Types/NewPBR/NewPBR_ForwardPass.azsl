@@ -7,18 +7,26 @@
  */
 
 
+// Forward Pass SRG + Output
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+
+
+// ---------- New PBR ----------
+
+// Options
 #define ENABLE_CLEAR_COAT       0
 #define ENABLE_TRANSMISSION     0
 #define FORCE_OPAQUE            1
 
-// Options
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-#include "NewPBR_Common.azsli"
+// Object SRG
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 
-// ---------- Material Parameters ----------
+// Material Definition & SRG
+#include "NewPBR_Common.azsli"
 
 COMMON_OPTIONS_BASE_COLOR()
 COMMON_OPTIONS_ROUGHNESS()
@@ -27,16 +35,6 @@ COMMON_OPTIONS_SPECULAR_F0()
 COMMON_OPTIONS_NORMAL()
 COMMON_OPTIONS_OCCLUSION()
 COMMON_OPTIONS_EMISSIVE()
-
-
-// Pass SRG
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
-
-// Pass Output
-#include <Atom/Features/PBR/ForwardPassOutput.azsli>
-
-// Utility
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // Shader Stitching
 #include "NewPBR_Vertex.azsli"
@@ -55,6 +53,7 @@ VSOutput NewPbr_ForwardPassVS(VSInput IN)
     VSOutput OUT = EvaluateVertexGeometry(IN);
     return OUT;
 }
+
 
 // ---------- Pixel Shader ----------
 
