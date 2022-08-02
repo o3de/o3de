@@ -13,6 +13,8 @@
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 
+#include <RHI/DX12.h>
+
 namespace AZ
 {
     namespace DX12

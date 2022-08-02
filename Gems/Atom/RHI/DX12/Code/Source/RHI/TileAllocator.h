@@ -8,7 +8,10 @@
 #pragma once
 
 #include <RHI/HeapAllocator.h>
+
 #include <Atom/RHI/PageTileAllocator.h>
+
+#include <AzCore/std/containers/set.h>
 
 namespace AZ
 {

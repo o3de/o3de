@@ -9,6 +9,8 @@
 
 #include <Atom/RHI.Reflect/Base.h>
 
+#include <AzCore/std/containers/vector.h>
+
 namespace AZ::RHI
 {
     //! a structure to represent continous number of tiles 

@@ -7,6 +7,8 @@
  */
 #include <Atom/RHI/PageTileAllocator.h>
 
+#include <AzCore/Casting/numeric_cast.h>    // for aznumeric_cast
+
 namespace AZ
 {
     namespace RHI
