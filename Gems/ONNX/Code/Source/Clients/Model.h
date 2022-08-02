@@ -55,7 +55,7 @@ namespace ONNX
         float m_delta = 0.0f; //!< Runtime in ms of latest inference.
 
     protected:
-        bool m_cudaEnable; // Holds state of whether inferencing of the model instance will be run on gpu using CUDA, run on CPU by default.
+        bool m_cudaEnable; // Determines if inferencing of the model instance will be run on gpu using CUDA (run on CPU by default).
         std::string m_modelName; // Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
         AZ::Debug::Timer m_timer; // Timer instance that is used within Run() to calculate inference runtime, and obtain the value in m_delta.
         Ort::MemoryInfo m_memoryInfo{ nullptr }; // Created by Load() and holds information about the memory allocator used by the instance and the memory type. These are set to OrtDeviceAllocator and OrtMemTypeCpu for both CPU and GPU execution (contrary to how it may seem this is the correct MemType for CUDA as well).
