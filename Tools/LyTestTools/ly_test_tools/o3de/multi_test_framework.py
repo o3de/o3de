@@ -317,9 +317,9 @@ class AbstractTestSuite(object):
     """
     # When this object is inherited, add any custom attributes as needed.
     # Test class to use for single test collection
-    single_test_class = SingleTest
+    _single_test_class = SingleTest
     # Test class to use for shared test collection
-    shared_test_class = SharedTest
+    _shared_test_class = SharedTest
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -573,9 +573,9 @@ class AbstractTestSuite(object):
             editor_utils.kill_all_ly_processes(include_asset_processor=False)
 
     @classmethod
-    def get_single_tests(cls) -> list[single_test_class]:
+    def get_single_tests(cls) -> list[_single_test_class]:
         """
-        Grabs all of the single_test_class subclassed tests from the AbstractTestSuite class.
+        Grabs all of the _single_test_class subclassed tests from the AbstractTestSuite class.
         Usage example:
            class MyTestSuite(AbstractTestSuite):
                class MyFirstTest(SingleTest):
@@ -583,13 +583,13 @@ class AbstractTestSuite(object):
         :return: The list of single tests
         """
         single_tests = [
-            c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], cls.single_test_class)]
+            c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], cls._single_test_class)]
         return single_tests
 
     @classmethod
-    def get_shared_tests(cls) -> list[shared_test_class]:
+    def get_shared_tests(cls) -> list[_shared_test_class]:
         """
-        Grabs all of the shared_test_class from the AbstractTestSuite
+        Grabs all of the _shared_test_class from the AbstractTestSuite
         Usage example:
            class MyTestSuite(AbstractTestSuite):
                class MyFirstTest(SharedTest):
@@ -599,11 +599,11 @@ class AbstractTestSuite(object):
         :return: The list of shared tests
         """
         shared_tests = [
-            c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], cls.shared_test_class)]
+            c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], cls._shared_test_class)]
         return shared_tests
 
     @classmethod
-    def get_session_shared_tests(cls, session: _pytest.main.Session) -> list[shared_test_class]:
+    def get_session_shared_tests(cls, session: _pytest.main.Session) -> list[_shared_test_class]:
         """
         Filters and returns all of the shared tests in a given session.
         :session: The test session
@@ -613,8 +613,8 @@ class AbstractTestSuite(object):
         return cls.filter_session_shared_tests(session, shared_tests)
 
     @staticmethod
-    def filter_session_shared_tests(session_items: list[_pytest.python.Function(shared_test_class)],
-                                    shared_tests: list[shared_test_class]) -> list[shared_test_class]:
+    def filter_session_shared_tests(session_items: list[_pytest.python.Function(_shared_test_class)],
+                                    shared_tests: list[_shared_test_class]) -> list[_shared_test_class]:
         """
         Retrieve the test sub-set that was collected this can be less than the original set if were overridden via -k
         argument or similar
@@ -638,9 +638,9 @@ class AbstractTestSuite(object):
         return selected_shared_tests
 
     @staticmethod
-    def filter_shared_tests(shared_tests: list[shared_test_class],
+    def filter_shared_tests(shared_tests: list[_shared_test_class],
                             is_batchable: bool = False,
-                            is_parallelizable: bool = False) -> list[shared_test_class]:
+                            is_parallelizable: bool = False) -> list[_shared_test_class]:
         """
         Filters and returns all tests based off of if they are batched and/or parallel
         :shared_tests: All shared tests

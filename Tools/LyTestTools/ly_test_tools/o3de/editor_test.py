@@ -162,9 +162,9 @@ class EditorTestSuite(AbstractTestSuite):
     # Return code for test failure
     _TEST_FAIL_RETCODE = 0xF
     # Test class to use for single test collection
-    single_test_class = EditorSingleTest
+    _single_test_class = EditorSingleTest
     # Test class to use for shared test collection
-    shared_test_class = EditorSharedTest
+    _shared_test_class = EditorSharedTest
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(

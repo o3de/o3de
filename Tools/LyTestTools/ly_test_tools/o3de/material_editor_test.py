@@ -167,9 +167,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     # Return code for test failure
     _TEST_FAIL_RETCODE = 0xF
     # Test class to use for single test collection
-    single_test_class = MaterialEditorSingleTest
+    _single_test_class = MaterialEditorSingleTest
     # Test class to use for shared test collection
-    shared_test_class = MaterialEditorSharedTest
+    _shared_test_class = MaterialEditorSharedTest
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(

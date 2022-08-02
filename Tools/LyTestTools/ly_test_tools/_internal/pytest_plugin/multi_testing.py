@@ -3,9 +3,10 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Utility for supporting seamless parallel and/or batched sets of tests.
+These tools are intended to be called only by the pytest framework and not invoked directly.
 """
-# Utility for supporting seamless parallel and/or batched sets of tests.
-# These tools are intended to be called only by the pytest framework and not invoked directly.
 
 from __future__ import annotations
 

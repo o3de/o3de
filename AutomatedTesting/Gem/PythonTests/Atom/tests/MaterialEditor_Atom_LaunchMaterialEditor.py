@@ -39,12 +39,12 @@ def MaterialEditor_Launched_SuccessfullyLaunched():
             Tests.material_editor_launched,
             material_editor.is_pane_visible("Inspector") is True)
 
-    # 2. Look for errors and asserts.
-    TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
-    for error_info in error_tracer.errors:
-        Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
-    for assert_info in error_tracer.asserts:
-        Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
+        # 2. Look for errors and asserts.
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        for error_info in error_tracer.errors:
+            Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
+        for assert_info in error_tracer.asserts:
+            Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
 
 if __name__ == "__main__":

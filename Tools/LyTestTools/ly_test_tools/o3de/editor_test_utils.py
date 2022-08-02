@@ -96,12 +96,11 @@ def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.manage
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    
         pass
-        
-    # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
+
     try:
         with open(crash_log) as f:
             crash_info = f.read()
-    except Exception as ex:
+    except Exception as ex:  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
         crash_info += f"\n{str(ex)}"
     return crash_info
 
