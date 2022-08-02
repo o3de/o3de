@@ -40,19 +40,14 @@ namespace ONNX
 
     void MNIST::DispatchTimingSample()
     {
-        // Ignore any unusually large inference times - this is mostly an issue with the first inference on CUDA, where the average runtimes
-        // and ImGui graphs are distorted by anomalies.
-        if (m_delta < 10.0f)
+        // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
+        if (m_cudaEnable)
         {
-            // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
-            if (m_cudaEnable)
-            {
-                ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta);
-            }
-            else
-            {
-                ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta);
-            }
+            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta);
+        }
+        else
+        {
+            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta);
         }
     }
 
@@ -139,19 +134,14 @@ namespace ONNX
                 std::string filepath = iterator->path().string();
                 MnistReturnValues returnedValues = MnistExample(mnist, filepath.c_str());
 
-                // Ignore any unusually large inference times (>10ms) - this is mostly an issue with the first inference on CUDA, where the
-                // average runtimes and ImGui graphs are distorted by anomalies.
-                if (returnedValues.m_runtime < 10.0f)
+                if (returnedValues.m_inference == digit)
                 {
-                    if (returnedValues.m_inference == digit)
-                    {
-                        numOfCorrectInferences += 1;
-                    }
-                    mnist.DispatchTimingSample();
-                    totalRuntimeInMilliseconds += returnedValues.m_runtime;
-                    iterator++;
-                    totalFiles++;
+                    numOfCorrectInferences += 1;
                 }
+                mnist.DispatchTimingSample();
+                totalRuntimeInMilliseconds += returnedValues.m_runtime;
+                iterator++;
+                totalFiles++;
             }
         }
 
