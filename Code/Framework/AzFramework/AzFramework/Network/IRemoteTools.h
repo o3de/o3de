@@ -16,10 +16,15 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/deque.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
 #include <AzCore/std/string/string.h>
+
+#if !defined(_RELEASE)
+    #define ENABLE_REMOTE_TOOLS 1
+#endif
 
 namespace AZ
 {
@@ -37,24 +42,8 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(RemoteToolsMessage, AZ::OSAllocator, 0);
         AZ_RTTI(RemoteToolsMessage, "{8512328C-949D-4F0C-B48D-77C26C207443}");
 
-        RemoteToolsMessage()
-            : m_msgId(0)
-            , m_senderTargetId(0)
-            , m_customBlob(nullptr)
-            , m_customBlobSize(0)
-            , m_isBlobOwner(false)
-            , m_immediateSelfDispatch(false)
-        {
-        }
-        RemoteToolsMessage(AZ::u64 msgId)
-            : m_msgId(msgId)
-            , m_senderTargetId(0)
-            , m_customBlob(nullptr)
-            , m_customBlobSize(0)
-            , m_isBlobOwner(false)
-            , m_immediateSelfDispatch(false)
-        {
-        }
+        RemoteToolsMessage() = default;
+        explicit RemoteToolsMessage(AZ::u64 msgId) : m_msgId(msgId) {}
 
         virtual ~RemoteToolsMessage();
 
@@ -64,17 +53,14 @@ namespace AzFramework
         //! @param ownBlob Whether this message owns the life cycle of the blob memory
         void AddCustomBlob(const void* blob, size_t blobSize, bool ownBlob = false);
 
-        //! Sets if this message can be immediately dispatched if the receipient is itself
-        //! @param immediateSelfDispatchEnabled Whether this message can be immediately dispatched
-        void SetImmediateSelfDispatchEnabled(bool immediateSelfDispatchEnabled);
+        //! Add a custom data blob to a Remote Tools message
+        //! @param blob Span of byte representing the blob
+        //! @param ownBlob Whether this message owns the life cycle of the blob memory
+        void AddCustomBlob(AZStd::span<AZStd::byte const> blob, bool ownBlob = false);
 
-        //! Gets if this message can be immediately dispatched if the receipient is itself
-        //! @return Whether this message can be immediately dispatched
-        bool IsImmediateSelfDispatchEnabled() const;
-
-        //! Gets the custom data blob assosciated with this message
+        //! Gets the custom data blob associated with this message
         //! @return Memory address of the start of the blob or nullptr if there is none
-        const void* GetCustomBlob() const;
+        const AZStd::span<AZStd::byte const> GetCustomBlob() const;
 
         //! Gets the size of the custom data blob associated with this message
         //! @return Size of the data blob or 0 if there is none
@@ -101,19 +87,19 @@ namespace AzFramework
         static void ReflectRemoteToolsMessage(AZ::ReflectContext* reflection);
 
     protected:
-        AZ::u64 m_msgId;
-        AZ::u32 m_senderTargetId;
-        const void* m_customBlob;
-        AZ::u32 m_customBlobSize;
-        bool m_isBlobOwner;
-        bool m_immediateSelfDispatch;
+        AZ::u64 m_msgId = 0;
+        AZ::u32 m_senderTargetId = 0;
+        AZStd::span<AZStd::byte const> m_customBlob;
+        bool m_isBlobOwner = false;
     };
 
     using RemoteToolsMessagePointer = AZStd::intrusive_ptr<RemoteToolsMessage>;
     using RemoteToolsMessageQueue = AZStd::deque<RemoteToolsMessagePointer, AZ::OSStdAllocator>;
     
     // id for the local application
-    static constexpr AZ::u32 s_selfNetworkId = 0xFFFFFFFF;
+    static constexpr AZ::u32 SelfNetworkId = 0xFFFFFFFF;
+    // const value for an invalid connection based AzNetworking::ConnectionId
+    static constexpr AZ::u32 InvalidRemoteToolsConnectionId = 0xFFFFFFFF;
 
     class RemoteToolsEndpointInfo final
     {
@@ -124,7 +110,6 @@ namespace AzFramework
 
         explicit RemoteToolsEndpointInfo(AZStd::string displayName = AZStd::string{}, AZ::u32 networkId = 0)
             : m_displayName(AZStd::move(displayName))
-            , m_persistentId(0)
             , m_networkId(networkId)
         {
         }
@@ -163,8 +148,8 @@ namespace AzFramework
 
     private:
         AZStd::string m_displayName;
-        AZ::u32 m_persistentId; // this is a CRC key used to identify a RemoteTools target
-        AZ::u32 m_networkId; // this is the connection id, used for AzNetworking communications.
+        AZ::u32 m_persistentId = 0; // this is a CRC key used to identify a RemoteTools target
+        AZ::u32 m_networkId = 0; // this is the connection id, used for AzNetworking communications.
     };
 
     using RemoteToolsEndpointContainer = AZStd::unordered_map<AZ::u32, RemoteToolsEndpointInfo>;

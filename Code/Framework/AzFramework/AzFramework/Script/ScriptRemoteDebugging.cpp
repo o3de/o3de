@@ -646,11 +646,11 @@ namespace AzFramework
                 {
                     if (sender.IsSelf() && m_debugger.IsSelf() && m_executionState == SDA_STATE_RUNNING)
                     {
-                        AZ_Assert(request->GetCustomBlob(), "ScriptDebugAgent was asked to execute a script but script is missing!");
+                        AZ_Assert(!request->GetCustomBlob().empty(), "ScriptDebugAgent was asked to execute a script but script is missing!");
                         ScriptDebugAckExecute response;
                         response.m_moduleName = request->m_context;
                         response.m_result =
-                            m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob()), request->m_context.c_str());
+                            m_curContext->Execute(reinterpret_cast<const char*>(request->GetCustomBlob().data()), request->m_context.c_str());
                         RemoteToolsInterface::Get()->SendRemoteToolsMessage(sender, response);
                     }
                     else

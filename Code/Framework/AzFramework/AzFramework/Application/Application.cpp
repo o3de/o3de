@@ -228,7 +228,7 @@ namespace AzFramework
                 using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
-#if !defined(_RELEASE)
+#if defined(ENABLE_REMOTE_TOOLS)
             IRemoteTools* remoteTools = RemoteToolsInterface::Get();
             if (remoteTools)
             {

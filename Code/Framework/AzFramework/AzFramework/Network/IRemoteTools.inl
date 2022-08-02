@@ -14,35 +14,30 @@ namespace AzFramework
     {
         if (m_isBlobOwner)
         {
-            azfree(const_cast<void*>(m_customBlob), AZ::OSAllocator);
+            azfree(const_cast<AZStd::byte*>(m_customBlob.data()), AZ::OSAllocator, m_customBlob.size());
         }
     }
 
     inline void RemoteToolsMessage::AddCustomBlob(const void* blob, size_t blobSize, bool ownBlob)
     {
-        m_customBlob = blob;
-        m_customBlobSize = static_cast<AZ::u32>(blobSize);
+        m_customBlob = AZStd::span<AZStd::byte const>(reinterpret_cast<const AZStd::byte*>(blob), blobSize);
         m_isBlobOwner = ownBlob;
     }
 
-    inline void RemoteToolsMessage::SetImmediateSelfDispatchEnabled(bool immediateSelfDispatchEnabled)
+    inline void RemoteToolsMessage::AddCustomBlob(AZStd::span<AZStd::byte const> blob, bool ownBlob)
     {
-        m_immediateSelfDispatch = immediateSelfDispatchEnabled;
+        m_customBlob = blob;
+        m_isBlobOwner = ownBlob;
     }
 
-    inline bool RemoteToolsMessage::IsImmediateSelfDispatchEnabled() const
-    {
-        return m_immediateSelfDispatch;
-    }
-
-    inline const void* RemoteToolsMessage::GetCustomBlob() const
+    inline const AZStd::span<AZStd::byte const> RemoteToolsMessage::GetCustomBlob() const
     {
         return m_customBlob;
     }
 
     inline size_t RemoteToolsMessage::GetCustomBlobSize() const
     {
-        return m_customBlobSize;
+        return m_customBlob.size();
     }
 
     inline bool RemoteToolsMessage::GetIsBlobOwner() const
@@ -70,20 +65,18 @@ namespace AzFramework
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
         if (serializeContext)
         {
-            serializeContext->Class<RemoteToolsMessage>()
-                ->Field("MsgId", &RemoteToolsMessage::m_msgId)
-                ->Field("BinaryBlobSize", &RemoteToolsMessage::m_customBlobSize);
+            serializeContext->Class<RemoteToolsMessage>()->Field("MsgId", &RemoteToolsMessage::m_msgId);
         }
     }
 
     inline bool RemoteToolsEndpointInfo::IsSelf() const
     {
-        return m_networkId == s_selfNetworkId;
+        return m_networkId == SelfNetworkId;
     }
 
     inline bool RemoteToolsEndpointInfo::IsOnline() const
     {
-        return m_networkId != 0xFFFFFFFF;
+        return m_networkId != InvalidRemoteToolsConnectionId;
     }
 
     inline bool RemoteToolsEndpointInfo::IsValid() const

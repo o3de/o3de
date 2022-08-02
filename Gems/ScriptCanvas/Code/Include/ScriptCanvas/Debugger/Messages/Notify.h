@@ -28,11 +28,7 @@ namespace ScriptCanvas
                 AZ_CLASS_ALLOCATOR(Notification, AZ::SystemAllocator, 0);
                 AZ_RTTI(Notification, "{2FBEC565-7F5F-435E-8BC6-DD17CC1FABE7}", AzFramework::RemoteToolsMessage);
 
-                Notification()
-                    : AzFramework::RemoteToolsMessage(k_serviceNotificationsMsgSlotId)
-                {
-                    SetImmediateSelfDispatchEnabled(true);
-                }
+                Notification() : AzFramework::RemoteToolsMessage(k_serviceNotificationsMsgSlotId) {}
 
                 virtual void Visit(NotificationVisitor& visitor) = 0;
             };

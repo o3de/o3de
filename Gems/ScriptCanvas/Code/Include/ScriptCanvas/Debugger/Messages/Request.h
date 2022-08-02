@@ -28,11 +28,7 @@ namespace ScriptCanvas
                 AZ_CLASS_ALLOCATOR(Request, AZ::SystemAllocator, 0);
                 AZ_RTTI(Request, "{0283335F-E3FF-4292-99BA-36A289DFED87}", AzFramework::RemoteToolsMessage);
 
-                Request()
-                    : AzFramework::RemoteToolsMessage(k_clientRequestsMsgSlotId)
-                {
-                    SetImmediateSelfDispatchEnabled(true);
-                }
+                Request() : AzFramework::RemoteToolsMessage(k_clientRequestsMsgSlotId) {}
 
                 virtual void Visit(RequestVisitor& visitor) = 0;
             };

@@ -88,7 +88,7 @@ namespace StandaloneTools
 
     bool BaseApplication::StartDebugService()
     {
-#if !defined(_RELEASE)
+#if defined(ENABLE_REMOTE_TOOLS)
         auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
         if (remoteToolsInterface)
         {

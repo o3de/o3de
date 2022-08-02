@@ -105,9 +105,12 @@ namespace RemoteTools
         AZ::SystemTickBus::Handler::BusDisconnect();
         m_joinThread = nullptr;
         m_outboxThread = nullptr;
-        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+        if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
-            AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(registryIt->second.m_name);
+            for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+            {
+                networking->DestroyNetworkInterface(registryIt->second.m_name);
+            }
         }
         m_entryRegistry.clear();
     }
@@ -314,7 +317,6 @@ namespace RemoteTools
         if (target.IsSelf())
         {
             AzFramework::RemoteToolsMessage* inboxMessage = aznew AzFramework::RemoteToolsMessage(msg.GetId());
-            inboxMessage->SetImmediateSelfDispatchEnabled(msg.IsImmediateSelfDispatchEnabled());
             inboxMessage->SetSenderTargetId(target.GetPersistentId());
 
             if (msg.GetCustomBlobSize() > 0)
@@ -322,12 +324,12 @@ namespace RemoteTools
                 if (msg.GetIsBlobOwner())
                 {
                     void* blob = azmalloc(msg.GetCustomBlobSize(), 16, AZ::OSAllocator);
-                    memcpy(blob, msg.GetCustomBlob(), msg.GetCustomBlobSize());
+                    memcpy(blob, msg.GetCustomBlob().data(), msg.GetCustomBlobSize());
                     inboxMessage->AddCustomBlob(blob, msg.GetCustomBlobSize(), true);
                 }
                 else
                 {
-                    inboxMessage->AddCustomBlob(msg.GetCustomBlob(), msg.GetCustomBlobSize(), false);
+                    inboxMessage->AddCustomBlob(msg.GetCustomBlob(), false);
                 }
             }
 
@@ -351,7 +353,7 @@ namespace RemoteTools
         size_t customBlobSize = msg.GetCustomBlobSize();
         if (msg.GetCustomBlobSize() > 0)
         {
-            outMsg.Write(customBlobSize, msg.GetCustomBlob());
+            outMsg.Write(customBlobSize, msg.GetCustomBlob().data());
         }
 
         AzNetworking::INetworkInterface* networkInterface =

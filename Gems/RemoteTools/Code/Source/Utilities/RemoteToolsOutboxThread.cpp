@@ -31,13 +31,12 @@ namespace RemoteTools
     void RemoteToolsOutboxThread::PushOutboxMessage(
         AzNetworking::INetworkInterface* netInterface,
         AzNetworking::ConnectionId connectionId, OutboundToolingDatum&& datum)
-    {
-        OutboundRemoteToolsMessage message;
+    { 
+        m_outboxMutex.lock();
+        auto& message = m_outbox.emplace_back();
         message.netInterface = netInterface;
         message.connectionId = connectionId;
         message.datum = datum;
-        m_outboxMutex.lock();
-        m_outbox.push_back(message);
         m_outboxMutex.unlock();
     }
 

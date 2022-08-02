@@ -53,8 +53,7 @@ namespace ScriptCanvas
         void ClientTransceiver::AddBreakpoint(const Breakpoint& breakpoint)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending AddBreakpoint Request %s", breakpoint.ToString().data());
-            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddBreakpointRequest(breakpoint));
             }
@@ -138,8 +137,7 @@ namespace ScriptCanvas
         void ClientTransceiver::DiscoverNetworkTargets()
         {
             AzFramework::RemoteToolsEndpointContainer targets;
-            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
                 remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
             }
@@ -170,8 +168,7 @@ namespace ScriptCanvas
         AzFramework::RemoteToolsEndpointInfo ClientTransceiver::GetNetworkTarget()
         {
             AzFramework::RemoteToolsEndpointInfo targetInfo;
-            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
                 targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
             }
@@ -446,8 +443,7 @@ namespace ScriptCanvas
 
         void ClientTransceiver::OnSystemTick()
         {
-            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddTargetsRequest(m_addCache));
                 m_connectionState.Merge(m_addCache);
@@ -466,8 +462,7 @@ namespace ScriptCanvas
             if (!m_currentTarget.IsValid())
             {
                 m_resetDesiredTarget = true;
-                AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-                if (remoteTools)
+                if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
                 {
                     m_previousDesiredInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
                     remoteTools->SetDesiredEndpointInfo(ScriptCanvas::RemoteToolsKey, m_selfTarget);
@@ -497,8 +492,7 @@ namespace ScriptCanvas
 
         void ClientTransceiver::StopLogging()
         {
-            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
-            if (remoteTools)
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
                 remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::StopLoggingRequest());
             }

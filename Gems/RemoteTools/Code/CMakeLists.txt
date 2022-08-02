@@ -14,7 +14,7 @@
 #            <restricted_folder>/<platform_name>/Gems/RemoteTools/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_name}")
 
-# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
+# Now that we have the platform abstraction layer (PAL) folder for this folder, that's where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
 # is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
