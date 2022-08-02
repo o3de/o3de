@@ -50,13 +50,21 @@ namespace EMotionFX
         m_subModes[m_subMode]->Setup(m_physicsSetupManipulatorData);
 
         const auto modeIndex = static_cast<size_t>(mode);
-        AZ_Assert(modeIndex < m_buttonIds.size(), "Invalid mode index %i.", modeIndex);
+        AZ_Assert(modeIndex < m_buttonData.size(), "Invalid mode index %i.", modeIndex);
+
+        const AZ::s32 viewportId = GetViewportId();
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            GetViewportId(), &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_clusterId,
-            m_buttonIds[modeIndex]);
+            viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_colliderClusterId);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::ClearClusterActiveButton, m_jointLimitClusterId);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            viewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+            m_buttonData[modeIndex].m_clusterId,
+            m_buttonData[modeIndex].m_buttonId);
     }
 
-    static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
+    static PhysicsSetupViewportUiCluster::ButtonData RegisterClusterButton(
         AZ::s32 viewportId, AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName, const char* tooltip)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
@@ -67,7 +75,7 @@ namespace EMotionFX
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, clusterId, buttonId, tooltip);
 
-        return buttonId;
+        return {clusterId, buttonId};
     }
 
     void PhysicsSetupViewportUiCluster::CreateClusterIfNoneExists(PhysicsSetupManipulatorData physicsSetupManipulatorData)
@@ -82,90 +90,112 @@ namespace EMotionFX
             DestroyClusterIfExists();
         }
 
-        if (m_clusterId == AzToolsFramework::ViewportUi::InvalidClusterId || hasChanged)
+        if (m_colliderClusterId == AzToolsFramework::ViewportUi::InvalidClusterId || hasChanged)
         {
             m_hasCapsuleCollider = hasCapsuleCollider;
             m_hasJointLimit = hasJointLimit;
             const AZ::s32 viewportId = GetViewportId();
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-                m_clusterId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+                m_colliderClusterId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
                 AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
-            m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
-            m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)] =
-                RegisterClusterButton(viewportId, m_clusterId, "Move", ColliderTranslationTooltip);
-            m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)] =
-                RegisterClusterButton(viewportId, m_clusterId, "Rotate", ColliderRotationTooltip);
+            m_buttonData.resize(static_cast<size_t>(SubMode::NumModes));
+            m_buttonData[static_cast<size_t>(SubMode::ColliderTranslation)] =
+                RegisterClusterButton(viewportId, m_colliderClusterId, "Move", ColliderTranslationTooltip);
+            m_buttonData[static_cast<size_t>(SubMode::ColliderRotation)] =
+                RegisterClusterButton(viewportId, m_colliderClusterId, "Rotate", ColliderRotationTooltip);
             if (m_hasCapsuleCollider)
             {
-                m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Scale", ColliderDimensionsTooltip);
-            }
-            if (m_hasJointLimit)
-            {
-                m_buttonIds[static_cast<size_t>(SubMode::JointLimitParentRotation)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Rotate", JointLimitParentRotationTooltip);
-                m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Rotate", JointLimitChildRotationTooltip);
-                m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits", JointLimitSwingTooltip);
-                m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits", JointLimitTwistTooltip);
-                m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Question", JointLimitAutofitTooltip);
+                m_buttonData[static_cast<size_t>(SubMode::ColliderDimensions)] =
+                    RegisterClusterButton(viewportId, m_colliderClusterId, "Scale", ColliderDimensionsTooltip);
             }
 
-            const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            const auto onColliderButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)])
+                if (buttonId == m_buttonData[static_cast<size_t>(SubMode::ColliderTranslation)].m_buttonId)
                 {
                     SetCurrentMode(SubMode::ColliderTranslation);
                 }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)])
+                else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::ColliderRotation)].m_buttonId)
                 {
                     SetCurrentMode(SubMode::ColliderRotation);
                 }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)])
+                else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::ColliderDimensions)].m_buttonId)
                 {
                     SetCurrentMode(SubMode::ColliderDimensions);
                 }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitParentRotation)])
-                {
-                    SetCurrentMode(SubMode::JointLimitParentRotation);
-                }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)])
-                {
-                    SetCurrentMode(SubMode::JointLimitChildRotation);
-                }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)])
-                {
-                    SetCurrentMode(SubMode::JointSwingLimits);
-                }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)])
-                {
-                    SetCurrentMode(SubMode::JointTwistLimits);
-                }
-                else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)])
-                {
-                    OptimizeJointLimits(m_physicsSetupManipulatorData);
-                }
             };
 
-            m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
+            m_colliderModeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onColliderButtonClicked);
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_clusterId,
-                m_modeSelectionHandler);
+                viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_colliderClusterId,
+                m_colliderModeSelectionHandler);
+
+            if (m_hasJointLimit)
+            {
+                AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
+                    m_jointLimitClusterId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+                    AzToolsFramework::ViewportUi::Alignment::TopLeft);
+
+                m_buttonData[static_cast<size_t>(SubMode::JointLimitParentRotation)] =
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Rotate", JointLimitParentRotationTooltip);
+                m_buttonData[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Rotate", JointLimitChildRotationTooltip);
+                m_buttonData[static_cast<size_t>(SubMode::JointSwingLimits)] =
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/SwingLimits", JointLimitSwingTooltip);
+                m_buttonData[static_cast<size_t>(SubMode::JointTwistLimits)] =
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "joints/TwistLimits", JointLimitTwistTooltip);
+                m_buttonData[static_cast<size_t>(SubMode::JointLimitOptimization)] =
+                    RegisterClusterButton(viewportId, m_jointLimitClusterId, "Question", JointLimitAutofitTooltip);
+
+                const auto onJointLimitButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+                {
+                    if (buttonId == m_buttonData[static_cast<size_t>(SubMode::JointLimitParentRotation)].m_buttonId)
+                    {
+                        SetCurrentMode(SubMode::JointLimitParentRotation);
+                    }
+                    else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::JointLimitChildRotation)].m_buttonId)
+                    {
+                        SetCurrentMode(SubMode::JointLimitChildRotation);
+                    }
+                    else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::JointSwingLimits)].m_buttonId)
+                    {
+                        SetCurrentMode(SubMode::JointSwingLimits);
+                    }
+                    else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::JointTwistLimits)].m_buttonId)
+                    {
+                        SetCurrentMode(SubMode::JointTwistLimits);
+                    }
+                    else if (buttonId == m_buttonData[static_cast<size_t>(SubMode::JointLimitOptimization)].m_buttonId)
+                    {
+                        OptimizeJointLimits(m_physicsSetupManipulatorData);
+                    }
+                };
+
+                m_jointLimitModeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onJointLimitButtonClicked);
+                AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                    viewportId,
+                    &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+                    m_jointLimitClusterId,
+                    m_jointLimitModeSelectionHandler);
+            }
         }
         SetCurrentMode(m_subMode);
     }
 
     void PhysicsSetupViewportUiCluster::DestroyClusterIfExists()
     {
-        if (m_clusterId != AzToolsFramework::ViewportUi::InvalidClusterId)
+        if (m_jointLimitClusterId != AzToolsFramework::ViewportUi::InvalidClusterId)
         {
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                GetViewportId(), &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_clusterId);
-            m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
+                GetViewportId(), &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_jointLimitClusterId);
+            m_jointLimitClusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
+        }
+        if (m_colliderClusterId != AzToolsFramework::ViewportUi::InvalidClusterId)
+        {
+            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                GetViewportId(), &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_colliderClusterId);
+            m_colliderClusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
             m_subModes[m_subMode]->Teardown();
         }
     }
