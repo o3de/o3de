@@ -11,7 +11,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import manifest
+from o3de import manifest, utils
 
 
 TEST_GEM_JSON_PAYLOAD = '''
@@ -36,6 +36,29 @@ TEST_GEM_JSON_PAYLOAD = '''
     "dependencies": [
     ],
     "external_subdirectories": [
+    ]
+}
+'''
+
+TEST_PROJECT_JSON_PAYLOAD = '''
+{
+    "project_name": "TestProject",
+    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+    "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
+    "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "TestProject",
+    "summary": "A short description of TestProject.",
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [
+        "TestProject"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de",
+    "restricted_name": "projects",
+    "external_subdirectories": [
+        "D:/TestGem"
     ]
 }
 '''
@@ -279,3 +302,66 @@ class TestGetAllGems:
                 as load_o3de_manifest_patch:
 
             assert manifest.get_all_gems() == expected_gem_paths
+
+class TestManifestProjects:
+    @staticmethod
+    def resolve(self):
+        return self
+
+    @staticmethod
+    def samefile(self, otherFile ):
+        return self.as_posix() == otherFile.as_posix()
+
+    @pytest.mark.parametrize("project_path, project_engine_name, engines, expected_engine_path", [
+            pytest.param(pathlib.Path('C:/project1'), 
+                'engine1', 
+                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+                pathlib.Path('C:/engine1')),
+            pytest.param(pathlib.Path('C:/project1'), 
+                'engine2', 
+                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+                pathlib.Path('D:/engine2')),
+            pytest.param(pathlib.Path('C:/engine1/project1'), 
+                '', 
+                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+                pathlib.Path('C:/engine1')),
+            pytest.param(pathlib.Path('C:/project1'), 
+                '', 
+                {'engine1': pathlib.Path('C:/engine1'), 'engine2': pathlib.Path('D:/engine2')},
+                None),
+        ]
+    )
+    def test_get_project_engines(self, project_path, project_engine_name, 
+                                    engines, expected_engine_path):
+        def get_project_json_data(project_name: str = None,
+            project_path: str or pathlib.Path = None) -> dict or None:
+            project_json = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+            project_json['engine'] = project_engine_name
+            return project_json
+
+        def get_registered(engine_name: str):
+            return engines[engine_name]
+
+        def get_manifest_engines():
+            return list(engines.values())
+
+        def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                                            max_scan_up_range: int=0) -> pathlib.Path or None:
+            for engine_path in engines.values():
+                if engine_path in start_path.parents:
+                    return engine_path
+            return None
+
+        def get_engine_projects(engine_path:pathlib.Path = None) -> list:
+            return [project_path] if engine_path in project_path.parents else []
+
+        with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _1, \
+            patch('o3de.manifest.get_registered', side_effect=get_registered) as _2, \
+            patch('o3de.manifest.get_manifest_engines', side_effect=get_manifest_engines) as _3, \
+            patch('o3de.manifest.get_engine_projects', side_effect=get_engine_projects) as _4, \
+            patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir_containing_file) as _5, \
+            patch('pathlib.Path.resolve', self.resolve) as _6, \
+            patch('pathlib.Path.samefile', self.samefile) as _7:
+
+            engine_path = manifest.get_project_engine_path(project_path)
+            assert engine_path == expected_engine_path

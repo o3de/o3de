@@ -48,8 +48,6 @@ namespace GraphCanvas
     {
         ClearLayout();
         delete m_nodePropertyDisplay;
-
-        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void NodePropertyDisplayWidget::RefreshStyle()
@@ -57,14 +55,6 @@ namespace GraphCanvas
         if (m_nodePropertyDisplay)
         {
             m_nodePropertyDisplay->RefreshStyle();
-        }
-    }
-
-    void NodePropertyDisplayWidget::OnSystemTick()
-    {
-        if (m_nodePropertyDisplay)
-        {
-            NodeUIRequestBus::Event(m_nodePropertyDisplay->GetNodeId(), &NodeUIRequests::AdjustSize);
         }
     }
 
@@ -188,8 +178,6 @@ namespace GraphCanvas
             return;
         }
 
-        ClearLayout();
-        
         if (m_nodePropertyDisplay == nullptr)
         {
             return;
@@ -201,6 +189,9 @@ namespace GraphCanvas
         // remove an item from the scene while that is in progress, it can crash since it is
         // still internally using a cached list of the scene items.
         QTimer::singleShot(0, this, [this, isForcedEdit]() {
+            // There is only one m_layoutItem in m_layout, so we are ok to clear layout in this timer event
+            ClearLayout();
+
             // Element here needs to be removed from the scene since removing it from the layout
             // doesn't actually remove it from the scene. The end result of this is you get an elements
             // which is still being rendered, and acts like it's apart of the layout despite not being
@@ -272,7 +263,5 @@ namespace GraphCanvas
             m_layoutItem->updateGeometry();
             m_layout->invalidate();
         }
-
-        AZ::SystemTickBus::Handler::BusConnect();
     }
 }
