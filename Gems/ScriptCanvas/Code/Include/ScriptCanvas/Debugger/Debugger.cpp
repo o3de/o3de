@@ -76,7 +76,7 @@ namespace ScriptCanvas
                 // remoteToolsInterface->SendRemoteToolsMessage(sender, Message::Denied());
                 return nullptr;
             }
-            else if (auto disconnection = azrtti_cast<Message::DisconnectRequest*>(msg.get()))
+            else if (azrtti_cast<Message::DisconnectRequest*>(msg.get()))
             {
                 DisconnectFromClient();
             }

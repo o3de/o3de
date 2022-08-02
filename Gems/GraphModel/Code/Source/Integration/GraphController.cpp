@@ -839,6 +839,7 @@ namespace GraphModelIntegration
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeAdded, node);
         }
     }
@@ -848,6 +849,8 @@ namespace GraphModelIntegration
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
+
             // Remove any thumbnail reference for this node when it is removed from the graph
             // The ThumbnailItem will be deleted by the Node layout itself
             m_nodeThumbnails.erase(node->GetId());
@@ -880,6 +883,7 @@ namespace GraphModelIntegration
         const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId);
         if (connection)
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             m_graph->RemoveConnection(connection);
             m_elementMap.Remove(connection);
 
@@ -1015,6 +1019,21 @@ namespace GraphModelIntegration
             {
                 WrapNodeInternal(newWrapperNode, newNode, layoutOrder);
             }
+        }
+    }
+
+    void GraphController::OnNodeIsBeingEdited(bool isBeingEditeed)
+    {
+        if (isBeingEditeed)
+        {
+            GraphCanvas::GraphModelRequestBus::Event(
+                m_graphCanvasSceneId, &GraphCanvas::GraphModelRequests::RequestPushPreventUndoStateUpdate);
+        }
+        else
+        {
+            GraphCanvas::GraphModelRequestBus::Event(
+                m_graphCanvasSceneId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
+            GraphCanvas::GraphModelRequestBus::Event(m_graphCanvasSceneId, &GraphCanvas::GraphModelRequests::RequestUndoPoint);
         }
     }
 
@@ -1354,12 +1373,14 @@ namespace GraphModelIntegration
 
         if (slot)
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
             slot->SetValue(slot->GetDefaultValue());
         }
     }
 
     void GraphController::RemoveSlot(const GraphCanvas::Endpoint& endpoint)
     {
+        GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
         const GraphCanvas::NodeId& nodeId = endpoint.GetNodeId();
         const GraphCanvas::SlotId& slotId = endpoint.GetSlotId();
         auto node = m_elementMap.Find<GraphModel::Node>(nodeId);
@@ -1391,6 +1412,7 @@ namespace GraphModelIntegration
     GraphCanvas::SlotId GraphController::RequestExtension(
         const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason)
     {
+        GraphCanvas::ScopedGraphUndoBatch undoBatch(m_graphCanvasSceneId);
         GraphCanvas::SlotId graphCanvasSlotId;
 
         GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeId);

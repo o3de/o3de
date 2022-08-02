@@ -83,6 +83,7 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
         //  AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus...
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+        void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
         void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
         ////////////////////////////////////////////////////////////////////////
 

@@ -54,6 +54,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaEditorSystemComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 #include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
@@ -117,6 +118,7 @@ namespace AzToolsFramework
             AzToolsFramework::AzToolsFrameworkConfigurationSystemComponent::CreateDescriptor(),
             AzToolsFramework::Components::EditorEntityUiSystemComponent::CreateDescriptor(),
             AzToolsFramework::Script::LuaSymbolsReporterSystemComponent::CreateDescriptor(),
+            AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),
         });
     }
 }

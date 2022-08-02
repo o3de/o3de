@@ -373,7 +373,7 @@ namespace Multiplayer
     EntityReplicator* EntityReplicationManager::AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole remoteNetworkRole)
     {
         EntityReplicator* entityReplicator(nullptr);
-        if (const AZ::Entity* entity = entityHandle.GetEntity())
+        if (entityHandle.GetEntity())
         {
             entityReplicator = GetEntityReplicator(entityHandle);
             if (entityReplicator)

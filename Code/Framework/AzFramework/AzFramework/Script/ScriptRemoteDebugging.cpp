@@ -36,8 +36,7 @@ namespace AzFramework
         static bool EnumClass(const char* name, const AZ::Uuid& typeId, void* userData)
         {
             ScriptUserClassList& output = *reinterpret_cast<ScriptUserClassList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_typeId = typeId;
             return true;
         }
@@ -46,8 +45,7 @@ namespace AzFramework
         {
             (void)classTypeId;
             ScriptUserMethodList& output = *reinterpret_cast<ScriptUserMethodList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_dbgParamInfo = dbgParamInfo ? dbgParamInfo : "null";
             return true;
         }
@@ -56,8 +54,7 @@ namespace AzFramework
         {
             (void)classTypeId;
             ScriptUserPropertyList& output = *reinterpret_cast<ScriptUserPropertyList*>(userData);
-            output.push_back();
-            output.back().m_name = name;
+            output.emplace_back().m_name = name;
             output.back().m_isRead = isRead;
             output.back().m_isWrite = isWrite;
             return true;
@@ -81,8 +78,7 @@ namespace AzFramework
 
             if (!found)
             {
-                output.push_back();
-                auto& ebus = output.back();
+                auto& ebus = output.emplace_back();
                 ebus.m_name = name;
                 ebus.m_canBroadcast = canBroadcast;
                 ebus.m_canQueue = canQueue;
@@ -100,8 +96,7 @@ namespace AzFramework
             {
                 if (ebusName == it->m_name)
                 {
-                    it->m_events.push_back();
-                    auto& event = it->m_events.back();
+                    auto& event = it->m_events.emplace_back();
                     event.m_name = senderName;
                     event.m_dbgParamInfo = dbgParamInfo;
                     event.m_category = category;
@@ -307,8 +302,7 @@ namespace AzFramework
                 return;
             }
         }
-        m_availableContexts.push_back();
-        m_availableContexts.back().m_context = sc;
+        m_availableContexts.emplace_back().m_context = sc;
         m_availableContexts.back().m_name = name;
     }
     //-------------------------------------------------------------------------
