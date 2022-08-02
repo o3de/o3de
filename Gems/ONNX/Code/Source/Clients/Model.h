@@ -35,7 +35,7 @@ namespace ONNX
         {
             //! Source of onnx model file.
             std::wstring m_modelFile = std::wstring{ W_GEM_ASSETS_PATH } + std::wstring{ L"/model.onnx" };
-            std::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
+            AZStd::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
             AZStd::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
             AZStd::vector<int64_t> m_outputShape; //!< Specifies dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
             bool m_cudaEnable = false; //!< Toggle to create a CUDA session on gpu, if disabled normal cpu session created.
@@ -56,7 +56,7 @@ namespace ONNX
 
     protected:
         bool m_cudaEnable; // Determines if inferencing of the model instance will be run on gpu using CUDA (run on CPU by default).
-        std::string m_modelName; // Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
+        AZStd::string m_modelName; // Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
         AZ::Debug::Timer m_timer; // Timer instance that is used within Run() to calculate inference runtime, and obtain the value in m_delta.
         Ort::MemoryInfo m_memoryInfo{ nullptr }; // Created by Load() and holds information about the memory allocator used by the instance and the memory type. These are set to OrtDeviceAllocator and OrtMemTypeCpu for both CPU and GPU execution (contrary to how it may seem this is the correct MemType for CUDA as well).
         Ort::Session m_session{ nullptr }; // Created by Load(), and is unique to the model.onnx file used - created using the Ort::Env and SessionOptions which are used to specify CPU or CUDA execution.
