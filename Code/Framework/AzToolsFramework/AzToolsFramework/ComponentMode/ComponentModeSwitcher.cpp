@@ -48,7 +48,6 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::Alignment::TopLeft);
 
         // initial transform button
-
         AzToolsFramework::Components::TransformComponent transformComponent;
         AZStd::string transformIconPath;
 
