@@ -69,7 +69,7 @@ namespace ONNX
 
     //! Runs through library of test mnist images in png format, calculating inference accuracy.
     //! @testsPerDigit specifies how many runs to do on each digit 0-9. Each run will be done on a unique image of that digit. Limit is
-    //! ~5,000.
+    //! ~9,000.
     //! @cudaEnable just specifies if the inferences should be run on gpu using CUDA or default cpu.
     void RunMnistSuite(int testsPerDigit, bool cudaEnable);
 } // namespace ONNX
