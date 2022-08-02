@@ -17,7 +17,7 @@
 
 namespace AzToolsFramework
 {
-    ToolBarManager::ToolBarManager()
+    ToolBarManager::ToolBarManager(QWidget* defaultParentWidget)
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "ToolBarManager - Could not retrieve instance of ActionManagerInterface");
@@ -31,7 +31,7 @@ namespace AzToolsFramework
         AZ::SystemTickBus::Handler::BusConnect();
         ActionManagerNotificationBus::Handler::BusConnect();
 
-        EditorToolBar::Initialize();
+        EditorToolBar::Initialize(defaultParentWidget);
     }
 
     ToolBarManager::~ToolBarManager()
@@ -77,8 +77,7 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -109,8 +108,7 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "ToolBar Manager - Could not add action \"%s\" to toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -146,8 +144,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : actions)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(pair.first);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(pair.first))
             {
                 errorMessage += AZStd::string(" ") + pair.first;
                 couldNotAddAction = true;
@@ -186,8 +183,7 @@ namespace AzToolsFramework
                 toolBarIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "ToolBar Manager - Could not remove action \"%s\" from toolbar \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -224,8 +220,7 @@ namespace AzToolsFramework
 
         for (const AZStd::string& actionIdentifier : actionIdentifiers)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
                 couldNotRemoveAction = true;
@@ -268,7 +263,8 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    ToolBarManagerOperationResult ToolBarManager::AddWidgetToToolBar(const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex)
+    ToolBarManagerOperationResult ToolBarManager::AddWidgetToToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
     {
         auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBars.end())
@@ -277,13 +273,18 @@ namespace AzToolsFramework
                 "ToolBar Manager - Could not add widget - toolbar \"%s\" has not been registered.", toolBarIdentifier.c_str()));
         }
 
-        if (!widget)
+        if (!m_actionManagerInterface->IsWidgetActionRegistered(widgetActionIdentifier))
         {
             return AZ::Failure(
-                AZStd::string::format("ToolBar Manager - Could not add widget to toolbar \"%s\" - nullptr widget.", toolBarIdentifier.c_str()));
+                AZStd::string::format(
+                    "ToolBar Manager - Could not add widget \"%s\" to toolbar \"%s\" - widget action was not registered.",
+                    toolBarIdentifier.c_str(),
+                    widgetActionIdentifier.c_str()
+                )
+            );
         }
 
-        toolBarIterator->second.AddWidget(sortIndex, widget);
+        toolBarIterator->second.AddWidget(sortIndex, widgetActionIdentifier);
         m_toolBarsToRefresh.insert(toolBarIdentifier);
 
         return AZ::Success();
@@ -314,6 +315,32 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "ToolBar Manager - Could not get sort key of action \"%s\" in toolbar \"%s\" - action was not found in toolbar.", actionIdentifier.c_str(), toolBarIdentifier.c_str()));
+        }
+
+        return AZ::Success(sortKey.value());
+    }
+
+    ToolBarManagerIntegerResult ToolBarManager::GetSortKeyOfWidgetInToolBar(
+        const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const
+    {
+        auto toolBarIterator = m_toolBars.find(toolBarIdentifier);
+        if (toolBarIterator == m_toolBars.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of widget \"%s\" in toolbar \"%s\" - toolbar has not been registered.",
+                widgetActionIdentifier.c_str(),
+                toolBarIdentifier.c_str())
+            );
+        }
+
+        auto sortKey = toolBarIterator->second.GetWidgetSortKey(widgetActionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not get sort key of widget \"%s\" in toolbar \"%s\" - widget was not found in toolbar.",
+                widgetActionIdentifier.c_str(),
+                toolBarIdentifier.c_str())
+            );
         }
 
         return AZ::Success(sortKey.value());
@@ -400,7 +427,11 @@ namespace AzToolsFramework
 
     void ToolBarManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
-        QueueRefreshForToolBarsContainingAction(actionIdentifier);
+        // Only refresh the toolbar if the action state changing could result in the action being shown/hidden.
+        if (m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(actionIdentifier))
+        {
+            QueueRefreshForToolBarsContainingAction(actionIdentifier);
+        }
     }
 
 } // namespace AzToolsFramework

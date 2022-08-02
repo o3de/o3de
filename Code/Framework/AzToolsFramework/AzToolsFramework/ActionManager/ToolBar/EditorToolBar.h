@@ -41,23 +41,25 @@ namespace AzToolsFramework
         EditorToolBar();
         explicit EditorToolBar(const AZStd::string& name);
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
         static void Reflect(AZ::ReflectContext* context);
         
         // Add Menu Items
-        void AddSeparator(int sortKey);
         void AddAction(int sortKey, AZStd::string actionIdentifier);
         void AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier);
-        void AddWidget(int sortKey, QWidget* widget);
+        void AddWidget(int sortKey, AZStd::string widgetActionIdentifier);
+        void AddSeparator(int sortKey);
 
         // Remove Menu Items
         void RemoveAction(AZStd::string actionIdentifier);
         
         // Returns whether the action queried is contained in this toolbar.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
+        bool ContainsWidget(const AZStd::string& widgetActionIdentifier) const;
         
         // Returns the sort key for the queried action, or 0 if it's not found.
         AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
+        AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
 
         // Returns the pointer to the ToolBar.
         QToolBar* GetToolBar();
@@ -70,8 +72,9 @@ namespace AzToolsFramework
         enum class ToolBarItemType
         {
             Action = 0,
-            Separator,
-            Widget
+            ActionAndSubMenu,
+            Widget,
+            Separator
         };
 
         struct ToolBarItem final
@@ -79,18 +82,26 @@ namespace AzToolsFramework
             AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator, 0);
             AZ_RTTI(ToolBarItem, "{B0DE0795-2C3F-4ABC-AAAB-1A68604EF33E}");
 
-            explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = AZStd::string());
-            explicit ToolBarItem(QWidget* widget);
+            explicit ToolBarItem(
+                QToolBar* toolBar,
+                ToolBarItemType type = ToolBarItemType::Separator,
+                AZStd::string identifier = AZStd::string(),
+                AZStd::string subMenuIdentifier = AZStd::string()
+            );
 
             ToolBarItemType m_type;
 
             AZStd::string m_identifier;
+            AZStd::string m_subMenuIdentifier;
             QWidgetAction* m_widgetAction = nullptr;
         };
 
         QToolBar* m_toolBar = nullptr;
         AZStd::map<int, AZStd::vector<ToolBarItem>> m_toolBarItems;
         AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;
+
+        inline static QWidget* m_defaultParentWidget;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
