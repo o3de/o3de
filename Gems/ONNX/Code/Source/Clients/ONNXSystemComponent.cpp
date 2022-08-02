@@ -88,7 +88,8 @@ namespace ONNX
             }
             m_timingStats.OnImGuiUpdate();
 
-            if (ENABLE_CUDA) {
+            if (ENABLE_CUDA)
+            {
                 if (ImGui::CollapsingHeader("MNIST CUDA (Precomputed)", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
                 {
                     if (ImGui::BeginTable("MNIST", 3))
@@ -105,7 +106,8 @@ namespace ONNX
                         ImGui::TableNextColumn();
                         ImGui::Text(
                             "Accuracy: %.2f%%",
-                            ((float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences) * 100.0f);
+                            ((float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences) *
+                                100.0f);
                         ImGui::EndTable();
                     }
                 }
@@ -119,7 +121,8 @@ namespace ONNX
         if (ImGui::BeginMenu("ONNX"))
         {
             ImGui::MenuItem(m_timingStats.GetName(), "", &m_timingStats.m_show);
-            if (ENABLE_CUDA) {
+            if (ENABLE_CUDA)
+            {
                 ImGui::MenuItem(m_timingStatsCuda.GetName(), "", &m_timingStatsCuda.m_show);
             }
             ImGui::EndMenu();
@@ -170,7 +173,8 @@ namespace ONNX
         m_timingStats.SetName("MNIST Timing Statistics");
         m_timingStats.SetHistogramBinCount(200);
 
-        if (ENABLE_CUDA) {
+        if (ENABLE_CUDA)
+        {
             m_timingStatsCuda.SetName("MNIST CUDA Timing Statistics");
             m_timingStatsCuda.SetHistogramBinCount(200);
         }
@@ -244,7 +248,8 @@ namespace ONNX
 
         m_mnist->BusConnect();
 
-        if (ENABLE_CUDA) {
+        if (ENABLE_CUDA)
+        {
             m_mnistCuda = AZStd::make_unique<MNIST>();
             m_mnistCuda->m_input = input;
             m_mnistCuda->m_output = output;
@@ -274,7 +279,8 @@ namespace ONNX
         // in the game tick. The results for these runs are displayed alongside the realtime data in the ImGui dashboard.
         RunMnistSuite(20, false);
 
-        if (ENABLE_CUDA) {
+        if (ENABLE_CUDA)
+        {
             RunMnistSuite(20, true);
         }
 

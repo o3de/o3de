@@ -133,7 +133,8 @@ namespace ONNX
         for (int digit = 0; digit < 10; digit++)
         {
             std::filesystem::directory_iterator iterator =
-                std::filesystem::directory_iterator{ std::wstring{ W_GEM_ASSETS_PATH } + L"/mnist_png/testing/" + std::to_wstring(digit) + L"/" };
+                std::filesystem::directory_iterator{ std::wstring{ W_GEM_ASSETS_PATH } + L"/mnist_png/testing/" + std::to_wstring(digit) +
+                                                     L"/" };
             for (int version = 0; version < numOfEach; version++)
             {
                 std::string filepath = iterator->path().string();
