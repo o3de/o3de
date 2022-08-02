@@ -3,17 +3,18 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Simplified O3DE test-writing utilities.
+
+Supports different options for running tests using this framework:
+SingleTest: A single test that runs 1 test in 1 instance/application.
+SharedTest: Multiple tests that run multiple tests in multiple instances/applications.
+BatchedTest: Multiple tests that run 1 instance/application with multiple tests in that 1 instance/application.
+ParallelTest: Multiple tests that run multiple instances/applications with 1 test in each instance/application.
+
+It is recommended that new modules are created with objects that inherit from objects here for new tests.
+Example: creating a new EditorTestSuite(AbstractTestSuite) class for testing the Editor application.
 """
-# Simplified O3DE test-writing utilities.
-#
-# Supports different options for running tests using this framework:
-# SingleTest: A single test that runs 1 test in 1 instance/application.
-# SharedTest: Multiple tests that run multiple tests in multiple instances/applications.
-# BatchedTest: Multiple tests that run 1 instance/application with multiple tests in that 1 instance/application.
-# ParallelTest: Multiple tests that run multiple instances/applications with 1 test in each instance/application.
-#
-# It is recommended that new modules are created with objects that inherit from objects here for new tests.
-# Example: creating a new EditorTestSuite(AbstractTestSuite) class for testing the Editor application.
 
 from __future__ import annotations
 __test__ = False  # Avoid pytest collection & warnings since this module is for test functions, but not a test itself.

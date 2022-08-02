@@ -3,24 +3,25 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+Test-writing utilities that simplify creating O3DE Editor tests in Python.
+
+Test writers should subclass a test suite from EditorTestSuite to hold the specification of python test scripts for
+the editor to load and run. Tests can be parallelized (run in multiple editor instances at once) and/or batched
+(multiple tests run in the same editor instance), with collated results and crash detection.
+
+Usage example:
+   class MyTestSuite(EditorTestSuite):
+
+       class MyFirstTest(EditorSingleTest):
+           from . import script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_1(EditorBatchedTest):
+           from . import another_script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_2(EditorParallelTest):
+           from . import yet_another_script_to_be_run_by_editor as test_module
 """
-# Test-writing utilities that simplify creating O3DE Editor tests in Python.
-#
-# Test writers should subclass a test suite from EditorTestSuite to hold the specification of python test scripts for
-# the editor to load and run. Tests can be parallelized (run in multiple editor instances at once) and/or batched
-# (multiple tests run in the same editor instance), with collated results and crash detection.
-#
-# Usage example:
-#    class MyTestSuite(EditorTestSuite):
-#
-#        class MyFirstTest(EditorSingleTest):
-#            from . import script_to_be_run_by_editor as test_module
-#
-#        class MyTestInParallel_1(EditorBatchedTest):
-#            from . import another_script_to_be_run_by_editor as test_module
-#
-#        class MyTestInParallel_2(EditorParallelTest):
-#            from . import yet_another_script_to_be_run_by_editor as test_module
 
 from __future__ import annotations
 __test__ = False  # Avoid pytest collection & warnings since this module is for test functions, but not a test itself.

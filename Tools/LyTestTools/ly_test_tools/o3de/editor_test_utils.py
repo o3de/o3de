@@ -174,9 +174,8 @@ def retrieve_material_editor_log_content(run_id: int,
     try:
         waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
     except AssertionError:
-        pass
+        pass  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
 
-    # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
     try:
         with open(material_editor_log) as opened_log:
             editor_info = ""
@@ -236,7 +235,7 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
     :param destination_file: the destination path for the logs
     :return: None
     """
-    if not destination_file:
+    if not os.path.exists(destination_file):
         logger.warning(f'No destination_file path found, got {destination_file} instead.')
         raise FileNotFoundError
     # text that designates the start of logging for a new test
@@ -244,7 +243,7 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
     dir_name = os.path.dirname(starting_path)
 
     # the current log we are writing to
-    current_new_log_path = os.path.join(dir_name, f"SetUp" + ".log")
+    current_new_log_path = os.path.join(dir_name, "SetUp.log")
     current_new_log = open(current_new_log_path, "a+")
 
     # loop through the log to split, and write to the split logs

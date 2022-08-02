@@ -17,10 +17,6 @@ import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.math as math
-try:
-    import azlmbr.legacy.general as general  # Editor test.
-except ModuleNotFoundError:  # MaterialEditor test.
-    import azlmbr.atomtools.general as general
 
 # Helper file Imports
 from editor_python_test_tools.wait_utils import PrefabWaiter
