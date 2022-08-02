@@ -44,16 +44,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
-    [[maybe_unused]] static QPixmap CreateIconMask(AZStd::string buttonIcon)
-    {
-        auto buttonPixmap = QPixmap(QString(buttonIcon.c_str()));
-        auto mask = buttonPixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
-        buttonPixmap.fill((QColor(255, 255, 255)));
-        buttonPixmap.setMask(mask);
-
-        return buttonPixmap;
-    }
-
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
