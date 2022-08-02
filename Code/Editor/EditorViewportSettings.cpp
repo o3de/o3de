@@ -69,15 +69,31 @@ namespace SandboxEditor
             {
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
-                m_notifyEventHandler = registry->RegisterNotifier(
+                m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, path))
+                        {
+                            m_angleSnappingChanged.Signal(AngleSnappingEnabled());
+                        }
+                    }
+                );
+
+                m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
                     [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
                     {
                         if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
-                    });
+                    }
+                );
             }
+        }
+
+        void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_angleSnappingChanged);
         }
 
         void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) override
@@ -85,8 +101,10 @@ namespace SandboxEditor
             handler.Connect(m_gridSnappingChanged);
         }
 
+        GridSnappingChangedEvent m_angleSnappingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_notifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
     };
 
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()

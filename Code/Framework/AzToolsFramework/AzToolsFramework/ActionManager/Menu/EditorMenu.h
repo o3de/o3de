@@ -32,13 +32,13 @@ namespace AzToolsFramework
         EditorMenu();
         explicit EditorMenu(const AZStd::string& name);
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
 
         // Add Menu Items
         void AddAction(int sortKey, AZStd::string actionIdentifier);
-        void AddSeparator(int sortKey);
         void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
-        void AddWidget(int sortKey, QWidget* widget);
+        void AddWidget(int sortKey, AZStd::string widgetActionIdentifier);
+        void AddSeparator(int sortKey);
 
         // Remove Menu Items
         void RemoveAction(AZStd::string actionIdentifier);
@@ -46,10 +46,12 @@ namespace AzToolsFramework
         // Returns whether the action or menu queried is contained in this menu.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
         bool ContainsSubMenu(const AZStd::string& menuIdentifier) const;
+        bool ContainsWidget(const AZStd::string& widgetActionIdentifier) const;
 
         // Returns the sort key for the queried action or menu, or 0 if it's not found.
         AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
         AZStd::optional<int> GetSubMenuSortKey(const AZStd::string& menuIdentifier) const;
+        AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();
@@ -62,15 +64,17 @@ namespace AzToolsFramework
         enum class MenuItemType
         {
             Action = 0,
-            Separator,
             SubMenu,
-            Widget
+            Widget,
+            Separator
         };
 
         struct MenuItem
         {
-            explicit MenuItem(MenuItemType type = MenuItemType::Separator, AZStd::string identifier = "");
-            explicit MenuItem(QWidget* widget);
+            explicit MenuItem(
+                MenuItemType type = MenuItemType::Separator,
+                AZStd::string identifier = ""
+            );
 
             MenuItemType m_type;
 
@@ -81,7 +85,10 @@ namespace AzToolsFramework
         QMenu* m_menu = nullptr;
         AZStd::multimap<int, MenuItem> m_menuItems;
         AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::map<AZStd::string, int> m_widgetToSortKeyMap;
         AZStd::map<AZStd::string, int> m_subMenuToSortKeyMap;
+
+        inline static QWidget* m_defaultParentWidget = nullptr;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

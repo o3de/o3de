@@ -206,6 +206,7 @@ namespace GradientSignal
 
                     ->GroupElementToggle("Advanced", &ImageGradientConfig::m_advancedMode)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse, "Channel To Use", "The channel to use from the image.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)

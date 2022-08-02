@@ -50,5 +50,6 @@ namespace ScriptCanvas
     void InitDataRegistry();
     void ResetDataRegistry();
     extern AZ::EnvironmentVariable<DataRegistry> GetDataRegistry();
-    static const char* s_dataRegistryName = "ScriptCanvasDataRegistry";
+
+    static constexpr const char* s_dataRegistryName = "ScriptCanvasDataRegistry";
 }

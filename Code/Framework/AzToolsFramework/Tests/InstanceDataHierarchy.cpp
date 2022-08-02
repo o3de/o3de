@@ -1460,8 +1460,7 @@ namespace UnitTest
             AZStd::list<AggregatedContainer> containers;
             for (int i = 0; i < 5; ++i)
             {
-                containers.push_back();
-                AggregatedContainer& container = containers.back();
+                AggregatedContainer& container = containers.emplace_back();
                 idh.AddRootInstance(&container, azrtti_typeid<AggregatedContainer>());
                 idh.Build(&serializeContext, 0);
 

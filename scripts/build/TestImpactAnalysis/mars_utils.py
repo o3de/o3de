@@ -136,7 +136,7 @@ class FilebeatClient(object):
             try:
                 sent = self._socket.send(data[total_sent:])
             except BrokenPipeError:
-                logging.error("Filebeat socket closed by peer")
+                logger.error("Filebeat socket closed by peer")
                 self._socket.close()
                 self._open_socket()
                 total_sent = 0

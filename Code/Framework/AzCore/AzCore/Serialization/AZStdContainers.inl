@@ -141,6 +141,11 @@ namespace AZ
         template<size_t Index>
         struct IndexToCStr : IndexToCStrHelper<Index> {};
 
+        template<class Container>
+        constexpr bool IsForwardList_v = false;
+        template<class T, class Alloc>
+        inline constexpr bool IsForwardList_v<AZStd::forward_list<T, Alloc>> = true;
+
         template<class T, bool IsStableIterators>
         class AZStdBasicContainer
             : public SerializeContext::IDataContainer
@@ -202,7 +207,7 @@ namespace AZ
             size_t  Size(void* instance) const override
             {
                 const T* arrayPtr = reinterpret_cast<const T*>(instance);
-                return arrayPtr->size();
+                return AZStd::ranges::distance(*arrayPtr);
             }
 
             /// Returns the capacity of the container. Returns 0 for objects without fixed capacity.
@@ -232,9 +237,29 @@ namespace AZ
             void*   ReserveElement(void* instance, const SerializeContext::ClassElement* classElement) override
             {
                 (void)classElement;
-                T* arrayPtr = reinterpret_cast<T*>(instance);
-                arrayPtr->push_back();
-                return &arrayPtr->back();
+                if constexpr (IsForwardList_v<T>)
+                {
+                    auto FindLastValidElementBefore = [](const T& forwardList,
+                        typename T::const_iterator last)
+                    {
+                        auto lastValidIter = forwardList.before_begin();
+                        for (auto first = forwardList.begin(); first != last; lastValidIter = first, ++first)
+                        {
+                        }
+
+                        return lastValidIter;
+                    };
+
+                    T* forwardListPtr = reinterpret_cast<T*>(instance);
+                    return AZStd::to_address(forwardListPtr->emplace_after(
+                        FindLastValidElementBefore(*forwardListPtr, forwardListPtr->end())
+                    ));
+                }
+                else
+                {
+                    T* arrayPtr = reinterpret_cast<T*>(instance);
+                    return &arrayPtr->emplace_back();
+                }
             }
 
             /// Get an element's address by its index (called before the element is loaded).
@@ -259,19 +284,35 @@ namespace AZ
             bool    RemoveElement(void* instance, const void* element, SerializeContext* deletePointerDataContext) override
             {
                 T* arrayPtr = reinterpret_cast<T*>(instance);
-                for (typename T::iterator it = arrayPtr->begin(); it != arrayPtr->end(); ++it)
+                // forward_list can only erase the element after the found one
+                // so keep track of the element before the last
+                typename T::iterator prevIter{};
+                if constexpr (IsForwardList_v<T>)
                 {
-                    void* arrayElement = &(*it);
-                    if (arrayElement == element)
+                    prevIter = arrayPtr->before_begin();
+                }
+
+                for (auto foundIt = arrayPtr->begin(); foundIt != arrayPtr->end(); prevIter = foundIt, ++foundIt)
+                {
+                    if (void* containerElem = AZStd::to_address(foundIt);
+                        containerElem == element)
                     {
                         if (deletePointerDataContext)
                         {
-                            DeletePointerData(deletePointerDataContext, &m_classElement, arrayElement);
+                            DeletePointerData(deletePointerDataContext, &m_classElement, containerElem);
                         }
-                        arrayPtr->erase(it);
+                        if constexpr (IsForwardList_v<T>)
+                        {
+                            arrayPtr->erase_after(prevIter);
+                        }
+                        else
+                        {
+                            arrayPtr->erase(foundIt);
+                        }
                         return true;
                     }
                 }
+
                 return false;
             }
 
@@ -381,7 +422,7 @@ namespace AZ
                 T* arrayPtr = reinterpret_cast<T*>(instance);
                 if (arrayPtr->size() < N)
                 {
-                    arrayPtr->push_back();
+                    arrayPtr->emplace_back();
                     return &arrayPtr->back();
                 }
                 return nullptr;

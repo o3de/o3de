@@ -507,6 +507,11 @@ namespace AzToolsFramework
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        if (!prefabEditorEntityOwnershipInterface)
+        {
+            return nullptr;
+        }
+
         const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
         if (!containerEntityId.IsValid())
         {

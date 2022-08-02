@@ -434,7 +434,10 @@ namespace ScriptCanvas
         using ExploredDynamicGroupCache = AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set< AZ::Crc32 >>;
 
     private:
-
+        AZStd::string m_name = "";
+        AZStd::string m_toolTip = "";
+        AZStd::string m_nodeStyle = "";
+        AZ::Crc32 m_nodeLexicalId;
         struct IteratorCache
         {
         public:
@@ -538,6 +541,13 @@ namespace ScriptCanvas
         virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
+        virtual const AZStd::string& GetNodeToolTip() const;
+        virtual const AZStd::string& GetNodeStyle() const;
+
+        virtual void SetNodeName(const AZStd::string& name);
+        virtual void SetNodeToolTip(const AZStd::string& toolTip);
+        virtual void SetNodeStyle(const AZStd::string& nodeStyle);
+        virtual void SetNodeLexicalId(const AZ::Crc32& nodeLexicalId);
 
         AZStd::string GetSlotName(const SlotId& slotId) const;
 
