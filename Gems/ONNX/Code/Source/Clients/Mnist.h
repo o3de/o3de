@@ -34,7 +34,7 @@ namespace ONNX
 
         //! To be called after Model::Run(), uses softmax to get inference probabilities.
         //! Directly mutates m_output and m_result.
-        std::ptrdiff_t GetResult();
+        void GetResult();
 
         //! Invokes the correct setter function in ONNXBus, adding the value currently held in m_delta into an ImGui histogram group based
         //! on the m_modelName.

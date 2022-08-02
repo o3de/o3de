@@ -26,11 +26,10 @@ namespace ONNX
         }
     }
 
-    std::ptrdiff_t MNIST::GetResult()
+    void MNIST::GetResult()
     {
         Softmax(m_output);
         m_result = std::distance(m_output.begin(), std::max_element(m_output.begin(), m_output.end()));
-        return m_result;
     }
 
     void MNIST::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
