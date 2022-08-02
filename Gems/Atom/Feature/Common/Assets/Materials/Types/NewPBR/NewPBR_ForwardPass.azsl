@@ -37,10 +37,15 @@ COMMON_OPTIONS_OCCLUSION()
 COMMON_OPTIONS_EMISSIVE()
 
 // Shader Stitching
+#include "NewPBR_VertexData.azsli"
 #include "NewPBR_Vertex.azsli"
+
+#include "NewPBR_PixelGeometryData.azsli"
 #include "NewPBR_PixelGeometry.azsli"
+
 #include "NewPBR_SurfaceData.azsli"
 #include "NewPBR_Surface.azsli"
+
 #include "NewPBR_LightingData.azsli"
 #include "NewPBR_LightingModel.azsli"
 #include "NewPBR_Lighting.azsli"

@@ -8,6 +8,8 @@
 
 #pragma once
 
+#define SURFACE_DATA_IS_NEW_PBR     1
+
 // Todo: factor out surface constants into separate file
 #include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
 

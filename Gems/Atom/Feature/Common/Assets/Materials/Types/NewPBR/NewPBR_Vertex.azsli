@@ -9,49 +9,48 @@
 #pragma once
 
 #include <Atom/RPI/TangentSpace.azsli>
+#include "NewPBR_VertexData.azsli"
 
-struct VSInput
-{
-    // Base fields (required by the template azsli file)...
-    float3 m_position : POSITION;
-    float3 m_normal : NORMAL;
-    float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
- 
-    // Extended fields (only referenced in this azsl file)...
-    float2 m_uv0 : UV0;
-    float2 m_uv1 : UV1;
-};
-
-struct VSOutput
-{
-    // Base fields (required by the template azsli file)...
-    // "centroid" is needed for SV_Depth to compile
-    precise linear centroid float4 m_position : SV_Position;
-    float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
-    float3 m_worldPosition : UV0;
-
-    // Extended fields (only referenced in this azsl file)...
-    float2 m_uv[UvSetCount] : UV1;
-};
-
-VSOutput EvaluateVertexGeometry(VSInput IN)
+VSOutput EvaluateVertexGeometry_NewPBR(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float3 bitangent,
+    float2 uv0,
+    float2 uv1)
 {
     VSOutput OUT;
 
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+    float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     OUT.m_worldPosition = worldPosition.xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 
     // By design, only UV0 is allowed to apply transforms.
-    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(IN.m_uv0, 1.0)).xy;
-    OUT.m_uv[1] = IN.m_uv1;
+    OUT.m_uv[0] = mul(MaterialSrg::m_uvMatrix, float3(uv0, 1.0)).xy;
+    OUT.m_uv[1] = uv1;
 
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
-    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+    ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
     return OUT;
 }
+
+VSOutput EvaluateVertexGeometry_NewPBR(VSInput IN)
+{
+    return EvaluateVertexGeometry_NewPBR(
+        IN.m_position,
+        IN.m_normal,
+        IN.m_tangent,
+        IN.m_bitangent,
+        IN.m_uv0,
+        IN.m_uv1);
+}
+
+
+#ifdef VERTEX_DATA_IS_NEW_PBR
+
+#define     EvaluateVertexGeometry(IN)                  \
+            EvaluateVertexGeometry_NewPBR(IN)
+
+#endif

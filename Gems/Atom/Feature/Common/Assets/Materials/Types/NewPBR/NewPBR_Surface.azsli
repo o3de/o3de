@@ -10,12 +10,12 @@
 
 #include <Atom/Features/MatrixUtility.azsli>
 
-Surface EvaluateSurface(
+Surface EvaluateSurface_NewPBR(
     float3 positionWS,
     float3 vertexNormal,
-    float2 uv[UvSetCount],
     float3 tangents[UvSetCount],
     float3 bitangents[UvSetCount],
+    float2 uv[UvSetCount],
     bool isFrontFace)
 {
     Surface surface;
@@ -67,7 +67,21 @@ Surface EvaluateSurface(
     return surface;
 }
 
-Surface EvaluateSurface(PixelGeometryData geoData)
+Surface EvaluateSurface_NewPBR(PixelGeometryData geoData)
 {
-    return EvaluateSurface(geoData.positionWS, geoData.vertexNormal, geoData.uv, geoData.tangents, geoData.bitangents, geoData.isFrontFace);
+    return EvaluateSurface_NewPBR(
+        geoData.positionWS,
+        geoData.vertexNormal,
+        geoData.tangents,
+        geoData.bitangents,
+        geoData.uv,
+        geoData.isFrontFace);
 }
+
+
+#ifdef SURFACE_DATA_IS_NEW_PBR
+
+#define     EvaluateSurface(geoData)                    \
+            EvaluateSurface_NewPBR(geoData)
+
+#endif

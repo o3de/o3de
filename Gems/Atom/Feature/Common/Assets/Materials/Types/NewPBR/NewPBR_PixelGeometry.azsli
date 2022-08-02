@@ -9,41 +9,57 @@
 #pragma once
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "NewPBR_PixelGeometryData.azsli"
 
-struct PixelGeometryData
-{
-    float3 positionWS;
-    float3 vertexNormal;
-    float2 uv[UvSetCount];
-    float3 tangents[UvSetCount];
-    float3 bitangents[UvSetCount];
-    bool isFrontFace;
-};
-
-PixelGeometryData EvaluatePixelGeometry(VSOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_NewPBR(
+    float3 positionWS,
+    float3 normal,
+    float3 tangent,
+    float3 bitangent,
+    float2 uv[UvSetCount],
+    bool isFrontFace)
 {
     PixelGeometryData geoData;
 
-    geoData.positionWS = IN.m_worldPosition;
-    geoData.vertexNormal = normalize(IN.m_normal);
+    geoData.positionWS = positionWS;
+    geoData.vertexNormal = normalize(normal);
 
-    geoData.tangents[0] = IN.m_tangent;
-    geoData.tangents[1] = IN.m_tangent;
+    geoData.tangents[0] = tangent;
+    geoData.tangents[1] = tangent;
 
-    geoData.bitangents[0] = IN.m_bitangent;
-    geoData.bitangents[1] = IN.m_bitangent;
+    geoData.bitangents[0] = bitangent;
+    geoData.bitangents[1] = bitangent;
 
-    geoData.uv = IN.m_uv;
+    geoData.uv = uv;
     geoData.isFrontFace = isFrontFace;
 
     if (o_normal_useTexture)
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
-            EvaluateTangentFrame(geoData.vertexNormal, IN.m_worldPosition, isFrontFace, IN.m_uv[i], i,
-                IN.m_tangent, IN.m_bitangent, geoData.tangents[i], geoData.bitangents[i]);
+            EvaluateTangentFrame(geoData.vertexNormal, positionWS, isFrontFace, uv[i], i,
+                tangent, bitangent, geoData.tangents[i], geoData.bitangents[i]);
         }
     }
 
     return geoData;
 }
+
+PixelGeometryData EvaluatePixelGeometry_NewPBR(VSOutput IN, bool isFrontFace)
+{
+    return EvaluatePixelGeometry_NewPBR(
+        IN.m_worldPosition,
+        IN.m_normal,
+        IN.m_tangent,
+        IN.m_bitangent,
+        IN.m_uv,
+        isFrontFace);
+}
+
+
+#ifdef PIXEL_GEOMETRY_DATA_IS_NEW_PBR
+
+#define     EvaluatePixelGeometry(IN, isFrontFace)                  \
+            EvaluatePixelGeometry_NewPBR(IN, isFrontFace)
+
+#endif
