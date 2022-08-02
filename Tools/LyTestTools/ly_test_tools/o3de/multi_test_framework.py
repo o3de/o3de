@@ -505,7 +505,7 @@ class AbstractTestSuite(object):
     def get_number_parallel_instances():
         """
         Number of program instances to run in parallel, this method can be overridden by the user.
-        Note: Some CLI options (i.e. '--editors-parallel') takes precedence over class settings.
+        Note: --parallel-executables CLI arg takes precedence over default class settings.
         See ly_test_tools._internal.pytest_plugin.editor_test.py for full list of CLI options.
         :return: count of parallel program instances to run
         """

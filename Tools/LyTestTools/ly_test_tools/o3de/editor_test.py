@@ -187,7 +187,7 @@ class EditorTestSuite(AbstractTestSuite):
         :request: The Pytest Request object
         :return: The number of parallel editors to use
         """
-        parallel_editors_value = request.config.getoption("--editors-parallel", None)
+        parallel_editors_value = request.config.getoption("--parallel-executables", None)
         if parallel_editors_value:
             return int(parallel_editors_value)
 

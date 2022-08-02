@@ -192,7 +192,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         :request: The Pytest Request object
         :return: The number of parallel MaterialEditors to use
         """
-        parallel_material_editors_value = request.config.getoption("--material-editors-parallel", None)
+        parallel_material_editors_value = request.config.getoption("--parallel-executables", None)
         if parallel_material_editors_value:
             return int(parallel_material_editors_value)
 
