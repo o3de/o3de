@@ -18,8 +18,9 @@
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 
-#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <LyShine/IDraw2d.h>
 
@@ -93,11 +94,19 @@ void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 
 AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext)
 {
-    // Create a scene with the necessary feature processors
+    // Create and register a scene with feature processors defined in the viewport settings
     AZ::RPI::SceneDescriptor sceneDesc;
     sceneDesc.m_nameId = AZ::Name("UiRenderer");
+    auto settingsRegistry = AZ::SettingsRegistry::Get();
+    const char* viewportSettingPath = "/O3DE/Editor/Viewport/UI/Scene";
+    bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
     AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
-    atomScene->EnableAllFeatureProcessors(); // [LYSHINE_ATOM_TODO][GHI #6272] Enable minimal feature processors
+
+    if (!sceneDescLoaded)
+    {
+        //AZ_Warning("UiRenderer", false, "Unable to load setting registery for the viewport's scene settings. Enable all feature processors.");
+        atomScene->EnableAllFeatureProcessors();
+    }
 
     // Assign the new scene to the specified viewport context
     viewportContext->SetRenderScene(atomScene);
