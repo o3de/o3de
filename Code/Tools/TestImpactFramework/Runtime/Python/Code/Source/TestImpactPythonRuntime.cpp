@@ -234,6 +234,23 @@ namespace TestImpact
         //}
         //
         //return sequenceReport;
+
+        return Client::RegularSequenceReport(
+            1,
+            AZStd::nullopt,
+            AZStd::nullopt,
+            SequencePolicyState{},
+            m_suiteFilter,
+            Client::TestRunSelection(),
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}));
     }
 
     Client::ImpactAnalysisSequenceReport PythonRuntime::ImpactAnalysisTestSequence(
@@ -362,6 +379,34 @@ namespace TestImpact
         //        AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun<NativeTestTarget>>& jobs)>>{
         //            AZStd::nullopt });
         //}
+
+        return Client::ImpactAnalysisSequenceReport(
+            1,
+            AZStd::nullopt,
+            AZStd::nullopt,
+            ImpactAnalysisSequencePolicyState{},
+            m_suiteFilter,
+            Client::TestRunSelection(),
+            {},
+            {},
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}),
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}));
     }
 
     Client::SafeImpactAnalysisSequenceReport PythonRuntime::SafeImpactAnalysisTestSequence(
@@ -526,6 +571,43 @@ namespace TestImpact
         //                              .value_or(m_hasImpactAnalysisData);
         //
         //return sequenceReport;
+
+        return Client::SafeImpactAnalysisSequenceReport(
+            1,
+            AZStd::nullopt,
+            AZStd::nullopt,
+            SafeImpactAnalysisSequencePolicyState{},
+            m_suiteFilter,
+            {},
+            {},
+            {},
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}),
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}),
+            Client::TestRunReport(
+                TestSequenceResult::Success,
+                AZStd::chrono::high_resolution_clock::time_point(),
+                AZStd::chrono::milliseconds{ 0 },
+                {},
+                {},
+                {},
+                {},
+                {}));
     }
 
     Client::SeedSequenceReport PythonRuntime::SeededTestSequence(

@@ -140,17 +140,17 @@ namespace TestImpact::Console
 
             switch (const auto type = options.GetTestSequenceType())
             {
-            case TestSequenceType::Regular:
-            {
-                return ConsumeSequenceReportAndGetReturnCode(
-                    runtime.RegularTestSequence(
-                        options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        RegularTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
-                    options);
-            }
+            //case TestSequenceType::Regular:
+            //{
+            //    return ConsumeSequenceReportAndGetReturnCode(
+            //        runtime.RegularTestSequence(
+            //            options.GetTestTargetTimeout(),
+            //            options.GetGlobalTimeout(),
+            //            TestSequenceStartCallback,
+            //            RegularTestSequenceCompleteCallback,
+            //            TestRunCompleteCallback),
+            //        options);
+            //}
             case TestSequenceType::Seed:
             {
                 return ConsumeSequenceReportAndGetReturnCode(
@@ -162,29 +162,29 @@ namespace TestImpact::Console
                         TestRunCompleteCallback),
                     options);
             }
-            case TestSequenceType::ImpactAnalysisNoWrite:
-            case TestSequenceType::ImpactAnalysis:
-            {
-                return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
-            }
-            case TestSequenceType::ImpactAnalysisOrSeed:
-            {
-                if (runtime.HasImpactAnalysisData())
-                {
-                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
-                }
-                else
-                {
-                    return ConsumeSequenceReportAndGetReturnCode(
-                        runtime.SeededTestSequence(
-                            options.GetTestTargetTimeout(),
-                            options.GetGlobalTimeout(),
-                            TestSequenceStartCallback,
-                            SeedTestSequenceCompleteCallback,
-                            TestRunCompleteCallback),
-                        options);
-                }
-            }
+            //case TestSequenceType::ImpactAnalysisNoWrite:
+            //case TestSequenceType::ImpactAnalysis:
+            //{
+            //    return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+            //}
+            //case TestSequenceType::ImpactAnalysisOrSeed:
+            //{
+            //    if (runtime.HasImpactAnalysisData())
+            //    {
+            //        return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+            //    }
+            //    else
+            //    {
+            //        return ConsumeSequenceReportAndGetReturnCode(
+            //            runtime.SeededTestSequence(
+            //                options.GetTestTargetTimeout(),
+            //                options.GetGlobalTimeout(),
+            //                TestSequenceStartCallback,
+            //                SeedTestSequenceCompleteCallback,
+            //                TestRunCompleteCallback),
+            //            options);
+            //    }
+            //}
             default:
                 std::cout << "Unexpected TestSequenceType value: " << static_cast<size_t>(type) << std::endl;
                 return ReturnCode::UnknownError;
