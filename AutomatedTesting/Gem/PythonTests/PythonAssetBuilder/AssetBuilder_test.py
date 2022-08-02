@@ -56,7 +56,7 @@ class TestPythonAssetProcessing(object):
         test_directory = os.path.join(os.path.dirname(__file__))
         testFile = os.path.join(test_directory, 'AssetBuilder_test_case.py')
         test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        compiled_test_case_name = ".".join([test_case_prefix, request.node.originalname])
+        compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
         editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={compiled_test_case_name}"])
 
         with editor.start():

@@ -76,7 +76,7 @@ class TestBundleMode(object):
         test_directory = os.path.join(os.path.dirname(__file__))
         test_file = os.path.join(test_directory, 'bundle_mode_in_editor_tests.py')
         test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        compiled_test_case_name = ".".join([test_case_prefix, request.node.originalname])
+        compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
         editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog",
                             "--autotest_mode", "--runpythontest", test_file, "--runpythonargs", bundles_folder, f"-pythontestcase={compiled_test_case_name}"])
 

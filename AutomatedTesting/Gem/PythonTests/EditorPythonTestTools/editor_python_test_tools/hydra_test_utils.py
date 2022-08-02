@@ -50,7 +50,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
     test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-    compiled_test_case_name = ".".join([test_case_prefix, request.node.originalname])
+    compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         run_python, test_case,
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
