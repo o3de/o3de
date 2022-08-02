@@ -19,6 +19,7 @@
 namespace AssetProcessor
 {
     //! Amount of time in milliseconds to wait between checking the status of the AssetBuilder process and pumping the stdout/err pipes
+    //! Should be kept fairly low to avoid the process stalling due to a full pipe but not too low to avoid wasting CPU time
     constexpr int MaximumSleepTimeMs = 10;
     constexpr int MillisecondsInASecond = 1000;
     constexpr const char* BuildersFolderName = "Builders";
@@ -270,6 +271,8 @@ namespace AssetProcessor
         bool finishedOK = false;
         QElapsedTimer ticker;
 
+        AZ_Assert(waitEvent, "WaitEvent must not be null");
+
         ticker.start();
 
         while (!finishedOK)
@@ -294,14 +297,14 @@ namespace AssetProcessor
         }
         else if (!IsConnected())
         {
-            AZ_Error("Builder", false, "Lost connection to asset builder");
+            AZ_Error("Builder", false, "Lost connection to asset builder %s", UuidString().c_str());
             return BuilderRunJobOutcome::LostConnection;
         }
         else if (!IsRunning(&exitCode))
         {
             // these are written to the debug channel because other messages are given for when asset builders die
             // that are more appropriate
-            AZ_Error("Builder", false, "AssetBuilder terminated with exit code %d", exitCode);
+            AZ_Error("Builder", false, "AssetBuilder %s terminated with exit code %d", UuidString().c_str(), exitCode);
             return BuilderRunJobOutcome::ProcessTerminated;
         }
         else if (jobCancelListener && jobCancelListener->IsCancelled())
@@ -313,7 +316,7 @@ namespace AssetProcessor
         }
         else
         {
-            AZ_Error("Builder", false, "AssetBuilder failed to respond within %d seconds", processTimeoutLimitInSeconds);
+            AZ_Error("Builder", false, "AssetBuilder %s failed to respond within %d seconds", UuidString().c_str(), processTimeoutLimitInSeconds);
             TerminateProcess(
                 AZ::u32(-1)); // Terminate the builder. Even if it isn't deadlocked, we can't put it back in the pool while it's busy.
             return BuilderRunJobOutcome::ResponseFailure;

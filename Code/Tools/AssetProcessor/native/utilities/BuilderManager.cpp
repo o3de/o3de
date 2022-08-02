@@ -89,15 +89,16 @@ namespace AssetProcessor
             {
                 if (m_allowUnmanagedBuilderConnections)
                 {
-                    AZ_TracePrintf("BuilderManager", "External builder connection accepted\n");
-                    builder = AddNewBuilder(BuilderPurpose::ProcessJob); // Assign it as a "process job" builder since we don't know what type it is.  This means it won't be used for create jobs
+                    AZ_TracePrintf("BuilderManager", "External builder connection accepted for ProcessJob work\n");
+                    builder = AddNewBuilder(BuilderPurpose::ProcessJob); // We only accept external connections for ProcessJob builders
                 }
                 else
                 {
                     AZ_Warning(
                         "BuilderManager",
                         false,
-                        "Received request ping from builder but could not match uuid %s",
+                        "Received request ping from builder but could not match uuid %s to list of builders started by this AssetProcessor instance.  "
+                        "If you intended to connect an external builder, please set BuilderManager::m_allowUnmanagedBuilderConnections to true to allow this.",
                         requestPing.m_uuid.ToString<AZStd::string>().c_str());
                 }
             }

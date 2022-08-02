@@ -30,7 +30,7 @@ namespace UnitTests
         // Save off the uuid of the CreateJobs builder for later
         auto createJobsBuilderUuid = bm.GetBuilder(AssetProcessor::BuilderPurpose::CreateJobs)->GetUuid();
 
-        constexpr int NumberOfBuilders = 15;
+        constexpr int NumberOfBuilders = 15; // Start up several builders, more builders increases the chances of exposing a bug
         AZStd::vector<AssetProcessor::BuilderRef> builders;
 
         for (int i = 0; i < NumberOfBuilders; ++i)

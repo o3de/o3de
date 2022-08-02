@@ -17,7 +17,8 @@ namespace AssetProcessor
             if (m_createJobsBuilder && m_createJobsBuilder->IsValid())
             {
                 AZ_Error(
-                    "BuilderList", false, "AddBuilder called with CreateJobs builder but a CreateJobs builder already exists and is valid");
+                    "BuilderList", false, "AddBuilder called with CreateJobs builder (%s) but a CreateJobs builder (%s) already exists and is valid",
+                    builder->UuidString().c_str(), m_createJobsBuilder->UuidString().c_str());
                 return;
             }
 
@@ -38,12 +39,7 @@ namespace AssetProcessor
 
         auto itr = m_builders.find(uuid);
 
-        if (itr != m_builders.end())
-        {
-            return itr->second;
-        }
-
-        return nullptr;
+        return itr != m_builders.end() ? itr->second : nullptr;
     }
 
     BuilderRef BuilderList::GetFirst(BuilderPurpose purpose)
