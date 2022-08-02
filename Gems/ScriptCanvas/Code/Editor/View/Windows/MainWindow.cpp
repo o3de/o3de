@@ -1051,13 +1051,6 @@ namespace ScriptCanvasEditor
             {
                 UpdateFileState(*handle, Tracker::ScriptCanvasFileState::MODIFIED);
             }
-            else
-            {
-                AZ_TracePrintf
-                    ( "ScriptCanvas"
-                    , "Ignoring source file modification notification (possibly external), as a it was recently saved by the editor: %s"
-                    , relativePath.c_str());
-            }
         }
     }
 
@@ -1071,13 +1064,6 @@ namespace ScriptCanvasEditor
             if (!IsRecentSave(handle))
             {
                 UpdateFileState(handle, Tracker::ScriptCanvasFileState::SOURCE_REMOVED);
-            }
-            else
-            {
-                AZ_TracePrintf
-                    ( "ScriptCanvas"
-                    , "Ignoring source file removed notification (possibly external), as a it was recently saved by the editor: %s"
-                    , relativePath.c_str());
             }
         }
     }
@@ -1231,7 +1217,6 @@ namespace ScriptCanvasEditor
 
     void MainWindow::RemoveScriptCanvasAsset(const SourceHandle& assetId)
     {
-        AZ_TracePrintf("ScriptCanvas", "RemoveScriptCanvasAsset : %s\n", assetId.ToString().c_str());
         m_assetCreationRequests.erase(assetId);
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
@@ -2417,8 +2402,6 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        AZ_TracePrintf("ScriptCanvas", "SetActiveAsset : from: %s to %s\n", m_activeGraph.ToString().c_str(), fileAssetId.ToString().c_str());
-
         if (fileAssetId.IsGraphValid())
         {
             if (m_tabBar->FindTab(fileAssetId) >= 0)
@@ -2465,7 +2448,6 @@ namespace ScriptCanvasEditor
     {
         if (m_activeGraph.IsGraphValid())
         {
-            AZ_TracePrintf("ScriptCanvas", "RefreshActiveAsset : m_activeGraph (%s)\n", m_activeGraph.ToString().c_str());
             if (auto view = m_tabBar->ModOrCreateTabView(m_tabBar->FindTab(m_activeGraph)))
             {
                 view->ShowScene(m_activeGraph.Get()->GetScriptCanvasId());
