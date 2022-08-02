@@ -28,9 +28,8 @@ namespace ONNX
     class Model
     {
     public:
-        Model()
-        {
-        }
+        Model() = default;
+
         //! Required params to create session and run inference, passed to Load().
         struct InitSettings
         {
