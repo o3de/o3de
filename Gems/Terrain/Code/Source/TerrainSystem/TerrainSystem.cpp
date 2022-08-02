@@ -705,7 +705,7 @@ void TerrainSystem::GetNormalsSynchronousExact(
     AZStd::vector<AZ::Vector3> queryPositions;
     queryPositions.reserve(inPositions.size() * queryCount);
 
-    for (auto& position : inPositions)
+    for (const auto& position : inPositions)
     {
         // For each input position, query the four outer points of the + sign.
         queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() - exactRange, 0.0f)); // down
@@ -776,7 +776,7 @@ void TerrainSystem::GetNormalsSynchronousClamp(
     AZStd::vector<uint8_t> existsIndex;
     existsIndex.reserve(inPositions.size());
 
-    for (auto& position : inPositions)
+    for (const auto& position : inPositions)
     {
         // For each position, determine where in the square the point falls and get the bottom left corner of the square.
         AZ::Vector2 normalizedDelta;
@@ -884,7 +884,7 @@ void TerrainSystem::GetNormalsSynchronousBilinear(
     AZStd::vector<AZ::Vector3> queryPositions;
     queryPositions.reserve(inPositions.size() * queryCount);
 
-    for (auto& position : inPositions)
+    for (const auto& position : inPositions)
     {
         // We'll query our 12 points in the following order, where the x represents the location of the query point.
         //            10     11
