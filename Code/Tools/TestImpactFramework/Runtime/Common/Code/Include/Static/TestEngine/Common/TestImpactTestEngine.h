@@ -169,6 +169,8 @@ namespace TestImpact
             // The individual timer for the test target expired
             case JobResult::Timeout:
                 return Client::TestRunResult::Timeout;
+            case JobResult::FailedToExecute:
+                return Client::TestRunResult::FailedToExecute;
             default:
                 throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
             }
