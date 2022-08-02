@@ -11,8 +11,8 @@
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/NameDictionary.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
@@ -33,10 +33,8 @@ namespace UnitTest
             SetupAllocator();
             AZ::NameDictionary::Create();
 
-            m_serializeContext = aznew AZ::SerializeContext(true, true);
             m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
             m_remoteToolsSystemComponent = AZStd::make_unique<RemoteToolsSystemComponent>();
-            m_remoteToolsSystemComponent->Reflect(m_serializeContext);
             m_remoteTools = m_remoteToolsSystemComponent.get();
         }
 
@@ -45,7 +43,6 @@ namespace UnitTest
             m_remoteTools = nullptr;
             m_remoteToolsSystemComponent.reset();
             m_networkingSystemComponent.reset();
-            delete m_serializeContext;
 
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
@@ -54,7 +51,6 @@ namespace UnitTest
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
         AZStd::unique_ptr<RemoteToolsSystemComponent> m_remoteToolsSystemComponent;
         AzFramework::IRemoteTools* m_remoteTools;
-        AZ::SerializeContext* m_serializeContext;
     };
 
     TEST_F(RemoteToolsTests, TEST_RemoteToolsEmptyRegistry)

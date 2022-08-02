@@ -71,7 +71,7 @@ namespace RemoteTools
 
     RemoteToolsSystemComponent::RemoteToolsSystemComponent()
     {
-#if !defined(_RELEASE)
+#if defined(ENABLE_REMOTE_TOOLS)
         if (AzFramework::RemoteToolsInterface::Get() == nullptr)
         {
             AzFramework::RemoteToolsInterface::Register(this);
@@ -81,7 +81,7 @@ namespace RemoteTools
 
     RemoteToolsSystemComponent::~RemoteToolsSystemComponent()
     {
-#if !defined(_RELEASE)
+#if defined(ENABLE_REMOTE_TOOLS)
         if (AzFramework::RemoteToolsInterface::Get() == this)
         {
             AzFramework::RemoteToolsInterface::Unregister(this);
