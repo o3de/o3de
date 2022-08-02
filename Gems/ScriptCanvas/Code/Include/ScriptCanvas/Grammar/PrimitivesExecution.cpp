@@ -94,6 +94,11 @@ namespace ScriptCanvas
             m_input.clear();
         }
 
+        void ExecutionTree::RemoveInput(const size_t& index)
+        {
+            m_input.erase(m_input.begin() + index);
+        }
+
         void ExecutionTree::ClearProperyExtractionSources()
         {
             m_propertyExtractionsSource.clear();

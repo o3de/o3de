@@ -123,6 +123,8 @@ namespace ScriptCanvas
 
             void ClearInput();
 
+            void RemoveInput(const size_t& index);
+
             void ClearProperyExtractionSources();
 
             void ConvertNameToIdentifier();

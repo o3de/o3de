@@ -4520,8 +4520,14 @@ namespace ScriptCanvas
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     break;
                 };
-
-                execution->ClearInput();
+                ExecutionInput input;
+                for (size_t index(0); index < execution->GetInputCount(); ++index)
+                {
+                    if (execution->GetInput(index).m_slot->GetNode()->GetNodeLexicalId() != AZ_CRC_CE("NONE"))
+                    {
+                        execution->RemoveInput(index);
+                    }
+                }
                 executionOperator->AddChild({ {}, execution->GetParent()->GetChild(0).m_output, execution }); // This may cause issues with multiple children
                 execution->SetParent(executionOperator);
             }
