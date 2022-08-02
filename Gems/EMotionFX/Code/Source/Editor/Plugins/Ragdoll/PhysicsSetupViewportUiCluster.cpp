@@ -57,12 +57,15 @@ namespace EMotionFX
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
-        AZ::s32 viewportId, AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
+        AZ::s32 viewportId, AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName, const char* tooltip)
     {
         AzToolsFramework::ViewportUi::ButtonId buttonId;
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            viewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, clusterId, buttonId, tooltip);
 
         return buttonId;
     }
@@ -89,24 +92,27 @@ namespace EMotionFX
                 AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
             m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
-            m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)] = RegisterClusterButton(viewportId, m_clusterId, "Move");
-            m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)] = RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+            m_buttonIds[static_cast<size_t>(SubMode::ColliderTranslation)] =
+                RegisterClusterButton(viewportId, m_clusterId, "Move", ColliderTranslationTooltip);
+            m_buttonIds[static_cast<size_t>(SubMode::ColliderRotation)] =
+                RegisterClusterButton(viewportId, m_clusterId, "Rotate", ColliderRotationTooltip);
             if (m_hasCapsuleCollider)
             {
-                m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)] = RegisterClusterButton(viewportId, m_clusterId, "Scale");
+                m_buttonIds[static_cast<size_t>(SubMode::ColliderDimensions)] =
+                    RegisterClusterButton(viewportId, m_clusterId, "Scale", ColliderDimensionsTooltip);
             }
             if (m_hasJointLimit)
             {
                 m_buttonIds[static_cast<size_t>(SubMode::JointLimitParentRotation)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+                    RegisterClusterButton(viewportId, m_clusterId, "Rotate", JointLimitParentRotationTooltip);
                 m_buttonIds[static_cast<size_t>(SubMode::JointLimitChildRotation)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Rotate");
+                    RegisterClusterButton(viewportId, m_clusterId, "Rotate", JointLimitChildRotationTooltip);
                 m_buttonIds[static_cast<size_t>(SubMode::JointSwingLimits)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits");
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/SwingLimits", JointLimitSwingTooltip);
                 m_buttonIds[static_cast<size_t>(SubMode::JointTwistLimits)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits");
+                    RegisterClusterButton(viewportId, m_clusterId, "joints/TwistLimits", JointLimitTwistTooltip);
                 m_buttonIds[static_cast<size_t>(SubMode::JointLimitOptimization)] =
-                    RegisterClusterButton(viewportId, m_clusterId, "Question");
+                    RegisterClusterButton(viewportId, m_clusterId, "Question", JointLimitAutofitTooltip);
             }
 
             const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)

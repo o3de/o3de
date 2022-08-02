@@ -39,6 +39,15 @@ namespace EMotionFX
             NumModes
         };
 
+        constexpr static const char* const ColliderTranslationTooltip = "Switch to collider translation mode";
+        constexpr static const char* const ColliderRotationTooltip = "Switch to collider rotation mode";
+        constexpr static const char* const ColliderDimensionsTooltip = "Switch to collider dimensions mode";
+        constexpr static const char* const JointLimitParentRotationTooltip = "Switch to joint limit parent frame rotation mode";
+        constexpr static const char* const JointLimitChildRotationTooltip = "Switch to joint limit child frame rotation mode";
+        constexpr static const char* const JointLimitSwingTooltip = "Switch to joint swing limit mode";
+        constexpr static const char* const JointLimitTwistTooltip = "Switch to joint twist limit mode";
+        constexpr static const char* const JointLimitAutofitTooltip = "Automatic joint limit setup";
+
     private:
         void SetCurrentMode(SubMode mode);
         AZ::s32 GetViewportId() const;
