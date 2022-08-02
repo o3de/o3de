@@ -143,6 +143,19 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+
+        /**
+         * Gathers all projects from the provided repo
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return A list of project infos or an error string on failure.
+         */
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) = 0;
+
+        /**
+         * Gathers all projects from all registered repos
+         * @return A list of project infos or an error string on failure.
+         */
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() = 0;
         
         /**
          * Adds existing project on disk
@@ -252,6 +265,26 @@ namespace O3DE::ProjectManager
          */
         virtual DetailedOutcome DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
+
+        /**
+         * Downloads and registers a Gem.
+         * @param gemName the name of the Gem to download.
+         * @param gemProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the gem.
+         * @return an outcome with a pair of string error and detailed messages on failure.
+         */
+        virtual DetailedOutcome DownloadProject(
+            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) = 0;
+
+        /**
+         * Downloads and registers a Gem.
+         * @param gemName the name of the Gem to download.
+         * @param gemProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the gem.
+         * @return an outcome with a pair of string error and detailed messages on failure.
+         */
+        virtual DetailedOutcome DownloadTemplate(
+            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) = 0;
 
         /**
          * Cancels the current download.

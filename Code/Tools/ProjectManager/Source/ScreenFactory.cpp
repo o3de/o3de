@@ -18,10 +18,11 @@
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <DownloadController.h>
 
 namespace O3DE::ProjectManager
 {
-    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen)
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen, DownloadController* downloadController)
     {
         ScreenWidget* newScreen;
 
@@ -34,13 +35,13 @@ namespace O3DE::ProjectManager
             newScreen = new NewProjectSettingsScreen(parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
-            newScreen = new GemCatalogScreen(parent);
+            newScreen = new GemCatalogScreen(true, parent, downloadController);
             break;
         case (ProjectManagerScreen::ProjectGemCatalog):
-            newScreen = new ProjectGemCatalogScreen(parent);
+            newScreen = new ProjectGemCatalogScreen(parent, downloadController);
             break;
         case (ProjectManagerScreen::Projects):
-            newScreen = new ProjectsScreen(parent);
+            newScreen = new ProjectsScreen(parent, downloadController);
             break;
         case (ProjectManagerScreen::UpdateProject):
             newScreen = new UpdateProjectCtrl(parent);

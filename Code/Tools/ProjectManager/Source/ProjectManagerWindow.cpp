@@ -8,6 +8,7 @@
 
 #include <ProjectManagerWindow.h>
 #include <ScreensCtrl.h>
+#include <DownloadController.h>
 
 namespace O3DE::ProjectManager
 {
@@ -16,7 +17,9 @@ namespace O3DE::ProjectManager
     {
         setWindowTitle(tr("O3DE Project Manager"));
 
-        ScreensCtrl* screensCtrl = new ScreensCtrl();
+        m_downloadController = new DownloadController();
+
+        ScreensCtrl* screensCtrl = new ScreensCtrl(nullptr, m_downloadController);
 
         // currently the tab order on the home page is based on the order of this list
         QVector<ProjectManagerScreen> screenEnums =

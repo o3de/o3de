@@ -36,7 +36,7 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent)
+    GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent, DownloadController* downloadController)
         : ScreenWidget(parent)
         , m_readOnly(readOnly)
     {
@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        m_downloadController = new DownloadController();
+        m_downloadController = downloadController;
 
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxyModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);

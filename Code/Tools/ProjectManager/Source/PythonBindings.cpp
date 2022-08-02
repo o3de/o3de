@@ -920,6 +920,78 @@ namespace O3DE::ProjectManager
         }
     }
 
+    AZ::Outcome<QVector<ProjectInfo>, AZStd::string> PythonBindings::GetProjectsForRepo(const QString& repoUri)
+    {
+        QVector<ProjectInfo> projects;
+
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto projectPaths = m_repo.attr("get_project_json_paths_from_cached_repo")(pyUri);
+
+                if (pybind11::isinstance<pybind11::set>(projectPaths))
+                {
+                    for (auto path : projectPaths)
+                    {
+                        //auto cpath = Py_To_String(path);
+                        //AZ::Outcome<ProjectInfo> projectOutcome = GetProject(QString(cpath));
+                        //if (projectOutcome.IsSuccess())
+                        {
+                            //ProjectInfo projectInfo = projectOutcome.GetValue();
+                            ProjectInfo projectInfo = ProjectInfoFromPath(path);
+                            projectInfo.m_remote = true;
+                            // projectInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                            projects.push_back(projectInfo);
+                        }
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(projects));
+    }
+
+    AZ::Outcome<QVector<ProjectInfo>, AZStd::string> PythonBindings::GetProjectsForAllRepos()
+    {
+        QVector<ProjectInfo> projectInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto projectPaths = m_repo.attr("get_project_json_paths_from_all_cached_repos")();
+
+                if (pybind11::isinstance<pybind11::set>(projectPaths))
+                {
+                    for (auto path : projectPaths)
+                    {
+                        //AZ::Outcome<ProjectInfo> projectOutcome = GetProject(QString(Py_To_String(path)));
+                        //if (projectOutcome.IsSuccess())
+                        {
+                           // ProjectInfo projectInfo = projectOutcome.GetValue();
+                            ProjectInfo projectInfo = ProjectInfoFromPath(path);
+                           projectInfo.m_remote = true;
+                            // projectInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                            projectInfos.push_back(projectInfo);
+                        }
+                        //GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        //gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        //projectInfos.push_back(gemInfo);
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(projectInfos));
+    }
+
     AZ::Outcome<void, AZStd::string> PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
     {
         return ExecuteWithLockErrorHandling([&]
@@ -1282,7 +1354,7 @@ namespace O3DE::ProjectManager
                 {
                     for (auto path : gemPaths)
                     {
-                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none()); 
                         gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
                         gemInfos.push_back(gemInfo);
                     }
@@ -1323,6 +1395,84 @@ namespace O3DE::ProjectManager
                 downloadSucceeded = (downloadResult.cast<int>() == 0);
             });
 
+
+        if (!result.IsSuccess())
+        {
+            IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
+            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+        }
+        else if (!downloadSucceeded)
+        {
+            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+        }
+
+        return AZ::Success();
+    }
+
+    IPythonBindings::DetailedOutcome PythonBindings::DownloadProject(
+        const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force)
+    {
+        // This process is currently limited to download a single gem at a time.
+        bool downloadSucceeded = false;
+
+        m_requestCancelDownload = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto downloadResult = m_download.attr("download_project")(
+                    QString_To_Py_String(projectName), // gem name
+                    pybind11::none(), // destination path
+                    false, // skip auto register
+                    force, // force overwrite
+                    pybind11::cpp_function(
+                        [this, projectProgressCallback](int bytesDownloaded, int totalBytes)
+                        {
+                            projectProgressCallback(bytesDownloaded, totalBytes);
+
+                            return m_requestCancelDownload;
+                        }) // Callback for download progress and cancelling
+                );
+                downloadSucceeded = (downloadResult.cast<int>() == 0);
+            });
+
+        if (!result.IsSuccess())
+        {
+            IPythonBindings::ErrorPair pythonRunError(result.GetError(), result.GetError());
+            return AZ::Failure<IPythonBindings::ErrorPair>(AZStd::move(pythonRunError));
+        }
+        else if (!downloadSucceeded)
+        {
+            return AZ::Failure<IPythonBindings::ErrorPair>(GetErrorPair());
+        }
+
+        return AZ::Success();
+    }
+
+    IPythonBindings::DetailedOutcome PythonBindings::DownloadTemplate(
+        const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force)
+    {
+        // This process is currently limited to download a single gem at a time.
+        bool downloadSucceeded = false;
+
+        m_requestCancelDownload = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto downloadResult = m_download.attr("download_template")(
+                    QString_To_Py_String(templateName), // gem name
+                    pybind11::none(), // destination path
+                    false, // skip auto register
+                    force, // force overwrite
+                    pybind11::cpp_function(
+                        [this, templateProgressCallback](int bytesDownloaded, int totalBytes)
+                        {
+                            templateProgressCallback(bytesDownloaded, totalBytes);
+
+                            return m_requestCancelDownload;
+                        }) // Callback for download progress and cancelling
+                );
+                downloadSucceeded = (downloadResult.cast<int>() == 0);
+            });
 
         if (!result.IsSuccess())
         {

@@ -89,6 +89,13 @@ namespace O3DE::ProjectManager
         m_warningIcon->setVisible(false);
         horizontalWarningMessageLayout->addWidget(m_warningIcon);
 
+        m_cloudIcon = new QLabel(this);
+        m_cloudIcon->setObjectName("projectCloudIconOverlay");
+        m_cloudIcon->setPixmap(QIcon(":/Cloud.svg").pixmap(30, 70));
+        m_cloudIcon->setAlignment(Qt::AlignCenter);
+        m_cloudIcon->setVisible(false);
+        horizontalWarningMessageLayout->addWidget(m_cloudIcon);
+
         horizontalWarningMessageLayout->addSpacing(15);
 
         verticalMessageLayout->addLayout(horizontalWarningMessageLayout);
@@ -123,6 +130,11 @@ namespace O3DE::ProjectManager
         m_buildingAnimation->setVisible(false);
         m_buildingAnimation->setMovie(new QMovie(":/SpinningGears.webp"));
         m_buildingAnimation->movie()->start();
+        verticalCenterLayout->addWidget(m_buildingAnimation);
+
+        m_downloadProgessBar = new QProgressBar(this);
+        m_downloadProgessBar->setObjectName("DownloadProgressBar");
+        m_downloadProgessBar->setValue(0);
         verticalCenterLayout->addWidget(m_buildingAnimation);
 
         m_projectOverlayLayout->addWidget(middleWidget);
@@ -186,6 +198,11 @@ namespace O3DE::ProjectManager
         return m_warningIcon;
     }
 
+    QLabel* LabelButton::GetCloudIcon()
+    {
+        return m_cloudIcon;
+    }
+
     QSpacerItem* LabelButton::GetWarningSpacer()
     {
         return m_warningSpacer;
@@ -221,6 +238,10 @@ namespace O3DE::ProjectManager
         return m_darkenOverlay;
     }
 
+    QProgressBar* LabelButton::GetProgressBar()
+    {
+        return m_downloadProgessBar;
+    }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
         : QFrame(parent)
@@ -353,6 +374,12 @@ namespace O3DE::ProjectManager
         case ProjectButtonState::BuildFailed:
             ShowBuildFailedState();
             break;
+        case ProjectButtonState::NotDownloaded:
+            ShowNotDownloadedState();
+            break;
+        case ProjectButtonState::Downloading:
+            ShowDownloadingState();
+            break;
         }
     }
 
@@ -415,6 +442,37 @@ namespace O3DE::ProjectManager
         ShowWarning(tr("Failed to build"));
     }
 
+    void ProjectButton::ShowNotDownloadedState()
+    {
+        HideContextualLabelButtonWidgets();
+        SetLaunchingEnabled(false);
+        SetProjectBuilding(false);
+
+        m_projectImageLabel->GetCloudIcon()->setVisible(true);
+        m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(true);
+        projectActionButton->setText(tr("Download Project"));
+        projectActionButton->setMenu(nullptr);
+    }
+
+    void ProjectButton::ShowDownloadingState()
+    {
+        HideContextualLabelButtonWidgets();
+        SetLaunchingEnabled(false);
+        SetProjectBuilding(false);
+        m_projectImageLabel->GetCloudIcon()->setVisible(true);
+        m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(true);
+        projectActionButton->setText(tr("Cancel Download"));
+        projectActionButton->setMenu(nullptr);
+
+        // Show progress bar
+        m_projectImageLabel->GetProgressBar()->setVisible(true);
+        m_projectImageLabel->GetProgressBar()->setValue(30);
+    }
+
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
     {
         QPushButton* projectActionButton;
@@ -448,6 +506,11 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
     {
         m_projectInfo.m_logUrl = logUrl;
+    }
+
+    void ProjectButton::SetProgressBarPercentage(const float percent)
+    {
+        m_projectImageLabel->GetProgressBar()->setValue(percent*100);
     }
 
     void ProjectButton::SetContextualText(const QString& text)

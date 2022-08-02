@@ -55,6 +55,8 @@ namespace O3DE::ProjectManager
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
 
+        bool m_remote = false;
+
         // Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built
         bool m_buildFailed = false;

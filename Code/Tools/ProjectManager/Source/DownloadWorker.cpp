@@ -20,26 +20,54 @@ namespace O3DE::ProjectManager
 
     void DownloadWorker::StartDownload()
     {
-        auto gemDownloadProgress = [=](int bytesDownloaded, int totalBytes)
+        auto objectDownloadProgress = [=](int bytesDownloaded, int totalBytes)
         {
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };
-        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> gemInfoResult =
-            PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> objectInfoResult;
+        if (m_downloadType == DownloadController::DownloadObjectType::Gem)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else if (m_downloadType == DownloadController::DownloadObjectType::Project)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadProject(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
 
-        if (gemInfoResult.IsSuccess())
+        if (objectInfoResult.IsSuccess())
         {
             emit Done("", "");
         }
         else
         {
-            emit Done(gemInfoResult.GetError().first.c_str(), gemInfoResult.GetError().second.c_str());
+            emit Done(objectInfoResult.GetError().first.c_str(), objectInfoResult.GetError().second.c_str());
         }
     }
 
     void DownloadWorker::SetGemToDownload(const QString& gemName, bool downloadNow)
     {
-        m_gemName = gemName;
+        m_objectName = gemName;
+        m_downloadType = DownloadController::DownloadObjectType::Gem;
+        if (downloadNow)
+        {
+            StartDownload();
+        }
+    }
+
+    void DownloadWorker::SetProjectToDownload(const QString& projectName, bool downloadNow)
+    {
+        m_objectName = projectName;
+        m_downloadType = DownloadController::DownloadObjectType::Project;
+        if (downloadNow)
+        {
+            StartDownload();
+        }
+    }
+
+    void DownloadWorker::SetTemplateToDownload(const QString& templateName, bool downloadNow)
+    {
+        m_objectName = templateName;
+        m_downloadType = DownloadController::DownloadObjectType::Template;
         if (downloadNow)
         {
             StartDownload();

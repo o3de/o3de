@@ -27,6 +27,8 @@ namespace O3DE::ProjectManager
         connect(m_worker, &DownloadWorker::Done, this, &DownloadController::HandleResults);
         connect(m_worker, &DownloadWorker::UpdateProgress, this, &DownloadController::UpdateUIProgress);
         connect(this, &DownloadController::StartGemDownload, m_worker, &DownloadWorker::SetGemToDownload);
+        connect(this, &DownloadController::StartProjectDownload, m_worker, &DownloadWorker::SetProjectToDownload);
+        connect(this, &DownloadController::StartTemplateDownload, m_worker, &DownloadWorker::SetTemplateToDownload);
     }
 
     DownloadController::~DownloadController()
@@ -39,38 +41,88 @@ namespace O3DE::ProjectManager
 
     void DownloadController::AddGemDownload(const QString& gemName)
     {
-        m_gemNames.push_back(gemName);
+        m_objects.push_back({ gemName, DownloadObjectType::Gem });
         emit GemDownloadAdded(gemName);
 
-        if (m_gemNames.size() == 1)
+        if (m_objects.size() == 1)
         {
-            m_worker->SetGemToDownload(m_gemNames.front(), false);
+            m_worker->SetGemToDownload(m_objects.front().m_objectName, false);
             m_workerThread.start();
         }
     }
 
     void DownloadController::CancelGemDownload(const QString& gemName)
     {
-        auto findResult = AZStd::find(m_gemNames.begin(), m_gemNames.end(), gemName);
+        auto findResult = AZStd::find_if(
+            m_objects.begin(),
+            m_objects.end(),
+            [gemName](const DownloadableObject& object)
+            {
+                return (object.m_objectType == DownloadObjectType::Gem && object.m_objectName == gemName);
+            });
 
-        if (findResult != m_gemNames.end())
+        if (findResult != m_objects.end())
         {
-            if (findResult == m_gemNames.begin())
+            if (findResult == m_objects.begin())
             {
                 // HandleResults will remove the gem upon cancelling
                 PythonBindingsInterface::Get()->CancelDownload();
             }
             else
             {
-                m_gemNames.erase(findResult);
+                m_objects.erase(findResult);
                 emit GemDownloadRemoved(gemName);
+            }
+        }
+    }
+
+    void DownloadController::AddProjectDownload(const QString& projectName)
+    {
+        m_objects.push_back({ projectName, DownloadObjectType::Project });
+        emit GemDownloadAdded(projectName);
+
+        if (m_objects.size() == 1)
+        {
+            m_worker->SetProjectToDownload(m_objects.front().m_objectName, false);
+            m_workerThread.start();
+        }
+    }
+
+    void DownloadController::CancelProjectDownload(const QString& projectName)
+    {
+        auto findResult = AZStd::find_if(
+            m_objects.begin(),
+            m_objects.end(),
+            [projectName](const DownloadableObject& object)
+            {
+                return (object.m_objectType == DownloadObjectType::Project && object.m_objectName == projectName);
+            });
+
+        if (findResult != m_objects.end())
+        {
+            if (findResult == m_objects.begin())
+            {
+                // HandleResults will remove the gem upon cancelling
+                PythonBindingsInterface::Get()->CancelDownload();
+            }
+            else
+            {
+                m_objects.erase(findResult);
+                emit ProjectDownloadRemoved(projectName);
             }
         }
     }
 
     void DownloadController::UpdateUIProgress(int bytesDownloaded, int totalBytes)
     {
-        emit GemDownloadProgress(m_gemNames.front(), bytesDownloaded, totalBytes);
+        if (m_objects.front().m_objectType == DownloadObjectType::Gem)
+        {
+            emit GemDownloadProgress(m_objects.front().m_objectName, bytesDownloaded, totalBytes);
+        }
+        else if (m_objects.front().m_objectType == DownloadObjectType::Project)
+        {
+            emit ProjectDownloadProgress(m_objects.front().m_objectName, bytesDownloaded, totalBytes);
+        }
     }
 
     void DownloadController::HandleResults(const QString& result, const QString& detailedError)
@@ -83,26 +135,33 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox gemDownloadError;
                 gemDownloadError.setIcon(QMessageBox::Critical);
-                gemDownloadError.setWindowTitle(tr("Gem download"));
+                gemDownloadError.setWindowTitle(tr("Object download"));
                 gemDownloadError.setText(result);
                 gemDownloadError.setDetailedText(detailedError);
                 gemDownloadError.exec();
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Gem download"), result);
+                QMessageBox::critical(nullptr, tr("Object download"), result);
             }
             succeeded = false;
         }
 
-        QString gemName = m_gemNames.front();
-        m_gemNames.erase(m_gemNames.begin());
-        emit Done(gemName, succeeded);
-        emit GemDownloadRemoved(gemName);
+        DownloadableObject downloadableObject = m_objects.front();
+        m_objects.erase(m_objects.begin());
+        emit Done(downloadableObject.m_objectName, succeeded);
+        emit GemDownloadRemoved(downloadableObject.m_objectName);
 
-        if (!m_gemNames.empty())
+        if (!m_objects.empty())
         {
-            emit StartGemDownload(m_gemNames.front(), true);
+            if (m_objects.front().m_objectType == DownloadObjectType::Gem)
+            {
+                emit StartGemDownload(m_objects.front().m_objectName, true);
+            }
+            else if (m_objects.front().m_objectType == DownloadObjectType::Project)
+            {
+                emit StartProjectDownload(m_objects.front().m_objectName, true);
+            }
         }
         else
         {
