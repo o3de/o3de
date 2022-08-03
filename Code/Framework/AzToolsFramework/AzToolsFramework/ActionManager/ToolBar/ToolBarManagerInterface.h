@@ -18,6 +18,7 @@ namespace AzToolsFramework
 {
     using ToolBarManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using ToolBarManagerIntegerResult = AZ::Outcome<int, AZStd::string>;
+    using ToolBarManagerStringResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
     //! Provides additional properties to initialize a ToolBar upon registration.
     struct ToolBarProperties
@@ -123,7 +124,7 @@ namespace AzToolsFramework
         AZ_RTTI(ToolBarManagerInternalInterface, "{55B9CA70-5277-4B8A-8F76-8C1F2A75D558}");
 
         //! Queues up a toolBar for a refresh at the end of this tick.
-        //! @param toolBarIdentifier The identifier for the toolBar to refresh.
+        //! @param toolBarIdentifier The identifier for the toolbar to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
 
@@ -132,8 +133,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
 
-        //! Refreshes all toolBar that were queued up by QueueMenuRefresh.
+        //! Refreshes all toolbars that were queued up for refresh.
         virtual void RefreshToolBars() = 0;
+
+        //! Serialize a toolbar by its identifier.
+        virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework
