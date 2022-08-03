@@ -31,7 +31,7 @@ class Tests:
 
 def ComponentCRUD_Add_Delete_Components():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -74,7 +74,7 @@ def ComponentCRUD_Add_Delete_Components():
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
-        from editor_python_test_tools.prefab_utils import wait_for_propagation
+        from editor_python_test_tools.wait_utils import PrefabWaiter
 
         async def add_component(component_name):
             pyside_utils.click_button_async(add_comp_btn)
@@ -123,11 +123,12 @@ def ComponentCRUD_Add_Delete_Components():
         mesh_frame = comp_list_contents.children()[3]
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
+        general.idle_wait_frames(3)  # Wait for Inspector to refresh
         success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_deleted, success)
 
         # 7) Undo deletion of component after waiting for the deletion to register
-        wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_delete_undo, success)

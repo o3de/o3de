@@ -176,9 +176,7 @@ namespace AZ
 
         void RHISystem::Shutdown()
         {
-            Interface<RHISystemInterface>::Unregister(this);
             m_frameScheduler.Shutdown();
-
             m_pipelineStateCache = nullptr;
             if (m_device)
             {
@@ -186,38 +184,37 @@ namespace AZ
                 AZ_Assert(m_device->use_count()==1, "The ref count for Device is %i but it should be 1 here to ensure all the resources are released", m_device->use_count());
                 m_device = nullptr;
             }
+            Interface<RHISystemInterface>::Unregister(this);
         }
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
             AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate");
-
             {
                 AZ_PROFILE_SCOPE(RHI, "main per-frame work");
-                m_frameScheduler.BeginFrame();
-
-                frameGraphCallback(m_frameScheduler);
-
-                /**
-                 * This exists as a hook to enable RHI sample tests, which are allowed to queue their
-                 * own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
-                 */
+                if (m_frameScheduler.BeginFrame() == ResultCode::Success)
                 {
-                    AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
-                    RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
-                }
+                    frameGraphCallback(m_frameScheduler);
 
-                RHI::MessageOutcome outcome = m_frameScheduler.Compile(m_compileRequest);
-                if (outcome.IsSuccess())
-                {
-                    m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
-                }
-                else
-                {
-                    AZ_Error("RHISystem", false, "Frame Scheduler Compilation Failure: %s", outcome.GetError().c_str());
-                }
+                    // This exists as a hook to enable RHI sample tests, which are allowed to queue their
+                    // own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
+                    {
+                        AZ_PROFILE_SCOPE(RHI, "RHISystem: FrameUpdate: OnFramePrepare");
+                        RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
+                    }
 
-                m_pipelineStateCache->Compact();
+                    RHI::MessageOutcome outcome = m_frameScheduler.Compile(m_compileRequest);
+                    if (outcome.IsSuccess())
+                    {
+                        m_frameScheduler.Execute(RHI::JobPolicy::Parallel);
+                    }
+                    else
+                    {
+                        AZ_Error("RHISystem", false, "Frame Scheduler Compilation Failure: %s", outcome.GetError().c_str());
+                    }
+
+                    m_pipelineStateCache->Compact();
+                }
             }
 
             m_frameScheduler.EndFrame();
@@ -292,7 +289,7 @@ namespace AZ
             m_xrSystem = xrRenderingInterface;
         }
 
-        void RHISystem::UnRegisterXRSystem()
+        void RHISystem::UnregisterXRSystem()
         {
             m_xrSystem = nullptr;
         }

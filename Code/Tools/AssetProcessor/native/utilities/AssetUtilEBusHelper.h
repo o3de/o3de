@@ -210,22 +210,23 @@ namespace AssetProcessor
     using AssetRegistryNotificationBus = AZ::EBus<AssetRegistryNotifications>;
 
     // This EBUS is used to check if there is sufficient disk space
-    class DiskSpaceInfoBusTraits
-        : public AZ::EBusTraits
+    class IDiskSpaceInfo
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        typedef AZStd::recursive_mutex MutexType;
+        AZ_RTTI(IDiskSpaceInfo, "{0A324878-9871-49DA-8F34-AE3B1D43B7C0}");
 
-        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space at the specified path
-        // savePath must be a folder path, not a file path
+        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space in the project cache folder
         // If shutdownIfInsufficient is true, an error will be displayed and the application will be shutdown
-        virtual bool CheckSufficientDiskSpace(const QString& /*savePath*/, qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
+        virtual bool CheckSufficientDiskSpace(qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
     };
 
-    using DiskSpaceInfoBus = AZ::EBus<DiskSpaceInfoBusTraits>;
-
+    //! Defines the modes the Asset Cache Server mode setting for the Asset Processor (AP).
+    enum class AssetServerMode
+    {
+        Inactive, //! This mode means the AP is offline; only processing the assets locally
+        Server, //! This mode means the AP is writing out the asset products to a remote location
+        Client //! This mode means the AP is attempting to retrieve asset products from a remote location
+    };
     // This EBUS is used to perform Asset Server related tasks.
     class AssetServerBusTraits
         : public AZ::EBusTraits
@@ -248,9 +249,30 @@ namespace AssetProcessor
         //! and put them in the temporary directory provided by the builderParam.
         //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
+        //! Retrieve the current mode for shared caching
+        virtual AssetServerMode GetRemoteCachingMode() const = 0;
+        //! Store the shared caching mode
+        virtual void SetRemoteCachingMode(AssetServerMode mode) = 0;
+        //! Retrieve the remote folder location for the shared cache 
+        virtual const AZStd::string& GetServerAddress() const = 0;
+        //! Store the remote folder location for the shared cache 
+        virtual bool SetServerAddress(const AZStd::string& address) = 0;
     };
-
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
+
+    // This EBUS has notify listeners when Asset Server state(s) changes.
+    class AssetServerNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // multi listener
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+        typedef AZStd::recursive_mutex MutexType;
+
+        //! This emits when the mode of the Asset Server Cache mode has changed.
+        virtual void OnRemoteCachingModeChanged([[maybe_unused]] AssetServerMode mode) {}
+    };
+    using AssetServerNotificationBus = AZ::EBus<AssetServerNotifications>;
 
     // This EBUS is used to retrieve asset server information
     class AssetServerInfoBusTraits

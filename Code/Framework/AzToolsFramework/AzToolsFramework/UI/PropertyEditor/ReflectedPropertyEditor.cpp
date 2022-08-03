@@ -431,8 +431,7 @@ namespace AzToolsFramework
         }
         else
         {
-            m_impl->m_instances.push_back();
-            m_impl->m_instances.back().SetValueComparisonFunction(m_impl->m_valueComparisonFunction);
+            m_impl->m_instances.emplace_back().SetValueComparisonFunction(m_impl->m_valueComparisonFunction);
             m_impl->m_instances.back().AddRootInstance(instance, classId);
 
             if (compareInstance)

@@ -212,8 +212,6 @@ namespace PhysX
         void CreatePxGeometryFromHeightfield(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
-            physx::PxHeightField* heightfield = nullptr;
-
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const size_t numCols = heightfieldConfig.GetNumColumnVertices();
@@ -245,10 +243,17 @@ namespace PhysX
             const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
             const float heightScale{ 1.0f / scaleFactor };
 
-            // Delete the cached heightfield object if it is there, and create a new one and save in the shape configuration
-            heightfieldConfig.SetCachedNativeHeightfield(nullptr);
+            if (physx::PxHeightField* cachedHeightfield
+                = static_cast<physx::PxHeightField*>(heightfieldConfig.GetCachedNativeHeightfield()))
+            {
+                physx::PxHeightFieldGeometry hfGeom(cachedHeightfield, physx::PxMeshGeometryFlags(), heightScale, rowScale, colScale);
+                pxGeometry.storeAny(hfGeom);
+                return;
+            }
 
             AZStd::vector<physx::PxHeightFieldSample> physxSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
+
+            physx::PxHeightField* heightfield = nullptr;
 
             if (!physxSamples.empty())
             {
@@ -271,6 +276,8 @@ namespace PhysX
             const size_t startCol, const size_t startRow,
             const size_t numColsToUpdate, const size_t numRowsToUpdate)
         {
+            AZ_PROFILE_FUNCTION(Physics);
+
             auto* pxScene = static_cast<physx::PxScene*>(physicsScene->GetNativePointer());
             AZ_Assert(pxScene, "Attempting to reference a null physics scene");
 
@@ -293,13 +300,15 @@ namespace PhysX
             desc.samples.data = physxSamples.data();
             desc.samples.stride = sizeof(physx::PxHeightFieldSample);
 
-            // Lock the scene and modify the heightfield itself, as well as the shape that's using it.
+            // Modify the heightfield samples
+            constexpr bool shrinkBounds = false;
+            pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
+
+            // Lock the scene and modify the heightfield shape in the scene.
             // (If only the heightfield is modified, the shape won't get refreshed with the new data)
             {
                 PHYSX_SCENE_WRITE_LOCK(pxScene);
 
-                constexpr bool shrinkBounds = false;
-                pxHeightfield->modifySamples(static_cast<physx::PxI32>(startCol), static_cast<physx::PxI32>(startRow), desc, shrinkBounds);
                 physx::PxHeightFieldGeometry hfGeom;
                 pxShape->getHeightFieldGeometry(hfGeom);
                 hfGeom.heightField = pxHeightfield;
@@ -1566,7 +1575,6 @@ namespace PhysX
             void GetTriangleMeshGeometry(const physx::PxTriangleMeshGeometry& geometry, AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices)
             {
                 const physx::PxTriangleMesh* triangleMesh = geometry.triangleMesh;
-                const physx::PxMeshScale scale = geometry.scale;
                 const physx::PxVec3* meshVertices = triangleMesh->getVertices();
                 const AZ::u32 vertCount = triangleMesh->getNbVertices();
                 const AZ::u32 triangleCount = triangleMesh->getNbTriangles();
@@ -1913,7 +1921,7 @@ namespace PhysX
         {
             // Allow to create runtime StaticRigidBodyComponent if there are no components
             // using 'PhysXColliderService' attached to entity.
-            const AZ::Crc32 physxColliderServiceId = AZ_CRC("PhysXColliderService", 0x4ff43f7c);
+            const AZ::Crc32 physxColliderServiceId = AZ_CRC_CE("PhysicsColliderService");
 
             return !EntityHasComponentsUsingService(editorEntity, physxColliderServiceId);
         }

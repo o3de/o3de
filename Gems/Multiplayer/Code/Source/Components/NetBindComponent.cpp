@@ -112,7 +112,7 @@ namespace Multiplayer
                     return netBindComponent->IsNetEntityRoleClient();
                 })
 
-            ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
+                ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -128,7 +128,24 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleServer();
                 })
-            ;
+
+                ->Method("MarkForRemoval", [](AZ::EntityId id) {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                        return;
+                    }
+
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return;
+                    }
+
+                    AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(netBindComponent->GetEntityHandle());
+                });
         }
     }
 
@@ -231,6 +248,16 @@ namespace Multiplayer
     bool NetBindComponent::IsNetEntityRoleClient() const
     {
         return (m_netEntityRole == NetEntityRole::Client);
+    }
+
+    void NetBindComponent::SetAllowEntityMigration(EntityMigration value)
+    {
+        m_netEntityMigration = value;
+    }
+
+    EntityMigration NetBindComponent::GetAllowEntityMigration() const
+    {
+        return m_netEntityMigration;
     }
 
     bool NetBindComponent::HasController() const
@@ -496,13 +523,13 @@ namespace Multiplayer
         stats.RecordEntitySerializeStart(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         bool success = true;
+        serializer.BeginObject(GetEntity()->GetName().c_str());
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
             success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer);
-
             stats.RecordComponentSerializeEnd(serializer.GetSerializerMode(), (*iter)->GetNetComponentId());
         }
-
+        serializer.EndObject(GetEntity()->GetName().c_str());
         stats.RecordEntitySerializeStop(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         return success;

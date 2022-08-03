@@ -124,7 +124,6 @@ AZ_POP_DISABLE_WARNING
 #include "Util/3DConnexionDriver.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 #include "QuickAccessBar.h"
@@ -876,7 +875,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
     g_splashScreenStateLock.lock();
 
-    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(CStartupLogoDialog::Loading, FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
     g_pInitializeUIInfo = splashScreen;
     g_splashScreen = splashScreen;
@@ -1573,8 +1572,6 @@ bool CCryEditApp::InitInstance()
     QElapsedTimer startupTimer;
     startupTimer.start();
 
-    // create / attach to the environment:
-    AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
     m_pEditor = new CEditorImpl();
 
     // parameters must be parsed early to capture arguments for test bootstrap
@@ -1590,8 +1587,8 @@ bool CCryEditApp::InitInstance()
 
     if (cmdInfo.m_bShowVersionInfo)
     {
-        CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
-        aboutDlg.exec();
+        CStartupLogoDialog startupDlg(CStartupLogoDialog::About, FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+        startupDlg.exec();
         return false;
     }
 
@@ -1905,8 +1902,14 @@ void CCryEditApp::WriteConfig()
 // App command to run the dialog
 void CCryEditApp::OnAppAbout()
 {
-    CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
-    aboutDlg.exec();
+    auto* dialog = new CStartupLogoDialog(
+        CStartupLogoDialog::About, FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    auto mainWindow = MainWindow::instance();
+    auto geometry = dialog->geometry();
+    geometry.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
+    dialog->setGeometry(geometry);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }
 
 // App command to run the Welcome to Open 3D Engine dialog
@@ -2084,7 +2087,7 @@ int CCryEditApp::ExitInstance(int exitCode)
             m_pEditor->OnEarlyExitShutdownSequence();
         }
 
-        gEnv->pLog->FlushAndClose();
+        gEnv->pLog->Flush();
 
         // note: the intention here is to quit immediately without processing anything further
         // on linux and mac, _exit has that effect
@@ -2165,7 +2168,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         delete m_mutexApplication;
     }
 
-    DetachEditorCoreAZEnvironment();
     return 0;
 }
 
@@ -2302,9 +2304,27 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
         }
     }
-    else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+    else
     {
-        GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+        {
+            GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        }
+
+        // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
+        static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
+        const int64_t maxFrameTimeMs = ed_backgroundSystemTickCap;
+
+        if (maxFrameTimeMs > 0)
+        {
+            const int64_t maxElapsedTimeMs = maxFrameTimeMs + static_cast<int64_t>(sTimeLastMs);
+            const int64_t realElapsedTimeMs = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
+            if (maxElapsedTimeMs > realElapsedTimeMs)
+            {
+                CrySleep(aznumeric_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
+            }
+        }
+        sTimeLastMs = AZ::GetRealElapsedTimeMs();
     }
 
     DisplayLevelLoadErrors();
@@ -3290,7 +3310,7 @@ void CCryEditApp::OnOpenLevel()
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
-        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data());
+        OpenDocumentFile(levelFileDialog.GetFileName().toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
     }
 }
 
@@ -3955,14 +3975,6 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     return ret;
 }
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
-{
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-}
-
-extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
-{
-    AZ::Environment::Detach();
-}
+AZ_DECLARE_MODULE_INITIALIZATION
 
 #include <moc_CryEdit.cpp>

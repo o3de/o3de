@@ -12,8 +12,6 @@
 
 #define THREAD_NUM_X 8
 #define THREAD_NUM_Y 8
-#define NO_DETAIL 0.0
-#define HAS_DETAIL 1.0
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -36,116 +34,96 @@ void MainCS(
     uint numberOfGroups = TerrainSrg::m_clipmapData.m_detailDispatchGroupCountX * TerrainSrg::m_clipmapData.m_detailDispatchGroupCountY;
     uint numberOfGroupThreads = THREAD_NUM_X * THREAD_NUM_Y;
 
-    for (uint clipmapLevel = 0; clipmapLevel < TerrainSrg::m_clipmapData.m_detailClipmapStackSize; ++clipmapLevel)
+    for (uint regionIndex = 0; regionIndex < TerrainSrg::m_clipmapData.m_detailClipmapUpdateRegionCount; ++regionIndex)
     {
-        for (uint updateRegionIndex = 0; updateRegionIndex < UpdateRegionMax; ++updateRegionIndex)
+        TerrainSrg::ClipmapUpdateRegion updateRegion = TerrainSrg::m_detailClipmapUpdateRegions[regionIndex];
+        uint clipmapLevel = updateRegion.m_clipmapLevel;
+        uint4 aabb = updateRegion.m_clipmapRegion;
+        uint2 size = uint2(aabb.z - aabb.x, aabb.w - aabb.y);
+        uint totalNumberOfTexels = size.x * size.y;
+
+        uint totalStride = (totalNumberOfTexels + numberOfGroups - 1) / numberOfGroups;
+        uint totalBegin = min(totalStride * (groupID.x + groupID.y * TerrainSrg::m_clipmapData.m_detailDispatchGroupCountX), totalNumberOfTexels);
+        uint totalEnd = min(totalBegin + totalStride, totalNumberOfTexels);
+
+        uint groupTotal = totalEnd - totalBegin;
+        uint groupStride = (groupTotal + numberOfGroupThreads - 1) / numberOfGroupThreads;
+        uint groupBegin = min(groupStride * (groupThreadID.x + groupThreadID.y * THREAD_NUM_X), groupTotal);
+        uint groupEnd = min(groupBegin + groupStride, groupTotal);
+
+        for (uint i = groupBegin; i < groupEnd; ++i)
         {
-            uint4 updateRegion = TerrainSrg::m_clipmapData.m_detailClipmapBoundsRegions[clipmapLevel + DetailClipmapStackSizeMax * updateRegionIndex];
-            uint2 size = uint2(updateRegion.z - updateRegion.x, updateRegion.w - updateRegion.y);
-            uint totalNumberOfTexels = size.x * size.y;
+            uint texelFlatIndex = totalBegin + i;
+            uint2 texelPosition = uint2(texelFlatIndex % size.x + aabb.x, texelFlatIndex / size.x + aabb.y);
+            uint3 texelIndex = uint3(texelPosition, clipmapLevel);
 
-            uint totalStride = (totalNumberOfTexels + numberOfGroups - 1) / numberOfGroups;
-            uint totalBegin = min(totalStride * (groupID.x + groupID.y * TerrainSrg::m_clipmapData.m_detailDispatchGroupCountX), totalNumberOfTexels);
-            uint totalEnd = min(totalBegin + totalStride, totalNumberOfTexels);
+            float2 worldPosition = GetWorldPositionFromDetailClipmaps(texelPosition, clipmapLevel);
 
-            uint groupTotal = totalEnd - totalBegin;
-            uint groupStride = (groupTotal + numberOfGroupThreads - 1) / numberOfGroupThreads;
-            uint groupBegin = min(groupStride * (groupThreadID.x + groupThreadID.y * THREAD_NUM_X), groupTotal);
-            uint groupEnd = min(groupBegin + groupStride, groupTotal);
+            DetailSurface detailSurface;
+            float2 detailRegionCoord = worldPosition * TerrainSrg::m_detailMaterialIdScale;
+            float2 detailUv = worldPosition * TerrainMaterialSrg::m_detailTextureMultiplier;
+            float clipmapToWorldScale = GetDetailClipmapToWorldScale(clipmapLevel);
+            float2 detailUvDdx = float2(clipmapToWorldScale, 0.0) * TerrainMaterialSrg::m_detailTextureMultiplier;
+            float2 detailUvDdy = float2(0.0, clipmapToWorldScale) * TerrainMaterialSrg::m_detailTextureMultiplier;
 
-            for (uint i = groupBegin; i < groupEnd; ++i)
+            ClipmapLevel macroClipmapLevel = CalculateMacroClipmapLevel(worldPosition);
+
+            float3 macroColor;
+            if (macroClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_macroClipmapStackSize)
             {
-                uint texelFlatIndex = totalBegin + i;
-                uint2 texelPosition = uint2(texelFlatIndex % size.x + updateRegion.x, texelFlatIndex / size.x + updateRegion.y);
-                uint3 texelIndex = uint3(texelPosition, clipmapLevel);
-
-                float2 worldPosition = GetCurrentWorldPositionFromDetailClipmaps(texelPosition, clipmapLevel);
-
-                if (any(worldPosition < TerrainSrg::m_clipmapData.m_worldBoundsMin) || any(worldPosition > TerrainSrg::m_clipmapData.m_worldBoundsMax))
-                {
-                    // alpha represents hasDetailSurface
-                    PassSrg::m_detailColorClipmaps[texelIndex] = float4(TerrainMaterialSrg::m_baseColor.rgb, NO_DETAIL);
-                    PassSrg::m_detailNormalClipmaps[texelIndex] = float2(0.0, 0.0);
-                    PassSrg::m_detailHeightClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailRoughnessClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailSpecularF0Clipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailMetalnessClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailOcclusionClipmaps[texelIndex] = 0.0;
-                    continue;
-                }
-
-                DetailSurface detailSurface;
-                float2 detailRegionCoord = worldPosition * TerrainSrg::m_detailMaterialIdScale;
-                float2 detailUv = worldPosition * TerrainMaterialSrg::m_detailTextureMultiplier;
-                float clipmapScaleInv = GetDetailClipmapScaleInv(clipmapLevel);
-                float2 detailUvDdx = ddxPosition(TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius, clipmapScaleInv) * TerrainMaterialSrg::m_detailTextureMultiplier;
-                float2 detailUvDdy = ddyPosition(TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius, clipmapScaleInv) * TerrainMaterialSrg::m_detailTextureMultiplier;
-
-                float2 distance = worldPosition - TerrainSrg::m_clipmapData.m_currentViewPosition;
-                ClipmapLevel macroClipmapLevel = CalculateClosestClipmapLevel(
-                    distance,
-                    TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
-                    TerrainSrg::m_clipmapData.m_macroClipmapScaleBase,
-                    TerrainSrg::m_clipmapData.m_macroClipmapStackSize
+                BilinearUvs macroClipmapUvs = CalculateClipmapUv(
+                    worldPosition,
+                    GetMacroClipmapToWorldScale(macroClipmapLevel.m_closestLevel),
+                    GetMacroClipmapCenter(macroClipmapLevel.m_closestLevel),
+                    GetMacroClipmapCenterInWorldSpace(macroClipmapLevel.m_closestLevel)
                 );
 
-                float3 macroColor;
-                if (macroClipmapLevel.m_nextLevel == TerrainSrg::m_clipmapData.m_macroClipmapStackSize)
-                {
-                    BilinearUvs macroClipmapUvs = CalculateClipmapUv(
-                        distance,
-                        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
-                        GetMacroClipmapScaleInv(macroClipmapLevel.m_closestLevel),
-                        GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
-                    );
+                macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel, 0.0).rgb;
+            }
+            else
+            {
+                BilinearUvs macroClipmapUvs1 = CalculateClipmapUv(
+                    worldPosition,
+                    GetMacroClipmapToWorldScale(macroClipmapLevel.m_closestLevel),
+                    GetMacroClipmapCenter(macroClipmapLevel.m_closestLevel),
+                    GetMacroClipmapCenterInWorldSpace(macroClipmapLevel.m_closestLevel)
+                );
 
-                    macroColor = ColorBilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel, 0.0).rgb;
-                }
-                else
-                {
-                    BilinearUvs macroClipmapUvs1 = CalculateClipmapUv(
-                        distance,
-                        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
-                        GetMacroClipmapScaleInv(macroClipmapLevel.m_closestLevel),
-                        GetCurrentMacroClipmapCenter(macroClipmapLevel.m_closestLevel)
-                    );
+                BilinearUvs macroClipmapUvs2 = CalculateClipmapUv(
+                    worldPosition,
+                    GetMacroClipmapToWorldScale(macroClipmapLevel.m_nextLevel),
+                    GetMacroClipmapCenter(macroClipmapLevel.m_nextLevel),
+                    GetMacroClipmapCenterInWorldSpace(macroClipmapLevel.m_nextLevel)
+                );
 
-                    BilinearUvs macroClipmapUvs2 = CalculateClipmapUv(
-                        distance,
-                        TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius,
-                        GetMacroClipmapScaleInv(macroClipmapLevel.m_nextLevel),
-                        GetCurrentMacroClipmapCenter(macroClipmapLevel.m_nextLevel)
-                    );
+                macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel, 0.0).rgb;
+            }
 
-                    macroColor = ColorTrilinearSampling(TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel, 0.0).rgb;
-                }
+            bool hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
 
-                bool hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
+            if (hasDetailSurface)
+            {
+                float3 normal = normalize(detailSurface.m_normal);
 
-                if (hasDetailSurface)
-                {
-                    float3 normal = normalize(detailSurface.m_normal);
-
-                    // alpha represents hasDetailSurface
-                    PassSrg::m_detailColorClipmaps[texelIndex] = float4(detailSurface.m_color, HAS_DETAIL);
-                    PassSrg::m_detailNormalClipmaps[texelIndex] = float2(normal.xy);
-                    PassSrg::m_detailHeightClipmaps[texelIndex] = detailSurface.m_height;
-                    PassSrg::m_detailRoughnessClipmaps[texelIndex] = detailSurface.m_roughness;
-                    PassSrg::m_detailSpecularF0Clipmaps[texelIndex] = detailSurface.m_specularF0;
-                    PassSrg::m_detailMetalnessClipmaps[texelIndex] = detailSurface.m_metalness;
-                    PassSrg::m_detailOcclusionClipmaps[texelIndex] = detailSurface.m_occlusion;
-                }
-                else
-                {
-                    // alpha represents hasDetailSurface
-                    PassSrg::m_detailColorClipmaps[texelIndex] = float4(TerrainMaterialSrg::m_baseColor.rgb, NO_DETAIL);
-                    PassSrg::m_detailNormalClipmaps[texelIndex] = float2(0.0, 0.0);
-                    PassSrg::m_detailHeightClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailRoughnessClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailSpecularF0Clipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailMetalnessClipmaps[texelIndex] = 0.0;
-                    PassSrg::m_detailOcclusionClipmaps[texelIndex] = 0.0;
-                }
+                // alpha represents hasDetailSurface
+                PassSrg::m_detailColorClipmaps[texelIndex] = float4(detailSurface.m_color, HAS_DETAIL);
+                PassSrg::m_detailNormalClipmaps[texelIndex] = float2(normal.xy);
+                PassSrg::m_detailHeightClipmaps[texelIndex] = detailSurface.m_height;
+                PassSrg::m_detailRoughnessClipmaps[texelIndex] = detailSurface.m_roughness;
+                PassSrg::m_detailSpecularF0Clipmaps[texelIndex] = detailSurface.m_specularF0;
+                PassSrg::m_detailMetalnessClipmaps[texelIndex] = detailSurface.m_metalness;
+                PassSrg::m_detailOcclusionClipmaps[texelIndex] = detailSurface.m_occlusion;
+            }
+            else
+            {
+                // alpha represents hasDetailSurface
+                PassSrg::m_detailColorClipmaps[texelIndex] = float4(TerrainMaterialSrg::m_baseColor.rgb, NO_DETAIL);
+                PassSrg::m_detailNormalClipmaps[texelIndex] = float2(0.0, 0.0);
+                PassSrg::m_detailHeightClipmaps[texelIndex] = 0.0;
+                PassSrg::m_detailRoughnessClipmaps[texelIndex] = 0.0;
+                PassSrg::m_detailSpecularF0Clipmaps[texelIndex] = 0.0;
+                PassSrg::m_detailMetalnessClipmaps[texelIndex] = 0.0;
+                PassSrg::m_detailOcclusionClipmaps[texelIndex] = 0.0;
             }
         }
     }

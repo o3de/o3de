@@ -8,21 +8,31 @@
 
 #pragma once
 
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
 class QMenuBar;
+class QWidget;
 
 namespace AzToolsFramework
 {
     class MenuManagerInterface;
+    class MenuManagerInternalInterface;
 
-    class EditorMenuBar
+    class EditorMenuBar final
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorMenuBar, "{6242037D-9BC5-41A1-91BE-441B33875DC6}");
+
         EditorMenuBar();
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
+        static void Reflect(AZ::ReflectContext* context);
 
         void AddMenu(int sortKey, AZStd::string menuIdentifier);
         
@@ -35,15 +45,19 @@ namespace AzToolsFramework
         // Returns the pointer to the menu bar.
         QMenuBar* GetMenuBar();
         const QMenuBar* GetMenuBar() const;
-
-    private:
+        
+        // Clears the menu bar and creates a new one from the EditorMenuBar information.
         void RefreshMenuBar();
 
+    private:
         QMenuBar* m_menuBar = nullptr;
-        AZStd::multimap<int, AZStd::string> m_menus;
-        AZStd::map<AZStd::string, int> m_menuToSortKeyMap;
+        AZStd::map<int, AZStd::vector<AZStd::string>> m_menus;
+        AZStd::unordered_map<AZStd::string, int> m_menuToSortKeyMap;
+        
+        inline static QWidget* m_defaultParentWidget = nullptr;
 
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

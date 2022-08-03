@@ -896,7 +896,7 @@ namespace AzToolsFramework
             return AZStd::move(m_containerEntity);
         }
 
-        PrefabDomValueConstReference Instance::GetCachedInstanceDom() const
+        PrefabDomConstReference Instance::GetCachedInstanceDom() const
         {
             if (m_cachedInstanceDom.IsNull())
             {

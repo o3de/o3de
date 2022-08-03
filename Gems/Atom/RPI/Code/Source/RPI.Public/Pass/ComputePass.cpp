@@ -140,7 +140,6 @@ namespace AZ
         void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(1);
         }
 
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)

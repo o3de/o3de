@@ -7,6 +7,7 @@
  */
 
 #pragma once
+
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -18,6 +19,14 @@ namespace RecastNavigation
         : public AZ::ComponentBus
     {
     public:
+        //! An entity with a navigation mesh is required to calculate paths.
+        //! @param navMeshEntity an entity with @RecastNavigationMeshComponent
+        virtual void SetNavigationMeshEntity(AZ::EntityId navMeshEntity) = 0;
+
+        //! An entity with a navigation mesh is required to calculate paths.
+        //! @return the associated entity with @RecastNavigationMeshComponent
+        virtual AZ::EntityId GetNavigationMeshEntity() const = 0;
+
         //! Blocking call that finds a walkable path between two entities.
         //! @param fromEntity The starting point of the path from the position of this entity.
         //! @param toEntity The end point of the path is at the position of this entity.

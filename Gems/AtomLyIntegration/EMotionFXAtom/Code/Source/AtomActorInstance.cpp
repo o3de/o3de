@@ -609,6 +609,8 @@ namespace AZ::Render
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+
+        m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
 
     void AtomActorInstance::UnregisterActor()

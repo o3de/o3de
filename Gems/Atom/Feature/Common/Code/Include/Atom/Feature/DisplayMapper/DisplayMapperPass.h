@@ -93,7 +93,7 @@ namespace AZ
             DisplayMapperConfigurationDescriptor m_displayMapperConfigurationDescriptor;
             bool m_needToRebuildChildren = false;
 
-            const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;
+            const RPI::PassAttachmentBinding* m_pipelineOutput = nullptr;
 
             AZ::Render::DisplayMapperParameters m_displayMapperParameters = {};
 
@@ -101,14 +101,14 @@ namespace AZ
             AZStd::shared_ptr<RPI::PassTemplate> m_acesOutputTransformLutTemplate;
             AZStd::shared_ptr<RPI::PassTemplate> m_bakeAcesOutputTransformLutTemplate;
             AZStd::shared_ptr<RPI::PassTemplate> m_passthroughTemplate;
-            AZStd::shared_ptr<RPI::PassTemplate> m_gammaCorrectionTemplate;
+            AZStd::shared_ptr<RPI::PassTemplate> m_sRGBTemplate;
             AZStd::shared_ptr<RPI::PassTemplate> m_ldrGradingLookupTableTemplate;
             AZStd::shared_ptr<RPI::PassTemplate> m_outputTransformTemplate;
             RPI::Ptr<AcesOutputTransformPass> m_acesOutputTransformPass = nullptr;
             RPI::Ptr<BakeAcesOutputTransformLutPass> m_bakeAcesOutputTransformLutPass = nullptr;
             RPI::Ptr<AcesOutputTransformLutPass> m_acesOutputTransformLutPass = nullptr;
             RPI::Ptr<DisplayMapperFullScreenPass> m_displayMapperPassthroughPass = nullptr;
-            RPI::Ptr<DisplayMapperFullScreenPass> m_displayMapperOnlyGammaCorrectionPass = nullptr;
+            RPI::Ptr<DisplayMapperFullScreenPass> m_displayMapperSRGBPass = nullptr;
             RPI::Ptr<ApplyShaperLookupTablePass> m_ldrGradingLookupTablePass = nullptr;
             RPI::Ptr<OutputTransformPass> m_outputTransformPass = nullptr;
 
@@ -119,7 +119,7 @@ namespace AZ
             const Name m_bakeAcesOutputTransformLutPassName = Name{ "BakeAcesOutputTransformLut" };
             const Name m_acesOutputTransformLutPassName = Name{ "AcesLutPass" };
             const Name m_displayMapperPassthroughPassName = Name{ "DisplayMapperPassthrough" };
-            const Name m_displayMapperOnlyGammaCorrectionPassName = Name{ "DisplayMapperOnlyGammaCorrection" };
+            const Name m_displayMapperSRGBPassName = Name{ "DisplayMapperSRGB" };
             const Name m_outputTransformPassName = Name{ "OutputTransform" };
 
             RHI::Format m_displayBufferFormat = RHI::Format::Unknown;

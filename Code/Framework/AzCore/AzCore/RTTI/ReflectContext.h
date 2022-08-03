@@ -18,6 +18,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/typetraits/decay.h>
 #include <AzCore/std/typetraits/function_traits.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/std/typetraits/is_function.h>
 #include <AzCore/std/typetraits/is_member_function_pointer.h>
 #include <AzCore/std/typetraits/is_same.h>

@@ -164,7 +164,7 @@ namespace AZ::Render
 
             if (m_selectedPass && !m_slotName.IsEmpty())
             {
-                bool readbackResult = m_selectedPass->ReadbackAttachment(m_readback, m_slotName);
+                bool readbackResult = m_selectedPass->ReadbackAttachment(m_readback, 0, m_slotName);
                 if (!readbackResult)
                 {
                     AZ_Error("ImGuiPassTree", false, "Failed to readback attachment from pass [%s] slot [%s]", m_selectedPass->GetName().GetCStr(), m_slotName.GetCStr());

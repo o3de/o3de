@@ -72,14 +72,16 @@ namespace AzNetworking
     {
         if (m_state == ConnectionState::Connected)
         {
+            m_state = ConnectionState::Disconnecting;
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionDeleted, TerminationEndpoint::Local);
+            m_state = ConnectionState::Disconnected;
         }
     }
 
-    bool TcpConnection::Connect()
+    bool TcpConnection::Connect(uint16_t localPort)
     {
         Disconnect(DisconnectReason::TerminatedByClient, TerminationEndpoint::Local);
-        if (!m_socket->Connect(GetRemoteAddress()))
+        if (!m_socket->Connect(GetRemoteAddress(), localPort))
         {
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionRejected, TerminationEndpoint::Local);
             return false;
@@ -235,6 +237,12 @@ namespace AzNetworking
         {
             return true;
         }
+        if (m_state == ConnectionState::Disconnecting)
+        {
+            AZLOG_WARN("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
+            return false;
+        }
+        m_state = ConnectionState::Disconnecting;
         m_networkInterface.GetConnectionListener().OnDisconnect(this, reason, endpoint);
         m_networkInterface.RequestDisconnect(this, reason);
         m_state = ConnectionState::Disconnected;

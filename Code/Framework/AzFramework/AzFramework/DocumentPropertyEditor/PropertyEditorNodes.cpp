@@ -44,11 +44,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
         system->RegisterNode<Row, NodeWithVisiblityControl>();
-
-        for (const auto& rowAttribute : Row::RowAttributes)
-        {
-            system->RegisterNodeAttribute<Row>(rowAttribute);
-        }
+        system->RegisterNodeAttribute<Row>(Row::AutoExpand);
+        system->RegisterNodeAttribute<Row>(Row::ForceAutoExpand);
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
@@ -92,6 +89,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();
+        system->RegisterNodeAttribute<ComboBox>(ComboBox::StringList);
+
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();

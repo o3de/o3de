@@ -21,7 +21,7 @@ namespace RecastNavigation
     //! Editor version of @RecastNavigationMeshComponent.
     class EditorRecastNavigationMeshComponent final
         : public AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController,
-                                                                      RecastNavigationMeshComponent, RecastNavigationMeshConfig>
+        RecastNavigationMeshComponent, RecastNavigationMeshConfig>
     {
     public:
         using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationMeshComponentController, RecastNavigationMeshComponent, RecastNavigationMeshConfig>;
@@ -30,5 +30,21 @@ namespace RecastNavigation
 
         EditorRecastNavigationMeshComponent() = default;
         explicit EditorRecastNavigationMeshComponent(const RecastNavigationMeshConfig& config);
+
+        void Activate() override;
+        void Deactivate() override;
+
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        //! Enables or disables in-Editor preview of navigation mesh without entering game mode.
+        //! @param enable if true, the preview will be enabled
+        void SetEditorPreview(bool enable);
+
+        void OnEditorUpdateTick();
+
+        AZ::u32 OnConfigurationChanged() override;
+
+    private:
+        AZ::ScheduledEvent m_inEditorUpdateTick{ [this]() {OnEditorUpdateTick(); }, AZ::Name("EditorRecastNavigationMeshTick") };
     };
 } // namespace RecastNavigation

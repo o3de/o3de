@@ -1,0 +1,110 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammarRegistry_Source.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+#include "{{filename}}.h"
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/Component.h>
+#include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
+{% for ScriptCanvas in dataFiles %}
+#include <{{ ScriptCanvas.attrib['Include'] }}>
+{% endfor %}
+
+namespace ScriptCanvas
+{
+    {{autogenTargetName}}GrammarRegistry::{{autogenTargetName}}GrammarRegistry()
+    {
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->RegisterRegistry(GetRegistryName(), this);
+    }
+
+    {{autogenTargetName}}GrammarRegistry::~{{autogenTargetName}}GrammarRegistry()
+    {
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry(GetRegistryName());
+    }
+
+    const char* {{autogenTargetName}}GrammarRegistry::GetRegistryName() {
+        return "{{autogenTargetName}}GrammarRegistry";
+    }
+
+    void {{autogenTargetName}}GrammarRegistry::Init(NodeRegistry* nodeRegistry)
+    {
+        if (nodeRegistry)
+        {
+{% for ScriptCanvas in dataFiles %}
+{%     for Class in ScriptCanvas %}
+{%         set namespaceName = '::' %}
+{%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
+{%             set namespaceName = Class.attrib['Namespace'] + '::' %}
+{%         endif %}
+{%         if Class.attrib['BaseClass'] is not defined or Class.attrib['BaseClass'].lower() == "false" %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
+            nodeRegistry->m_nodes.push_back(AZ::AzTypeInfo<{{namespaceName}}{{Class.attrib['QualifiedName']}}>::Uuid());
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
+{%         endif %}
+{%         endif %}
+{%     endfor %}
+{% endfor %}
+        }
+    }
+
+    void {{autogenTargetName}}GrammarRegistry::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    {
+{% for ScriptCanvas in dataFiles %}
+{%     for Class in ScriptCanvas %}
+{%         set namespaceName = '::' %}
+{%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
+{%             set namespaceName = Class.attrib['Namespace'] + '::' %}
+{%         endif %}
+{%         if Class.attrib['BaseClass'] is defined and Class.attrib['BaseClass'].lower() == "true" %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
+        {{namespaceName}}{{Class.attrib['QualifiedName']}}::Reflect(context);
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
+{%         endif %}
+{%         endif %}
+{%     endfor %}
+{% endfor %}
+    }
+
+    AZStd::vector<AZ::ComponentDescriptor*> {{autogenTargetName}}GrammarRegistry::GetComponentDescriptors()
+    {
+        return AZStd::vector<AZ::ComponentDescriptor*>({
+{% for ScriptCanvas in dataFiles %}
+{%     for Class in ScriptCanvas %}
+{%         set namespaceName = '::' %}
+{%         if Class.attrib['Namespace'] is defined and Class.attrib['Namespace'] != 'None' %}
+{%             set namespaceName = Class.attrib['Namespace'] + '::' %}
+{%         endif %}
+{%         if Class.attrib['BaseClass'] is not defined or Class.attrib['BaseClass'].lower() == "false" %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#ifndef _RELEASE
+{%         endif %}
+            {{namespaceName}}{{Class.attrib['QualifiedName']}}::CreateDescriptor(),
+{%         endif %}
+{%         if "UnitTesting" in Class.attrib['QualifiedName'] %}
+#endif
+{%         endif %}
+{%     endfor %}
+{% endfor %}
+        });
+    }
+}

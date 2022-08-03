@@ -58,8 +58,8 @@ namespace AZ
             default:
                 return RHI::ResultCode::InvalidArgument;
             }
-            
-            const VkResult result = vkCreateFence(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFence);
+
+            const VkResult result = device.GetContext().CreateFence(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeFence);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -73,7 +73,7 @@ namespace AZ
             if (m_nativeFence != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyFence(device.GetNativeDevice(), m_nativeFence, nullptr);
+                device.GetContext().DestroyFence(device.GetNativeDevice(), m_nativeFence, nullptr);
                 m_nativeFence = VK_NULL_HANDLE;
             }
             // Signal any pending thread.
@@ -93,20 +93,20 @@ namespace AZ
             // According to the standard we can't wait until the event (like VkSubmitQueue) happens first.
             m_signalEvent.Wait();
             auto& device = static_cast<Device&>(GetDevice());
-            AssertSuccess(vkWaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX));
+            AssertSuccess(device.GetContext().WaitForFences(device.GetNativeDevice(), 1, &m_nativeFence, VK_FALSE, UINT64_MAX));
         }
 
         void Fence::ResetInternal()
         {
             m_signalEvent.SetValue(false);
             auto& device = static_cast<Device&>(GetDevice());
-            AssertSuccess(vkResetFences(device.GetNativeDevice(), 1, &m_nativeFence));
+            AssertSuccess(device.GetContext().ResetFences(device.GetNativeDevice(), 1, &m_nativeFence));
         }
 
         RHI::FenceState Fence::GetFenceStateInternal() const
         {
             auto& device = static_cast<Device&>(GetDevice());
-            VkResult result = vkGetFenceStatus(device.GetNativeDevice(), m_nativeFence);
+            VkResult result = device.GetContext().GetFenceStatus(device.GetNativeDevice(), m_nativeFence);
             switch (result)
             {
             case VK_SUCCESS:

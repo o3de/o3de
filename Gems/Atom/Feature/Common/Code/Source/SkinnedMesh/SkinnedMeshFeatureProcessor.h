@@ -12,6 +12,8 @@
 #include <SkinnedMesh/SkinnedMeshStatsCollector.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorInterface.h>
 
+#include <Atom/RHI/FrameGraphInterface.h>
+
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Utils/StableDynamicArray.h>
@@ -64,10 +66,13 @@ namespace AZ
             Data::Instance<RPI::Shader> GetSkinningShader() const;
             RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
             void OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader);
-            void SubmitSkinningDispatchItems(RHI::CommandList* commandList);
+            void SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
+            void SetupSkinningScope(RHI::FrameGraphInterface frameGraph);
 
             Data::Instance<RPI::Shader> GetMorphTargetShader() const;
-            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList);
+            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
+            void SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph);
+
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
 
@@ -85,8 +90,13 @@ namespace AZ
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
 
             MeshFeatureProcessor* m_meshFeatureProcessor = nullptr;
+
             AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
+            bool m_alreadyCreatedSkinningScopeThisFrame = false;
+
             AZStd::unordered_set<const RHI::DispatchItem*> m_morphTargetDispatches;
+            bool m_alreadyCreatedMorphTargetScopeThisFrame = false;
+
             AZStd::mutex m_dispatchItemMutex;
 
         };

@@ -139,7 +139,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path EBusSendEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusSenderPath) / GetBusName();
+        AZStd::string fileName = GetBusName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void EBusSendEventPaletteTreeItem::GenerateTranslationData()
@@ -147,8 +148,7 @@ namespace ScriptCanvasEditor
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
-        const char* ebusName = m_busName.toUtf8().data();
-        auto behaviorEbus = behaviorContext->m_ebuses.find(ebusName);
+        auto behaviorEbus = behaviorContext->m_ebuses.find(m_busName.toUtf8().data());
 
         ScriptCanvasEditorTools::TranslationGeneration translation;
         translation.TranslateEBus(behaviorEbus->second);
@@ -357,7 +357,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path EBusHandleEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::EBusHandlerPath) / GetBusName();
+        AZStd::string fileName = GetBusName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void EBusHandleEventPaletteTreeItem::GenerateTranslationData()

@@ -134,6 +134,11 @@ namespace EMotionFX::MotionMatching
         settings.m_maxKdTreeDepth = animGraphNode->m_maxKdTreeDepth;
         settings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
         settings.m_motionList.reserve(animGraphNode->m_motionIds.size());
+        settings.m_normalizeData = animGraphNode->m_normalizeData;
+        settings.m_featureTansformerSettings.m_featureMin = animGraphNode->m_featureMin;
+        settings.m_featureTansformerSettings.m_featureMax = animGraphNode->m_featureMax;
+        settings.m_featureTansformerSettings.m_clip = animGraphNode->m_clipFeatures;
+
         for (const AZStd::string& id : animGraphNode->m_motionIds)
         {
             Motion* motion = motionSet->RecursiveFindMotionById(id);
@@ -319,6 +324,16 @@ namespace EMotionFX::MotionMatching
         return AZ::Edit::PropertyVisibility::Show;
     }
 
+    AZ::Crc32 BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility() const
+    {
+        if (m_normalizeData)
+        {
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+
+        return AZ::Edit::PropertyVisibility::Hide;
+    }
+
     AZ::Crc32 BlendTreeMotionMatchNode::OnVisualizeSchemaButtonClicked()
     {
         FeatureSchema* usedSchema = nullptr;
@@ -356,12 +371,16 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
-            ->Version(9)
+            ->Version(10)
             ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
             ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
             ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
             ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
             ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed)
+            ->Field("normalizeData", &BlendTreeMotionMatchNode::m_normalizeData)
+            ->Field("featureMin", &BlendTreeMotionMatchNode::m_featureMin)
+            ->Field("featureMax", &BlendTreeMotionMatchNode::m_featureMax)
+            ->Field("clipFeatures", &BlendTreeMotionMatchNode::m_clipFeatures)
             ->Field("maxKdTreeDepth", &BlendTreeMotionMatchNode::m_maxKdTreeDepth)
             ->Field("minFramesPerKdTreeNode", &BlendTreeMotionMatchNode::m_minFramesPerKdTreeNode)
             ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
@@ -401,8 +420,22 @@ namespace EMotionFX::MotionMatching
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-            //->ClassElement(AZ::Edit::ClassElements::Group, "Acceleration Structure") // Enable once GHI #9478 and #9479 are fixed.
-            //    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+            ->ClassElement(AZ::Edit::ClassElements::Group, "Data Normalization")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_normalizeData, "Normalize Data", "Normalize feature data for more intuitive control over weighting the cost factors.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMin, "Feature Minimum", "Minimum value after data transformation.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMax, "Feature Maximum", "Maximum value after data transformation.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_clipFeatures, "Clip Features", "Clip feature values for outliers to the above range.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+            ->ClassElement(AZ::Edit::ClassElements::Group, "Acceleration Structure")
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kd-tree depth", "The maximum number of hierarchy levels in the kdTree.")
                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                 ->Attribute(AZ::Edit::Attributes::Max, 20)
@@ -411,11 +444,12 @@ namespace EMotionFX::MotionMatching
                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                 ->Attribute(AZ::Edit::Attributes::Max, 100000)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+            ->EndGroup()
+            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureSchema, "FeatureSchema", "")
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
             ->UIElement(AZ::Edit::UIHandlers::Button, "", "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::OnVisualizeSchemaButtonClicked)
                 ->Attribute(AZ::Edit::Attributes::ButtonText, &BlendTreeMotionMatchNode::OnVisualizeSchemaButtonText)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureSchema, "FeatureSchema", "")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
             ->DataElement(AZ_CRC_CE("MotionSetMotionIds"), &BlendTreeMotionMatchNode::m_motionIds, "Motions", "")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                 ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)

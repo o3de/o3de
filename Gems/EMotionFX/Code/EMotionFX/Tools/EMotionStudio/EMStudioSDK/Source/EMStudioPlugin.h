@@ -11,8 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/MemoryFile.h>
-#include <EMotionFX/Rendering/Common/RenderUtil.h>
-#include <EMotionFX/Rendering/Common/Camera.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include "EMStudioConfig.h"
 #include <QString>
@@ -64,24 +62,6 @@ namespace EMStudio
         virtual void OnAfterLoadActors() {}
         virtual void OnBeforeRemovePlugin(uint32 classID) { MCORE_UNUSED(classID); }
         virtual void OnMainWindowClosed() {}
-
-        struct RenderInfo
-        {
-            MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin::RenderInfo, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
-            RenderInfo(MCommon::RenderUtil* renderUtil, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight)
-            {
-                m_renderUtil     = renderUtil;
-                m_camera         = camera;
-                m_screenWidth    = screenWidth;
-                m_screenHeight   = screenHeight;
-            }
-
-            MCommon::RenderUtil*        m_renderUtil;
-            MCommon::Camera*            m_camera;
-            uint32                      m_screenWidth;
-            uint32                      m_screenHeight;
-        };
 
         //! Render function will call atom auxGeom internally to render. This is the replacement for LegacyRender function.
         virtual void Render(EMotionFX::ActorRenderFlags renderFlags)

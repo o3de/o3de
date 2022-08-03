@@ -6,12 +6,15 @@
  *
  */
 
-#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Math/Capsule.h>
+#include <AzCore/Math/Obb.h>
+#include <AzCore/Math/Sphere.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/PropertyTypes.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Physics
 {
@@ -74,6 +77,11 @@ namespace Physics
     {
     }
 
+    AZ::Sphere SphereShapeConfiguration::ToSphere(const AZ::Transform& transform) const
+    {
+        return AZ::Sphere(transform.GetTranslation(), m_radius);
+    }
+
     void BoxShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -103,6 +111,11 @@ namespace Physics
     BoxShapeConfiguration::BoxShapeConfiguration(const AZ::Vector3& boxDimensions)
         : m_dimensions(boxDimensions)
     {
+    }
+
+    AZ::Obb BoxShapeConfiguration::ToObb(const AZ::Transform& transform) const
+    {
+        return AZ::Obb::CreateFromPositionRotationAndHalfLengths(transform.GetTranslation(), transform.GetRotation(), 0.5f * m_dimensions);
     }
 
     void CapsuleShapeConfiguration::Reflect(AZ::ReflectContext* context)
@@ -155,6 +168,14 @@ namespace Physics
     {
         // check that the radius is less than half the height
         m_radius = AZ::GetMin(m_radius, (0.5f - AZ::Constants::FloatEpsilon) * m_height);
+    }
+
+    AZ::Capsule CapsuleShapeConfiguration::ToCapsule(const AZ::Transform& transform) const
+    {
+        const float halfAxisLength = 0.5f * m_height - m_radius;
+        const AZ::Vector3 firstHemisphereCenter = transform.TransformPoint(AZ::Vector3::CreateAxisZ(-halfAxisLength));
+        const AZ::Vector3 secondHemisphereCenter = transform.TransformPoint(AZ::Vector3::CreateAxisZ(halfAxisLength));
+        return AZ::Capsule(firstHemisphereCenter, secondHemisphereCenter, m_radius);
     }
 
     void PhysicsAssetShapeConfiguration::Reflect(AZ::ReflectContext* context)

@@ -27,6 +27,14 @@ namespace EMotionFX
         return m_valid && m_jointConfiguration;
     }
 
+    AZ::Transform PhysicsSetupManipulatorData::GetJointParentFrameWorld() const
+    {
+        const AZ::Quaternion& parentWorldRotation = m_parentWorldTransform.GetRotation();
+        const AZ::Vector3& childWorldTranslation = m_nodeWorldTransform.GetTranslation();
+        return AZ::Transform::CreateFromQuaternionAndTranslation(parentWorldRotation, childWorldTranslation) *
+            AZ::Transform::CreateFromQuaternion(m_jointConfiguration->m_parentLocalRotation);
+    }
+
     void PhysicsSetupManipulatorsBase::SetViewportId(AZ::s32 viewportId)
     {
         m_viewportId = viewportId;

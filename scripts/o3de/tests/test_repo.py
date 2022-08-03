@@ -21,11 +21,11 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
 {
     "o3de_manifest_name": "testuser",
     "origin": "C:/Users/testuser/.o3de",
-    "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
+    "default_engines_folder": "C:/Users/testuser/O3DE/Engines",
     "default_projects_folder": "C:/Users/testuser/O3DE/Projects",
     "default_gems_folder": "C:/Users/testuser/O3DE/Gems",
     "default_templates_folder": "C:/Users/testuser/O3DE/Templates",
-    "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
+    "default_restricted_folder": "C:/Users/testuser/O3DE/Restricted",
     "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
     "projects": [],
     "external_subdirectories": [],

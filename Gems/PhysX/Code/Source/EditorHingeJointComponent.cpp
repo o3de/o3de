@@ -36,7 +36,7 @@ namespace PhysX
                     "PhysX Hinge Joint", "A dynamic joint that constrains a rigid body with rotation limits around a single axis.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/hinge-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
@@ -49,14 +49,14 @@ namespace PhysX
 
     void EditorHingeJointComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXJointService", 0x0d2f906f));
+        provided.push_back(AZ_CRC_CE("PhysicsJointService"));
     }
 
     void EditorHingeJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        required.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorHingeJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

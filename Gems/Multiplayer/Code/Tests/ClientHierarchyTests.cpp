@@ -459,7 +459,7 @@ namespace Multiplayer
 
         // Test ProcessInput
         {
-            AZStd::unordered_set<NetEntityId> inputProcessedEntities;
+            NetEntityIdSet inputProcessedEntities;
             size_t processInputCallCounter = 0;
             auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](NetEntityId netEntityId)
             {
@@ -477,7 +477,7 @@ namespace Multiplayer
 
             EXPECT_EQ(processInputCallCounter, 3);
             EXPECT_EQ(inputProcessedEntities,
-                AZStd::unordered_set<NetEntityId>({ m_root->m_netId, m_child->m_netId, m_childOfChild->m_netId }));
+                NetEntityIdSet({ m_root->m_netId, m_child->m_netId, m_childOfChild->m_netId }));
         }
     }
 }

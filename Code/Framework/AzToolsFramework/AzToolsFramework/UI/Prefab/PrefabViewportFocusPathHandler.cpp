@@ -54,7 +54,7 @@ namespace AzToolsFramework::Prefab
                 m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
 
                 // Manually refresh path
-                QTimer::singleShot(0, [&]() { OnPrefabFocusChanged(); });
+                QTimer::singleShot(0, [&]() { Refresh(); });
             }
         );
 
@@ -73,6 +73,16 @@ namespace AzToolsFramework::Prefab
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()
+    {
+        Refresh();
+    }
+
+    void PrefabViewportFocusPathHandler::OnPrefabFocusRefreshed()
+    {
+        Refresh();
+    }
+
+    void PrefabViewportFocusPathHandler::Refresh()
     {
         // Push new Path
         m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());

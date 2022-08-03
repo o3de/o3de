@@ -167,6 +167,27 @@ namespace PhysXEditorTests
                         }
                     }
                 });
+
+        ON_CALL(mockShapeRequests, UpdateHeightsAndMaterialsAsync)
+            .WillByDefault(
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+                   const Physics::UpdateHeightfieldCompleteFunction& updateHeightsMaterialsCompleteCallback,
+                   [[maybe_unused]] size_t startColumn,
+                   [[maybe_unused]] size_t startRow,
+                   [[maybe_unused]] size_t numColumns,
+                   [[maybe_unused]] size_t numRows)
+                {
+                    auto samples = GetSamples();
+                    for (size_t row = 0; row < 3; row++)
+                    {
+                        for (size_t col = 0; col < 3; col++)
+                        {
+                            updateHeightsMaterialsCallback(col, row, samples[(row * 3) + col]);
+                        }
+                    }
+
+                    updateHeightsMaterialsCompleteCallback();
+                });
     }
 
     EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
@@ -192,7 +213,8 @@ namespace PhysXEditorTests
 
             // Notify the Editor entity that the heightfield data changed so that it refreshes itself before we build
             // the corresponding game entity.
-            Physics::HeightfieldProviderNotificationBus::Broadcast(
+            Physics::HeightfieldProviderNotificationBus::Event(
+                m_editorEntity->GetId(),
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
@@ -202,7 +224,8 @@ namespace PhysXEditorTests
             m_gameEntity->Activate();
 
             // Send the notification a second time so that the game entity gets refreshed as well.
-            Physics::HeightfieldProviderNotificationBus::Broadcast(
+            Physics::HeightfieldProviderNotificationBus::Event(
+                m_gameEntity->GetId(),
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, AZ::Aabb::CreateNull(),
                 Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
@@ -311,6 +334,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(gameEntity->FindComponent<UnitTest::MockPhysXHeightfieldProviderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId) != nullptr);
+
+        // Make sure to deactivate the entities before destroying the mocks, or else it's possible to get deadlocked.
+        gameEntity->Deactivate();
+        editorEntity->Deactivate();
 
         CleanupHeightfieldComponent();
     }

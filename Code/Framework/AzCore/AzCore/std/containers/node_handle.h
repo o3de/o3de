@@ -11,6 +11,7 @@
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/utils.h>
+#include <AzCore/std/typetraits/add_const.h>
 
 namespace AZStd
 {

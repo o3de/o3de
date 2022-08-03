@@ -232,6 +232,8 @@ public:
     void OnUpdateNonGameMode(QAction* action);
     void OnUpdateNewLevel(QAction* action);
     void OnUpdatePlayGame(QAction* action);
+    void OnToolsLogMemoryUsage();
+    void OnToolsPreferences();
 
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
@@ -351,7 +353,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();
     void OnToolsScriptHelp();
@@ -359,7 +360,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnToolsPreferences();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
     void OnSwitchToSequenceCamera();
@@ -471,7 +471,7 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env);
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
 
 #endif // CRYINCLUDE_EDITOR_CRYEDIT_H

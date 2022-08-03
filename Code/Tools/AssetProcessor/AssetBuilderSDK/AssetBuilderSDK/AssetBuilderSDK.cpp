@@ -21,6 +21,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
 #include <xxhash/xxhash.h>
@@ -608,6 +609,11 @@ namespace AssetBuilderSDK
 
     }
 
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag)
+    {
+        return (static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & flag) == flag;
+    }
+
     ProductPathDependency::ProductPathDependency(AZStd::string_view dependencyPath, ProductPathDependencyType dependencyType)
         : m_dependencyPath(dependencyPath),
         m_dependencyType(dependencyType)
@@ -1059,15 +1065,18 @@ namespace AssetBuilderSDK
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<JobProduct>()->
-                Version(6)->
-                Field("Product File Name", &JobProduct::m_productFileName)->
-                Field("Product Asset Type", &JobProduct::m_productAssetType)->
-                Field("Product Sub Id", &JobProduct::m_productSubID)->
-                Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)->
-                Field("Dependencies", &JobProduct::m_dependencies)->
-                Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)->
-                Field("Dependencies Handled", &JobProduct::m_dependenciesHandled);
+            serializeContext->Class<JobProduct>()
+                ->Version(7)
+                ->Field("Product File Name", &JobProduct::m_productFileName)
+                ->Field("Product Asset Type", &JobProduct::m_productAssetType)
+                ->Field("Product Sub Id", &JobProduct::m_productSubID)
+                ->Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)
+                ->Field("Dependencies", &JobProduct::m_dependencies)
+                ->Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)
+                ->Field("Dependencies Handled", &JobProduct::m_dependenciesHandled)
+                ->Field("Output Flags", &JobProduct::m_outputFlags)
+                ->Field("Output Path Override", &JobProduct::m_outputPathOverride)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<JobProduct>>();
         }
@@ -1084,7 +1093,11 @@ namespace AssetBuilderSDK
                 ->Property("productSubID", BehaviorValueProperty(&JobProduct::m_productSubID))
                 ->Property("productDependencies", BehaviorValueProperty(&JobProduct::m_dependencies))
                 ->Property("pathDependencies", BehaviorValueProperty(&JobProduct::m_pathDependencies))
-                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled));
+                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled))
+                ->Property("outputFlags", BehaviorValueProperty(&JobProduct::m_outputFlags))
+                ->Property("outputPathOverride", BehaviorValueProperty(&JobProduct::m_outputPathOverride))
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::ProductAsset)>("ProductAsset")
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::IntermediateAsset)>("IntermediateAsset")
             ;
         }
     }

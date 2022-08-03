@@ -146,20 +146,17 @@ namespace AZ
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
             };
 
-            using ObjectId = TransformServiceFeatureProcessorInterface::ObjectId;
-
-            //! Sets ray tracing data for a mesh.
+            //! Adds ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMesh(const ObjectId objectId, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes);
+            void AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale);
 
             //! Removes ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void RemoveMesh(const ObjectId objectId);
+            void RemoveMesh(const AZ::Uuid& uuid);
 
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void SetMeshTransform(const ObjectId objectId, const AZ::Transform transform,
-                const AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne());
+            void SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale);
 
             //! Retrieves the map of all subMeshes in the scene
             const SubMeshVector& GetSubMeshes() const { return m_subMeshes; }
@@ -228,8 +225,8 @@ namespace AZ
             bool m_rayTracingEnabled = false;
 
             // mesh data for meshes that should be included in ray tracing operations,
-            // this is a map of the mesh object Id to the ray tracing data for the sub-meshes
-            using MeshMap = AZStd::map<uint32_t, Mesh>;
+            // this is a map of the mesh UUID to the ray tracing data for the sub-meshes
+            using MeshMap = AZStd::map<AZ::Uuid, Mesh>;
             MeshMap m_meshes;
             SubMeshVector m_subMeshes;
 

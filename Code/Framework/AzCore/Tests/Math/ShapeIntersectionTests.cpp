@@ -253,6 +253,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(4.0f, 4.0f, 5.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCompletelyContainedObb)
@@ -266,6 +267,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingFace)
@@ -279,6 +281,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromFace)
@@ -292,6 +295,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingFace)
@@ -305,6 +309,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.5f, 2.0f, 0.5f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromFace)
@@ -318,6 +323,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.5f, 2.0f, 0.5f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingEdge)
@@ -331,6 +337,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.5f, 1.5f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromEdge)
@@ -344,6 +351,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.5f, 1.5f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingEdge)
@@ -357,6 +365,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.0f, 1.5f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromEdge)
@@ -370,6 +379,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.0f, 1.5f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustOverlappingVertex)
@@ -383,6 +393,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCapJustSeparateFromVertex)
@@ -396,6 +407,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustOverlappingVertex)
@@ -409,6 +421,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 2.0f, 1.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleObbCylinderJustSeparateFromVertex)
@@ -422,6 +435,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 2.0f, 1.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, capsule));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedObb)
@@ -434,6 +448,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.0f, 2.0f, 1.5f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbCompletelyContainedSphere)
@@ -446,6 +461,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(5.0f, 6.0f, 7.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustIntersectingFace)
@@ -458,6 +474,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 3.0f, 1.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromFace)
@@ -470,6 +487,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 3.0f, 1.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustIntersectingEdge)
@@ -482,6 +500,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.5f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromEdge)
@@ -494,6 +513,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(1.5f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustIntersectingVertex)
@@ -506,6 +526,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, SphereObbJustSeparateFromVertex)
@@ -518,6 +539,7 @@ namespace UnitTest
         const AZ::Vector3 obbHalfLengths(2.0f, 1.0f, 2.0f);
         const AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(obbPosition, obbRotation, obbHalfLengths);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, obb));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(obb, sphere));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereCompletelyContainedSphere)
@@ -530,6 +552,7 @@ namespace UnitTest
         const float sphereRadius = 1.5f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereCompletelyContainedCapsule)
@@ -542,6 +565,7 @@ namespace UnitTest
         const float sphereRadius = 5.0f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereJustIntersectingCap)
@@ -554,6 +578,7 @@ namespace UnitTest
         const float sphereRadius = 5.01f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereJustSeparateFromCap)
@@ -566,6 +591,7 @@ namespace UnitTest
         const float sphereRadius = 4.99f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_FALSE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereJustIntersectingCylinder)
@@ -578,6 +604,7 @@ namespace UnitTest
         const float sphereRadius = 2.01f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, CapsuleSphereJustSeparateFromCylinder)
@@ -590,6 +617,7 @@ namespace UnitTest
         const float sphereRadius = 1.99f;
         const AZ::Sphere sphere(sphereCenter, sphereRadius);
         EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(capsule, sphere));
+        EXPECT_TRUE(AZ::ShapeIntersection::Overlaps(sphere, capsule));
     }
 
     TEST(MATH_ShapeIntersection, ObbObbCompletelyContained)

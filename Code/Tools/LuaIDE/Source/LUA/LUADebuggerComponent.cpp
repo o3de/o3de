@@ -351,13 +351,11 @@ namespace LUADebugger
             {
                 if (*c2 == '\n')
                 {
-                    callstack.push_back();
-                    callstack.back().assign(c1, c2);
+                    callstack.emplace_back().assign(c1, c2);
                     c1 = c2 + 1;
                 }
             }
-            callstack.push_back();
-            callstack.back() = c1;
+            callstack.emplace_back() = c1;
             EBUS_EVENT(LUAEditor::Context_DebuggerManagement::Bus, OnReceivedCallstack, callstack);
         }
         else if (azrtti_istypeof<AzFramework::ScriptDebugRegisteredGlobalsResult*>(msg.get()))

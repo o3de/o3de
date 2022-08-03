@@ -12,10 +12,13 @@ set(FILES
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorWidgetAction.cpp
+    ActionManager/Action/EditorWidgetAction.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -362,6 +365,9 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
     UI/DPEDebugViewer/DPEDebugTextView.h
+    UI/DPEDebugViewer/DPEDebugWindow.cpp
+    UI/DPEDebugViewer/DPEDebugWindow.h
+    UI/DPEDebugViewer/DPEDebugWindow.ui
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
@@ -409,6 +415,8 @@ set(FILES
     UI/PropertyEditor/EntityIdQLineEdit.cpp
     UI/PropertyEditor/EntityPropertyEditor.hxx
     UI/PropertyEditor/EntityPropertyEditor.cpp
+    UI/PropertyEditor/ExeSelectPropertyHandler.cpp
+    UI/PropertyEditor/ExeSelectPropertyHandler.h
     UI/PropertyEditor/GenericComboBoxCtrl.h
     UI/PropertyEditor/GenericComboBoxCtrl.cpp
     UI/PropertyEditor/GenericComboBoxCtrl.inl
@@ -695,6 +703,8 @@ set(FILES
     Prefab/PrefabFocusUndo.h
     Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabIdTypes.h
+    Prefab/PrefabInstanceUtils.h
+    Prefab/PrefabInstanceUtils.cpp
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
     Prefab/PrefabLoaderInterface.h
@@ -712,6 +722,9 @@ set(FILES
     Prefab/PrefabSystemScriptingHandler.cpp
     Prefab/Instance/Instance.h
     Prefab/Instance/Instance.cpp
+    Prefab/Instance/InstanceDomGenerator.h
+    Prefab/Instance/InstanceDomGenerator.cpp
+    Prefab/Instance/InstanceDomGeneratorInterface.h
     Prefab/Instance/InstanceSerializer.h
     Prefab/Instance/InstanceSerializer.cpp
     Prefab/Instance/InstanceEntityScrubber.h
@@ -722,10 +735,10 @@ set(FILES
     Prefab/Instance/InstanceEntityMapper.cpp
     Prefab/Instance/InstanceEntityMapperInterface.h
     Prefab/Instance/InstanceToTemplateInterface.h
-    Prefab/Instance/InstanceToTemplatePropagator.cpp
     Prefab/Instance/InstanceToTemplatePropagator.h
-    Prefab/Instance/InstanceUpdateExecutor.cpp
+    Prefab/Instance/InstanceToTemplatePropagator.cpp
     Prefab/Instance/InstanceUpdateExecutor.h
+    Prefab/Instance/InstanceUpdateExecutor.cpp
     Prefab/Instance/InstanceUpdateExecutorInterface.h
     Prefab/Instance/TemplateInstanceMapper.h
     Prefab/Instance/TemplateInstanceMapper.cpp
@@ -835,6 +848,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.ui
     Input/QtEventToAzInputMapper.h
     Input/QtEventToAzInputMapper.cpp
+    Script/LuaEditorSystemComponent.h
+    Script/LuaEditorSystemComponent.cpp
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp

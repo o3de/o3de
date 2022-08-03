@@ -231,7 +231,7 @@ namespace AzToolsFramework
 
             static InstanceAlias GenerateInstanceAlias();
 
-            PrefabDomValueConstReference GetCachedInstanceDom() const;
+            PrefabDomConstReference GetCachedInstanceDom() const;
             PrefabDomReference GetCachedInstanceDom();
             void SetCachedInstanceDom(PrefabDomValueConstReference instanceDom);
 

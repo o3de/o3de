@@ -59,6 +59,7 @@ set(FILES
     Include/AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
     Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
+    Include/AtomToolsFramework/DynamicNode/DynamicNodeUtil.h
     Source/DynamicNode/DynamicNode.cpp
     Source/DynamicNode/DynamicNodeConfig.cpp
     Source/DynamicNode/DynamicNodeManager.cpp
@@ -66,6 +67,7 @@ set(FILES
     Source/DynamicNode/DynamicNodeSlotConfig.cpp
     Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
     Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
+    Source/DynamicNode/DynamicNodeUtil.cpp
 
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
@@ -129,6 +131,9 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererState.h
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
+
+    Include/AtomToolsFramework/SettingsDialog/SettingsDialog.h
+    Source/SettingsDialog/SettingsDialog.cpp
 
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h

@@ -42,8 +42,9 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
     child_entity.add_component(PHYSX_COLLIDER_NAME)
     assert child_entity.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
 
-    # Create a prefab based on that entity
+    # Create a prefab based on that entity and focus it
     _, outer_instance = Prefab.create_prefab([parent_entity], OUTER_PREFAB_FILE_NAME)
+    outer_instance.container_entity.focus_on_owning_prefab()
     # The entities should be now inside the outer prefab instance.
     parent_entity_on_outer_instance = outer_instance.get_direct_child_entities()[0]
     child_entity_on_outer_instance = parent_entity_on_outer_instance.get_children()[0]

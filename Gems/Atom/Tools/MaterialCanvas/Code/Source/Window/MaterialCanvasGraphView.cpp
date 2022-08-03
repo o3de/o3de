@@ -31,29 +31,23 @@ namespace MaterialCanvas
 
     void MaterialCanvasGraphView::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        SetActiveGraphId(GraphCanvas::GraphId());
+        GraphCanvas::GraphId activeGraphId = GraphCanvas::GraphId();
         if (m_documentId == documentId)
         {
-            m_activeGraphId = GraphCanvas::GraphId();
-            MaterialCanvasDocumentRequestBus::EventResult(m_activeGraphId, documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
-            SetActiveGraphId(m_activeGraphId);
+            MaterialCanvasDocumentRequestBus::EventResult(
+                activeGraphId, m_documentId, &MaterialCanvasDocumentRequestBus::Events::GetGraphId);
         }
+        SetActiveGraphId(activeGraphId, m_documentId == documentId);
     }
 
     void MaterialCanvasGraphView::OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        if (m_documentId == documentId)
-        {
-            SetActiveGraphId(GraphCanvas::GraphId());
-        }
+        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
     }
 
     void MaterialCanvasGraphView::OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId)
     {
-        if (m_documentId == documentId)
-        {
-            SetActiveGraphId(GraphCanvas::GraphId());
-        }
+        SetActiveGraphId(GraphCanvas::GraphId(), m_documentId == documentId);
     }
 } // namespace MaterialCanvas
 

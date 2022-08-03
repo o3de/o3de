@@ -235,6 +235,8 @@ private:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
+    AZStd::optional<float> GetCameraFoV() override;
     bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     // AzToolsFramework::Prefab::PrefabPublicNotificationBus overrides ...
@@ -395,7 +397,8 @@ private:
     // these are now forwarded to EntityVisibilityQuery
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
-    // Handlers for grid snapping/editor event callbacks
+    // Handlers for snapping/editor event callbacks
+    SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 

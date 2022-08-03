@@ -159,6 +159,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -357,6 +364,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -482,6 +496,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -607,6 +628,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -732,6 +760,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -857,6 +892,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -982,6 +1024,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1112,6 +1161,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1237,6 +1293,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1362,6 +1425,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1487,6 +1557,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1612,6 +1689,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1737,6 +1821,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1862,6 +1953,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -1987,6 +2085,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -2112,6 +2217,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 561144275819577369,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -2222,6 +2334,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4053738125999010589,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -2336,6 +2455,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4053738125999010589,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -2396,8 +2522,8 @@
                     "Parent Entity": "ContainerEntity",
                     "Transform Data": {
                         "Translate": [
-                            -7.378466606140137,
-                            1.4436144828796387,
+                            -5.95854377746582,
+                            1.57130765914917,
                             -1.069833755493164
                         ],
                         "Rotate": [
@@ -2450,6 +2576,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4053738125999010589,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -2559,6 +2692,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 4053738125999010589,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}

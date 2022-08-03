@@ -8,15 +8,19 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+
 namespace AzToolsFramework
 {
     ActionManager::ActionManager()
     {
         AZ::Interface<ActionManagerInterface>::Register(this);
+        AZ::Interface<ActionManagerInternalInterface>::Register(this);
     }
 
     ActionManager::~ActionManager()
     {
+        AZ::Interface<ActionManagerInternalInterface>::Unregister(this);
         AZ::Interface<ActionManagerInterface>::Unregister(this);
 
         ClearActionContextMap();
@@ -48,6 +52,11 @@ namespace AzToolsFramework
         );
 
         return AZ::Success();
+    }
+
+    bool ActionManager::IsActionContextRegistered(const AZStd::string& contextIdentifier) const
+    {
+        return m_actionContexts.contains(contextIdentifier);
     }
 
     ActionManagerOperationResult ActionManager::RegisterAction(
@@ -83,6 +92,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
+                    properties.m_hideFromMenusWhenDisabled,
+                    properties.m_hideFromToolBarsWhenDisabled,
                     handler
                 )
             }
@@ -125,6 +136,8 @@ namespace AzToolsFramework
                     properties.m_description,
                     properties.m_category,
                     properties.m_iconPath,
+                    properties.m_hideFromMenusWhenDisabled,
+                    properties.m_hideFromToolBarsWhenDisabled,
                     handler,
                     checkStateCallback
                 )
@@ -132,6 +145,11 @@ namespace AzToolsFramework
         );
 
         return AZ::Success();
+    }
+
+    bool ActionManager::IsActionRegistered(const AZStd::string& actionIdentifier) const
+    {
+        return m_actions.contains(actionIdentifier);
     }
     
     ActionManagerGetterResult ActionManager::GetActionName(const AZStd::string& actionIdentifier)
@@ -269,28 +287,6 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
-    {
-        auto actionIterator = m_actions.find(actionIdentifier);
-        if (actionIterator == m_actions.end())
-        {
-            return nullptr;
-        }
-
-        return actionIterator->second.GetAction();
-    }
-
-    const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier)
-    {
-        auto actionIterator = m_actions.find(actionIdentifier);
-        if (actionIterator == m_actions.end())
-        {
-            return nullptr;
-        }
-        
-        return actionIterator->second.GetAction();
-    }
-
     ActionManagerOperationResult ActionManager::InstallEnabledStateCallback(
         const AZStd::string& actionIdentifier, AZStd::function<bool()> enabledStateCallback)
     {
@@ -324,6 +320,7 @@ namespace AzToolsFramework
         }
         
         actionIterator->second.Update();
+
         return AZ::Success();
     }
     
@@ -400,6 +397,148 @@ namespace AzToolsFramework
         {
             delete elem.second;
         }
+    }
+
+    ActionManagerOperationResult ActionManager::RegisterWidgetAction(
+        const AZStd::string& widgetActionIdentifier, const WidgetActionProperties& properties, AZStd::function<QWidget*()> generator)
+    {
+        if (m_widgetActions.contains(widgetActionIdentifier))
+        {
+            return AZ::Failure(
+                AZStd::string::format("Action Manager - Could not register widget action \"%.s\" twice.", widgetActionIdentifier.c_str()));
+        }
+
+        m_widgetActions.insert(
+            {
+                widgetActionIdentifier,
+                EditorWidgetAction(
+                  widgetActionIdentifier,
+                  properties.m_name,
+                  properties.m_category,
+                  AZStd::move(generator)
+                )
+            }
+        );
+
+        return AZ::Success();
+    }
+
+    bool ActionManager::IsWidgetActionRegistered(const AZStd::string& widgetActionIdentifier) const
+    {
+        return m_widgetActions.contains(widgetActionIdentifier);
+    }
+
+    ActionManagerGetterResult ActionManager::GetWidgetActionName(const AZStd::string& widgetActionIdentifier)
+    {
+        auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
+        if (widgetActionIterator == m_widgetActions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get name of widget action \"%s\" as no widget action with that identifier was registered.",
+                widgetActionIdentifier.c_str()));
+        }
+
+        return AZ::Success(widgetActionIterator->second.GetName());
+    }
+
+    ActionManagerOperationResult ActionManager::SetWidgetActionName(
+        const AZStd::string& widgetActionIdentifier, const AZStd::string& name)
+    {
+        auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
+        if (widgetActionIterator == m_widgetActions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set name of widget action \"%s\" as no widget action with that identifier was registered.",
+                widgetActionIdentifier.c_str()));
+        }
+
+        widgetActionIterator->second.SetName(name);
+        return AZ::Success();
+    }
+
+    ActionManagerGetterResult ActionManager::GetWidgetActionCategory(const AZStd::string& widgetActionIdentifier)
+    {
+        auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
+        if (widgetActionIterator == m_widgetActions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not get category of widget action \"%s\" as no widget action with that identifier was registered.",
+                widgetActionIdentifier.c_str()));
+        }
+
+        return AZ::Success(widgetActionIterator->second.GetCategory());
+    }
+
+    ActionManagerOperationResult ActionManager::SetWidgetActionCategory(
+        const AZStd::string& widgetActionIdentifier, const AZStd::string& category)
+    {
+        auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
+        if (widgetActionIterator == m_widgetActions.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Action Manager - Could not set category of widget action \"%s\" as no widget action with that identifier was registered.",
+                widgetActionIdentifier.c_str()));
+        }
+
+        widgetActionIterator->second.SetCategory(category);
+        return AZ::Success();
+    }
+
+    QAction* ActionManager::GetAction(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return actionIterator->second.GetAction();
+    }
+
+    const QAction* ActionManager::GetActionConst(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return actionIterator->second.GetAction();
+    }
+
+    bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            // Return the default value.
+            return true;
+        }
+
+        return actionIterator->second.GetHideFromMenusWhenDisabled();
+    }
+
+    bool ActionManager::GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            // Return the default value.
+            return false;
+        }
+
+        return actionIterator->second.GetHideFromToolBarsWhenDisabled();
+    }
+
+    QWidget* ActionManager::GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier)
+    {
+        auto widgetActionIterator = m_widgetActions.find(widgetActionIdentifier);
+        if (widgetActionIterator == m_widgetActions.end())
+        {
+            return nullptr;
+        }
+
+        return widgetActionIterator->second.GenerateWidget();
     }
 
 } // namespace AzToolsFramework

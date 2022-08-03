@@ -1,6 +1,5 @@
-atomicwrites==1.4.0 \
-    --hash=sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197 \
-    --hash=sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a \
+atomicwrites==1.4.1 \
+    --hash=sha256:81b2c9071a49367a7f770170e5eec8cb66567cfbbc8c73d20ce5ca4a8d71cf11 \
     # via -r .\requirements.txt, pytest
 attrs==20.1.0 \
     --hash=sha256:0ef97238856430dcf9228e07f316aefc17e8939fc8507e18c6501b761ef1a42a \
@@ -60,9 +59,9 @@ importlib-metadata==1.6.1 \
     --hash=sha256:0505dd08068cfec00f53a74a0ad927676d7757da81b7436a6eefe4c7cf75c545 \
     --hash=sha256:15ec6c0fd909e893e3a08b3a7c76ecb149122fb14b7efe1199ddd4c7c57ea958 \
     # pluggy, pytest
-jinja2==2.11.2 \
-    --hash=sha256:89aab215427ef59c34ad58735269eb58b1a5808103067f7bb9d5836c651b3bb0 \
-    --hash=sha256:f0a4641d3cf955324a89c04f3d94663aa4d638abe8f733ecd3582848e1c37035 \
+jinja2==2.11.3 \
+    --hash=sha256:03e47ad063331dd6a3f04a43eddca8a966a26ba0c5b7207a9a9e4e08f1b29419 \
+    --hash=sha256:a6d58433de0ae800347cab1fa3043cebbabe8baa9d29e668f1c768cb87a333c6 \
     # via -r .\requirements.txt
 jmespath==0.9.5 \
     --hash=sha256:695cb76fa78a10663425d5b73ddc5714eb711157e52704d69be03b1a02ba4fec \

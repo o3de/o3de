@@ -65,7 +65,6 @@ namespace UnitTest
             bookmarkPersistInterface->OverrideStreamReadFn(
                 [persistentSetReg]([[maybe_unused]] const AZStd::string& localBookmarksFileName)
                 {
-                    [[maybe_unused]] auto debugString = AZStd::string(persistentSetReg->m_buffer);
                     return persistentSetReg->m_buffer;
                 });
 

@@ -114,6 +114,7 @@ set(FILES
     Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
+    Editor/Translation/TranslationHelper.cpp
     Editor/Translation/TranslationHelper.h
     Editor/Undo/ScriptCanvasGraphCommand.cpp
     Editor/Undo/ScriptCanvasGraphCommand.h

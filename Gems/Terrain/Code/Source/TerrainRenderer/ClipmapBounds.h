@@ -36,7 +36,7 @@ namespace Terrain
 
         //! Scale of the clip map compared to the world. A scale of 0.5 means that
         //! a clipmap of size 1024 would cover 512 meters.
-        float m_clipToWorldScale = 1.0f;
+        float m_clipmapToWorldScale = 1.0f;
     };
 
     struct ClipmapBoundsRegion
@@ -118,10 +118,12 @@ namespace Terrain
         //! The biggest possible number of regions can return when calling UpdateCenter();
         static constexpr uint32_t MaxUpdateRegions = 6;
 
-        //! Takes in a single world space region and transforms it into 0-4 regions in the clipmap clamped
+        //! Takes in a single world space aabb and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
         ClipmapBoundsRegionList TransformRegion(AZ::Aabb worldSpaceRegion);
-        
+        //! Takes in a single world space min and max 2d bounds and transforms it into 0-4 regions in the clipmap clamped
+        //! to the bounds of the clipmap.
+        ClipmapBoundsRegionList TransformRegion(const AZ::Vector2& worldSpaceMin, const AZ::Vector2& worldSpaceMax);
         //! Takes in a single unscaled clipmap space region and transforms it into 0-4 regions in the clipmap clamped
         //! to the bounds of the clipmap.
         ClipmapBoundsRegionList TransformRegion(Aabb2i clipSpaceRegion);
@@ -134,9 +136,22 @@ namespace Terrain
         //! 0.25 and margin of 4 would have a safe distance of (1024 * 0.5 - 4) * 0.25 = 127.0f.
         float GetWorldSpaceSafeDistance() const;
 
-        //! Returns the modulated center of the clipmap.
+        //! Returns the center of the clipmap in clipmap space.
+        Vector2i GetCenterInClipmapSpace() const;
+
+        //! Returns the center of the clipmap in world space.
+        AZ::Vector2 GetCenterInWorldSpace() const;
+
+        //! Returns the modulated center of the clipmap in [0, size).
         Vector2i GetModCenter() const;
     private:
+
+        enum class RoundMode
+        {
+            Average,
+            Floor,
+            Ceil,
+        };
 
         //! Returns the center point snapped to a multiple of m_clipmapUpdateMultiple. This isn't
         //! a simple rounding operation. The value returned will only be different from the current
@@ -147,7 +162,7 @@ namespace Terrain
         Aabb2i GetLocalBounds() const;
 
         //! Applies scale and averages a world space vector to get a clip space vector.
-        Vector2i GetClipSpaceVector(const AZ::Vector2& worldSpaceVector) const;
+        Vector2i GetClipSpaceVector(const AZ::Vector2& worldSpaceVector, RoundMode roundMode = RoundMode::Average) const;
 
         //! Applies inverse scale to get a world aabb from clip space aabb.
         AZ::Aabb GetWorldSpaceAabb(const Aabb2i& clipSpaceAabb) const;
@@ -157,8 +172,8 @@ namespace Terrain
         int32_t m_size;
         int32_t m_halfSize;
         int32_t m_clipmapUpdateMultiple;
-        float m_scale;
-        float m_rcpScale;
+        float m_clipmapToWorldScale;
+        float m_worldToClipmapScale;
     };
 
 }

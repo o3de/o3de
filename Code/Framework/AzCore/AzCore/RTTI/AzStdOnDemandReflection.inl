@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 struct lua_State;

@@ -18,6 +18,7 @@
 
 namespace SandboxEditor
 {
+    using AngleSnappingChangedEvent = AZ::Event<bool>;
     using GridSnappingChangedEvent = AZ::Event<bool>;
 
     //! Set callbacks to listen for editor settings change events.
@@ -26,6 +27,7 @@ namespace SandboxEditor
     public:
         virtual ~EditorViewportSettingsCallbacks() = default;
 
+        virtual void SetAngleSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
         virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
     };
 
