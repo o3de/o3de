@@ -268,7 +268,7 @@ void MainWindow::Activate()
     connect(ui->connectionTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::OnConnectionContextMenu);
 
     //allowed list connections
-    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::FirstTimeAddedToRejctedList, this, &MainWindow::FirstTimeAddedToRejctedList);
+    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::FirstTimeAddedToRejctedList, this, &MainWindow::FirstTimeAddedToRejectedList);
     connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::SyncAllowedListAndRejectedList, this, &MainWindow::SyncAllowedListAndRejectedList);
     connect(ui->allowListAllowedListConnectionsListView, &QListView::clicked, this, &MainWindow::OnAllowedListConnectionsListViewClicked);
     ui->allowListAllowedListConnectionsListView->setModel(&m_allowedListAddresses);
@@ -1292,7 +1292,7 @@ void MainWindow::SyncAllowedListAndRejectedList(QStringList allowedList, QString
     m_rejectedAddresses.setStringList(rejectedList);
 }
 
-void MainWindow::FirstTimeAddedToRejctedList(QString ipAddress)
+void MainWindow::FirstTimeAddedToRejectedList(QString ipAddress)
 {
     QMessageBox* msgBox = new QMessageBox(this);
     msgBox->setText(tr("!!!Rejected Connection!!!"));
