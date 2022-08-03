@@ -18,6 +18,9 @@ namespace PhysX::Benchmarks
 {
     static constexpr float DefaultTimeStep = 0.0166667f; // 0.0166667f (60fps)
 
+    static constexpr int RigidBodyApiObject = 0;
+    static constexpr int RigidBodyEntity = 1;
+
     //! The Benchmark environment is used for one time setup and tear down of shared resources
     class PhysXBenchmarkEnvironment
         : public AZ::Test::BenchmarkEnvironmentBase

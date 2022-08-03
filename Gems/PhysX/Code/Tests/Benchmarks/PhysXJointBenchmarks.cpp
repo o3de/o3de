@@ -346,6 +346,7 @@ namespace PhysX::Benchmarks
     BENCHMARK_DEFINE_F(PhysXJointBenchmarkFixture, BM_Joints_Snake)(benchmark::State& state)
     {
         const int numSegments = aznumeric_cast<int>(state.range(0));
+        const int bodyType = static_cast<int>(state.range(1));
 
         //create the collider shape config to use on the whole snake
         auto snakePartShapeConfiguration = AZStd::make_shared<Physics::SphereShapeConfiguration>(JointConstants::CreateJointDefaults::ColliderRadius);
@@ -373,7 +374,8 @@ namespace PhysX::Benchmarks
             return AZ::Vector3(0.0f, JointConstants::SnakeSegmentLength + JointConstants::SnakeSegmentLength * idx, 0.0f);
         };
 
-        AzPhysics::SimulatedBodyHandleList snakeRigidBodyHandles = Utils::CreateRigidBodies(numSegments, m_defaultScene, JointConstants::CCDEnabled, &colliderGenerator, &posGenerator);
+        Utils::BenchmarkRigidBodies snakeRigidBodyHandles = Utils::CreateRigidBodies(
+            numSegments, GetDefaultSceneHandle(), JointConstants::CCDEnabled, bodyType, &colliderGenerator, &posGenerator);
         AZStd::vector<AzPhysics::RigidBody*> snakeRigidBodies;
         snakeRigidBodies.reserve(numSegments);
         snakeRigidBodies = Utils::GetRigidBodiesFromHandles(m_defaultScene, snakeRigidBodyHandles);
@@ -413,12 +415,22 @@ namespace PhysX::Benchmarks
         }
         subTickTracker.Stop();
 
-        m_defaultScene->RemoveSimulatedBodies(snakeRigidBodyHandles);
+        if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&snakeRigidBodyHandles))
+        {
+            m_defaultScene->RemoveSimulatedBodies(*handlesList);
+        }
+
         for (const auto& jointHandle : jointHandles)
         {
             m_defaultScene->RemoveJoint(jointHandle);
         }
-        snakeRigidBodyHandles.clear();
+
+        AZStd::visit(
+            [](auto&& rigidBodies)
+            {
+                rigidBodies.clear();
+            },
+            snakeRigidBodyHandles);
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());

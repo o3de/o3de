@@ -191,6 +191,7 @@ namespace PhysX::Benchmarks
     {
         //get the request number of rigid bodies and prepare to spawn them
         const int numRigidBodies = static_cast<int>(state.range(0));
+        const int bodyType = static_cast<int>(state.range(1));
 
         //common settings for each rigid body
         const float boxSizeWithSpacing = RigidBodyConstants::RigidBodys::BoxSize + 2.0f;
@@ -219,9 +220,10 @@ namespace PhysX::Benchmarks
         {
             return boxShapeConfiguration;
         };
+
         //spawn the rigid bodies
-        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
-            RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator);
+        Utils::BenchmarkRigidBodies rigidBodies = Utils::CreateRigidBodies(
+            numRigidBodies, GetDefaultSceneHandle(), RigidBodyConstants::CCDEnabled, bodyType, &colliderGenerator, &posGenerator);
 
         //setup the sub tick tracker
         Utils::PrePostSimulationEventHandler subTickTracker;
@@ -244,8 +246,17 @@ namespace PhysX::Benchmarks
         subTickTracker.Stop();
 
         //object clean up
-        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
-        rigidBodies.clear();
+        if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&rigidBodies))
+        {
+            m_defaultScene->RemoveSimulatedBodies(*handlesList);
+        }
+
+        AZStd::visit(
+            [](auto&& rigidBodies)
+            {
+                rigidBodies.clear();
+            },
+            rigidBodies);
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -270,6 +281,7 @@ namespace PhysX::Benchmarks
 
         //get the request number of rigid bodies and prepare to spawn them
         const int numRigidBodies = static_cast<int>(state.range(0));
+        const int bodyType = static_cast<int>(state.range(1));
 
         //add the rigid bodies
         //function to generate the rigid bodies position / orientation / mass
@@ -292,8 +304,10 @@ namespace PhysX::Benchmarks
             return boxShapeConfiguration;
         };
         //spawn the rigid bodies
-        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
-            RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
+        Utils::BenchmarkRigidBodies rigidBodies = Utils::CreateRigidBodies(
+            numRigidBodies,
+            GetDefaultSceneHandle(),
+            RigidBodyConstants::CCDEnabled, bodyType, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
 
         //setup the sub tick tracker
         Utils::PrePostSimulationEventHandler subTickTracker;
@@ -318,8 +332,19 @@ namespace PhysX::Benchmarks
 
         //object clean up
         washingMachine.TearDownWashingMachine();
-        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
-        rigidBodies.clear();
+
+        if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&rigidBodies))
+        {
+            m_defaultScene->RemoveSimulatedBodies(*handlesList);
+        }
+
+        AZStd::visit(
+            [](auto&& rigidBodies)
+            {
+                rigidBodies.clear();
+            },
+            rigidBodies);
+
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -416,6 +441,7 @@ namespace PhysX::Benchmarks
 
         //get the request number of rigid bodies and prepare to spawn them
         const int numRigidBodies = static_cast<int>(state.range(0));
+        const int bodyType = static_cast<int>(state.range(2));
 
         //add the rigid bodies
         //function to generate the rigid bodies position / orientation / mass
@@ -443,8 +469,10 @@ namespace PhysX::Benchmarks
             return boxShapeConfiguration;
         };
         //spawn the rigid bodies
-        AzPhysics::SimulatedBodyHandleList rigidBodies = Utils::CreateRigidBodies(numRigidBodies, m_defaultScene,
-            RigidBodyConstants::CCDEnabled, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
+        Utils::BenchmarkRigidBodies benchmarkRigidBodies = Utils::CreateRigidBodies(
+            numRigidBodies,
+            GetDefaultSceneHandle(),
+            RigidBodyConstants::CCDEnabled, bodyType, &colliderGenerator, &posGenerator, &oriGenerator, &massGenerator);
 
         //create the collision handlers
         AZStd::vector<Utils::SimulatedBodyCollisionHandler> collisionHandlers;
@@ -458,10 +486,21 @@ namespace PhysX::Benchmarks
             numberCollisionHandlers = numRigidBodies / 2;
         }
         collisionHandlers.reserve(numberCollisionHandlers);
+
         for (int i = 0; i < numberCollisionHandlers; i++)
         {
             const AZ::u64 randIndex = rand.Getu64Random() % numRigidBodies; //randomly select the offset.
-            collisionHandlers.emplace_back(m_testSceneHandle, rigidBodies[randIndex]);
+
+            if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&benchmarkRigidBodies))
+            {
+                collisionHandlers.emplace_back(m_testSceneHandle, (*handlesList)[randIndex]);
+            }
+            else if (auto entityList = AZStd::get_if<PhysX::EntityList>(&benchmarkRigidBodies))
+            {
+                const EntityPtr& entity = (*entityList)[randIndex];
+                auto* rigidBodyComponent = entity->FindComponent<RigidBodyComponent>();
+                collisionHandlers.emplace_back(m_testSceneHandle, rigidBodyComponent->GetSimulatedBodyHandle());
+            }
         }
 
         //setup the sub tick tracker
@@ -488,8 +527,18 @@ namespace PhysX::Benchmarks
         //object clean up
         collisionHandlers.clear();
         washingMachine.TearDownWashingMachine();
-        m_defaultScene->RemoveSimulatedBodies(rigidBodies);
-        rigidBodies.clear();
+
+        if (auto handlesList = AZStd::get_if<AzPhysics::SimulatedBodyHandleList>(&benchmarkRigidBodies))
+        {
+            m_defaultScene->RemoveSimulatedBodies(*handlesList);
+        }
+
+        AZStd::visit(
+            [](auto&& rigidBodies)
+            {
+                rigidBodies.clear();
+            },
+            benchmarkRigidBodies);
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -503,35 +552,45 @@ namespace PhysX::Benchmarks
 
     BENCHMARK_REGISTER_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_AtRest)
         ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
-        ->Range(RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange)
+        ->Ranges({ { RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange },
+                   { RigidBodyApiObject, RigidBodyEntity } })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
+        ->MeasureProcessCPUTime()
         ;
 
     BENCHMARK_REGISTER_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_MovingAndColliding)
         ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
-        ->Range(RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange)
+        ->Ranges({ { RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange },
+                   { RigidBodyApiObject, RigidBodyEntity } })
+        ->Unit(benchmark::kMillisecond)
+        ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
+        ->MeasureProcessCPUTime();
+        ;
+
+    BENCHMARK_REGISTER_F(PhysXRigidbodyCollisionsBenchmarkFixture, BM_RigidBody_MovingAndColliding_CollisionHandlers)
+        ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
+        ->Ranges({  {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange},
+                    {RigidBodyConstants::BenchmarkSettings::AllCollisionHanders, RigidBodyConstants::BenchmarkSettings::AllCollisionHanders},
+                    {RigidBodyApiObject, RigidBodyEntity} })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
         ;
 
     BENCHMARK_REGISTER_F(PhysXRigidbodyCollisionsBenchmarkFixture, BM_RigidBody_MovingAndColliding_CollisionHandlers)
         ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
-        ->Ranges({ {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange}, {RigidBodyConstants::BenchmarkSettings::AllCollisionHanders, RigidBodyConstants::BenchmarkSettings::AllCollisionHanders} })
+        ->Ranges({  {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange},
+                    {RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers, RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers},
+                    {RigidBodyApiObject, RigidBodyEntity} })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
         ;
 
     BENCHMARK_REGISTER_F(PhysXRigidbodyCollisionsBenchmarkFixture, BM_RigidBody_MovingAndColliding_CollisionHandlers)
         ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
-        ->Ranges({ {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange}, {RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers, RigidBodyConstants::BenchmarkSettings::HalfCollisionHandlers} })
-        ->Unit(benchmark::kMillisecond)
-        ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
-        ;
-
-    BENCHMARK_REGISTER_F(PhysXRigidbodyCollisionsBenchmarkFixture, BM_RigidBody_MovingAndColliding_CollisionHandlers)
-        ->RangeMultiplier(RigidBodyConstants::BenchmarkSettings::RangeMultipler)
-        ->Ranges({ {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange}, {RigidBodyConstants::BenchmarkSettings::NoCollisionHandlers, RigidBodyConstants::BenchmarkSettings::NoCollisionHandlers} })
+        ->Ranges({  {RigidBodyConstants::BenchmarkSettings::StartRange, RigidBodyConstants::BenchmarkSettings::EndRange},
+                    {RigidBodyConstants::BenchmarkSettings::NoCollisionHandlers, RigidBodyConstants::BenchmarkSettings::NoCollisionHandlers},
+                    {RigidBodyApiObject, RigidBodyEntity} })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
         ;
