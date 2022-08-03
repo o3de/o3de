@@ -9,9 +9,9 @@
 #pragma once
 
 
-#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "MaterialFunctions/EvaluateTangentFrame.azsli"
 
-PixelGeometryData EvaluatePixelGeometry_NewPBR(
+PixelGeometryData EvaluatePixelGeometry_BasePBR(
     float3 positionWS,
     float3 normal,
     float3 tangent,
@@ -45,9 +45,9 @@ PixelGeometryData EvaluatePixelGeometry_NewPBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_NewPBR(VSOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_BasePBR(VSOutput IN, bool isFrontFace)
 {
-    return EvaluatePixelGeometry_NewPBR(
+    return EvaluatePixelGeometry_BasePBR(
         IN.m_worldPosition,
         IN.m_normal,
         IN.m_tangent,
@@ -57,9 +57,9 @@ PixelGeometryData EvaluatePixelGeometry_NewPBR(VSOutput IN, bool isFrontFace)
 }
 
 
-#ifdef PIXEL_GEOMETRY_DATA_IS_NEW_PBR
+#ifdef PIXEL_GEOMETRY_DATA_IS_BASE_PBR
 
 #define     EvaluatePixelGeometry(IN, isFrontFace)                  \
-            EvaluatePixelGeometry_NewPBR(IN, isFrontFace)
+            EvaluatePixelGeometry_BasePBR(IN, isFrontFace)
 
 #endif

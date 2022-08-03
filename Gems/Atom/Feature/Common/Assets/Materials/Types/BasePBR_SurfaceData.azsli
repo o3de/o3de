@@ -9,7 +9,7 @@
 #pragma once
 
 
-#define SURFACE_DATA_IS_NEW_PBR     1
+#define SURFACE_DATA_IS_BASE_PBR     1
 
 // Todo: factor out surface constants into separate file
 #include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
@@ -28,9 +28,6 @@ class Surface
     //! Surface lighting data
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
     float3 specularF0;          //!< Fresnel f0 spectral value of the surface
-    float3 emissiveLighting;    //!< Emissive lighting
-    float diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
-    float specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
 
     //! Applies specular anti-aliasing to roughnessA2
     void ApplySpecularAA();
@@ -57,6 +54,9 @@ void Surface::ApplySpecularAA()
     float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
     roughnessA2 = filteredRoughnessA2;
+
+    roughnessA = sqrt(roughnessA2);
+    roughnessLinear = sqrt(roughnessA);
 }
 
 void Surface::CalculateRoughnessA()

@@ -15,25 +15,25 @@
             { 
                 "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/UvPropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
-            { 
+            {
                 "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]

@@ -6,8 +6,44 @@
  *
  */
 
-// NOTE: This file is a temporary workaround until .shader files can #define macros for their .azsl files
 
-#define QUALITY_LOW_END 1
+// --- Pass SRG + Output ---
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
-#include "BasePBR_ForwardPass.azsl"
+
+// --- Material Definition ---
+#include "BasePBR.azsli"
+
+
+// --- Vertex Shader ---
+
+VSOutput NewPbr_ForwardPassVS(VSInput IN)
+{
+    VSOutput OUT = EvaluateVertexGeometry(IN);
+    return OUT;
+}
+
+#include <Atom/Features/Pipeline/Forward/ForwardPassLowEndOutput.azsli>
+
+// --- Pixel Shader ---
+
+[earlydepthstencil]
+ForwardPassOutput NewPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+{
+    // ------- Geometry -> Surface -> Lighting -------
+
+    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
+
+    Surface surface = EvaluateSurface(geoData);
+
+    LightingData lightingData = EvaluateLighting(surface, IN.m_position);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    OUT.m_color.rgb = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb;
+    OUT.m_color.a = 1.0;
+
+    return OUT;
+}

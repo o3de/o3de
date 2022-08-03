@@ -11,9 +11,10 @@
 
 // ------- Options -------
 
-#define ENABLE_CLEAR_COAT       0
-#define ENABLE_TRANSMISSION     0
-#define FORCE_OPAQUE            1
+#define ENABLE_CLEAR_COAT               0
+#define ENABLE_TRANSMISSION             0
+#define ENABLE_AREA_LIGHT_VALIDATION    0
+#define FORCE_OPAQUE                    1
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
@@ -24,7 +25,7 @@
 
 // ------- Material SRG -------
 
-#include "NewPBR_Common.azsli"
+#include "BasePBR_Common.azsli"
 
 // ------- Material Options -------
 
@@ -33,21 +34,19 @@ COMMON_OPTIONS_ROUGHNESS()
 COMMON_OPTIONS_METALLIC()
 COMMON_OPTIONS_SPECULAR_F0()
 COMMON_OPTIONS_NORMAL()
-COMMON_OPTIONS_OCCLUSION()
-COMMON_OPTIONS_EMISSIVE()
 
 
 // ------- Shader Stitching -------
 
-#include "NewPBR_VertexData.azsli"
-#include "NewPBR_Vertex.azsli"
+#include "BasePBR_VertexData.azsli"
+#include "BasePBR_Vertex.azsli"
 
-#include "NewPBR_PixelGeometryData.azsli"
-#include "NewPBR_PixelGeometry.azsli"
+#include "BasePBR_PixelGeometryData.azsli"
+#include "BasePBR_PixelGeometry.azsli"
 
-#include "NewPBR_SurfaceData.azsli"
-#include "NewPBR_Surface.azsli"
+#include "BasePBR_SurfaceData.azsli"
+#include "BasePBR_Surface.azsli"
 
-#include "NewPBR_LightingData.azsli"
-#include "NewPBR_LightingModel.azsli"
-#include "NewPBR_Lighting.azsli"
+#include "BasePBR_LightingData.azsli"
+#include "BasePBR_LightingModel.azsli"
+#include "BasePBR_Lighting.azsli"

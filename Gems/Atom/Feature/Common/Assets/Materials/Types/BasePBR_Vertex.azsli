@@ -11,7 +11,7 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-VSOutput EvaluateVertexGeometry_NewPBR(
+VSOutput EvaluateVertexGeometry_BasePBR(
     float3 position,
     float3 normal,
     float4 tangent,
@@ -36,9 +36,9 @@ VSOutput EvaluateVertexGeometry_NewPBR(
     return OUT;
 }
 
-VSOutput EvaluateVertexGeometry_NewPBR(VSInput IN)
+VSOutput EvaluateVertexGeometry_BasePBR(VSInput IN)
 {
-    return EvaluateVertexGeometry_NewPBR(
+    return EvaluateVertexGeometry_BasePBR(
         IN.m_position,
         IN.m_normal,
         IN.m_tangent,
@@ -48,9 +48,9 @@ VSOutput EvaluateVertexGeometry_NewPBR(VSInput IN)
 }
 
 
-#ifdef VERTEX_DATA_IS_NEW_PBR
+#ifdef VERTEX_DATA_IS_BASE_PBR
 
 #define     EvaluateVertexGeometry(IN)                  \
-            EvaluateVertexGeometry_NewPBR(IN)
+            EvaluateVertexGeometry_BasePBR(IN)
 
 #endif

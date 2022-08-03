@@ -1,11 +1,7 @@
 {
-    // Note: "LowEnd" shaders are for supporting the low end pipeline
-    // These shaders can be safely added to materials without incurring additional runtime draw
-    // items as draw items for shaders are only created if the scene has a pass with a matching
-    // DrawListTag. If your pipeline doesn't have a "lowEndForward" DrawListTag, no draw items
-    // for this shader will be created.
-
     "Source" : "./BasePBR_LowEndForward.azsl",
+
+    "Definitions": ["QUALITY_LOW_END=1"],
 
     "DepthStencilState" :
     {
@@ -41,15 +37,15 @@
       "EntryPoints":
       [
         {
-          "name": "BasePbr_ForwardPassVS",
+          "name": "NewPbr_ForwardPassVS",
           "type": "Vertex"
         },
         {
-          "name": "BasePbr_ForwardPassPS_EDS",
+          "name": "NewPbr_ForwardPassPS",
           "type": "Fragment"
         }
       ]
     },
 
-    "DrawList" : "lowEndForward"
+    "DrawList" : "forward"
 }
