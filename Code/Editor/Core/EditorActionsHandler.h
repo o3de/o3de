@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 class CCryEditApp;
 class QMainWindow;
@@ -32,6 +33,7 @@ class EditorActionsHandler
     : private AzToolsFramework::EditorEventsBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+    , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
     void Initialize(QMainWindow* mainWindow);
@@ -60,7 +62,13 @@ private:
 
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
-        const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities);
+        const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
+    virtual void AfterUndoRedo() override;
+    void OnEndUndo(const char* label, bool changed) override;
+
+    // ViewportSettingsNotificationBus overrides ...
+    void OnAngleSnappingChanged(bool enabled) override;
+    void OnGridSnappingChanged(bool enabled) override;
 
     // Recent Files
     bool IsRecentFileActionActive(int index);

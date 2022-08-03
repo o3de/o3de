@@ -15,8 +15,12 @@
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
 #include <AzQtComponents/Components/SearchLineEdit.h>
+#include <AzQtComponents/Components/Style.h>
 
 #include <CryEdit.h>
+#include <EditorCoreAPI.h>
+#include <Editor/Undo/Undo.h>
+#include <Editor/EditorViewportSettings.h>
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
@@ -33,16 +37,23 @@
 
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
+static constexpr AZStd::string_view AngleSnappingStateChangedUpdaterIdentifier = "o3de.updater.onAngleSnappingStateChanged";
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
+static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
+static constexpr AZStd::string_view UndoRedoUpdaterIdentifier = "o3de.updater.onUndoRedo";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
 static constexpr AZStd::string_view RecentFilesMenuIdentifier = "o3de.menu.editor.file.recent";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+static constexpr AZStd::string_view EditModifyMenuIdentifier = "o3de.menu.editor.edit.modify";
+static constexpr AZStd::string_view EditModifySnapMenuIdentifier = "o3de.menu.editor.edit.modify.snap";
+static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
+static constexpr AZStd::string_view EditSettingsMenuIdentifier = "o3de.menu.editor.edit.settings";
 static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
 static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
 static constexpr AZStd::string_view GameAudioMenuIdentifier = "o3de.menu.editor.game.audio";
@@ -138,9 +149,12 @@ void EditorActionsHandler::InitializeActionContext()
 
 void EditorActionsHandler::InitializeActionUpdaters()
 {
+    m_actionManagerInterface->RegisterActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(UndoRedoUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -432,6 +446,154 @@ void EditorActionsHandler::InitializeActions()
             [=]()
             {
                 m_mainWindow->window()->close();
+            }
+        );
+    }
+
+    // --- Edit Actions
+
+    // Undo
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "&Undo";
+        actionProperties.m_description = "Undo last operation";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.undo",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnUndo();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.edit.undo",
+            []() -> bool
+            {
+                return GetIEditor()->GetUndoManager()->IsHaveUndo();
+            }
+        );
+
+        // Trigger update after every undo or redo operation
+        m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.undo");
+    }
+
+    // Redo
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "&Redo";
+        actionProperties.m_description = "Redo last undo operation";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.redo",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnRedo();
+            }
+        );
+
+        auto outcome = m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.edit.redo",
+            []() -> bool
+            {
+                return GetIEditor()->GetUndoManager()->IsHaveRedo();
+            }
+        );
+
+        // Trigger update after every undo or redo operation
+        m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.redo");
+    }
+
+    // Angle Snapping
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Angle snapping";
+        actionProperties.m_description = "Toggle angle snapping";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Angle.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.snap.toggleAngleSnapping",
+            actionProperties,
+            []()
+            {
+                SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::AngleSnappingEnabled();
+            }
+        );
+
+        // Trigger update when the angle snapping setting changes
+        m_actionManagerInterface->AddActionToUpdater(AngleSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.toggleAngleSnapping");
+    }
+
+    // Grid Snapping
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Grid snapping";
+        actionProperties.m_description = "Toggle grid snapping";
+        actionProperties.m_category = "Edit";
+        actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Grid.svg";
+
+        m_actionManagerInterface->RegisterCheckableAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.snap.toggleGridSnapping",
+            actionProperties,
+            []()
+            {
+                SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
+            },
+            []() -> bool
+            {
+                return SandboxEditor::GridSnappingEnabled();
+            }
+        );
+
+        // Trigger update when the grid snapping setting changes
+        m_actionManagerInterface->AddActionToUpdater(GridSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.toggleGridSnapping");
+    }
+
+    // Global Preferences
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Global Preferences...";
+        actionProperties.m_category = "Editor";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.globalPreferences",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnToolsPreferences();
+            }
+        );
+    }
+
+    // Editor Settings Manager
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Editor Settings Manager";
+        actionProperties.m_category = "Editor";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.edit.editorSettingsManager",
+            actionProperties,
+            []()
+            {
+                QtViewPaneManager::instance()->OpenPane(LyViewPane::EditorSettingsManager);
             }
         );
     }
@@ -836,6 +998,26 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&Edit";
         m_menuManagerInterface->RegisterMenu(EditMenuIdentifier, menuProperties);
     }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Modify";
+            m_menuManagerInterface->RegisterMenu(EditModifyMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Snap";
+            m_menuManagerInterface->RegisterMenu(EditModifySnapMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Transform Mode";
+            m_menuManagerInterface->RegisterMenu(EditModifyModesMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Editor Settings";
+            m_menuManagerInterface->RegisterMenu(EditSettingsMenuIdentifier, menuProperties);
+        }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Game";
@@ -871,16 +1053,16 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&Help";
         m_menuManagerInterface->RegisterMenu(HelpMenuIdentifier, menuProperties);
     }
-    {
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "Documentation";
-        m_menuManagerInterface->RegisterMenu(HelpDocumentationMenuIdentifier, menuProperties);
-    }
-    {
-        AzToolsFramework::MenuProperties menuProperties;
-        menuProperties.m_name = "GameDev Resources";
-        m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
-    }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Documentation";
+            m_menuManagerInterface->RegisterMenu(HelpDocumentationMenuIdentifier, menuProperties);
+        }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "GameDev Resources";
+            m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
+        }
 
     // Add Menus to MenuBar
     // We space the sortkeys by 100 to allow external systems to add menus in-between.
@@ -924,6 +1106,28 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.showLog", 1500);
         m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1600);
         m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.editor.exit", 1700);
+    }
+
+    // Edit
+    {
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.undo", 100);
+        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.redo", 200);
+
+        m_menuManagerInterface->AddSubMenuToMenu(EditMenuIdentifier, EditModifyMenuIdentifier, 1800);
+        {
+            m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifySnapMenuIdentifier, 100);
+            {
+                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleAngleSnapping", 100);
+                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.toggleGridSnapping", 200);
+            }
+            m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifyModesMenuIdentifier, 200);
+        }
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1900);
+        m_menuManagerInterface->AddSubMenuToMenu(EditMenuIdentifier, EditSettingsMenuIdentifier, 2000);
+        {
+            m_menuManagerInterface->AddActionToMenu(EditSettingsMenuIdentifier, "o3de.action.edit.globalPreferences", 100);
+            m_menuManagerInterface->AddActionToMenu(EditSettingsMenuIdentifier, "o3de.action.edit.editorSettingsManager", 200);
+        }
     }
 
     // Game
@@ -1101,6 +1305,42 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
     m_actionManagerInterface->TriggerActionUpdater(EntitySelectionChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::AfterUndoRedo()
+{
+    // Wait one frame for the undo stack to actually be updated.
+    QTimer::singleShot(
+        0,
+        nullptr,
+        [actionManagerInterface = m_actionManagerInterface]()
+        {
+            actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
+        }
+    );
+}
+
+void EditorActionsHandler::OnEndUndo([[maybe_unused]] const char* label, [[maybe_unused]] bool changed)
+{
+    // Wait one frame for the undo stack to actually be updated.
+    QTimer::singleShot(
+        0,
+        nullptr,
+        [actionManagerInterface = m_actionManagerInterface]()
+        {
+            actionManagerInterface->TriggerActionUpdater(UndoRedoUpdaterIdentifier);
+        }
+    );
+}
+
+void EditorActionsHandler::OnAngleSnappingChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(AngleSnappingStateChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)

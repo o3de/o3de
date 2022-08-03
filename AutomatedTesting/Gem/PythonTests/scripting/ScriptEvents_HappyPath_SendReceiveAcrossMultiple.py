@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report, Tracer
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import azlmbr.legacy.general as general
 import editor_python_test_tools.hydra_editor_utils as hydra
 import azlmbr.paths as paths

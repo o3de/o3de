@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Test Case Title: Event can return a value of set type successfully
 """
 
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report, Tracer
 import azlmbr.legacy.general as general
