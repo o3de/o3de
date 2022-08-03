@@ -282,7 +282,7 @@ namespace AZ
             return GetFeatureProcessor(
                 [featureProcessorId](const FeatureProcessorPtr& fp)
                 {
-                    return FeatureProcessorId(fp->RTTI_TypeName()) == featureProcessorId;
+                    return FeatureProcessorId(fp->RTTI_GetTypeName()) == featureProcessorId;
                 }
             );
         }
