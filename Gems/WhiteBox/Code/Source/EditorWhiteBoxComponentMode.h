@@ -98,8 +98,7 @@ namespace WhiteBox
         //! The world transform of the entity this ComponentMode is on.
         AZ::Transform m_worldFromLocal;
         //! The function to use for querying modifier keys (while drawing).
-        KeyboardModifierQueryFn
-            m_keyboardModifierQueryFn;
+        KeyboardModifierQueryFn m_keyboardModifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;

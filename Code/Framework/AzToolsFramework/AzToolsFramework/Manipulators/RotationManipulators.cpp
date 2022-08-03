@@ -158,5 +158,4 @@ namespace AzToolsFramework
     {
         m_circleBoundWidth = circleBoundWidth;
     }
-
 } // namespace AzToolsFramework

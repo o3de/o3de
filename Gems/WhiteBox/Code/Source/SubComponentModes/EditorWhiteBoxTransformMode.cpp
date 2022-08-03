@@ -283,7 +283,7 @@ namespace WhiteBox
             m_manipulator->ProcessManipulators(
                 [&mouseOverManipulator](auto manipulator)
                 {
-                        mouseOverManipulator = manipulator->MouseOver() || mouseOverManipulator;
+                    mouseOverManipulator = manipulator->MouseOver() || mouseOverManipulator;
                 });
         }
 
