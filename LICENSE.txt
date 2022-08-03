@@ -24,7 +24,7 @@ require distribution of source code, including:
 - Qt Toolkit https://github.com/qtproject/, which is subject to the GNU 
 Lesser General Public License version 3 (with certain exceptions). A copy of 
 the source code for Qt Toolkit may be found at 
-https://github.com/o3de/3p-package-source/tree/main/package-system/Qt
+https://github.com/o3de/qt5/tree/5.15.1-o3de
  
 - The AWS Python SDK uses Chardet https://chardet.github.io/, which is 
 subject to the GNU Lesser General Public License version 2.1. A copy of the 
