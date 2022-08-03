@@ -118,6 +118,11 @@ namespace GraphModel
 
         NodeId GetId() const;
 
+        bool HasInputConnections() const;
+        bool HasOutputConnections() const;
+        bool HasInputConnectionFromNode(ConstNodePtr node) const;
+        bool HasOutputConnectionToNode(ConstNodePtr node) const;
+
         bool Contains(ConstSlotPtr slot) const;
 
         //! Returns SlotDefinitions for all available Slots
