@@ -23,8 +23,8 @@ class Tests:
         "Cubemap property set on HDRi Skybox component",
         "Couldn't set Cubemap property on HDRi Skybox component")
     exposure_set_to_negative_five = (
-        "Exposure set to negative 5",
-        "Exposure could not be set to negative 5")
+        "Exposure set to -5.0",
+        "Exposure could not be set to -5.0")
     exposure_set_to_default = (
         "Exposure set to 0",
         "Exposure could not be set to 0")
@@ -144,10 +144,6 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         get_cubemap_property = hdri_skybox_component.get_component_property_value(
             AtomComponentProperties.hdri_skybox('Cubemap Texture'))
         Report.result(Tests.cubemap_property_set, get_cubemap_property == skybox_cubemap_material_asset.id)
-
-        properties = hdri_skybox_component.get_property_type_visibility()
-        for path, value in properties.items():
-            Report.info(f"'{path}' {value}")
 
         # 6. Set Exposure value to -5.0.
         hdri_skybox_component.set_component_property_value(
