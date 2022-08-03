@@ -762,7 +762,7 @@ namespace Benchmark
     }
 
 
-    class BM_MathEulerRadians
+    class BM_MathQuaternionEulerRadians
         : public benchmark::Fixture
     {
         void internalSetUp()
@@ -810,7 +810,7 @@ namespace Benchmark
         std::vector<EulerData> m_eulerDataArray;
     };
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerRadiansXYZ)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansXYZ)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
@@ -823,7 +823,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerRadiansYXZ)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansYXZ)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
@@ -836,7 +836,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerRadiansZYX)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerRadiansZYX)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
@@ -849,7 +849,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerDegreesXYZ)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesXYZ)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
@@ -862,7 +862,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerDegreesYXZ)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesYXZ)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
@@ -875,7 +875,7 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathEulerRadians, CreateFromEulerDegreesZYX)(benchmark::State& state)
+    BENCHMARK_F(BM_MathQuaternionEulerRadians, CreateFromEulerDegreesZYX)(benchmark::State& state)
     {
         for ([[maybe_unused]] auto _ : state)
         {
