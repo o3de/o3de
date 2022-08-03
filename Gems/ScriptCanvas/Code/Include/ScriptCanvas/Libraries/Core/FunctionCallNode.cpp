@@ -195,7 +195,7 @@ namespace ScriptCanvas
                     config.m_displayGroup = displayGroup;
                     config.m_addUniqueSlotByNameAndType = false;
                     config.SetConnectionType(ScriptCanvas::ConnectionType::Input);
-                    config.DeepCopyFrom(input.datum);
+                    config.CopyTypeAndValueFrom(input.datum);
                     auto previousSlotId = previousMap.FindInputSlotIdBySource(input.sourceID, inSourceId);
                     if (previousSlotId.IsValid())
                     {
