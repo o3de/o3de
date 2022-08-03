@@ -20,7 +20,7 @@ namespace AZ::Render
         : public RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(AZ::Render::StarsFeatureProcessorInterface, "{7ECE8A5E-366B-4942-B6F9-370DC6017927}"); 
+        AZ_RTTI(AZ::Render::StarsFeatureProcessorInterface, "{7ECE8A5E-366B-4942-B6F9-370DC6017927}", AZ::RPI::FeatureProcessor);
 
         struct StarVertex 
         {

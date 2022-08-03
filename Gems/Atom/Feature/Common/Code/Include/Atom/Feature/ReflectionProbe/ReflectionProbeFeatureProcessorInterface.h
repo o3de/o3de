@@ -38,7 +38,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::ReflectionProbeFeatureProcessorInterface, "{805FA0F8-765A-4072-A8B1-41C4708B6E36}");
+            AZ_RTTI(AZ::Render::ReflectionProbeFeatureProcessorInterface, "{805FA0F8-765A-4072-A8B1-41C4708B6E36}", AZ::RPI::FeatureProcessor);
 
             //! Add a new reflection probe, returns the handle of the new probe
             virtual ReflectionProbeHandle AddReflectionProbe(const AZ::Transform& transform, bool useParallaxCorrection) = 0;

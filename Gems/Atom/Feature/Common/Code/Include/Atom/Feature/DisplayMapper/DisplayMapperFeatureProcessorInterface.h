@@ -38,7 +38,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DisplayMapperFeatureProcessorInterface, "{FA57793A-1C7B-4B44-88C4-02AA431C468F}", FeatureProcessor);
+            AZ_RTTI(AZ::Render::DisplayMapperFeatureProcessorInterface, "{FA57793A-1C7B-4B44-88C4-02AA431C468F}", AZ::RPI::FeatureProcessor);
 
             virtual void GetOwnedLut(DisplayMapperLut& displayMapperLut, const AZ::Name& lutName) = 0;
             virtual void GetDisplayMapperLut(DisplayMapperLut& displayMapperLut) = 0;

@@ -24,7 +24,9 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<EditorModeFeatureProcessor, RPI::FeatureProcessor>()->Version(0);
+                serializeContext
+                    ->Class<EditorModeFeatureProcessor, RPI::FeatureProcessor>()
+                    ->Version(1);
             }
         }
 

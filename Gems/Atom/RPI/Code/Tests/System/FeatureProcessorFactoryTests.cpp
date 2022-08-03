@@ -89,8 +89,8 @@ namespace UnitTest
     {
         FeatureProcessorPtr implementation1 = FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation::RTTI_TypeName() });
         FeatureProcessorPtr implementation2 = FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation2::RTTI_TypeName() });
-        EXPECT_TRUE(implementation1 != nullptr);
-        EXPECT_TRUE(implementation2 != nullptr);
+        EXPECT_NE(implementation1, nullptr);
+        EXPECT_NE(implementation2, nullptr);
         EXPECT_NE(implementation1, implementation2);
     }
 
@@ -102,8 +102,8 @@ namespace UnitTest
         FeatureProcessorPtr implementation1 = FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation::RTTI_TypeName() });
         FeatureProcessorPtr implementation2 = FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorImplementation2::RTTI_TypeName() });
 
-        EXPECT_TRUE(implementation1 != nullptr);
-        EXPECT_TRUE(implementation2 != nullptr);
+        EXPECT_NE(implementation1, nullptr);
+        EXPECT_NE(implementation2, nullptr);
     }
 
     //
@@ -112,7 +112,7 @@ namespace UnitTest
     TEST_F(FeatureProcessorFactoryTests, CreateFeatureProcessor_ByInterfaceName_FailsToCreate)
     {
         AZ_TEST_START_TRACE_SUPPRESSION; // FeatureProcessorFactory may throw an error for this
-        EXPECT_TRUE(AZ::RPI::FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorInterface::RTTI_TypeName() }) == nullptr);
+        EXPECT_EQ(AZ::RPI::FeatureProcessorFactory::Get()->CreateFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorInterface::RTTI_TypeName() }), nullptr);
         AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     }
 

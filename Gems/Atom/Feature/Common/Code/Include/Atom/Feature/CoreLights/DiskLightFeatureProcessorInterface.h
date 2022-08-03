@@ -52,7 +52,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DiskLightFeatureProcessorInterface, "{A78A8FBD-1494-4EF9-9C05-AF153FDB1F17}"); 
+            AZ_RTTI(AZ::Render::DiskLightFeatureProcessorInterface, "{A78A8FBD-1494-4EF9-9C05-AF153FDB1F17}", AZ::RPI::FeatureProcessor);
 
             using LightHandle = RHI::Handle<uint16_t, class DiskLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Candela;
