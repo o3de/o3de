@@ -562,6 +562,13 @@ namespace AZ
         m_console.reset();
 
         m_moduleManager.reset();
+
+        // Unregister the global settings registry origin tracker if this application owns is
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == m_settingsRegistryOriginTracker.get())
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Unregister(m_settingsRegistryOriginTracker.get());
+        }
+        m_settingsRegistryOriginTracker.reset();
         // Unregister the global Settings Registry if it is owned by this application instance
         if (AZ::SettingsRegistry::Get() == m_settingsRegistry.get())
         {
@@ -569,7 +576,6 @@ namespace AZ
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SettingsRegistryUnavailable", R"({})");
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorPendingDestruction", R"({})");
         }
-        m_settingsRegistryOriginTracker.reset();
         m_settingsRegistry.reset();
 
         // Unregister the Name Dictionary with the AZ Interface system and reset it
