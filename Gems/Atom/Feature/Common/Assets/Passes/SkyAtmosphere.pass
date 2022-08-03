@@ -10,23 +10,15 @@
             "Slots": [
                 {
                     "Name": "SpecularInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "SlotType": "InputOutput"
                 },
                 {
                     "Name": "ReflectionInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "SlotType": "InputOutput"
                 },
                 {
                     "Name": "SkyBoxDepth",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
+                    "SlotType": "Input"
                 },
                 {
                     "Name": "DirectionalShadowmap",
