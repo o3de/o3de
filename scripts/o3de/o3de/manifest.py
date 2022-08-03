@@ -317,8 +317,8 @@ def get_project_engine_path(project_path: pathlib.Path) -> pathlib.Path or None:
             engine_path = get_registered(engine_name=engine_name)
             if engine_path:
                 return engine_path
-    
-    # check if the project is registered in an engine.json 
+
+    # check if the project is registered in an engine.json
     # in a parent folder
     resolved_project_path = pathlib.Path(project_path).resolve()
     engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), resolved_project_path)
@@ -350,6 +350,9 @@ def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: l
     :param: visited_gem_paths stores the list of gem paths visited so far up until this get_path
     The visited_gem_paths is a list instead of a set to maintain insertion order
     '''
+
+    # Resolve the path before to make sure it is absolute before adding to the visited_gem_paths set
+    gem_path = pathlib.Path(gem_path).resolve()
     if gem_path in visited_gem_paths:
         logger.warning(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
         return []
@@ -363,7 +366,8 @@ def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: l
 
         # recurse into gem subdirectories
         for external_subdirectory in external_subdirectories:
-            gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
+            external_subdirectory = pathlib.Path(external_subdirectory)
+            gem_json_path = external_subdirectory / 'gem.json'
             if gem_json_path.is_file():
                 external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory, visited_gem_paths))
 
@@ -398,6 +402,9 @@ def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
     external_subdirectories_data.extend(get_engine_external_subdirectories())
     if project_path:
         external_subdirectories_data.extend(get_project_external_subdirectories(project_path))
+
+    # Filter out duplicate external_subdirectories before querying if they contain gem.json files
+    external_subdirectories_data = list(dict.fromkeys(external_subdirectories_data))
 
     gem_paths = get_gems_from_external_subdirectories(external_subdirectories_data)
     for gem_path in gem_paths:
