@@ -4509,17 +4509,58 @@ namespace ScriptCanvas
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Square")):
-                    executionOperator->SetSymbol(Symbol::OperatorMultiplication);
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } }); // This manual setting of the lexical scope will probably have to change; It only works when translating to lua
+                    executionOperator->SetName("Pow");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(2.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Cube")):
-                    executionOperator->SetSymbol(Symbol::OperatorMultiplication);
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
+                    executionOperator->SetName("Pow");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
-                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(3.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Square Root")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
+                    executionOperator->SetName("Sqrt");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     break;
+                case (AZ_CRC_CE("Cube Root")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
+                    executionOperator->SetName("Pow");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(1.0/3.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Invert Vector 2")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetName("ScriptCanvas_Vector2Functions_MultiplyByNumber");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(-1.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Invert Vector 3")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetName("ScriptCanvas_Vector3Functions_MultiplyByNumber");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(-1.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Invert Vector 4")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetName("ScriptCanvas_Vector4Functions_MultiplyByNumber");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    variable->m_datum = Datum(-1.0);
+                    executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
                 };
+
                 ExecutionInput input;
                 for (size_t index(0); index < execution->GetInputCount(); ++index)
                 {
