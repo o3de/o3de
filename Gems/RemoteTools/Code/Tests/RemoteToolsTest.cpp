@@ -25,32 +25,35 @@ namespace UnitTest
 
     static constexpr AZ::Crc32 TestToolsKey("TestRemoteTools"); 
 
-    class RemoteToolsTests : public AllocatorsFixture
+    class RemoteToolsTests : public ScopedAllocatorSetupFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
+            ScopedAllocatorSetupFixture::SetUp();
             AZ::NameDictionary::Create();
 
             m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
             m_remoteToolsSystemComponent = AZStd::make_unique<RemoteToolsSystemComponent>();
+
             m_remoteTools = m_remoteToolsSystemComponent.get();
         }
 
         void TearDown() override
         {
+            m_networkingSystemComponent->Deactivate();
+
             m_remoteTools = nullptr;
             m_remoteToolsSystemComponent.reset();
             m_networkingSystemComponent.reset();
 
             AZ::NameDictionary::Destroy();
-            TeardownAllocator();
+            ScopedAllocatorSetupFixture::TearDown();
         }
 
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
         AZStd::unique_ptr<RemoteToolsSystemComponent> m_remoteToolsSystemComponent;
-        AzFramework::IRemoteTools* m_remoteTools;
+        AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 
     TEST_F(RemoteToolsTests, TEST_RemoteToolsEmptyRegistry)
