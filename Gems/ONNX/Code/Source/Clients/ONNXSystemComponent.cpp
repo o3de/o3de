@@ -213,8 +213,7 @@ namespace ONNX
     // editor starts up, and used by the ImGui dashboard.
     void ONNXSystemComponent::Init()
     {
-        void* ptr;
-        m_env = AZStd::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_VERBOSE, "test_log", OnnxLoggingFunction, ptr);
+        m_env = AZStd::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_VERBOSE, "test_log", OnnxLoggingFunction, nullptr);
         m_allocator = AZStd::make_unique<Ort::AllocatorWithDefaultOptions>();
         m_precomputedTimingData = AZStd::make_unique<PrecomputedTimingData>();
         m_precomputedTimingDataCuda = AZStd::make_unique<PrecomputedTimingData>();
