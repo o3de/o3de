@@ -542,9 +542,9 @@ namespace Terrain
     {
         if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
         {
-            AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
+            AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
+                heightBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightBounds);
 
             float queryResolution = 1.0f;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -552,11 +552,10 @@ namespace Terrain
 
             bool gridSizeChanged = UpdateGridSize(m_config.m_firstLodDistance);
 
-            // Sectors need to be rebuilt if the sample spacing changes.
-            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution) || gridSizeChanged;
+            // Sectors need to be rebuilt when certain settings change.
+            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution) || (heightBounds != m_worldHeightBounds) || gridSizeChanged;
 
-            m_worldMinHeight = worldBounds.GetMin().GetZ();
-            m_worldMaxHeight = worldBounds.GetMax().GetZ();
+            m_worldHeightBounds = heightBounds;
             m_sampleSpacing = queryResolution;
 
             if (dirtyRegion.IsValid())
@@ -791,7 +790,7 @@ namespace Terrain
         (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             static constexpr float HeightDoesNotExistValue = -1.0f;
-            const float height = surfacePoint.m_position.GetZ() - m_worldMinHeight;
+            const float height = surfacePoint.m_position.GetZ() - m_worldHeightBounds.m_min;
             heights.at(yIndex * querySamplesX + xIndex) = terrainExists ? height : HeightDoesNotExistValue;
             terrainExistsAnywhere = terrainExistsAnywhere || terrainExists;
         };
@@ -812,8 +811,8 @@ namespace Terrain
             return;
         }
 
-        float zExtents = (m_worldMaxHeight - m_worldMinHeight);
-        const float rcpWorldZ = 1.0f / (m_worldMaxHeight - m_worldMinHeight);
+        float zExtents = (m_worldHeightBounds.m_max - m_worldHeightBounds.m_min);
+        const float rcpWorldZ = 1.0f / zExtents;
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
 
         // initialize min/max heights to the max/min possible values so they're immediately updated when a valid point is found.
@@ -916,8 +915,8 @@ namespace Terrain
         {
             float width = (request.m_samplesX - 1) * request.m_vertexSpacing;
             float height = (request.m_samplesY - 1) * request.m_vertexSpacing;
-            AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldMinHeight + minHeight);
-            AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldMinHeight + maxHeight);
+            AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldHeightBounds.m_min + minHeight);
+            AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldHeightBounds.m_min + maxHeight);
             meshAabb.Set(aabbMin, aabbMax);
         }
     }
@@ -998,8 +997,9 @@ namespace Terrain
 
                 // Check against the area of terrain that could appear in this sector for any terrain areas. If none exist then skip updating the mesh.
                 bool hasTerrain = false;
-                AZ::Vector3 minAabb = AZ::Vector3(sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters, m_worldMinHeight);
-                AZ::Aabb sectorBounds = AZ::Aabb::CreateFromMinMax(minAabb, minAabb + AZ::Vector3(gridMeters, gridMeters, m_worldMaxHeight - m_worldMinHeight));
+                AZ::Vector3 minAabb = AZ::Vector3(sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters, m_worldHeightBounds.m_min);
+                AZ::Aabb sectorBounds = AZ::Aabb::CreateFromMinMax(minAabb,
+                    minAabb + AZ::Vector3(gridMeters, gridMeters, m_worldHeightBounds.m_max - m_worldHeightBounds.m_min));
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     hasTerrain, &AzFramework::Terrain::TerrainDataRequests::TerrainAreaExistsInBounds, sectorBounds);
 
@@ -1035,9 +1035,9 @@ namespace Terrain
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
         // For now only create a small patch of terrain data for ray tracing around the origin as a test case.
-        AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
-        AZ::Aabb updateBounds = raytracingBounds.GetClamped(bounds);
-        if (!raytracingBounds.IsValid())
+        const AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
+        const AZ::Aabb updateBounds = bounds.GetClamped(raytracingBounds);
+        if (updateBounds.GetXExtent() <= 0.0f || updateBounds.GetYExtent() <= 0.0f)
         {
             // No raytracing data to update.
             return;
@@ -1086,7 +1086,7 @@ namespace Terrain
         uint32_t yMax = yMin + request.m_samplesY;
 
         constexpr uint32_t RayTracingVertices1D = RayTracingQuads1D + 1;
-        float zExtent = m_worldMaxHeight - m_worldMinHeight;
+        float zExtent = m_worldHeightBounds.m_max - m_worldHeightBounds.m_min;
 
         for (uint32_t y = yMin; y < yMax; ++y)
         {

@@ -26,7 +26,7 @@ namespace AzToolsFramework
 
     void EditorMenu::AddSeparator(int sortKey)
     {
-        m_menuItems.insert({ sortKey, MenuItem() });
+        m_menuItems[sortKey].emplace_back();
     }
     
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
@@ -37,7 +37,7 @@ namespace AzToolsFramework
         }
 
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Action, AZStd::move(actionIdentifier)) });
+        m_menuItems[sortKey].emplace_back(MenuItemType::Action, AZStd::move(actionIdentifier));
     }
 
     void EditorMenu::RemoveAction(AZStd::string actionIdentifier)
@@ -50,22 +50,13 @@ namespace AzToolsFramework
 
         int sortKey = sortKeyIterator->second;
 
-        auto multimapIterator = m_menuItems.find(sortKey);
-        if (multimapIterator == m_menuItems.end())
-        {
-            return;
-        }
-
-        while (multimapIterator->first == sortKey)
-        {
-            if (multimapIterator->second.m_identifier == actionIdentifier)
+        AZStd::erase_if(
+            m_menuItems[sortKey],
+            [actionIdentifier](const MenuItem& item)
             {
-                m_menuItems.erase(multimapIterator);
-                return;
+                return item.m_identifier == actionIdentifier;
             }
-
-            ++multimapIterator;
-        }
+        );
     }
 
     void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)
@@ -76,7 +67,7 @@ namespace AzToolsFramework
         }
 
         m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
-        m_menuItems.insert({ sortKey, MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)) });
+        m_menuItems[sortKey].emplace_back(MenuItemType::SubMenu, AZStd::move(menuIdentifier));
     }
 
     void EditorMenu::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)
@@ -84,7 +75,7 @@ namespace AzToolsFramework
         if (!m_widgetToSortKeyMap.contains(widgetActionIdentifier))
         {
             m_widgetToSortKeyMap.insert(AZStd::make_pair(widgetActionIdentifier, sortKey));
-            m_menuItems.insert({ sortKey, MenuItem(MenuItemType::Widget, AZStd::move(widgetActionIdentifier)) });
+            m_menuItems[sortKey].emplace_back(MenuItemType::Widget, AZStd::move(widgetActionIdentifier));
         }
     }
     
@@ -150,43 +141,47 @@ namespace AzToolsFramework
     {
         m_menu->clear();
 
-        for (const auto& elem : m_menuItems)
+        for (const auto& vectorIterator : m_menuItems)
         {
-            switch (elem.second.m_type)
+            for (const auto& menuItem : vectorIterator.second)
             {
-            case MenuItemType::Action:
+                switch (menuItem.m_type)
                 {
-                    if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
+                case MenuItemType::Action:
                     {
-                        if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(elem.second.m_identifier))
+                        if (QAction* action = m_actionManagerInternalInterface->GetAction(menuItem.m_identifier))
                         {
-                            continue;
-                        }
+                            if (!action->isEnabled() &&
+                                m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(menuItem.m_identifier))
+                            {
+                                continue;
+                            }
 
-                        m_menu->addAction(action);
+                            m_menu->addAction(action);
+                        }
+                        break;
                     }
-                    break;
-                }
-            case MenuItemType::SubMenu:
-                {
-                    if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(elem.second.m_identifier))
+                case MenuItemType::SubMenu:
                     {
-                        m_menu->addMenu(menu);
+                        if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(menuItem.m_identifier))
+                        {
+                            m_menu->addMenu(menu);
+                        }
+                        break;
                     }
+                case MenuItemType::Separator:
+                    {
+                        m_menu->addSeparator();
+                        break;
+                    }
+                case MenuItemType::Widget:
+                    {
+                        m_menu->addAction(menuItem.m_widgetAction);
+                        break;
+                    }
+                default:
                     break;
                 }
-            case MenuItemType::Separator:
-                {
-                    m_menu->addSeparator();
-                    break;
-                }
-            case MenuItemType::Widget:
-                {
-                    m_menu->addAction(elem.second.m_widgetAction);
-                    break;
-                }
-            default:
-                break;
             }
         }
     }
@@ -220,6 +215,19 @@ namespace AzToolsFramework
 
         m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
         AZ_Assert(m_menuManagerInternalInterface, "EditorMenu - Could not retrieve instance of MenuManagerInternalInterface");
+    }
+
+    void EditorMenu::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<MenuItem>()
+                ->Field("Type", &MenuItem::m_type)
+                ->Field("Identifier", &MenuItem::m_identifier);
+
+            serializeContext->Class<EditorMenu>()
+                ->Field("Items", &EditorMenu::m_menuItems);
+        }
     }
 
 } // namespace AzToolsFramework

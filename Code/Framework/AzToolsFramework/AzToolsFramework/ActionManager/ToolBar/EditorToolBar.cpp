@@ -31,16 +31,13 @@ namespace AzToolsFramework
 
     void EditorToolBar::AddSeparator(int sortKey)
     {
-        m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar) });
+        m_toolBarItems[sortKey].emplace_back();
     }
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
-        if (!m_actionToSortKeyMap.contains(actionIdentifier))
-        {
-            m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-            m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar, ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
-        }
+        m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
+        m_toolBarItems[sortKey].emplace_back(ToolBarItemType::Action, AZStd::move(actionIdentifier));
     }
 
     void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
@@ -48,16 +45,7 @@ namespace AzToolsFramework
         if (!m_actionToSortKeyMap.contains(actionIdentifier))
         {
             m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-            m_toolBarItems.insert(
-                {
-                    sortKey,
-                    ToolBarItem(
-                        m_toolBar, 
-                        ToolBarItemType::ActionAndSubMenu,
-                        AZStd::move(actionIdentifier),
-                        AZStd::move(subMenuIdentifier))
-                }
-            );
+            m_toolBarItems[sortKey].emplace_back(ToolBarItemType::ActionAndSubMenu, AZStd::move(actionIdentifier), AZStd::move(subMenuIdentifier));
         }
     }
 
@@ -71,22 +59,13 @@ namespace AzToolsFramework
 
         int sortKey = sortKeyIterator->second;
 
-        auto multimapIterator = m_toolBarItems.find(sortKey);
-        if (multimapIterator == m_toolBarItems.end())
-        {
-            return;
-        }
-
-        while (multimapIterator->first == sortKey)
-        {
-            if (multimapIterator->second.m_identifier == actionIdentifier)
+        AZStd::erase_if(
+            m_toolBarItems[sortKey],
+            [actionIdentifier](const ToolBarItem& item)
             {
-                m_toolBarItems.erase(multimapIterator);
-                return;
+                return item.m_identifier == actionIdentifier;
             }
-
-            ++multimapIterator;
-        }
+        );
     }
 
     void EditorToolBar::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)
@@ -94,7 +73,7 @@ namespace AzToolsFramework
         if (!m_widgetToSortKeyMap.contains(widgetActionIdentifier))
         {
             m_widgetToSortKeyMap.insert(AZStd::make_pair(widgetActionIdentifier, sortKey));
-            m_toolBarItems.insert({ sortKey, ToolBarItem(m_toolBar, ToolBarItemType::Widget, AZStd::move(widgetActionIdentifier)) });
+            m_toolBarItems[sortKey].emplace_back(ToolBarItemType::Widget, AZStd::move(widgetActionIdentifier));
         }
     }
 
@@ -144,41 +123,45 @@ namespace AzToolsFramework
     {
         m_toolBar->clear();
 
-        for (const auto& elem : m_toolBarItems)
+        for (const auto& vectorIterator : m_toolBarItems)
         {
-            switch (elem.second.m_type)
+            for (const auto& toolBarItem : vectorIterator.second)
             {
-            case ToolBarItemType::Action:
+                switch (toolBarItem.m_type)
                 {
-                    if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
-                    {
-                        if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(elem.second.m_identifier))
+                    case ToolBarItemType::Action:
                         {
-                            continue;
-                        }
+                            if (QAction* action = m_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
+                            {
+                                if (!action->isEnabled() &&
+                                    m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                                {
+                                    continue;
+                                }
 
-                        m_toolBar->addAction(action);
-                    }
+                                m_toolBar->addAction(action);
+                            }
+                        }
+                        break;
+                    case ToolBarItemType::Separator:
+                        {
+                            m_toolBar->addSeparator();
+                        }
+                        break;
+                    case ToolBarItemType::ActionAndSubMenu:
+                    case ToolBarItemType::Widget:
+                        {
+                            m_toolBar->addAction(toolBarItem.m_widgetAction);
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                break;
-            case ToolBarItemType::Separator:
-                {
-                    m_toolBar->addSeparator();
-                }
-                break;
-            case ToolBarItemType::ActionAndSubMenu:
-            case ToolBarItemType::Widget:
-                {
-                    m_toolBar->addAction(elem.second.m_widgetAction);
-                }
-                break;
-            default:
-                break;
             }
         }
     }
 
-    EditorToolBar::ToolBarItem::ToolBarItem(QToolBar* toolBar, ToolBarItemType type, AZStd::string identifier, AZStd::string subMenuIdentifier)
+    EditorToolBar::ToolBarItem::ToolBarItem(ToolBarItemType type, AZStd::string identifier, AZStd::string subMenuIdentifier)
         : m_type(type)
         , m_identifier(AZStd::move(identifier))
         , m_subMenuIdentifier(AZStd::move(subMenuIdentifier))
@@ -202,7 +185,7 @@ namespace AzToolsFramework
 
                     if (action && subMenu)
                     {
-                        QToolButton* toolButton = new QToolButton(toolBar);
+                        QToolButton* toolButton = new QToolButton(m_defaultParentWidget);
 
                         toolButton->setPopupMode(QToolButton::MenuButtonPopup);
                         toolButton->setAutoRaise(true);
@@ -240,6 +223,20 @@ namespace AzToolsFramework
 
         m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
         AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
+    }
+
+    void EditorToolBar::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ToolBarItem>()
+                ->Field("Type", &ToolBarItem::m_type)
+                ->Field("Identifier", &ToolBarItem::m_identifier)
+                ->Field("SubMenu", &ToolBarItem::m_subMenuIdentifier);
+
+            serializeContext->Class<EditorToolBar>()
+                ->Field("Items", &EditorToolBar::m_toolBarItems);
+        }
     }
 
 } // namespace AzToolsFramework
