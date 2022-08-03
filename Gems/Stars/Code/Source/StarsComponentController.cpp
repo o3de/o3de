@@ -68,7 +68,6 @@ namespace AZ::Render
 
     void StarsComponentController::RegisterFeatureProcessor(EntityId entityId)
     {
-        RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessorWithInterface<StarsFeatureProcessor, StarsFeatureProcessorInterface>();
         m_scene = RPI::Scene::GetSceneForEntityId(entityId);
         if (m_scene)
         {
@@ -102,8 +101,6 @@ namespace AZ::Render
             m_scene->DisableFeatureProcessor<StarsFeatureProcessor>();
 
             m_starsFeatureProcessor = nullptr;
-
-            RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<StarsFeatureProcessor>();
         }
     }
 

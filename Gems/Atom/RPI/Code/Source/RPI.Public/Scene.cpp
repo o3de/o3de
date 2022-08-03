@@ -279,19 +279,22 @@ namespace AZ
         
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
         {
-            AZ::TypeId featureProcessorTypeId = FeatureProcessorFactory::Get()->GetFeatureProcessorTypeId(featureProcessorId);
-
-            return GetFeatureProcessor(featureProcessorTypeId);
+            return GetFeatureProcessor(
+                [featureProcessorId](const FeatureProcessorPtr& fp)
+                {
+                    return FeatureProcessorId(fp->RTTI_TypeName()) == featureProcessorId;
+                }
+            );
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const TypeId& featureProcessorTypeId) const
         {
-            auto foundFP = AZStd::find_if(
-                AZStd::begin(m_featureProcessors),
-                AZStd::end(m_featureProcessors),
-                [featureProcessorTypeId](const FeatureProcessorPtr& fp) { return fp->RTTI_IsTypeOf(featureProcessorTypeId); });
-
-            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
+            return GetFeatureProcessor(
+                [featureProcessorTypeId](const FeatureProcessorPtr& fp)
+                {
+                    return fp->RTTI_IsTypeOf(featureProcessorTypeId);
+                }
+            );
         }
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)

@@ -228,6 +228,9 @@ namespace AZ
             void FinalizeDrawListsTaskGraph();
             void FinalizeDrawListsJobs();
 
+            template<typename Predicate>
+            FeatureProcessor* GetFeatureProcessor(const Predicate& predicate) const;
+
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
 
@@ -281,6 +284,14 @@ namespace AZ
         };
 
         // --- Template functions ---
+
+        template<typename Predicate>
+        FeatureProcessor* Scene::GetFeatureProcessor(const Predicate& predicate) const
+        {
+            auto foundFP = AZStd::find_if(AZStd::begin(m_featureProcessors), AZStd::end(m_featureProcessors), predicate);
+            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
+        }
+
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::EnableFeatureProcessor()
         {

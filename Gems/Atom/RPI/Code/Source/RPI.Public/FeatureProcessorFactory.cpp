@@ -75,24 +75,43 @@ namespace AZ
 
             if (!serializeContext)
             {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since could not retrieve serialize context.", featureProcessorId.GetCStr());
+                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since the serialize context could not be retrieved.", featureProcessorId.GetCStr());
                 return nullptr;
             }
 
+            AZ::Uuid typeId{};
+
+            // First check the registry for the feature processor id, otherwise fall back on the serialize context.
             auto foundIt = GetEntry(featureProcessorId);
-            if (foundIt == AZStd::end(m_registry))
+            if (foundIt != AZStd::end(m_registry))
             {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since failed to find it in registry.", featureProcessorId.GetCStr());
-                return nullptr;
+                typeId = foundIt->m_typeId;
+            }
+            else
+            {
+                auto foundUuids = serializeContext->FindClassId(AZ::Crc32(featureProcessorId.GetStringView()));
+
+                if (foundUuids.empty())
+                {
+                    AZ_Error("FeatureProcessorFactory", false, "Provided type %s is either an invalid TypeId or does not match any class names", featureProcessorId.GetCStr());
+                    return nullptr;
+                }
+                typeId = foundUuids[0];
+
+                if (!serializeContext->CanDowncast(typeId, FeatureProcessor::RTTI_Type()))
+                {
+                    AZ_Error("FeatureProcessorFactory", false, "Provided type %s is not a Feature Processor", featureProcessorId.GetCStr());
+                    return nullptr;
+                }
             }
 
-            auto* classData = serializeContext->FindClassData(foundIt->m_typeId);
+            // Create the class from the type id.
+            auto* classData = serializeContext->FindClassData(typeId);
             if (!classData)
             {
                 AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since failed to get class data.", featureProcessorId.GetCStr());
                 return nullptr;
             }
-
             return FeatureProcessorPtr(reinterpret_cast<FeatureProcessor*>(classData->m_factory->Create("FeatureProcessor")));
         }
 
