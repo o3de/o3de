@@ -124,7 +124,6 @@ AZ_POP_DISABLE_WARNING
 #include "Util/3DConnexionDriver.h"
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 #include "QuickAccessBar.h"
@@ -876,7 +875,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
     g_splashScreenStateLock.lock();
 
-    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(CStartupLogoDialog::Loading, FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
     g_pInitializeUIInfo = splashScreen;
     g_splashScreen = splashScreen;
@@ -1588,8 +1587,8 @@ bool CCryEditApp::InitInstance()
 
     if (cmdInfo.m_bShowVersionInfo)
     {
-        CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
-        aboutDlg.exec();
+        CStartupLogoDialog startupDlg(CStartupLogoDialog::About, FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+        startupDlg.exec();
         return false;
     }
 
@@ -1903,8 +1902,14 @@ void CCryEditApp::WriteConfig()
 // App command to run the dialog
 void CCryEditApp::OnAppAbout()
 {
-    CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
-    aboutDlg.exec();
+    auto* dialog = new CStartupLogoDialog(
+        CStartupLogoDialog::About, FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    auto mainWindow = MainWindow::instance();
+    auto geometry = dialog->geometry();
+    geometry.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
+    dialog->setGeometry(geometry);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->show();
 }
 
 // App command to run the Welcome to Open 3D Engine dialog

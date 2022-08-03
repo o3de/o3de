@@ -35,6 +35,8 @@
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
+    class MenuManagerInterface;
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -205,6 +207,7 @@ namespace AzToolsFramework
 
         void SetupBoxSelect();
 
+        // Legacy ActionManager
         void RegisterActions();
         void UnregisterActions();
 
@@ -253,6 +256,7 @@ namespace AzToolsFramework
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
+        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -347,6 +351,9 @@ namespace AzToolsFramework
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
+
+        ActionManagerInterface* m_actionManagerInterface = nullptr;
+        MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.
