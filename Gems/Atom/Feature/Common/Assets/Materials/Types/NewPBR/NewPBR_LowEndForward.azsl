@@ -9,41 +9,11 @@
 
 // --- Pass SRG + Output ---
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
-#include <Atom/Features/Pipeline/Forward/ForwardPassLowEndOutput.azsli>
 
 
 // --- Material Definition ---
 #include "NewPBR.azsli"
 
 
-// --- Vertex Shader ---
-
-VSOutput NewPbr_ForwardPassVS(VSInput IN)
-{
-    VSOutput OUT = EvaluateVertexGeometry(IN);
-    return OUT;
-}
-
-
-// --- Pixel Shader ---
-
-[earlydepthstencil]
-ForwardPassOutput NewPbr_ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
-{
-    // ------- Geometry -> Surface -> Lighting -------
-
-    PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
-
-    Surface surface = EvaluateSurface(geoData);
-
-    LightingData lightingData = EvaluateLighting(surface, IN.m_position);
-
-    // ------- Output -------
-
-    ForwardPassOutput OUT;
-
-    OUT.m_color.rgb = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb;
-    OUT.m_color.a = 1.0;
-
-    return OUT;
-}
+// --- Vertex + Pixel Shader ---
+#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
