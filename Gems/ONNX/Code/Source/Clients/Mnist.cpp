@@ -43,11 +43,11 @@ namespace ONNX
         // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
         if (m_cudaEnable)
         {
-            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta);
+            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta, m_modelColor);
         }
         else
         {
-            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta);
+            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
         }
     }
 
@@ -108,6 +108,7 @@ namespace ONNX
         if (cudaEnable)
         {
             modelInitSettings.m_modelName = "MNIST CUDA (Precomputed)";
+            modelInitSettings.m_modelColor = AZ::Color::CreateFromRgba(56, 229, 59, 255);
             modelInitSettings.m_cudaEnable = true;
         }
         else

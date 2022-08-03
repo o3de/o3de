@@ -36,8 +36,8 @@ namespace ONNX
         virtual Ort::Env* GetEnv() = 0;
         virtual Ort::AllocatorWithDefaultOptions* GetAllocator() = 0;
 
-        virtual void AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds) = 0;
-        virtual void AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds) = 0;
+        virtual void AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) = 0;
+        virtual void AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) = 0;
 
         virtual PrecomputedTimingData* GetPrecomputedTimingData() = 0;
         virtual void SetPrecomputedTimingData(int totalCount, int64_t correctCount, float totalTime, float avgTime) = 0;

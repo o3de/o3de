@@ -41,14 +41,14 @@ namespace ONNX
         return m_precomputedTimingDataCuda.get();
     }
 
-    void ONNXSystemComponent::AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds)
+    void ONNXSystemComponent::AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor)
     {
-        m_timingStats.PushHistogramValue(modelName, inferenceTimeInMilliseconds, AZ::Color::CreateFromRgba(229, 56, 59, 255));
+        m_timingStats.PushHistogramValue(modelName, inferenceTimeInMilliseconds, modelColor);
     }
 
-    void ONNXSystemComponent::AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds)
+    void ONNXSystemComponent::AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor)
     {
-        m_timingStatsCuda.PushHistogramValue(modelName, inferenceTimeInMilliseconds, AZ::Color::CreateFromRgba(56, 229, 59, 255));
+        m_timingStatsCuda.PushHistogramValue(modelName, inferenceTimeInMilliseconds, modelColor);
     }
 
     void ONNXSystemComponent::OnImGuiUpdate()
@@ -258,6 +258,7 @@ namespace ONNX
             modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
             modelInitSettingsCuda.m_outputShape = { 1, 10 };
             modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
+            modelInitSettingsCuda.m_modelColor = AZ::Color::CreateFromRgba(56, 229, 59, 255);
             modelInitSettingsCuda.m_cudaEnable = true;
 
             m_mnistCuda->Load(modelInitSettingsCuda);

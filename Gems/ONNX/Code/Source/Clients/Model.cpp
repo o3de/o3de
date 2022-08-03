@@ -24,6 +24,8 @@ namespace ONNX
             m_modelName = initSettings.m_modelName;
         }
 
+        m_modelColor = initSettings.m_modelColor;
+
         // Grabs environment created on init of system component.
         Ort::Env* m_env;
         ONNXRequestBus::BroadcastResult(m_env, &ONNXRequestBus::Events::GetEnv);

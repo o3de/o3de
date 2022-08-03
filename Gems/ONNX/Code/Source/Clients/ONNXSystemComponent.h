@@ -68,8 +68,8 @@ namespace ONNX
         PrecomputedTimingData* GetPrecomputedTimingDataCuda() override;
         void SetPrecomputedTimingDataCuda(int totalCount, int64_t correctCount, float totalTime, float avgTime) override;
 
-        void AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds) override;
-        void AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds) override;
+        void AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) override;
+        void AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
