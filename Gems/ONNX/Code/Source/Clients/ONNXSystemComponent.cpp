@@ -88,31 +88,29 @@ namespace ONNX
             }
             m_timingStats.OnImGuiUpdate();
 
-            if (ENABLE_CUDA)
+#ifdef ENABLE_CUDA
+            if (ImGui::CollapsingHeader("MNIST CUDA (Precomputed)", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
             {
-                if (ImGui::CollapsingHeader("MNIST CUDA (Precomputed)", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
+                if (ImGui::BeginTable("MNIST", 3))
                 {
-                    if (ImGui::BeginTable("MNIST", 3))
-                    {
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Total Inference Runtime: %.2f ms", timingDataCuda->m_totalPrecomputedRuntime);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Average Inference Runtime: %.2f ms", timingDataCuda->m_averagePrecomputedRuntime);
-                        ImGui::TableNextRow();
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Total No. Of Inferences: %d", timingDataCuda->m_totalNumberOfInferences);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("No. Of Correct Inferences: %d", timingDataCuda->m_numberOfCorrectInferences);
-                        ImGui::TableNextColumn();
-                        ImGui::Text(
-                            "Accuracy: %.2f%%",
-                            ((float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences) *
-                                100.0f);
-                        ImGui::EndTable();
-                    }
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Total Inference Runtime: %.2f ms", timingDataCuda->m_totalPrecomputedRuntime);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Average Inference Runtime: %.2f ms", timingDataCuda->m_averagePrecomputedRuntime);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Total No. Of Inferences: %d", timingDataCuda->m_totalNumberOfInferences);
+                    ImGui::TableNextColumn();
+                    ImGui::Text("No. Of Correct Inferences: %d", timingDataCuda->m_numberOfCorrectInferences);
+                    ImGui::TableNextColumn();
+                    ImGui::Text(
+                        "Accuracy: %.2f%%",
+                        ((float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences) * 100.0f);
+                    ImGui::EndTable();
                 }
-                m_timingStatsCuda.OnImGuiUpdate();
             }
+            m_timingStatsCuda.OnImGuiUpdate();
+#endif
         }
     }
 
@@ -121,10 +119,9 @@ namespace ONNX
         if (ImGui::BeginMenu("ONNX"))
         {
             ImGui::MenuItem(m_timingStats.GetName(), "", &m_timingStats.m_show);
-            if (ENABLE_CUDA)
-            {
-                ImGui::MenuItem(m_timingStatsCuda.GetName(), "", &m_timingStatsCuda.m_show);
-            }
+#ifdef ENABLE_CUDA
+            ImGui::MenuItem(m_timingStatsCuda.GetName(), "", &m_timingStatsCuda.m_show);
+#endif
             ImGui::EndMenu();
         }
     }
@@ -173,11 +170,10 @@ namespace ONNX
         m_timingStats.SetName("MNIST Timing Statistics");
         m_timingStats.SetHistogramBinCount(200);
 
-        if (ENABLE_CUDA)
-        {
-            m_timingStatsCuda.SetName("MNIST CUDA Timing Statistics");
-            m_timingStatsCuda.SetHistogramBinCount(200);
-        }
+#ifdef ENABLE_CUDA
+        m_timingStatsCuda.SetName("MNIST CUDA Timing Statistics");
+        m_timingStatsCuda.SetHistogramBinCount(200);
+#endif
 
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
     }
@@ -202,8 +198,7 @@ namespace ONNX
         return m_allocator.get();
     }
 
-    void OnnxLoggingFunction(
-        void*, OrtLoggingLevel, const char* category, const char* logId, const char* codeLocation, const char* message)
+    void OnnxLoggingFunction(void*, OrtLoggingLevel, const char* category, const char* logId, const char* codeLocation, const char* message)
     {
         AZ_Printf("ONNX", "%s %s %s %s\n", category, logId, codeLocation, message);
     }
@@ -247,25 +242,24 @@ namespace ONNX
 
         m_mnist->BusConnect();
 
-        if (ENABLE_CUDA)
-        {
-            m_mnistCuda = AZStd::make_unique<MNIST>();
-            m_mnistCuda->m_input = input;
-            m_mnistCuda->m_output = output;
+#ifdef ENABLE_CUDA
+        m_mnistCuda = AZStd::make_unique<MNIST>();
+        m_mnistCuda->m_input = input;
+        m_mnistCuda->m_output = output;
 
-            MNIST::InitSettings modelInitSettingsCuda;
-            modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
-            modelInitSettingsCuda.m_outputShape = { 1, 10 };
-            modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
-            modelInitSettingsCuda.m_modelColor = AZ::Color::CreateFromRgba(56, 229, 59, 255);
-            modelInitSettingsCuda.m_cudaEnable = true;
+        MNIST::InitSettings modelInitSettingsCuda;
+        modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
+        modelInitSettingsCuda.m_outputShape = { 1, 10 };
+        modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
+        modelInitSettingsCuda.m_modelColor = AZ::Color::CreateFromRgba(56, 229, 59, 255);
+        modelInitSettingsCuda.m_cudaEnable = true;
 
-            m_mnistCuda->Load(modelInitSettingsCuda);
+        m_mnistCuda->Load(modelInitSettingsCuda);
 
-            m_mnistCuda->LoadImage(demoImage.c_str());
+        m_mnistCuda->LoadImage(demoImage.c_str());
 
-            m_mnistCuda->BusConnect();
-        }
+        m_mnistCuda->BusConnect();
+#endif
     }
 
     void ONNXSystemComponent::Activate()
@@ -279,10 +273,9 @@ namespace ONNX
         // in the game tick. The results for these runs are displayed alongside the realtime data in the ImGui dashboard.
         RunMnistSuite(20, false);
 
-        if (ENABLE_CUDA)
-        {
-            RunMnistSuite(20, true);
-        }
+#ifdef ENABLE_CUDA
+        RunMnistSuite(20, true);
+#endif
 
         InitRuntimeMnistExamples();
     }

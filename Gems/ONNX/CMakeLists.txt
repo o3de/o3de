@@ -9,8 +9,6 @@
 set(gem_path ${CMAKE_CURRENT_LIST_DIR})
 set(gem_json ${gem_path}/gem.json)
 
-add_compile_definitions("ENABLE_CUDA=true") # Change to ENABLE_CUDA=false to disable CUDA inferencing
-
 add_compile_definitions("W_GEM_ASSETS_PATH=L\"${CMAKE_CURRENT_LIST_DIR}/Assets\"" "GEM_ASSETS_PATH=\"${CMAKE_CURRENT_LIST_DIR}/Assets\"")
 
 o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)

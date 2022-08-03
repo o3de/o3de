@@ -47,6 +47,8 @@ ly_add_target(
     FILES_CMAKE
         onnx_private_files.cmake
         ${pal_dir}/onnx_private_files.cmake
+    COMPILE_DEFINITIONS
+        PUBLIC ENABLE_CUDA=true
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
