@@ -104,7 +104,8 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 
     if (!sceneDescLoaded)
     {
-        //AZ_Warning("UiRenderer", false, "Unable to load setting registery for the viewport's scene settings. Enable all feature processors.");
+        AZ_Warning("UiRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                    "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
         atomScene->EnableAllFeatureProcessors();
     }
 

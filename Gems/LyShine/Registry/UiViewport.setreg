@@ -3,19 +3,19 @@
         "Editor": {
             "Viewport": {
                 "UI": {
-					"Scene": {
-						"FeatureProcessors": [												
-							"LyShineFeatureProcessor",
-							// These FPs can be removed once the LightCullingPass issue [ATOM-17812] is addressed 
-							"AZ::Render::SimplePointLightFeatureProcessor",
-							"AZ::Render::SimpleSpotLightFeatureProcessor",
-							"AZ::Render::PointLightFeatureProcessor",
-							"AZ::Render::DiskLightFeatureProcessor",
-							"AZ::Render::CapsuleLightFeatureProcessor",
-							"AZ::Render::QuadLightFeatureProcessor",
-							"AZ::Render::DecalTextureArrayFeatureProcessor"
-						]
-					}
+                    "Scene": {
+                        "FeatureProcessors": [
+                            "LyShineFeatureProcessor",
+                            // These FPs can be removed once the LightCullingPass issue [ATOM-17812] is addressed 
+                            "AZ::Render::SimplePointLightFeatureProcessor",
+                            "AZ::Render::SimpleSpotLightFeatureProcessor",
+                            "AZ::Render::PointLightFeatureProcessor",
+                            "AZ::Render::DiskLightFeatureProcessor",
+                            "AZ::Render::CapsuleLightFeatureProcessor",
+                            "AZ::Render::QuadLightFeatureProcessor",
+                            "AZ::Render::DecalTextureArrayFeatureProcessor"
+                        ]
+                    }
                 }
             }
         }
