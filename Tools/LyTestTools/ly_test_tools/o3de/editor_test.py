@@ -1105,8 +1105,10 @@ class EditorTestSuite:
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
         finally:
-            if temp_batched_file:
-                os.unlink(temp_batched_file.name)
+            if temp_batched_script_file:
+                os.unlink(temp_batched_script_file.name)
+            if temp_batched_case_file:
+                os.unlink(temp_batched_case_file.name)
         return results
     
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
