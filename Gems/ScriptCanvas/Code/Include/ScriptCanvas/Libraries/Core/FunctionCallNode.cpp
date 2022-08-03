@@ -195,6 +195,9 @@ namespace ScriptCanvas
                     config.m_displayGroup = displayGroup;
                     config.m_addUniqueSlotByNameAndType = false;
                     config.SetConnectionType(ScriptCanvas::ConnectionType::Input);
+                    // For current use case, we don't need to deep copy datum from subgraphinterface
+                    // Later if we need to make deep copy, we must verify the subgraphinterface is accurate.
+                    // For example, when subgraphinterface shows datum as dynamic, we should create slot by using DynamicDataSlotConfiguration
                     config.CopyTypeAndValueFrom(input.datum);
                     auto previousSlotId = previousMap.FindInputSlotIdBySource(input.sourceID, inSourceId);
                     if (previousSlotId.IsValid())
