@@ -890,4 +890,42 @@ namespace RecastNavigationTests
         waypoints = detour->FindPathBetweenPositions(AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
         EXPECT_GE(waypoints.size(), 1);
     }
+
+    TEST_F(NavigationTest, NavUpdateThenDeleteCollidersThenUpdateAgainThenFindPathShouldFail)
+    {
+        Entity e;
+        PopulateEntity(e);
+        e.CreateComponent<DetourNavigationComponent>(e.GetId(), 3.f);
+        ActivateEntity(e);
+        SetupNavigationMesh();
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([this]
+        (AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, const AZ::Aabb*)
+            {
+                AddTestGeometry(vertices, indices, true);
+            }));
+        
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
+
+        AZStd::vector<AZ::Vector3> waypoints;
+        DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
+            AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
+        EXPECT_GT(waypoints.size(), 1);
+
+        ON_CALL(*m_mockPhysicsShape.get(), GetGeometry(_, _, _)).WillByDefault(Invoke([]
+        (
+            [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertices,
+            [[maybe_unused]] AZStd::vector<AZ::u32>& indices,
+            [[maybe_unused]] const AZ::Aabb*)
+            {
+                // Act as if there colliders are gone.
+            }));
+        
+        RecastNavigationMeshRequestBus::Event(e.GetId(), &RecastNavigationMeshRequests::UpdateNavigationMeshBlockUntilCompleted);
+
+        waypoints.clear();
+        DetourNavigationRequestBus::EventResult(waypoints, AZ::EntityId(1), &DetourNavigationRequests::FindPathBetweenPositions,
+            AZ::Vector3(0.f, 0.f, 0.f), AZ::Vector3(2.f, 2.f, 0.f));
+        EXPECT_EQ(waypoints.size(), 0);
+    }
 }

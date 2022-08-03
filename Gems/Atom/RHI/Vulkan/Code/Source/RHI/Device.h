@@ -64,6 +64,8 @@ namespace AZ
 
             VkDevice GetNativeDevice() const;
 
+            const GladVulkanContext& GetContext() const;
+
             uint32_t FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const;
 
             VkMemoryRequirements GetImageMemoryRequirements(const RHI::ImageDescriptor& descriptor);
@@ -157,6 +159,8 @@ namespace AZ
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
+
+            GladVulkanContext m_context = {};
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;

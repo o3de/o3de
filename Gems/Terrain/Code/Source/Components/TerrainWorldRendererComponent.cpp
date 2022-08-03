@@ -43,7 +43,8 @@ namespace Terrain
                 ;
 
             serialize->Class<ClipmapConfiguration>()
-                ->Version(1)
+                ->Version(2)
+                ->Field("ClipmapEnabled", &ClipmapConfiguration::m_clipmapEnabled)
                 ->Field("ClipmapSize", &ClipmapConfiguration::m_clipmapSize)
                 ->Field("MacroClipmapMaxResolution", &ClipmapConfiguration::m_macroClipmapMaxResolution)
                 ->Field("DetailClipmapMaxResolution", &ClipmapConfiguration::m_detailClipmapMaxResolution)
@@ -98,6 +99,9 @@ namespace Terrain
                     ;
 
                 editContext->Class<ClipmapConfiguration>("Clipmap", "Settings related to clipmap rendering")
+                    ->GroupElementToggle("Clipmap Enabled", &ClipmapConfiguration::m_clipmapEnabled)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClipmapConfiguration::m_clipmapSize,
                         "Clipmap image size",
                         "The size of the clipmap image in each layer.")
@@ -163,6 +167,7 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig, "Detail material configuration", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_clipmapConfig, "Clipmap configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
             }
         }

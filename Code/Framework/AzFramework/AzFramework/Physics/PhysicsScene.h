@@ -444,8 +444,8 @@ namespace AzPhysics
         SceneEvents::OnSimulationBodyRemoved m_simulatedBodyRemovedEvent;
         SceneEvents::OnSimulationBodySimulationEnabled m_simulatedBodySimulationEnabledEvent;
         SceneEvents::OnSimulationBodySimulationDisabled m_simulatedBodySimulationDisabledEvent;
-        SceneEvents::OnSceneSimulationStartEvent m_sceneSimuationStartEvent;
-        SceneEvents::OnSceneSimulationFinishEvent m_sceneSimuationFinishEvent;
+        SceneEvents::OnSceneSimulationStartEvent m_sceneSimulationStartEvent;
+        SceneEvents::OnSceneSimulationFinishEvent m_sceneSimulationFinishEvent;
         SceneEvents::OnSceneActiveSimulatedBodiesEvent m_sceneActiveSimulatedBodies;
         SceneEvents::OnSceneCollisionsEvent m_sceneCollisionEvent;
         SceneEvents::OnSceneTriggersEvent m_sceneTriggerEvent;
@@ -485,12 +485,12 @@ namespace AzPhysics
 
     inline void Scene::RegisterSceneSimulationStartHandler(SceneEvents::OnSceneSimulationStartHandler& handler)
     {
-        handler.Connect(m_sceneSimuationStartEvent);
+        handler.Connect(m_sceneSimulationStartEvent);
     }
 
     inline void Scene::RegisterSceneSimulationFinishHandler(SceneEvents::OnSceneSimulationFinishHandler& handler)
     {
-        handler.Connect(m_sceneSimuationFinishEvent);
+        handler.Connect(m_sceneSimulationFinishEvent);
     }
 
     inline void Scene::RegisterSceneActiveSimulatedBodiesHandler(SceneEvents::OnSceneActiveSimulatedBodiesEvent::Handler& handler)

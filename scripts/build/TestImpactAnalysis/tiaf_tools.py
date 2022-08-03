@@ -9,8 +9,8 @@
 import argparse
 import pathlib
 from tiaf_logger import get_logger
-from s3_storage_query_tool import S3StorageQueryTool
-from local_storage_query_tool import LocalStorageQueryTool
+from storage_query_tool import S3StorageQueryTool
+from storage_query_tool import LocalStorageQueryTool
 import sys
 logger = get_logger(__file__)
 
@@ -75,6 +75,7 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def run(args: dict):
     try:
         if args.get('s3_bucket'):
@@ -87,12 +88,14 @@ def run(args: dict):
             elif args.get('full_address'):
                 sqt = LocalStorageQueryTool(**args)
             else:
-                logger.error("You must define a repository to search in when searching locally")
+                logger.error(
+                    "You must define a repository to search in when searching locally")
 
     except Exception as e:
         logger.error(type(e).__name__)
         logger.error(e.args)
         logger.error(f"Exception caught by TIAF Tools: '{e}'.")
+
 
 if __name__ == "__main__":
     parsed_args = vars(parse_args())

@@ -63,6 +63,8 @@ namespace Multiplayer
         bool IsOnGround() const override;
         float GetGravityMultiplier() const override { return {}; }
         void SetGravityMultiplier([[maybe_unused]] float gravityMultiplier) override {}
+        float GetGroundDetectionBoxHeight() const override { return {}; }
+        void SetGroundDetectionBoxHeight([[maybe_unused]] float groundDetectionBoxHeight) override {}
         AZ::Vector3 GetFallingVelocity() const override { return {}; }
         void SetFallingVelocity([[maybe_unused]] const AZ::Vector3& fallingVelocity) override {}
 

@@ -1292,6 +1292,10 @@ namespace AZStd
 #endif
     };
 
+    // AZStd::list deduction guides
+    template <class InputIt, class Alloc = allocator>
+    list(InputIt, InputIt, Alloc = Alloc()) -> list<typename iterator_traits<InputIt>::value_type, Alloc>;
+
     template< class T, class Allocator >
     AZ_FORCE_INLINE bool operator==(const list<T, Allocator>& left, const list<T, Allocator>& right)
     {

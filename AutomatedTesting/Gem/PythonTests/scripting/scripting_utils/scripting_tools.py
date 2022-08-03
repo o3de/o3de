@@ -9,7 +9,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 from PySide2 import QtWidgets, QtTest, QtCore
 from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import Report
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
 import azlmbr.editor as editor
 import azlmbr.math as math
@@ -411,6 +411,7 @@ def located_expected_tracer_lines(self, section_tracer, lines):
     for line in lines:
         for found_line in found_lines:
             if line == found_line:
+                print("found line: " + found_line)
                 matching_lines += 1
 
     return matching_lines >= expected_lines
@@ -462,3 +463,24 @@ def create_entity_with_multiple_sc_component_asset(entity_name, source_files, po
         hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
     return entity
+
+def change_entity_sc_asset(entity, source_file, component_index = 0):
+    """
+    function for changing the source file component property value of an entity. Function assumes that there is a SC
+    component somewhere in the list of components
+
+    param entity: The entity with the SC component you want to update
+    param source_file: The file you want to assign to the script canvas component property
+    param component_index: the index of the sc component you want to update.
+
+    returns true if the function was able to asign the source file ot the component
+    """
+
+    source_handle = scriptcanvas.SourceHandleFromPath(source_file)
+    script_canvas_component = entity.components[component_index]
+    hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, source_handle)
+    script_file = hydra.get_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+    result = helper.wait_for_condition(lambda: script_file is not None, WAIT_TIME_3)
+
+    return result
+

@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Cosine",
+        "category": "Math Functions",
+        "title": "cos",
         "inputSlots": [
             {
                 "name": "inValue",

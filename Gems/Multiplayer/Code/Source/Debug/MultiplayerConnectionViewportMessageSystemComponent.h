@@ -64,11 +64,14 @@ namespace Multiplayer
         void OnPlayModeEnd() override;
         //! @}
 
-        void DrawConnectionStatus(AzNetworking::ConnectionState connectionState);
+        void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
+        void DrawConnectionStatusLine(const char* line, const AZ::Color& color);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;
+        AzNetworking::IpAddress m_hostIpAddress;
+        int m_currentConnectionsDrawCount = 0;
     };
 }

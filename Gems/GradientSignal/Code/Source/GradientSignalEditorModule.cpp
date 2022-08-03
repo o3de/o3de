@@ -7,7 +7,6 @@
  */
 
 #include <GradientSignalEditorModule.h>
-#include <Editor/EditorGradientBakerComponent.h>
 #include <Editor/EditorSurfaceAltitudeGradientComponent.h>
 #include <Editor/EditorSmoothStepGradientComponent.h>
 #include <Editor/EditorSurfaceSlopeGradientComponent.h>
@@ -27,6 +26,7 @@
 #include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <UI/GradientPreviewDataWidget.h>
 
