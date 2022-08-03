@@ -201,6 +201,9 @@ endfunction()
 function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
     get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
     get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
+
+    # Strip the separating semicolons to yield the executable command string for this test
+    string(REPLACE ";" " " test_command "${test_command}")
     
     # namespace is optional, in which case this component will be simply the test name
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})

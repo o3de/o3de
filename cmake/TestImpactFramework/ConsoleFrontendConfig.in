@@ -134,6 +134,11 @@
     },
     "target": {
       "exclude": [
+        {
+          "target": "cli_test_driver",
+          "tests": [
+          ]
+        }
       ]
     }
   }
