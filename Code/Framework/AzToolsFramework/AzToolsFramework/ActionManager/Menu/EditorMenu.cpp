@@ -26,7 +26,7 @@ namespace AzToolsFramework
 
     void EditorMenu::AddSeparator(int sortKey)
     {
-        m_menuItems[sortKey].emplace_back(MenuItem());
+        m_menuItems[sortKey].emplace_back();
     }
     
     void EditorMenu::AddAction(int sortKey, AZStd::string actionIdentifier)
@@ -37,12 +37,7 @@ namespace AzToolsFramework
         }
 
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-        m_menuItems[sortKey].emplace_back(
-            MenuItem(
-                MenuItemType::Action,
-                AZStd::move(actionIdentifier)
-            )
-        );
+        m_menuItems[sortKey].emplace_back(MenuItemType::Action, AZStd::move(actionIdentifier));
     }
 
     void EditorMenu::RemoveAction(AZStd::string actionIdentifier)
@@ -72,7 +67,7 @@ namespace AzToolsFramework
         }
 
         m_subMenuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
-        m_menuItems[sortKey].emplace_back(MenuItem(MenuItemType::SubMenu, AZStd::move(menuIdentifier)));
+        m_menuItems[sortKey].emplace_back(MenuItemType::SubMenu, AZStd::move(menuIdentifier));
     }
 
     void EditorMenu::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)
@@ -80,7 +75,7 @@ namespace AzToolsFramework
         if (!m_widgetToSortKeyMap.contains(widgetActionIdentifier))
         {
             m_widgetToSortKeyMap.insert(AZStd::make_pair(widgetActionIdentifier, sortKey));
-            m_menuItems[sortKey].emplace_back(MenuItem(MenuItemType::Widget, AZStd::move(widgetActionIdentifier)));
+            m_menuItems[sortKey].emplace_back(MenuItemType::Widget, AZStd::move(widgetActionIdentifier));
         }
     }
     

@@ -21,7 +21,7 @@ namespace AzToolsFramework
     void EditorMenuBar::AddMenu(int sortKey, AZStd::string menuIdentifier)
     {
         m_menuToSortKeyMap.insert(AZStd::make_pair(menuIdentifier, sortKey));
-        m_menus[sortKey].emplace_back(AZStd::move(menuIdentifier));
+        m_menus[sortKey].push_back(AZStd::move(menuIdentifier));
     }
     
     bool EditorMenuBar::ContainsMenu(const AZStd::string& menuIdentifier) const
