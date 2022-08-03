@@ -10,9 +10,11 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
+#include <ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationBus.h>
@@ -27,6 +29,7 @@ namespace AzToolsFramework
     class ActionManagerInterface;
     class ContainerEntityInterface;
     class ReadOnlyEntityPublicInterface;
+    class ToolBarManagerInterface;
 
     namespace Prefab
     {
@@ -40,6 +43,7 @@ namespace AzToolsFramework
             , public EditorEventsBus::Handler
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
+            , private PrefabFocusNotificationBus::Handler
             , private PrefabPublicNotificationBus::Handler
             , private EditorEntityContextNotificationBus::Handler
         {
@@ -58,10 +62,15 @@ namespace AzToolsFramework
 
             // EditorEventsBus overrides ...
             void OnEscape() override;
+            void NotifyEditorInitialized() override;
 
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+
+            // PrefabFocusNotificationBus
+            void OnPrefabFocusChanged() override;
+            void OnPrefabFocusRefreshed() override;
 
             // PrefabInstanceContainerNotificationBus overrides ...
             void OnPrefabComponentActivate(AZ::EntityId entityId) override;
@@ -106,6 +115,11 @@ namespace AzToolsFramework
             void InitializeShortcuts();
             void UninitializeShortcuts();
 
+            // Action Manager Initializers
+            void InitializeActionUpdaters();
+            void InitializeActions();
+            void InitializeWidgetActions();
+
             // Reference detection
             static void GatherAllReferencedEntitiesAndCompare(const EntityIdSet& entities, EntityIdSet& entitiesAndReferencedEntities,
                 bool& hasExternalReferences);
@@ -128,6 +142,7 @@ namespace AzToolsFramework
 
             ActionManagerInterface* m_actionManagerInterface = nullptr;
             ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+            ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
         };
     }
 }
