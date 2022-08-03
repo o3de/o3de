@@ -9,6 +9,7 @@
 #include <PrefabGroup/PrefabGroupBehavior.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <PrefabGroup/ProceduralAssetHandler.h>
+#include <PrefabGroup/PrefabGroupBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -47,6 +48,8 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
+#ifndef AZ_HASH_NODEINDEX
+#define AZ_HASH_NODEINDEX
 namespace AZStd
 {
     template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
@@ -59,6 +62,7 @@ namespace AZStd
         }
     };
 }
+#endif // #ifndef AZ_HASH_NODEINDEX
 
 namespace AZ::SceneAPI::Behaviors
 {
@@ -75,12 +79,14 @@ namespace AZ::SceneAPI::Behaviors
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
+        AZStd::unique_ptr<PrefabGroupEventHandler> m_prefabGroupEventHandler;
 
         ExportEventHandler() = delete;
 
         ExportEventHandler(PreExportEventContextFunction function)
             : m_preExportEventContextFunction(AZStd::move(function))
         {
+            m_prefabGroupEventHandler = AZStd::make_unique<PrefabGroupEventHandler>();
             BindToCall(&ExportEventHandler::PrepareForExport);
             AZ::SceneAPI::SceneCore::ExportingComponent::Activate();
             Events::AssetImportRequestBus::Handler::BusConnect();
@@ -88,6 +94,7 @@ namespace AZ::SceneAPI::Behaviors
 
         ~ExportEventHandler()
         {
+            m_prefabGroupEventHandler.reset();
             Events::AssetImportRequestBus::Handler::BusDisconnect();
             AZ::SceneAPI::SceneCore::ExportingComponent::Deactivate();
         }
@@ -526,7 +533,7 @@ namespace AZ::SceneAPI::Behaviors
         }
         else if (action == Events::AssetImportRequest::ConstructDefault && requester == RequestingApplication::Editor)
         {
-            // ignore constructing a default procedurla prefab if the Editor's "Edit Settings..." is being used
+            // ignore constructing a default procedural prefab if the Editor's "Edit Settings..." is being used
             // the user is trying to assign the source scene asset their own mesh groups
             return Events::ProcessingResult::Ignored;
         }

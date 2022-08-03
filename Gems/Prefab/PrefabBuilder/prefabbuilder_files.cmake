@@ -14,6 +14,8 @@ set(FILES
     PrefabGroup/PrefabGroup.h
     PrefabGroup/PrefabGroupBehavior.cpp
     PrefabGroup/PrefabGroupBehavior.h
+    PrefabGroup/PrefabGroupBus.cpp
+    PrefabGroup/PrefabGroupBus.h
     PrefabGroup/ProceduralAssetHandler.cpp
     PrefabGroup/ProceduralAssetHandler.h
 )
