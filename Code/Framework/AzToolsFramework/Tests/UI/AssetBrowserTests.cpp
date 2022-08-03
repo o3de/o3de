@@ -24,6 +24,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <QAbstractItemModelTester>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
 namespace UnitTest
 {

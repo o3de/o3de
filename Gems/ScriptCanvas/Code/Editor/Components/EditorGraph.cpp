@@ -1418,6 +1418,7 @@ namespace ScriptCanvasEditor
             {
                 data->m_scriptCanvasEntity.reset(entity);
                 graph->MarkOwnership(*data);
+                graph->MarkVersion();
                 entity->Init();
                 entity->Activate();
                 return data;

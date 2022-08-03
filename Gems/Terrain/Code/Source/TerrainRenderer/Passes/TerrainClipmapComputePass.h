@@ -42,8 +42,6 @@ namespace Terrain
         //! Besides the standard enable flag,
         //! the pass can be disabled by the case that no update is triggered.
         bool IsEnabled() const override;
-        //! Used to check if clipmap rendering is enabled.
-        bool ClipmapFeatureIsEnabled() const;
     private:
         TerrainMacroClipmapGenerationPass(const AZ::RPI::PassDescriptor& descriptor);
 

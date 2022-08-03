@@ -76,7 +76,7 @@ namespace AZ
             if (m_nativePipeline != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyPipeline(device.GetNativeDevice(), m_nativePipeline, nullptr);
+                device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, nullptr);
                 m_nativePipeline = VK_NULL_HANDLE;
             }
             Base::Shutdown();
