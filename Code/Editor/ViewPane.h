@@ -114,7 +114,9 @@ private:
 
     QString m_viewPaneClass;
     bool m_bFullscreen;
-    CViewportTitleDlg m_viewportTitleDlg;
+
+    CViewportTitleDlg* m_viewportTitleDlg;
+    ViewportTitleExpanderWatcher* m_expanderWatcher;
 
     int m_id;
     int m_nBorder;
@@ -122,7 +124,6 @@ private:
     QWidget* m_viewport;
     QScrollArea* m_viewportScrollArea = nullptr;
     ViewportExpansionPolicy m_viewportPolicy = ViewportExpansionPolicy::AutoExpand;
-    ViewportTitleExpanderWatcher* m_expanderWatcher;
     bool m_active;
 };
 

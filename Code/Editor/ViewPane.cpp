@@ -22,14 +22,15 @@
 #include <QScrollArea>
 #include <QToolBar>
 
-// AzCore
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzQtComponents/Components/Style.h>
-
-// AzFramework
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
+#include <AzFramework/StringFunc/StringFunc.h>
+
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+
+#include <AzQtComponents/Components/Style.h>
 
 // Editor
 #include "ViewManager.h"
@@ -141,15 +142,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     : AzQtComponents::ToolBarArea(parent)
-    , m_viewportTitleDlg(this)
-    , m_expanderWatcher(new ViewportTitleExpanderWatcher(this, &m_viewportTitleDlg))
 {
     m_viewport = nullptr;
     m_active = false;
     m_nBorder = VIEW_BORDER;
 
     m_bFullscreen = false;
-    m_viewportTitleDlg.SetViewPane(this);
 
     // Set up an optional scrollable area for our viewport.  We'll use this for times that we want a fixed-size
     // viewport independent of main window size.
@@ -157,31 +155,55 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_viewportScrollArea->setContentsMargins(QMargins());
     m_viewportScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    QWidget* viewportContainer = m_viewportTitleDlg.findChild<QWidget*>(QStringLiteral("ViewportTitleDlgContainer"));
-    QToolBar* toolbar = CreateToolBarFromWidget(viewportContainer,
-                                                Qt::TopToolBarArea,
-                                                QStringLiteral("Viewport Settings"));
-    toolbar->setMovable(false);
-    toolbar->installEventFilter(&m_viewportTitleDlg);
-    toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(toolbar, &QWidget::customContextMenuRequested, &m_viewportTitleDlg, &QWidget::customContextMenuRequested);
-    setContextMenuPolicy(Qt::NoContextMenu);
+    if(!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        m_viewportTitleDlg = new CViewportTitleDlg(this);
+        m_expanderWatcher = new ViewportTitleExpanderWatcher(this, m_viewportTitleDlg);
+
+        m_viewportTitleDlg->SetViewPane(this);
+
+        QWidget* viewportContainer = m_viewportTitleDlg->findChild<QWidget*>(QStringLiteral("ViewportTitleDlgContainer"));
+        QToolBar* toolbar = CreateToolBarFromWidget(viewportContainer,
+                                                    Qt::TopToolBarArea,
+                                                    QStringLiteral("Viewport Settings"));
+        toolbar->setMovable(false);
+        toolbar->installEventFilter(m_viewportTitleDlg);
+        toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(toolbar, &QWidget::customContextMenuRequested, m_viewportTitleDlg, &QWidget::customContextMenuRequested);
+        setContextMenuPolicy(Qt::NoContextMenu);
     
-    if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(toolbar))
-    {
-        expansion->installEventFilter(m_expanderWatcher);
+        if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(toolbar))
+        {
+            expansion->installEventFilter(m_expanderWatcher);
+        }
+
+        AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
+            qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
+        QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
+
+        AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
+        AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
+
+        if (prefabsBreadcrumbs && backButton)
+        {
+            m_viewportTitleDlg->InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
+        }
     }
-
-    AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
-        qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
-    QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
-
-    AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
-    AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
-
-    if (prefabsBreadcrumbs && backButton)
+    else
     {
-        m_viewportTitleDlg.InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
+        auto toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+
+        if (toolBarManagerInterface)
+        {
+            // Register top viewport toolbar.
+            AzToolsFramework::ToolBarProperties toolBarProperties;
+            toolBarProperties.m_name = "Viewport ToolBar";
+            toolBarManagerInterface->RegisterToolBar("o3de.toolbar.viewport.top", toolBarProperties);
+
+            // Add toolbar to top of viewport.
+            QToolBar* toolBar = toolBarManagerInterface->GetToolBar("o3de.toolbar.viewport.top");
+            addToolBar(Qt::TopToolBarArea, toolBar);
+        }
     }
 
     m_id = -1;
@@ -215,7 +237,10 @@ void CLayoutViewPane::SetViewClass(const QString& sClass)
     if (newPane)
     {
         newPane->setProperty("IsViewportWidget", true);
-        connect(newPane, &QWidget::windowTitleChanged, &m_viewportTitleDlg, &CViewportTitleDlg::SetTitle, Qt::UniqueConnection);
+        if (!AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            connect(newPane, &QWidget::windowTitleChanged, m_viewportTitleDlg, &CViewportTitleDlg::SetTitle, Qt::UniqueConnection);
+        }
         AttachViewport(newPane);
     }
 }
@@ -310,7 +335,6 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         m_viewport->setVisible(true);
 
         setWindowTitle(m_viewPaneClass);
-        m_viewportTitleDlg.SetTitle(pViewport->windowTitle());
 
         if (QtViewport* vp = qobject_cast<QtViewport*>(pViewport))
         {
@@ -321,7 +345,11 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
             OnFOVChanged(gSettings.viewports.fDefaultFov);
         }
 
-        m_viewportTitleDlg.OnViewportSizeChanged(pViewport->width(), pViewport->height());
+        if (!AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            m_viewportTitleDlg->SetTitle(pViewport->windowTitle());
+            m_viewportTitleDlg->OnViewportSizeChanged(pViewport->width(), pViewport->height());
+        }
     }
 }
 
@@ -633,7 +661,10 @@ void CLayoutViewPane::SetFocusToViewport()
 //////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::OnFOVChanged(const float fovRadians)
 {
-    m_viewportTitleDlg.OnViewportFOVChanged(fovRadians);
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        m_viewportTitleDlg->OnViewportFOVChanged(fovRadians);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
