@@ -170,8 +170,8 @@ namespace ONNX
                 avgRuntimeInMilliseconds);
         }
 
-        AZ_Printf("\nONNX", " Run Type: %s", cudaEnable ? "CUDA" : "CPU");
-        AZ_Printf("\nONNX", " Evaluated: %d  Correct: %d  Accuracy: %f%%", totalFiles, numOfCorrectInferences, accuracy);
-        AZ_Printf("\nONNX", " Total Runtime: %fms  Avg Runtime: %fms", totalRuntimeInMilliseconds, avgRuntimeInMilliseconds);
+        AZ_Printf("ONNX", " Run Type: %s\n", cudaEnable ? "CUDA" : "CPU");
+        AZ_Printf("ONNX", " Evaluated: %d  Correct: %d  Accuracy: %f%%\n", totalFiles, numOfCorrectInferences, accuracy);
+        AZ_Printf("ONNX", " Total Runtime: %fms  Avg Runtime: %fms\n", totalRuntimeInMilliseconds, avgRuntimeInMilliseconds);
     }
 } // namespace ONNX

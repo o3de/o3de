@@ -205,7 +205,7 @@ namespace ONNX
     void OnnxLoggingFunction(
         void*, OrtLoggingLevel, const char* category, const char* logId, const char* codeLocation, const char* message)
     {
-        AZ_Printf("\nONNX", "%s %s %s %s", category, logId, codeLocation, message);
+        AZ_Printf("ONNX", "%s %s %s %s\n", category, logId, codeLocation, message);
     }
 
     // The global environment and memory allocator are initialised with the system component, and are accessed via the EBus from within the
