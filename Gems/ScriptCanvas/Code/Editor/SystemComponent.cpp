@@ -268,31 +268,40 @@ namespace ScriptCanvasEditor
         using namespace AzToolsFramework;
         using namespace AzToolsFramework::AssetBrowser;
 
-        bool isScriptCanvasAsset = false;
-
-        if (AZStd::wildcard_match(ScriptCanvasEditor::SourceDescription::GetFileExtension(), fullSourceFileName))
+        if (AZ::IO::Path(fullSourceFileName).Extension() == ScriptCanvasEditor::SourceDescription::GetFileExtension())
         {
-            isScriptCanvasAsset = true;
-        }
-
-        if (isScriptCanvasAsset)
-        {
-            auto scriptCanvasEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
+            auto scriptCanvasOpenInEditorCallback = []([[maybe_unused]] const char* fullSourceFileNameInCall, const AZ::Uuid& sourceUUIDInCall)
             {
                 AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-                const SourceAssetBrowserEntry* fullDetails = SourceAssetBrowserEntry::GetSourceByUuid(sourceUUIDInCall);
-                if (fullDetails)
-                {
-                    AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
 
+                auto sourceHandle = CompleteDescription(SourceHandle(nullptr, sourceUUIDInCall));
+
+                if (sourceHandle)
+                {
                     AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::OpenViewPane, "Script Canvas");
+
                     GeneralRequestBus::BroadcastResult(openOutcome
                         , &GeneralRequests::OpenScriptCanvasAsset
-                        , SourceHandle(nullptr, sourceUUIDInCall), Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                        , *sourceHandle
+                        , Tracker::ScriptCanvasFileState::UNMODIFIED
+                        , -1);
+
+                    if (!openOutcome.IsSuccess())
+                    {
+                        AZ_Error("ScriptCanvas", false, openOutcome.GetError().data());
+                    }
+                }
+                else
+                {
+                    AZ_Warning("ScriptCanvas", false
+                        , "Unabled to find full path for Source UUid %s", sourceUUIDInCall.ToString<AZStd::string>().c_str());
                 }
             };
 
-            openers.push_back({ "O3DE_ScriptCanvasEditor", "Open In Script Canvas Editor...", QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath()), scriptCanvasEditorCallback });
+            openers.push_back({ "O3DE_ScriptCanvasEditor"
+                , "Open In Script Canvas Editor..."
+                , QIcon(ScriptCanvasEditor::SourceDescription::GetIconPath())
+                , scriptCanvasOpenInEditorCallback });
         }
     }
 
