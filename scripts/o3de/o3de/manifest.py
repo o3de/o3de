@@ -343,9 +343,12 @@ def get_gem_gems(gem_path: pathlib.Path) -> list:
     return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, set()))
 
 
+def cycle_detected(path: pathlib.Path, visited_paths: set) -> bool:
+    return path in visited_paths
+
 def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: set) -> list:
-    if gem_path in visited_gem_paths:
-        logger.error(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
+    if cycle_detected(gem_path, visited_gem_paths):
+        logger.warning(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
         return []
     visited_gem_paths.add(gem_path)
 
@@ -353,9 +356,10 @@ def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: s
     if gem_object:
         external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
             gem_object['external_subdirectories'])) if 'external_subdirectories' in gem_object else []
+        immediate_external_subdirectores = external_subdirectories.copy()
 
         # recurse into gem subdirectories 
-        for external_subdirectory in external_subdirectories:
+        for external_subdirectory in immediate_external_subdirectores:
             gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
             if gem_json_path.is_file():
                 external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory, visited_gem_paths))

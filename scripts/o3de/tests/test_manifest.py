@@ -303,6 +303,54 @@ class TestGetAllGems:
 
             assert manifest.get_all_gems() == expected_gem_paths
 
+    @pytest.mark.parametrize("""gem_external_subdirectories,
+                                expected_cycle_detected""", [
+            pytest.param( 
+                {
+                    'D:/Gem1':['D:/Gem2'],
+                    'D:/Gem2':['D:/Gem1']
+                },
+                True),
+            pytest.param(
+                {
+                    'D:/Gem1':['Gem2'],
+                    'D:/Gem1/Gem2':['Gem3','Gem4'],
+                    'D:/Gem1/Gem2/Gem3':[],
+                    'D:/Gem1/Gem2/Gem4':[]
+                },
+                False),
+        ]
+    )
+    def test_get_gem_external_subdirectories_detects_cycles(self, 
+        gem_external_subdirectories,
+        expected_cycle_detected ):
+
+        def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+            project_path: pathlib.Path = None) -> dict or None:
+
+            gem_payload = json.loads(TEST_GEM_JSON_PAYLOAD)
+            gem_payload["external_subdirectories"] = gem_external_subdirectories[gem_path]
+
+            return gem_payload
+
+        def cycle_detected(path: pathlib.Path, visited_paths: set) -> bool:
+            if path in visited_paths:
+                self.cycle_detected = True
+            return path in visited_paths
+
+        with patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _1, \
+            patch('o3de.manifest.cycle_detected', side_effect=cycle_detected) as _2, \
+            patch('pathlib.Path.is_file', return_value=True) as _3,\
+            patch('pathlib.Path.resolve', self.resolve) as _4:
+
+            self.cycle_detected = False
+
+            # start with the first path in the dictionary
+            gem_path = list(gem_external_subdirectories.keys())[0]
+            manifest.get_gem_external_subdirectories(gem_path, set())
+
+            assert self.cycle_detected == expected_cycle_detected 
+
 class TestManifestProjects:
     @staticmethod
     def resolve(self):
