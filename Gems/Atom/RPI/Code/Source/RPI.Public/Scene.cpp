@@ -276,25 +276,49 @@ namespace AZ
             }
             m_featureProcessors.clear();
         }
-        
+
+        void Scene::VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const
+        {
+            auto VisitInterface = [&callback](const FeatureProcessorPtr& featureProcessor)
+            {
+                return featureProcessor != nullptr ? callback(*featureProcessor) : true;
+            };
+
+            AZStd::ranges::all_of(m_featureProcessors, VisitInterface);
+        }
+
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
         {
-            return GetFeatureProcessor(
-                [featureProcessorId](const FeatureProcessorPtr& fp)
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorId, &foundFp](FeatureProcessor& fp)
                 {
-                    return FeatureProcessorId(fp->RTTI_GetTypeName()) == featureProcessorId;
+                    if (FeatureProcessorId(fp.RTTI_GetTypeName()) == featureProcessorId)
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
                 }
             );
+            return foundFp;
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const TypeId& featureProcessorTypeId) const
         {
-            return GetFeatureProcessor(
-                [featureProcessorTypeId](const FeatureProcessorPtr& fp)
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorTypeId, &foundFp](FeatureProcessor& fp)
                 {
-                    return fp->RTTI_IsTypeOf(featureProcessorTypeId);
+                    if (fp.RTTI_IsTypeOf(featureProcessorTypeId))
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
                 }
             );
+            return foundFp;
         }
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)

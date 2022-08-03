@@ -102,6 +102,11 @@ namespace AZ
 
             void DisableAllFeatureProcessors();
 
+            //! Callback function that will be invoked with each non-pointer FeatureProcessor
+            //! return true to continue visiting or false to halt
+            using FeatureProcessorVisitCallback = AZStd::function<bool(FeatureProcessor&)>;
+            void VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const;
+
             //! Linear search to retrieve specific class of a feature processor.
             //! Returns nullptr if a feature processor with the specified id is
             //! not found.
@@ -228,9 +233,6 @@ namespace AZ
             void FinalizeDrawListsTaskGraph();
             void FinalizeDrawListsJobs();
 
-            template<typename Predicate>
-            FeatureProcessor* GetFeatureProcessor(const Predicate& predicate) const;
-
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
 
@@ -284,13 +286,6 @@ namespace AZ
         };
 
         // --- Template functions ---
-
-        template<typename Predicate>
-        FeatureProcessor* Scene::GetFeatureProcessor(const Predicate& predicate) const
-        {
-            auto foundFP = AZStd::find_if(AZStd::begin(m_featureProcessors), AZStd::end(m_featureProcessors), predicate);
-            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
-        }
 
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::EnableFeatureProcessor()
