@@ -23,6 +23,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/ILogger.h>
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -984,7 +985,7 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded.  Asset may be missing, not processed or moved.  AssetId: %s",
+                AZLOG_DEBUG("GetAsset called for asset which does not exist in asset catalogand cannot be loaded.Asset may be missing, not processed or moved.AssetId: % s",
                     assetId.ToString<AZStd::string>().c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
