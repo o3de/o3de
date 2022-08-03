@@ -3232,7 +3232,7 @@ namespace UnitTest
             AZ::Data::Asset<AZ::Data::AssetData> m_asset;
             SignalType& m_reloadSignal;
         };
-        
+
         SignalType reloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
 
         // 1) Load the asset
@@ -3265,7 +3265,108 @@ namespace UnitTest
 
         // 5) If the bug is still active, this will fail because the asset can never finish loading
         EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
-        
+
+        // Shut down the event thread
+        running = false;
+
+        if (eventThread.joinable())
+        {
+            eventThread.join();
+        }
+    }
+
+    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer)
+    {
+        // Regression test very similar to the above test but this time it occurs when releasing an old asset reference while *loading* (not reloading) the same asset
+        // Order of events to reproduce:
+        // 1) Asset is loaded
+        // 2) Asset is reloaded
+        // Reference to old asset is kept, newly loaded reference is released
+        // 3) Asset load is started again
+        // 4) Reference to old asset is released
+        // 4a) Old asset ref count hits 0
+        // 4b) Old asset triggers OnAssetUnused
+        // 4c) Container is released <-- This is where the bug happens, which should not occur with the fix
+        // 5) Load stalls because container is gone
+
+        AZStd::atomic_bool running = true;
+        using SignalType = AZStd::unique_ptr<AZStd::binary_semaphore>;
+
+        // Start up a thread to dispatch queued events in the background
+        AZStd::thread eventThread(
+            [&running]()
+            {
+                while (running)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
+            });
+
+        struct AssetEventHandler : AZ::Data::AssetBus::Handler
+        {
+            AssetEventHandler(SignalType& loadSignal, SignalType& unloadSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+                : m_asset(asset)
+                , m_loadSignal(loadSignal)
+                , m_unloadSignal(unloadSignal)
+            {
+                BusConnect(asset.GetId());
+            }
+
+            ~AssetEventHandler() override
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReady(Asset<AssetData> asset) override
+            {
+                m_loadSignal->release();
+            }
+
+            void OnAssetUnloaded([[maybe_unused]] const AssetId assetId, [[maybe_unused]] const AssetType assetType) override
+            {
+                m_unloadSignal->release();
+            }
+
+            AZ::Data::Asset<AZ::Data::AssetData> m_reloadedAsset;
+            AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+            SignalType& m_loadSignal;
+            SignalType& m_unloadSignal;
+        };
+
+        SignalType loadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+        SignalType unloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+
+        // 1) Load the asset
+        AssetEventHandler assetEventHandler(
+            loadSignal, unloadSignal,
+            AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+
+        m_loadDataSynchronizer.m_readyToLoad = true;
+        m_loadDataSynchronizer.m_condition.notify_all();
+
+        loadSignal->acquire();
+
+        ASSERT_TRUE(assetEventHandler.m_asset.IsReady());
+
+        // 2) Start a reload which will complete
+        AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+        unloadSignal->acquire(); // Wait until unload is done
+
+        // 3) Start another load
+        m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the load from progressing too far
+        auto loadingAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+        // 4) Unload the old asset reference
+        assetEventHandler.m_asset = {};
+
+        // Resume loading
+        m_loadDataSynchronizer.m_readyToLoad = true;
+        m_loadDataSynchronizer.m_condition.notify_all();
+
+        // 5) If the bug is still active, this will fail because the asset can never finish loading
+        EXPECT_TRUE(loadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
         // Shut down the event thread
         running = false;
 
