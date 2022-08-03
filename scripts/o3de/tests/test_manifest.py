@@ -309,8 +309,8 @@ class TestGetAllGems:
                                 expected_cycle_detected""", [
             pytest.param( 
                 {
-                    'D:/Gem1':['D:/Gem2'],
-                    'D:/Gem2':['D:/Gem1']
+                    'D:/Gem1':['../Gem2'],
+                    'D:/Gem2':['../Gem1']
                 },
                 True),
             pytest.param(
@@ -341,8 +341,7 @@ class TestGetAllGems:
 
         with patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as _1, \
             patch('logging.Logger.warning', side_effect=cycle_detected) as _2, \
-            patch('pathlib.Path.is_file', return_value=True) as _3,\
-            patch('pathlib.Path.resolve', self.resolve) as _4:
+            patch('pathlib.Path.is_file', return_value=True) as _3:
 
             self.cycle_detected = False
 

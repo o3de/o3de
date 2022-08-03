@@ -358,7 +358,7 @@ def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: l
     gem_object = get_gem_json_data(gem_path=gem_path)
     external_subdirectories = []
     if gem_object:
-        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
+        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).resolve().as_posix(),
             gem_object['external_subdirectories'])) if 'external_subdirectories' in gem_object else []
 
         # recurse into gem subdirectories
