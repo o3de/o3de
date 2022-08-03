@@ -132,7 +132,7 @@ namespace AZ::Render
 
     void SkyAtmospherePass::BuildShaderData()
     {
-        m_passData.clear();
+        m_atmospherePassData.clear();
 
         for (auto child : m_children)
         {
@@ -166,7 +166,7 @@ namespace AZ::Render
                 }
 
                 RPI::ShaderOptionGroup shaderOptionGroup = shader->CreateShaderOptionGroup();
-                m_passData.push_back({ index, srg, AZStd::move(shaderOptionGroup) });
+                m_atmospherePassData.push_back({ index, srg, AZStd::move(shaderOptionGroup) });
             }
         }
     }
@@ -187,7 +187,7 @@ namespace AZ::Render
 
     void SkyAtmospherePass::UpdatePassData()
     {
-        for (auto passData : m_passData)
+        for (auto passData : m_atmospherePassData)
         {
             passData.m_srg->SetConstant(passData.m_index, m_constants);
 
@@ -202,7 +202,7 @@ namespace AZ::Render
 
     void SkyAtmospherePass::FrameBeginInternal(AZ::RPI::Pass::FramePrepareParams params)
     {
-        if (m_updateConstants && !m_passData.empty())
+        if (m_updateConstants && !m_atmospherePassData.empty())
         {
             m_updateConstants = false;
             UpdatePassData();
@@ -322,7 +322,7 @@ namespace AZ::Render
     {
         m_transmittanceLUTImage.reset();
         m_skyViewLUTImage.reset();
-        m_passData.clear();
+        m_atmospherePassData.clear();
 
         Base::ResetInternal();
     }

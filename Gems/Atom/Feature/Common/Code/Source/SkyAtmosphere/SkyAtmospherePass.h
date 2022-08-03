@@ -111,13 +111,13 @@ namespace AZ::Render
 
         RHI::ShaderInputNameIndex m_constantsIndexName = "m_constants";
 
-        struct PassData
+        struct AtmospherePassData
         {
             RHI::ShaderInputConstantIndex m_index;
             Data::Instance<RPI::ShaderResourceGroup> m_srg;
             RPI::ShaderOptionGroup m_shaderOptionGroup;
         };
-        AZStd::vector<PassData> m_passData;
+        AZStd::vector<AtmospherePassData> m_atmospherePassData;
 
         RPI::Ptr<RPI::Pass> m_skyTransmittanceLUTPass = nullptr;
 
