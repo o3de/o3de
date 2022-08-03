@@ -387,12 +387,12 @@ namespace AzToolsFramework
         m_toolBarsToRefresh.clear();
     }
 
-    const ToolBarManagerStringResult ToolBarManager::SerializeToolBar(const AZStd::string& toolBarIdentifier)
+    ToolBarManagerStringResult ToolBarManager::SerializeToolBar(const AZStd::string& toolBarIdentifier)
     {
         if (!m_toolBars.contains(toolBarIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
-                "ToolBar Manager - Could not refresh toolBar \"%.s\" as it is not registered.", toolBarIdentifier.c_str()));
+                "ToolBar Manager - Could not serialize toolBar \"%.s\" as it is not registered.", toolBarIdentifier.c_str()));
         }
 
         rapidjson::Document document;
@@ -412,12 +412,8 @@ namespace AzToolsFramework
             return AZ::Success(AZStd::string(prefabBuffer.GetString()));
         }
 
-        return AZ::Failure(AZStd::string::format("ToolBar Manager - Something happened."));
-
-        /* Keep for later...
-        AZ::JsonDeserializerSettings settings;
-        AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Load(instance, prefabDom, settings);
-        */
+        return AZ::Failure(AZStd::string::format(
+            "ToolBar Manager - Could not serialize toolbar \"%.s\" - serialization error.", toolBarIdentifier.c_str()));
     }
 
     void ToolBarManager::OnSystemTick()

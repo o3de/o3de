@@ -12,9 +12,6 @@
 
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
-// Temp
-#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
-
 namespace AzToolsFramework
 {
     ActionManagerSystemComponent::~ActionManagerSystemComponent()
@@ -40,12 +37,10 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::Activate()
     {
-        EditorEventsBus::Handler::BusConnect();
     }
 
     void ActionManagerSystemComponent::Deactivate()
     {
-        EditorEventsBus::Handler::BusDisconnect();
     }
 
     void ActionManagerSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -55,6 +50,7 @@ namespace AzToolsFramework
             serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
 
+        MenuManager::Reflect(context);
         ToolBarManager::Reflect(context);
     }
 
@@ -69,21 +65,6 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-    }
-
-    void ActionManagerSystemComponent::NotifyEditorInitialized()
-    {
-        ToolBarManagerInternalInterface* toolBarManagerInternalInterface = AZ::Interface<ToolBarManagerInternalInterface>::Get();
-
-        if (toolBarManagerInternalInterface)
-        {
-            auto outcome = toolBarManagerInternalInterface->SerializeToolBar("o3de.toolbar.editor.playcontrols");
-
-            if (outcome.IsSuccess())
-            {
-                AZ_TracePrintf("Action Manager Test", "%s", outcome.GetValue().c_str());
-            }
-        }
     }
 
 } // namespace AzToolsFramework

@@ -8,6 +8,9 @@
 
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 
 namespace AzToolsFramework
@@ -37,6 +40,12 @@ namespace AzToolsFramework
 
         AZ::Interface<MenuManagerInternalInterface>::Unregister(this);
         AZ::Interface<MenuManagerInterface>::Unregister(this);
+    }
+    
+    void MenuManager::Reflect(AZ::ReflectContext* context)
+    {
+        EditorMenu::Reflect(context);
+        EditorMenuBar::Reflect(context);
     }
 
     MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties)
@@ -490,6 +499,64 @@ namespace AzToolsFramework
         }
 
         m_menuBarsToRefresh.clear();
+    }
+
+    MenuManagerStringResult MenuManager::SerializeMenu(const AZStd::string& menuIdentifier)
+    {
+        if (!m_menus.contains(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not serialize menu \"%.s\" as it is not registered.", menuIdentifier.c_str()));
+        }
+
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+
+        // Generate menu dom using Json serialization system.
+        AZ::JsonSerializationResult::ResultCode result =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_menus[menuIdentifier], settings);
+
+        // Stringify dom to return it.
+        if (result.HasDoneWork())
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            document.Accept(writer);
+
+            return AZ::Success(AZStd::string(prefabBuffer.GetString()));
+        }
+
+        return AZ::Failure(
+            AZStd::string::format("Menu Manager - Could not serialize menu \"%.s\" - serialization error.", menuIdentifier.c_str()));
+    }
+
+    MenuManagerStringResult MenuManager::SerializeMenuBar(const AZStd::string& menuBarIdentifier)
+    {
+        if (!m_menuBars.contains(menuBarIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not serialize menu bar \"%.s\" as it is not registered.", menuBarIdentifier.c_str()));
+        }
+
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+
+        // Generate menu dom using Json serialization system.
+        AZ::JsonSerializationResult::ResultCode result =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_menuBars[menuBarIdentifier], settings);
+
+        // Stringify dom to return it.
+        if (result.HasDoneWork())
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            document.Accept(writer);
+
+            return AZ::Success(AZStd::string(prefabBuffer.GetString()));
+        }
+
+        return AZ::Failure(
+            AZStd::string::format("Menu Manager - Could not serialize menu bar \"%.s\" - serialization error.", menuBarIdentifier.c_str()));
     }
 
     void MenuManager::OnSystemTick()

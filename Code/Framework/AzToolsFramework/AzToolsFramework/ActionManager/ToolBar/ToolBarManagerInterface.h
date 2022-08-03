@@ -136,8 +136,8 @@ namespace AzToolsFramework
         //! Refreshes all toolbars that were queued up for refresh.
         virtual void RefreshToolBars() = 0;
 
-        // TODO - Add description
-        virtual const ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
+        //! Serialize a toolbar by its identifier.
+        virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

@@ -61,7 +61,7 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
         ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) override;
         void RefreshToolBars() override;
-        const ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
+        ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;
