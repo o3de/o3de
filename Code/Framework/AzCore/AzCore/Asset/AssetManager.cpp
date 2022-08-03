@@ -985,7 +985,7 @@ namespace AZ::Data
             }
             else
             {
-                AZLOG_DEBUG("GetAsset called for asset which does not exist in asset catalogand cannot be loaded.Asset may be missing, not processed or moved.AssetId: % s",
+                AZLOG_WARN("GetAsset called for asset which does not exist in asset catalogand cannot be loaded.Asset may be missing, not processed or moved.AssetId: % s",
                     assetId.ToString<AZStd::string>().c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
