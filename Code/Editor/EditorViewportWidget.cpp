@@ -102,6 +102,21 @@
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 
+namespace
+{
+    void CVar_OnDefaultNearFarChange([[maybe_unused]]const float& value)
+    {
+        EditorViewportWidget* primaryViewport = EditorViewportWidget::GetPrimaryViewport();
+        if (primaryViewport != nullptr)
+        {
+            primaryViewport->OnDefaultCameraNearFarChange();
+        }
+    }
+}
+
+AZ_CVAR(float, ed_editor_camera_near, 0.1f, CVar_OnDefaultNearFarChange, AZ::ConsoleFunctorFlags::Null, "Set editor camera near plane distance");
+AZ_CVAR(float, ed_editor_camera_far, 100.f, CVar_OnDefaultNearFarChange, AZ::ConsoleFunctorFlags::Null, "Set editor camera far plane distance");
+
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
@@ -1927,6 +1942,13 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fov);
     }
 
+    // Update camera matrix accord to near / far values
+    // Only update if the editor camera is the active view
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetDefaultCameraNearFar();
+    }
+
     // push the default view as the active view
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
@@ -1955,6 +1977,24 @@ void EditorViewportWidget::SetDefaultCamera()
     SetViewTM(m_defaultViewTM);
 
     PostCameraSet();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+void EditorViewportWidget::SetDefaultCameraNearFar()
+{
+    auto m = m_defaultView->GetViewToClipMatrix();
+    AZ::SetPerspectiveMatrixNearFar(m, ed_editor_camera_near, ed_editor_camera_far, true);
+    m_defaultView->SetViewToClipMatrix(m);
+}
+
+
+void EditorViewportWidget::OnDefaultCameraNearFarChange()
+{
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetDefaultCameraNearFar();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

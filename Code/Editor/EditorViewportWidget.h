@@ -124,6 +124,9 @@ public:
     void SetFOV(float fov) override;
     float GetFOV() const override;
 
+    // Callback for cvar modification
+    void OnDefaultCameraNearFarChange();
+
     // AzFramework::ViewportBorderRequestBus overrides ...
     AZStd::optional<AzFramework::ViewportBorderPadding> GetViewportBorderPadding() const override;
 
@@ -245,6 +248,7 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
+    void SetDefaultCameraNearFar();
     void RenderSnapMarker();
     void RenderAll();
 
