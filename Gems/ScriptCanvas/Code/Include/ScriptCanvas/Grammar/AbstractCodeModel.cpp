@@ -4477,6 +4477,7 @@ namespace ScriptCanvas
                 executionBeforeOperator->ClearChildren();
                 ExecutionTreePtr executionOperator = CreateChild(executionBeforeOperator, {}, {});
                 executionBeforeOperator->AddChild({ {}, variableData->m_output, executionOperator });
+                //executionBeforeOperator->
 
                 auto variable = AZStd::make_shared<Variable>();
                 variable->m_isMember = false;
@@ -4510,33 +4511,87 @@ namespace ScriptCanvas
                     break;
                 case (AZ_CRC_CE("Square")):
                     executionOperator->SetSymbol(Symbol::FunctionCall);
-                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } }); // This manual setting of the lexical scope will probably have to change; It only works when translating to lua
-                    executionOperator->SetName("Pow");
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } }); // This manual setting of the lexical scope will probably have to change; It only works when translating to lua
+                    executionOperator->SetName("pow");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     variable->m_datum = Datum(2.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Cube")):
                     executionOperator->SetSymbol(Symbol::FunctionCall);
-                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
-                    executionOperator->SetName("Pow");
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("pow");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     variable->m_datum = Datum(3.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Square Root")):
                     executionOperator->SetSymbol(Symbol::FunctionCall);
-                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
-                    executionOperator->SetName("Sqrt");
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("sqrt");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Cube Root")):
                     executionOperator->SetSymbol(Symbol::FunctionCall);
-                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "Math" } });
-                    executionOperator->SetName("Pow");
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("pow");
                     executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     variable->m_datum = Datum(1.0/3.0);
                     executionOperator->AddInput({ {}, variable, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Absolute Value")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("abs");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Floor")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("floor");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Ceiling")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("ceil");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Cosine")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("cos");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Sine")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("sin");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Tangent")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("tan");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Arc Cosine")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("acos");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Arc Sine")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("asin");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
+                    break;
+                case (AZ_CRC_CE("Arc Tangent")):
+                    executionOperator->SetSymbol(Symbol::FunctionCall);
+                    executionOperator->SetNameLexicalScope({ ScriptCanvas::Grammar::LexicalScopeType::Namespace, { "math" } });
+                    executionOperator->SetName("atan");
+                    executionOperator->AddInput({ {}, variableData->m_value, DebugDataSource::FromInternal() });
                     break;
                 case (AZ_CRC_CE("Invert Vector 2")):
                     executionOperator->SetSymbol(Symbol::FunctionCall);

@@ -902,6 +902,132 @@ namespace
             cubeRootPaletteData->m_categoryPath = "Math/Small Operators";
             nodePaletteModel.RegisterDataDrivenNode(cubeRootPaletteData);
 
+            // Absolute Value
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData absoluteValueNodeData;
+            absoluteValueNodeData.m_lexicalId = AZ_CRC_CE("Absolute Value");
+            absoluteValueNodeData.m_title = "abs";
+            absoluteValueNodeData.m_toolTip = "Gets the absolute value of input number";
+            absoluteValueNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            absoluteValueNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* absoluteValuePaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            absoluteValuePaletteData->m_nodeData = absoluteValueNodeData;
+            absoluteValuePaletteData->m_displayName = "Absolute Value";
+            absoluteValuePaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(absoluteValuePaletteData);
+
+            // Floor
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData floorNodeData;
+            floorNodeData.m_lexicalId = AZ_CRC_CE("Floor");
+            floorNodeData.m_title = "floor";
+            floorNodeData.m_toolTip = "Floors the input number";
+            floorNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            floorNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* floorPaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            floorPaletteData->m_nodeData = floorNodeData;
+            floorPaletteData->m_displayName = "Floor";
+            floorPaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(floorPaletteData);
+
+            // Ceiling
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData ceilingNodeData;
+            ceilingNodeData.m_lexicalId = AZ_CRC_CE("Ceiling");
+            ceilingNodeData.m_title = "ceil";
+            ceilingNodeData.m_toolTip = "Ceilings the input number";
+            ceilingNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            ceilingNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* ceilingPaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            ceilingPaletteData->m_nodeData = ceilingNodeData;
+            ceilingPaletteData->m_displayName = "Ceiling";
+            ceilingPaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(ceilingPaletteData);
+
+            // Cosine
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData cosineNodeData;
+            cosineNodeData.m_lexicalId = AZ_CRC_CE("Cosine");
+            cosineNodeData.m_title = "cos";
+            cosineNodeData.m_toolTip = "Gets the cosine of the input number (using radians)";
+            cosineNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            cosineNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* cosinePaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            cosinePaletteData->m_nodeData = cosineNodeData;
+            cosinePaletteData->m_displayName = "Cosine";
+            cosinePaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(cosinePaletteData);
+
+            // Sine
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData sineNodeData;
+            sineNodeData.m_lexicalId = AZ_CRC_CE("Sine");
+            sineNodeData.m_title = "sin";
+            sineNodeData.m_toolTip = "Gets the sine of the input number (using radians)";
+            sineNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            sineNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* sinePaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            sinePaletteData->m_nodeData = sineNodeData;
+            sinePaletteData->m_displayName = "Sine";
+            sinePaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(sinePaletteData);
+
+            // Tangent
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData tangentNodeData;
+            tangentNodeData.m_lexicalId = AZ_CRC_CE("Tangent");
+            tangentNodeData.m_title = "tan";
+            tangentNodeData.m_toolTip = "Gets the tangent of the input number (using radians)";
+            tangentNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            tangentNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* tangentPaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            tangentPaletteData->m_nodeData = tangentNodeData;
+            tangentPaletteData->m_displayName = "Tangent";
+            tangentPaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(tangentPaletteData);
+
+            // Arc Cosine
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData arcCosineNodeData;
+            arcCosineNodeData.m_lexicalId = AZ_CRC_CE("Arc Cosine");
+            arcCosineNodeData.m_title = "acos";
+            arcCosineNodeData.m_toolTip = "Gets the arc cosine of the input number (in radians)";
+            arcCosineNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            arcCosineNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* arcCosinePaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            arcCosinePaletteData->m_nodeData = arcCosineNodeData;
+            arcCosinePaletteData->m_displayName = "Arc Cosine";
+            arcCosinePaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(arcCosinePaletteData);
+
+            // Arc Sine
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData arcSineNodeData;
+            arcSineNodeData.m_lexicalId = AZ_CRC_CE("Arc Sine");
+            arcSineNodeData.m_title = "asin";
+            arcSineNodeData.m_toolTip = "Gets the arc sine of the input number (in radians)";
+            arcSineNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            arcSineNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* arcSinePaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            arcSinePaletteData->m_nodeData = arcSineNodeData;
+            arcSinePaletteData->m_displayName = "Arc Sine";
+            arcSinePaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(arcSinePaletteData);
+
+            // Arc Tangent
+            ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData arcTangentNodeData;
+            arcTangentNodeData.m_lexicalId = AZ_CRC_CE("Arc Tangent");
+            arcTangentNodeData.m_title = "atan";
+            arcTangentNodeData.m_toolTip = "Gets the arc tangent of the input number (in radians)";
+            arcTangentNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
+            arcTangentNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            ScriptCanvasEditor::DataDrivenNodeModelInformation* arcTangentPaletteData =
+                aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
+            arcTangentPaletteData->m_nodeData = arcTangentNodeData;
+            arcTangentPaletteData->m_displayName = "Arc Tangent";
+            arcTangentPaletteData->m_categoryPath = "Math/Small Operators";
+            nodePaletteModel.RegisterDataDrivenNode(arcTangentPaletteData);
+
             // Invert Vector 2
             ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData invertVector2NodeData;
             invertVector2NodeData.m_lexicalId = AZ_CRC_CE("Invert Vector 2");
@@ -934,7 +1060,7 @@ namespace
             ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData invertVector4NodeData;
             invertVector4NodeData.m_lexicalId = AZ_CRC_CE("Invert Vector 4");
             invertVector4NodeData.m_title = "inv";
-            invertVector4NodeData.m_toolTip = "Inverts the input vector";
+            invertVector4NodeData.m_toolTip = "Inverts the input vector 4";
             invertVector4NodeData.m_dataType = ScriptCanvas::Data::Type::Vector4();
             invertVector4NodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* invertVector4PaletteData =
