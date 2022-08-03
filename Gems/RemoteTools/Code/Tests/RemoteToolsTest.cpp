@@ -11,6 +11,7 @@
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Time/TimeSystem.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/Network/IRemoteTools.h>
@@ -33,26 +34,26 @@ namespace UnitTest
             ScopedAllocatorSetupFixture::SetUp();
             AZ::NameDictionary::Create();
 
+            m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
             m_networkingSystemComponent = AZStd::make_unique<AzNetworking::NetworkingSystemComponent>();
             m_remoteToolsSystemComponent = AZStd::make_unique<RemoteToolsSystemComponent>();
-
             m_remoteTools = m_remoteToolsSystemComponent.get();
         }
 
         void TearDown() override
         {
-            m_networkingSystemComponent->Deactivate();
-
             m_remoteTools = nullptr;
             m_remoteToolsSystemComponent.reset();
             m_networkingSystemComponent.reset();
+            m_timeSystem.reset();
 
             AZ::NameDictionary::Destroy();
-            ScopedAllocatorSetupFixture::TearDown();
+            ScopedAllocatorSetupFixture::SetUp();
         }
 
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
         AZStd::unique_ptr<RemoteToolsSystemComponent> m_remoteToolsSystemComponent;
+        AZStd::unique_ptr<AZ::TimeSystem> m_timeSystem;
         AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 
