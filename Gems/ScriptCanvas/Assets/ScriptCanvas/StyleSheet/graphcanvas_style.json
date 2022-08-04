@@ -99,6 +99,14 @@
     "opacity": "40%"
   },
   {
+    "selectors": [ "node.small" ],
+
+    "border-width": 0,
+    "spacing": 0,
+    "border-radius": 10,
+    "layout-orientation": "horizontal"
+  },
+  {
     "selectors": [ "node.collapsedGroup" ],
 
     "border-width": 2,
@@ -133,9 +141,17 @@
 
     "padding": 2,
     "spacing": 0,
+    "margin": 5
+  },
+  {
+    "selectors": [ "node.small > title" ],
+
+    "background-color": "transparent",
+
+    "padding": 0,
+    "spacing": 0,
     "margin": 0
   },
-
   {
     "selectors": [ "node > .maintitle" ],
 
@@ -156,6 +172,15 @@
     "margin": 0
   },
   {
+    "selectors": [ "node.small > .maintitle" ],
+
+    "text-alignment": "center",
+
+    "padding": 0,
+    "spacing": 0,
+    "margin": 0
+  },
+  {
     "selectors": [ "node:disabled > .maintitle" ],
     "font-style": "italic"
   },
@@ -166,6 +191,11 @@
   {
     "selectors": [ "node:inspection_transparent > title" ],
     "background-color": "#6441A4"
+  },
+  {
+    "selectors": [ "node.small:disabled > .maintitle" ],
+    "font-style": "italic",
+    "color": "#ffffff"
   },
   {
     "selectors": [ "node > .subtitle" ],
@@ -371,39 +401,39 @@
   },
   {
     "selectors": [ "nodeGroup > border" ],
-    
+
     "border-width": 3,
     "border-color": "#000000",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:selected > border" ],
-    
+
     "border-width": 3,
     "border-color": "#17A3CD",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:deletion > border" ],
-    
+
     "border-width": 3,
     "border-color": "#EF1713",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:hovered > border" ],
-    
+
     "border-width": 3,
     "border-color": "#4285f4",
     "border-style": "dashed"
   },
   {
     "selectors": [ "nodeGroup:highlighted > border" ],
-    
+
     "border-width": 3,
     "border-color": "#4285f4",
     "border-style": "dashed"
-  },  
+  },
   {
     "selectors": [ "wrapperNode" ],
 
@@ -644,6 +674,11 @@
     "padding": 0
   },
   {
+    "selectors": [ "generalSlotLayout.small" ],
+
+    "spacing": 0
+  },
+  {
     "selectors": [ "executionSlot" ],
 
     "font-family": "Open Sans",
@@ -854,7 +889,10 @@
     "min-height": 25
   },
   {
-    "selectors": [ "dataSlot" ]
+    "selectors": [ "dataSlot" ],
+
+    "spacing": 2,
+    "padding": 2
   },
   {
     "selectors": [ "dataSlot:disabled" ],
@@ -872,6 +910,12 @@
     "selectors": [ "dataSlot:highlighted" ],
 
     "border-color": "#E25243"
+  },
+  {
+    "selectors": [ "dataSlot.small" ],
+
+    "spacing": 0,
+    "padding": 0
   },
   {
     "selectors": [ "dataSlot > dataConnectionPin" ],
@@ -907,6 +951,11 @@
     "min-height": 25
   },
   {
+    "selectors": [ "dataSlot.small > .slotName" ],
+
+    "min-height": 0
+  },
+  {
     "selectors": [ "dataSlot > .inputSlotName" ],
 
     "font-family": "Open Sans",
@@ -925,6 +974,11 @@
     "spacing": 4,
     "margin": 0,
     "min-height": 25
+  },
+  {
+    "selectors": [ "dataSlot.small > .inputSlotName" ],
+
+    "min-height": 0
   },
   {
     "selectors": [ "dataSlot > .inputSlotName:validDrop" ],
@@ -955,6 +1009,11 @@
     "spacing": 4,
     "margin": 0,
     "min-height": 25
+  },
+  {
+    "selectors": [ "dataSlot.small > .outputSlotName" ],
+
+    "min-height": 0
   },
   {
     "selectors": [ "dataSlot > .outputSlotName:validDrop" ],
@@ -2339,26 +2398,26 @@
   },
   {
     "selectors": [ "UnknownLayer" ],
-    "layer": -3    
+    "layer": -3
   },
   {
-    "selectors": ["neutral"],
+    "selectors": [ "neutral" ],
     "layer": 0
   },
   {
-    "selectors": ["interactive"],
+    "selectors": [ "interactive" ],
     "layer": 1
   },
   {
-    "selectors": ["dropTarget"],
+    "selectors": [ "dropTarget" ],
     "layer": 1
   },
   {
-    "selectors": ["editing"],
+    "selectors": [ "editing" ],
     "layer": 1
   },
   {
-    "selectors": ["groupHighlight"],
+    "selectors": [ "groupHighlight" ],
     "layer": 2
   },
   {

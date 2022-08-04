@@ -16,9 +16,10 @@ from abc import ABCMeta, abstractmethod
 from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
-from ly_test_tools.environment.file_system import find_ancestor_file
+import ly_test_tools.environment.file_system
 
 logger = logging.getLogger(__name__)
+
 
 def _find_engine_root(initial_path):
     # type: (str) -> str
@@ -92,8 +93,8 @@ def _find_project_json(engine_root, project):
 
     # Check relative to defined build directory, for external projects which configure through SDK settings
     if not project_json:
-        project_json = find_ancestor_file(target_file_name='project.json',
-                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
+        project_json = ly_test_tools.environment.file_system.find_ancestor_file(
+            target_file_name='project.json', start_path=ly_test_tools._internal.pytest_plugin.build_directory)
 
     if not project_json:
         raise OSError(f"Unable to find the project directory for project: ${project}")
@@ -129,31 +130,6 @@ class AbstractResourceLocator(object):
         :return: engine_root
         """
         return self._engine_root
-
-    def third_party(self):
-        """
-        Return path to 3rdParty directory
-        ex. <engine_root>\\3rdParty
-        :return: path to 3rdParty
-        """
-        third_party_folder = os.path.join(self._engine_root, '3rdParty')
-        third_party_txt_file = os.path.join(third_party_folder, '3rdParty.txt')
-
-        if not os.path.isfile(third_party_txt_file):
-            raise FileNotFoundError(
-                f"3rdParty.txt file not found at third_party_txt_file location: '{third_party_txt_file}' - "
-                f"Please specify a directory containing the 3rdParty.txt file.")
-
-        return third_party_folder
-
-    def build(self):
-        """
-        Return path to the build directory.
-        ex. engine_root/dev/windows_vs2017/bin/profile)
-        :return: full path to the bin folder
-        """
-        warnings.warn("build() is deprecated; use build_directory()", DeprecationWarning)
-        return self.build_directory()
 
     def build_directory(self):
         """
@@ -293,14 +269,6 @@ class AbstractResourceLocator(object):
         """
         return self.cache()
 
-    def get_shader_compiler_path(self):
-        """
-        Return path to shader compiler executable
-        ex. engine_root/dev/windows/bin/profile/CrySCompileServer
-        :return: path to CrySCompileServer executable
-        """
-        return os.path.join(self.build_directory(), 'CrySCompileServer')
-
     def asset_processor_config_file(self):
         return os.path.join(self.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 
@@ -312,12 +280,14 @@ class AbstractResourceLocator(object):
 
     def test_results(self):
         """
-        Return the path to the TestResults directory containing test artifacts.
+        Return the path to a default TestResults directory containing test artifacts. This may not be used if the
+        workspace defines an output_path for its artifact manager.
         :return: path to TestResults dir
         """
         return os.path.join(self.engine_root(), "TestResults")
 
-    def devices_file(self):
+    @staticmethod
+    def devices_file():
         """
         Return the path to the user's devices.ini file. This has OS specific functionality.
             Windows: %USERPROFILE%/ly_test_tools/devices.ini
@@ -328,22 +298,6 @@ class AbstractResourceLocator(object):
         return os.path.join(os.path.expanduser('~'),
                             'ly_test_tools',
                             'devices.ini')
-
-    def shader_compiler_config_file(self):
-        """
-        Return path to the Shader Compiler config file
-        ex. engine_root/dev/windows/bin/profile/config.ini
-        :return: path to the Shader Compiler config file
-        """
-        return os.path.join(self.build_directory(), 'config.ini')
-
-    def shader_cache(self):
-        """
-        Return path to the shader cache for the current build
-        ex. engine_root/dev/windows/bin/profile/Cache
-        :return: path to the shader cache for the current build
-        """
-        return os.path.join(self.build_directory(), 'Cache')
 
     #
     #   The following are OS specific paths and must be defined by an override

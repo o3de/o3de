@@ -132,33 +132,16 @@ namespace AZStd
         }
 
         template <class InputIterator>
-        vector(const InputIterator& first, const InputIterator& last)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
+        vector(InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type())
+            : m_allocator(allocator)
         {
             // We need some help here, since this function can be mistaken with the vector(size_type, const_reference value, const allocator_type&) one...
             // so we need to handle this case.
             construct_iter(first, last, is_integral<InputIterator>());
         }
-        template <class InputIterator>
-        vector(const InputIterator& first, const InputIterator& last, const allocator_type& allocator)
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
-            , m_allocator(allocator)
+        vector(initializer_list<T> list, const allocator_type& allocator = allocator_type())
+            : vector(list.begin(), list.end(), allocator)
         {
-            // We need some help here, since this function can be mistaken with the vector(size_type, const_reference value, const allocator_type&) one...
-            // so we need to handle this case.
-            construct_iter(first, last, is_integral<InputIterator>());
-        }
-        vector(std::initializer_list<T> list, const allocator_type& allocator = allocator_type())
-            : m_start(0)
-            , m_last(0)
-            , m_end(0)
-            , m_allocator(allocator)
-        {
-            construct_iter(list.begin(), list.end(), is_integral<std::initializer_list<T> >());
         }
 
         vector(const this_type& rhs)
@@ -184,7 +167,7 @@ namespace AZStd
             , m_end(0)
             , m_allocator(rhs.m_allocator)
         {
-            assign_rv(AZStd::forward<this_type>(rhs));
+            assign_rv(AZStd::move(rhs));
         }
         vector(this_type&& rhs, const allocator_type& allocator)
             :  m_start(0)
@@ -192,11 +175,11 @@ namespace AZStd
             , m_end(0)
             , m_allocator(allocator)
         {
-            assign_rv(AZStd::forward<this_type>(rhs));
+            assign_rv(AZStd::move(rhs));
         }
         this_type& operator=(this_type&& rhs)
         {
-            assign_rv(AZStd::forward<this_type>(rhs));
+            assign_rv(AZStd::move(rhs));
             return *this;
         }
 
@@ -211,7 +194,7 @@ namespace AZStd
                 clear();
                 for (iterator iter = rhs.begin(); iter != rhs.end(); ++iter)
                 {
-                    push_back(AZStd::forward<T>(*iter));
+                    push_back(AZStd::move(*iter));
                 }
             }
             else
@@ -258,7 +241,7 @@ namespace AZStd
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 orphan_range(m_last, m_last);
 #endif
-                Internal::construct<pointer>::single(m_last, AZStd::forward<value_type>(m_start[index]));
+                Internal::construct<pointer>::single(m_last, AZStd::move(m_start[index]));
                 ++m_last;
             }
             else
@@ -278,7 +261,7 @@ namespace AZStd
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 orphan_range(m_last, m_last);
 #endif
-                Internal::construct<pointer>::single(m_last, AZStd::forward<value_type>(value));
+                Internal::construct<pointer>::single(m_last, AZStd::move(value));
                 ++m_last;
             }
         }
@@ -310,7 +293,7 @@ namespace AZStd
 
         inline iterator insert(const_iterator pos, value_type&& value)
         {
-            return emplace(pos, AZStd::forward<value_type>(value));
+            return emplace(pos, AZStd::move(value));
         }
 
         template<class ... Args>
@@ -327,10 +310,6 @@ namespace AZStd
             emplace_back(AZStd::forward<Args>(args) ...);
             AZStd::rotate(m_start + offset, m_last - 1, m_last);
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start + offset));
-        }
-        void swap(this_type&& rhs)
-        {
-            assign_rv(AZStd::forward<this_type>(rhs));
         }
 
         ~vector()
@@ -630,6 +609,11 @@ namespace AZStd
             assign_iter(first, last, is_integral<InputIterator>());
         }
 
+        void assign(initializer_list<T> iList)
+        {
+            assign(iList.begin(), iList.end());
+        }
+
         inline iterator insert(const_iterator insertPos, const_reference value)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -653,11 +637,11 @@ namespace AZStd
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)) + offset;
         }
 
-        void    insert(const_iterator insertPos, size_type numElements, const_reference value)
+        iterator insert(const_iterator insertPos, size_type numElements, const_reference value)
         {
             if (numElements == 0)
             {
-                return;
+                return begin() + ranges::distance(begin(), insertPos);
             }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             pointer insertPosPtr;
@@ -674,6 +658,7 @@ namespace AZStd
 #else
             pointer insertPosPtr = const_cast<pointer>(insertPos);
 #endif
+            const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
             size_type capacity   = m_end - m_start;
             size_type size       = m_last - m_start;
             size_type newSize    = size + numElements;
@@ -807,17 +792,19 @@ namespace AZStd
                 orphan_range(insertPosPtr, m_last);
 #endif
             }
+
+            return AZStd::ranges::next(begin(), offset);
         }
 
         template<class InputIterator>
-        AZ_FORCE_INLINE void        insert(const_iterator insertPos, const InputIterator& first, const InputIterator& last)
+        iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
-            insert_impl(insertPos, first, last, is_integral<InputIterator>());
+            return insert_impl(insertPos, first, last, is_integral<InputIterator>());
         }
 
-        AZ_FORCE_INLINE void insert(const_iterator insertPos, std::initializer_list<T> ilist)
+        iterator insert(const_iterator insertPos, initializer_list<T> ilist)
         {
-            insert_impl(insertPos, ilist.begin(), ilist.end(), is_integral<std::initializer_list<T> >());
+            return insert(insertPos, ilist.begin(), ilist.end());
         }
 
         inline iterator erase(const_iterator elementIter)
@@ -979,30 +966,6 @@ namespace AZStd
         AZ_FORCE_INLINE int     validate_iterator(const const_reverse_iterator& iter) const { return validate_iterator(iter.base()); }
 
         /**
-         *  Pushes an element at the end of the vector without a provided instance. This can be used for value types
-         *  with expensive constructors so we don't want to create temporary one.
-         */
-        inline void push_back()
-        {
-            size_type size      = m_last - m_start;
-            size_type capacity  = m_end - m_start;
-            if (size >= capacity)
-            {
-                // Reallocate - this is so expensive that I rather just call regular push, with a copy of a default object;
-                push_back(value_type());
-            }
-            else
-            {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-                orphan_range(m_last, m_last);
-#endif
-                Internal::construct<pointer>::single(m_last);
-                ++m_last;
-            }
-        }
-
-
-        /**
         * Resets the container without deallocating any memory or calling any destructor.
         * This function should be used when we need very quick tear down. Generally it's used for temporary vectors and we can just nuke them that way.
         * In addition the provided \ref Allocators, has leak and reset flag which will enable automatically this behavior. So this function should be used in
@@ -1109,21 +1072,21 @@ namespace AZStd
 
         //#pragma region Insert iterator specializations
         template<class Iterator>
-        AZ_FORCE_INLINE void insert_impl(const_iterator insertPos, const Iterator& first, const Iterator& last, const true_type& /* is_integral<Iterator> */)
+        AZ_FORCE_INLINE iterator insert_impl(const_iterator insertPos, const Iterator& first, const Iterator& last, const true_type& /* is_integral<Iterator> */)
         {
             // we actually are calling this with integral types.
-            insert(insertPos, (size_type)first, (const_reference)last);
+            return insert(insertPos, (size_type)first, (const_reference)last);
         }
 
         template<class Iterator>
-        AZ_FORCE_INLINE void insert_impl(const_iterator insertPos, const Iterator& first, const Iterator& last, const false_type& /* is_integral<Iterator> */)
+        AZ_FORCE_INLINE iterator insert_impl(const_iterator insertPos, const Iterator& first, const Iterator& last, const false_type& /* is_integral<Iterator> */)
         {
             // specialize for specific interators.
-            insert_iter(insertPos, first, last, typename iterator_traits<Iterator>::iterator_category());
+            return insert_iter(insertPos, first, last, typename iterator_traits<Iterator>::iterator_category());
         }
 
         template<class Iterator>
-        void insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const forward_iterator_tag&)
+        iterator insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const forward_iterator_tag&)
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             // We can template this func if we want to check if first and last belong to the same container. It's possible
@@ -1142,11 +1105,12 @@ namespace AZStd
 #else
             pointer insertPosPtr = const_cast<pointer>(insertPos);
 #endif
+            const size_type offset = AZStd::ranges::distance(begin(), insertPos);
 
             size_type numElements = distance(first, last);
             if (numElements == 0)
             {
-                return;
+                return AZStd::ranges::next(begin(), offset);
             }
             //AZSTD_CONTAINER_ASSERT(numElements>0,("AZStd::vector<T>::insert<Iterator> - No point to insert 0 elements!"));
 
@@ -1252,11 +1216,13 @@ namespace AZStd
                 orphan_range(insertPosPtr, m_last);
 #endif
             }
+
+            return AZStd::ranges::next(begin(), offset);
         }
 
 
         template<class Iterator>
-        inline void insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const input_iterator_tag&)
+        inline iterator insert_iter(const_iterator insertPos, const Iterator& first, const Iterator& last, const input_iterator_tag&)
         {
             const_iterator start(AZSTD_POINTER_ITERATOR_PARAMS(m_start));
             size_type offset = AZStd::distance(start, insertPos);
@@ -1266,6 +1232,8 @@ namespace AZStd
             {
                 insert(start + offset, *iter);
             }
+
+            return AZStd::ranges::next(begin(), offset);
         }
         //#pragma endregion
 
@@ -1312,9 +1280,9 @@ namespace AZStd
         //#pragma endregion
 
     protected:
-        pointer         m_start;            ///< Pointer to the first allocated element of the array.
-        pointer         m_last;             ///< Pointer after the last used element.
-        pointer         m_end;              ///< Pointer after the last allocated element.
+        pointer         m_start{};            ///< Pointer to the first allocated element of the array.
+        pointer         m_last{};             ///< Pointer after the last used element.
+        pointer         m_end{};              ///< Pointer after the last allocated element.
         allocator_type  m_allocator;        ///< Instance of the allocator.
 
         // Debug
@@ -1355,6 +1323,10 @@ namespace AZStd
         }
 #endif
     };
+
+    // AZStd::vector deduction guides
+    template <class InputIt, class Alloc = allocator>
+    vector(InputIt, InputIt, Alloc = Alloc()) -> vector<typename iterator_traits<InputIt>::value_type, Alloc>;
 
     //#pragma region Vector equality/inequality
     template <class T, class Allocator>

@@ -33,7 +33,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<QuadLightFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

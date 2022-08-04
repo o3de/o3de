@@ -112,10 +112,10 @@ class AbstractWorkspaceManager:
         :return:  None
         """
         if os.path.exists(self.paths.cache()):
-            logger.info(f"Clearing {self.paths.cache()}")
+            logger.debug(f"Clearing {self.paths.cache()}")
             ly_test_tools.environment.file_system.delete([self.paths.cache()], True, True)
             return
-        logger.info(f"Cache directory: {self.paths.cache()} could not be found.")
+        logger.debug(f"Cache directory: {self.paths.cache()} could not be found.")
 
     def clear_bin(self):
         """
@@ -123,10 +123,10 @@ class AbstractWorkspaceManager:
         :return: None
         """
         if os.path.exists(self.paths.build_directory()):
-            logger.info(f"Clearing {self.paths.build_directory()}")
+            logger.debug(f"Clearing {self.paths.build_directory()}")
             ly_test_tools.environment.file_system.delete([self.paths.build_directory()], True, True)
             return
-        logger.info(f"build_directory directory: {self.paths.build_directory()} could not be found.")
+        logger.debug(f"build_directory directory: {self.paths.build_directory()} could not be found.")
 
     def _execute_and_save_log(self, command, log_file_name):
         """

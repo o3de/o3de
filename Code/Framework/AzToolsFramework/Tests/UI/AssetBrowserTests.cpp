@@ -8,11 +8,13 @@
 
 #include <AzTest/AzTest.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
@@ -22,6 +24,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <QAbstractItemModelTester>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
 namespace UnitTest
 {
@@ -62,15 +65,16 @@ namespace UnitTest
         void SetupAssetBrowser();
         void PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer);
         QModelIndex GetModelIndex(const QAbstractItemModel* model, int targetDepth, int row = 0);
-        AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry();
         AZStd::vector<QString> GetVectorFromFormattedString(const QString& formattedString);
 
     protected:
         QString m_assetBrowserHierarchy = QString();
 
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::SearchWidget> m_searchWidget;
-        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserComponent> m_assetBrowserComponent;
 
+        AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> m_rootEntry;
+
+        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserModel> m_assetBrowserModel;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
 
@@ -81,15 +85,15 @@ namespace UnitTest
 
     void AssetBrowserTest::SetUpEditorFixtureImpl()
     {
-        GetApplication()->RegisterComponentDescriptor(AzToolsFramework::EditorEntityContextComponent::CreateDescriptor());
-
-        m_assetBrowserComponent = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserComponent>();
-        m_assetBrowserComponent->Activate();
-
+        m_assetBrowserModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserModel>();
         m_filterModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel>();
         m_tableModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserTableModel>();
 
-        m_filterModel->setSourceModel(m_assetBrowserComponent->GetAssetBrowserModel());
+        m_rootEntry = AZStd::make_shared<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry>();
+        m_assetBrowserModel->SetRootEntry(m_rootEntry);
+
+        m_assetBrowserModel->SetFilterModel(m_filterModel.get());
+        m_filterModel->setSourceModel(m_assetBrowserModel.get());
         m_tableModel->setSourceModel(m_filterModel.get());
 
         m_searchWidget = AZStd::make_unique<AzToolsFramework::AssetBrowser::SearchWidget>();
@@ -103,12 +107,7 @@ namespace UnitTest
 
     void AssetBrowserTest::TearDownEditorFixtureImpl()
     {
-        m_tableModel.reset();
-        m_filterModel.reset();
-        m_assetBrowserComponent->Deactivate();
-
-        m_assetBrowserComponent.reset();
-        m_searchWidget.reset();
+        AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
     }
 
     void AssetBrowserTest::AddScanFolder(
@@ -119,7 +118,7 @@ namespace UnitTest
         scanFolder.m_scanFolder = folderPath;
         scanFolder.m_displayName = displayName;
         scanFolder.m_isRoot = folderType == FolderType::Root;
-        GetRootEntry()->AddScanFolder(scanFolder);
+        m_rootEntry->AddScanFolder(scanFolder);
     }
 
     AZ::Uuid AssetBrowserTest::CreateSourceEntry(
@@ -130,7 +129,7 @@ namespace UnitTest
         entry.m_fileID = fileID;
         entry.m_fileName = filename;
         entry.m_isFolder = sourceType == AssetEntryType::Folder;
-        GetRootEntry()->AddFile(entry);
+        m_rootEntry->AddFile(entry);
 
         if (!entry.m_isFolder)
         {
@@ -142,7 +141,7 @@ namespace UnitTest
             entrySource.second.m_sourceID = fileID;
             entrySource.second.m_sourceGuid = AZ::Uuid::CreateRandom();
 
-            GetRootEntry()->AddSource(entrySource);
+            m_rootEntry->AddSource(entrySource);
 
             return entrySource.second.m_sourceGuid;
         }
@@ -160,7 +159,7 @@ namespace UnitTest
         product.second.m_subID = aznumeric_cast<AZ::u32>(productID);
         product.second.m_productName = productName;
 
-        GetRootEntry()->AddProduct(product);
+        m_rootEntry->AddProduct(product);
     }
 
     void AssetBrowserTest::SetupAssetBrowser()
@@ -268,11 +267,6 @@ namespace UnitTest
         return QModelIndex();
     }
 
-    AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> AssetBrowserTest::GetRootEntry()
-    {
-        return m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry();
-    }
-
     AZStd::vector<QString> AssetBrowserTest::GetVectorFromFormattedString(const QString& formattedString)
     {
         AZStd::vector<QString> hierarchySections;
@@ -317,17 +311,17 @@ namespace UnitTest
 
     TEST_F(AssetBrowserTest, CheckScanFolderAddition)
     {
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
+        EXPECT_EQ(m_assetBrowserModel->rowCount(), 1);
         const int newFolderId = 20;
         AddScanFolder(newFolderId, "E:/TestFolder/TestFolder2", "TestFolder");
 
         // Since the folder is empty it shouldn't be added to the model.
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
+        EXPECT_EQ(m_assetBrowserModel->rowCount(), 1);
 
         CreateSourceEntry(123, newFolderId, "DummyFile");
 
         // When we add a file to the folder it should be added to the model
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 2);
+        EXPECT_EQ(m_assetBrowserModel->rowCount(), 2);
     }
 
 } // namespace UnitTest
