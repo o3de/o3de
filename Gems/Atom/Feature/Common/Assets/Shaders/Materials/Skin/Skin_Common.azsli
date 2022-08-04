@@ -12,15 +12,15 @@
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
-#include "MaterialInputs/BaseColorInput.azsli"
-#include "MaterialInputs/RoughnessInput.azsli"
-#include "MaterialInputs/MetallicInput.azsli"
-#include "MaterialInputs/SpecularInput.azsli"
-#include "MaterialInputs/NormalInput.azsli"
-#include "MaterialInputs/OcclusionInput.azsli"
-#include "MaterialInputs/EmissiveInput.azsli"
-#include "MaterialInputs/UvSetCount.azsli"
-#include "MaterialInputs/DetailMapsInput.azsli"
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/MetallicInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
+#include "../MaterialInputs/EmissiveInput.azsli"
+#include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/DetailMapsInput.azsli"
 
 // Use human skin profile for thin object transmission (if enabled)
 // Remove this line to use a custom profile based on the scatter color

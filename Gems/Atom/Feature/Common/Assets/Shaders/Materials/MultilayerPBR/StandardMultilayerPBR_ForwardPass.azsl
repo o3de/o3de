@@ -26,15 +26,15 @@
 
 // ---------- Material Parameters ----------
 
-#include "MaterialInputs/BaseColorInput.azsli"
-#include "MaterialInputs/RoughnessInput.azsli"
-#include "MaterialInputs/MetallicInput.azsli"
-#include "MaterialInputs/SpecularInput.azsli"
-#include "MaterialInputs/NormalInput.azsli"
-#include "MaterialInputs/ClearCoatInput.azsli"
-#include "MaterialInputs/OcclusionInput.azsli"
-#include "MaterialInputs/EmissiveInput.azsli"
-#include "MaterialInputs/ParallaxInput.azsli"
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/MetallicInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/ClearCoatInput.azsli"
+#include "../MaterialInputs/OcclusionInput.azsli"
+#include "../MaterialInputs/EmissiveInput.azsli"
+#include "../MaterialInputs/ParallaxInput.azsli"
 
 #define DEFINE_LAYER_OPTIONS(prefix) \
 COMMON_OPTIONS_BASE_COLOR(prefix)    \
@@ -51,7 +51,7 @@ DEFINE_LAYER_OPTIONS(o_layer1_)
 DEFINE_LAYER_OPTIONS(o_layer2_)
 DEFINE_LAYER_OPTIONS(o_layer3_)
 
-#include "MaterialInputs/TransmissionInput.azsli"
+#include "../MaterialInputs/TransmissionInput.azsli"
 #include "StandardMultilayerPBR_Common.azsli"
 
 

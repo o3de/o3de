@@ -25,14 +25,14 @@ COMMON_OPTIONS_EMISSIVE()
 // Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
 
 // Alpha
-#include "MaterialInputs/AlphaInput.azsli"
+#include "../MaterialInputs/AlphaInput.azsli"
 
-#include "MaterialFunctions/EvaluateStandardSurface.azsli"
-#include "MaterialFunctions/EvaluateTangentFrame.azsli"
-#include "MaterialFunctions/ParallaxDepth.azsli"
-#include "MaterialFunctions/StandardGetNormalToWorld.azsli"
-#include "MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
-#include "MaterialFunctions/StandardTransformUvs.azsli"
+#include "../MaterialFunctions/EvaluateStandardSurface.azsli"
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "../MaterialFunctions/ParallaxDepth.azsli"
+#include "../MaterialFunctions/StandardGetNormalToWorld.azsli"
+#include "../MaterialFunctions/StandardGetObjectToWorld.azsli"
+#include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
+#include "../MaterialFunctions/StandardTransformUvs.azsli"
 
 #include "StandardSurface_ForwardPass.azsli"

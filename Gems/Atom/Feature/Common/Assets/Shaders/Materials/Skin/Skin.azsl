@@ -58,8 +58,8 @@ option bool o_wrinkleLayers_showBlendMaskValues;
 // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
 option bool o_blendMask_isBound;
 
-#include "MaterialInputs/SubsurfaceInput.azsli"
-#include "MaterialInputs/TransmissionInput.azsli"
+#include "../MaterialInputs/SubsurfaceInput.azsli"
+#include "../MaterialInputs/TransmissionInput.azsli"
 
 
 // ---------- Vertex Shader ----------

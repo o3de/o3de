@@ -13,13 +13,13 @@
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
-#include "MaterialInputs/BaseColorInput.azsli"
-#include "MaterialInputs/NormalInput.azsli"
-#include "MaterialInputs/RoughnessInput.azsli"
-#include "MaterialInputs/SpecularInput.azsli"
-#include "MaterialInputs/UvSetCount.azsli"
-#include "MaterialInputs/SubsurfaceInput.azsli"
-#include "MaterialInputs/TransmissionInput.azsli"
+#include "../MaterialInputs/BaseColorInput.azsli"
+#include "../MaterialInputs/NormalInput.azsli"
+#include "../MaterialInputs/RoughnessInput.azsli"
+#include "../MaterialInputs/SpecularInput.azsli"
+#include "../MaterialInputs/UvSetCount.azsli"
+#include "../MaterialInputs/SubsurfaceInput.azsli"
+#include "../MaterialInputs/TransmissionInput.azsli"
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {

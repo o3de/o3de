@@ -9,7 +9,7 @@
 #pragma once
 
 
-#include "MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 
 PixelGeometryData EvaluatePixelGeometry_BasePBR(
     float3 positionWS,

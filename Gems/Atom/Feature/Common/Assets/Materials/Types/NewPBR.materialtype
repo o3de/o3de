@@ -13,44 +13,44 @@
     "propertyLayout": {
         "propertyGroups": [
             {
-                "$import": "../MaterialInputs/BaseColorPropertyGroup.json"
+                "$import": "MaterialInputs/BaseColorPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/MetallicPropertyGroup.json"
+                "$import": "MaterialInputs/MetallicPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/RoughnessPropertyGroup.json"
+                "$import": "MaterialInputs/RoughnessPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/SpecularPropertyGroup.json"
+                "$import": "MaterialInputs/SpecularPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/NormalPropertyGroup.json"
+                "$import": "MaterialInputs/NormalPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/UvPropertyGroup.json"
+                "$import": "MaterialInputs/UvPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/IrradiancePropertyGroup.json"
+                "$import": "MaterialInputs/IrradiancePropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/GeneralCommonPropertyGroup.json"
+                "$import": "MaterialInputs/GeneralCommonPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/OcclusionPropertyGroup.json"
+                "$import": "MaterialInputs/OcclusionPropertyGroup.json"
             },
             {
-                "$import": "../MaterialInputs/EmissivePropertyGroup.json"
+                "$import": "MaterialInputs/EmissivePropertyGroup.json"
             }
         ]
     },
     "shaders": [
         {
-            "file": "./NewPBR_ForwardPass.shader",
+            "file": "Shaders/Materials/NewPBR/NewPBR_ForwardPass.shader",
             "tag": "ForwardPass"
         },
         {
-            "file": "./NewPBR_LowEndForward.shader",
+            "file": "Shaders/Materials/NewPBR/NewPBR_LowEndForward.shader",
             "tag": "LowEndForward"
         },
         {

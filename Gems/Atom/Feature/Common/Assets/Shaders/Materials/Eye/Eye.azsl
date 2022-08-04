@@ -21,10 +21,10 @@ COMMON_OPTIONS_NORMAL(o_sclera_)
 COMMON_OPTIONS_ROUGHNESS(o_sclera_)
 COMMON_OPTIONS_SPECULAR_F0()
 
-#include "MaterialInputs/AlphaInput.azsli"
+#include "../MaterialInputs/AlphaInput.azsli"
 
-#include "MaterialFunctions/EvaluateEyeSurface.azsli"
-#include "MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "../MaterialFunctions/EvaluateEyeSurface.azsli"
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 
 #include "EyeSurface_ForwardPass.azsli"
 

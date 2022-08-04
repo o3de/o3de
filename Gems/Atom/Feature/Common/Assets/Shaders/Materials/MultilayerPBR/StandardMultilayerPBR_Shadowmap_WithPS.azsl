@@ -16,17 +16,17 @@
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
 
-#include "MaterialInputs/ParallaxInput.azsli"
+#include "../MaterialInputs/ParallaxInput.azsli"
 COMMON_OPTIONS_PARALLAX(o_layer1_)
 COMMON_OPTIONS_PARALLAX(o_layer2_)
 COMMON_OPTIONS_PARALLAX(o_layer3_)
 
 #include "StandardMultilayerPBR_Common.azsli"
 
-#include "MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "MaterialFunctions/StandardGetNormalToWorld.azsli"
-#include "MaterialFunctions/StandardTransformUvs.azsli"
-#include "MaterialFunctions/EvaluateTangentFrame.azsli"
-#include "MaterialFunctions/MultilayerParallaxDepth.azsli"
+#include "../MaterialFunctions/StandardGetObjectToWorld.azsli"
+#include "../MaterialFunctions/StandardGetNormalToWorld.azsli"
+#include "../MaterialFunctions/StandardTransformUvs.azsli"
+#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "../MaterialFunctions/MultilayerParallaxDepth.azsli"
 
-#include "DepthPass_WithPS.azsli"
+#include "../DepthPass_WithPS.azsli"

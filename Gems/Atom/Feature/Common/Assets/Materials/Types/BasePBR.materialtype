@@ -40,11 +40,11 @@
     },
     "shaders": [
         {
-            "file": "./BasePBR_ForwardPass.shader",
+            "file": "Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader",
             "tag": "ForwardPass_EDS"
         },
         {
-            "file": "./BasePBR_LowEndForward.shader",
+            "file": "Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader",
             "tag": "LowEndForward_EDS"
         },
         {
