@@ -978,4 +978,11 @@
         </Expand>
     </Type>
 
+    <Type Name="AZ::SettingsRegistryImpl">
+        <DisplayString>{m_settings}</DisplayString>
+        <Expand>
+            <ExpandedItem>m_settings</ExpandedItem>
+        </Expand>
+    </Type>
+
 </AutoVisualizer>
