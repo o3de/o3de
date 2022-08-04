@@ -93,7 +93,7 @@ namespace MaterialCanvas
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
-        m_dynamicNodeManager->LoadConfigFiles({ "materialcanvasnode.azasset" });
+        m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
 
         // Each graph document creates its own graph context but we want to use a shared graph context instead to avoid data duplication
         m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
