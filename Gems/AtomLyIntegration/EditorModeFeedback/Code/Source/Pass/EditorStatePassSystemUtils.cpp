@@ -10,14 +10,12 @@
 #include <Pass/State/EditorStateBufferCopyPass.h>
 #include <Pass/State/EditorStateParentPassData.h>
 #include <Pass/EditorStatePassSystem.h>
+#include <Pass/EditorStatePassSystemUtils.h>
 
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
 namespace AZ::Render
 {
-    static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
-    static constexpr const char* const BufferCopyStatePassTemplatePassClassName = "EditorStateBufferCopyPass";
-
     Name GetMaskPassTemplateNameForDrawList(const Name& drawList)
     {
         return Name(AZStd::string(drawList.GetStringView()) + "_EditorModeMaskTemplate");
@@ -96,7 +94,7 @@ namespace AZ::Render
         AZ::u32 passCount = 0;
         for (const auto& childPassTemplate : state.GetChildPassNameList())
         {
-            auto childPassName = state->GetGeneratedChildPassName(index);
+            auto childPassName = state.GetGeneratedChildPassName(passCount);
             RPI::PassRequest pass;
             pass.m_passName = childPassName;
             pass.m_templateName = childPassTemplate;

@@ -25,7 +25,7 @@ namespace AZ::Render
         }
 
         // Erase any drawable entity meshes not in the provided list of entities
-        erase_if(m_drawableEntities, [](auto elem) { !entityIds.contains(elem); });
+        erase_if(m_drawableEntities, [&entityIds](const auto& elem) { return !entityIds.contains(elem.first); });
 
         // Construct the drawable entity meshes for entities not in the drawable entity cache
         for (const auto& entityId : entityIds)

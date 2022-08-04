@@ -8,8 +8,13 @@
 
 #include <Pass/State/EditorStateBase.h>
 
+#pragma once
+
 namespace AZ::Render
 {
+    inline constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
+    inline constexpr const char* const BufferCopyStatePassTemplatePassClassName = "EditorStateBufferCopyPass";
+
     //! Returns the name for the mask pass template for the specified draw list.
     Name GetMaskPassTemplateNameForDrawList(const Name& drawList);
 

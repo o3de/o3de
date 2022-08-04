@@ -23,8 +23,6 @@ namespace AZ::Render
     static constexpr const char* const MainPassParentTemplateName = "EditorModeFeedbackParentTemplate";
     static constexpr const char* const MainPassParentTemplatePassClassName = "EditorModeFeedbackParentPass";
     static constexpr const char* const MainPassParentPassName = "EditorModeFeedback";
-    static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
-    static constexpr const char* const BufferCopyStatePassTemplatePassClassName = "EditorStateBufferCopyPass";
     
     static constexpr const char* const EditorModeDesaturationPassName = "EditorModeDesaturationPass";
     static constexpr const char* const EditorModeTintPassPassName = "EditorModeTintPass";
@@ -211,7 +209,7 @@ namespace AZ::Render
         for (auto& state : m_editorStates)
         {
             auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
-            state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
+            state->AddParentPassForPipeline(renderPipeline->GetId(), statePass);
         }
     }
 
@@ -219,7 +217,7 @@ namespace AZ::Render
     {
         for (auto& state : m_editorStates)
         {
-            state->RemoveParentPassForPipeline(mainPassParent->GetPathName());
+            state->RemoveParentPassForPipeline(renderPipeline->GetId());
         }
     }
 } // namespace AZ::Render

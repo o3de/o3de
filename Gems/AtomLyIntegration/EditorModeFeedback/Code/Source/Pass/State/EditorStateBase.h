@@ -89,7 +89,7 @@ namespace AZ::Render
         void SetEnabled(bool enabled) override;
 
         //! Returns the generated name for the specified child pass.
-        Name GetGeneratedChildPassName(size_t index)
+        Name GetGeneratedChildPassName(size_t index) const
         {
             if(index >= m_childPassNameList.size())
             {
@@ -97,7 +97,7 @@ namespace AZ::Render
                 return Name("");
             }
 
-            return Name(AZStd::string::format("%sChildPass%u_%s", stateParentPassTemplate->m_name.GetCStr(), index, m_childPassNameList[index].GetCStr()));
+            return Name(AZStd::string::format("%sChildPass%u_%s", GetPassTemplateName().GetCStr(), index, m_childPassNameList[index].GetCStr()));
         }
 
     protected:
