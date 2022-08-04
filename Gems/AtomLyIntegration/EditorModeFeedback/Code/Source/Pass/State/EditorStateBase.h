@@ -21,7 +21,7 @@
 namespace AZ::Render
 {
     //! List of passes to create.
-    using PassDescriptorList = AZStd::vector<Name>;
+    using PassNameList = AZStd::vector<Name>;
 
     //! Parent pass for editor states.
     //! This base class is inherited by the specific editor states that wish to implement custom feedback effects.
@@ -38,19 +38,19 @@ namespace AZ::Render
         //! it to the tick bus.
         //! @param editorState The editor state enumeration to associate with this pass.
         //! @param stateName Name for this editor mode stat.
-        //! @param passDescriptorList List of child passes to create, in order of appearance.
+        //! @param passNameList List of child passes to create, in order of appearance.
         //! @param maskDrawList The entity mask to use for this state.
         EditorStateBase(
             EditorState editorState,
             const AZStd::string& stateName,
-            const PassDescriptorList& childPassDescriptorList,
+            const PassNameList& childPassNameList,
             const AZStd::string& maskDrawList);
 
         //! Delegate constructor for editor state parents that use the default entity mask.
         EditorStateBase(
             EditorState editorState,
             const AZStd::string& stateName,
-            const PassDescriptorList& childPassDescriptorList);
+            const PassNameList& childPassNameList);
 
         virtual ~EditorStateBase();
 
@@ -65,7 +65,7 @@ namespace AZ::Render
 
         //! Returns the child pass descriptor list for this editor mode state (used by the pass system to construct and configure the
         //! child passes state and routing).
-        const PassDescriptorList& GetChildPassDescriptorList() const;
+        const PassNameList& GetChildPassNameList() const;
 
         //! Returns true of this editor mode state is to be enabled, otherwise false.
         virtual bool IsEnabled() const { return m_enabled; }
@@ -93,7 +93,7 @@ namespace AZ::Render
         template<class ChildPass>
         ChildPass* FindChildPass(RPI::ParentPass* parentPass, size_t index) const
         {
-            if (index >= m_childPassDescriptorList.size())
+            if (index >= m_childPassNameList.size())
             {
                 AZ_Error("EditorStateBase", false, "Couldn't find child pass");
                 return nullptr;
@@ -117,7 +117,7 @@ namespace AZ::Render
         EditorState m_state; //!< The editor state enumeration this editor state effect pass is associated with.
         AZStd::string m_stateName; //!< The name of this state.
         bool m_enabled = true; //!< True if this pass is enabled, otherwise false.
-        PassDescriptorList m_childPassDescriptorList; //!< The child passes that compose this editor state effect pass.
+        PassNameList m_childPassNameList; //!< The child passes that compose this editor state effect pass.
         Name m_entityMaskDrawList; //!< The draw list of the mask this pass uses.
 
         //! The parent pass class instances for this editor state effect pass for each pipeline this pass is added to.

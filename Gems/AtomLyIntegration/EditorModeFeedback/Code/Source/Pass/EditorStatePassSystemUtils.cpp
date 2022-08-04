@@ -94,7 +94,7 @@ namespace AZ::Render
         // Child passes
         auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("InputColor"));
         AZ::u32 passCount = 0;
-        for (const auto& childPassTemplate : state.GetChildPassDescriptorList())
+        for (const auto& childPassTemplate : state.GetChildPassNameList())
         {
             auto childPassName = Name(AZStd::string::format("%sChildPass%u", stateParentPassTemplate->m_name.GetCStr(), passCount));
             RPI::PassRequest pass;

@@ -14,10 +14,10 @@
 
 namespace AZ::Render
 {
-    static PassDescriptorList CreateFocusedEntityChildPasses()
+    static PassNameList CreateFocusedEntityChildPasses()
     {
         // Effect chain for the non-focused entities.
-        return PassDescriptorList
+        return PassNameList
         {
             // Black and white effect for unfocused entities (scaled by distance)
             AZ::Name("EditorModeDesaturationTemplate"),

@@ -16,11 +16,11 @@ namespace AZ::Render
     EditorStateBase::EditorStateBase(
         EditorState editorState,
         const AZStd::string& stateName,
-        const PassDescriptorList& childPassDescriptorList,
+        const PassNameList& childPassNameList,
         const AZStd::string& maskDrawList)
         : m_state(editorState)
         , m_stateName(stateName)
-        , m_childPassDescriptorList(childPassDescriptorList)
+        , m_childPassNameList(childPassNameList)
         , m_entityMaskDrawList(maskDrawList)
     {
         EditorStateRequestsBus::Handler::BusConnect(m_state);
@@ -29,8 +29,8 @@ namespace AZ::Render
     EditorStateBase::EditorStateBase(
         EditorState editorState,
         const AZStd::string& stateName,
-        const PassDescriptorList& childPassDescriptorList)
-        : EditorStateBase(editorState, stateName, childPassDescriptorList, DefaultEntityMaskName)
+        const PassNameList& childPassNameList)
+        : EditorStateBase(editorState, stateName, childPassNameList, DefaultEntityMaskName)
     {
     }
 
@@ -49,9 +49,9 @@ namespace AZ::Render
         return m_entityMaskDrawList;
     }
 
-    const PassDescriptorList& EditorStateBase::GetChildPassDescriptorList() const
+    const PassNameList& EditorStateBase::GetChildPassNameList() const
     {
-        return m_childPassDescriptorList;
+        return m_childPassNameList;
     }
 
     Name EditorStateBase::GetPassTemplateName() const
