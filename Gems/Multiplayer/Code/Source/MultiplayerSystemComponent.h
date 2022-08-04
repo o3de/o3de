@@ -191,9 +191,14 @@ namespace Multiplayer
         // Store player information if they connect before there is a level and IPlayerSpawner available
         struct PlayerWaitingToBeSpawned
         {
-            uint64_t userId;
-            MultiplayerAgentDatum agent;
-            AzNetworking::IConnection* connection;
+            PlayerWaitingToBeSpawned(uint64_t userId, MultiplayerAgentDatum agent, AzNetworking::IConnection* connection)
+                : m_userId(userId), m_agent(agent), m_connection(connection)
+            {
+            }
+
+            uint64_t m_userId;
+            MultiplayerAgentDatum m_agent;
+            AzNetworking::IConnection* m_connection;
         };
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;

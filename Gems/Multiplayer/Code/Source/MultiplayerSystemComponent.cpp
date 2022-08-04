@@ -608,7 +608,7 @@ namespace Multiplayer
                 else
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, connection });
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
                 }
             }
             else
@@ -879,23 +879,22 @@ namespace Multiplayer
             // Signal to session management that a user has left the server
             if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
-                IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
-                if (spawner)
+                if (IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get())
                 {
                     // Check if this disconnected player was waiting to be spawned, and therefore, doesn't have a controlled player entity yet.
-                    bool playerSpawned = true;
+                    bool spawnedPlayerIsLeaving = true;
                     for (auto it = m_playersWaitingToBeSpawned.begin(); it != m_playersWaitingToBeSpawned.end(); ++it)
                     {
-                        if (it->connection && it->connection->GetConnectionId() == connection->GetConnectionId())
+                        if (it->m_agent.m_id == connection->GetConnectionId())
                         {
-                            m_playersWaitingToBeSpawned.erase(it--);
-                            playerSpawned = false;
+                            m_playersWaitingToBeSpawned.erase(it);
+                            spawnedPlayerIsLeaving = false;
                             break;
                         }
                     }
 
                     // Alert IMultiplayerSpawner that our spawned player has left.
-                    if (playerSpawned)
+                    if (spawnedPlayerIsLeaving)
                     {
                         ServerToClientConnectionData* connectionData =
                             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
@@ -1006,7 +1005,7 @@ namespace Multiplayer
                 if (!controlledEntity.Exists())
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, nullptr });
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
                 }
             }
             else
@@ -1285,17 +1284,17 @@ namespace Multiplayer
 
         for (const auto& playerWaitingToBeSpawned : m_playersWaitingToBeSpawned)
         {
-            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(playerWaitingToBeSpawned.userId, playerWaitingToBeSpawned.agent);
+            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(playerWaitingToBeSpawned.m_userId, playerWaitingToBeSpawned.m_agent);
             if (!controlledEntity.Exists())
             {
-                AZLOG_WARN("Attempting to spawn players on level load failed.");
+                AZLOG_WARN("Attempting to spawn networked player on level load failed. IMultiplayerSpawner did not return a valid player entity for user id: %i!", playerWaitingToBeSpawned.m_userId);
                 return;
             }
 
             if ((GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
-                && playerWaitingToBeSpawned.agent.m_agentType == MultiplayerAgentType::Client)
+                && playerWaitingToBeSpawned.m_agent.m_agentType == MultiplayerAgentType::Client)
             {
-                StartServerToClientReplication(playerWaitingToBeSpawned.userId, controlledEntity, playerWaitingToBeSpawned.connection);
+                StartServerToClientReplication(playerWaitingToBeSpawned.m_userId, controlledEntity, playerWaitingToBeSpawned.m_connection);
             }
         }
 
