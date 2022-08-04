@@ -303,9 +303,8 @@ namespace SettingsRegistryConsoleUtilsTests
                 if (window == AZStd::string_view("SettingsRegistry"))
                 {
                     // Test for in memory origin
-                    AZStd::string messageStr;
-                    messageStr = message;
-                    EXPECT_TRUE(messageStr.contains("<in-memory>"));
+                    AZStd::string_view messageView = message;
+                    EXPECT_TRUE(messageView.contains("<in-memory>"));
                 }
                 return false;
             }

@@ -130,7 +130,7 @@ namespace AZ::SettingsRegistryConsoleUtils
         {
             settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
             {
-                outputString += AZStd::string::format("Key: %s Origin: %s Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
+                outputString += AZStd::string::format("Key: \"%s\" Origin: \"%s\" Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
                         settingsRegistryOrigin.m_originFilePath.c_str(),
                         settingsRegistryOrigin.m_settingsValue.has_value() ? settingsRegistryOrigin.m_settingsValue.value().c_str()
                                                                            : "<removed>");

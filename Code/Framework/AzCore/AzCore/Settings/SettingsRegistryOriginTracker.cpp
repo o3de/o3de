@@ -41,6 +41,11 @@ namespace AZ
         return m_settingsRegistry;
     }
 
+    const AZ::SettingsRegistryInterface& SettingsRegistryOriginTracker::GetSettingsRegistry() const
+    {
+        return m_settingsRegistry;
+    }
+
     SettingsRegistryOriginTracker::SettingsNotificationHandler::~SettingsNotificationHandler() = default;
 
     bool SettingsRegistryOriginTracker::SettingsRegistryOrigin::operator==(const SettingsRegistryOrigin& origin) const
@@ -74,9 +79,9 @@ namespace AZ
         m_originTracker.AddOrigin(notifyEventArgs.m_jsonKeyPath, notifyEventArgs.m_mergeFilePath);
     }
 
-    bool SettingsRegistryOriginTracker::FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key)
+    bool SettingsRegistryOriginTracker::FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key) const
     {
-        auto populateOriginPath = [&](const AZ::Dom::Path&, const SettingsRegistryOriginStack& stack)
+        auto populateOriginPath = [&originPath](const AZ::Dom::Path&, const SettingsRegistryOriginStack& stack)
         {
             if (!stack.empty())
             {
@@ -86,7 +91,7 @@ namespace AZ
             return true;
         };
         AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
-        AZ::Dom::PrefixTreeTraversalFlags traversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific;
+        constexpr AZ::Dom::PrefixTreeTraversalFlags traversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific;
         m_settingsOriginPrefixTree.VisitPath(jsonPath, populateOriginPath, traversalFlags);
         return !originPath.empty();
     }
@@ -209,9 +214,9 @@ namespace AZ
         m_settingsOriginPrefixTree.VisitPath(jsonPath, removeOriginAtKey, traversalFlags);
     }
 
-    void SettingsRegistryOriginTracker::VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback)
+    void SettingsRegistryOriginTracker::VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback) const
     {
-        auto visitOriginStackCallback = [&](const AZ::Dom::Path&, SettingsRegistryOriginStack& stack)
+        auto visitOriginStackCallback = [&](const AZ::Dom::Path&, const SettingsRegistryOriginStack& stack)
         {
             for (const auto& origin : stack)
             {
@@ -223,7 +228,7 @@ namespace AZ
             return true;
         };
         AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
-        AZ::Dom::PrefixTreeTraversalFlags traversalFlags =
+        constexpr AZ::Dom::PrefixTreeTraversalFlags traversalFlags =
             AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific | AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths;
         m_settingsOriginPrefixTree.VisitPath(jsonPath, visitOriginStackCallback, traversalFlags);
     }

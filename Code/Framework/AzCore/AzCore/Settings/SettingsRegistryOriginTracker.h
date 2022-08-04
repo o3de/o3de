@@ -39,9 +39,10 @@ namespace AZ
 
         //! Gets setting registry being tracked
         AZ::SettingsRegistryInterface& GetSettingsRegistry();
+        const AZ::SettingsRegistryInterface& GetSettingsRegistry() const;
 
         //! Returns the last origin associated with the given key
-        bool FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key);
+        bool FindLastOrigin(AZ::IO::Path& originPath, AZStd::string_view key) const;
 
         struct SettingsRegistryOrigin
         {
@@ -69,7 +70,7 @@ namespace AZ
 
         //! Visit all settings keys that are at specified key path and any children in the DomPrefixTree
         //! and invoke the supplied callback with the visit key and the SettingsRegistryOriginStack
-        void VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback);
+        void VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback) const;
 
     private:
 

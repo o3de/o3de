@@ -37,6 +37,9 @@ namespace AZ
 
 namespace SettingsRegistryOriginTrackerTests
 {
+    const AZStd::string OBJECT_VALUE = "<object>";
+    const AZStd::string ARRAY_VALUE = "<array>";
+
     class SettingsRegistryOriginTrackerFixture
         : public UnitTest::ScopedAllocatorSetupFixture
     {
@@ -109,7 +112,6 @@ namespace SettingsRegistryOriginTrackerTests
             for (const auto& settingsRegistryOrigin : expected)
             {
                 EXPECT_THAT(originArray, ::testing::Contains(settingsRegistryOrigin));
-                std::cout << "hi";
             }
             EXPECT_EQ(expected.size(), originArray.size());
         }
@@ -118,7 +120,7 @@ namespace SettingsRegistryOriginTrackerTests
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
         AZStd::unique_ptr<AZ::SettingsRegistryOriginTracker> m_originTracker;
         AZ::Test::ScopedAutoTempDirectory m_testFolder;
-        bool m_createdNameDictionary;
+        bool m_createdNameDictionary = false;
     };
 
    TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFile_TracksOrigin_Successful)
@@ -168,20 +170,8 @@ namespace SettingsRegistryOriginTrackerTests
            "",
            nullptr);
        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedObjectValueOriginStack = {
-           { filePath1.String(), "/O3DE/Settings/ObjectValue", R"(
-               {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true
-               }
-               )"
-           },
-           { filePath2.String(), "/O3DE/Settings/ObjectValue", R"(
-               {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true,
-                   "IntKey2": 9001
-               }
-               )" },
+           { filePath1.String(), "/O3DE/Settings/ObjectValue", OBJECT_VALUE },
+           { filePath2.String(), "/O3DE/Settings/ObjectValue", OBJECT_VALUE},
            { filePath2.String(), "/O3DE/Settings/ObjectValue/IntKey2", "9001" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/StringKey1", "\"Hello\"" },
@@ -214,10 +204,7 @@ namespace SettingsRegistryOriginTrackerTests
        m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonPatch);
        m_registry->MergeSettingsFile(filePath2.Native(), AZ::SettingsRegistryInterface::Format::JsonPatch);
        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedArrayValueOriginStack = {
-           {
-               filePath1.String(),
-               "/O3DE/ArrayValue", "[5,7,40000000,-89396]"
-           },
+           {filePath1.String(), "/O3DE/ArrayValue", ARRAY_VALUE },
            { filePath1.String(), "/O3DE/ArrayValue/3", "-89396" },
            { filePath1.String(), "/O3DE/ArrayValue/2", "40000000" },
            { filePath2.String(), "/O3DE/ArrayValue/2", "42" },
@@ -261,25 +248,8 @@ namespace SettingsRegistryOriginTrackerTests
        m_registry->MergeSettingsFile(filePath2.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
        m_registry->MergeSettingsFile(filePath1.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedObjectValueOriginStack = {
-           { filePath1.String(),
-             "/O3DE/Settings/ObjectValue",
-                 R"(
-               {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true,
-                   "IntKey2": 9001
-               }
-               )"
-           },
-           { filePath2.String(),
-             "/O3DE/Settings/ObjectValue",
-             R"(
-               {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true,
-                   "IntKey2": 9001
-               }
-               )" },
+           { filePath1.String(), "/O3DE/Settings/ObjectValue", OBJECT_VALUE },
+           { filePath2.String(), "/O3DE/Settings/ObjectValue", OBJECT_VALUE },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/Settings/ObjectValue/StringKey1", "\"Hello\"" },
            { filePath2.String(), "/O3DE/Settings/ObjectValue/IntKey2", "9001" }
@@ -319,24 +289,8 @@ namespace SettingsRegistryOriginTrackerTests
        ASSERT_TRUE(m_registry->Set(stringKey1Path, stringKey1NewValue));
        m_registry->MergeSettingsFile(filePath2.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
        AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedObjectValueOriginStack = {
-           { filePath1.String(),
-             "/O3DE/ObjectValue",
-                 R"(
-              {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true
-              }
-              )"
-           },
-           { filePath2.String(),
-             "/O3DE/ObjectValue",
-             R"(
-              {
-                   "StringKey1": "Hi",
-                   "BoolKey1": true,
-                   "IntKey2": 9001
-              }
-              )" },
+           { filePath1.String(), "/O3DE/ObjectValue", OBJECT_VALUE },
+           { filePath2.String(), "/O3DE/ObjectValue", OBJECT_VALUE },
            { filePath2.String(), "/O3DE/ObjectValue/IntKey2", "9001" },
            { filePath1.String(), "/O3DE/ObjectValue/BoolKey1", "true" },
            { filePath1.String(), "/O3DE/ObjectValue/StringKey1", "\"Hello\"" },
@@ -382,16 +336,7 @@ namespace SettingsRegistryOriginTrackerTests
         m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedO3DEOriginStack =
         {
-            { filePath1.String(),
-              "/O3DE",
-                  R"(
-                        {
-                            "foo": 1,
-                            "bar": true,
-                            "baz": "yes"
-                        }
-                    )"
-            },
+            { filePath1.String(), "/O3DE", OBJECT_VALUE },
             { filePath2.String(), "/O3DE/foo", "3" },
             { filePath1.String(), "/O3DE/foo", "1" },
             { filePath1.String(), "/O3DE/bar", "true" },
@@ -415,7 +360,7 @@ namespace SettingsRegistryOriginTrackerTests
     TEST_F(SettingsRegistryOriginTrackerFixture, MergeSettingsFiles_LargeInput_Successful)
     {
         auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
-        int numIterations = 3;
+        int numIterations = 10;
         for (int i = 0; i < numIterations; i++)
         {
             AZ::IO::FixedMaxPath filePath = tempRootFolder / AZStd::string::format("file%d.setreg", i);
@@ -429,30 +374,17 @@ namespace SettingsRegistryOriginTrackerTests
             )",i, i)));
             m_registry->MergeSettingsFile(filePath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         }
-        rapidjson::Document expectedO3DEOriginValue;
-        expectedO3DEOriginValue.SetObject();
-        expectedO3DEOriginValue.AddMember("persistentKey", 0, expectedO3DEOriginValue.GetAllocator());
         AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedO3DEOriginStack;
         for (int i = 0; i < numIterations; i++)
         {
             AZ::IO::FixedMaxPath filePath = tempRootFolder / AZStd::string::format("file%d.setreg", i);
-            rapidjson::Value& persistentKeyValue = expectedO3DEOriginValue["persistentKey"];
-            persistentKeyValue.SetInt(i);
-            AZStd::string changingKeyString = AZStd::string::format("changingKey%d", i);
-            rapidjson::Value changingKey(changingKeyString.c_str(), expectedO3DEOriginValue.GetAllocator());
-            expectedO3DEOriginValue.AddMember(changingKey, true, expectedO3DEOriginValue.GetAllocator());
-            rapidjson::StringBuffer expectedO3DEOriginValueBuffer;
-            rapidjson::Writer<rapidjson::StringBuffer> writer(expectedO3DEOriginValueBuffer);
-            expectedO3DEOriginValue.Accept(writer);
-            AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin o3deOrigin{ filePath.String(),
-                                                                                           "/O3DE",
-                                                                                  expectedO3DEOriginValueBuffer.GetString() };
+            AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin o3deOrigin{ filePath.String(), "/O3DE", OBJECT_VALUE };
             AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin persistentKeyOrigin{ filePath.String(),
-                                                                              "/O3DE/persistentKey",
-                                                                              AZStd::string::format("%d", i) };
+                                                                                           "/O3DE/persistentKey",
+                                                                                           AZStd::string::format("%d", i) };
             AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin changingKeyOrigin{ filePath.String(),
-                                                                                AZStd::string::format("/O3DE/changingKey%d", i),
-                                                                                "true" };
+                                                                                         AZStd::string::format("/O3DE/changingKey%d", i),
+                                                                                         "true" };
             expectedO3DEOriginStack.emplace_back(o3deOrigin);
             expectedO3DEOriginStack.emplace_back(changingKeyOrigin);
             expectedO3DEOriginStack.emplace_back(persistentKeyOrigin);
@@ -496,23 +428,8 @@ namespace SettingsRegistryOriginTrackerTests
         m_registry->MergeSettingsFile(filePath1.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         m_registry->MergeSettingsFile(filePath2.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch);
         AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedObjectValueOriginStack = {
-            { filePath1.String(),
-              "/O3DE/ObjectValue",
-              R"(
-              {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true
-              }
-              )" },
-            { filePath2.String(),
-              "/O3DE/ObjectValue",
-              R"(
-              {
-                   "StringKey1": "Hello",
-                   "BoolKey1": true,
-                   "IntKey2": 9001
-              }
-              )" },
+            { filePath1.String(), "/O3DE/ObjectValue", OBJECT_VALUE },
+            { filePath2.String(), "/O3DE/ObjectValue", OBJECT_VALUE },
             { filePath1.String(), "/O3DE/ObjectValue/BoolKey1", "true" },
             { filePath1.String(), "/O3DE/ObjectValue/StringKey1", "\"Hello\"" }
         };

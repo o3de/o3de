@@ -123,7 +123,7 @@ namespace AZ
         PostMergeEvent m_postMergeEvent;
 
         //! NOTE: During SignalNotifier, the registered notify event handlers are moved to a local NotifyEvent
-        //! Therefore setting a value within the registry during signaling will queue future SignalNotifeir calls
+        //! Therefore setting a value within the registry during signaling will queue future SignalNotifier calls
         //! These calls will then be invoked after the current signaling has completed
         //! This is done to avoid deadlock if another thread attempts to access register a notifier or signal one
         mutable AZStd::mutex m_signalMutex;
