@@ -321,17 +321,8 @@ namespace AZ
             for (const auto* scopeAttachment : attachments)
             {
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
-                const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
-                const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
-                bool isClear = isClearAction || isClearActionStencil;
-
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeAttachment->GetUsageAndAccess())
-                {
-                    if (usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader && isClear)
-                    {
-                        clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
-                        break;
-                    }
+                if (HasExplicitClear(*scopeAttachment, bindingDescriptor)) {
+                    clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
                 }
             }
         }
