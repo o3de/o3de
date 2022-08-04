@@ -10,7 +10,7 @@
 
 namespace AZ::Render
 {
-    EditorStateMaskRenderer::EditorStateMaskRenderer(Name name, Data::Instance<RPI::Material> maskMaterial)
+    EditorStateMaskRenderer::EditorStateMaskRenderer(const Name& name, Data::Instance<RPI::Material> maskMaterial)
         : m_drawTag(name)
         , m_maskMaterial(maskMaterial)
     {
@@ -25,17 +25,7 @@ namespace AZ::Render
         }
 
         // Erase any drawable entity meshes not in the provided list of entities
-        for (auto it = m_drawableEntities.begin(); it != m_drawableEntities.end();)
-        {
-            if (!entityIds.contains(it->first))
-            {
-                it = m_drawableEntities.erase(it);
-            }
-            else
-            {
-                it++;
-            }
-        }
+        erase_if(m_drawableEntities, [](auto elem) { !entityIds.contains(elem); });
 
         // Construct the drawable entity meshes for entities not in the drawable entity cache
         for (const auto& entityId : entityIds)

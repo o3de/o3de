@@ -20,7 +20,7 @@ namespace AZ::Render
     {
     public:
         //! Constructs the mask renderer for the specified draw tag.
-        EditorStateMaskRenderer(Name name, Data::Instance<RPI::Material> maskMaterial);
+        EditorStateMaskRenderer(const Name& name, Data::Instance<RPI::Material> maskMaterial);
 
         //! Renders the specified entities to this mask.
         void RenderMaskEntities(const AzToolsFramework::EntityIdSet& entityIds);
