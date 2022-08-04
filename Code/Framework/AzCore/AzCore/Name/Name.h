@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Internal/NameData.h>
 #include <AzCore/std/parallel/thread.h>
 
@@ -98,8 +99,7 @@ namespace AZ
         //!
         //! \warning FromStringLiteral is not thread-safe and should only be called from the
         //! main thread.
-        static Name FromStringLiteral(AZStd::string_view name);
-        static Name FromStringLiteral(AZStd::string_view name,  NameDictionary& nameDictionary);
+        static Name FromStringLiteral(AZStd::string_view name,  NameDictionary* nameDictionary);
 
         Name& operator=(const Name&);
         Name& operator=(Name&&);
@@ -191,8 +191,7 @@ namespace AZ
         // The name string is stored persistently and used as a key to look up an entry in the dictionary.
         // If this is called before the dictionary is available, the key will be used when the name dictionary
         // becomes available.
-        void SetNameLiteral(AZStd::string_view name);
-        void SetNameLiteral(AZStd::string_view name, NameDictionary& nameDictionary);
+        void SetNameLiteral(AZStd::string_view name, NameDictionary* nameDictionary);
 
         // This constructor is used by NameDictionary to construct from a dictionary-held NameData instance.
         Name(Internal::NameData* nameData);
@@ -236,12 +235,12 @@ namespace AZ
 } // namespace AZ
 
 //! Defines a cached name literal that describes an AZ::Name. Subsequent calls to this macro will retrieve the cached name from the
-//! dictionary.
+//! global dictionary.
 #define AZ_NAME_LITERAL(str)                                                                                                               \
     (                                                                                                                                      \
         []() -> const AZ::Name&                                                                                                            \
         {                                                                                                                                  \
-            static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str));                                                           \
+            static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str, AZ::Interface<AZ::NameDictionary>::Get()));                 \
             return nameLiteral;                                                                                                            \
         })()
 

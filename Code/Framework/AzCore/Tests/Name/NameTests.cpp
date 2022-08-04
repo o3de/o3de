@@ -33,7 +33,7 @@
 
 namespace UnitTest
 {
-    static AZ::Name globalName = AZ::Name::FromStringLiteral("global");
+    static AZ::Name globalName = AZ::Name::FromStringLiteral("global", AZ::Interface<AZ::NameDictionary>::Get());
 
     class NameDictionaryTester
     {
@@ -683,7 +683,7 @@ namespace UnitTest
 
     TEST_F(NameTest, NameLiteral)
     {
-        static AZ::Name staticName = AZ::Name::FromStringLiteral("static");
+        static AZ::Name staticName = AZ::Name::FromStringLiteral("static", AZ::Interface<AZ::NameDictionary>::Get());
         EXPECT_EQ("literal", AZ_NAME_LITERAL("literal").GetStringView());
         EXPECT_EQ("static", staticName.GetStringView());
         EXPECT_EQ("global", globalName.GetStringView());
@@ -956,8 +956,8 @@ namespace UnitTest
     {
         // When run with --gtest_repeat=2 the literal is not relinked to the NameDictionary
         // if a static variable is used due to not running the constructor
-        const AZ::Name staticName = AZ::Name::FromStringLiteral("firstStatic", *m_nameDictionary1);
-        const AZ::Name literalRef = AZ::Name::FromStringLiteral("secondLiteral", *m_nameDictionary2);
+        const AZ::Name staticName = AZ::Name::FromStringLiteral("firstStatic", m_nameDictionary1.get());
+        const AZ::Name literalRef = AZ::Name::FromStringLiteral("secondLiteral", m_nameDictionary2.get());
 
         // "firstStatic" should be in dictionary1, but not dictionary2
         EXPECT_FALSE(m_nameDictionary1->FindName(staticName.GetHash()).IsEmpty());
@@ -968,13 +968,13 @@ namespace UnitTest
         EXPECT_TRUE(m_nameDictionary1->FindName(literalRef.GetHash()).IsEmpty());
 
         // Add a "firstStatic" to second dictionary
-        const AZ::Name staticNameDict2{ AZ::Name::FromStringLiteral("firstStatic", *m_nameDictionary2) };
+        const AZ::Name staticNameDict2{ AZ::Name::FromStringLiteral("firstStatic", m_nameDictionary2.get()) };
         EXPECT_FALSE(m_nameDictionary1->FindName(staticName.GetHash()).IsEmpty());
         EXPECT_FALSE(m_nameDictionary2->FindName(staticNameDict2.GetHash()).IsEmpty());
 
         // Now create a second name literal for the string literal of "secondLiteral"
         // There should be two different "secondLiteral" instance each associated with a different name dictionary
-        const AZ::Name literalRefForDict1 = AZ::Name::FromStringLiteral("secondLiteral", *m_nameDictionary1);
+        const AZ::Name literalRefForDict1 = AZ::Name::FromStringLiteral("secondLiteral", m_nameDictionary1.get());
 
         EXPECT_EQ(literalRef, literalRefForDict1) << "The values of the names should be equal";
         EXPECT_NE(&literalRef, &literalRefForDict1) << "The memory address of the names should not be equal";

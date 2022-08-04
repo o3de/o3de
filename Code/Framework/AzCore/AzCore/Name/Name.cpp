@@ -93,7 +93,7 @@ namespace AZ
     {
         auto nameDictionary = AZ::Interface<NameDictionary>::Get();
         AZ_Assert(nameDictionary != nullptr, "hash value %u cannot be looked up before the global before the NameDictionary is ready.\n"
-            "If a explicit name dictionary is available, it can be passed to the Name(Hash, NameDictionary&) overload instead.", hash);
+            "If an explicit name dictionary is available, it can be passed to the Name(Hash, NameDictionary&) overload instead.", hash);
         *this = nameDictionary->FindName(hash);
     }
 
@@ -120,14 +120,7 @@ namespace AZ
     {
     }
 
-    Name Name::FromStringLiteral(AZStd::string_view name)
-    {
-        Name literalName;
-        literalName.SetNameLiteral(name);
-        return literalName;
-    }
-
-    Name Name::FromStringLiteral(AZStd::string_view name, NameDictionary& nameDictionary)
+    Name Name::FromStringLiteral(AZStd::string_view name, NameDictionary* nameDictionary)
     {
         Name literalName;
         literalName.SetNameLiteral(name, nameDictionary);
@@ -144,14 +137,8 @@ namespace AZ
             {
                 m_hash = rhs.m_hash;
                 m_data = rhs.m_data;
-                if (m_data != nullptr && m_data->m_nameDictionary != nullptr)
-                {
-                    SetNameLiteral(rhs.m_view, *m_data->m_nameDictionary);
-                }
-                else
-                {
-                    SetNameLiteral(rhs.m_view);
-                }
+                AZ::NameDictionary* nameDictionary = m_data != nullptr ? m_data->m_nameDictionary : nullptr;
+                SetNameLiteral(rhs.m_view, nameDictionary);
             }
             else
             {
@@ -174,14 +161,8 @@ namespace AZ
         {
             m_hash = rhs.m_hash;
             m_data = rhs.m_data;
-            if (m_data != nullptr && m_data->m_nameDictionary != nullptr)
-            {
-                SetNameLiteral(rhs.m_view, *m_data->m_nameDictionary);
-            }
-            else
-            {
-                SetNameLiteral(rhs.m_view);
-            }
+            AZ::NameDictionary* nameDictionary = m_data != nullptr ? m_data->m_nameDictionary : nullptr;
+            SetNameLiteral(rhs.m_view, nameDictionary);
         }
         else
         {
@@ -234,7 +215,8 @@ namespace AZ
         *this = nameDictionary.MakeName(name);
     }
 
-    void Name::SetNameLiteral(AZStd::string_view name)
+
+    void Name::SetNameLiteral(AZStd::string_view name, NameDictionary* nameDictionary)
     {
         if (name.empty())
         {
@@ -248,31 +230,15 @@ namespace AZ
         }
         AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
         m_view = name;
-        // Link ourselves into the deferred list if we're not already in there
-        if (!m_supportsDeferredLoad)
+        if (nameDictionary != nullptr)
         {
+            nameDictionary->LoadDeferredName(*this);
+        }
+        else if (!m_supportsDeferredLoad)
+        {
+            // Link ourselves into the deferred list if we're not already in there
             LinkStaticName(&s_staticNameBegin);
         }
-
-        m_supportsDeferredLoad = true;
-    }
-
-
-    void Name::SetNameLiteral(AZStd::string_view name, NameDictionary& nameDictionary)
-    {
-        if (name.empty())
-        {
-            *this = Name();
-            return;
-        }
-
-        if (s_staticNameListThread == AZStd::thread::id{})
-        {
-            s_staticNameListThread = AZStd::this_thread::get_id();
-        }
-        AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
-        m_view = name;
-        nameDictionary.LoadDeferredName(*this);
 
         m_supportsDeferredLoad = true;
     }

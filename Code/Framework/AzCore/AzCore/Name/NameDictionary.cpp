@@ -77,8 +77,10 @@ namespace AZ
         return *nameDictionary;
     }
 
+    // The deferred head passes in a nullptr NameDictionary as the nameDictionary isn't available
+    // until the constructor completes
     NameDictionary::NameDictionary()
-        : m_deferredHead(Name::FromStringLiteral("-fixed name dictionary deferred head-"))
+        : m_deferredHead(Name::FromStringLiteral("-fixed name dictionary deferred head-", nullptr))
     {
         // Ensure a Name that is valid for the life-cycle of this dictionary is the head of our literal linked list
         // This prevents our list head from being destroyed from a module that has shut down its AZ::Environment and

@@ -20,6 +20,8 @@
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
+#include <AzCore/Name/NameDictionary.h>
+
 namespace AZ::Render
 {
     void StarsFeatureProcessor::Reflect(ReflectContext* context)
@@ -252,7 +254,7 @@ namespace AZ::Render
 
         auto setClearValue = [&](RPI::Pass* pass)-> RPI::PassFilterExecutionFlow
         {
-            Name slotName = Name::FromStringLiteral(slot);
+            Name slotName = Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
             if (auto binding = pass->FindAttachmentBinding(slotName))
             {
                 binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
