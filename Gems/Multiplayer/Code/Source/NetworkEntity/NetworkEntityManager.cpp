@@ -404,7 +404,12 @@ namespace Multiplayer
     }
 
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate(
-        const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, const AZ::Transform& transform, AutoActivate autoActivate)
+        const AzFramework::Spawnable& spawnable,
+        NetEntityRole netEntityRole,
+        const AZ::Transform& transform,
+        AutoActivate autoActivate,
+        AutonomousControl autonomousControl,
+        AzNetworking::ConnectionId autonomousOwnerConnectionId)
     {
         INetworkEntityManager::EntityList returnList;
 
@@ -456,6 +461,18 @@ namespace Multiplayer
                 }
             }
 
+            if (autonomousControl == AutonomousControl::Enabled)
+            {
+                cloneNetBindComponent->SetOwningConnectionId(autonomousOwnerConnectionId);
+
+                // An invalid connection id means the owner of this entity isn't some other connected client; 
+                // we are the owner, and thus should have autonomy.
+                if (autonomousOwnerConnectionId == AzNetworking::InvalidConnectionId)
+                {
+                    cloneNetBindComponent->SetAllowAutonomy(true);
+                }
+            }
+
             PrefabEntityId prefabEntityId;
             prefabEntityId.m_prefabName = m_networkPrefabLibrary.GetSpawnableNameFromAssetId(spawnable.GetId());
             prefabEntityId.m_entityOffset = aznumeric_cast<uint32_t>(i);
@@ -494,13 +511,31 @@ namespace Multiplayer
         return CreateEntitiesImmediate(prefabEntryId, NextId(), netEntityRole, autoActivate, transform);
     }
 
+    INetworkEntityManager::EntityList NetworkEntityManager::CreateAutomonousPlayerImmediate(
+        const PrefabEntityId& prefabEntryId,
+        const AZ::Transform& transform,
+        AzNetworking::ConnectionId autonomousOwnerConnectionId,
+        AutoActivate autoActivate)
+    {
+        return CreateEntitiesImmediate(
+            prefabEntryId,
+            NextId(),
+            NetEntityRole::Authority,
+            autoActivate,
+            transform,
+            AutonomousControl::Enabled,
+            autonomousOwnerConnectionId);
+    }
+
     INetworkEntityManager::EntityList NetworkEntityManager::CreateEntitiesImmediate
     (
         const PrefabEntityId& prefabEntryId,
         NetEntityId netEntityId,
         NetEntityRole netEntityRole,
         AutoActivate autoActivate,
-        const AZ::Transform& transform
+        const AZ::Transform& transform,
+        AutonomousControl autonomousControl,
+        AzNetworking::ConnectionId autonomousOwnerConnectionId
     )
     {
         EntityList returnList;
@@ -524,7 +559,7 @@ namespace Multiplayer
 
         if (entityIndex == PrefabEntityId::AllIndices)
         {
-            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, transform, autoActivate);
+            return CreateEntitiesImmediate(*netSpawnable, netEntityRole, transform, autoActivate, autonomousControl, autonomousOwnerConnectionId);
         }
 
         const AzFramework::Spawnable::EntityList& entities = netSpawnable->GetEntities();
@@ -544,6 +579,18 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
         if (netBindComponent)
         {
+            if (autonomousControl == AutonomousControl::Enabled)
+            {
+                netBindComponent->SetOwningConnectionId(autonomousOwnerConnectionId);
+
+                // An invalid connection id means the owner of this entity isn't some other connected client; 
+                // we are the owner, and thus should have autonomy.
+                if (autonomousOwnerConnectionId == AzNetworking::InvalidConnectionId)
+                {
+                    netBindComponent->SetAllowAutonomy(true);
+                }
+            }
+
             netBindComponent->PreInit(clone, prefabEntryId, netEntityId, netEntityRole);
 
             auto* transformComponent = clone->FindComponent<AzFramework::TransformComponent>();

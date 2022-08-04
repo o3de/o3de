@@ -102,6 +102,12 @@ namespace Multiplayer
         Activate
     };
 
+    enum class AutonomousControl : uint8_t
+    {
+        Enabled,
+        Disabled
+    };
+
     enum class EntityMigration
     {
         Disabled,
