@@ -20,7 +20,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", AZ::RPI::FeatureProcessor);
 
             static void Reflect(AZ::ReflectContext* context);
 
