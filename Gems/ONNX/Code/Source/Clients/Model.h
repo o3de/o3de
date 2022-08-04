@@ -13,6 +13,7 @@
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <ONNX/ONNXBus.h>
 #include <onnxruntime_cxx_api.h>

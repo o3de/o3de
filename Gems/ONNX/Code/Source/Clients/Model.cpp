@@ -13,25 +13,23 @@ namespace ONNX
     void Model::Load(const InitSettings& initSettings)
     {
         // Get the FileIOBase to resolve the path to the ONNX gem
-        AZ::IO::FixedMaxPath onnxGemAssetsPath;
+        AZ::IO::FixedMaxPath onnxModelPath;
 
         // If no filepath provided for onnx model, set default to a model.onnx file in the Assets folder.
         if (initSettings.m_modelFile.empty())
         {
             AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
-            fileIo->ResolvePath(onnxGemAssetsPath, "@gemroot:ONNX@");
-            onnxGemAssetsPath /= "Assets/model.onnx";
-            onnxGemAssetsPath = onnxGemAssetsPath.AsPosix();
+            fileIo->ResolvePath(onnxModelPath, "@gemroot:ONNX@/Assets/model.onnx");
         }
         else
         {
-            onnxGemAssetsPath = initSettings.m_modelFile;
+            onnxModelPath = initSettings.m_modelFile;
         }
 
         // If no model name is provided, will default to the name of the onnx model file.
         if (initSettings.m_modelName.empty())
         {
-            AZ::StringFunc::Path::GetFileName(onnxGemAssetsPath.c_str(), m_modelName);
+            AZ::StringFunc::Path::GetFileName(onnxModelPath.c_str(), m_modelName);
         }
         else
         {
@@ -55,8 +53,8 @@ namespace ONNX
         m_cudaEnable = initSettings.m_cudaEnable;
 
         // The model_path provided to Ort::Session needs to be const wchar_t*, even though the docs state const char* - doesn't work otherwise.
-        AZStd::string onnxGemAssetsPathString = onnxGemAssetsPath.String();
-        m_session = Ort::Session(*m_env, AZStd::wstring(onnxGemAssetsPathString.cbegin(), onnxGemAssetsPathString.cend()).c_str(), sessionOptions);
+        AZStd::string onnxModelPathString = onnxModelPath.String();
+        m_session = Ort::Session(*m_env, AZStd::wstring(onnxModelPathString.cbegin(), onnxModelPathString.cend()).c_str(), sessionOptions);
         m_memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 
         // Grabs memory allocator created on init of system component.
