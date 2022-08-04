@@ -19,6 +19,7 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -399,5 +400,28 @@ namespace AtomToolsFramework
         }
 
         return paths;
+    }
+
+    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    {
+        AZStd::set<AZStd::string> results;
+        AZStd::vector<AZStd::string> scanFolders;
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        for (const AZStd::string& scanFolder : scanFolders)
+        {
+            if (const auto& findFilesResult = AzFramework::FileFunc::FindFileList(scanFolder, wildcard.c_str(), true))
+            {
+                for (AZStd::string path : findFilesResult.GetValue())
+                {
+                    if (ValidateDocumentPath(path))
+                    {
+                        results.insert(path);
+                    }
+                }
+            }
+        }
+        return results;
     }
 } // namespace AtomToolsFramework
