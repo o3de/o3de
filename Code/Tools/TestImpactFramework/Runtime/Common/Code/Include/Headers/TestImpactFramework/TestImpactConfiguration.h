@@ -31,17 +31,17 @@ namespace TestImpact
         RepoPath m_build; //!< The absolute path to the build configuration's binary output directory.
     };
 
+    //! Temporary workspace configuration.
+    struct ArtifactDir
+    {
+        RepoPath m_testRunArtifactDirectory; //!< Path to read and write test run artifacts to and from.
+        RepoPath m_coverageArtifactDirectory; //!< Path to read and write coverage artifacts to and from.
+        RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
+    };
+
     //! Test impact analysis framework workspace configuration.
     struct WorkspaceConfig
     {
-        //! Temporary workspace configuration.
-        struct Temp
-        {
-            RepoPath m_root; //!< Path to the temporary workspace (cleaned prior to use).
-            RepoPath m_artifactDirectory; //!< Path to read and write runtime artifacts to and from.
-            RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
-        };
-
         //! Active persistent data workspace configuration.
         struct Active
         {
@@ -49,7 +49,7 @@ namespace TestImpact
             RepoPath m_sparTiaFile; //!< Paths to the test impact analysis data file.
         };
 
-        Temp m_temp;
+        ArtifactDir m_temp;
         Active m_active;
     };
 

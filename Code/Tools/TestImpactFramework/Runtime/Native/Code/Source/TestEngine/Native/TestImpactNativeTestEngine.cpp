@@ -118,7 +118,7 @@ namespace TestImpact
         const RepoPath& sourceDir,
         const RepoPath& targetBinaryDir,
         [[maybe_unused]]const RepoPath& cacheDir,
-        const RepoPath& artifactDir,
+        const ArtifactDir& artifactDir,
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
@@ -145,7 +145,8 @@ namespace TestImpact
 
     void NativeTestEngine::DeleteArtifactXmls() const
     {
-        DeleteFiles(m_artifactDir, "*.xml");
+        DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
+        DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.xml");
     }
 
     TestEngineRegularRunResult<NativeTestTarget> NativeTestEngine::RegularRun(

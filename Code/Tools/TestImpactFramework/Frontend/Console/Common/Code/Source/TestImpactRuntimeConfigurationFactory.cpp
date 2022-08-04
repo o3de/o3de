@@ -27,7 +27,8 @@ namespace TestImpact
             "platform",
             "build_config",
             "relative_paths",
-            "artifact_dir",
+            "run_artifact_dir",
+            "coverage_artifact_dir",
             "enumeration_cache_dir",
             "test_impact_data_file",
             "temp",
@@ -75,7 +76,8 @@ namespace TestImpact
             PlatformName,
             BuildConfig,
             RelativePaths,
-            ArtifactDir,
+            RunArtifactDir,
+            CoverageArtifactDir,
             EnumerationCacheDir,
             TestImpactDataFile,
             TempWorkspace,
@@ -161,16 +163,12 @@ namespace TestImpact
         return repoConfig;
     }
 
-    WorkspaceConfig::Temp ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace)
+    ArtifactDir ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace)
     {
-        WorkspaceConfig::Temp tempWorkspaceConfig;
-        tempWorkspaceConfig.m_root = tempWorkspace[Config::Keys[Config::Root]].GetString();
-        tempWorkspaceConfig.m_artifactDirectory =
-            GetAbsPathFromRelPath(
-                tempWorkspaceConfig.m_root, tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::ArtifactDir]].GetString());
-        tempWorkspaceConfig.m_enumerationCacheDirectory = GetAbsPathFromRelPath(
-            tempWorkspaceConfig.m_root,
-            tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::EnumerationCacheDir]].GetString());
+        ArtifactDir tempWorkspaceConfig;
+        tempWorkspaceConfig.m_testRunArtifactDirectory = tempWorkspace[Config::Keys[Config::RunArtifactDir]].GetString();
+        tempWorkspaceConfig.m_coverageArtifactDirectory = tempWorkspace[Config::Keys[Config::CoverageArtifactDir]].GetString();
+        tempWorkspaceConfig.m_enumerationCacheDirectory = tempWorkspace[Config::Keys[Config::EnumerationCacheDir]].GetString();
         return tempWorkspaceConfig;
     }
 

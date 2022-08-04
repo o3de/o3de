@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
@@ -23,10 +24,10 @@ namespace TestImpact
         : public TestRunnerWithCoverage<TestRunWithCoverageJobData, PythonTestCoverage>
     {
     public:
-        PythonTestRunnerBase(const RepoPath& artifactDir);
+        PythonTestRunnerBase(const ArtifactDir& artifactDir);
 
     protected:
         typename PayloadMap PayloadMapProducer(const typename JobDataMap& jobDataMap) override;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
     };
 } // namespace TestImpact

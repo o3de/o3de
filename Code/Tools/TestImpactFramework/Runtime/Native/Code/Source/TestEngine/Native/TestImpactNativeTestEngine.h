@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
@@ -44,7 +45,7 @@ namespace TestImpact
             const RepoPath& sourceDir,
             const RepoPath& targetBinaryDir,
             const RepoPath& cacheDir,
-            const RepoPath& artifactDir,
+            const ArtifactDir& artifactDir,
             const RepoPath& testRunnerBinary,
             const RepoPath& instrumentBinary,
             size_t maxConcurrentRuns);
@@ -120,6 +121,6 @@ namespace TestImpact
         AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunner> m_instrumentedTestRunner;
         AZStd::unique_ptr<NativeRegularTestRunner> m_testRunner;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
     };
 } // namespace TestImpact

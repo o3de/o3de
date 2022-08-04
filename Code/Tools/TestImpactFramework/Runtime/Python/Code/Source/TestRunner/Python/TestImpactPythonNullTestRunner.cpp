@@ -37,7 +37,7 @@ namespace TestImpact
             {
                 JobMeta meta;
                 meta.m_result = JobResult::FailedToExecute;
-                Job job(jobInfo, JobMeta{}, {});
+                Job job(jobInfo, JobMeta{}, AZStd::nullopt);
                 jobs.push_back(job);
             }
         }

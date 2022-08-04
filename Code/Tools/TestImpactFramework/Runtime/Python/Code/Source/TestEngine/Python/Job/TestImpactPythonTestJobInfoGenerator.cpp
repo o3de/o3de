@@ -15,11 +15,11 @@
 namespace TestImpact
 {
     PythonTestRunJobInfoGenerator::PythonTestRunJobInfoGenerator(
-        RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
-        : m_repoDir(AZStd::move(repoDir))
-        , m_pythonBinary(AZStd::move(pythonBinary))
-        , m_buildDir(AZStd::move(buildDir))
-        , m_artifactDir(AZStd::move(artifactDir))
+        const RepoPath& repoDir, const RepoPath& pythonBinary, const RepoPath& buildDir, const ArtifactDir& artifactDir)
+        : m_repoDir(repoDir)
+        , m_pythonBinary(pythonBinary)
+        , m_buildDir(buildDir)
+        , m_artifactDir(artifactDir)
     {
     }
 
@@ -36,7 +36,8 @@ namespace TestImpact
     PythonTestRunner::JobInfo PythonTestRunJobInfoGenerator::GenerateJobInfo(
         const PythonTestTarget* testTarget, PythonTestRunner::JobInfo::Id jobId) const
     {
-        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir / RepoPath(CompileParentFolderName(testTarget)));
+        const auto parentFolderName = RepoPath(CompileParentFolderName(testTarget));
+        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir.m_testRunArtifactDirectory);
         //const Command args = {
         //    AZStd::string::format(
         //        "\"%s\" " // 1. Python binary
@@ -53,6 +54,6 @@ namespace TestImpact
 
         const Command args = { testTarget->GetCommand() };
 
-        return JobInfo(jobId, args, JobData(runArtifact, m_artifactDir));
+        return JobInfo(jobId, args, JobData(runArtifact, m_artifactDir.m_coverageArtifactDirectory / parentFolderName));
     }
 } // namespace TestImpact

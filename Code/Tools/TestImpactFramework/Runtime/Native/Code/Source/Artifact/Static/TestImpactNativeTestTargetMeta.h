@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRepoPath.h>
+
 #include <Artifact/Static/TestImpactTestSuiteMeta.h>
 
 #include <AzCore/std/containers/unordered_map.h>

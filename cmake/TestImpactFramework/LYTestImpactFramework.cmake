@@ -162,6 +162,7 @@ endfunction()
 # \arg:TEST_NAME name of test
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
 function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
+
     # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
     list(LENGTH test_components num_test_components)
@@ -233,7 +234,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"command\": \"${test_command}\", \"timeout\": ${test_timeout} }")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout}, \"command\": \"${test_command}\" }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")

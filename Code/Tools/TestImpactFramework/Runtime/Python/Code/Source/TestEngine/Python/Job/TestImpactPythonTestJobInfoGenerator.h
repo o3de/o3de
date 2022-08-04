@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
+
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
@@ -24,7 +26,7 @@ namespace TestImpact
         //! @param buildDir Path to where the target binaries are found.
         //! @param artifactDir Path to the transient directory where test artifacts are produced.
         PythonTestRunJobInfoGenerator(
-            RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
+            const RepoPath& repoDir, const RepoPath& pythonBinary, const RepoPath& buildDir, const ArtifactDir& artifactDir);
 
         //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
@@ -35,6 +37,6 @@ namespace TestImpact
         RepoPath m_repoDir;
         RepoPath m_pythonBinary;
         RepoPath m_buildDir;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
     };
 } // namespace TestImpact

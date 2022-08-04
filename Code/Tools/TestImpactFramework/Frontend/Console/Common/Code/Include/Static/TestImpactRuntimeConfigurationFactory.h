@@ -17,7 +17,7 @@ namespace TestImpact
     ExcludedTargets ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes);
 
     //!
-    WorkspaceConfig::Temp ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace);
+    ArtifactDir ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace);
 
     //!
     WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace);

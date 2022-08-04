@@ -15,14 +15,14 @@
 namespace TestImpact
 {
     NativeTestEnumerationJobInfoGenerator::NativeTestEnumerationJobInfoGenerator(
-        RepoPath targetBinaryDir,
-        RepoPath cacheDir,
-        RepoPath artifactDir,
-        RepoPath testRunnerBinary)
-        : m_targetBinaryDir(AZStd::move(targetBinaryDir))
-        , m_cacheDir(AZStd::move(cacheDir))
-        , m_artifactDir(AZStd::move(artifactDir))
-        , m_testRunnerBinary(AZStd::move(testRunnerBinary))
+        const RepoPath& targetBinaryDir,
+        const RepoPath& cacheDir,
+        const ArtifactDir& artifactDir,
+        const RepoPath& testRunnerBinary)
+        : m_targetBinaryDir(targetBinaryDir)
+        , m_cacheDir(cacheDir)
+        , m_artifactDir(artifactDir)
+        , m_testRunnerBinary(testRunnerBinary)
     {
     }
 
@@ -32,7 +32,7 @@ namespace TestImpact
     {
         using Cache = NativeTestEnumerator::JobData::Cache;
 
-        const auto enumerationArtifact = GenerateTargetEnumerationArtifactFilePath(testTarget, m_artifactDir);
+        const auto enumerationArtifact = GenerateTargetEnumerationArtifactFilePath(testTarget, m_artifactDir.m_enumerationCacheDirectory);
         const Command args = { AZStd::string::format(
             "%s --gtest_list_tests --gtest_output=xml:\"%s\"",
             GenerateLaunchArgument(testTarget, m_targetBinaryDir, m_testRunnerBinary).c_str(), enumerationArtifact.c_str()) };
@@ -53,18 +53,18 @@ namespace TestImpact
     }
 
     NativeRegularTestRunJobInfoGenerator::NativeRegularTestRunJobInfoGenerator(
-        RepoPath sourceDir, RepoPath targetBinaryDir, RepoPath artifactDir, RepoPath testRunnerBinary)
-        : m_sourceDir(AZStd::move(sourceDir))
-        , m_targetBinaryDir(AZStd::move(targetBinaryDir))
-        , m_artifactDir(AZStd::move(artifactDir))
-        , m_testRunnerBinary(AZStd::move(testRunnerBinary))
+        const RepoPath& sourceDir, const RepoPath& targetBinaryDir, const ArtifactDir& artifactDir, const RepoPath& testRunnerBinary)
+        : m_sourceDir(sourceDir)
+        , m_targetBinaryDir(targetBinaryDir)
+        , m_artifactDir(artifactDir)
+        , m_testRunnerBinary(testRunnerBinary)
     {
     }
 
     NativeRegularTestRunner::JobInfo NativeRegularTestRunJobInfoGenerator::GenerateJobInfo(
         const NativeTestTarget* testTarget, NativeRegularTestRunner::JobInfo::Id jobId) const
     {
-        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir);
+        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir.m_testRunArtifactDirectory);
         const Command args = { AZStd::string::format(
             "%s --gtest_output=xml:\"%s\"", GenerateLaunchArgument(testTarget, m_targetBinaryDir, m_testRunnerBinary).c_str(),
             runArtifact.c_str()) };
@@ -73,26 +73,26 @@ namespace TestImpact
     }
 
     NativeInstrumentedTestRunJobInfoGenerator::NativeInstrumentedTestRunJobInfoGenerator(
-        RepoPath sourceDir,
-        RepoPath targetBinaryDir,
-        RepoPath artifactDir,
-        RepoPath testRunnerBinary,
-        RepoPath instrumentBinary,
+        const RepoPath& sourceDir,
+        const RepoPath& targetBinaryDir,
+        const ArtifactDir& artifactDir,
+        const RepoPath& testRunnerBinary,
+        const RepoPath& instrumentBinary,
         CoverageLevel coverageLevel)
-        : m_sourceDir(AZStd::move(sourceDir))
-        , m_targetBinaryDir(AZStd::move(targetBinaryDir))
-        , m_artifactDir(AZStd::move(artifactDir))
-        , m_testRunnerBinary(AZStd::move(testRunnerBinary))
-        , m_instrumentBinary(AZStd::move(instrumentBinary))
-        , m_coverageLevel(AZStd::move(coverageLevel))
+        : m_sourceDir(sourceDir)
+        , m_targetBinaryDir(targetBinaryDir)
+        , m_artifactDir(artifactDir)
+        , m_testRunnerBinary(testRunnerBinary)
+        , m_instrumentBinary(instrumentBinary)
+        , m_coverageLevel(coverageLevel)
     {
     }
 
     NativeInstrumentedTestRunner::JobInfo NativeInstrumentedTestRunJobInfoGenerator::GenerateJobInfo(
         const NativeTestTarget* testTarget, NativeInstrumentedTestRunner::JobInfo::Id jobId) const
     {
-        const auto coverageArtifact = GenerateTargetCoverageArtifactFilePath(testTarget, m_artifactDir);
-        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir);
+        const auto coverageArtifact = GenerateTargetCoverageArtifactFilePath(testTarget, m_artifactDir.m_coverageArtifactDirectory);
+        const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir.m_testRunArtifactDirectory);
         const Command args = {
             AZStd::string::format(
                 "\"%s\" " // 1. Instrumented test runner

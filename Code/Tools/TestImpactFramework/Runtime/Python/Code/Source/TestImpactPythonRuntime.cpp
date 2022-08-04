@@ -89,7 +89,8 @@ namespace TestImpact
             m_config.m_commonConfig.m_repo.m_root,
             m_config.m_testEngine.m_testRunner.m_pythonCmd,
             m_config.m_commonConfig.m_repo.m_build,
-            m_config.m_workspace.m_temp.m_artifactDirectory);
+            m_config.m_workspace.m_temp,
+            true);
 
         try
         {

@@ -43,11 +43,18 @@ namespace TestImpact
         using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
     };
 
-    PythonTestEngine::PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir)
+    PythonTestEngine::PythonTestEngine(
+        const RepoPath& repoDir,
+        const RepoPath& pythonBinary,
+        const RepoPath& buildDir,
+        const ArtifactDir& artifactDir,
+        bool useNullTestRunner)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
               AZStd::move(repoDir), AZStd::move(pythonBinary), AZStd::move(buildDir), artifactDir))
         , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
+        , m_nullTestRunner(AZStd::make_unique<PythonNullTestRunner>(artifactDir))
         , m_artifactDir(artifactDir)
+        , m_useNullTestRunner(useNullTestRunner)
     {
     }
 
@@ -55,7 +62,8 @@ namespace TestImpact
 
     void PythonTestEngine::DeleteArtifactXmls() const
     {
-        DeleteFiles(m_artifactDir, "*.xml");
+        DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
+        DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.pycoverage");
     }
 
     TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
@@ -90,50 +98,33 @@ namespace TestImpact
 
             return TestImpact::ProcessCallbackResult::Continue;
         };
-    
-        return GenerateJobInfosAndRunTests(
-            m_testRunner.get(),
-            m_testJobInfoGenerator.get(),
-            testTargets,
-            PythonInstrumentedTestRunnerErrorCodeChecker,
-            executionFailurePolicy,
-            testFailurePolicy,
-            targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            callback,
-            stdPrint);
-    }
 
-    TestEngineInstrumentedRunResult<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>
-    PythonTestEngine::NullRun(
-        [[maybe_unused]] const AZStd::vector<const PythonTestTarget*>& testTargets,
-        [[maybe_unused]] Policy::ExecutionFailure executionFailurePolicy,
-        [[maybe_unused]] Policy::IntegrityFailure integrityFailurePolicy,
-        [[maybe_unused]] Policy::TestFailure testFailurePolicy,
-        [[maybe_unused]] Policy::TargetOutputCapture targetOutputCapture,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
-    {
-        const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
-                                 [[maybe_unused]] const AZStd::string& stdOutput,
-                                 [[maybe_unused]] const AZStd::string& stdError,
-                                 AZStd::string&& stdOutDelta,
-                                 [[maybe_unused]] AZStd::string&& stdErrDelta)
+        if (m_useNullTestRunner)
         {
-            AZ_Printf("%s", stdOutDelta.c_str());
-            return TestImpact::ProcessCallbackResult::Continue;
-        };
-
-        m_nullTestRunner->RunTests(
-            m_testJobInfoGenerator->GenerateJobInfos(testTargets),
-            StdOutputRouting::ToParent,
-            StdErrorRouting::ToParent,
-            testTargetTimeout,
-            globalTimeout,
-            AZStd::nullopt,
-            stdPrint);
-        return { TestSequenceResult::Success, {} };
+            m_nullTestRunner->RunTests(
+                m_testJobInfoGenerator->GenerateJobInfos(testTargets),
+                StdOutputRouting::ToParent,
+                StdErrorRouting::ToParent,
+                testTargetTimeout,
+                globalTimeout,
+                AZStd::nullopt,
+                stdPrint);
+            return { TestSequenceResult::Success, {} };
+        }
+        else
+        {
+            return GenerateJobInfosAndRunTests(
+                m_testRunner.get(),
+                m_testJobInfoGenerator.get(),
+                testTargets,
+                PythonInstrumentedTestRunnerErrorCodeChecker,
+                executionFailurePolicy,
+                testFailurePolicy,
+                targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                callback,
+                stdPrint);
+        }
     }
 } // namespace TestImpact

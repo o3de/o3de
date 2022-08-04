@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 
@@ -34,7 +35,12 @@ namespace TestImpact
         using TestTargetType = PythonTestTarget;
         using TestCaseCoverageType = PythonTestCoverage;
         //!
-        PythonTestEngine(RepoPath repoDir, RepoPath pythonBinary, RepoPath buildDir, RepoPath artifactDir);
+        PythonTestEngine(
+            const RepoPath& repoDir,
+            const RepoPath& pythonBinary,
+            const RepoPath& buildDir,
+            const ArtifactDir& artifactDir,
+            bool useNullTestRunner = false);
 
         ~PythonTestEngine();
 
@@ -49,18 +55,6 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
-
-        //!
-        [[nodiscard]] TestEngineInstrumentedRunResult<TestTargetType, TestCaseCoverageType> NullRun(
-            const AZStd::vector<const PythonTestTarget*>& testTargets,
-            Policy::ExecutionFailure executionFailurePolicy,
-            Policy::IntegrityFailure integrityFailurePolicy,
-            Policy::TestFailure testFailurePolicy,
-            Policy::TargetOutputCapture targetOutputCapture,
-            AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const;
-
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
         void DeleteArtifactXmls() const;
@@ -68,6 +62,7 @@ namespace TestImpact
         AZStd::unique_ptr<PythonTestRunJobInfoGenerator> m_testJobInfoGenerator;
         AZStd::unique_ptr<PythonTestRunner> m_testRunner;
         AZStd::unique_ptr<PythonNullTestRunner> m_nullTestRunner;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
+        bool m_useNullTestRunner = false;
     };
 } // namespace TestImpact

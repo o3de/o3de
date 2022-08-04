@@ -14,7 +14,7 @@
 
 namespace TestImpact
 {
-    PythonTestRunnerBase::PythonTestRunnerBase(const RepoPath& artifactDir)
+    PythonTestRunnerBase::PythonTestRunnerBase(const ArtifactDir& artifactDir)
         : TestRunnerWithCoverage(1)
         , m_artifactDir(artifactDir)
     {
