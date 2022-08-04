@@ -603,6 +603,14 @@ namespace Multiplayer
                 controlledEntity = spawner->OnPlayerJoin(userId, datum);
                 if (controlledEntity.Exists())
                 {
+                    if (!controlledEntity.GetNetBindComponent()->IsNetEntityRoleAutonomous())
+                    {
+                        AZLOG_ERROR("IMultiplayerSpawner::OnPlayerJoined returned a controlled entity for user id %i that isn't marked as autonomous. "
+                            "Please use NetworkEntityManager::CreateAutomonousPlayerImmediate or enable autonomy by hand before activating "
+                            "the controlled entity.",
+                            userId);
+                    }
+
                     StartServerToClientReplication(userId, controlledEntity, connection);
                 }
                 else
@@ -1002,7 +1010,16 @@ namespace Multiplayer
                 constexpr uint64_t userId = 0;
 
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
-                if (!controlledEntity.Exists())
+                if (controlledEntity.Exists())
+                {
+                    if (!controlledEntity.GetNetBindComponent()->IsNetEntityRoleAutonomous())
+                    {
+                        AZLOG_ERROR("IMultiplayerSpawner::OnPlayerJoined returned a controlled entity for user id 0 (the client currently hosting this client-server) that isn't marked as autonomous. "
+                            "Please use NetworkEntityManager::CreateAutomonousPlayerImmediate or enable autonomy by hand before activating "
+                            "the controlled entity.");
+                    }
+                }
+                else
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
                     m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
