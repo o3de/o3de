@@ -47,7 +47,7 @@ namespace AZ
         static_assert(AZ_ARRAY_SIZE(CubeMapSpecularFileSuffixes) == aznumeric_cast<uint32_t>(CubeMapSpecularQualityLevel::Count),
             "CubeMapSpecularFileSuffixes must have the same number of entries as CubeMapSpecularQualityLevel");
 
-        static const char* CubeMapDiffuseFileSuffix = "_ibldiffusecm.dds";
+        static constexpr const char* CubeMapDiffuseFileSuffix = "_ibldiffusecm.dds";
 
         // Mixin class that provides cubemap capture capability for editor components
         class EditorCubeMapRenderer

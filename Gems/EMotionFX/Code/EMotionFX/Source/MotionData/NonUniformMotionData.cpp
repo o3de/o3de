@@ -1238,12 +1238,21 @@ namespace EMotionFX
                 const float x = transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
                 const float y = transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
                 const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
-
                 m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
 
                 if (extractRotation)
                 {
-                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(AZ::Quaternion::CreateIdentity());
+                    const AZ::Quaternion sampleJointRotation = m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].ToQuaternion();
+
+                    // Final root rotation only keeps the rotation around Z-axis
+                    const AZ::Vector3 rootRotEuler = AZ::ConvertQuaternionToEulerRadians(sampleJointRotation);
+                    const AZ::Quaternion finalRootRotation = AZ::ConvertEulerRadiansToQuaternion(AZ::Vector3(0, 0, rootRotEuler.GetZ()));
+
+                    // Calculate the final sample rotation
+                    const AZ::Quaternion finalSampleRotation = finalRootRotation.GetInverseFull() * sampleJointRotation;
+
+                    m_jointData[rootJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalRootRotation);
+                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalSampleRotation);
                 }
             }
         }

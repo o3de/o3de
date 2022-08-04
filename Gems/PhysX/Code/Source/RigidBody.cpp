@@ -9,6 +9,7 @@
 #include <Source/RigidBody.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/utility/as_const.h>
 #include <AzCore/Math/MathStringConversions.h>
@@ -46,6 +47,39 @@ namespace PhysX
                 || geometryType == physx::PxGeometryType::eBOX
                 || geometryType == physx::PxGeometryType::eCAPSULE
                 || geometryType == physx::PxGeometryType::eCONVEXMESH;
+        }
+    }
+
+    void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PhysX::RigidBodyConfiguration>()
+                ->Version(1)
+                ->Field("SolverPositionIterations", &PhysX::RigidBodyConfiguration::m_solverPositionIterations)
+                ->Field("SolverVelocityIterations", &PhysX::RigidBodyConfiguration::m_solverVelocityIterations)
+                ;
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::RigidBodyConfiguration>("PhysX-specific Rigid Body Configuration",
+                    "Additional Rigid Body settings specific to PhysX.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PhysX::RigidBodyConfiguration::m_solverPositionIterations,
+                        "Solver Position Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &PhysX::RigidBodyConfiguration::m_solverVelocityIterations,
+                        "Solver Velocity Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ;
+            }
         }
     }
 

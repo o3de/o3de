@@ -184,8 +184,7 @@ namespace AZ
         DataNode* newNode;
         if (m_currentNode)
         {
-            m_currentNode->m_children.push_back();
-            newNode = &m_currentNode->m_children.back();
+            newNode = &m_currentNode->m_children.emplace_back();
         }
         else
         {

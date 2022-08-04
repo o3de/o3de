@@ -284,6 +284,11 @@ namespace WhiteBox
         return interactionHandled;
     }
 
+    AZStd::string EditorWhiteBoxComponentMode::GetComponentModeName() const
+    {
+        return "White Box Edit Mode";
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
     {
         return AZStd::visit(
