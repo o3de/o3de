@@ -508,6 +508,28 @@ namespace AzToolsFramework
         return actionIterator->second.GetAction();
     }
 
+    EditorAction* ActionManager::GetEditorAction(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return &actionIterator->second;
+    }
+
+    const EditorAction* ActionManager::GetEditorActionConst(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return &actionIterator->second;
+    }
+
     bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const
     {
         auto actionIterator = m_actions.find(actionIdentifier);

@@ -12,6 +12,7 @@ set(FILES
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerInternalInterface.h
     ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
@@ -29,11 +30,13 @@ set(FILES
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
     ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/EditorToolBar.cpp
     ActionManager/ToolBar/EditorToolBar.h
     ActionManager/ToolBar/ToolBarManager.cpp
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
+    ActionManager/ToolBar/ToolBarManagerInternalInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
