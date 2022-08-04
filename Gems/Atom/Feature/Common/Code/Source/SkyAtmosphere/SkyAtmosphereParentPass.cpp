@@ -41,7 +41,7 @@ namespace AZ::Render
     {
         if (auto pass = GetPass(id))
         {
-            RemoveChild(pass);
+            pass->QueueForRemoval();
         }
     }
 
