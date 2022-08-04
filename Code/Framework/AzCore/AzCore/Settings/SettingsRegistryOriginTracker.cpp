@@ -119,14 +119,27 @@ namespace AZ
             if (auto type = m_settingsRegistry.GetType(key);
                 type != AZ::SettingsRegistryInterface::Type::NoType)
             {
-                // Retrieve the JSON value as a string using the SettingsRegistryMergeUtils::DumpSettingsRegistryToStream function
+                // If the Type is an array or object just add a marker value instead of dumping the entire object
                 AZStd::string settingsValue;
-                AZ::IO::ByteContainerStream stringWriter(&settingsValue);
-                AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
-                dumperSettings.m_prettifyOutput = false;
-                AZ_Verify(AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(m_settingsRegistry, key, stringWriter, dumperSettings),
-                    R"(Failed to Dump SettingsRegistry at key "%.*s")", AZ_STRING_ARG(key));
-
+                if (type == AZ::SettingsRegistryInterface::Type::Object)
+                {
+                    constexpr AZStd::string_view ObjectMarkerValue = "<object>";
+                    settingsValue = ObjectMarkerValue;
+                }
+                else if (type == AZ::SettingsRegistryInterface::Type::Array)
+                {
+                    constexpr AZStd::string_view ArrayMarkerValue = "<array>";
+                    settingsValue = ArrayMarkerValue;
+                }
+                else
+                {
+                    // Retrieve the JSON value as a string using the SettingsRegistryMergeUtils::DumpSettingsRegistryToStream function
+                    AZ::IO::ByteContainerStream stringWriter(&settingsValue);
+                    AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+                    dumperSettings.m_prettifyOutput = false;
+                    AZ_Verify(AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(m_settingsRegistry, key, stringWriter, dumperSettings),
+                        R"(Failed to Dump SettingsRegistry at key "%.*s")", AZ_STRING_ARG(key));
+                }
                 // The settings at the json pointer path has been written to the string writer as JSON
                 // So emplace it into the settings value of SettingsRegistryOrigin
                 settingsRegistryOrigin.m_settingsValue.emplace(settingsValue);
