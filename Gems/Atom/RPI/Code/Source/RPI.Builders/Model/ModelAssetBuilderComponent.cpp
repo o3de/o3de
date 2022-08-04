@@ -1129,9 +1129,9 @@ namespace AZ
                         // common case is that everything assigned to the same material uid likely matches already anyways
                         if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
                         {
-                            // Remove the next mesh in the list if it doesn't match the current one
+                            // Don't merge the next mesh in the list if it doesn't match the current one
                             finalMeshList.emplace_back(*(meshIter + 1));
-                            meshIter = meshList.erase(meshIter + 1);
+                            meshList.erase(meshIter + 1);
                         }
                         else
                         {
