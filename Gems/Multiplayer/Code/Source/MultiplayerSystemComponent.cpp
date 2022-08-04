@@ -603,20 +603,14 @@ namespace Multiplayer
                 controlledEntity = spawner->OnPlayerJoin(userId, datum);
                 if (controlledEntity.Exists())
                 {
-                    if (!controlledEntity.GetNetBindComponent()->IsNetEntityRoleAutonomous())
-                    {
-                        AZLOG_ERROR("IMultiplayerSpawner::OnPlayerJoined returned a controlled entity for user id %i that isn't marked as autonomous. "
-                            "Please use NetworkEntityManager::CreateAutomonousPlayerImmediate or enable autonomy by hand before activating "
-                            "the controlled entity.",
-                            userId);
-                    }
-
+					EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
                     StartServerToClientReplication(userId, controlledEntity, connection);
                 }
                 else
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
+					// This can happen if IMultiplayerSpawn depends on a level being loaded, but the client connects to the server before the server has started a level.
+                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, connection });
                 }
             }
             else
@@ -887,22 +881,23 @@ namespace Multiplayer
             // Signal to session management that a user has left the server
             if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
-                if (IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get())
+                IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
+                if (spawner)
                 {
                     // Check if this disconnected player was waiting to be spawned, and therefore, doesn't have a controlled player entity yet.
-                    bool spawnedPlayerIsLeaving = true;
+                    bool playerSpawned = true;
                     for (auto it = m_playersWaitingToBeSpawned.begin(); it != m_playersWaitingToBeSpawned.end(); ++it)
                     {
-                        if (it->m_agent.m_id == connection->GetConnectionId())
+                        if (it->connection && it->connection->GetConnectionId() == connection->GetConnectionId())
                         {
                             m_playersWaitingToBeSpawned.erase(it);
-                            spawnedPlayerIsLeaving = false;
+                            playerSpawned = false;
                             break;
                         }
                     }
 
                     // Alert IMultiplayerSpawner that our spawned player has left.
-                    if (spawnedPlayerIsLeaving)
+                    if (playerSpawned)
                     {
                         ServerToClientConnectionData* connectionData =
                             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
@@ -1010,19 +1005,14 @@ namespace Multiplayer
                 constexpr uint64_t userId = 0;
 
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
-                if (controlledEntity.Exists())
-                {
-                    if (!controlledEntity.GetNetBindComponent()->IsNetEntityRoleAutonomous())
-                    {
-                        AZLOG_ERROR("IMultiplayerSpawner::OnPlayerJoined returned a controlled entity for user id 0 (the client currently hosting this client-server) that isn't marked as autonomous. "
-                            "Please use NetworkEntityManager::CreateAutomonousPlayerImmediate or enable autonomy by hand before activating "
-                            "the controlled entity.");
-                    }
-                }
+				if (controlledEntity.Exists())
+				{
+					EnableAutonomousControl(controlledEntity, InvalidConnectionId);
+				}
                 else
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
+                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, nullptr });
                 }
             }
             else
@@ -1289,6 +1279,43 @@ namespace Multiplayer
         }
     }
 
+    void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId)
+    {
+        if (!entityHandle.Exists())
+        {
+            AZLOG_WARN("Attempting to enable autonomous control for an invalid multiplayer entity");
+            return;
+        }
+
+        entityHandle.GetNetBindComponent()->SetOwningConnectionId(ownerConnectionId);
+
+        // An invalid connection id means this player is controlled by us (the host); not controlled by some connected client.
+        if (ownerConnectionId == InvalidConnectionId)
+        {
+            entityHandle.GetNetBindComponent()->EnablePlayerHostAutonomy(true);
+        }
+
+        if (auto* hierarchyComponent = entityHandle.FindComponent<NetworkHierarchyRootComponent>())
+        {
+            for (AZ::Entity* subEntity : hierarchyComponent->GetHierarchicalEntities())
+            {
+                NetworkEntityHandle subEntityHandle = NetworkEntityHandle(subEntity);
+                NetBindComponent* subEntityNetBindComponent = subEntityHandle.GetNetBindComponent();
+
+                if (subEntityNetBindComponent != nullptr)
+                {
+                    subEntityNetBindComponent->SetOwningConnectionId(ownerConnectionId);
+
+                    // An invalid connection id means this player is controlled by us (the host); not controlled by some connected client.
+                    if (ownerConnectionId == InvalidConnectionId)
+                    {
+                        subEntityNetBindComponent->EnablePlayerHostAutonomy(true);
+                    }
+                }
+            }
+        }
+    }
+
     void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
         // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
@@ -1301,17 +1328,21 @@ namespace Multiplayer
 
         for (const auto& playerWaitingToBeSpawned : m_playersWaitingToBeSpawned)
         {
-            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(playerWaitingToBeSpawned.m_userId, playerWaitingToBeSpawned.m_agent);
-            if (!controlledEntity.Exists())
+            NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(playerWaitingToBeSpawned.userId, playerWaitingToBeSpawned.agent);
+            if (controlledEntity.Exists())
             {
-                AZLOG_WARN("Attempting to spawn networked player on level load failed. IMultiplayerSpawner did not return a valid player entity for user id: %i!", playerWaitingToBeSpawned.m_userId);
+                EnableAutonomousControl(controlledEntity, playerWaitingToBeSpawned.agent.m_id);
+            }
+            else
+            {
+                AZLOG_WARN("Attempting to spawn network player on level load failed. IMultiplayerSpawner did not return a controlled entity.");
                 return;
             }
 
             if ((GetAgentType() == MultiplayerAgentType::ClientServer || GetAgentType() == MultiplayerAgentType::DedicatedServer)
-                && playerWaitingToBeSpawned.m_agent.m_agentType == MultiplayerAgentType::Client)
+                && playerWaitingToBeSpawned.agent.m_agentType == MultiplayerAgentType::Client)
             {
-                StartServerToClientReplication(playerWaitingToBeSpawned.m_userId, controlledEntity, playerWaitingToBeSpawned.m_connection);
+                StartServerToClientReplication(playerWaitingToBeSpawned.userId, controlledEntity, playerWaitingToBeSpawned.connection);
             }
         }
 

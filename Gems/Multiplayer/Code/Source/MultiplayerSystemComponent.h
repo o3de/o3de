@@ -151,6 +151,7 @@ namespace Multiplayer
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
         static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
+        static void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
