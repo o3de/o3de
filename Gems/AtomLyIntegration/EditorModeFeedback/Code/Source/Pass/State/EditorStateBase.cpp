@@ -86,4 +86,16 @@ namespace AZ::Render
     {
         m_enabled = enabled;
     }
+
+    Name EditorStateBase::GetGeneratedChildPassName(size_t index) const
+    {
+        if (index >= m_childPassNameList.size())
+        {
+            AZ_Error("EditorStateBase", false, "Couldn't retrieve child pass name for index %zu", index);
+            return Name("");
+        }
+
+        return Name(
+            AZStd::string::format("%sChildPass%zu_%s", GetPassTemplateName().GetCStr(), index, m_childPassNameList[index].GetCStr()));
+    }
 } // namespace AZ::Render

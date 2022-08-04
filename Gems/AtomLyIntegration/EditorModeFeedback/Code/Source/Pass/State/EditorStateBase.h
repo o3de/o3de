@@ -89,16 +89,7 @@ namespace AZ::Render
         void SetEnabled(bool enabled) override;
 
         //! Returns the generated name for the specified child pass.
-        Name GetGeneratedChildPassName(size_t index) const
-        {
-            if(index >= m_childPassNameList.size())
-            {
-                AZ_Error("EditorStateBase", false, "Couldn't retrieve child pass name for index %zu", index);
-                return Name("");
-            }
-
-            return Name(AZStd::string::format("%sChildPass%u_%s", GetPassTemplateName().GetCStr(), index, m_childPassNameList[index].GetCStr()));
-        }
+        Name GetGeneratedChildPassName(size_t index) const;
 
     protected:
         //! Helper function for finding the specified child effect pass for this editor state effect pass.
