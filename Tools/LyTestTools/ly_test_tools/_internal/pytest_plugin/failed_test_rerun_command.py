@@ -59,8 +59,9 @@ def _format_cmd(launcher_cmd, test_path, nodeid):
     elif os.path.split(test_path)[-1] in nodeid:
         test_id_argument = os.path.abspath(
             os.path.join(os.path.dirname(test_path), nodeid))
-    else: # TODO SOMETHING IS WRONG HERE
-        test_id_argument = os.path.abspath(test_path)
+    else:
+        test_id_argument = os.path.abspath(
+            os.path.join(test_path, os.path.normpath(nodeid)))
 
     return f"{launcher_cmd}{test_id_argument}"
 
