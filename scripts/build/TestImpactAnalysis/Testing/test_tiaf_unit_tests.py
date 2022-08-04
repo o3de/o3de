@@ -10,6 +10,7 @@
 from logging import getLogger
 from typing import Counter
 from test_impact import NativeTestImpact, BaseTestImpact, PythonTestImpact
+from tiaf_driver import SUPPORTED_RUNTIMES
 from tiaf_driver import main
 import pytest
 logging = getLogger("tiaf")
@@ -37,6 +38,56 @@ class ConcreteBaseTestImpact(BaseTestImpact):
     @property
     def runtime_type(self):
         return self._runtime_type
+
+
+class TestTiafDriver():
+
+    def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, main_args, mock_runtime, mocker):
+        # given:
+        # Default args + mars_index_prefix being provided,
+        # and transmit_report_to_mars is patched to intercept the call.
+        main_args['mars_index_prefix'] = "test_prefix"
+        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
+        # when:
+        # We run Tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(main_args)
+
+        # then:
+        # Tiaf should call the transmit function.
+        mock_mars.assert_called()
+
+    def test_run_Tiaf_mars_index_prefix_is_not_supplied(self, caplog, main_args, mock_runtime, mocker):
+        # given:
+        # Default_args - mars index is not supplied.
+        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
+        # when:
+        # We run tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(main_args)
+
+        # then:
+        # Tiaf should not call the transmit function.
+        mock_mars.assert_not_called()
+
+    @pytest.mark.parametrize("runtime_type,mock_type", [("native", "test_impact.native_test_impact.NativeTestImpact.__init__"), ("python", "test_impact.python_test_impact.PythonTestImpact.__init__")])
+    def test_run_Tiaf_driver_runtime_type_selection(self, caplog, tiaf_args, mock_runtime, mocker, runtime_type, mock_type):
+        # given:
+        # Default args + runtime_type
+        tiaf_args['runtime_type'] = runtime_type
+        runtime_class = SUPPORTED_RUNTIMES[runtime_type]
+        testMock = mocker.patch(mock_type, side_effect=SystemExit)
+        
+        # when
+        # We run tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(tiaf_args)
+
+        # then:
+        # Tiaf should instantiate a TestImpact object of the correct runtime type
+        testMock.assert_called()
 
 
 class TestTiafInitialiseStorage():
@@ -259,36 +310,6 @@ class TestTIAFBaseUnitTests():
         # then:
         # tiaf.destination_commit should equal our commit parameter.
         assert tiaf.destination_commit == commit
-
-    def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
-        # given:
-        # Default args + mars_index_prefix being provided,
-        # and transmit_report_to_mars is patched to intercept the call.
-        tiaf_args['mars_index_prefix'] = "test_prefix"
-        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
-
-        # when:
-        # We run Tiaf through the driver.
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        # Tiaf should call the transmit function.
-        mock_mars.assert_called()
-
-    def test_run_Tiaf_mars_index_prefix_is_not_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
-        # given:
-        # Default_args - mars index is not supplied.
-        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
-
-        # when:
-        # We run tiaf through the driver.
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        # Tiaf should not call the transmit function.
-        mock_mars.assert_not_called()
 
     def test_create_TestImpact_valid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
