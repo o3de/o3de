@@ -9,7 +9,6 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -212,7 +211,7 @@ namespace AzToolsFramework
                     // selecting based on 2d icon - should only do it when visible and not selected
                     const AZ::Vector3 ndcPoint = AzFramework::WorldToScreenNdc(entityPosition, cameraView, cameraProjection);
                     const AzFramework::ScreenPoint screenPosition =
-                        AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), cameraState.m_viewportSize);
+                        AzFramework::ScreenPointFromNdc(AZ::Vector2(ndcPoint), cameraState.m_viewportSize);
 
                     const float distanceFromCamera = cameraState.m_position.GetDistance(entityPosition);
                     const auto iconRange = GetIconSize(distanceFromCamera) * 0.5f;
