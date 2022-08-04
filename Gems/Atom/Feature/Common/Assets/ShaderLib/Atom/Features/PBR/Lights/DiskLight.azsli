@@ -212,7 +212,7 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
 {    
     lightingData.tileIterator.LoadAdvance();
-            
+
     while( !lightingData.tileIterator.IsDone() )
     {
         uint currLightIndex = lightingData.tileIterator.GetValue();

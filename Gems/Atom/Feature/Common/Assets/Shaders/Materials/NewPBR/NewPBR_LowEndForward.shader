@@ -47,5 +47,5 @@
       ]
     },
 
-    "DrawList" : "forward"
+    "DrawList" : "lowEndForward"
 }
