@@ -250,19 +250,7 @@ namespace Multiplayer
             [[maybe_unused]] NetEntityId netEntityId,
             [[maybe_unused]] NetEntityRole netEntityRole,
             [[maybe_unused]] AutoActivate autoActivate,
-            [[maybe_unused]] const AZ::Transform& transform,
-            [[maybe_unused]] AutonomousControl autonomousControl,
-            [[maybe_unused]] AzNetworking::ConnectionId autonomousOwnerConnectionId) override
-        {
-            return {};
-        }
-
-        EntityList CreateAutomonousPlayerImmediate(
-            [[maybe_unused]] const PrefabEntityId& prefabEntryId,
-            [[maybe_unused]] const AZ::Transform& transform,
-            [[maybe_unused]] AzNetworking::ConnectionId autonomousOwnerConnectionId,
-            [[maybe_unused]] AutoActivate autoActivate) override
-        {
+            [[maybe_unused]] const AZ::Transform& transform) override {
             return {};
         }
         [[nodiscard]] AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(

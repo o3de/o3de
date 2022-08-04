@@ -64,9 +64,8 @@ namespace UnitTest
         MOCK_METHOD4(
             CreateEntitiesImmediate,
             EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::Transform&, Multiplayer::AutoActivate));
-        MOCK_METHOD7(CreateEntitiesImmediate, EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityId, Multiplayer::
-            NetEntityRole, Multiplayer::AutoActivate, const AZ::Transform&, Multiplayer::AutonomousControl, AzNetworking::ConnectionId));
-        MOCK_METHOD4(CreateAutomonousPlayerImmediate, EntityList(const Multiplayer::PrefabEntityId&, const AZ::Transform&, AzNetworking::ConnectionId, Multiplayer::AutoActivate));
+        MOCK_METHOD5(CreateEntitiesImmediate, EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityId, Multiplayer::
+            NetEntityRole, Multiplayer::AutoActivate, const AZ::Transform&));
         MOCK_METHOD2(RequestNetSpawnableInstantiation, AZStd::unique_ptr<AzFramework::EntitySpawnTicket>(const AZ::Data::Asset<AzFramework::Spawnable>&, const AZ::Transform&));
         MOCK_METHOD3(SetupNetEntity, void(AZ::Entity*, Multiplayer::PrefabEntityId, Multiplayer::NetEntityRole));
         MOCK_CONST_METHOD0(GetEntityCount, uint32_t());
