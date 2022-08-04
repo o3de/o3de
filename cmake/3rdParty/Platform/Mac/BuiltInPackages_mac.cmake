@@ -31,7 +31,7 @@ ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-mac                 
 ly_associate_package(PACKAGE_NAME mcpp-2.7.2_az.2-rev1-mac                          TARGETS mcpp                        PACKAGE_HASH be9558905c9c49179ef3d7d84f0a5472415acdf7fe2d76eb060d9431723ddf2e)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-mac                             TARGETS mikkelsen                   PACKAGE_HASH 83af99ca8bee123684ad254263add556f0cf49486c0b3e32e6d303535714e505)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-mac                         TARGETS googletest                  PACKAGE_HASH cbf020d5ef976c5db8b6e894c6c63151ade85ed98e7c502729dd20172acae5a8)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH ad25de0146769c91e179953d845de2bec8ed4a691f973f47e3eb37639381f665)
+ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-mac                    TARGETS GoogleBenchmark             PACKAGE_HASH a1c8793eb1760905290065929b45600a4b4457345fcc129fce253d1a8980bbce)
 ly_associate_package(PACKAGE_NAME openimageio-opencolorio-2.3.12.0-rev2-mac         TARGETS OpenImageIO OpenColorIO OpenColorIO::Runtime OpenImageIO::Tools::Binaries OpenImageIO::Tools::PythonPlugins PACKAGE_HASH 48f0d9919aa69c5856dc2dbe81d991fbf83a91acd662901d8deff38f7f8be03a)
 ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-mac                             TARGETS OpenMesh                    PACKAGE_HASH af92db02a25c1f7e1741ec898f49d81d52631e00336bf9bddd1e191590063c2f)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev1-mac                           TARGETS OpenSSL                     PACKAGE_HASH 73a4bd7856b53edf5ab9d2ff1d31ebb02301be818680a59206ce8ec5940f3468)

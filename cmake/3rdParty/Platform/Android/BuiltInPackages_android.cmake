@@ -25,7 +25,7 @@ ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android             TARGETS Lua
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS PhysX           PACKAGE_HASH b346e8f9bc55f367a97d781d94c8a5c3bff8059478b8a7007e5fd17708dc1d07)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 20b46e572211a69d7d94ddad1c89ec37bb958711d6ad4025368ac89ea83078fb)
+ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev1-android TARGETS GoogleBenchmark PACKAGE_HASH a19e41670b46ec1676b51f9d6ad862443c56415d61b505383c19909fb02feb9e)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android            TARGETS PNG             PACKAGE_HASH c2240299251d97d963d2e9f4320fbc384bfb2e1b1e073419d1171df0e8ea983d)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev2-android        TARGETS OpenSSL         PACKAGE_HASH 28fa781be8fa233e3074b08e5d6d5064d1a5a5cffc80b04e1bb8d407aca459a0)
