@@ -520,17 +520,17 @@ namespace MaterialCanvas
                 if (sourceSlot && targetSlot && sourceSlot != targetSlot && sourceSlot != slot)
                 {
                     ReplaceStringsInContainer(
-                        "SLOTVALUE",
+                        "O3DE_SLOTVALUE",
                         AZStd::string::format("node%u_%s", sourceSlot->GetParentNode()->GetId(), sourceSlot->GetName().c_str()),
                         instructionsForSlot);
                     break;
                 }
             }
 
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
+            ReplaceStringsInContainer("O3DE_NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
+            ReplaceStringsInContainer("O3DE_SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
+            ReplaceStringsInContainer("O3DE_SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
+            ReplaceStringsInContainer("O3DE_SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
         }
 
         return instructionsForSlot;
@@ -588,7 +588,7 @@ namespace MaterialCanvas
             // We might need separate blocks of instructions that can be processed before or after the slots are processed.
             AZStd::vector<AZStd::string> instructionsForNode;
             AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
+            ReplaceStringsInContainer("O3DE_NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
             instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
 
@@ -725,8 +725,8 @@ namespace MaterialCanvas
 
                     // Inject include files found while traversing the graph into any include file blocks in the template.
                     ReplaceLinesInTemplateBlock(
-                        "GENERATED_INCLUDES_BEGIN",
-                        "GENERATED_INCLUDES_END",
+                        "O3DE_GENERATED_INCLUDES_BEGIN",
+                        "O3DE_GENERATED_INCLUDES_END",
                         [&includePaths]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             // Include file paths will need to be specified as or converted to include statements.
@@ -736,8 +736,8 @@ namespace MaterialCanvas
 
                     // Inject class definitions found while traversing the graph.
                     ReplaceLinesInTemplateBlock(
-                        "GENERATED_CLASSES_BEGIN",
-                        "GENERATED_CLASSES_END",
+                        "O3DE_GENERATED_CLASSES_BEGIN",
+                        "O3DE_GENERATED_CLASSES_END",
                         [&classDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             return classDefinitions;
@@ -746,8 +746,8 @@ namespace MaterialCanvas
 
                     // Inject function definitions found while traversing the graph.
                     ReplaceLinesInTemplateBlock(
-                        "GENERATED_FUNCTIONS_BEGIN",
-                        "GENERATED_FUNCTIONS_END",
+                        "O3DE_GENERATED_FUNCTIONS_BEGIN",
+                        "O3DE_GENERATED_FUNCTIONS_END",
                         [&functionDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             return functionDefinitions;
@@ -755,13 +755,13 @@ namespace MaterialCanvas
                         templateLines);
 
                     // Inject shader code instructions stitched together by traversing the graph from each of the input slots on the current
-                    // node. The GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to
+                    // node. The O3DE_GENERATED_INSTRUCTIONS_BEGIN marker will be followed by a list of input slot names corresponding to
                     // required variables in the shader. Instructions will only be generated for the current node and nodes connected to the
-                    // specified inputs. This will allow multiple GENERATED_INSTRUCTIONS blocks with different inputs to be specified in
+                    // specified inputs. This will allow multiple O3DE_GENERATED_INSTRUCTIONS blocks with different inputs to be specified in
                     // multiple locations across multiple files from a single graph.
                     ReplaceLinesInTemplateBlock(
-                        "GENERATED_INSTRUCTIONS_BEGIN",
-                        "GENERATED_INSTRUCTIONS_END",
+                        "O3DE_GENERATED_INSTRUCTIONS_BEGIN",
+                        "O3DE_GENERATED_INSTRUCTIONS_END",
                         [&]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
