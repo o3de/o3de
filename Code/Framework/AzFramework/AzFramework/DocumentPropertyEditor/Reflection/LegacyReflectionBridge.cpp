@@ -418,7 +418,8 @@ namespace AZ::Reflection
                             }
                         }
 
-                        if (!isParentAttribute && descriptionAttributeValue.empty() && nodeData.m_classData->m_editData->m_description)
+                        if (!isParentAttribute && descriptionAttributeValue.empty() &&
+                            nodeData.m_classData->m_editData && nodeData.m_classData->m_editData->m_description)
                         {
                             descriptionAttributeValue = nodeData.m_classData->m_editData->m_description;
                         }
