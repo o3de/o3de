@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import os
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report, Tracer
 import editor_python_test_tools.hydra_editor_utils as hydra
