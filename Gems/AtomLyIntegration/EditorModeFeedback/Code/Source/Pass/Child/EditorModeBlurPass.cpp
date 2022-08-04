@@ -6,7 +6,7 @@
  *
  */
  
-#include <Pass/EditorModeBlurPass.h>
+#include <Pass/Child/EditorModeBlurPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -17,7 +17,7 @@
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeBlurPass, 0.0f, 0.0f, 20.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernelHalfWidth, 5.0f);
 
- namespace AZ
+namespace AZ
 {
     namespace Render
     {
@@ -28,20 +28,20 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeBlurPass, KernelHalfWidth, 5.0f);
         }
         
         EditorModeBlurPass::EditorModeBlurPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackPassBase(descriptor, { 0.0f, 0.0f, 20.0f }, 1.0f)
+            : EditorModeFeedbackChildPassBase(descriptor, { 0.0f, 0.0f, 20.0f }, 1.0f)
         {
         }
         
         void EditorModeBlurPass::InitializeInternal()
         {
-            EditorModeFeedbackPassBase::InitializeInternal();
+            EditorModeFeedbackChildPassBase::InitializeInternal();
             m_kernelHalfWidthIndex.Reset();
         }
         
         void EditorModeBlurPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackPassBase::FrameBeginInternal(params);
+            EditorModeFeedbackChildPassBase::FrameBeginInternal(params);
         }
 
         void EditorModeBlurPass::SetKernelHalfWidth(const float width)
