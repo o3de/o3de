@@ -32,7 +32,7 @@ namespace AZ::Render
         //! FeatureProcessor 
         void Activate() override;
         void Deactivate() override;
-        void Simulate(const SimulatePacket& packet) override;
+        void Render(const RenderPacket& packet) override;
 
         //! SkyAtmosphereFeatureProcessorInterface
         AtmosphereId CreateAtmosphere() override;

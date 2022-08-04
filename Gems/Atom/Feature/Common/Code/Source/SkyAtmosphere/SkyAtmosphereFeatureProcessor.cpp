@@ -136,9 +136,9 @@ namespace AZ::Render
         }
     }
     
-    void SkyAtmosphereFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
+    void SkyAtmosphereFeatureProcessor::Render([[maybe_unused]] const FeatureProcessor::RenderPacket& packet)
     {
-        AZ_PROFILE_SCOPE(RPI, "SkyAtmosphereFeatureProcessor: Simulate");
+        AZ_PROFILE_SCOPE(RPI, "SkyAtmosphereFeatureProcessor: Render");
 
         for (size_t i = 0; i < m_atmospheres.GetSize(); ++i)
         {
@@ -153,7 +153,6 @@ namespace AZ::Render
 
                 atmosphere.m_passNeedsUpdate = false;
             }
-
         }
     }
 
