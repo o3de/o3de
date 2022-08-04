@@ -37,7 +37,7 @@ namespace ONNX
         {
             //! Source of onnx model file.
             // AZStd::wstring m_modelFile = (std::wstring{ W_GEM_ASSETS_PATH } + std::wstring{ L"/model.onnx" }).c_str();
-            AZStd::wstring m_modelFile;
+            AZ::IO::FixedMaxPath m_modelFile;
             AZStd::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
             AZ::Color m_modelColor = AZ::Color::CreateFromRgba(229, 56, 59, 255); //!< Sets the color of the dashboard graph for runtime statistics of this model instance.
             AZStd::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.

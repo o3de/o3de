@@ -12,29 +12,26 @@ namespace ONNX
 {
     void Model::Load(const InitSettings& initSettings)
     {
-        AZStd::wstring modelFile;
+        // Get the FileIOBase to resolve the path to the ONNX gem
+        AZ::IO::FixedMaxPath onnxGemAssetsPath;
 
         // If no filepath provided for onnx model, set default to a model.onnx file in the Assets folder.
         if (initSettings.m_modelFile.empty())
         {
-            // Get the FileIOBase to resolve the path to the ONNX gem
             AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
-            AZ::IO::FixedMaxPath onnxGemRoot;
-            fileIo->ResolvePath(onnxGemRoot, "@gemroot:ONNX@");
-            AZStd::string gemRootString = onnxGemRoot.c_str();
-            modelFile = AZStd::wstring(gemRootString.begin(), gemRootString.end()) + AZStd::wstring(L"/Assets/model.onnx");
+            fileIo->ResolvePath(onnxGemAssetsPath, "@gemroot:ONNX@");
+            onnxGemAssetsPath /= "Assets/model.onnx";
+            onnxGemAssetsPath = onnxGemAssetsPath.AsPosix();
         }
         else
         {
-            modelFile = initSettings.m_modelFile;
+            onnxGemAssetsPath = initSettings.m_modelFile;
         }
 
         // If no model name is provided, will default to the name of the onnx model file.
         if (initSettings.m_modelName.empty())
         {
-            std::filesystem::path filepath = std::filesystem::path(modelFile.c_str()).stem().c_str();
-            std::string filestring = filepath.string();
-            AZ::StringFunc::Path::GetFileName(filestring.c_str(), m_modelName);
+            AZ::StringFunc::Path::GetFileName(onnxGemAssetsPath.c_str(), m_modelName);
         }
         else
         {
@@ -55,9 +52,11 @@ namespace ONNX
             OrtCUDAProviderOptions cuda_options;
             sessionOptions.AppendExecutionProvider_CUDA(cuda_options);
         }
-
         m_cudaEnable = initSettings.m_cudaEnable;
-        m_session = Ort::Session::Session(*m_env, modelFile.c_str(), sessionOptions);
+
+        // The model_path provided to Ort::Session needs to be const wchar_t*, even though the docs state const char* - doesn't work otherwise.
+        AZStd::string onnxGemAssetsPathString = onnxGemAssetsPath.String();
+        m_session = Ort::Session(*m_env, AZStd::wstring(onnxGemAssetsPathString.cbegin(), onnxGemAssetsPathString.cend()).c_str(), sessionOptions);
         m_memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 
         // Grabs memory allocator created on init of system component.
