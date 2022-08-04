@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <ImGuiBus.h>
 #include <LYImGuiUtils/HistogramGroup.h>

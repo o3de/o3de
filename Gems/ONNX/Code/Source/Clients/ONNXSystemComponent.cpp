@@ -237,8 +237,12 @@ namespace ONNX
         m_mnist->Load(modelInitSettings);
 
         // For simplicity, the demo inferences the same test image on each tick.
-        std::string demoImage = std::string{ GEM_ASSETS_PATH } + std::string{ "/mnist_png/testing/0/10.png" };
-        m_mnist->LoadImage(demoImage.c_str());
+        AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
+        AZ::IO::FixedMaxPath demoImagePath;
+        if (fileIo && fileIo->ResolvePath(demoImagePath, "@gemroot:ONNX@/Assets/mnist_png/testing/0/10.png"))
+        {
+            m_mnist->LoadImage(demoImagePath.c_str());
+        }
 
         m_mnist->BusConnect();
 
@@ -256,7 +260,7 @@ namespace ONNX
 
         m_mnistCuda->Load(modelInitSettingsCuda);
 
-        m_mnistCuda->LoadImage(demoImage.c_str());
+        m_mnistCuda->LoadImage(demoImagePath.c_str());
 
         m_mnistCuda->BusConnect();
 #endif
