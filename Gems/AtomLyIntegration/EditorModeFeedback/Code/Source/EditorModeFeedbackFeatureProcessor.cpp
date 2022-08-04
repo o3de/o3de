@@ -64,17 +64,12 @@ namespace AZ
 
         void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitPasses(pipeline.get());
+            m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());
         }
 
         void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitPasses(renderPipeline);
-        }
-
-        void EditorModeFeatureProcessor::InitPasses(RPI::RenderPipeline* renderPipeline)
-        {
-            m_editorStatePassSystem->InitPasses(renderPipeline);
+            m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
         }
 
         void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)

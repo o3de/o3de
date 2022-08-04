@@ -189,7 +189,7 @@ namespace AZ::Render
         return entityMaskMap;
     }
 
-    void EditorStatePassSystem::InitPasses([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
+    void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
     {
         RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
         RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);

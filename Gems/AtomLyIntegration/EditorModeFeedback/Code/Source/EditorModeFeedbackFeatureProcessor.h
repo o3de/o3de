@@ -40,8 +40,6 @@ namespace AZ
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
         private:
-            void InitPasses(RPI::RenderPipeline* renderPipeline);
-
             //! The pass system for the editor state feedback effects.
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
 
