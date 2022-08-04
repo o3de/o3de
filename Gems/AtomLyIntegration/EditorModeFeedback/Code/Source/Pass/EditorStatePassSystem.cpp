@@ -31,8 +31,8 @@ namespace AZ::Render
     static constexpr const char* const EditorModeBlurPassName = "EditorModeBlurPass";
     static constexpr const char* const EditorModeOutlinePassName = "EditorModeOutlinePass";
 
-    EditorStatePassSystem::EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses)
-        : m_editorStateParentPasses(AZStd::move(editorStateParentPasses))
+    EditorStatePassSystem::EditorStatePassSystem(EditorStateList&& editorStates)
+        : m_editorStates(AZStd::move(editorStates))
     {
         auto* passSystem = RPI::PassSystemInterface::Get();
         AZ_Assert(passSystem, "Cannot get the pass system.");
@@ -71,7 +71,7 @@ namespace AZ::Render
         }
 
         // Entity mask passes
-        m_masks = CreateMaskPassTemplatesFromStateParentPasses(m_editorStateParentPasses);
+        m_masks = CreateMaskPassTemplatesFromEditorStates(m_editorStates);
         for (const auto& drawList : m_masks)
         {
             RPI::PassRequest pass;
@@ -91,7 +91,7 @@ namespace AZ::Render
         
         // Editor state passes
         auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
-        for (const auto& state : m_editorStateParentPasses)
+        for (const auto& state : m_editorStates)
         {
             CreateAndAddStateParentPassTemplate(*state);
             RPI::PassRequest pass;
@@ -169,11 +169,11 @@ namespace AZ::Render
         }
     }
 
-    EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStatePasses() const
+    EntityMaskMap EditorStatePassSystem::GetEntitiesForEditorStates() const
     {
         EntityMaskMap entityMaskMap;
 
-        for (const auto& state : m_editorStateParentPasses)
+        for (const auto& state : m_editorStates)
         {
             if (state->IsEnabled())
             {
@@ -200,7 +200,7 @@ namespace AZ::Render
         }
 
         auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
-        for (auto& state : m_editorStateParentPasses)
+        for (auto& state : m_editorStates)
         {
             auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
             state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);

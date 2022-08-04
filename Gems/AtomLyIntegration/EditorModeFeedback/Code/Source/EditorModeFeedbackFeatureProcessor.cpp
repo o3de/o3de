@@ -50,10 +50,10 @@ namespace AZ
                 m_maskMaterial = CreateMaskMaterial();
             }
 
-            EditorStateParentPassList editorStatePasses;
-            editorStatePasses.push_back(AZStd::make_unique<FocusedEntityParentPass>());
-            editorStatePasses.push_back(AZStd::make_unique<SelectedEntityParentPass>());
-            m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStatePasses));
+            EditorStateList editorStates;
+            editorStates.push_back(AZStd::make_unique<FocusedEntityParentPass>());
+            editorStates.push_back(AZStd::make_unique<SelectedEntityParentPass>());
+            m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStates));
         }
 
         void EditorModeFeatureProcessor::Deactivate()
@@ -96,7 +96,7 @@ namespace AZ
 
         void EditorModeFeatureProcessor::Render([[maybe_unused]] const RenderPacket& packet)
         {
-            const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStatePasses();
+            const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStates();
             for (const auto& [mask, entities] : entityMaskMap)
             {
                 if(auto it = m_maskRenderers.find(mask);

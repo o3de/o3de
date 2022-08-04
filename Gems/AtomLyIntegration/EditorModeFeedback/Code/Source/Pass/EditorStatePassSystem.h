@@ -19,7 +19,7 @@
 namespace AZ::Render
 {
     //! Container for specialized editor state effect parent pass classes.
-    using EditorStateParentPassList = AZStd::vector<AZStd::unique_ptr<EditorStateParentPassBase>>;
+    using EditorStateList = AZStd::vector<AZStd::unique_ptr<EditorStateParentPassBase>>;
 
     //! Mapping for mask draw tags to entities rendered to that mask.
     using EntityMaskMap = AZStd::unordered_map<Name, AzToolsFramework::EntityIdSet>;
@@ -29,13 +29,13 @@ namespace AZ::Render
     {
     public:
         //! Constructs the pass system with the specified editor state effect parent pass instances.
-        EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses);
+        EditorStatePassSystem(EditorStateList&& editorStates);
 
         //! Adds the editor state effect parent passes to the specified render pipeline.
         void AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline);
 
         //! Returns the map of masks to the entities to be rendered to those masks.
-        EntityMaskMap GetEntitiesForEditorStatePasses() const;
+        EntityMaskMap GetEntitiesForEditorStates() const;
 
         //! Initializes the editor state effect parent pass instances for the specified render pipeline.
         void InitPasses(RPI::RenderPipeline* renderPipeline);
@@ -49,7 +49,7 @@ namespace AZ::Render
         //! Performs any updates for the editor state effect parent pass instances for the given simulation tick.
         void Update()
         {
-            for (auto& state : m_editorStateParentPasses)
+            for (auto& state : m_editorStates)
             {
                 state->UpdatePassDataForPipelines();
             }
@@ -57,7 +57,7 @@ namespace AZ::Render
 
     private:
         //! Parent passes for each editor state (ordering in vector is ordering of rendering).
-        EditorStateParentPassList m_editorStateParentPasses;
+        EditorStateList m_editorStates;
 
         //! Set of all masks used by this pass system.
         AZStd::unordered_set<Name> m_masks;

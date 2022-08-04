@@ -32,5 +32,5 @@ namespace AZ::Render
     void CreateAndAddMaskPassTemplate(const Name& drawList);
 
     //! Creates the mask pass templates from the list of editor state parent passes and returns the drawlists used by the masks.
-    AZStd::unordered_set<Name> CreateMaskPassTemplatesFromStateParentPasses(const EditorStateParentPassList& editorStateParentPasses);
+    AZStd::unordered_set<Name> CreateMaskPassTemplatesFromEditorStates(const EditorStateList& editorStates);
 } // namespace AZ::Render

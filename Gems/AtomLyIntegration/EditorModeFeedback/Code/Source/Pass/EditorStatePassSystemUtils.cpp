@@ -262,11 +262,11 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->AddPassTemplate(maskPassTemplate->m_name, maskPassTemplate);
     }
 
-    AZStd::unordered_set<Name> CreateMaskPassTemplatesFromStateParentPasses(
-        const EditorStateParentPassList& editorStateParentPasses)
+    AZStd::unordered_set<Name> CreateMaskPassTemplatesFromEditorStates(
+        const EditorStateList& editorStates)
     {
         AZStd::unordered_set<Name> drawLists;
-        for (const auto& state : editorStateParentPasses)
+        for (const auto& state : editorStates)
         {
             if (const auto drawList = state->GetEntityMaskDrawList();
                 !drawLists.contains(drawList))
