@@ -708,6 +708,12 @@ void TerrainSystem::GetNormalsSynchronousExact(
         queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() + exactRange, 0.0f)); // up
     }
 
+    // These constants are the relative index for each of the four positions that we pushed for each input above.
+    constexpr size_t down = 0;
+    constexpr size_t left = 1;
+    constexpr size_t right = 2;
+    constexpr size_t up = 3;
+
     AZStd::vector<float> heights(queryPositions.size());
     AZStd::vector<bool> exists(queryPositions.size());
 
@@ -733,8 +739,8 @@ void TerrainSystem::GetNormalsSynchronousExact(
         {
             // We have 4 vertices that make a + sign, cross the two lines to get the normal at the center.
             // (right - left) x (up - down)
-            normals[inPosIndex] = (queryPositions[queryPositionIndex + 2] - queryPositions[queryPositionIndex + 1])
-                                .Cross(queryPositions[queryPositionIndex + 3] - queryPositions[queryPositionIndex])
+            normals[inPosIndex] = (queryPositions[queryPositionIndex + right] - queryPositions[queryPositionIndex + left])
+                                .Cross(queryPositions[queryPositionIndex + up] - queryPositions[queryPositionIndex + down])
                                 .GetNormalized();
         }
         else
@@ -764,11 +770,6 @@ void TerrainSystem::GetNormalsSynchronousClamp(
     // The full set of positions to query to be able to calculate all the normals.
     AZStd::vector<AZ::Vector3> queryPositions;
     queryPositions.reserve(inPositions.size() * queryCount);
-
-    // To determine if terrain exists at the queried normal, we'll use the terrain exists flag from the terrain grid point closest
-    // to the position. We'll track this while building up our query positions.
-    AZStd::vector<uint8_t> existsIndex;
-    existsIndex.reserve(inPositions.size());
 
     for (const auto& position : inPositions)
     {
@@ -803,28 +804,12 @@ void TerrainSystem::GetNormalsSynchronousClamp(
             queryPositions.emplace_back(corners[0]);
             queryPositions.emplace_back(corners[1]);
             queryPositions.emplace_back(corners[2]);
-
-            // This will give us an index of 0, 1, or 2 based on which of the 3 corners is closest to the query point:
-            // Corner 0 -> index 0: x < 0.5, y < 0.5
-            // Corner 1 -> index 1: x >= 0.5, y < 0.5
-            // Corner 2 -> index 2: x < 0.5, y >= 0.5
-            uint8_t existsIndexLookup = ((normalizedDelta.GetY() >= 0.5f) << 1) | (normalizedDelta.GetX() >= 0.5f);
-            existsIndex.emplace_back(existsIndexLookup);
-            AZ_Assert(existsIndexLookup < 3, "Invalid existsIndex");
         }
         else
         {
             queryPositions.emplace_back(corners[3]);
             queryPositions.emplace_back(corners[2]);
             queryPositions.emplace_back(corners[1]);
-
-            // This will give us an index of 0, 1, or 2 based on which of the 3 corners is closest to the query point.
-            // Corner 3 -> index 0: x >= 0.5, y >= 0.5
-            // Corner 2 -> index 1: x < 0.5, y >= 0.5
-            // Corner 1 -> index 2: x >= 0.5, y < 0.5
-            uint8_t existsIndexLookup = ((normalizedDelta.GetY() < 0.5f) << 1) | (normalizedDelta.GetX() < 0.5f);
-            existsIndex.emplace_back(existsIndexLookup);
-            AZ_Assert(existsIndexLookup < 3, "Invalid existsIndex");
         }
     }
 
@@ -836,11 +821,11 @@ void TerrainSystem::GetNormalsSynchronousClamp(
 
     for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
     {
-        // We'll determine if terrain exists where the normal is based on the value for the nearest terrain grid point.
-        terrainExists[inPosIndex] = exists[queryPositionIndex + existsIndex[inPosIndex]];
+        // We'll set "exists" to true *only* if all three positions for calculating the normal exists.
+        terrainExists[inPosIndex] = exists[queryPositionIndex] && exists[queryPositionIndex + 1] && exists[queryPositionIndex + 2];
 
-        // However, we can only calculate the normal if all the queried points exist.
-        if (exists[queryPositionIndex] && exists[queryPositionIndex + 1] && exists[queryPositionIndex + 2])
+        // Only calculate the normal if all the queried points exist.
+        if (terrainExists[inPosIndex])
         {
             // Combine the output heights with our query positions.
             for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
