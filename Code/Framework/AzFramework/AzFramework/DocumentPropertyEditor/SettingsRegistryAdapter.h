@@ -18,9 +18,16 @@ namespace AZ::DocumentPropertyEditor
     class SettingsRegistryAdapter : public DocumentAdapter
     {
     public:
+        //! Default constructs a Settings Registry adapter that uses the globally registered
+        //! SettingsRegistryOriginTracker instance
         SettingsRegistryAdapter();
+
+        //! Constructs a Settings Registry adapter using the supplied SettingsRegistry Origin Tracker instance
+        explicit SettingsRegistryAdapter(AZ::SettingsRegistryOriginTracker* originTracker);
         ~SettingsRegistryAdapter();
 
+        // Recurses through the Settings Registry associated with the supplied Settings Registry Origin Tracker
+        // populates PropertyEditorNOdes
         bool BuildField(AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type);
 
     protected:
@@ -28,8 +35,6 @@ namespace AZ::DocumentPropertyEditor
 
     private:
         AdapterBuilder m_builder;
-       /* AZ::SettingsRegistryInterface& m_settingsRegistry;
-        AZ::SettingsRegistryOriginTracker& m_originTracker;
-        AZStd::unique_ptr<AZ::SettingsRegistryOriginTracker> m_originTracker;*/
+        AZ::SettingsRegistryOriginTracker* m_originTracker = nullptr;
     };
 }

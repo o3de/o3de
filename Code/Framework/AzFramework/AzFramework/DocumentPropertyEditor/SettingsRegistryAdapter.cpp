@@ -17,60 +17,84 @@
 namespace AZ::DocumentPropertyEditor
 {
     SettingsRegistryAdapter::SettingsRegistryAdapter()
+        : SettingsRegistryAdapter(AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get())
     {
     }
 
-    SettingsRegistryAdapter::~SettingsRegistryAdapter()
+    SettingsRegistryAdapter::SettingsRegistryAdapter(AZ::SettingsRegistryOriginTracker* originTracker)
+        : m_originTracker(originTracker)
     {
     }
+
+    SettingsRegistryAdapter::~SettingsRegistryAdapter() = default;
 
     bool SettingsRegistryAdapter::BuildField(
         AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
     {
-        auto settingsRegistryOriginTracker = AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get();
-        AZ::SettingsRegistryInterface& settingsRegistry = settingsRegistryOriginTracker->GetSettingsRegistry();
-        auto visitorCallback = [this](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
-        {
-            BuildField(path, fieldName, type);
-        };
+        AZ::SettingsRegistryInterface& settingsRegistry = m_originTracker->GetSettingsRegistry();
         m_builder.BeginRow();
         m_builder.Label(fieldName);
         if (type == AZ::SettingsRegistryInterface::Type::Boolean)
         {
             bool value;
-            settingsRegistry.Get(value, path);
-            m_builder.BeginPropertyEditor<Nodes::CheckBox>(Dom::Value(value));
-            m_builder.EndPropertyEditor();
+            if (settingsRegistry.Get(value, path))
+            {
+                m_builder.BeginPropertyEditor<Nodes::CheckBox>(Dom::Value(value));
+                m_builder.EndPropertyEditor();
+            }
         }
         else if (type == AZ::SettingsRegistryInterface::Type::Integer)
         {
-            AZ::s64 value;
-            settingsRegistry.Get(value, path);
-            m_builder.BeginPropertyEditor<Nodes::IntSpinBox>(Dom::Value(value));
-            m_builder.EndPropertyEditor();
+            using SettingsType = AZ::SettingsRegistryInterface::SettingsType;
+            const SettingsType settingsType = settingsRegistry.GetType(path);
+            if (settingsType.m_signedness == AZ::SettingsRegistryInterface::Signedness::Signed)
+            {
+                if (AZ::s64 value; settingsRegistry.Get(value, path))
+                {
+                    m_builder.BeginPropertyEditor<Nodes::IntSpinBox>(Dom::Value(value));
+                    m_builder.EndPropertyEditor();
+                }
+            }
+            else
+            {
+                if (AZ::u64 value; settingsRegistry.Get(value, path))
+                {
+                    m_builder.BeginPropertyEditor<Nodes::UintSpinBox>(Dom::Value(value));
+                    m_builder.EndPropertyEditor();
+                }
+            }
         }
         else if (type == AZ::SettingsRegistryInterface::Type::FloatingPoint)
         {
-            m_builder.BeginPropertyEditor<Nodes::DoubleSlider>(Dom::Value(1.0));
-            m_builder.EndPropertyEditor();
+            if (double value; settingsRegistry.Get(value, path))
+            {
+                m_builder.BeginPropertyEditor<Nodes::DoubleSpinBox>(Dom::Value(value));
+                m_builder.EndPropertyEditor();
+            }
         }
         else if (type == AZ::SettingsRegistryInterface::Type::String)
         {
-            AZStd::string value;
-            settingsRegistry.Get(value, path);
-            m_builder.BeginPropertyEditor<Nodes::LineEdit>(Dom::Value(AZStd::string_view(value), true));
-            m_builder.Attribute(Nodes::PropertyEditor::ValueType, AZ::Dom::Utils::TypeIdToDomValue(azrtti_typeid<AZStd::string>()));
-            m_builder.EndPropertyEditor();
+            if (AZStd::string value; settingsRegistry.Get(value, path))
+            {
+                m_builder.BeginPropertyEditor<Nodes::LineEdit>(Dom::Value(value, true));
+                m_builder.Attribute(Nodes::PropertyEditor::ValueType, AZ::Dom::Utils::TypeIdToDomValue(azrtti_typeid<AZStd::string>()));
+                m_builder.EndPropertyEditor();
+            }
         }
         else if (type == AZ::SettingsRegistryInterface::Type::Object || type == AZ::SettingsRegistryInterface::Type::Array)
         {
+            auto visitorCallback = [this](AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
+            {
+                BuildField(path, fieldName, type);
+            };
             AZ::SettingsRegistryVisitorUtils::VisitField(settingsRegistry, visitorCallback, path);
             m_builder.Label("");
         }
+
         AZ::IO::Path originPath;
-        if (settingsRegistryOriginTracker->FindLastOrigin(originPath, path))
+        if (m_originTracker->FindLastOrigin(originPath, path))
         {
-            m_builder.Label(originPath.FixedMaxPathString());
+            m_builder.Label(originPath.Native());
         }
         m_builder.EndRow();
         return true;
@@ -79,13 +103,13 @@ namespace AZ::DocumentPropertyEditor
     Dom::Value SettingsRegistryAdapter::GenerateContents()
     {
         m_builder.BeginAdapter();
-
-        auto settingsRegistryOriginTracker = AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get();
-        AZ::SettingsRegistryInterface& settingsRegistry = settingsRegistryOriginTracker->GetSettingsRegistry();
-        if (settingsRegistryOriginTracker != nullptr)
+        if (m_originTracker != nullptr)
         {
+            // Start from the root key of the Settings Registry
+            AZ::SettingsRegistryInterface& settingsRegistry = m_originTracker->GetSettingsRegistry();
             BuildField("", "", settingsRegistry.GetType(""));
         }
+
         m_builder.EndAdapter();
         return m_builder.FinishAndTakeResult();
     }
