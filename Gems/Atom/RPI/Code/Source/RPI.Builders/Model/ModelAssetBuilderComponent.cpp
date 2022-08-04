@@ -45,6 +45,7 @@
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
+static constexpr AZStd::string_view MismatchedVertexLayoutsAreErrorsKey{ "/O3DE/SceneAPI/ModelBuilder/MismatchedVertexLayoutsAreErrors" };
  /**
   * DEBUG DEFINES!
   * These are useful for debugging bad behavior from the builder.
@@ -97,6 +98,16 @@ namespace AZ
     namespace RPI
     {
         static const uint64_t s_invalidMaterialUid = 0;
+
+        static bool MismatchedVertexLayoutsAreErrors()
+        {
+            bool mismatchedVertexStreamsAreErrors = false;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(mismatchedVertexStreamsAreErrors, MismatchedVertexLayoutsAreErrorsKey);
+            }
+            return mismatchedVertexStreamsAreErrors;
+        }
 
         void ModelAssetBuilderComponent::Reflect(ReflectContext* context)
         {
@@ -1129,6 +1140,11 @@ namespace AZ
                         // common case is that everything assigned to the same material uid likely matches already anyways
                         if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
                         {
+                            if (MismatchedVertexLayoutsAreErrors())
+                            {
+                                return AZ::Failure();
+                            }
+
                             // Don't merge the next mesh in the list if it doesn't match the current one
                             finalMeshList.emplace_back(*(meshIter + 1));
                             meshList.erase(meshIter + 1);
@@ -1170,6 +1186,8 @@ namespace AZ
 
         bool ModelAssetBuilderComponent::VertexStreamLayoutMatches(const ProductMeshContent& lhs, const ProductMeshContent& rhs) const
         {
+            bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
+
             // Check that the stream counts and types match
             bool layoutMatches =
                 lhs.m_positions.empty() == rhs.m_positions.empty() &&
@@ -1191,10 +1209,8 @@ namespace AZ
                     if (lhs.m_uvCustomNames[i] != rhs.m_uvCustomNames[i])
                     {
                         namesMatch = false;
-                        AZ_Warning(
-                            s_builderName,
-                            false,
-                            "Two meshes have the same material assigment, but the uv names don't match. "
+                        AZStd::string errorMessage = AZStd::string::format(
+                            "Two meshes have the same material assignment, but the uv names don't match. "
                             "Mesh '%s' uv '%d' is named '%s'. "
                             "Mesh '%s' uv '%d' is named '%s'. "
                             "Consider re-naming the uvs to match. "
@@ -1205,6 +1221,9 @@ namespace AZ
                             rhs.m_name.GetCStr(),
                             i,
                             rhs.m_uvCustomNames[i].GetCStr());
+                        
+                        AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                        AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
                     }
                 }
                 for (size_t i = 0; i < lhs.m_colorCustomNames.size(); ++i)
@@ -1212,10 +1231,8 @@ namespace AZ
                     if (lhs.m_colorCustomNames[i] != rhs.m_uvCustomNames[i])
                     {
                         namesMatch = false;
-                        AZ_Warning(
-                            s_builderName,
-                            false,
-                            "Two meshes have the same material assigment, but the color names don't match. "
+                        AZStd::string errorMessage = AZStd::string::format(
+                            "Two meshes have the same material assignment, but the color names don't match. "
                             "Mesh '%s' color '%d' is named '%s'. "
                             "Mesh '%s' color '%d' is named '%s'. "
                             "Consider re-naming the colors to match. "
@@ -1226,20 +1243,24 @@ namespace AZ
                             rhs.m_name.GetCStr(),
                             i,
                             rhs.m_colorCustomNames[i].GetCStr());
+
+                        AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                        AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
                     }
                 }
                 layoutMatches = namesMatch;
             }
             else
             {
-                AZ_Warning(
-                    s_builderName,
-                    false,
+                AZStd::string errorMessage = AZStd::string::format(
                     "Mesh '%s' and '%s' have the same material assignment, but don't have matching vertex streams. "
                     "Consider giving them the same vertex streams in the source file or assigning a unique material to each of them. "
                     "They will not be merged, but will still show up as a single material slot for material assignments.",
                     lhs.m_name.GetCStr(),
                     rhs.m_name.GetCStr());
+
+                AZ_Error(s_builderName, !mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
+                AZ_Warning(s_builderName, mismatchedVertexLayoutsAreErrors, "%s", errorMessage.c_str());
             }
 
             return layoutMatches;
