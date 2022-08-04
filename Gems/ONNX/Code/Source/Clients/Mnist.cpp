@@ -13,12 +13,12 @@ namespace ONNX
     template<typename T>
     static void MNIST::Softmax(T& input)
     {
-        const float rowmax = *std::max_element(input.begin(), input.end());
-        std::vector<float> y(input.size());
+        const float rowmax = *AZStd::ranges::max_element(input.begin(), input.end());
+        AZStd::vector<float> y(input.size());
         float sum = 0.0f;
         for (size_t i = 0; i != input.size(); ++i)
         {
-            sum += y[i] = std::exp(input[i] - rowmax);
+            sum += y[i] = AZStd::exp2(input[i] - rowmax);
         }
         for (size_t i = 0; i != input.size(); ++i)
         {
@@ -29,7 +29,7 @@ namespace ONNX
     void MNIST::GetResult()
     {
         Softmax(m_output);
-        m_result = std::distance(m_output.begin(), std::max_element(m_output.begin(), m_output.end()));
+        m_result = AZStd::distance(m_output.begin(), AZStd::ranges::max_element(m_output.begin(), m_output.end()));
     }
 
     void MNIST::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
