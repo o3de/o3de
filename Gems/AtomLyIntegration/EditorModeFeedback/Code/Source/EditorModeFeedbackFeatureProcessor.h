@@ -32,7 +32,7 @@ namespace AZ
             void Activate() override;
             void Deactivate() override;
             void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
-            void Render(const RenderPacket&) override;
+            void Render(const RenderPacket& packet) override;
             void Simulate(const SimulatePacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...

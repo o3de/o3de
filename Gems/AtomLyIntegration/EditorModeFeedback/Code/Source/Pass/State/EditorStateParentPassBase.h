@@ -54,10 +54,13 @@ namespace AZ::Render
 
         virtual ~EditorStateParentPassBase();
 
+        //! Returns the entities that should be rendered to the entity mask for this editor state.
+        [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
+
         //! Returns the name of this editor state.
         const AZStd::string& GetStateName() const;
 
-        //! Returns the name of the entity mask daw list used this editor state.
+        //! Returns the name of the entity mask draw list used this editor state.
         const Name& GetEntityMaskDrawList() const;
 
         //! Returns the child pass descriptor list for this editor mode state (used by the pass system to construct and configure the
@@ -66,9 +69,6 @@ namespace AZ::Render
 
         //! Returns true of this editor mode state is to be enabled, otherwise false.
         virtual bool IsEnabled() const { return m_enabled; }
-
-        //! Returns the entities that should be rendered to the entity mask for this editor state.
-        [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
 
         //! Returns the pass template name for this editor state effect pass.
         Name GetPassTemplateName() const;
@@ -88,7 +88,7 @@ namespace AZ::Render
     protected:
         //! Helper function for finding the specified child effect pass for this editor state effect pass.
         template<class ChildPass>
-        ChildPass* FindChildPass(RPI::ParentPass* parentPass, std::size_t index) const
+        ChildPass* FindChildPass(RPI::ParentPass* parentPass, size_t index) const
         {
             if (index >= m_childPassDescriptorList.size())
             {
@@ -111,7 +111,7 @@ namespace AZ::Render
         virtual void UpdatePassData(RPI::ParentPass*) {}
         
     private:
-        EditorState m_state; //!<  The editor state enumeration this editor state effect pass is associated with.
+        EditorState m_state; //!< The editor state enumeration this editor state effect pass is associated with.
         AZStd::string m_stateName; //!< The name of this state.
         bool m_enabled = true; //!< True if this pass is enabled, otherwise false.
         PassDescriptorList m_childPassDescriptorList; //!< The child passes that compose this editor state effect pass.

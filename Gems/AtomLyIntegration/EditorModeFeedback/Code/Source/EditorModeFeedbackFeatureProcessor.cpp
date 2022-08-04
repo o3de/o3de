@@ -27,7 +27,7 @@ namespace AZ
         // Creates the material for the mask pass shader
         static Data::Instance<RPI::Material> CreateMaskMaterial()
         {
-            const AZStd::string path = "shaders/editormodemask.azmaterial";
+            constexpr AZStd::string path = "shaders/editormodemask.azmaterial";
             const auto materialAsset = GetAssetFromPath<RPI::MaterialAsset>(path, Data::AssetLoadBehavior::PreLoad, true);
             const auto maskMaterial = RPI::Material::FindOrCreate(materialAsset);
             return maskMaterial;
@@ -65,7 +65,6 @@ namespace AZ
         void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             InitPasses(pipeline.get());
-            
         }
 
         void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
@@ -94,7 +93,7 @@ namespace AZ
             }
         }
 
-        void EditorModeFeatureProcessor::Render(const RenderPacket&)
+        void EditorModeFeatureProcessor::Render([[maybe_unused]] const RenderPacket& packet)
         {
             const auto entityMaskMap = m_editorStatePassSystem->GetEntitiesForEditorStatePasses();
             for (const auto& [mask, entities] : entityMaskMap)

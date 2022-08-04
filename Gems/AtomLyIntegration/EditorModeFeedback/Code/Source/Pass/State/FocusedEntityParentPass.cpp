@@ -45,18 +45,12 @@ namespace AZ::Render
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
         AzToolsFramework::ViewportEditorMode mode)
     {
-        if (mode == AzToolsFramework::ViewportEditorMode::Focus)
-        {
-            m_inFocusMode = true;
-        }
+        m_inFocusMode = (mode == AzToolsFramework::ViewportEditorMode::Focus);
     }
     void FocusedEntityParentPass::OnEditorModeDeactivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {   
-        if (mode == AzToolsFramework::ViewportEditorMode::Focus)
-        {
-            m_inFocusMode = false;
-        }
+        m_inFocusMode = !(mode == AzToolsFramework::ViewportEditorMode::Focus);
     }
 
     bool FocusedEntityParentPass::IsEnabled() const
@@ -74,4 +68,5 @@ namespace AZ::Render
 
         return focusModeInterface->GetFocusedEntities(AzToolsFramework::GetEntityContextId());
     }
-}
+} // namespace AZ::Render
+

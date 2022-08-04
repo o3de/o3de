@@ -28,7 +28,8 @@ namespace AZ::Render
     bool EditorStateBufferCopyPass::IsEnabled() const
     {
         const RPI::EditorStateBufferCopyPassData* passData =
-        RPI::PassUtils::GetPassData<RPI::EditorStateBufferCopyPassData>(m_passDescriptor);
+            RPI::PassUtils::GetPassData<RPI::EditorStateBufferCopyPassData>(m_passDescriptor);
+            
         if (passData == nullptr)
         {
             AZ_Error(

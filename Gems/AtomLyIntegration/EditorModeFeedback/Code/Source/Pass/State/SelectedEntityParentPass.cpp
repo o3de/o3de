@@ -18,7 +18,7 @@ namespace AZ::Render
     // Name of the mask for selected entities
     static constexpr const char* const SelectedEntityMaskName = "editormodeselectedmask";
 
-    // Indicies of child passes (a better way to do this will be to specifiy a pass template name/effect name pair for the
+    // Indices of child passes (a better way to do this will be to specifiy a pass template name/effect name pair for the
     // PassDescriptorList so we can lookup child passes by their effect name rather than having to maintain parity between
     // their ordering in the PassDescriptorList and in this enum but that is a problem that will be addressed in the next
     // version where we remove the CVARs and have the editor state effects configured via menus and registry, see the note

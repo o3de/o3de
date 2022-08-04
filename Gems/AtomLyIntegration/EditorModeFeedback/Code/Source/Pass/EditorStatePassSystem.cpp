@@ -25,6 +25,11 @@ namespace AZ::Render
     static constexpr const char* const MainPassParentPassName = "EditorModeFeedbackPassParent";
     static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
     static constexpr const char* const BufferCopyStatePassTemplatePassClassName = "EditorStateBufferCopyPass";
+    
+    static constexpr const char* const EditorModeDesaturationPassName = "EditorModeDesaturationPass";
+    static constexpr const char* const EditorModeTintPassPassName = "EditorModeTintPass";
+    static constexpr const char* const EditorModeBlurPassName = "EditorModeBlurPass";
+    static constexpr const char* const EditorModeOutlinePassName = "EditorModeOutlinePass";
 
     EditorStatePassSystem::EditorStatePassSystem(EditorStateParentPassList&& editorStateParentPasses)
         : m_editorStateParentPasses(AZStd::move(editorStateParentPasses))
@@ -34,10 +39,10 @@ namespace AZ::Render
         passSystem->AddPassCreator(Name(MainPassParentTemplatePassClassName), &EditorModeFeedbackParentPass::Create);
         passSystem->AddPassCreator(Name(BufferCopyStatePassTemplatePassClassName), &EditorStateBufferCopyPass::Create);
         passSystem->AddPassCreator(Name(StatePassTemplatePassClassName), &EditorStateParentPass::Create);
-        passSystem->AddPassCreator(Name("EditorModeDesaturationPass"), &EditorModeDesaturationPass::Create);
-        passSystem->AddPassCreator(Name("EditorModeTintPass"), &EditorModeTintPass::Create);
-        passSystem->AddPassCreator(Name("EditorModeBlurPass"), &EditorModeBlurPass::Create);
-        passSystem->AddPassCreator(Name("EditorModeOutlinePass"), &EditorModeOutlinePass::Create);
+        passSystem->AddPassCreator(Name(EditorModeDesaturationPassName), &EditorModeDesaturationPass::Create);
+        passSystem->AddPassCreator(Name(EditorModeTintPassPassName), &EditorModeTintPass::Create);
+        passSystem->AddPassCreator(Name(EditorModeBlurPassName), &EditorModeBlurPass::Create);
+        passSystem->AddPassCreator(Name(EditorModeOutlinePassName), &EditorModeOutlinePass::Create);
 
         // Editor state child effect passes
         passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
@@ -188,14 +193,17 @@ namespace AZ::Render
     {
         RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
         RPI::Ptr<RPI::Pass> mainPass = RPI::PassSystemInterface::Get()->FindFirstPass(mainPassParentPassFilter);
-        if (mainPass)
+
+        if (!mainPass)
         {
-            auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
-            for (auto& state : m_editorStateParentPasses)
-            {
-                auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
-                state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
-            }
+            return;
+        }
+
+        auto mainPassParent = azdynamic_cast<EditorModeFeedbackParentPass*>(mainPass.get());
+        for (auto& state : m_editorStateParentPasses)
+        {
+            auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
+            state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
         }
     }
 } // namespace AZ::Render

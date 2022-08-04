@@ -16,7 +16,7 @@
 
 namespace AZ::Render
 {
-    //! Pass class for the EditorStateBufferCopy pass.
+    //! Pass class for the EditorStateBufferCopy pass to copy over buffer contents.
     class EditorStateBufferCopyPass
         : public AZ::RPI::FullscreenTrianglePass
     {
