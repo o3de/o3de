@@ -18,7 +18,7 @@ namespace EMotionFX
     class Node;
     class Transform;
 
-    //! Provides UI in the viewport for manipulating physics configurations such as collider and joint limit settings. 
+    //! Provides UI in the viewport for manipulating physics configurations such as collider and joint limit settings.
     class PhysicsSetupViewportUiCluster
     {
     public:
@@ -39,15 +39,35 @@ namespace EMotionFX
             NumModes
         };
 
+        //! Used to track the cluster that a specific button is a part of.
+        struct ButtonData
+        {
+            AzToolsFramework::ViewportUi::ClusterId m_clusterId;
+            AzToolsFramework::ViewportUi::ButtonId m_buttonId;
+        };
+
+        constexpr static const char* const ColliderTranslationTooltip = "Switch to collider translation mode";
+        constexpr static const char* const ColliderRotationTooltip = "Switch to collider rotation mode";
+        constexpr static const char* const ColliderDimensionsTooltip = "Switch to collider dimensions mode";
+        constexpr static const char* const JointLimitParentRotationTooltip = "Switch to joint limit parent frame rotation mode";
+        constexpr static const char* const JointLimitChildRotationTooltip = "Switch to joint limit child frame rotation mode";
+        constexpr static const char* const JointLimitSwingTooltip = "Switch to joint swing limit mode";
+        constexpr static const char* const JointLimitTwistTooltip = "Switch to joint twist limit mode";
+        constexpr static const char* const JointLimitAutofitTooltip = "Automatic joint limit setup";
+
     private:
         void SetCurrentMode(SubMode mode);
         AZ::s32 GetViewportId() const;
 
-        AzToolsFramework::ViewportUi::ClusterId m_clusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
-        AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds;
+        AzToolsFramework::ViewportUi::ClusterId m_colliderClusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
+        AzToolsFramework::ViewportUi::ClusterId m_jointLimitClusterId = AzToolsFramework::ViewportUi::InvalidClusterId;
+        AZStd::vector<ButtonData> m_buttonData;
         AZStd::unordered_map<SubMode, AZStd::unique_ptr<PhysicsSetupManipulatorsBase>> m_subModes;
         SubMode m_subMode = SubMode::ColliderTranslation;
-        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_modeSelectionHandler; //!< Event handler for sub mode changes.
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
+            m_colliderModeSelectionHandler; //!< Event handler for sub mode changes in the collider cluster.
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
+            m_jointLimitModeSelectionHandler; //!< Event handler for sub mode changes in the joint limit cluster.
         PhysicsSetupManipulatorData m_physicsSetupManipulatorData;
         mutable AZStd::optional<AZ::s32> m_viewportId;
         bool m_hasCapsuleCollider = false;

@@ -15,6 +15,7 @@
 #include <GraphModel/Model/Node.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeConfig.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
 
 namespace MaterialCanvas
@@ -54,6 +55,10 @@ namespace MaterialCanvas
         // MaterialCanvasDocumentRequestBus::Handler overrides...
         GraphCanvas::GraphId GetGraphId() const override;
         const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const override;
+        AZStd::string GetGraphName() const override;
+        bool CompileGraph() const override;
+        void QueueCompileGraph() const override;
+        bool IsCompileGraphQueued() const override;
 
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
@@ -72,9 +77,46 @@ namespace MaterialCanvas
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
 
-        bool CompareNodeExecutionOrder(GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB) const;
+        // Convert the template file path into a save file path based on the document name.
+        AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
+
+        // Get a list of all of the graph nodes sorted in execution order based on input connections.
         AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
-        bool CompileGraph() const;
+
+        // Perform a search and replace operation on all of the strings stored in a container.
+        void ReplaceStringsInContainer(
+            const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
+
+        // Convert special slot type names, like color, into one compatible with AZSL shader code.
+        AZStd::string ConvertSlotTypeToAZSL(const AZStd::string& slotTypeName) const;
+
+        // Convert a stored slot value into a string representation that can be injected into AZSL shader code.
+        AZStd::string ConvertSlotValueToAZSL(const AZStd::any& slotValue) const;
+
+        // Determine if instructions contained on an input node should be used as part of code generation based on node connections.
+        bool ShouldUseInstructionsFromInputNode(
+            GraphModel::ConstNodePtr outputNode,
+            GraphModel::ConstNodePtr inputNode,
+            const AZStd::vector<AZStd::string>& inputSlotNames) const;
+
+        // Collect instructions from a slot and perform substitutions based on node and slot types, names, values, and connections.
+        AZStd::vector<AZStd::string> GetInstructionsFromSlot(
+            GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
+
+        // Generate AZSL instructions for an output node by evaluating all of the sorted graph nodes for connections to input slots
+        AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
+            GraphModel::ConstNodePtr outputNode,
+            const AZStd::vector<GraphModel::ConstNodePtr>& sortedNodes,
+            const AZStd::vector<AZStd::string>& inputSlotNames) const;
+
+        using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
+
+        // Search for marked up blocks of text from a template and replace lines between them with lines provided by a function.
+        void ReplaceLinesInTemplateBlock(
+            const AZStd::string& blockBeginToken,
+            const AZStd::string& blockEndToken,
+            const LineGenerationFn& lineGenerationFn,
+            AZStd::vector<AZStd::string>& templateLines) const;
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
@@ -82,6 +124,7 @@ namespace MaterialCanvas
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
         bool m_modified = {};
+        mutable bool m_compileGraphQueued = {};
         mutable AZStd::vector<AZStd::string> m_generatedFiles;
     };
 } // namespace MaterialCanvas

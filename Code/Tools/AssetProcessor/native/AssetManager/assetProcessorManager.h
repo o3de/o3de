@@ -224,6 +224,14 @@ namespace AssetProcessor
         //! Request to invalidate and reprocess a source asset or folder containing source assets
         AZ::u64 RequestReprocess(const QString& sourcePath);
         AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
+
+        //! Retrieves the scan folder ID for the intermediate asset scan folder, if available.
+        //! Calls GetIntermediateAssetsScanFolderId for the platform config, which returns an optional.
+        //! If the scan folder ID is not available, returns nullopt, otherwise returns the scan folder ID.
+        //! The scan folder ID may not be available if the platform config is not available,
+        //! or the scan folder ID hasn't been set for the platform config.
+        AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderId() const;
+
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
 
