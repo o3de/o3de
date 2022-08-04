@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 #include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
@@ -25,6 +25,6 @@ namespace AZ::RPI
         virtual ~EditorStateBufferCopyPassData() = default;
 
         //! Pointer to the owning editor state effect parent pass instance.
-        const Render::EditorStateParentPassBase* editorStatePass = nullptr;
+        const Render::EditorStateBase* editorStatePass = nullptr;
     };
 } // namespace AZ::RPI

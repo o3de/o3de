@@ -6,7 +6,7 @@
  *
  */
 
-#include <Pass/State/FocusedEntityParentPass.h>
+#include <Pass/State/FocusedEntityState.h>
 
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -30,35 +30,35 @@ namespace AZ::Render
         };
     }
 
-    FocusedEntityParentPass::FocusedEntityParentPass()
-        : EditorStateParentPassBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
+    FocusedEntityState::FocusedEntityState()
+        : EditorStateBase(EditorState::FocusMode, "FocusMode", CreateFocusedEntityChildPasses())
     {
         AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
     }
 
-    FocusedEntityParentPass::~FocusedEntityParentPass()
+    FocusedEntityState::~FocusedEntityState()
     {
         AzToolsFramework::ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
     }
 
-    void FocusedEntityParentPass::OnEditorModeActivated(
+    void FocusedEntityState::OnEditorModeActivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState,
         AzToolsFramework::ViewportEditorMode mode)
     {
         m_inFocusMode = (mode == AzToolsFramework::ViewportEditorMode::Focus);
     }
-    void FocusedEntityParentPass::OnEditorModeDeactivated(
+    void FocusedEntityState::OnEditorModeDeactivated(
         [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {   
         m_inFocusMode = !(mode == AzToolsFramework::ViewportEditorMode::Focus);
     }
 
-    bool FocusedEntityParentPass::IsEnabled() const
+    bool FocusedEntityState::IsEnabled() const
     {
-        return EditorStateParentPassBase::IsEnabled() && m_inFocusMode;
+        return EditorStateBase::IsEnabled() && m_inFocusMode;
     }
 
-    AzToolsFramework::EntityIdList FocusedEntityParentPass::GetMaskedEntities() const
+    AzToolsFramework::EntityIdList FocusedEntityState::GetMaskedEntities() const
     {
         const auto focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
         if (!focusModeInterface)

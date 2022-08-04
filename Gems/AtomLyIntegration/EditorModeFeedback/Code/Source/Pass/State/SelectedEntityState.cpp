@@ -6,7 +6,7 @@
  *
  */
 
-#include <Pass/State/SelectedEntityParentPass.h>
+#include <Pass/State/SelectedEntityState.h>
 #include <Pass/Child/EditorModeOutlinePass.h>
 
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -38,12 +38,12 @@ namespace AZ::Render
         };
     }
 
-    SelectedEntityParentPass::SelectedEntityParentPass()
-        : EditorStateParentPassBase(EditorState::EntitySelection, "EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
+    SelectedEntityState::SelectedEntityState()
+        : EditorStateBase(EditorState::EntitySelection, "EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
     {
     }
 
-    void SelectedEntityParentPass::UpdatePassData([[maybe_unused]] RPI::ParentPass* parentPass)
+    void SelectedEntityState::UpdatePassData([[maybe_unused]] RPI::ParentPass* parentPass)
     {
         // Note: this is an example of how the state passes configure their child passes to tailor the effects in response to
         // settigns menus etc. Right now they can't be set here as the temporary CVARS are hogging the pass configuration
@@ -56,7 +56,7 @@ namespace AZ::Render
         //}
     }
 
-    AzToolsFramework::EntityIdList SelectedEntityParentPass::GetMaskedEntities() const
+    AzToolsFramework::EntityIdList SelectedEntityState::GetMaskedEntities() const
     {
         AzToolsFramework::EntityIdList initialSelectedEntityList, selectedEntityList;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(

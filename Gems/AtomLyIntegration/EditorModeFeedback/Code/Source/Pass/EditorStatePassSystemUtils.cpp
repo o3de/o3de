@@ -28,17 +28,17 @@ namespace AZ::Render
         return Name(AZStd::string(drawList.GetStringView()) + "_EntityMaskPass");
     }
 
-    Name GetBufferCopyPassTemplateName(const EditorStateParentPassBase& state)
+    Name GetBufferCopyPassTemplateName(const EditorStateBase& state)
     {
         return Name(state.GetStateName() + "BufferCopyTemplate");
     }
     
-    Name GetBufferCopyPassNameForState(const EditorStateParentPassBase& state)
+    Name GetBufferCopyPassNameForState(const EditorStateBase& state)
     {
         return Name(state.GetStateName() + "BufferCopyPass");
     }
 
-    void CreateAndAddStateParentPassTemplate(const EditorStateParentPassBase& state)
+    void CreateAndAddStateParentPassTemplate(const EditorStateBase& state)
     {
         auto stateParentPassTemplate = AZStd::make_shared<RPI::PassTemplate>();
         stateParentPassTemplate->m_name = state.GetPassTemplateName();
@@ -142,7 +142,7 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->AddPassTemplate(stateParentPassTemplate->m_name, stateParentPassTemplate);
     }
 
-    void CreateAndAddBufferCopyPassTemplate(const EditorStateParentPassBase& state)
+    void CreateAndAddBufferCopyPassTemplate(const EditorStateBase& state)
     {
         auto passTemplate = AZStd::make_shared<RPI::PassTemplate>();
         passTemplate->m_name = GetBufferCopyPassTemplateName(state);

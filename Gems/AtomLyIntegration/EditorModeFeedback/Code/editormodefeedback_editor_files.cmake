@@ -28,17 +28,17 @@ set(FILES
     Source/Pass/State/EditorStateParentPass.cpp
     Source/Pass/State/EditorStateParentPass.h
     Source/Pass/State/EditorStateParentPassData.h
-    Source/Pass/State/EditorStateParentPassBase.cpp
-    Source/Pass/State/EditorStateParentPassBase.h
+    Source/Pass/State/EditorStateBase.cpp
+    Source/Pass/State/EditorStateBase.h
     Source/Pass/State/EditorStateBufferCopyPass.cpp
     Source/Pass/State/EditorStateBufferCopyPass.h
     Source/Pass/State/EditorStateBufferCopyPass.cpp
     Source/Pass/State/EditorStateBufferCopyPass.h
     Source/Pass/State/EditorStateBufferCopyPassData.h
-    Source/Pass/State/FocusedEntityParentPass.cpp
-    Source/Pass/State/FocusedEntityParentPass.h
-    Source/Pass/State/SelectedEntityParentPass.cpp
-    Source/Pass/State/SelectedEntityParentPass.h
+    Source/Pass/State/FocusedEntityState.cpp
+    Source/Pass/State/FocusedEntityState.h
+    Source/Pass/State/SelectedEntityState.cpp
+    Source/Pass/State/SelectedEntityState.h
     Source/Draw/DrawableMeshEntity.cpp
     Source/Draw/DrawableMeshEntity.h
     Source/Draw/EditorStateMaskRenderer.cpp

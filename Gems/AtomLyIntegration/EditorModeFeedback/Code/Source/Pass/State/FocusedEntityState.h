@@ -8,20 +8,20 @@
 
 #pragma once
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 
 namespace AZ::Render
 {
     //! Class for the Focused Entity editor state effect.
-    class FocusedEntityParentPass
-        : public EditorStateParentPassBase
+    class FocusedEntityState
+        : public EditorStateBase
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
     {
     public:
-        FocusedEntityParentPass();
-        ~FocusedEntityParentPass();
+        FocusedEntityState();
+        ~FocusedEntityState();
 
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(
@@ -29,7 +29,7 @@ namespace AZ::Render
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // EditorStateParentPassBase overrides ...
+        // EditorStateBase overrides ...
         bool IsEnabled() const override;
         AzToolsFramework::EntityIdList GetMaskedEntities() const override;
 

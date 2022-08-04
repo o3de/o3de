@@ -7,8 +7,8 @@
  */
 
 #include <EditorModeFeedbackFeatureProcessor.h>
-#include <Pass/State/FocusedEntityParentPass.h>
-#include <Pass/State/SelectedEntityParentPass.h>
+#include <Pass/State/FocusedEntityState.h>
+#include <Pass/State/SelectedEntityState.h>
 
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -51,8 +51,8 @@ namespace AZ
             }
 
             EditorStateList editorStates;
-            editorStates.push_back(AZStd::make_unique<FocusedEntityParentPass>());
-            editorStates.push_back(AZStd::make_unique<SelectedEntityParentPass>());
+            editorStates.push_back(AZStd::make_unique<FocusedEntityState>());
+            editorStates.push_back(AZStd::make_unique<SelectedEntityState>());
             m_editorStatePassSystem = AZStd::make_unique<EditorStatePassSystem>(AZStd::move(editorStates));
         }
 

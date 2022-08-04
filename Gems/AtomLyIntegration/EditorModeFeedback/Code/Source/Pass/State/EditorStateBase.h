@@ -30,7 +30,7 @@ namespace AZ::Render
     //! pipeline for these passes is determined by the order in which they are added to the editor mode pass system
     //! (first in, first rendered) but it is the responsibility of the child classes themselves to enable and disable
     //! themselves as per the editor state, as well as handling their own mutal exclusivity (if any).
-    class EditorStateParentPassBase
+    class EditorStateBase
         : private EditorStateRequestsBus::Handler
     {
     public:
@@ -40,19 +40,19 @@ namespace AZ::Render
         //! @param stateName Name for this editor mode stat.
         //! @param passDescriptorList List of child passes to create, in order of appearance.
         //! @param maskDrawList The entity mask to use for this state.
-        EditorStateParentPassBase(
+        EditorStateBase(
             EditorState editorState,
             const AZStd::string& stateName,
             const PassDescriptorList& childPassDescriptorList,
             const AZStd::string& maskDrawList);
 
         //! Delegate constructor for editor state parents that use the default entity mask.
-        EditorStateParentPassBase(
+        EditorStateBase(
             EditorState editorState,
             const AZStd::string& stateName,
             const PassDescriptorList& childPassDescriptorList);
 
-        virtual ~EditorStateParentPassBase();
+        virtual ~EditorStateBase();
 
         //! Returns the entities that should be rendered to the entity mask for this editor state.
         [[nodiscard]] virtual AzToolsFramework::EntityIdList GetMaskedEntities() const = 0;
@@ -92,7 +92,7 @@ namespace AZ::Render
         {
             if (index >= m_childPassDescriptorList.size())
             {
-                AZ_Error("EditorStateParentPassBase", false, "Couldn't find child pass");
+                AZ_Error("EditorStateBase", false, "Couldn't find child pass");
                 return nullptr;
             }
 

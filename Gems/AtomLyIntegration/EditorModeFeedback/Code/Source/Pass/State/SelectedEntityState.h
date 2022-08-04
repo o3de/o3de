@@ -8,21 +8,21 @@
 
 #pragma once
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 namespace AZ::Render
 {
     //! Class for the Selected Entity outline editor state effect.
-    class SelectedEntityParentPass
-        : public EditorStateParentPassBase
+    class SelectedEntityState
+        : public EditorStateBase
     {
     public:
-        SelectedEntityParentPass();
+        SelectedEntityState();
 
         // EditorModeStateParentPass overrides ...
         void UpdatePassData(RPI::ParentPass* parentPass) override;
 
-        // EditorStateParentPassBase overrides ...
+        // EditorStateBase overrides ...
         AzToolsFramework::EntityIdList GetMaskedEntities() const override;
     };
 } // namespace AZ::Render

@@ -6,14 +6,14 @@
  *
  */
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 namespace AZ::Render
 {
     // Name of the default mask for entities of interest
     static constexpr const char* const DefaultEntityMaskName = "editormodeinterestmask";
 
-    EditorStateParentPassBase::EditorStateParentPassBase(
+    EditorStateBase::EditorStateBase(
         EditorState editorState,
         const AZStd::string& stateName,
         const PassDescriptorList& childPassDescriptorList,
@@ -26,50 +26,50 @@ namespace AZ::Render
         EditorStateRequestsBus::Handler::BusConnect(m_state);
     }
 
-    EditorStateParentPassBase::EditorStateParentPassBase(
+    EditorStateBase::EditorStateBase(
         EditorState editorState,
         const AZStd::string& stateName,
         const PassDescriptorList& childPassDescriptorList)
-        : EditorStateParentPassBase(editorState, stateName, childPassDescriptorList, DefaultEntityMaskName)
+        : EditorStateBase(editorState, stateName, childPassDescriptorList, DefaultEntityMaskName)
     {
     }
 
-    EditorStateParentPassBase::~EditorStateParentPassBase()
+    EditorStateBase::~EditorStateBase()
     {
         EditorStateRequestsBus::Handler::BusDisconnect();
     }
 
-    const AZStd::string& EditorStateParentPassBase::GetStateName() const
+    const AZStd::string& EditorStateBase::GetStateName() const
     {
         return m_stateName;
     }
 
-    const Name& EditorStateParentPassBase::GetEntityMaskDrawList() const
+    const Name& EditorStateBase::GetEntityMaskDrawList() const
     {
         return m_entityMaskDrawList;
     }
 
-    const PassDescriptorList& EditorStateParentPassBase::GetChildPassDescriptorList() const
+    const PassDescriptorList& EditorStateBase::GetChildPassDescriptorList() const
     {
         return m_childPassDescriptorList;
     }
 
-    Name EditorStateParentPassBase::GetPassTemplateName() const
+    Name EditorStateBase::GetPassTemplateName() const
     {
         return Name(GetStateName() + "Template");
     }
 
-    Name EditorStateParentPassBase::GetPassName() const
+    Name EditorStateBase::GetPassName() const
     {
         return Name(GetStateName() + "Pass");
     }
 
-    void EditorStateParentPassBase::AddParentPassForPipeline(const Name& pipelineName, RPI::Ptr<RPI::Pass> parentPass)
+    void EditorStateBase::AddParentPassForPipeline(const Name& pipelineName, RPI::Ptr<RPI::Pass> parentPass)
     {
         m_parentPasses[pipelineName] = parentPass;
     }
 
-    void EditorStateParentPassBase::UpdatePassDataForPipelines()
+    void EditorStateBase::UpdatePassDataForPipelines()
     {
         for (auto& [pipelineName, parentPass] : m_parentPasses)
         {
@@ -77,7 +77,7 @@ namespace AZ::Render
         }
     }
 
-    void EditorStateParentPassBase::SetEnabled(bool enabled)
+    void EditorStateBase::SetEnabled(bool enabled)
     {
         m_enabled = enabled;
     }

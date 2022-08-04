@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -19,7 +19,7 @@
 namespace AZ::Render
 {
     //! Container for specialized editor state effect parent pass classes.
-    using EditorStateList = AZStd::vector<AZStd::unique_ptr<EditorStateParentPassBase>>;
+    using EditorStateList = AZStd::vector<AZStd::unique_ptr<EditorStateBase>>;
 
     //! Mapping for mask draw tags to entities rendered to that mask.
     using EntityMaskMap = AZStd::unordered_map<Name, AzToolsFramework::EntityIdSet>;

@@ -6,7 +6,7 @@
  *
  */
 
-#include <Pass/State/EditorStateParentPassBase.h>
+#include <Pass/State/EditorStateBase.h>
 
 namespace AZ::Render
 {
@@ -17,16 +17,16 @@ namespace AZ::Render
     Name GetMaskPassNameForDrawList(const Name& drawList);
 
     //! Returns the name for the buffer copy pass template for the specified editor state.
-    Name GetBufferCopyPassTemplateName(const EditorStateParentPassBase& state);
+    Name GetBufferCopyPassTemplateName(const EditorStateBase& state);
     
     //! Returns the name for the buffer copy pass for the specified editor state.
-    Name GetBufferCopyPassNameForState(const EditorStateParentPassBase& state);
+    Name GetBufferCopyPassNameForState(const EditorStateBase& state);
 
     //! Creates and adds to the Atom pass system the parent pass template for the specified editor state.
-    void CreateAndAddStateParentPassTemplate(const EditorStateParentPassBase& state);
+    void CreateAndAddStateParentPassTemplate(const EditorStateBase& state);
 
     //! Creates and adds to the Atom pass system the buffer copy pass template for the specified editor state.
-    void CreateAndAddBufferCopyPassTemplate(const EditorStateParentPassBase& state);
+    void CreateAndAddBufferCopyPassTemplate(const EditorStateBase& state);
 
     //! Creates and adds to the Atom pass system the pass template for the mask with the specified draw list.
     void CreateAndAddMaskPassTemplate(const Name& drawList);
