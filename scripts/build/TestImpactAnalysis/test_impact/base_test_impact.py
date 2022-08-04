@@ -6,20 +6,45 @@
 #
 #
 
+from abc import ABC, abstractmethod
+import uuid
+from pathlib import PurePath, Path
 import json
 import subprocess
 import re
-import uuid
-import pathlib
+import os
+from test_impact import RuntimeArgs
 from git_utils import Repo
-from tiaf_persistent_storage_local import PersistentStorageLocal
-from tiaf_persistent_storage_s3 import PersistentStorageS3
-from tiaf_logger import get_logger
+from persistent_storage import PersistentStorageLocal, PersistentStorageS3
+from tiaf_tools import get_logger
 
 logger = get_logger(__file__)
 
+# Constants to access our argument dictionary for the values of different arguments. Not guarunteed to be in dictionary in all cases.
+ARG_S3_BUCKET = 's3_bucket'
+ARG_SUITE = 'suite'
+ARG_CONFIG = 'config'
+ARG_SOURCE_BRANCH = 'src_branch'
+ARG_DESTINATION_BRANCH = 'dst_branch'
+ARG_COMMIT = 'commit'
+ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
+ARG_INTEGRATION_POLICY = RuntimeArgs.COMMON_IPOLICY.driver_argument
+ARG_TEST_FAILURE_POLICY = RuntimeArgs.COMMON_FPOLICY.driver_argument
+ARG_CHANGE_LIST = RuntimeArgs.COMMON_CHANGELIST.driver_argument
+ARG_SEQUENCE = RuntimeArgs.COMMON_SEQUENCE.driver_argument
+ARG_REPORT = RuntimeArgs.COMMON_REPORT.driver_argument
 
-class TestImpact:
+# Sequence types as constants
+TIA_NOWRITE = 'tianowrite'
+TIA_SEED = 'seed'
+TIA_ON = 'tia'
+TIA_REGULAR = 'regular'
+    
+
+
+class BaseTestImpact(ABC):
+
+    _runtime_type = None
 
     def __init__(self, args: dict):
         """
@@ -38,14 +63,14 @@ class TestImpact:
         # Unique instance id to be used as part of the report name.
         self._instance_id = uuid.uuid4().hex
 
-        self._s3_bucket = args.get('s3_bucket')
-        self._suite = args.get('suite')
+        self._s3_bucket = args.get(ARG_S3_BUCKET)
+        self._suite = args.get(ARG_SUITE)
 
-        self._config = self._parse_config_file(args['config'])
+        self._config = self._parse_config_file(args.get(ARG_CONFIG))
 
         # Initialize branches
-        self._src_branch = args.get("src_branch")
-        self._dst_branch = args.get("dst_branch")
+        self._src_branch = args.get(ARG_SOURCE_BRANCH)
+        self._dst_branch = args.get(ARG_DESTINATION_BRANCH)
         logger.info(f"Source branch: '{self._src_branch}'.")
         logger.info(f"Destination branch: '{self._dst_branch}'.")
 
@@ -53,19 +78,18 @@ class TestImpact:
         self._determine_source_of_truth()
 
         # Initialize commit info
-        self._dst_commit = args.get("commit")
+        self._dst_commit = args.get(ARG_COMMIT)
         logger.info(f"Commit: '{self._dst_commit}'.")
         self._src_commit = None
         self._commit_distance = None
 
-        # Default to a regular sequence run unless otherwise specified
-        sequence_type = "regular"
+        sequence_type = self._default_sequence_type
 
         # If flag is set for us to use TIAF
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
-            self._persistent_storage = self._intialize_persistent_storage(
-                s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get('s3_top_level_dir'))
+            self._persistent_storage = self._initialize_persistent_storage(
+                s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get(ARG_S3_TOP_LEVEL_DIR))
 
             # If persistent storage intialized correctly
             if self._persistent_storage:
@@ -85,90 +109,45 @@ class TestImpact:
                 if self._has_change_list:
                     if self._is_source_of_truth_branch:
                         # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
-                        sequence_type = "tia"
+                        sequence_type = TIA_ON
                     else:
                         # Use TIA no-write sequence (regular subset of tests) for non coverage updating branches
-                        sequence_type = "tianowrite"
+                        sequence_type = TIA_NOWRITE
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        self._runtime_args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-                    self._runtime_args.append(
-                        f"--changelist={self._change_list_path}")
-                    logger.info(
-                        f"Change list is set to '{self._change_list_path}'.")
+                        args[ARG_INTEGRATION_POLICY] = "continue"
+                    args[ARG_CHANGE_LIST] = self._change_list_path
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
-                        sequence_type = "seed"
+                        sequence_type = TIA_SEED
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
-                        args['test_failure_policy'] = "continue"
+                        args[ARG_TEST_FAILURE_POLICY] = "continue"
                     else:
                         # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
-                        sequence_type = "regular"
+                        sequence_type = TIA_REGULAR
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        self._runtime_args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-
+                        args[ARG_INTEGRATION_POLICY] = "continue"
+        # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
+        args[ARG_SEQUENCE] = sequence_type
+        self._report_file = PurePath(self._temp_workspace).joinpath(
+            f"report.{self._instance_id}.json")
+        args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(
-            args, sequence_type, self._runtime_args)
+            args, self._runtime_args)
 
-    def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
+    def _parse_arguments_to_runtime(self, args, runtime_args):
         """
         Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
 
         @param args: Dictionary containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
-        @sequence_type: The sequence type as determined when initialising this TestImpact object.
         @runtime_args: A list of strings that will become the arguments for our runtime.
         """
-        runtime_args.append(f"--sequence={sequence_type}")
-        logger.info(f"Sequence type is set to '{sequence_type}'.")
 
-        if args.get('safe_mode'):
-            runtime_args.append("--safemode=on")
-            logger.info("Safe mode set to 'on'.")
-        else:
-            runtime_args.append("--safemode=off")
-            logger.info("Safe mode set to 'off'.")
-
-        # Test failure policy
-        test_failure_policy = args.get('test_failure_policy')
-        runtime_args.append(f"--fpolicy={test_failure_policy}")
-        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
-
-        # Sequence report
-        self._report_file = pathlib.PurePath(self._temp_workspace).joinpath(
-            f"report.{self._instance_id}.json")
-        runtime_args.append(f"--report={self._report_file}")
-        logger.info(f"Sequence report file is set to '{self._report_file}'.")
-
-        # Suite
-        suite = args.get('suite')
-        runtime_args.append(f"--suite={suite}")
-        logger.info(f"Test suite is set to '{suite}'.")
-
-        # Exclude tests
-        exclude_file = args.get('exclude_file')
-        if exclude_file:
-            runtime_args.append(f"--exclude={exclude_file}")
-            logger.info(
-                f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
-        else:
-            logger.info(f'Exclude file not found, skipping.')
-
-        # Timeouts
-        test_timeout = args.get('test_timeout')
-        if test_timeout:
-            runtime_args.append(f"--ttimeout={test_timeout}")
-            logger.info(
-                f"Test target timeout is set to {test_timeout} seconds.")
-
-        global_timeout = args.get('global_timeout')
-        if global_timeout:
-            runtime_args.append(f"--gtimeout={global_timeout}")
-            logger.info(
-                f"Global sequence timeout is set to {test_timeout} seconds.")
+        for argument in RuntimeArgs:
+            value = args.get(argument.driver_argument)
+            if value:
+                runtime_args.append(f"{argument.runtime_arg}{value}")
+                logger.info(f"{argument.message}{value}")
 
     def _handle_historic_data(self):
         """
@@ -203,9 +182,9 @@ class TestImpact:
             # If this commit is different to the last commit in our historic data, we can diff the commits to get our change list
             self._attempt_to_generate_change_list()
 
-    def _intialize_persistent_storage(self, suite: str,  s3_bucket: str = None, s3_top_level_dir: str = None):
+    def _initialize_persistent_storage(self, suite: str, s3_bucket: str = None, s3_top_level_dir: str = None):
         """
-        Initialise our persistent storage object. Defaults to initialising local storage, unless the s3_bucket argument is not None. 
+        Initialise our persistent storage object. Defaults to initialising local storage, unless the s3_bucket argument is not None.
         Returns PersistentStorage object or None if initialisation failed.
 
         @param suite: The testing suite we are using.
@@ -217,7 +196,7 @@ class TestImpact:
         try:
             if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
+                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch)
             else:
                 return PersistentStorageLocal(
                     self._config, suite, self._dst_commit)
@@ -260,7 +239,7 @@ class TestImpact:
 
                 # TIAF
                 self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = pathlib.Path(config["common"]["repo"]["tiaf_bin"])
+                self._tiaf_bin = Path(config["common"]["repo"]["tiaf_bin"])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -314,7 +293,7 @@ class TestImpact:
                 # Attempt to generate a diff between the src and dst commits
                 logger.info(
                     f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
-                diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(
+                diff_path = Path(PurePath(self._temp_workspace).joinpath(
                     f"changelist.{self._instance_id}.diff"))
                 self._repo.create_diff_file(
                     self._src_commit, self._dst_commit, diff_path, multi_branch)
@@ -352,7 +331,7 @@ class TestImpact:
 
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self._change_list, indent=4)
-            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(
+            change_list_path = PurePath(self._temp_workspace).joinpath(
                 f"changelist.{self._instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
@@ -396,6 +375,21 @@ class TestImpact:
         result["report"] = report
         result["change_list"] = self._change_list
         return result
+
+    def _compile_s3_top_level_dir_name(self, dir_name: str):
+        """
+        Function to build our s3_top_level_dir name. Reads the argument from our dictionary and then appends runtime_type to the end.
+        If s3_top_level_dir name is not provided in args, we will default to "tiaf"+runtime_type.
+
+        @param dir_name: Name of the directory to use as top level when compiling directory name.
+
+        @return: Compiled s3_top_level_dir name
+        """
+        if dir_name:
+            dir_name = os.path.join(dir_name, self.runtime_type)
+            return dir_name
+        raise SystemError(
+            "s3_top_level_dir not set while trying to access s3 instance.")
 
     def run(self):
         """
@@ -513,3 +507,20 @@ class TestImpact:
         The source of truth branch for this TIAF run.
         """
         return self._source_of_truth_branch
+
+    @property
+    @abstractmethod
+    def runtime_type(self):
+        """
+        The runtime this TestImpact supports. Must be implemented by subclass.
+        Current options are "native" or "python".
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def default_sequence_type(self):
+        """
+        The default sequence type for this TestImpact class. Must be implemented by subclass.
+        """
+        pass

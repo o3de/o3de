@@ -17,6 +17,8 @@ set(FILES
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorWidgetAction.cpp
+    ActionManager/Action/EditorWidgetAction.h
     ActionManager/HotKey/HotKeyManager.cpp
     ActionManager/HotKey/HotKeyManager.h
     ActionManager/HotKey/HotKeyManagerInterface.h
