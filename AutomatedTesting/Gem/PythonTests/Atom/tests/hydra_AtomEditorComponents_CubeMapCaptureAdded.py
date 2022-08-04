@@ -18,12 +18,9 @@ class Tests:
     removal_undo = (
         "REDO CubeMap Capture Entity success",
         "P0: REDO CubeMap Capture Entity failed")
-    specular_ibl_property_set_to_very_high = (
+    specular_ibl_cubemap_quality_values = (
         "Specular IBL property set to Very High on CubeMap Capture Component",
         "P1: Couldn't set Specular IBL property to Very High on CubeMap Capture Component")
-    specular_ibl_property_set_to_very_low = (
-        "Specular IBL property set to Very Low on CubeMap Capture Component",
-        "P1: Couldn't set Specular IBL property to Very Low on CubeMap Capture Component")
     capture_type_property_set_to_Diffuse_ibl = (
         "Capture Type property set to Diffuse_IBL on CubeMap Capture Component",
         "P1: Couldn't set Capture Type property to Diffuse_IBL on CubeMap Capture Component")
@@ -109,12 +106,9 @@ def AtomEditorComponents_CubeMapCapture_AddedToEntity():
                 f"Specular IBL quality set too {quality}",
                 f"P1: failed to set 'Specular IBL quality' to {quality}")
             cubemap_capture_component.set_component_property_value(
-                AtomComponentProperties.cube_map_capture('Specular IBL CubeMap Quality'),
-                value=SPECULAR_IBL_QUALITY['Very High'])
-            Report.result(
-                Tests.specular_ibl_property_set_to_very_high,
-                cubemap_capture_component.get_component_property_value(AtomComponentProperties.cube_map_capture(
-                    'Specular IBL CubeMap Quality')) == SPECULAR_IBL_QUALITY['Very High'])
+                AtomComponentProperties.cube_map_capture('Specular IBL CubeMap Quality'), SPECULAR_IBL_QUALITY[quality])
+            Report.result(test_quality, cubemap_capture_component.get_component_property_value(
+                AtomComponentProperties.cube_map_capture('Specular IBL CubeMap Quality')) == SPECULAR_IBL_QUALITY[quality])
 
         # 6. Set Exposure property
         cubemap_capture_component.set_component_property_value(AtomComponentProperties.cube_map_capture('Exposure'), 16.0)
