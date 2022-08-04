@@ -22,7 +22,7 @@ namespace AZ::Render
 {
     static constexpr const char* const MainPassParentTemplateName = "EditorModeFeedbackParentTemplate";
     static constexpr const char* const MainPassParentTemplatePassClassName = "EditorModeFeedbackParentPass";
-    static constexpr const char* const MainPassParentPassName = "EditorModeFeedbackPassParent";
+    static constexpr const char* const MainPassParentPassName = "EditorModeFeedback";
     static constexpr const char* const StatePassTemplatePassClassName = "EditorStateParentPass";
     static constexpr const char* const BufferCopyStatePassTemplatePassClassName = "EditorStateBufferCopyPass";
     

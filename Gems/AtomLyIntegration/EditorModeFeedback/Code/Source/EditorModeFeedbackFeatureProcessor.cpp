@@ -88,6 +88,7 @@ namespace AZ
 
             for (const auto& mask : m_editorStatePassSystem->GetMasks())
             {
+                // Emplaces the mask key and mask renderer value in place for the mask renderers map
                 m_maskRenderers.emplace(
                     AZStd::piecewise_construct, AZStd::forward_as_tuple(mask), AZStd::forward_as_tuple(mask, m_maskMaterial));
             }
