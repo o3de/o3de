@@ -83,12 +83,8 @@ namespace ScriptEvents
                     errorMessage = "Failed to load selected file.";
                 }
             }
-            else
-            {
-                errorMessage = "Failed to select file.";
-            }
 
-            // failure
+            // failure or canceled
             return { SourceHandle(), errorMessage };
         }
 

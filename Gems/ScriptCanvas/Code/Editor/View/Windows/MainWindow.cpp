@@ -4510,14 +4510,17 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            QMessageBox mb
-                ( QMessageBox::Warning
-                , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
-                , result.second.c_str()
-                , QMessageBox::Close
-                , nullptr);
+            if (!result.second.empty())
+            {
+                QMessageBox mb
+                    ( QMessageBox::Warning
+                    , tr("Failed to open ScriptEvent file into ScriptCanvas Editor.")
+                    , result.second.c_str()
+                    , QMessageBox::Close
+                    , nullptr);
 
-            mb.exec();
+                mb.exec();
+            }
         }
     }
 
