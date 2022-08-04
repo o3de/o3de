@@ -34,6 +34,7 @@ namespace AzToolsFramework::ViewportUi
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) override;
         void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) override;
+        void SetSwitcherButtonTooltip(SwitcherId switcherId, ButtonId buttonId, const AZStd::string& tooltip) override;
         const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) override;
         const ButtonId CreateSwitcherButton(
             SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) override;
@@ -41,6 +42,7 @@ namespace AzToolsFramework::ViewportUi
         void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
         void RemoveSwitcher(SwitcherId switcherId) override;
+        void RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterVisible(ClusterId clusterId, bool visible) override;
         void SetSwitcherVisible(SwitcherId switcherId, bool visible);
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;
@@ -83,6 +85,8 @@ namespace AzToolsFramework::ViewportUi
         TextFieldId RegisterNewTextField(AZStd::shared_ptr<Internal::TextField>& textField);
         //! Update the corresponding ui element for the given button group.
         void UpdateButtonGroupUi(Internal::ButtonGroup* buttonGroup);
+        //! Update the corresponding ui element for the given button group.
+        void UpdateSwitcherButtonGroupUi(Internal::ButtonGroup* buttonGroup);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
     };

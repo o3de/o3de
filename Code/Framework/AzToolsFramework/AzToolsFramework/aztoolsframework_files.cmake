@@ -582,6 +582,8 @@ set(FILES
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeSwitcher.h
+    ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h
     ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
