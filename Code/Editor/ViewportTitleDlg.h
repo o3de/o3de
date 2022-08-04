@@ -141,7 +141,6 @@ protected:
 
     void UpdateMuteActionText();
 
-    //void OnToggleEditMode();
     void OnToggleDisplayInfo();
 
     void OnSpeedComboBoxEnter();
@@ -186,14 +185,14 @@ protected:
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 
     //! The different edit mode effects available in the Edit mode menu.
-    enum class EditMode
+    enum class FocusModeUxSetting
     {
         Normal, //!< No effect.
         Monochromatic //!< Monochromatic effect.
     };
 
     //! The currently active edit mode effect.
-    EditMode m_editMode = EditMode::Monochromatic;
+    FocusModeUxSetting m_editMode = FocusModeUxSetting::Monochromatic;
 };
 
 namespace AzToolsFramework

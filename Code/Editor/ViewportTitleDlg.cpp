@@ -439,13 +439,13 @@ void CViewportTitleDlg::OnMaximize()
 
 void CViewportTitleDlg::SetNormalEditMode()
 {
-    m_editMode = EditMode::Normal;
+    m_editMode = FocusModeUxSetting::Normal;
     UpdateEditMode();
 }
 
 void CViewportTitleDlg::SetMonochromaticEditMode()
 {
-    m_editMode = EditMode::Monochromatic;
+    m_editMode = FocusModeUxSetting::Monochromatic;
     UpdateEditMode();
 }
 
@@ -487,14 +487,14 @@ void CViewportTitleDlg::UpdateEditMode()
 
     switch (m_editMode)
     {
-    case EditMode::Normal:
+    case FocusModeUxSetting::Normal:
         {
             m_normalEditModeAction->setChecked(true);
             AZ::Render::EditorStateRequestsBus::Event(
                 AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
             break;
         }
-    case EditMode::Monochromatic:
+    case FocusModeUxSetting::Monochromatic:
         {
             m_monochromaticEditModeAction->setChecked(true);
             AZ::Render::EditorStateRequestsBus::Event(
