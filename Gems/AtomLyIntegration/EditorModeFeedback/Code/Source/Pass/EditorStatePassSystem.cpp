@@ -189,6 +189,14 @@ namespace AZ::Render
         return entityMaskMap;
     }
 
+    void EditorStatePassSystem::Update()
+    {
+        for (auto& state : m_editorStates)
+        {
+            state->UpdatePassDataForPipelines();
+        }
+    }
+
     void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
     {
         RPI::PassFilter mainPassParentPassFilter = RPI::PassFilter::CreateWithPassName(Name(MainPassParentPassName), renderPipeline);
@@ -204,6 +212,14 @@ namespace AZ::Render
         {
             auto statePass = mainPassParent->FindChildPass(Name(state->GetPassName()));
             state->AddParentPassForPipeline(mainPassParent->GetPathName(), statePass);
+        }
+    }
+
+    void EditorStatePassSystem::RemoveStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)
+    {
+        for (auto& state : m_editorStates)
+        {
+            state->RemoveParentPassForPipeline(mainPassParent->GetPathName());
         }
     }
 } // namespace AZ::Render

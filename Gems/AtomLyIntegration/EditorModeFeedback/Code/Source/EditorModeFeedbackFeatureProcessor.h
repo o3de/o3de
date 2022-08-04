@@ -38,6 +38,7 @@ namespace AZ
             // RPI::SceneNotificationBus overrides ...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
 
         private:
             //! The pass system for the editor state feedback effects.

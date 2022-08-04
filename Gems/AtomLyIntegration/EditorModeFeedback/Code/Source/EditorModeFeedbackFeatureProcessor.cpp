@@ -62,6 +62,11 @@ namespace AZ
             DisableSceneNotification();
         }
 
+        void EditorModeFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipelinePtr pipeline)
+        {
+            m_editorStatePassSystem->RemoveStatePassesForPipeline(pipeline.get());
+        }
+
         void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());

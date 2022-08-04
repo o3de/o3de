@@ -69,6 +69,11 @@ namespace AZ::Render
         m_parentPasses[pipelineName] = parentPass;
     }
 
+    void EditorStateBase::RemoveParentPassForPipeline(const Name& pipelineName, RPI::Ptr<RPI::Pass> parentPass)
+    {
+        m_parentPasses.erase(pipelineName);
+    }
+
     void EditorStateBase::UpdatePassDataForPipelines()
     {
         for (auto& [pipelineName, parentPass] : m_parentPasses)

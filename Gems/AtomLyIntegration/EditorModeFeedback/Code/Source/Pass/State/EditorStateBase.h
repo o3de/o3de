@@ -79,6 +79,9 @@ namespace AZ::Render
         //! Adds the pass class pointer for this pass for the specified pipeline.
         void AddParentPassForPipeline(const Name& pipelineName, RPI::Ptr<RPI::Pass> parentPass);
 
+        //! Removes the pass class pointer for this pass for the specified pipeline.
+        void RemoveParentPassForPipeline(const Name& pipelineName);
+
         //! Calls the update method for each pipeline this editor state effect pass is part of.
         void UpdatePassDataForPipelines();
 

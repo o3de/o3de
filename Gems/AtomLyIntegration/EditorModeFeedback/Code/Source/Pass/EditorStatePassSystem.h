@@ -40,6 +40,9 @@ namespace AZ::Render
         //! Configures the editor state pass instances for the specified render pipeline.
         void ConfigureStatePassesForPipeline(RPI::RenderPipeline* renderPipeline);
 
+        //! Removes the editor state pass instances for the specified render pipeline.
+        void RemoveStatePassesForPipeline(RPI::RenderPipeline* renderPipeline);
+
         //! Returns the set of all masks used by this pass system.
         const AZStd::unordered_set<Name>& GetMasks() const
         {
@@ -47,13 +50,7 @@ namespace AZ::Render
         }
 
         //! Performs any updates for the editor state effect parent pass instances for the given simulation tick.
-        void Update()
-        {
-            for (auto& state : m_editorStates)
-            {
-                state->UpdatePassDataForPipelines();
-            }
-        }
+        void Update();
 
     private:
         //! Parent passes for each editor state (ordering in vector is ordering of rendering).
