@@ -3494,10 +3494,14 @@ namespace UnitTest
 
             void OnAssetReady(Asset<AssetData> asset) override
             {
+                AZ_TracePrintf("ThreadA", "OnAssetReady called\n");
                 m_signal.release();
                 m_signal.acquire();
+                AZ_TracePrintf("ThreadA", "OnAssetReady resumed\n");
                 m_otherAsset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetC, Default);
+                AZ_TracePrintf("ThreadA", "OnAssetReady GetAsset done\n");
                 m_otherAsset.BlockUntilLoadComplete();
+                AZ_TracePrintf("ThreadA", "OnAssetReady asset loaded\n");
             }
 
             AZ::Data::Asset<AZ::Data::AssetData> m_otherAsset;
@@ -3508,16 +3512,19 @@ namespace UnitTest
         SignalType signal;
         SignalType finishedSignal;
 
+        // This thread will wait until the initial OnAssetReady event has fired on threadA, at which point it will call GetAsset
+        // and signal for threadA to continue after the AssetContainer lock has been acquired
         AZStd::thread threadB([&signal, &finishedSignal]()
         {
             signal.acquire();
 
             ContainerListener listener(signal);
 
+            AZ_TracePrintf("ThreadB", "Starting\n");
             auto asset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetB, Default);
-
+            AZ_TracePrintf("ThreadB", "Got asset\n");
             asset.BlockUntilLoadComplete();
-
+            AZ_TracePrintf("ThreadB", "Asset loaded\n");
             finishedSignal.release();
         });
 
