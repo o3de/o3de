@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Pass/EditorModeFeedbackPassBase.h>
+#include <Pass/Child/EditorModeFeedbackChildPassBase.h>
 
 namespace AZ
 {
@@ -15,7 +15,7 @@ namespace AZ
     {
         //! Pass for editor mode feedback outline effect.
         class EditorModeOutlinePass
-            : public EditorModeFeedbackPassBase
+            : public EditorModeFeedbackChildPassBase
         {
         public:
             //! The outline syles supported by the outline effect.
@@ -25,7 +25,7 @@ namespace AZ
                 Visible //!< Outlines only the visible fragments of the entitites of interest.
             };
 
-            AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackPassBase);
+            AZ_RTTI(EditorModeOutlinePass, "{5DEBA4FC-6BB3-417B-B052-7CB87EF15F84}", EditorModeFeedbackChildPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeOutlinePass, SystemAllocator, 0);
 
             virtual ~EditorModeOutlinePass() = default;

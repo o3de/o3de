@@ -30,15 +30,15 @@ namespace AZ
     {
         //! Base class to provide depth transitioning and final blend control to all visual effect passes of the editor mode
         //! feedback system.
-        class EditorModeFeedbackPassBase
+        class EditorModeFeedbackChildPassBase
             : public AZ::RPI::FullscreenTrianglePass
         {
         public:
-            AZ_RTTI(EditorModeFeedbackPassBase, "{F1F345E3-1396-47F7-9CA4-9AC87A2E9829}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(EditorModeFeedbackPassBase, SystemAllocator, 0);
+            AZ_RTTI(EditorModeFeedbackChildPassBase, "{F1F345E3-1396-47F7-9CA4-9AC87A2E9829}", AZ::RPI::FullscreenTrianglePass);
+            AZ_CLASS_ALLOCATOR(EditorModeFeedbackChildPassBase, SystemAllocator, 0);
 
             //! Creates a EditorModeFeedbackPassBase
-            static RPI::Ptr<EditorModeFeedbackPassBase> Create(const RPI::PassDescriptor& descriptor);
+            static RPI::Ptr<EditorModeFeedbackChildPassBase> Create(const RPI::PassDescriptor& descriptor);
 
             //! Sets the minimum blend amount that will be calculated through depth transitioning. 
             void SetMinDepthTransitionValue(float minValue);
@@ -63,7 +63,8 @@ namespace AZ
                 float m_depthTransitionDuration = 0.0f; 
             };
 
-            EditorModeFeedbackPassBase(const RPI::PassDescriptor& descriptor, const DepthTransition& depthTransition, float finalBlendAmount);
+            EditorModeFeedbackChildPassBase(
+                const RPI::PassDescriptor& descriptor, const DepthTransition& depthTransition, float finalBlendAmount);
 
             //! Pass behavior overrides
             void InitializeInternal() override;

@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "EditorModeBlurParentTemplate",
-            "PassClass": "EditorModeFeedbackParentPass",
+            "PassClass": "ParentPass",
             "Slots": [
                 {
                     "Name": "InputDepth",

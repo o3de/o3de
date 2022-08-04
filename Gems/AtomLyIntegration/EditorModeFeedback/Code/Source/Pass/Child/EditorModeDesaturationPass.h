@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Pass/EditorModeFeedbackPassBase.h>
+#include <Pass/Child/EditorModeFeedbackChildPassBase.h>
 
 namespace AZ
 {
@@ -16,10 +16,10 @@ namespace AZ
     {
         //! Pass for editor mode feedback desaturation effect.
         class EditorModeDesaturationPass
-            : public EditorModeFeedbackPassBase
+            : public EditorModeFeedbackChildPassBase
         {
         public:
-            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", EditorModeFeedbackPassBase);
+            AZ_RTTI(EditorModeDesaturationPass, "{3587B748-7EA8-497F-B2D1-F60E369EACF4}", EditorModeFeedbackChildPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeDesaturationPass, SystemAllocator, 0);
 
             virtual ~EditorModeDesaturationPass() = default;
