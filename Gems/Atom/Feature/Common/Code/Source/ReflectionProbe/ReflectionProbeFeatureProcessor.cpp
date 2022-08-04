@@ -30,7 +30,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<ReflectionProbeFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
