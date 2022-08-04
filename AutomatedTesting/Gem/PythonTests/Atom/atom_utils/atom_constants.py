@@ -294,7 +294,7 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'CubeMap Capture',
-            'Specular IBL': 'Controller|Configuration|Specular IBL CubeMap Quality',
+            'Specular IBL CubeMap Quality': 'Controller|Configuration|Specular IBL CubeMap Quality',
             'Capture Type': 'Controller|Configuration|Capture Type',
             'Exposure': 'Controller|Configuration|Exposure',
         }
