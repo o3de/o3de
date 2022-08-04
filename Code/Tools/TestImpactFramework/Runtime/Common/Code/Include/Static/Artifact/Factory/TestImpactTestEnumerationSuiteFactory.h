@@ -19,4 +19,12 @@ namespace TestImpact
         //! @return The constructed list of test enumeration suite artifacts.
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData);
     } // namespace GTest
+    namespace Python
+    {
+            
+        //! Constructs a list of test enumeration suite artifacts from the specified test enumeraion data.
+        //! @param testEnumerationData The raw test enumeration data collected from pytest using the --collect-only argument, with -q mode enabled
+        //! @return The constructed list of pairs of absolute paths to the test script, and the corresponding test enumeration suite artifacts.
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::vector<TestEnumerationSuite>>> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData);
+    }
 } // namespace TestImpact
