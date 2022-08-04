@@ -36,7 +36,7 @@ namespace RemoteTools
         //! Invoked on thread stop
         void OnStop() override{}
 
-        //! Invoked on thread update to poll for a Target host to join
+        //! Invoked on thread update to poll for a target host to join
         //! @param updateRateMs The amount of time the thread can spend in OnUpdate in ms
         void OnUpdate(AZ::TimeMs updateRateMs) override;
 

@@ -27,7 +27,7 @@ namespace RemoteToolsPackets
 namespace RemoteTools
 {
     // Slightly below AzNetworking's TCP max packet size for maximum message space with room for packet headers
-    static constexpr uint32_t RemoteToolsBufferSize = 16000;
+    static constexpr uint32_t RemoteToolsBufferSize = AzNetworking::MaxPacketSize - 384;
     using RemoteToolsMessageBuffer = AzNetworking::ByteBuffer<RemoteToolsBufferSize>;
 
     struct RemoteToolsRegistryEntry
