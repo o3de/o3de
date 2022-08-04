@@ -96,7 +96,7 @@ namespace AZ::Render
         AZ::u32 passCount = 0;
         for (const auto& childPassTemplate : state.GetChildPassNameList())
         {
-            auto childPassName = Name(AZStd::string::format("%sChildPass%u_%s", stateParentPassTemplate->m_name.GetCStr(), passCount, childPassTemplate.GetCStr()));
+            auto childPassName = state->GetGeneratedChildPassName(index);
             RPI::PassRequest pass;
             pass.m_passName = childPassName;
             pass.m_templateName = childPassTemplate;
