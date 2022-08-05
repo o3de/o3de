@@ -138,7 +138,6 @@ namespace ONNX
                     // How many files of that digit have been tested
                     int version = 0;
 
-                    // The current folder is the @gemroot:ONNX@/testing/{digit} folder
                     // Search for any png files
                     auto RunMnistExample = [&mnist, &numOfCorrectInferences, &totalFiles, &totalRuntimeInMilliseconds, &mnistTestImageRoot, &directoryName, &version, &digit, &numOfEach](AZ::IO::Path pngFilePath, bool) -> bool
                     {
@@ -163,11 +162,11 @@ namespace ONNX
             return true;
         };
 
-        // Get the FileIOBase to resolve the path to the ONNX gem
+        // Get the FileIOBase to resolve the path to the MNIST testing image folder in the onnx gem
         AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
         if (fileIo->ResolvePath(mnistTestImageRoot, "@gemroot:ONNX@/Assets/mnist_png/testing"))
         {
-            // onnxGemRoot is set to the root folder of the ONNX gem
+            // mnistTestImageRoot is set to the root folder of the MNIST testing images
             AZ::IO::SystemFile::FindFiles((mnistTestImageRoot / "*").c_str(), TestImage);
         }
 
