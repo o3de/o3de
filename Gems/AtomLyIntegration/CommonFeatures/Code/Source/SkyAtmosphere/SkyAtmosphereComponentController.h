@@ -57,5 +57,6 @@ namespace AZ::Render
         SkyAtmosphereComponentConfig m_configuration;
         SkyAtmosphereParams m_atmosphereParams;
         EntityId m_entityId;
+        EntityId m_sunEntityId;
     };
 } // namespace AZ::Render

@@ -82,6 +82,28 @@ namespace AZ::Render
         params.m_sunFalloffFactor = m_configuration.m_sunFalloffFactor;
         params.m_sunRadiusFactor = m_configuration.m_sunRadiusFactor;
 
+        if (m_configuration.m_sun != m_sunEntityId)
+        {
+            if(m_sunEntityId.IsValid())
+            {
+                AZ::TransformNotificationBus::MultiHandler::BusDisconnect(m_sunEntityId);
+                m_sunEntityId.SetInvalid();
+            }
+
+            if (m_configuration.m_sun.IsValid() && m_configuration.m_sun != m_entityId)
+            {
+                m_sunEntityId = m_configuration.m_sun;
+
+                AZ::TransformNotificationBus::MultiHandler::BusConnect(m_configuration.m_sun);
+                if (auto handler = TransformBus::FindFirstHandler(m_configuration.m_sun); handler == nullptr)
+                {
+                    // connect to the entity bus so we can be notified when this entity activates so we can get
+                    // notified when the transform changes
+                    AZ::EntityBus::Handler::BusConnect(m_configuration.m_sun);
+                }
+            }
+        }
+
         // sun direction using own transform or sun entity
         const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : Transform::Identity();
         auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
@@ -134,15 +156,6 @@ namespace AZ::Render
             m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
 
             AZ::TransformNotificationBus::MultiHandler::BusConnect(m_entityId);
-            if (m_configuration.m_sun.IsValid())
-            {
-                AZ::TransformNotificationBus::MultiHandler::BusConnect(m_configuration.m_sun);
-                auto sunTransformInterface = TransformBus::FindFirstHandler(m_configuration.m_sun);
-                if (!sunTransformInterface)
-                {
-                    AZ::EntityBus::Handler::BusConnect(m_configuration.m_sun);
-                }
-            }
         }
     }
 
@@ -176,11 +189,11 @@ namespace AZ::Render
         m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
     }
 
-    void SkyAtmosphereComponentController::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    void SkyAtmosphereComponentController::OnEntityActivated(const AZ::EntityId& entityId)
     {
         m_featureProcessorInterface->SetAtmosphereParams(m_atmosphereId, GetUpdatedSkyAtmosphereParams());
 
-        AZ::EntityBus::Handler::BusDisconnect(m_configuration.m_sun);
+        AZ::EntityBus::Handler::BusDisconnect(entityId);
     }
 
 } // namespace AZ::Render
