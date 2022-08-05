@@ -132,6 +132,7 @@ set(FILES
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
     QtWidgetLimitsTests.cpp
+    Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
     Script/ScriptEntityTests.cpp
     Slice.cpp

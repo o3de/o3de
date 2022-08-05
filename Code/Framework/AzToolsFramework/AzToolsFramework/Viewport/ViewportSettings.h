@@ -76,4 +76,7 @@ namespace AzToolsFramework
 
     bool HelpersVisible();
     void SetHelpersVisible(bool visible);
+
+    bool ComponentSwitcherEnabled();
+
 } // namespace AzToolsFramework

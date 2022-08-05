@@ -43,6 +43,7 @@ namespace AssetProcessor
     class AssetTreeFilterModel;
     class JobSortFilterProxyModel;
     class JobsModel;
+    class AssetTreeItem;
     class ProductAssetTreeModel;
     class SourceAssetTreeModel;
     class ProductDependencyTreeItem;
@@ -64,7 +65,8 @@ public:
     enum class AssetTabIndex
     {
         Source = 0,
-        Product = 1
+        Intermediate = 1,
+        Product = 2
     };
 
     // This order is actually driven by the layout in the UI file.
@@ -113,7 +115,7 @@ public Q_SLOTS:
     void ShowWindow();
 
     void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
-    void FirstTimeAddedToRejctedList(QString ipAddress);
+    void FirstTimeAddedToRejectedList(QString ipAddress);
     void SaveLogPanelState();
     void OnAssetProcessorStatusChanged(const AssetProcessor::AssetProcessorStatusEntry entry);
 
@@ -147,8 +149,10 @@ private:
     LogSortFilterProxy* m_logSortFilterProxy;
     AssetProcessor::JobsModel* m_jobsModel;
     AssetProcessor::SourceAssetTreeModel* m_sourceModel = nullptr;
+    AssetProcessor::SourceAssetTreeModel* m_intermediateModel = nullptr;
     AssetProcessor::ProductAssetTreeModel* m_productModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_sourceAssetTreeFilterModel = nullptr;
+    AssetProcessor::AssetTreeFilterModel* m_intermediateAssetTreeFilterModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_productAssetTreeFilterModel = nullptr;
     QPointer<AssetProcessor::LogPanel> m_loggingPanel;
     int m_processJobsCount = 0;
@@ -205,6 +209,10 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    void ShowIntermediateAssetContextMenu(const QPoint& pos);
+
+    void BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcessor::AssetTreeItem& sourceAssetTreeItem);
+
     // Helper function that retrieves the item selected in outgoing/incoming dependency TreeView
     AssetProcessor::ProductDependencyTreeItem* GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos);
     void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);

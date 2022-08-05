@@ -104,11 +104,11 @@ namespace AZ::Render
     {
         if (visibility)
         {
-            m_controller.RegisterFeatureProcessor(GetEntityId());
+            m_controller.EnableFeatureProcessor(GetEntityId());
         }
         else
         {
-            m_controller.UnregisterFeatureProcessor();
+            m_controller.DisableFeatureProcessor();
         }
     }
 }

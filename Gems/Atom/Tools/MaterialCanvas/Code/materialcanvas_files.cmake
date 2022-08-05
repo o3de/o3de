@@ -15,6 +15,7 @@ set(FILES
 
     Source/Document/MaterialCanvasDocument.cpp
     Source/Document/MaterialCanvasDocument.h
+    Source/Document/MaterialCanvasDocumentNotificationBus.h
     Source/Document/MaterialCanvasDocumentRequestBus.h
 
     Source/Window/MaterialCanvas.qrc

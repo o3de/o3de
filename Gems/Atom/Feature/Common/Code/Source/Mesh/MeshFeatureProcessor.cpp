@@ -44,7 +44,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

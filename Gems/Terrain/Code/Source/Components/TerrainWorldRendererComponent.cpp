@@ -227,8 +227,6 @@ namespace Terrain
     {
         // On component activation, register the terrain feature processor with Atom and the scene related to this entity context.
 
-        AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
-
         if (AZ::RPI::Scene* scene = GetScene(); scene)
         {
             m_terrainFeatureProcessor = scene->EnableFeatureProcessor<Terrain::TerrainFeatureProcessor>();
@@ -257,8 +255,6 @@ namespace Terrain
             }
         }
         m_terrainFeatureProcessor = nullptr;
-
-        AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
 
     bool TerrainWorldRendererComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)

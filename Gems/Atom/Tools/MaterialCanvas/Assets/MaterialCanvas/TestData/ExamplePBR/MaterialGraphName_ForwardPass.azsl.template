@@ -18,6 +18,9 @@
 
 // Everything inside of the generated blocks will eventually be replaced in the generated files as the material graph is compiled. 
 
+// GENERATED_INCLUDES_BEGIN
+// GENERATED_INCLUDES_END
+
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -58,19 +61,23 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    VertexHelper(IN, OUT, worldPosition);
+    // GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float4 inPositionOffset = float3(0.0, 0.0, 0.0, 0.0);
+    // GENERATED_INSTRUCTIONS_END
+
+    VertexHelper(IN, OUT, worldPosition + inPositionOffset.xyz);
 
     return OUT;
 }
 
 ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
 {
-    // GENERATED_INSTRUCTIONS_BEGIN
+    // GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor
     float4 inBaseColor = float4(1.0, 1.0, 1.0, 1.0);
-    float4 inEmissive = float4(0.0, 0.0, 0.0, 0.0);
-    float inMetallic = 1.0;
-    float inRoughness = 0.5;
-    float inSpecularF0Factor = 0.5;
+    float4 inEmissive = float4(0.0, 0.0, 0.0, 1.0);
+    float inMetallic = 0.0;
+    float inRoughness = 0.0;
+    float inSpecularF0Factor = 0.0;
     // GENERATED_INSTRUCTIONS_END
 
     // ------- Surface -------
