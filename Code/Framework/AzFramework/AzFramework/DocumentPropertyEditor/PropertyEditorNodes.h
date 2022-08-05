@@ -93,6 +93,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         };
 
         static constexpr AZStd::string_view Name = "PropertyEditor";
+        static constexpr auto Description = AttributeDefinition<AZStd::string_view>("Description");
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");

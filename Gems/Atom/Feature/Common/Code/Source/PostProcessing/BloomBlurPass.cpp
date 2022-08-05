@@ -299,8 +299,8 @@ namespace AZ
                 else
                 {
                     // If kernel radius is 0 skip kernel calculation and buffer preparation
-                    m_weightData.push_back();
-                    m_offsetData.push_back();
+                    m_weightData.emplace_back();
+                    m_offsetData.emplace_back();
                     m_kernelRadiusData.push_back(0);
                 }
             }

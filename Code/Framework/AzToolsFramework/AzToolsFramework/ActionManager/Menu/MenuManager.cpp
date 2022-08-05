@@ -8,11 +8,15 @@
 
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 
 namespace AzToolsFramework
 {
-    MenuManager::MenuManager()
+    MenuManager::MenuManager(QWidget* defaultParentWidget)
     {
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "MenuManager - Could not retrieve instance of ActionManagerInterface");
@@ -26,8 +30,8 @@ namespace AzToolsFramework
         AZ::SystemTickBus::Handler::BusConnect();
         ActionManagerNotificationBus::Handler::BusConnect();
 
-        EditorMenu::Initialize();
-        EditorMenuBar::Initialize();
+        EditorMenu::Initialize(defaultParentWidget);
+        EditorMenuBar::Initialize(defaultParentWidget);
     }
 
     MenuManager::~MenuManager()
@@ -37,6 +41,12 @@ namespace AzToolsFramework
 
         AZ::Interface<MenuManagerInternalInterface>::Unregister(this);
         AZ::Interface<MenuManagerInterface>::Unregister(this);
+    }
+    
+    void MenuManager::Reflect(AZ::ReflectContext* context)
+    {
+        EditorMenu::Reflect(context);
+        EditorMenuBar::Reflect(context);
     }
 
     MenuManagerOperationResult MenuManager::RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties)
@@ -86,8 +96,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not add action \"%s\" to menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -123,8 +132,7 @@ namespace AzToolsFramework
 
         for (const auto& pair : actions)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(pair.first);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(pair.first))
             {
                 errorMessage += AZStd::string(" ") + pair.first;
                 couldNotAddAction = true;
@@ -163,8 +171,7 @@ namespace AzToolsFramework
                 menuIdentifier.c_str()));
         }
 
-        QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-        if (!action)
+        if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not remove action \"%s\" from menu \"%s\" - action could not be found.", actionIdentifier.c_str(),
@@ -201,8 +208,7 @@ namespace AzToolsFramework
 
         for (const AZStd::string& actionIdentifier : actionIdentifiers)
         {
-            QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-            if (!action)
+            if (!m_actionManagerInterface->IsActionRegistered(actionIdentifier))
             {
                 errorMessage += AZStd::string(" ") + actionIdentifier;
                 couldNotRemoveAction = true;
@@ -304,7 +310,7 @@ namespace AzToolsFramework
     }
     
     MenuManagerOperationResult MenuManager::AddWidgetToMenu(
-        const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex)
+        const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
     {
         auto menuIterator = m_menus.find(menuIdentifier);
         if (menuIterator == m_menus.end())
@@ -313,16 +319,17 @@ namespace AzToolsFramework
                 "Menu Manager - Could not add widget to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
         }
 
-        if (!widget)
+        if (m_actionManagerInterface->IsWidgetActionRegistered(widgetActionIdentifier))
         {
-            return AZ::Failure(AZStd::string::format(
-                "Menu Manager - Could not add widget to menu \"%s\" - nullptr widget.", menuIdentifier.c_str()));
+            menuIterator->second.AddWidget(sortIndex, widgetActionIdentifier);
+            m_menusToRefresh.insert(menuIdentifier);
+
+            return AZ::Success();
         }
 
-        menuIterator->second.AddWidget(sortIndex, widget);
-        m_menusToRefresh.insert(menuIdentifier);
-
-        return AZ::Success();
+        return AZ::Failure(AZStd::string::format(
+            "Menu Manager - Could not add widget \"%s\" to menu \"%s\" - widget has not been registered.",
+            widgetActionIdentifier.c_str(),  menuIdentifier.c_str()));
     }
 
     QMenu* MenuManager::GetMenu(const AZStd::string& menuIdentifier)
@@ -380,6 +387,29 @@ namespace AzToolsFramework
         {
             return AZ::Failure(AZStd::string::format(
                 "Menu Manager - Could not get sort key of sub-menu \"%s\" in menu \"%s\" - sub-menu was not found in menu.", subMenuIdentifier.c_str(), menuIdentifier.c_str()));
+        }
+        
+        return AZ::Success(sortKey.value());
+    }
+
+    MenuManagerIntegerResult MenuManager::GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of widget \"%s\" in menu \"%s\" - menu has not been registered.",
+                widgetActionIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+        
+        auto sortKey = menuIterator->second.GetWidgetSortKey(widgetActionIdentifier);
+        if (!sortKey.has_value())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not get sort key of widget \"%s\" in menu \"%s\" - sub-menu was not found in menu.",
+                widgetActionIdentifier.c_str(),
+                menuIdentifier.c_str()));
         }
         
         return AZ::Success(sortKey.value());
@@ -472,6 +502,64 @@ namespace AzToolsFramework
         m_menuBarsToRefresh.clear();
     }
 
+    MenuManagerStringResult MenuManager::SerializeMenu(const AZStd::string& menuIdentifier)
+    {
+        if (!m_menus.contains(menuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not serialize menu \"%.s\" as it is not registered.", menuIdentifier.c_str()));
+        }
+
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+
+        // Generate menu dom using Json serialization system.
+        AZ::JsonSerializationResult::ResultCode result =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_menus[menuIdentifier], settings);
+
+        // Stringify dom to return it.
+        if (result.HasDoneWork())
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            document.Accept(writer);
+
+            return AZ::Success(AZStd::string(prefabBuffer.GetString()));
+        }
+
+        return AZ::Failure(
+            AZStd::string::format("Menu Manager - Could not serialize menu \"%.s\" - serialization error.", menuIdentifier.c_str()));
+    }
+
+    MenuManagerStringResult MenuManager::SerializeMenuBar(const AZStd::string& menuBarIdentifier)
+    {
+        if (!m_menuBars.contains(menuBarIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not serialize menu bar \"%.s\" as it is not registered.", menuBarIdentifier.c_str()));
+        }
+
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+
+        // Generate menu dom using Json serialization system.
+        AZ::JsonSerializationResult::ResultCode result =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_menuBars[menuBarIdentifier], settings);
+
+        // Stringify dom to return it.
+        if (result.HasDoneWork())
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            document.Accept(writer);
+
+            return AZ::Success(AZStd::string(prefabBuffer.GetString()));
+        }
+
+        return AZ::Failure(
+            AZStd::string::format("Menu Manager - Could not serialize menu bar \"%.s\" - serialization error.", menuBarIdentifier.c_str()));
+    }
+
     void MenuManager::OnSystemTick()
     {
         RefreshMenus();
@@ -480,7 +568,11 @@ namespace AzToolsFramework
 
     void MenuManager::OnActionStateChanged(AZStd::string actionIdentifier)
     {
-        QueueRefreshForMenusContainingAction(actionIdentifier);
+        // Only refresh the menu if the action state changing could result in the action being shown/hidden.
+        if (m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(actionIdentifier))
+        {
+            QueueRefreshForMenusContainingAction(actionIdentifier);
+        }
     }
 
 } // namespace AzToolsFramework

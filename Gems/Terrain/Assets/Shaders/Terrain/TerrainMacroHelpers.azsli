@@ -17,12 +17,12 @@ void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positio
     hasNormal = false;
 
     // ------- Macro Data -------
-    uint2 macroGridResolution = TerrainSrg::GetMacroGridResolution();
+    int macroGridResolution = TerrainSrg::m_macroMaterialGridInfo.m_tileCount1D;
     float macroTileSize = TerrainSrg::m_macroMaterialGridInfo.m_tileSize;
-    float2 macroGridOffset = TerrainSrg::m_macroMaterialGridInfo.m_offset;
-    uint2 macroGridPosition = (worldPosition - macroGridOffset) / macroTileSize;
+    int2 macroTileWorldCoord = int2(floor(worldPosition / macroTileSize));
+    uint2 macroLocalCoord = ((macroTileWorldCoord % macroGridResolution) + macroGridResolution) % macroGridResolution;
 
-    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
+    uint macroTileIndex = macroGridResolution * macroLocalCoord.y + macroLocalCoord.x;
     static const uint NumMacroMaterialsPerTile = 4;
 
     TerrainSrg::MacroMaterialRefs refs = TerrainSrg::m_macroMaterialGridRefs[macroTileIndex];
