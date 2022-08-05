@@ -32,7 +32,7 @@ namespace TestImpact
         {
             TargetDescriptor descriptor;
             descriptor.m_name = testTargetMeta.first;
-            descriptor.m_sources.m_staticSources.push_back(testTargetMeta.second.m_scriptPath);
+            descriptor.m_sources.m_staticSources.push_back(testTargetMeta.second.m_scriptMeta.m_scriptPath);
 
             testTargets.emplace_back(AZStd::move(descriptor), AZStd::move(testTargetMeta.second));
         }

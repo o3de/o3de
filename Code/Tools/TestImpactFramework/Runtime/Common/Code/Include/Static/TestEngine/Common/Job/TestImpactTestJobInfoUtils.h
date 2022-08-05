@@ -30,7 +30,17 @@ namespace TestImpact
     template<typename TestTarget>
     RepoPath GenerateTargetRunArtifactFilePath(const TestTarget* testTarget, const RepoPath& artifactDir)
     {
-        return AZStd::string::format("%s.xml", (artifactDir / RepoPath(testTarget->GetName())).c_str());
+        AZStd::string targetName;
+        if (testTarget->GetNamespace().empty())
+        {
+            targetName = testTarget->GetNamespace().c_str();
+        }
+        else
+        {
+            targetName = AZStd::string::format("%s_%s", testTarget->GetNamespace().c_str(), testTarget->GetName().c_str());
+        }
+
+        return AZStd::string::format("%s.xml", (artifactDir / RepoPath(targetName)).c_str());
     }
 
     //! Generates the path to the test coverage artifact file for the specified test target.

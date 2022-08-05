@@ -29,7 +29,7 @@ namespace TestImpact
         auto testTargetMetaMap = PythonTestTargetMetaMapFactory(masterTestListData, suiteFilter);
         for (auto& [name, meta] : testTargetMetaMap)
         {
-            meta.m_testCommand = AZStd::regex_replace(meta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType); 
+            meta.m_scriptMeta.m_testCommand = AZStd::regex_replace(meta.m_scriptMeta.m_testCommand, AZStd::regex("\\$\\<CONFIG\\>"), buildType); 
         }
 
         return testTargetMetaMap;

@@ -14,6 +14,7 @@ set(FILES
     Include/Static/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
     Include/Static/Artifact/Factory/TestImpactTargetDescriptorFactory.h
     Include/Static/Artifact/Static/TestImpactTestSuiteMeta.h
+    Include/Static/Artifact/Static/TestImpactTestTargetMeta.h
     Include/Static/Artifact/Static/TestImpactTargetDescriptor.h
     Include/Static/Artifact/Static/TestImpactDependencyGraphData.h
     Include/Static/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
@@ -42,6 +43,8 @@ set(FILES
     Include/Static/Target/Common/TestImpactTarget.h
     Include/Static/Target/Common/TestImpactTargetList.h
     Include/Static/Target/Common/TestImpactTargetException.h
+    Include/Static/Target/Common/TestImpactTestTarget.cpp
+    Include/Static/Target/Common/TestImpactTestTarget.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerException.h
     Include/Static/TestRunner/Common/TestImpactTestRunnerBase.h
     Include/Static/TestRunner/Common/TestImpactTestRunner.h

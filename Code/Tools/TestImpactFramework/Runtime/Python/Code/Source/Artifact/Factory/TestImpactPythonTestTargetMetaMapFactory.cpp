@@ -25,6 +25,7 @@ namespace TestImpact
             "tests",
             "suites",
             "suite",
+            "namespace",
             "name",
             "timeout",
             "script",
@@ -38,6 +39,7 @@ namespace TestImpact
             TestsKey,
             TestSuitesKey,
             SuiteKey,
+            NamespaceKey,
             NameKey,
             TimeoutKey,
             ScriptKey,
@@ -65,10 +67,11 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testMeta.m_suiteMeta.m_name = suiteName;
-                    testMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
-                    testMeta.m_scriptPath = suite[Keys[ScriptKey]].GetString();
-                    testMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
+                    testMeta.m_testTargetMeta.m_namespace = test[Keys[NamespaceKey]].GetString();
+                    testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
+                    testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                    testMeta.m_scriptMeta.m_scriptPath = suite[Keys[ScriptKey]].GetString();
+                    testMeta.m_scriptMeta.m_testCommand = suite[Keys[TestCommandKey]].GetString();
 
                     AZStd::string name = test[Keys[NameKey]].GetString();
                     AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");

@@ -159,9 +159,10 @@ endfunction()
 #
 # \arg:COMPOSITE_TEST test in the form 'namespace::test'
 # \arg:COMPOSITE_SUITES composite list of suites for this target
+# \arg:TEST_NAMESPACE namespace of test
 # \arg:TEST_NAME name of test
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
-function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
+function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAMESPACE TEST_NAME TEST_SUITES)
 
     # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
@@ -197,9 +198,10 @@ endfunction()
 #
 # \arg:COMPOSITE_TEST test in form 'namespace::test' or 'test'
 # \arg:COMPOSITE_SUITES composite list of suites for this target
+# \arg:TEST_NAMESPACE namespace of test
 # \arg:TEST_NAME name of test
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
-function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
+function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAMESPACE TEST_NAME TEST_SUITES)
     get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
     get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
 
@@ -210,11 +212,14 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
     list(LENGTH test_components num_test_components)
     if(num_test_components GREATER 1)
+        list(GET test_components 0 test_namespace)
         list(GET test_components 1 test_name)
     else()
+        set(test_namespace "")
         set(test_name ${test_components})
     endif()
 
+    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
     
     set(test_suites "")
@@ -260,25 +265,25 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
         if("${test_type}" STREQUAL "pytest")
             # Python tests
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND python_tests "        { \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "pytest_editor")
             # Python editor tests            
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND python_editor_tests "        { \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googletest")
             # Google tests
-            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_name test_suites)
+            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             ly_test_impact_get_test_launch_method(${test} launch_method)
-            list(APPEND google_tests "        { \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            list(APPEND google_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googlebenchmark")
             # Google benchmarks
-            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND google_benchmarks "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         else()
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             message("${test_name} is of unknown type (TEST_LIBRARY property is \"${test_type}\")")
-            list(APPEND unknown_tests "        { \"name\": \"${test}\", \"type\": \"${test_type}\" }")
+            list(APPEND unknown_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test}\", \"type\": \"${test_type}\" }")
         endif()
     endforeach()
 

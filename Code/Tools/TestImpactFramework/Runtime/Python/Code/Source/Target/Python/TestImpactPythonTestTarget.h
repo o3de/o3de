@@ -9,23 +9,18 @@
 #pragma once
 
 #include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
-#include <Target/Common/TestImpactTarget.h>
+#include <Target/Common/TestImpactTestTarget.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for native test targets (build targets containing test code and no production code).
-    class PythonTestTarget : public Target
+    class PythonTestTarget 
+        : public TestTarget
     {
     public:
         PythonTestTarget(TargetDescriptor&& descriptor, PythonTestTargetMeta&& testMetaData);
-
-        //! Returns the test target suite.
-        const AZStd::string& GetSuite() const;
-
-        //! Returns the test run timeout.
-        AZStd::chrono::milliseconds GetTimeout() const;
 
         //! Returns the path to the script to execute this test.
         const RepoPath& GetScriptPath() const;
@@ -34,6 +29,6 @@ namespace TestImpact
         const AZStd::string& GetCommand() const;
 
     private:
-        PythonTestTargetMeta m_testMetaData;
+        PythonTargetScriptMeta m_scriptMetaData;
     };
 } // namespace TestImpact

@@ -12,28 +12,18 @@ namespace TestImpact
 {
     NativeTestTarget::NativeTestTarget(
         TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData)
-        : Target(AZStd::move(descriptor))
-        , m_testMetaData(AZStd::move(testMetaData))
+        : TestTarget(AZStd::move(descriptor), AZStd::move(testMetaData.m_testTargetMeta))
+        , m_launchMeta(AZStd::move(testMetaData.m_launchMeta))
     {
-    }
-
-    const AZStd::string& NativeTestTarget::GetSuite() const
-    {
-        return m_testMetaData.m_suiteMeta.m_name;
     }
 
     const AZStd::string& NativeTestTarget::GetCustomArgs() const
     {
-        return m_testMetaData.m_customArgs;
-    }
-
-    AZStd::chrono::milliseconds NativeTestTarget::GetTimeout() const
-    {
-        return m_testMetaData.m_suiteMeta.m_timeout;
+        return m_launchMeta.m_customArgs;
     }
 
     LaunchMethod NativeTestTarget::GetLaunchMethod() const
     {
-        return m_testMetaData.m_launchMethod;
+        return m_launchMeta.m_launchMethod;
     }
 } // namespace TestImpact
