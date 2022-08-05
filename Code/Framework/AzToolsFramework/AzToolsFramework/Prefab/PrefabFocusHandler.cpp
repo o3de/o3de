@@ -293,7 +293,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
 
         // Force propagation on both the previous and the new focused instances to ensure they are represented correctly.
-        m_instanceUpdateExecutorInterface = AZ::Interface<InstanceUpdateExecutorInterface>::Get();
         if (previousFocusedInstance.has_value())
         {
             m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
