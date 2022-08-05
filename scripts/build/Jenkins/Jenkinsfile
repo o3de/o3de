@@ -413,12 +413,12 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
 
-        dir("${workspace}/${ETRAS_REPOSITORY_NAME}") {
-            PlatformSh("scripts/o3de${ext} register --all-engines-path ${path}/Engines", "Registering engines in ${path}/Engines")
-            PlatformSh("scripts/o3de${ext} register --all-projects-path ${path}/Projects", "Registering projects in ${path}/Projects")
-            PlatformSh("scripts/o3de${ext} register --all-gems-path ${path}/Gems", "Registering gems in ${path}/Gems")
-            PlatformSh("scripts/o3de${ext} register --all-templates-path ${path}/Templates", "Registering templates in ${path}/Templates")
-            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${path}/Restricted", "Registering templates in ${path}/Restricted")
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines", "Registering engines in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines")
+            PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects", "Registering projects in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects")
+            PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems", "Registering gems in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems")
+            PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates")
+            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted")
         }
 
         dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
