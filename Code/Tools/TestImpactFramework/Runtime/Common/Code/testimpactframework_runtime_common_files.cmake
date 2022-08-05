@@ -51,9 +51,11 @@ set(FILES
     Include/Static/TestRunner/Common/TestImpactTestRunnerWithCoverage.h
     Include/Static/TestRunner/Common/TestImpactTestEnumerator.h
     Include/Static/TestRunner/Common/TestImpactTestSuiteContainer.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestJobInfoGenerator.h
     Include/Static/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h
     Include/Static/TestRunner/Common/Job/TestImpactTestEnumerationJobData.h
     Include/Static/TestRunner/Common/Job/TestImpactTestRunJobData.h
+    Include/Static/TestRunner/Common/Job/TestImpactTestJobInfoUtils.h
     Include/Static/TestRunner/Common/Job/TestImpactTestJobRunner.h
     Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
     Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
@@ -63,8 +65,6 @@ set(FILES
     Include/Static/TestEngine/Common/TestImpactTestEngineException.h
     Include/Static/TestEngine/Common/TestImpactTestEngine.h
     Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
-    Include/Static/TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h
-    Include/Static/TestEngine/Common/Job/TestImpactTestJobInfoUtils.h
     Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
@@ -85,6 +85,7 @@ set(FILES
     Source/Target/Common/TestImpactTarget.cpp
     Source/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.cpp
     Source/TestRunner/Common/Job/TestImpactTestEnumerationJobData.cpp
+    Source/TestRunner/Common/Job/TestImpactTestJobInfoUtils.cpp
     Source/TestRunner/Common/Job/TestImpactTestRunJobData.cpp
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestRunner/Common/Run/TestImpactTestCoverage.cpp

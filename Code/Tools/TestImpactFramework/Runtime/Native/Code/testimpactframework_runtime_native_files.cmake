@@ -20,6 +20,8 @@ set(FILES
     Source/TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h
     Source/TestRunner/Native/TestImpactNativeRegularTestRunner.h
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
+    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
+    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h
     Source/TestRunner/Native/Job/TestImpactNativeTestRunJobData.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
@@ -28,7 +30,5 @@ set(FILES
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
     Source/TestImpactNativeRuntime.cpp
 )

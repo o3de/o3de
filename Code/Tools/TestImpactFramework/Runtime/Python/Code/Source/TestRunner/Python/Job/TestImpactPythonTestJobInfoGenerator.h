@@ -11,7 +11,7 @@
 #include <TestImpactFramework/TestImpactConfiguration.h>
 
 #include <Target/Python/TestImpactPythonTestTarget.h>
-#include <TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h>
+#include <TestRunner/Common/Job/TestImpactTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
 
 namespace TestImpact

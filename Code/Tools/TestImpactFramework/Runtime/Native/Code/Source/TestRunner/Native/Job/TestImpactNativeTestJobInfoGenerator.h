@@ -11,7 +11,7 @@
 #include <TestImpactFramework/TestImpactConfiguration.h>
 
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h>
+#include <TestRunner/Common/Job/TestImpactTestJobInfoGenerator.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>

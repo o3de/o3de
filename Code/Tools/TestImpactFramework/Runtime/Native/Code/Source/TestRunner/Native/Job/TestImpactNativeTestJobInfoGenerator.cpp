@@ -7,10 +7,10 @@
  */
 
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Common/Job/TestImpactTestJobInfoUtils.h>
 #include <TestEngine/Native/TestImpactNativeTestTargetExtension.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
+#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 namespace TestImpact
 {

@@ -11,8 +11,8 @@
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Python/TestImpactPythonErrorCodeChecker.h>
-#include <TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
+#include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
 #include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
 
