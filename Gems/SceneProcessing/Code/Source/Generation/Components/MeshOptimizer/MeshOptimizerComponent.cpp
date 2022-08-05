@@ -90,6 +90,7 @@ namespace AZ::SceneGenerationComponents
     using AZ::SceneAPI::DataTypes::IMeshVertexUVData;
     using AZ::SceneAPI::DataTypes::IMeshVertexColorData;
     using AZ::SceneAPI::DataTypes::ISkinWeightData;
+    using AZ::SceneAPI::DataTypes::ICustomPropertyData;
     using AZ::SceneAPI::Events::ProcessingResult;
     using AZ::SceneAPI::Events::GenerateSimplificationEventContext;
     using AZ::SceneAPI::SceneCore::GenerationComponent;
@@ -264,11 +265,11 @@ namespace AZ::SceneGenerationComponents
         ).empty();
     }
 
-    static AZ::Outcome<SceneData::GraphData::CustomPropertyData::PropertyMap*> FindOrCreateCustomPropertyData(
+    static ICustomPropertyData::PropertyMap& FindOrCreateCustomPropertyData(
         Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& nodeIndex)
     {
         NodeIndex customPropertyIndex =
-            SceneAPI::Utilities::GetImmediateChildOfType(graph, nodeIndex, azrtti_typeid<SceneAPI::DataTypes::ICustomPropertyData>());
+            SceneAPI::Utilities::GetImmediateChildOfType(graph, nodeIndex, azrtti_typeid<ICustomPropertyData>());
 
         if (!customPropertyIndex.IsValid())
         {
@@ -278,12 +279,15 @@ namespace AZ::SceneGenerationComponents
             customPropertyIndex = graph.AddChild(nodeIndex, "custom_properties", AZStd::move(createdCustumPropertyData));
         }
 
-        SceneData::GraphData::CustomPropertyData* customPropertyDataNode =
-            azrtti_cast<SceneData::GraphData::CustomPropertyData*>(graph.GetNodeContent(customPropertyIndex).get());
+        ICustomPropertyData* customPropertyDataNode =
+            azrtti_cast<ICustomPropertyData*>(graph.GetNodeContent(customPropertyIndex).get());
 
+        return customPropertyDataNode->GetPropertyMap();
+    }
+
+    static bool HasOptimizedMeshNode(Containers::SceneGraph& graph, ICustomPropertyData::PropertyMap& propertyMap)
+    {
         // Now look up the optimized index
-        SceneData::GraphData::CustomPropertyData::PropertyMap& propertyMap = customPropertyDataNode->GetPropertyMap();
-
         if (auto iter = propertyMap.find(SceneAPI::Utilities::OptimizedMeshPropertyMapKey); iter != propertyMap.end())
         {
             const auto& [key, anyNodeIndex] = *iter;
@@ -296,11 +300,11 @@ namespace AZ::SceneGenerationComponents
                     "the additional ones.",
                     graph.GetNodeName(optimizedMeshIndex).GetName());
 
-                return AZ::Failure();
+                return true;
             }
         }
 
-        return AZ::Success(&propertyMap);
+        return false;
     }
 
     ProcessingResult MeshOptimizerComponent::OptimizeMeshes(GenerateSimplificationEventContext& context) const
@@ -390,9 +394,8 @@ namespace AZ::SceneGenerationComponents
                     continue;
                 }
 
-                AZ::Outcome<SceneData::GraphData::CustomPropertyData::PropertyMap*> propertyMapOutcome =
-                    FindOrCreateCustomPropertyData(graph, nodeIndex);
-                if (!propertyMapOutcome.IsSuccess())
+                ICustomPropertyData::PropertyMap& unoptimizedPropertyMap = FindOrCreateCustomPropertyData(graph, nodeIndex);
+                if (HasOptimizedMeshNode(graph, unoptimizedPropertyMap))
                 {
                     // There is already an optimized mesh node for this mesh, so skip it.
                     // There must be another mesh group already referencing this mesh node.
@@ -411,12 +414,23 @@ namespace AZ::SceneGenerationComponents
                     hasBlendShapes ? "Yes" : "No"
                 );
 
+                // Insert a new node for the optimized mesh
                 const AZStd::string name =
                     SceneAPI::Utilities::SceneGraphSelector::GenerateOptimizedMeshNodeName(graph, nodeIndex, meshGroup);
-                const NodeIndex optimizedMeshNodeIndex = graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
+                const NodeIndex optimizedMeshNodeIndex =
+                    graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));            
 
-                // Add the optimized node index to the custom property map so it can be looked up later
-                (*propertyMapOutcome.GetValue())[SceneAPI::Utilities::OptimizedMeshPropertyMapKey] = AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);
+                // Copy any custom properties from the original mesh to the optimized mesh
+                ICustomPropertyData::PropertyMap& optimizedPropertyMap = FindOrCreateCustomPropertyData(graph, optimizedMeshNodeIndex);
+                optimizedPropertyMap = unoptimizedPropertyMap;
+
+                // Add a mapping from the optimized node back to the original node so it can also be looked up later
+                optimizedPropertyMap[SceneAPI::Utilities::OriginalUnoptimizedMeshPropertyMapKey] =
+                    AZStd::make_any<NodeIndex>(nodeIndex);
+
+                // Add the optimized node index to the original mesh's custom property map so it can be looked up later
+                unoptimizedPropertyMap[SceneAPI::Utilities::OptimizedMeshPropertyMapKey] =
+                    AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);    
 
                 auto addOptimizedNodes = [&graph, &optimizedMeshNodeIndex](const auto& originalNodeIndexes, auto& optimizedNodes)
                 {
@@ -456,7 +470,9 @@ namespace AZ::SceneGenerationComponents
                     }
                 }
 
-                const AZStd::array optimizedChildTypes {
+                const AZStd::array skippedChildTypes {
+                    // Skip copying the optimized nodes since we've already
+                    // populated those nodes with the optimized data
                     azrtti_typeid<IMeshData>(),
                     azrtti_typeid<IMeshVertexUVData>(),
                     azrtti_typeid<IMeshVertexTangentData>(),
@@ -464,12 +480,22 @@ namespace AZ::SceneGenerationComponents
                     azrtti_typeid<IMeshVertexColorData>(),
                     azrtti_typeid<ISkinWeightData>(),
                     azrtti_typeid<IBlendShapeData>(),
+                    // Skip copying the custom property data because we've already copied it above
+                    azrtti_typeid<ICustomPropertyData>()
                 };
+
+                // Copy the children of the original mesh node, but skip any nodes we have already populated
                 for (const NodeIndex& childNodeIndex : nodeIndexes(childNodes(nodeIndex)))
                 {
                     const AZStd::shared_ptr<SceneAPI::DataTypes::IGraphObject>& childNode = graph.GetNodeContent(childNodeIndex);
 
-                    if (!AZStd::any_of(optimizedChildTypes.begin(), optimizedChildTypes.end(), [&childNode](const AZ::Uuid& typeId) { return AZ::RttiIsTypeOf(typeId, childNode.get()); }))
+                    if (!AZStd::any_of(
+                            skippedChildTypes.begin(),
+                            skippedChildTypes.end(),
+                            [&childNode](const AZ::Uuid& typeId)
+                            {
+                                return AZ::RttiIsTypeOf(typeId, childNode.get());
+                            }))
                     {
                         const AZStd::string optimizedName {graph.GetNodeName(childNodeIndex).GetName(), graph.GetNodeName(childNodeIndex).GetNameLength()};
                         const NodeIndex optimizedNodeIndex = graph.AddChild(optimizedMeshNodeIndex, optimizedName.c_str(), childNode);

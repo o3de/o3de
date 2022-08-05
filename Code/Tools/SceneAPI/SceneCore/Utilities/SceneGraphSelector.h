@@ -23,6 +23,7 @@ namespace AZ::SceneAPI::Utilities
 {
     inline constexpr AZStd::string_view OptimizedMeshSuffix = "_optimized";
     inline constexpr AZStd::string_view OptimizedMeshPropertyMapKey = "o3de_optimized_mesh_node";
+    inline constexpr AZStd::string_view OriginalUnoptimizedMeshPropertyMapKey = "o3de_original_unoptimized_mesh_node";
 
     // SceneGraphSelector provides utilities including converting selected and unselected node lists
     // in the MeshGroup into the final target node list.
@@ -56,6 +57,16 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOptimizedMesh(
             const Containers::SceneGraph& graph,
             const Containers::SceneGraph::NodeIndex& index);
+
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOriginalUnoptimizedMesh(
+            const Containers::SceneGraph& graph,
+            const Containers::SceneGraph::NodeIndex& index);
+
+        SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapNodeIndex(
+                const Containers::SceneGraph& graph,
+                const Containers::SceneGraph::NodeIndex& index,
+                const AZStd::string_view customPropertyKey
+                );
 
         SCENE_CORE_API static AZStd::string GenerateOptimizedMeshNodeName(
             const Containers::SceneGraph& graph,
