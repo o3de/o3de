@@ -18,6 +18,9 @@ PIPELINE_TIMEOUT = 60
 EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
+ENGINE_ORGANIZATION_NAME = 'o3de'
+EXTRAS_REPOSITORY_NAME = 'o3de-extras'
+EXTRAS_ORGANIZATION_NAME = 'o3de'
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
@@ -45,7 +48,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Cancels AR immediately on any failure in the pipeline and marks it as failed', name: 'FAIL_FAST')
 ]
 
-def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
+def PlatformSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) {
     if (env.IS_UNIX) {
         sh label: lbl,
            script: cmd
@@ -61,7 +64,7 @@ def palSh(cmd, lbl = '', winSlashReplacement = true, winCharReplacement = true) 
     }
 }
 
-def palMkdir(path) {
+def PlatformMkdir(path) {
     if (env.IS_UNIX) {
         sh label: "Making directories ${path}",
            script: "mkdir -p ${path}"
@@ -72,7 +75,7 @@ def palMkdir(path) {
     }
 }
 
-def palRm(path) {
+def PlatformRm(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
            script: "rm ${path}"
@@ -83,7 +86,7 @@ def palRm(path) {
     }
 }
 
-def palRmDir(path) {
+def PlatformRmDir(path) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
            script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
@@ -135,7 +138,7 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
     echo 'Loading pipeline config'
     def pipelineConfig = {}
     pipelineConfig = readJSON file: PIPELINE_CONFIG_FILE
-    palRm(PIPELINE_CONFIG_FILE)
+    PlatformRm(PIPELINE_CONFIG_FILE)
     pipelineConfig.platforms = EMPTY_JSON
 
     // Load the pipeline configs per platform
@@ -152,7 +155,7 @@ def LoadPipelineConfig(String pipelineName, String branchName) {
                 pipelineConfig.platforms[platform] = EMPTY_JSON
                 pipelineConfig.platforms[platform].PIPELINE_ENV = readJSON file: pipeline_config_path.toString()
             }
-            palRm(pipeline_config_path.toString())
+            PlatformRm(pipeline_config_path.toString())
         }
     }
 
@@ -207,6 +210,16 @@ def GetEnvStringList(Map envVarMap) {
     return strList
 }
 
+def GetEngineRemoteConfig(remoteConfigs) {
+    def engineRemoteConfigs = [name: "${ENGINE_REPOSITORY_NAME}",
+        url: remoteConfigs.url[0]
+            .replace("${EXTRAS_REPOSITORY_NAME}", "${ENGINE_REPOSITORY_NAME}")
+            .replace("/${EXTRAS_ORGANIZATION_NAME}/", "/${ENGINE_ORGANIZATION_NAME}/"),
+        credentialsId: remoteConfigs.credentialsId[0]
+        ]
+    return engineRemoteConfigs
+}
+
 def GetCrashArtifactDir() {
     if (env.IS_UNIX) {
         def uname = sh(script: 'uname', returnStdout: true).trim()
@@ -238,25 +251,33 @@ def CheckoutBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: scm.userRemoteConfigs
+        userRemoteConfigs: [GetEngineRemoteConfig(scm.userRemoteConfigs)]
     ])
 }
 
-def CheckoutRepo(boolean disableSubmodules = false) {
+def CheckoutRepo(boolean disableSubmodules = false, boolean extras = false) {
 
-    if (!fileExists(ENGINE_REPOSITORY_NAME)) {
-        palMkdir(ENGINE_REPOSITORY_NAME)
-    }
+    def projectsAndUrl = [
+        "${ENGINE_REPOSITORY_NAME}": GetEngineRemoteConfig(scm.userRemoteConfigs),
+        "${EXTRAS_REPOSITORY_NAME}": scm.userRemoteConfigs[0]
+    ]
 
-    if(fileExists('.git')) {
-        // If the repository after checkout is locked, likely we took a snapshot while git was running,
-        // to leave the repo in a usable state, garbagecollect. This also helps in situations where
-        def indexLockFile = '.git/index.lock'
-        if(fileExists(indexLockFile)) {
-            palSh('git gc', 'Git GarbageCollect')
+    projectsAndUrl.each { projectAndUrl ->
+        if (!fileExists(projectAndUrl.key)) {
+            PlatformMkdir(projectAndUrl.key)
         }
-        if(fileExists(indexLockFile)) { // if it is still there, remove it
-            palRm(indexLockFile)
+        dir(projectAndUrl.key) {
+            if (fileExists('.git')) {
+                // If the repository after checkout is locked, likely we took a snapshot while git was running,
+                // to leave the repo in a usable state, garbage collect.
+                def indexLockFile = '.git/index.lock'
+                if (fileExists(indexLockFile)) {
+                    PlatformSh('git gc', 'Git GarbageCollect')
+                }
+                if (fileExists(indexLockFile)) { // if it is still there, remove it
+                    PlatformRm(indexLockFile)
+                }
+            }
         }
     }
 
@@ -267,33 +288,43 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             sleep random.nextInt(60 * retryAttempt)  // Stagger checkouts to prevent HTTP 429 (Too Many Requests) response from CodeCommit
         }
         retryAttempt = retryAttempt + 1
-        checkout scm: [
-            $class: 'GitSCM',
-            branches: scm.branches,
-            extensions: [
-                [$class: 'PruneStaleBranch'],
-                [$class: 'AuthorInChangelog'],
-                [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
-                [$class: 'CheckoutOption', timeout: 60]
-            ],
-            userRemoteConfigs: scm.userRemoteConfigs
-       ]
+        projectsAndUrl.each { projectAndUrl ->
+            dir(projectAndUrl.key) {
+                def branchName = scm.branches
+                if (projectAndUrl.key == "${ENGINE_REPOSITORY_NAME}") {
+                    branchName = [[name: params.ENGINE_BRANCH]]
+                }
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: branchName,
+                    extensions: [
+                        [$class: 'PruneStaleBranch'],
+                        [$class: 'AuthorInChangelog'],
+                        [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
+                        [$class: 'CheckoutOption', timeout: 60]
+                    ],
+                    userRemoteConfigs: [projectAndUrl.value]
+                ]
+            }
+        }
     }
 
-    // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
-    palSh('git rev-parse HEAD > commitid', 'Getting commit id')
-    env.CHANGE_ID = readFile file: 'commitid'
-    env.CHANGE_ID = env.CHANGE_ID.trim()
-    palRm('commitid')
+    dir(extras ? EXTRAS_REPOSITORY_NAME : ENGINE_REPOSITORY_NAME) {
+        // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
+        PlatformSh('git rev-parse HEAD > commitid', 'Getting commit id')
+        env.CHANGE_ID = readFile file: 'commitid'
+        env.CHANGE_ID = env.CHANGE_ID.trim()
+        PlatformRm('commitid')
 
-    // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
-    commitDateFmt = '%%cI'
-    if (env.IS_UNIX) commitDateFmt = '%cI'
+        // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
+        commitDateFmt = '%%cI'
+        if (env.IS_UNIX) commitDateFmt = '%cI'
 
-    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
-    env.CHANGE_DATE = readFile file: 'commitdate'
-    env.CHANGE_DATE = env.CHANGE_DATE.trim()
-    palRm('commitdate')
+        PlatformSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date', winSlashReplacement=true, winCharReplacement=false)
+        env.CHANGE_DATE = readFile file: 'commitdate'
+        env.CHANGE_DATE = env.CHANGE_DATE.trim()
+        PlatformRm('commitdate')
+    }
 }
 
 def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {
@@ -304,9 +335,9 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     else pythonCmd = 'python3 -u '
 
     if(recreateVolume) {
-        palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
+        PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
     }
-    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
+    PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
 
     if(env.IS_UNIX) {
         sh label: 'Setting volume\'s ownership',
@@ -320,7 +351,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     }
 }
 
-def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
+def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false, boolean extras = false) {
     echo 'Starting pre-build common steps...'
 
     if (mount) {
@@ -337,19 +368,20 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
     // we need to cleanup. Once all branches take this relocation, we can remove this
     if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
-            palRmDir(workspace)
+            PlatformRmDir(workspace)
         }
     }
 
     dir(workspace) {
         // Add folder where we will store the 3rdParty downloads and packages
         if(!fileExists('3rdParty')) {
-            palMkdir('3rdParty')
+            PlatformMkdir('3rdParty')
         }
     }
-    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-        CheckoutRepo(disableSubmodules)
 
+    CheckoutRepo(disableSubmodules, extras)
+
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
         // Get python
         if(env.IS_UNIX) {
             sh label: 'Getting python',
@@ -365,11 +397,11 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         if(env.IS_UNIX) command += '.sh'
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-        palSh(command, "Running ${platform} clean")
+        PlatformSh(command, "Running ${platform} clean")
 
         if(fileExists('.lfsconfig')) {
-            palSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
-            palSh("git lfs pull", "Pulling new LFS objects")
+            PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
+            PlatformSh("git lfs pull", "Pulling new LFS objects")
         }
     }
 }
@@ -380,8 +412,17 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
         if(env.IS_UNIX) command += '.sh'
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type ${type}"
+
+        dir("${workspace}/${ETRAS_REPOSITORY_NAME}") {
+            PlatformSh("scripts/o3de${ext} register --all-engines-path ${path}/Engines", "Registering engines in ${path}/Engines")
+            PlatformSh("scripts/o3de${ext} register --all-projects-path ${path}/Projects", "Registering projects in ${path}/Projects")
+            PlatformSh("scripts/o3de${ext} register --all-gems-path ${path}/Gems", "Registering gems in ${path}/Gems")
+            PlatformSh("scripts/o3de${ext} register --all-templates-path ${path}/Templates", "Registering templates in ${path}/Templates")
+            PlatformSh("scripts/o3de${ext} register --all-restricted-path ${path}/Restricted", "Registering templates in ${path}/Restricted")
+        }
+
         dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-            palSh(command, "Running ${platform} ${type}")
+            PlatformSh(command, "Running ${platform} ${type}")
         }
     }
 }
@@ -431,7 +472,7 @@ def BenchmarkMetrics(Map pipelineConfig, String workspace, String branchName, St
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
             ]
             command += " -u mars/scripts/python/benchmark_scraper.py ${cmakeBuildDir} ${branchName}"
-            palSh(command, "Publishing Benchmark Metrics")
+            PlatformSh(command, "Publishing Benchmark Metrics")
         }
     }
 }
@@ -455,7 +496,7 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
                           "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
                           "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
                           '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
-            palSh(command, "Uploading test screenshots for ${jobName}")
+            PlatformSh(command, "Uploading test screenshots for ${jobName}")
         }
     }
 }
@@ -465,9 +506,9 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
 //See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
 def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
     if (!fileExists(s3Prefix)) {
-        palMkdir(s3Prefix)
+        PlatformMkdir(s3Prefix)
     }
-    palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
+    PlatformSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
     // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
     archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
     def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
@@ -478,7 +519,7 @@ def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean rec
         command += "--include \"${include}\" "
     }
     if (recursive) command += "--recursive "
-    palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
+    PlatformSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
 }
 
 def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
@@ -512,10 +553,10 @@ def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
     if (params && params.containsKey('OUTPUT_DIRECTORY')){
         dir([workspace, ENGINE_REPOSITORY_NAME, params.OUTPUT_DIRECTORY].join('/')){
             // Clean up Testing directory
-            palRmDir("Testing")
+            PlatformRmDir("Testing")
             // Recreate test runner xml directories that need to be pre generated to prevent race condition on incremental runs
-            palMkdir("Testing/Pytest")
-            palMkdir("Testing/Gtest")
+            PlatformMkdir("Testing/Pytest")
+            PlatformMkdir("Testing/Gtest")
         }
     }
     
@@ -526,7 +567,7 @@ def PostBuildCommonSteps(String workspace, Map params, boolean mount = true) {
 
         try {
             timeout(5) {
-                palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
+                PlatformSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action unmount", 'Unmounting volume')
             }
         } catch (Exception e) {
             echo "Unmount script error ${e}"
@@ -542,8 +583,8 @@ def HandleDriveSnapshots(String repositoryName, String projectName, String pipel
         
         mountName = "Name:${repositoryName}_${projectName}_${pipeline}_${branchName}_${platform}_${buildType}"
         mountName = mountName.replace('/', '_').replace('\\', '_')
-        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
-        palSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
+        PlatformSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action create --tags ${mountName} --execute", "Starting volume snapshots", true)
+        PlatformSh("${pythonCmd} ${EBS_SNAPSHOT_SCRIPT_PATH} --action delete --tags ${mountName} --retention ${env.SNAP_RETENTION} --execute", "Cleaning up old snapshots", true)
     }
 }
 
@@ -553,7 +594,7 @@ def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName,
             if(onlyMountEBSVolume) {
                 HandleDriveMount(snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName, environmentVars['WORKSPACE'], false)
             } else {
-                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], repository_name == "${EXTRAS_REPOSITORY_NAME}" ? true : false)
             }
         }
     }
