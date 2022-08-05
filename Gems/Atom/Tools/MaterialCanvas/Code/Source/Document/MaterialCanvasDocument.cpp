@@ -406,27 +406,6 @@ namespace MaterialCanvas
         return templateOuputPath;
     }
 
-    AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetNodesInExecutionOrder() const
-    {
-        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
-        sortedNodes.reserve(m_graph->GetNodes().size());
-
-        for (const auto& nodePair : m_graph->GetNodes())
-        {
-            sortedNodes.push_back(nodePair.second);
-        }
-
-        AZStd::sort(
-            sortedNodes.begin(),
-            sortedNodes.end(),
-            [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
-            {
-                return nodeB->HasInputConnectionFromNode(nodeA);
-            });
-
-        return sortedNodes;
-    }
-
     void MaterialCanvasDocument::ReplaceStringsInContainer(
         const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const
     {
@@ -479,29 +458,6 @@ namespace MaterialCanvas
         return AZStd::string();
     }
 
-    bool MaterialCanvasDocument::ShouldUseInstructionsFromInputNode(
-        GraphModel::ConstNodePtr outputNode, GraphModel::ConstNodePtr inputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
-    {
-        for (const auto& inputSlotName : inputSlotNames)
-        {
-            if (const auto slot = outputNode->GetSlot(inputSlotName))
-            {
-                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
-                {
-                    for (const auto& connection : slot->GetConnections())
-                    {
-                        if (connection->GetSourceNode() == inputNode ||
-                            connection->GetSourceNode()->HasInputConnectionFromNode(inputNode))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromSlot(
         GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
     {
@@ -536,20 +492,66 @@ namespace MaterialCanvas
         return instructionsForSlot;
     }
 
+    bool MaterialCanvasDocument::ShouldUseInstructionsFromInputNode(
+        GraphModel::ConstNodePtr outputNode, GraphModel::ConstNodePtr inputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
+    {
+        if (inputNode == outputNode)
+        {
+            return true;
+        }
+
+        for (const auto& inputSlotName : inputSlotNames)
+        {
+            if (const auto slot = outputNode->GetSlot(inputSlotName))
+            {
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetSourceNode() == inputNode || connection->GetSourceNode()->HasInputConnectionFromNode(inputNode))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetInstructionNodesInExecutionOrder(
+        GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
+    {
+        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
+        sortedNodes.reserve(m_graph->GetNodes().size());
+
+        for (const auto& nodePair : m_graph->GetNodes())
+        {
+            const auto& inputNode = nodePair.second;
+            if (ShouldUseInstructionsFromInputNode(outputNode, inputNode, inputSlotNames))
+            {
+                sortedNodes.push_back(inputNode);
+            }
+        }
+
+        AZStd::sort(
+            sortedNodes.begin(),
+            sortedNodes.end(),
+            [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
+            {
+                return nodeA != nodeB && nodeA->HasOutputConnectionToNode(nodeB);
+            });
+
+        return sortedNodes;
+    }
+
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInstructionsFromConnectedNodes(
-        GraphModel::ConstNodePtr outputNode,
-        const AZStd::vector<GraphModel::ConstNodePtr>& sortedNodes,
-        const AZStd::vector<AZStd::string>& inputSlotNames) const
+        GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
         AZStd::vector<AZStd::string> instructions;
 
-        for (const auto& inputNode : sortedNodes)
+        for (const auto& inputNode : GetInstructionNodesInExecutionOrder(outputNode, inputSlotNames))
         {
-            if (inputNode != outputNode && !ShouldUseInstructionsFromInputNode(outputNode, inputNode, inputSlotNames))
-            {
-                continue;
-            }
-
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
             if (!dynamicNode)
             {
@@ -615,12 +617,19 @@ namespace MaterialCanvas
 
             // We have to insert one line at a time because AZStd::vector does not include a standard
             // range insert that returns an iterator
-            for (const auto& lineToInsert : lineGenerationFn(*blockBeginItr))
+            const auto& linesToInsert = lineGenerationFn(*blockBeginItr);
+            for (const auto& lineToInsert : linesToInsert)
             {
                 ++blockBeginItr;
                 blockBeginItr = templateLines.insert(blockBeginItr, lineToInsert);
                 AZ_TracePrintf("MaterialCanvasDocument", "lineToInsert: %s\n", lineToInsert.c_str());
             }
+
+            if (linesToInsert.empty())
+            {
+                AZ_TracePrintf("MaterialCanvasDocument", "Nothing was generated. This block will remain unmodified.\n");
+            }
+
             ++blockBeginItr;
 
             // From the last line that was inserted, locate the end of the insertion block
@@ -634,8 +643,11 @@ namespace MaterialCanvas
 
             AZ_TracePrintf("MaterialCanvasDocument", "*blockEnd: %s\n", (*blockEndItr).c_str());
 
-            // Erase any pre-existing lines the template might have had between the begin and end blocks
-            blockEndItr = templateLines.erase(blockBeginItr, blockEndItr);
+            if (!linesToInsert.empty())
+            {
+                // If any new lines were inserted, erase pre-existing lines the template might have had between the begin and end blocks
+                blockEndItr = templateLines.erase(blockBeginItr, blockEndItr);
+            }
 
             // Search for another insertion point
             blockBeginItr = AZStd::find_if(
@@ -668,11 +680,11 @@ namespace MaterialCanvas
 
         AZ_TracePrintf("MaterialCanvasDocument", "Dumping data scraped from traversing material graph.\n");
 
-        AZStd::vector<GraphModel::ConstNodePtr> sortedNodes = GetNodesInExecutionOrder();
-
         // Traverse all graph nodes and slots to collect global settings like include files and class definitions
-        for (const auto& currentNode : sortedNodes)
+        for (const auto& nodePair : m_graph->GetNodes())
         {
+            const auto& currentNode = nodePair.second;
+
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get()))
             {
                 AtomToolsFramework::VisitDynamicNodeSettings(
@@ -687,9 +699,9 @@ namespace MaterialCanvas
         }
 
         // Traverse all graph nodes and slots searching for settings to generate files from templates
-        for (const auto& currentNode : sortedNodes)
+        for (const auto& nodePair : m_graph->GetNodes())
         {
-            AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", currentNode->GetTitle());
+            const auto& currentNode = nodePair.second;
 
             // Visit all of the settings for this node to collect template paths for files that need to be generated
             AZStd::set<AZStd::string> templatePaths;
@@ -766,7 +778,7 @@ namespace MaterialCanvas
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
                             AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
-                            return GetInstructionsFromConnectedNodes(currentNode, sortedNodes, inputSlotNames);
+                            return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames);
                         },
                         templateLines);
 
