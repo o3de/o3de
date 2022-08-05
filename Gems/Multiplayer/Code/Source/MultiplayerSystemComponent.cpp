@@ -557,9 +557,9 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
-        [[maybe_unused]] AzNetworking::IConnection* connection,
+        AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerPackets::Connect& packet
+        MultiplayerPackets::Connect& packet
     )
     {
         PlayerConnectionConfig config;
