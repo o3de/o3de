@@ -398,10 +398,6 @@ namespace AZ
     ComponentApplication::ComponentApplication()
         : ComponentApplication(0, nullptr)
     {
-        if (Interface<ComponentApplicationRequests>::Get() == nullptr)
-        {
-            Interface<ComponentApplicationRequests>::Register(this);
-        }
     }
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
@@ -420,11 +416,11 @@ namespace AZ
         }
         else
         {
-             azstrcpy(m_commandLineBuffer, AZ_ARRAY_SIZE(m_commandLineBuffer), "no_argv_supplied");
+            azstrcpy(m_commandLineBuffer, AZ_ARRAY_SIZE(m_commandLineBuffer), "no_argv_supplied");
             // use a "valid" value here.  This is because Qt and potentially other third party libraries require
             // that ArgC be 'at least 1' and that (*argV)[0] be a valid pointer to a real null terminated string.
-             m_argC = 1;
-             m_argV = &m_commandLineBufferAddress;
+            m_argC = 1;
+            m_argV = &m_commandLineBufferAddress;
         }
 
         // Create the Event logger if it doesn't exist, otherwise reuse the one registered
@@ -438,7 +434,7 @@ namespace AZ
             m_eventLogger = EventLoggerPtr(static_cast<AZ::Debug::LocalFileEventLogger*>(AZ::Interface<AZ::Debug::IEventLogger>::Get()),
                 EventLoggerDeleter{ true });
         }
-        
+
         // we are about to create allocators, so make sure that
         // the descriptor is filled with at least the defaults:
         m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
@@ -449,6 +445,18 @@ namespace AZ
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
+
+
+        m_nameDictionary = AZStd::make_unique<NameDictionary>();
+
+        // Register the Name Dictionary with the AZ Interface system
+        if (AZ::Interface<AZ::NameDictionary>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::NameDictionary>::Register(m_nameDictionary.get());
+            // Link the deferred names into this Name Dictionary
+            m_nameDictionary->LoadDeferredNames(AZ::Name::GetDeferredHead());
+        }
+
         SettingsRegistryMergeUtils::ParseCommandLine(m_commandLine);
 
         // Create the settings registry and register it with the AZ interface system
@@ -502,12 +510,10 @@ namespace AZ
         // Az Console initialization..
         // note that tests destroy and construct the application over and over, which is not a desirable pattern
         // so we allow the console to construct once and skip destruction / construction on consecutive runs
-        m_console = AZ::Interface<AZ::IConsole>::Get();
-        if (m_console == nullptr)
+        m_console = AZStd::make_unique<AZ::Console>(*m_settingsRegistry);
+        if (AZ::Interface<AZ::IConsole>::Get() == nullptr)
         {
-            m_console = aznew AZ::Console(*m_settingsRegistry);
-            AZ::Interface<AZ::IConsole>::Register(m_console);
-            m_ownsConsole = true;
+            AZ::Interface<AZ::IConsole>::Register(m_console.get());
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
@@ -538,12 +544,12 @@ namespace AZ
         m_projectPathChangedHandler = {};
 
         // Delete the AZ::IConsole if it was created by this application instance
-        if (m_ownsConsole)
+        if (AZ::Interface<AZ::IConsole>::Get() == m_console.get())
         {
-            AZ::Interface<AZ::IConsole>::Unregister(m_console);
-            delete m_console;
+            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleUnavailable", R"({})");
         }
+        m_console.reset();
 
         m_moduleManager.reset();
         // Unregister the global Settings Registry if it is owned by this application instance
@@ -554,6 +560,13 @@ namespace AZ
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "SystemAllocatorPendingDestruction", R"({})");
         }
         m_settingsRegistry.reset();
+
+        // Unregister the Name Dictionary with the AZ Interface system and reset it
+        if (AZ::Interface<AZ::NameDictionary>::Get() == m_nameDictionary.get())
+        {
+            AZ::Interface<AZ::NameDictionary>::Unregister(m_nameDictionary.get());
+        }
+        m_nameDictionary.reset();
 
         // Set AZ::CommandLine to an empty object to clear out allocated memory before the allocators
         // are destroyed
@@ -655,8 +668,6 @@ namespace AZ
         {
             GetSerializeContext()->CreateEditContext();
         }
-
-        NameDictionary::Create();
 
         // Call this and child class's reflects
         ReflectionEnvironment::GetReflectionManager()->Reflect(azrtti_typeid(this), [this](ReflectContext* context) {Reflect(context); });
@@ -762,8 +773,6 @@ namespace AZ
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsUnloaded", R"({})");
-
-        NameDictionary::Destroy();
 
         m_systemEntity.reset();
 

@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
 
