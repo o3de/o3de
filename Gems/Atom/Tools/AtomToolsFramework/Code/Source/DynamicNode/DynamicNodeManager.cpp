@@ -47,37 +47,14 @@ namespace AtomToolsFramework
         return m_registeredDataTypes;
     }
 
-    void DynamicNodeManager::LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions)
+    void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
-        // Enumerate all of the dynamic node configuration files in the project. This is currently using the asset system to enumerate the
-        // files as a proof of concept. If these remain editor only files then they don't need to go through the asset processor and should
-        // instead traverse source file directories using the file system.
-        AZStd::unordered_set<AZStd::string> configPaths;
-        AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB =
-            [&]([[maybe_unused]] const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
-        {
-            if (assetInfo.m_assetType == AZ::RPI::AnyAsset::RTTI_Type())
-            {
-                for (const auto& extension : extensions)
-                {
-                    if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), extension))
-                    {
-                        const AZStd::string& configPath =
-                            GetPathWithAlias(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId));
-                        configPaths.insert(configPath);
-                        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" discovered.\n", configPath.c_str());
-                        break;
-                    }
-                }
-            }
-        };
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
-
         // Load and register all discovered dynamic node configuration
-        for (const AZStd::string& configPath : configPaths)
+        for (AZStd::string configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
         {
+            // Convert path to use alias so that is consistent for loading and for the config ID
+            configPath = GetPathWithAlias(configPath);
+
             DynamicNodeConfig config;
             if (config.Load(configPath))
             {

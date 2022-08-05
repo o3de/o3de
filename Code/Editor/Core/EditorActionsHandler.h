@@ -24,6 +24,7 @@ namespace AzToolsFramework
 {
     class ActionManagerInterface;
     class ActionManagerInternalInterface;
+    class HotKeyManagerInterface;
     class MenuManagerInterface;
     class MenuManagerInternalInterface;
     class ToolBarManagerInterface;
@@ -82,6 +83,7 @@ private:
     // Editor Action Manager initialization functions
     AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
     AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
+    AzToolsFramework::HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
     AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
     AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;

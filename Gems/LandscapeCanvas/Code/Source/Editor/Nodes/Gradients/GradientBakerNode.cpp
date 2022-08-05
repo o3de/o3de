@@ -59,6 +59,7 @@ namespace LandscapeCanvas
 
         GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr pathDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INPUT_BOUNDS_SLOT_ID,
@@ -73,5 +74,11 @@ namespace LandscapeCanvas
             { gradientDataType },
             AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+
+        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+            OUTPUT_IMAGE_SLOT_ID,
+            OUTPUT_IMAGE_SLOT_LABEL.toUtf8().constData(),
+            pathDataType,
+            OUTPUT_IMAGE_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas
