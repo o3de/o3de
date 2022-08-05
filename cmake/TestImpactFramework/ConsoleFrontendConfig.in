@@ -62,13 +62,6 @@
           "previous_test_run_data_file": "PreviousTestRunData.json"
         }
       },
-      "active": {
-        "root": "${native_active_dir}",
-        "relative_paths": {
-          "test_impact_data_file": "TestImpactData.spartia",
-          "previous_test_run_data_file": "PreviousTestRunData.json"
-        }
-      },
       "historic": {
         "root": "${native_historic_dir}",
         "relative_paths": {
