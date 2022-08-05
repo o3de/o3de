@@ -1129,13 +1129,13 @@ void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
     m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
     m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
+    SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
     m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
+    SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
@@ -1150,14 +1150,14 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = SandboxEditor::GridSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
         m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = SandboxEditor::AngleSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
         m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);
