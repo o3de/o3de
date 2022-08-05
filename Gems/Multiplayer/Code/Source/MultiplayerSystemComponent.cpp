@@ -597,10 +597,12 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::Client;
-                datum.m_id = connection->GetConnectionId();
-                const uint64_t userId = packet.GetTemporaryUserId();
+                auto preActivationCallback = [connection](const INetworkEntityManager::EntityList& entityList)
+                {
+                    EnableAutonomousControl(entityList, connection->GetConnectionId());
+                };
 
-                controlledEntity = spawner->OnPlayerJoin(userId, datum);
+                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum, preActivationCallback);
                 if (controlledEntity.Exists())
                 {
 					EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
@@ -1002,7 +1004,7 @@ namespace Multiplayer
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::ClientServer;
                 datum.m_id = InvalidConnectionId;
-                constexpr uint64_t userId = 0;
+                const uint64_t userId = 0;
 
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
 				if (controlledEntity.Exists())

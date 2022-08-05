@@ -52,9 +52,7 @@ namespace Multiplayer
             const AzFramework::Spawnable& spawnable,
             NetEntityRole netEntityRole,
             const AZ::Transform& transform,
-            AutoActivate autoActivate,
-            AutonomousControl autonomousControl,
-            AzNetworking::ConnectionId autonomousOwnerConnectionId
+            AutoActivate autoActivate
         );
         EntityList CreateEntitiesImmediate
         (
@@ -69,15 +67,8 @@ namespace Multiplayer
             NetEntityId netEntityId,
             NetEntityRole netEntityRole,
             AutoActivate autoActivate,
-            const AZ::Transform& transform,
-            AutonomousControl autonomousControl = AutonomousControl::Disabled,
-            AzNetworking::ConnectionId autonomousOwnerConnectionId = AzNetworking::InvalidConnectionId
+            const AZ::Transform& transform
         ) override;
-        EntityList CreateAutomonousPlayerImmediate(
-            const PrefabEntityId& prefabEntryId,
-            const AZ::Transform& transform,
-            AzNetworking::ConnectionId autonomousOwnerConnectionId,
-            AutoActivate autoActivate = AutoActivate::Activate) override;
 
         AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
             const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform) override;

@@ -41,16 +41,20 @@ namespace Multiplayer
 
         virtual ~IMultiplayerSpawner() = default;
 
+        //! Callback to inject logic after the network player entity is created, but before its components are activated
+        using EntityPreActivationCallback = AZStd::function<void(const INetworkEntityManager::EntityList& entityList)>;
+
         //! Invoked when a Client connects/ClientHost starts a session to determine what autonomous Prefab should be spawned where
         //! @param userId User ID of joining player
         //! @param agentDatum Datum containing connection data that can be used to inform join logic
-        //! @return A list of the entities making up the player.
-        virtual NetworkEntityHandle OnPlayerJoin(uint64_t userId, const MultiplayerAgentDatum& agentDatum) = 0;
+        //! @return A NetworkEntityHandle of the entity the player will have autonomy over
+        virtual Multiplayer::NetworkEntityHandle OnPlayerJoin(uint64_t userId, const Multiplayer::MultiplayerAgentDatum& agentDatum, EntityPreActivationCallback preActivationCallback) = 0;
 
         //! Invoked when a Client disconnects from the session to determine how the autonomous prefab should be cleaned up
         //! @param entityHandle The entity handle to consider on leaving, generally the connection's primary player entity
         //! @param replicationSet The replication set of the related connection
         //! @param reason The cause of disconnection
-        virtual void OnPlayerLeave(ConstNetworkEntityHandle entityHandle, const ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;
+        virtual void OnPlayerLeave(
+            Multiplayer::ConstNetworkEntityHandle entityHandle, const Multiplayer::ReplicationSet& replicationSet, AzNetworking::DisconnectReason reason) = 0;
     };
 }

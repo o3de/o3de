@@ -87,19 +87,8 @@ namespace Multiplayer
             NetEntityId netEntityId,
             NetEntityRole netEntityRole,
             AutoActivate autoActivate,
-            const AZ::Transform& transform,
-            AutonomousControl autonomousControl = AutonomousControl::Disabled,
-            AzNetworking::ConnectionId autonomousOwnerConnectionId = AzNetworking::InvalidConnectionId
+            const AZ::Transform& transform
         ) = 0;
-
-        //! Creates a new autonomous player based on the provided archetype.
-        //! Provides the player entities with autonomous control.
-        //! @param prefabEntryId the name of the spawnable to spawn
-        virtual EntityList CreateAutomonousPlayerImmediate(
-            const PrefabEntityId& prefabEntryId,
-            const AZ::Transform& transform,
-            AzNetworking::ConnectionId autonomousOwnerConnectionId,
-            AutoActivate autoActivate = AutoActivate::Activate) = 0;
 
         //! Requests a network spawnable to instantiate at a given transform
         //! This is an async function. The instantiated entities are not available immediately but will be constructed by the spawnable system
