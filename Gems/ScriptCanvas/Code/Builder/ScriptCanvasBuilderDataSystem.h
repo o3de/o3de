@@ -27,25 +27,13 @@ namespace ScriptCanvasEditor
 namespace ScriptCanvasBuilder
 {
 /// this MACRO enables highly verbose status updates from the builder data system which will later be routed through an imgui window.
-#define SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED
+// #define SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED
 
 #if defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
 #define DATA_SYSTEM_STATUS(window, ...) AZ_TracePrintf(window, __VA_ARGS__);
 #else
 #define DATA_SYSTEM_STATUS(window, ...)
 #endif//defined(SCRIPT_CANVAS_BUILDER_DATA_SYSTEM_DIAGNOSTICS_ENABLED)
-
-    /*
-    *
-namespace AzFramework
-{
-    namespace AssetSystem
-    {
-        //! AssetSystemInfoBusTraits
-        //! This bus is for events that occur in the asset system in general, and has no address
-        class AssetSystemInfoNotifications
-        */
-
 
     /// <summary>
     /// Provides simplified access to status and compiled data for ScriptCanvas source files.
@@ -100,12 +88,6 @@ namespace AzFramework
         
         void AddResult(const SourceHandle& handle, BuilderSourceStorage&& result);
         void AddResult(AZ::Uuid&& id, BuilderSourceStorage&& result);
-
-        /*
-        void AssetCompilationStarted(const AZStd::string& assetPath) override;
-        void AssetCompilationSuccess(const AZStd::string& assetPath) override;
-        void AssetCompilationFailed(const AZStd::string& assetPath) override;
-        */
 
         void CompileBuilderDataInternal(SourceHandle sourceHandle);
         void MarkAssetInError(AZ::Uuid sourceId);

@@ -79,84 +79,6 @@ namespace ScriptCanvasBuilder
         m_buildResultsByHandle[id] = result;
     }
 
-    /*
-    void DataSystem::AssetCompilationStarted(const AZStd::string& assetPath)
-    {
-        if (!IsScriptCanvasFile(assetPath))
-        {
-            return;
-        }
-
-        if (auto uuidOptional = GetUuid(assetPath))
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationStarted: %s : %s and will monitor the asset"
-                , assetPath.c_str()
-                , uuidOptional->ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-            MonitorAsset(*uuidOptional);
-        }
-        else
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationStarted but did not get a Uuid: %s"
-                , assetPath.c_str());
-        }
-    }
-
-    void DataSystem::AssetCompilationSuccess(const AZStd::string& assetPath)
-    {
-        if (!IsScriptCanvasFile(assetPath))
-        {
-            return;
-        }
-
-        if (auto uuidOptional = GetUuid(assetPath))
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationStarted: %s : %s and will monitor the asset"
-                , assetPath.c_str()
-                , uuidOptional->ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-            MonitorAsset(*uuidOptional);
-        }
-        else
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationStarted but did not get a Uuid: %s"
-                , assetPath.c_str());
-        }
-    }
-
-    void DataSystem::AssetCompilationFailed(const AZStd::string& assetPath)
-    {
-        if (!IsScriptCanvasFile(assetPath))
-        {
-            return;
-        }
-
-        if (auto uuidOptional = GetUuid(assetPath))
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationFailed: %s : %s, marking the asset in error"
-                , assetPath.c_str()
-                , uuidOptional->ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str());
-            MarkAssetInError(*uuidOptional);
-        }
-        else
-        {
-            DATA_SYSTEM_STATUS
-                ( "ScriptCanvas"
-                , "DataSystem received AssetCompilationFailed but did not get a Uuid: %s"
-                , assetPath.c_str());
-        }
-
-    }
-    */
-
     BuilderSourceResult DataSystem::CompileBuilderData(SourceHandle sourceHandle)
     {
         MutexLock lock(m_mutex);
@@ -174,7 +96,6 @@ namespace ScriptCanvasBuilder
     {
         using namespace ScriptCanvasBuilder;
 
-        ScriptCanvasEditor::CompleteDescriptionInPlace(sourceHandle);
         BuilderSourceStorage result;
         
         auto assetTreeOutcome = LoadEditorAssetTree(sourceHandle);
@@ -226,20 +147,23 @@ namespace ScriptCanvasBuilder
         asset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         m_assets[sourceId] = BuilderAssetResult{ BuilderAssetStatus::Pending, asset };
         return m_assets[sourceId];
-
-        m_buildResultsByHandle it isn't going in here, which is the problem
     }
 
     BuilderAssetResult DataSystem::LoadAsset(SourceHandle sourceHandle)
     {
+        BuilderAssetResult* result = nullptr;;
+
         if (auto iter = m_assets.find(sourceHandle.Id()); iter != m_assets.end())
         {
-            return iter->second;
+            result = &iter->second;
         }
         else
         {
-            return MonitorAsset(sourceHandle.Id());
+            result = &MonitorAsset(sourceHandle.Id());
         }
+
+        result->data.QueueLoad();
+        return *result;
     }
 
     void DataSystem::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -402,6 +326,7 @@ namespace ScriptCanvasBuilder
         MonitorAsset(sourceId);
 
         auto handle = SourceHandle::FromRelativePathAndScenFolder(relativePath, scanFolder, sourceId);
+        CompileBuilderDataInternal(handle);
         auto& builderStorage = m_buildResultsByHandle[sourceId];
         DataSystemSourceNotificationsBus::Event
             ( sourceId
