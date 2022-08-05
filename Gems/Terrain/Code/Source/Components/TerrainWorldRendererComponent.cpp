@@ -26,20 +26,20 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<DetailMaterialConfiguration>()
-                ->Version(1)
-                ->Field("UseHeightBasedBlending", &DetailMaterialConfiguration::m_useHeightBasedBlending)
-                ->Field("RenderDistance", &DetailMaterialConfiguration::m_renderDistance)
-                ->Field("FadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
-                ->Field("Scale", &DetailMaterialConfiguration::m_scale)
-                ;
-
             serialize->Class<MeshConfiguration>()
                 ->Version(2)
                 ->Field("RenderDistance", &MeshConfiguration::m_renderDistance)
                 ->Field("FirstLodDistance", &MeshConfiguration::m_firstLodDistance)
                 ->Field("ClodEnabled", &MeshConfiguration::m_clodEnabled)
                 ->Field("ClodDistance", &MeshConfiguration::m_clodDistance)
+                ;
+
+            serialize->Class<DetailMaterialConfiguration>()
+                ->Version(1)
+                ->Field("UseHeightBasedBlending", &DetailMaterialConfiguration::m_useHeightBasedBlending)
+                ->Field("RenderDistance", &DetailMaterialConfiguration::m_renderDistance)
+                ->Field("FadeDistance", &DetailMaterialConfiguration::m_fadeDistance)
+                ->Field("Scale", &DetailMaterialConfiguration::m_scale)
                 ;
 
             serialize->Class<ClipmapConfiguration>()
@@ -56,29 +56,14 @@ namespace Terrain
 
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
                 ->Version(3)
-                ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
                 ->Field("MeshConfiguration", &TerrainWorldRendererConfig::m_meshConfig)
+                ->Field("DetailMaterialConfiguration", &TerrainWorldRendererConfig::m_detailMaterialConfig)
                 ->Field("ClipmapConfiguration", &TerrainWorldRendererConfig::m_clipmapConfig)
                 ;
 
             AZ::EditContext* editContext = serialize->GetEditContext();
             if (editContext)
             {
-                editContext->Class<DetailMaterialConfiguration>("Detail material", "Settings related to rendering detail surface materials.")
-                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DetailMaterialConfiguration::m_useHeightBasedBlending, "Height based texture blending", "When turned on, detail materials will use the height texture to aid with blending.")
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_renderDistance, "Detail material render distance", "The distance from the camera that the detail material will render.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance, "Detail material fade distance", "The distance over which the detail material will fade out into the macro material.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale, "Detail material scale", "The scale at which all detail materials are rendered at.")
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.1f)
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
-                    ;
-
                 editContext->Class<MeshConfiguration>("Mesh", "Settings related to rendering terrain meshes")
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshConfiguration::m_renderDistance, "Mesh render distance", "The distance from the camera that terrain meshes will render.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
@@ -96,6 +81,21 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Max, 1000.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 100.0f)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &MeshConfiguration::IsClodDisabled)
+                    ;
+
+                editContext->Class<DetailMaterialConfiguration>("Detail material", "Settings related to rendering detail surface materials.")
+                    ->DataElement(AZ::Edit::UIHandlers::CheckBox, &DetailMaterialConfiguration::m_useHeightBasedBlending, "Height based texture blending", "When turned on, detail materials will use the height texture to aid with blending.")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_renderDistance, "Detail material render distance", "The distance from the camera that the detail material will render.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_fadeDistance, "Detail material fade distance", "The distance over which the detail material will fade out into the macro material.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &DetailMaterialConfiguration::m_scale, "Detail material scale", "The scale at which all detail materials are rendered at.")
+                    ->Attribute(AZ::Edit::Attributes::SoftMin, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0001f)
+                    ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ;
 
                 editContext->Class<ClipmapConfiguration>("Clipmap", "Settings related to clipmap rendering")
@@ -163,9 +163,9 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_meshConfig, "Mesh configuration", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_detailMaterialConfig, "Detail material configuration", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldRendererConfig::m_clipmapConfig, "Clipmap configuration", "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
