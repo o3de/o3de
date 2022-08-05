@@ -10,10 +10,6 @@
 
 #pragma once
 
-#define ENABLE_TRANSMISSION 0
-#define ENABLE_AREA_LIGHTS 0
-#define ENABLE_CLEAR_COAT 0
-
 #define USE_CORNETTESHANKS 1 // use Cornette Shanks mie phase function
 #define USE_NON_LINEAR_SKY_LUT 1 // improve precision at sunset angles
 #define USE_MULTI_SCATTERING_POWER_SERIES 1
