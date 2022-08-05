@@ -389,6 +389,7 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
     Include/ScriptCanvas/Utils/ReplacementUtils.h
+    Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

@@ -18,8 +18,8 @@
 
 // Everything inside of the generated blocks will eventually be replaced in the generated files as the material graph is compiled. 
 
-// GENERATED_INCLUDES_BEGIN
-// GENERATED_INCLUDES_END
+// O3DE_GENERATED_INCLUDES_BEGIN
+// O3DE_GENERATED_INCLUDES_END
 
 struct VSInput
 {
@@ -28,8 +28,8 @@ struct VSInput
     float4 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT;
 
-    // GENERATED_VSINPUT_BEGIN
-    // GENERATED_VSINPUT_END
+    // O3DE_GENERATED_VSINPUT_BEGIN
+    // O3DE_GENERATED_VSINPUT_END
 };
 
 struct VSOutput
@@ -45,15 +45,15 @@ struct VSOutput
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
-    // GENERATED_MATERIAL_SRG_BEGIN
-    // GENERATED_MATERIAL_SRG_END
+    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
+    // O3DE_GENERATED_MATERIAL_SRG_END
 }
  
-// GENERATED_CLASSES_BEGIN
-// GENERATED_CLASSES_END
+// O3DE_GENERATED_CLASSES_BEGIN
+// O3DE_GENERATED_CLASSES_END
  
-// GENERATED_FUNCTIONS_BEGIN
-// GENERATED_FUNCTIONS_END
+// O3DE_GENERATED_FUNCTIONS_BEGIN
+// O3DE_GENERATED_FUNCTIONS_END
 
 VSOutput MaterialGraphName_MainPassVS(VSInput IN)
 {
@@ -61,9 +61,9 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
  
     float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
  
-    // GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
-    float4 inPositionOffset = float3(0.0, 0.0, 0.0, 0.0);
-    // GENERATED_INSTRUCTIONS_END
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float4 inPositionOffset = float4(0.0, 0.0, 0.0, 0.0);
+    // O3DE_GENERATED_INSTRUCTIONS_END
 
     VertexHelper(IN, OUT, worldPosition + inPositionOffset.xyz);
 
@@ -72,13 +72,13 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
 
 ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
 {
-    // GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inBaseColor, inEmissive, inMetallic, inRoughness, inSpecularF0Factor
     float4 inBaseColor = float4(1.0, 1.0, 1.0, 1.0);
     float4 inEmissive = float4(0.0, 0.0, 0.0, 1.0);
     float inMetallic = 0.0;
     float inRoughness = 0.0;
     float inSpecularF0Factor = 0.0;
-    // GENERATED_INSTRUCTIONS_END
+    // O3DE_GENERATED_INSTRUCTIONS_END
 
     // ------- Surface -------
 

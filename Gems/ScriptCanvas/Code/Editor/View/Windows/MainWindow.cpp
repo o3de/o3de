@@ -1689,7 +1689,7 @@ namespace ScriptCanvasEditor
         
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedDirectoryPath.data(), filter);
+            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.

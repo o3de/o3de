@@ -11,7 +11,10 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
 #include <AzQtComponents/Components/SearchLineEdit.h>
@@ -96,6 +99,9 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     AZ_Assert(
         m_actionManagerInternalInterface,
         "EditorActionsHandler - could not get ActionManagerInternalInterface on EditorActionsHandler construction.");
+    
+    m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+    AZ_Assert(m_hotKeyManagerInterface, "EditorActionsHandler - could not get HotKeyManagerInterface on EditorActionsHandler construction.");
     
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
@@ -184,6 +190,8 @@ void EditorActionsHandler::InitializeActions()
                 cryEdit->OnCreateLevel();
             }
         );
+
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.new", "Ctrl+N");
     }
 
     // Open Level
@@ -200,6 +208,8 @@ void EditorActionsHandler::InitializeActions()
                 cryEdit->OnOpenLevel();
             }
         );
+
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.open", "Ctrl+O");
     }
 
     // Recent Files
@@ -298,6 +308,8 @@ void EditorActionsHandler::InitializeActions()
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.save", IsLevelLoaded);
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.file.save");
+        
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.file.save", "Ctrl+S");
     }
 
     // Save As...
@@ -480,6 +492,8 @@ void EditorActionsHandler::InitializeActions()
 
         // Trigger update after every undo or redo operation
         m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.undo");
+
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.edit.undo", "Ctrl+Z");
     }
 
     // Redo
@@ -510,6 +524,8 @@ void EditorActionsHandler::InitializeActions()
 
         // Trigger update after every undo or redo operation
         m_actionManagerInterface->AddActionToUpdater(UndoRedoUpdaterIdentifier, "o3de.action.edit.redo");
+
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.edit.redo", "Ctrl+Shift+Z");
     }
 
     // Angle Snapping
@@ -623,6 +639,8 @@ void EditorActionsHandler::InitializeActions()
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.play", IsLevelLoaded);
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.play");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.play");
+
+        m_hotKeyManagerInterface->SetActionHotKey("o3de.action.game.play", "Ctrl+G");
     }
 
     // Play Game (Maximized)
@@ -749,7 +767,7 @@ void EditorActionsHandler::InitializeActions()
         );
     }
 
-    // Stop All Sounds
+    // Refresh Audio System
     {
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Refresh";

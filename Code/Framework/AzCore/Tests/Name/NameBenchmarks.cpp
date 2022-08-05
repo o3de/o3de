@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -165,7 +166,7 @@ namespace AZ::NameBenchmarks
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name::FromStringLiteral("created as a literal"));
+                names[i] = (Name::FromStringLiteral("created as a literal", AZ::Interface<AZ::NameDictionary>::Get()));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {
