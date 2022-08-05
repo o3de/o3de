@@ -1,0 +1,39 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Constants",
+        "title": "Constant Float2",
+        "propertySlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypes": [
+                    "float2"
+                ],
+                "settings": {
+                    "instructions": [
+                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypes": [
+                    "float2"
+                ],
+                "settings": {
+                    "instructions": [
+                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_NODEID_inValue;"
+                    ]
+                }
+            }
+        ]
+    }
+}
