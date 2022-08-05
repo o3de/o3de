@@ -33,6 +33,8 @@ namespace AzToolsFramework
         ToolBarManager(QWidget* defaultParentWidget);
         virtual ~ToolBarManager();
 
+        static void Reflect(AZ::ReflectContext* context);
+
     private:
         // ToolBarManagerInterface overrides ...
         ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) override;
@@ -59,6 +61,7 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
         ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) override;
         void RefreshToolBars() override;
+        ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

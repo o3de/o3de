@@ -64,8 +64,10 @@ namespace Terrain
         float GetTerrainSurfaceDataQueryResolution() const override;
         void SetTerrainSurfaceDataQueryResolution(float queryResolution) override;
 
-        AZ::Aabb GetTerrainAabb() const override;
-        void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
+        virtual AZ::Aabb GetTerrainAabb() const override;
+
+        AzFramework::Terrain::FloatRange GetTerrainHeightBounds() const override;
+        void SetTerrainHeightBounds(const AzFramework::Terrain::FloatRange& heightRange) override;
 
         bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const override;
 
@@ -198,6 +200,8 @@ namespace Terrain
             int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
             int32_t& subdivisionsX, int32_t& subdivisionsY);
 
+        static bool ContainedAabbTouchesEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb);
+
         //! This performs the logic for QueryRegion, but also accepts x and y index offsets so that the subregions for QueryRegionAsync
         //! can pass the correct x and y indices down to the subregion perPositionCallbacks.
         void QueryRegionInternal(
@@ -219,7 +223,6 @@ namespace Terrain
         static void RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition);
         static void InterpolateHeights(const AZStd::array<float, 4>& heights, const AZStd::array<bool, 4>& exists,
             float lerpX, float lerpY, float& outHeight, bool& outExists);
-        bool InWorldBounds(float x, float y) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(const AZ::Vector3& position, AZ::Aabb& bounds) const;
         void GetOrderedSurfaceWeights(
@@ -268,9 +271,12 @@ namespace Terrain
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
+        void RecalculateCachedBounds();
+        AZ::Aabb ClampZBoundsToHeightBounds(const AZ::Aabb& aabb) const;
+
         struct TerrainSystemSettings
         {
-            AZ::Aabb m_worldBounds;
+            AzFramework::Terrain::FloatRange m_heightRange;
             float m_heightQueryResolution{ 1.0f };
             float m_surfaceDataQueryResolution{ 1.0f };
             bool m_systemActive{ false };
@@ -283,6 +289,7 @@ namespace Terrain
         bool m_terrainHeightDirty = false;
         bool m_terrainSurfacesDirty = false;
         AZ::Aabb m_dirtyRegion;
+        AZ::Aabb m_cachedAreaBounds;
 
         // Cached data for each terrain area to use when looking up terrain data.
         struct TerrainAreaData

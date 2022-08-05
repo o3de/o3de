@@ -19,6 +19,7 @@ namespace AzToolsFramework
 {
     using MenuManagerOperationResult = AZ::Outcome<void, AZStd::string>;
     using MenuManagerIntegerResult = AZ::Outcome<int, AZStd::string>;
+    using MenuManagerStringResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
     //! Provides additional properties to initialize a Menu upon registration.
     struct MenuProperties
@@ -171,6 +172,12 @@ namespace AzToolsFramework
 
         //! Refreshes all menuBars that were queued up by QueueMenuBarRefresh.
         virtual void RefreshMenuBars() = 0;
+
+        //! Serialize a menu by its identifier.
+        virtual MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) = 0;
+
+        //! Serialize a menu bar by its identifier.
+        virtual MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

@@ -100,6 +100,7 @@
 #include <Editor/Nodes/GradientModifiers/PosterizeGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h>
+#include <Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h>
 #include <Editor/Nodes/Shapes/BoxShapeNode.h>
 #include <Editor/Nodes/Shapes/CapsuleShapeNode.h>
 #include <Editor/Nodes/Shapes/CompoundShapeNode.h>
@@ -375,6 +376,7 @@ namespace LandscapeCanvasEditor
         // Shapes
         GraphCanvas::IconDecoratedNodePaletteTreeItem* shapeCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Shapes", editorId);
         shapeCategory->SetTitlePalette("ShapeNodeTitlePalette");
+        REGISTER_NODE_PALETTE_ITEM(shapeCategory, AxisAlignedBoxShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, BoxShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, CapsuleShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, CompoundShapeNode, editorId);

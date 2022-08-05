@@ -33,6 +33,8 @@ namespace AzToolsFramework
         MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
 
+        static void Reflect(AZ::ReflectContext* context);
+
     private:
         // MenuManagerInterface overrides ...
         MenuManagerOperationResult RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties) override;
@@ -65,6 +67,8 @@ namespace AzToolsFramework
         MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) override;
         void RefreshMenus() override;
         void RefreshMenuBars() override;
+        MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
+        MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

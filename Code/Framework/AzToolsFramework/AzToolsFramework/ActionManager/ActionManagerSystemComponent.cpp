@@ -49,6 +49,9 @@ namespace AzToolsFramework
         {
             serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
+
+        MenuManager::Reflect(context);
+        ToolBarManager::Reflect(context);
     }
 
     void ActionManagerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
