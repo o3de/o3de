@@ -3343,13 +3343,14 @@ namespace LandscapeCanvasEditor
         auto baseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
         const AZ::EntityId& entityId = baseNode->GetVegetationEntityId();
 
-        AZStd::string imageAssetPath;
+        AZStd::string imageSourceAsset;
         GradientSignal::ImageGradientRequestBus::EventResult(
-            imageAssetPath, entityId, &GradientSignal::ImageGradientRequests::GetImageAssetPath);
+            imageSourceAsset, entityId, &GradientSignal::ImageGradientRequests::GetImageAssetSourcePath);
+        AZ::IO::Path imageSourceAssetPath(imageSourceAsset);
 
-        // The imageAssetPath will only be valid if the targetNode is an Image Gradient that has
+        // The imageSourceAssetPath will only be valid if the targetNode is an Image Gradient that has
         // a valid image asset path set.
-        if (!imageAssetPath.empty())
+        if (!imageSourceAssetPath.empty())
         {
             // Look through all the gradient nodes in this graph to find a Gradient Baker that
             // has the same output path as the input image asset to the Image Gradient. There
@@ -3371,12 +3372,6 @@ namespace LandscapeCanvasEditor
                 AZ::IO::Path outputImagePath;
                 GradientSignal::GradientBakerRequestBus::EventResult(
                     outputImagePath, nodeEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
-
-                // The path from the Image Gradient is to the product, so it will have an additional extension:
-                //      e.g. baked_output_image.png.streamingimage
-                // So we need to remove the product extension from the path to compare since the gradient baker
-                // output image path is only to the source asset
-                AZ::IO::Path imageSourceAssetPath = AZ::IO::Path(imageAssetPath).ReplaceExtension("");
 
                 if (imageSourceAssetPath == outputImagePath)
                 {
