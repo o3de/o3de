@@ -62,8 +62,8 @@ namespace AZ
 
     void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth)
     {
-        AZ_Assert(nearDist > FloatEpsilon, "near distance should be greater than 0.f");
-        AZ_Assert(farDist > nearDist, "far should be greater than near");
+        AZ_Assert(nearDist > FloatEpsilon, "Near distance should be greater than zero (float epsilon)");
+        AZ_Assert(farDist > nearDist, "Far should be greater than near");
 
         if (reverseDepth)
         {
