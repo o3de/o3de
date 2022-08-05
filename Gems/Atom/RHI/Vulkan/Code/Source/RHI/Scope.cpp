@@ -321,7 +321,8 @@ namespace AZ
             for (const auto* scopeAttachment : attachments)
             {
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
-                if (HasExplicitClear(*scopeAttachment, bindingDescriptor)) {
+                if (HasExplicitClear(*scopeAttachment, bindingDescriptor))
+                {
                     clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
                 }
             }
