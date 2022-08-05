@@ -150,11 +150,6 @@ class MaterialEditorBatchedTest(MaterialEditorSharedTest):
     is_parallelizable = False
 
 
-class MaterialEditorResult(Result):
-    """Used to set the log_attribute value for MaterialEditor result logs."""
-    Result.log_attribute = "material_editor_log"
-
-
 class MaterialEditorTestSuite(AbstractTestSuite):
     # Extra cmdline arguments to supply for every MaterialEditor instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
@@ -170,6 +165,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     _single_test_class = MaterialEditorSingleTest
     # Test class to use for shared test collection
     _shared_test_class = MaterialEditorSharedTest
+    # Log attribute value to use to collect MaterialEditor logs
+    _log_attribute = "material_editor_log"
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(
@@ -186,26 +183,13 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         """
         return MaterialEditorTestSuite.AbstractTestClass(name, collector)
 
-    def _get_number_parallel_instances(self, request: _pytest.fixtures.FixtureRequest) -> int:
-        """
-        Retrieves the number of parallel instances preference based on cmdline overrides or class overrides.
-        Defaults to self.get_number_parallel_instances() from inherited AbstractTestSuite class.
-        :request: The Pytest Request object
-        :return: The number of parallel MaterialEditors to use
-        """
-        parallel_material_editors_value = request.config.getoption("--parallel-executables", None)
-        if parallel_material_editors_value:
-            return int(parallel_material_editors_value)
-
-        return self.get_number_parallel_instances()
-
     def _exec_material_editor_test(self,
                                    request: _pytest.fixtures.FixtureRequest,
                                    workspace: AbstractWorkspaceManager,
                                    run_id: int,
                                    log_name: str,
                                    test_spec: AbstractTestBase,
-                                   cmdline_args: list[str] = None) -> dict[str, MaterialEditorResult.ResultType]:
+                                   cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts the MaterialEditor with the given test & returns a result dict with a single element specifying the result
         :request: The pytest request
@@ -251,12 +235,13 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             workspace.artifact_manager.save_artifact(
                 os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace), log_name))
             if return_code == 0:
-                test_result = MaterialEditorResult.Pass(test_spec, output, material_editor_log_content)
+                test_result = Result.Pass('material_editor_log', test_spec, output, material_editor_log_content)
             else:
                 has_crashed = return_code != MaterialEditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
-                    test_result = MaterialEditorResult.Crash(test_spec, output, return_code, crash_output, None)
+                    test_result = Result.Crash(
+                        MaterialEditorTestSuite._log_attribute, test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
                     dmp_file_name = os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace),
                                                  'error.dmp')
@@ -271,12 +256,14 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
-                    test_result = MaterialEditorResult.Fail(test_spec, output, material_editor_log_content)
+                    test_result = Result.Fail(
+                        MaterialEditorTestSuite._log_attribute, test_spec, output, material_editor_log_content)
         except WaitTimeoutError:
             output = material_editor.get_output()
             material_editor.stop()
             material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
-            test_result = MaterialEditorResult.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
+            test_result = Result.Timeout(
+                MaterialEditorTestSuite._log_attribute, test_spec, output, test_spec.timeout, material_editor_log_content)
 
         material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, material_editor_log_content)
@@ -289,7 +276,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                                         run_id: int,
                                         log_name: str,
                                         test_spec_list: list[AbstractTestBase],
-                                        cmdline_args: list[str] = None) -> dict[str, MaterialEditorResult.ResultType]:
+                                        cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts a MaterialEditor executable with a list of tests and returns a dict of the result of every test ran
         within that MaterialEditor instance.
@@ -356,7 +343,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             if return_code == 0:
                 # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
-                    results[test_spec.__name__] = MaterialEditorResult.Pass(test_spec, output, material_editor_log_content)
+                    results[test_spec.__name__] = Result.Pass(
+                        MaterialEditorTestSuite._log_attribute, test_spec, output, material_editor_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list,
@@ -370,7 +358,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 if has_crashed:
                     crashed_result = None
                     for test_spec_name, result in results.items():
-                        if isinstance(result, MaterialEditorResult.Unknown):
+                        if isinstance(result, Result.Unknown):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no output data) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(
@@ -389,8 +377,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                                     editor_utils.cycle_crash_report(run_id, workspace)
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                                results[test_spec_name] = MaterialEditorResult.Crash(
-                                    result.test_spec, output, return_code, crash_error, result.material_editor_log)
+                                results[test_spec_name] = Result.Crash(
+                                    MaterialEditorTestSuite._log_attribute, result.test_spec, output, return_code,
+                                    crash_error, result.material_editor_log)
                                 crashed_result = result
                             else:
                                 # If there are remaning "Unknown" results, these couldn't execute because of the crash,
@@ -402,9 +391,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = MaterialEditorResult.Crash(
-                            crashed_result.test_spec, output, return_code, crash_error,
-                            crashed_result.material_editor_log)
+                        results[test_spec_name] = Result.Crash(
+                            MaterialEditorTestSuite._log_attribute, crashed_result.test_spec, output, return_code,
+                            crash_error, crashed_result.material_editor_log)
         except WaitTimeoutError:
             material_editor.stop()
             output = material_editor.get_output()
@@ -418,11 +407,11 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
-                if isinstance(result, MaterialEditorResult.Unknown):
+                if isinstance(result, Result.Unknown):
                     if not timed_out_result:
-                        results[test_spec_name] = MaterialEditorResult.Timeout(result.test_spec, result.output,
-                                                                 self.timeout_material_editor_shared_test,
-                                                                 result.material_editor_log)
+                        results[test_spec_name] = Result.Timeout(
+                            MaterialEditorTestSuite._log_attribute, result.test_spec, result.output,
+                            self.timeout_material_editor_shared_test, result.material_editor_log)
                         timed_out_result = result
                     else:
                         # If there are remaning "Unknown" results, these couldn't execute because of the timeout,
@@ -433,10 +422,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             # if all the tests ran, the one that has caused the timeout is the last test,
             # as it didn't close the MaterialEditor
             if not timed_out_result:
-                results[test_spec_name] = MaterialEditorResult.Timeout(timed_out_result.test_spec,
-                                                         results[test_spec_name].output,
-                                                         self.timeout_material_editor_shared_test,
-                                                         result.material_editor_log)
+                results[test_spec_name] = Result.Timeout(
+                    MaterialEditorTestSuite._log_attribute, timed_out_result.test_spec, results[test_spec_name].output,
+                    self.timeout_material_editor_shared_test, result.material_editor_log)
         finally:
             if temp_batched_file:
                 os.unlink(temp_batched_file.name)
@@ -466,14 +454,15 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         if result is None:
             logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
-                      MaterialEditorResult.Unknown(
+                      Result.Unknown(
+                          log_attribute=MaterialEditorTestSuite._log_attribute,
                           test_spec=test_spec,
                           extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
         # If test did not pass, save assets with errors and warnings
-        if not isinstance(test_result, MaterialEditorResult.Pass):
+        if not isinstance(test_result, Result.Pass):
             editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
@@ -507,7 +496,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             if result is None:
                 logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorBatchedTest")
                 logger.debug(f"Results from MaterialEditorBatchedTest:\n{results}")
-            if not isinstance(result, MaterialEditorResult.Pass):
+            if not isinstance(result, Result.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return  # exit early on first batch failure
 
@@ -575,11 +564,12 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorParallelTest")
                     logger.debug(f"Results from MaterialEditorParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
-                              MaterialEditorResult.Unknown(
+                              Result.Unknown(
+                                  log_attribute=MaterialEditorTestSuite._log_attribute,
                                   test_spec=MaterialEditorParallelTest,
                                   extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
                 collected_test_data.results.update(result)
-                if not isinstance(result, MaterialEditorResult.Pass):
+                if not isinstance(result, Result.Pass):
                     save_asset_logs = True
             # If at least one test did not pass, save assets with errors and warnings
             if save_asset_logs:
@@ -647,11 +637,12 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorSharedTest")
                 logger.debug(f"Results from MaterialEditorSharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
-                          MaterialEditorResult.Unknown(
+                          Result.Unknown(
+                              log_attribute=MaterialEditorTestSuite._log_attribute,
                               test_spec=MaterialEditorSharedTest,
                               extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
             collected_test_data.results.update(result)
-            if not isinstance(result, MaterialEditorResult.Pass):
+            if not isinstance(result, Result.Pass):
                 save_asset_logs = True
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:

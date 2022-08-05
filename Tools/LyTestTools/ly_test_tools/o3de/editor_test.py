@@ -145,11 +145,6 @@ class EditorBatchedTest(EditorSharedTest):
     is_parallelizable = False
 
 
-class EditorResult(Result.ResultType):
-    """Used to set the log_attribute value for Editor result logs."""
-    Result.log_attribute = "editor_log"
-
-
 class EditorTestSuite(AbstractTestSuite):
     # Extra cmdline arguments to supply for every editor instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
@@ -165,6 +160,8 @@ class EditorTestSuite(AbstractTestSuite):
     _single_test_class = EditorSingleTest
     # Test class to use for shared test collection
     _shared_test_class = EditorSharedTest
+    # Log attribute value to use to collect Editor logs
+    _log_attribute = "editor_log"
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(
@@ -181,26 +178,13 @@ class EditorTestSuite(AbstractTestSuite):
         """
         return EditorTestSuite.AbstractTestClass(name, collector)
 
-    def _get_number_parallel_instances(self, request: _pytest.fixtures.FixtureRequest) -> int:
-        """
-        Retrieves the number of parallel instances preference based on cmdline overrides or class overrides.
-        Defaults to self.get_number_parallel_instances() from inherited AbstractTestSuite class.
-        :request: The Pytest Request object
-        :return: The number of parallel editors to use
-        """
-        parallel_editors_value = request.config.getoption("--parallel-executables", None)
-        if parallel_editors_value:
-            return int(parallel_editors_value)
-
-        return self.get_number_parallel_instances()
-
     def _exec_editor_test(self,
                           request: _pytest.fixtures.FixtureRequest,
                           workspace: AbstractWorkspaceManager,
                           run_id: int,
                           log_name: str,
                           test_spec: AbstractTestBase,
-                          cmdline_args: list[str] = None) -> dict[str, EditorResult.ResultType]:
+                          cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts the editor with the given test and returns a result dict with a single element specifying the result
         :request: The pytest request
@@ -209,7 +193,7 @@ class EditorTestSuite(AbstractTestSuite):
         :log_name: The name of the editor log to retrieve
         :test_spec: The type of test class
         :cmdline_args: Any additional command line args
-        :return: a dictionary of Result objects (should be only one)
+        :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
         """
         if cmdline_args is None:
             cmdline_args = []
@@ -246,15 +230,15 @@ class EditorTestSuite(AbstractTestSuite):
             return_code = editor.get_returncode()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
-            workspace.artifact_manager.save_artifact(os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
-                                                     f'({run_id}){log_name}')
+            workspace.artifact_manager.save_artifact(
+                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
             if return_code == 0:
-                test_result = EditorResult.Pass(test_spec, output, editor_log_content)
+                test_result = Result.Pass(EditorTestSuite._log_attribute, test_spec, output, editor_log_content)
             else:
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
-                    test_result = EditorResult.Crash(test_spec, output, return_code, crash_output, None)
+                    test_result = Result.Crash(EditorTestSuite._log_attribute, test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
                     dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
                                                  'error.dmp')
@@ -269,15 +253,15 @@ class EditorTestSuite(AbstractTestSuite):
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
-                    test_result = EditorResult.Fail(test_spec, output, editor_log_content)
+                    test_result = Result.Fail(EditorTestSuite._log_attribute, test_spec, output, editor_log_content)
         except WaitTimeoutError:
             output = editor.get_output()
             editor.stop()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-            test_result = EditorResult.Timeout(test_spec, output, test_spec.timeout, editor_log_content)
+            test_result = Result.Timeout(EditorTestSuite._log_attribute, test_spec, output, test_spec.timeout, editor_log_content)
     
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-        results = self._get_results_using_output([test_spec], output, editor_log_content)
+        results = self._get_results_using_output(EditorTestSuite._log_attribute, [test_spec], output, editor_log_content)
         results[test_spec.__name__] = test_result
         return results
 
@@ -287,7 +271,7 @@ class EditorTestSuite(AbstractTestSuite):
                                run_id: int,
                                log_name: str,
                                test_spec_list: list[AbstractTestBase],
-                               cmdline_args: list[str] = None) -> dict[str, EditorResult.ResultType]:
+                               cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that
         editor instance. In case of failure this function also parses the editor output to find out what specific tests
@@ -357,7 +341,7 @@ class EditorTestSuite(AbstractTestSuite):
             if return_code == 0:
                 # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
-                    results[test_spec.__name__] = EditorResult.Pass(test_spec, output, editor_log_content)
+                    results[test_spec.__name__] = Result.Pass(EditorTestSuite._log_attribute, test_spec, output, editor_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
@@ -369,7 +353,7 @@ class EditorTestSuite(AbstractTestSuite):
                 if has_crashed:
                     crashed_result = None
                     for test_spec_name, result in results.items():
-                        if isinstance(result, EditorResult.Unknown):
+                        if isinstance(result, Result.Unknown):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
@@ -387,8 +371,8 @@ class EditorTestSuite(AbstractTestSuite):
                                     editor_utils.cycle_crash_report(run_id, workspace)
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                                results[test_spec_name] = EditorResult.Crash(result.test_spec, output, return_code,
-                                                                             crash_error, result.editor_log)
+                                results[test_spec_name] = Result.Crash(
+                                    'editor_log', result.test_spec, output, return_code, crash_error, result.editor_log)
                                 crashed_result = result
                             else:
                                 # If there are remaning "Unknown" results, these couldn't execute because of the crash,
@@ -400,8 +384,9 @@ class EditorTestSuite(AbstractTestSuite):
                     if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = EditorResult.Crash(crashed_result.test_spec, output, return_code,
-                                                                     crash_error, crashed_result.editor_log)
+                        results[test_spec_name] = Result.Crash(
+                            'editor_log', crashed_result.test_spec, output, return_code, crash_error,
+                            crashed_result.editor_log)
         except WaitTimeoutError:            
             editor.stop()
             output = editor.get_output()
@@ -413,11 +398,13 @@ class EditorTestSuite(AbstractTestSuite):
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
-                if isinstance(result, EditorResult.Unknown):
+                if isinstance(result, Result.Unknown):
                     if not timed_out_result:
-                        results[test_spec_name] = EditorResult.Timeout(result.test_spec, result.output,
-                                                                       self.timeout_editor_shared_test,
-                                                                       result.editor_log)
+                        results[test_spec_name] = Result.Timeout(EditorTestSuite._log_attribute,
+                                                                 result.test_spec,
+                                                                 result.output,
+                                                                 self.timeout_editor_shared_test,
+                                                                 result.editor_log)
                         timed_out_result = result
                     else:
                         # If there are remaning "Unknown" results, these couldn't execute because of the timeout,
@@ -427,9 +414,11 @@ class EditorTestSuite(AbstractTestSuite):
                                                              f"before this test could be executed"
             # if all the tests ran, the one that has caused the timeout is the last test, as it didn't close the editor
             if not timed_out_result:
-                results[test_spec_name] = EditorResult.Timeout(timed_out_result.test_spec,
-                                                               results[test_spec_name].output,
-                                                               self.timeout_editor_shared_test, result.editor_log)
+                results[test_spec_name] = Result.Timeout(EditorTestSuite._log_attribute,
+                                                         timed_out_result.test_spec,
+                                                         results[test_spec_name].output,
+                                                         self.timeout_editor_shared_test,
+                                                         result.editor_log)
         finally:
             if temp_batched_file:
                 os.unlink(temp_batched_file.name)
@@ -459,14 +448,15 @@ class EditorTestSuite(AbstractTestSuite):
         if result is None:
             logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
-                      EditorResult.Unknown(
+                      Result.Unknown(
+                          log_attribute='editor_log',
                           test_spec=test_spec,
                           extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
         # If test did not pass, save assets with errors and warnings
-        if not isinstance(test_result, EditorResult.Pass):
+        if not isinstance(test_result, Result.Pass):
             editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_batched_tests(self,
@@ -501,7 +491,7 @@ class EditorTestSuite(AbstractTestSuite):
             if result is None:
                 logger.error("Unexpectedly found no test run in the editor log during EditorBatchedTest")
                 logger.debug(f"Results from EditorBatchedTest:\n{results}")
-            if not isinstance(result, EditorResult.Pass):
+            if not isinstance(result, Result.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return  # exit early on first batch failure
 
@@ -565,11 +555,12 @@ class EditorTestSuite(AbstractTestSuite):
                     logger.error("Unexpectedly found no test run in the editor log during EditorParallelTest")
                     logger.debug(f"Results from EditorParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
-                              EditorResult.Unknown(
+                              Result.Unknown(
+                                  log_attribute='editor_log',
                                   test_spec=EditorParallelTest,
                                   extra_info="Unexpectedly found no test run information on stdout in the editor log")}
                 collected_test_data.results.update(result)
-                if not isinstance(result, EditorResult.Pass):
+                if not isinstance(result, Result.Pass):
                     save_asset_logs = True
             # If at least one test did not pass, save assets with errors and warnings
             if save_asset_logs:
@@ -636,11 +627,12 @@ class EditorTestSuite(AbstractTestSuite):
                 logger.error("Unexpectedly found no test run in the editor log during EditorSharedTest")
                 logger.debug(f"Results from EditorSharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
-                          EditorResult.Unknown(
+                          Result.Unknown(
+                              log_attribute='editor_log',
                               test_spec=EditorSharedTest,
                               extra_info="Unexpectedly found no test run information on stdout in the editor log")}
             collected_test_data.results.update(result)
-            if not isinstance(result, EditorResult.Pass):
+            if not isinstance(result, Result.Pass):
                 save_asset_logs = True
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:

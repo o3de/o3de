@@ -43,7 +43,7 @@ from ly_test_tools.o3de.asset_processor import AssetProcessor
 logger = logging.getLogger(__name__)
 
 
-class AbstractTestBase(abc.ABC):
+class AbstractTestBase(object):
     """
     Abstract base Test class
     """
@@ -56,6 +56,8 @@ class AbstractTestBase(abc.ABC):
     attach_debugger = False
     # Wait until a debugger is attached at the startup of the test, this is another way of debugging.
     wait_for_debugger = False
+    # The name of the python attribute to search for to get the current executable's log file.
+    _log_attribute = ''
 
 
 class SingleTest(AbstractTestBase):
@@ -124,7 +126,6 @@ class TestResultException(Exception):
 
 class Result(object):
     """Holds test results for a given program/application."""
-    log_attribute = ''
 
     class ResultType(abc.ABC):
         """Generic result-type for data shared among results"""
@@ -146,13 +147,14 @@ class Result(object):
             else:
                 return "-- No output --"
 
-        def get_log_attribute_str(self):
+        def get_log_attribute_str(self, log_attribute):
             # type () -> str
             """
             Checks if the log_attribute exists and returns it.
-            :return: Either the log_attribute string or a no output message
+            :param log_attribute: Name of the log attribute to search for.
+            :return: Either the log_attribute string or a no output message.
             """
-            log = getattr(Result, Result.log_attribute, None)
+            log = getattr(self, log_attribute, None)
             if log:
                 return log
             else:
@@ -160,13 +162,15 @@ class Result(object):
 
     class Pass(ResultType):
 
-        def __init__(self, test_spec: type(AbstractTestBase), output: str, log_output: str):
+        def __init__(self, log_attribute: str, test_spec: type(AbstractTestBase), output: str, log_output: str):
             """
-            Represents a test success
-            :test_spec: The type of test class
-            :output: The test output
-            :log_output: The program's log output
+            Represents a test success.
+            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+            :param test_spec: The type of test class.
+            :param output: The test output.
+            :param log_output: The program's log output.
             """
+            self.log_attribute = log_attribute
             self.test_spec = test_spec
             self.output = output
             self.log_output = log_output
@@ -183,13 +187,15 @@ class Result(object):
 
     class Fail(ResultType):
 
-        def __init__(self, test_spec: type(AbstractTestBase), output: str, log_output: str):
+        def __init__(self, log_attribute: str, test_spec: type(AbstractTestBase), output: str, log_output: str):
             """
-            Represents a normal test failure
-            :test_spec: The type of test class
-            :output: The test output
-            :log_output: The program's log output
+            Represents a normal test failure.
+            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+            :param test_spec: The type of test class
+            :param output: The test output
+            :param log_output: The program's log output
             """
+            self.log_attribute = log_attribute
             self.test_spec = test_spec
             self.output = output
             self.log_output = log_output
@@ -202,15 +208,16 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                f"|  {Result.log_attribute} log  |\n"
+                f"|  {self.log_attribute} log  |\n"
                 "-------------------------------\n"
-                f"{self.get_log_attribute_str()}\n"
+                f"{self.get_log_attribute_str(self.log_attribute)}\n"
             )
             return output
 
     class Crash(ResultType):
 
         def __init__(self,
+                     log_attribute: str,
                      test_spec: type(AbstractTestBase),
                      output: str,
                      ret_code: int,
@@ -218,12 +225,14 @@ class Result(object):
                      log_output: str or None) -> None:
             """
             Represents a test which failed with an unexpected crash
-            :test_spec: The type of test class
-            :output: The test output
-            :ret_code: The test's return code
-            :stacktrace: The test's stacktrace if available
-            :log_output: The program's log output
+            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+            :param test_spec: The type of test class
+            :param output: The test output
+            :param ret_code: The test's return code
+            :param stacktrace: The test's stacktrace if available
+            :param log_output: The program's log output
             """
+            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.ret_code = ret_code
@@ -243,23 +252,30 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                f"|  {Result.log_attribute} log  |\n"
+                f"|  {self.log_attribute} log  |\n"
                 "------------------------------\n"
-                f"{self.get_log_attribute_str()}\n"
+                f"{self.get_log_attribute_str(self.log_attribute)}\n"
             )
             return output
 
     class Timeout(ResultType):
 
-        def __init__(self, test_spec: type(AbstractTestBase), output: str, time_secs: float, log_output: str):
+        def __init__(self,
+                     log_attribute: str,
+                     test_spec: type(AbstractTestBase),
+                     output: str,
+                     time_secs: float,
+                     log_output: str):
             """
             Represents a test which failed due to freezing, hanging, or executing slowly
-            :test_spec: The type of test class
-            :output: The test output
-            :time_secs: The timeout duration in seconds
-            :log_output: The program's log output
+            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+            :param test_spec: The type of test class
+            :param output: The test output
+            :param time_secs: The timeout duration in seconds
+            :param log_output: The program's log output
             :return: The Timeout object
             """
+            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.time_secs = time_secs
@@ -273,23 +289,29 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                f"|  {Result.log_attribute} log  |\n"
+                f"|  {self.log_attribute} log  |\n"
                 "-------------------------------\n"
-                f"{self.get_log_attribute_str()}\n"
+                f"{self.get_log_attribute_str(self.log_attribute)}\n"
             )
             return output
 
     class Unknown(ResultType):
 
-        def __init__(self, test_spec: type(AbstractTestBase), output: str = None, extra_info: str = None,
+        def __init__(self,
+                     log_attribute: str,
+                     test_spec: type(AbstractTestBase),
+                     output: str = None,
+                     extra_info: str = None,
                      log_output: str = None):
             """
             Represents a failure that the test framework cannot classify
-            :test_spec: The type of test class
-            :output: The test output
-            :extra_info: Any extra information as a string
-            :log_output: The program's log output
+            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+            :param test_spec: The type of test class
+            :param output: The test output
+            :param extra_info: Any extra information as a string
+            :param log_output: The program's log output
             """
+            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.log_output = log_output
@@ -303,9 +325,9 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                f"|  {Result.log_attribute} log  |\n"
+                f"|  {self.log_attribute} log  |\n"
                 "-------------------------------\n"
-                f"{self.get_log_attribute_str()}\n"
+                f"{self.get_log_attribute_str(self.log_attribute)}\n"
             )
             return output
 
@@ -320,6 +342,8 @@ class AbstractTestSuite(object):
     _single_test_class = SingleTest
     # Test class to use for shared test collection
     _shared_test_class = SharedTest
+    # Log attribute value to use to collect logs from a given program executable
+    _log_attribute = ""
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -521,6 +545,19 @@ class AbstractTestSuite(object):
 
         return count
 
+    def _get_number_parallel_instances(self, request: _pytest.fixtures.FixtureRequest) -> int:
+        """
+        Retrieves the number of parallel instances preference based on cmdline overrides or class overrides.
+        Defaults to self.get_number_parallel_instances() from inherited AbstractTestSuite class.
+        :request: The Pytest Request object
+        :return: The number of parallel editors to use
+        """
+        parallel_editors_value = request.config.getoption("--parallel-executables", None)
+        if parallel_editors_value:
+            return int(parallel_editors_value)
+
+        return self.get_number_parallel_instances()
+
     @classmethod
     def pytest_custom_modify_items(
             cls, session: _pytest.main.Session, items: list[AbstractTestBase], config: _pytest.config.Config) -> None:
@@ -606,7 +643,7 @@ class AbstractTestSuite(object):
     def get_session_shared_tests(cls, session: _pytest.main.Session) -> list[_shared_test_class]:
         """
         Filters and returns all of the shared tests in a given session.
-        :session: The test session
+        :param session: The test session
         :return: The list of tests
         """
         shared_tests = cls.get_shared_tests()
@@ -618,8 +655,8 @@ class AbstractTestSuite(object):
         """
         Retrieve the test sub-set that was collected this can be less than the original set if were overridden via -k
         argument or similar
-        :session_items: The tests in a session to run
-        :shared_tests: All of the shared tests
+        :param session_items: The tests in a session to run
+        :param shared_tests: All of the shared tests
         :return: The list of filtered tests
         """
 
@@ -643,9 +680,9 @@ class AbstractTestSuite(object):
                             is_parallelizable: bool = False) -> list[_shared_test_class]:
         """
         Filters and returns all tests based off of if they are batched and/or parallel
-        :shared_tests: All shared tests
-        :is_batchable: Filter to batched tests
-        :is_parallelizable: Filter to parallel tests
+        :param shared_tests: All shared tests
+        :param is_batchable: Filter to batched tests
+        :param is_parallelizable: Filter to parallel tests
         :return: The list of filtered tests
         """
         return [test for test in shared_tests if (
@@ -654,15 +691,17 @@ class AbstractTestSuite(object):
                 getattr(test, "is_parallelizable", None) is is_parallelizable)]
 
     @staticmethod
-    def _get_results_using_output(test_spec_list: list[AbstractTestBase],
+    def _get_results_using_output(log_attribute: str,
+                                  test_spec_list: list[AbstractTestBase],
                                   output: str,
                                   log_output: str) -> dict[any, [Result.Unknown, Result.Pass, Result.Fail]]:
         """
         Utility function for parsing the output information from the program being tested (i.e. editor).
         It de-serializes the JSON content printed in the output for every test and returns that information.
-        :test_spec_list: The list of test classes
-        :output: The test output
-        :log_output: The program's log output
+        :param log_attribute: The name of the python log attribute to search for to obtain the log file.
+        :param test_spec_list: The list of test classes
+        :param output: The test output
+        :param log_output: The program's log output
         :return: A dict of the tests and their respective Result objects
         """
         results = {}
@@ -693,7 +732,9 @@ class AbstractTestSuite(object):
             name = editor_utils.get_module_filename(test_spec.test_module)
             if name not in found_jsons.keys():
                 results[test_spec.__name__] = Result.Unknown(
-                    test_spec, output,
+                    log_attribute,
+                    test_spec,
+                    output,
                     f"Found no test run information on stdout for {name} in the test output",
                     log_output)
             else:
@@ -711,9 +752,9 @@ class AbstractTestSuite(object):
                 log_start = end
 
                 if json_result["success"]:
-                    result = Result.Pass(test_spec, json_output, cur_log)
+                    result = Result.Pass(log_attribute, test_spec, json_output, cur_log)
                 else:
-                    result = Result.Fail(test_spec, json_output, cur_log)
+                    result = Result.Fail(log_attribute, test_spec, json_output, cur_log)
                 results[test_spec.__name__] = result
 
         return results

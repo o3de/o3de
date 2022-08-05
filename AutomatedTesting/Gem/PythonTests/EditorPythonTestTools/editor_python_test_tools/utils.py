@@ -14,9 +14,9 @@ from typing import Callable, Tuple
 
 import azlmbr
 try:
-    import azlmbr.legacy.general as general  # Editor test.
-except ModuleNotFoundError:  # MaterialEditor test.
-    import azlmbr.atomtools.general as general
+    import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
+except ModuleNotFoundError:  # Editor test.
+    import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
