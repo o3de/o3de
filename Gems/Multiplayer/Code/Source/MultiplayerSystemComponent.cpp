@@ -8,6 +8,7 @@
 
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
@@ -597,22 +598,20 @@ namespace Multiplayer
                 // Route to spawner implementation
                 MultiplayerAgentDatum datum;
                 datum.m_agentType = MultiplayerAgentType::Client;
-                auto preActivationCallback = [connection](const INetworkEntityManager::EntityList& entityList)
-                {
-                    EnableAutonomousControl(entityList, connection->GetConnectionId());
-                };
+                datum.m_id = connection->GetConnectionId();
+                const uint64_t userId = packet.GetTemporaryUserId();
 
-                controlledEntity = spawner->OnPlayerJoin(packet.GetTemporaryUserId(), datum, preActivationCallback);
+                controlledEntity = spawner->OnPlayerJoin(userId, datum);
                 if (controlledEntity.Exists())
                 {
-					EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
+                    EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
                     StartServerToClientReplication(userId, controlledEntity, connection);
                 }
                 else
                 {
                     // If there wasn't any spawner available, wait until a level loads and check again
 					// This can happen if IMultiplayerSpawn depends on a level being loaded, but the client connects to the server before the server has started a level.
-                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, connection });
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
                 }
             }
             else
@@ -1007,14 +1006,16 @@ namespace Multiplayer
                 const uint64_t userId = 0;
 
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
-				if (controlledEntity.Exists())
-				{
-					EnableAutonomousControl(controlledEntity, InvalidConnectionId);
-				}
+                if (controlledEntity.Exists())
+                {
+                    // ControlledEntity likely doesn't exist at this time.
+                    // Unless IMultiplayerSpawner has a way to return a player without being inside a level, the client-server's player won't be spawned until the next level is loaded.
+                    EnableAutonomousControl(controlledEntity, InvalidConnectionId);
+                }
                 else
                 {
-                    // If there wasn't any spawner available, wait until a level loads and check again
-                    m_playersWaitingToBeSpawned.push_back(PlayerWaitingToBeSpawned{ userId, datum, nullptr });
+                    // If there wasn't any player entity, wait until a level loads and check again
+                    m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr );
                 }
             }
             else
