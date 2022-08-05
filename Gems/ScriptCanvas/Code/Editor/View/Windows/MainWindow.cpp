@@ -1040,17 +1040,15 @@ namespace ScriptCanvasEditor
     }
 
     void MainWindow::SourceFileChanged
-        ( [[maybe_unused]] AZStd::string relativePath
+        ( AZStd::string relativePath
         , AZStd::string scanFolder
-        , [[maybe_unused]] AZ::Uuid fileAssetId)
+        , AZ::Uuid fileAssetId)
     {
-        auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId));
-        if (handle)
+        auto handle = SourceHandle::FromRelativePathAndScenFolder(scanFolder, relativePath, fileAssetId);
+
+        if (!IsRecentSave(handle))
         {
-            if (!IsRecentSave(*handle))
-            {
-                UpdateFileState(*handle, Tracker::ScriptCanvasFileState::MODIFIED);
-            }
+            UpdateFileState(handle, Tracker::ScriptCanvasFileState::MODIFIED);
         }
     }
 
@@ -1678,8 +1676,8 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                auto sourceHandlePath = sourceHandle.RelativePath();
-                suggestedFilename = sourceHandle.RelativePath().Native();
+                auto sourceHandlePath = sourceHandle.AbsolutePath();
+                suggestedFilename = sourceHandle.AbsolutePath().Native();
                 sourceHandlePath.RemoveFilename();
                 suggestedDirectoryPath = sourceHandlePath.Native();
             }
@@ -1781,8 +1779,6 @@ namespace ScriptCanvasEditor
             int currentTabIndex = m_tabBar->currentIndex();
 
             AZ::Data::AssetInfo assetInfo;
-            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetSourceInfo(fileAssetId.RelativePath().c_str(), assetInfo)
-                , "Failed to find asset info for source file just saved: %s", fileAssetId.RelativePath().c_str());
             fileAssetId = SourceHandle::FromRelativePath(fileAssetId, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
             fileAssetId = SourceHandle::MarkAbsolutePath(fileAssetId, result.absolutePath);
 
