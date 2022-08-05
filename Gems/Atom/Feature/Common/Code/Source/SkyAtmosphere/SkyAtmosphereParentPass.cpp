@@ -23,30 +23,35 @@ namespace AZ::Render
     void SkyAtmosphereParentPass::CreateAtmospherePass(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
     {
         // make sure a pass doesn't already exist for this id
-        auto pass = GetPass(id);
-        if (pass)
+        if (m_atmosphereIds.contains(id))
         {
             return;
         }
 
-        pass = SkyAtmospherePass::CreateWithPassRequest(id);
-        if (pass)
-        {
-            pass->QueueForBuildAndInitialization();
-            AddChild(pass);
-        }
+        m_atmosphereIds.insert(id);
+
+        m_flags.m_createChildren = true;
+
+        QueueForBuildAndInitialization();
     }
 
     void SkyAtmosphereParentPass::ReleaseAtmospherePass(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id)
     {
-        if (auto pass = GetPass(id))
+        if (m_atmosphereIds.contains(id))
         {
-            pass->QueueForRemoval();
+            m_atmosphereIds.erase(id);
+
+            if (auto pass = GetPass(id))
+            {
+                pass->QueueForRemoval();
+            }
         }
     }
 
     void SkyAtmosphereParentPass::UpdateAtmospherePassSRG(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id, const SkyAtmosphereParams& params)
     {
+        // child passes should already be built because UpdateAtmospherePassSRG is called from Render()
+        // which is run after CreateChildPassesInternal() 
         if (auto pass = GetPass(id))
         {
             pass->UpdateRenderPassSRG(params);
@@ -64,6 +69,26 @@ namespace AZ::Render
             }
         }
         return nullptr;
+    }
+
+
+    void SkyAtmosphereParentPass::CreateChildPassesInternal()
+    {
+        for(const auto& id : m_atmosphereIds)
+        {
+            auto pass = GetPass(id);
+            if (pass)
+            {
+                AZ_Error("SkyAtmosphereParentPass", false, "Trying to create a SkyAtmospherePass that already exists");
+                continue;
+            }
+
+            pass = SkyAtmospherePass::CreateWithPassRequest(id);
+            if (pass)
+            {
+                AddChild(pass);
+            }
+        }
     }
 
 } // namespace AZ::Render

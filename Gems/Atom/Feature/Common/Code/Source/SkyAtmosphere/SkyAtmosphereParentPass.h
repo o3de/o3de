@@ -12,6 +12,7 @@
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <SkyAtmosphere/SkyAtmospherePass.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 namespace AZ::Render
 {
@@ -39,6 +40,10 @@ namespace AZ::Render
         SkyAtmosphereParentPass() = delete;
         explicit SkyAtmosphereParentPass(const RPI::PassDescriptor& descriptor);
 
+        void CreateChildPassesInternal() override;
+
         RPI::Ptr<SkyAtmospherePass> GetPass(SkyAtmosphereFeatureProcessorInterface::AtmosphereId id) const;
+
+        AZStd::unordered_set<SkyAtmosphereFeatureProcessorInterface::AtmosphereId> m_atmosphereIds;
     };
 } // namespace AZ::Render
