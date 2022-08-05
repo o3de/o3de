@@ -14,7 +14,6 @@
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
@@ -198,9 +197,6 @@ namespace AzToolsFramework
             PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
-
-            // Handles the Prefab Focus API that determines what prefab is being edited.
-            PrefabFocusHandler m_prefabFocusHandler;
 
             // Caches entity states for undo/redo purposes
             PrefabUndoCache m_prefabUndoCache;

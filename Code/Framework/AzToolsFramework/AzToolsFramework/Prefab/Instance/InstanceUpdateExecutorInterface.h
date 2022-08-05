@@ -22,13 +22,16 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceUpdateExecutorInterface, "{26BB4ACF-6EA5-4668-84E7-AB75B90BA449}");
             virtual ~InstanceUpdateExecutorInterface() = default;
 
-            // Add all Instances of Template with given Id into a queue for updating them later.
+            // Add an instance into queue for updating later on next system tick.
+            virtual void AddInstanceToQueue(InstanceOptionalReference instance) = 0;
+
+            // Add all instances of template with given id into queue for updating later on next system tick.
             virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) = 0;
 
-            // Update Instances in the waiting queue.
+            // Update instances in the waiting queue.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
 
-            // Remove an Instance from the waiting queue.
+            // Remove an instance from the waiting queue.
             virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
 
             // A notification OnRootPrefabInstanceLoaded will fire during the propagation if root

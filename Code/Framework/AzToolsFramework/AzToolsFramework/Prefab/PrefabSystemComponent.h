@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapper.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
+#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
@@ -421,6 +422,9 @@ namespace AzToolsFramework
 
             // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;
+
+            // Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             PrefabSystemScriptingHandler m_prefabSystemScriptingHandler;
 

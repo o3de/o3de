@@ -29,6 +29,7 @@ namespace AzToolsFramework
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
+    class InstanceUpdateExecutorInterface;
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
@@ -42,8 +43,8 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
-        PrefabFocusHandler();
-        ~PrefabFocusHandler();
+        void RegisterPrefabFocusInterface();
+        void UnregisterPrefabFocusInterface();
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -95,9 +96,11 @@ namespace AzToolsFramework::Prefab
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
+
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 
