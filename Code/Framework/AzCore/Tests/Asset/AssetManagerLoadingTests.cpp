@@ -3480,9 +3480,10 @@ namespace UnitTest
 
         struct AssetBusHandler : AZ::Data::AssetBus::Handler
         {
-            AssetBusHandler(SignalType& signal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+            AssetBusHandler(SignalType& onAssetReadySignal, SignalType& clearToStartLoadingSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
                 : m_asset(asset)
-                , m_signal(signal)
+                , m_onAssetReadySignal(onAssetReadySignal)
+                , m_clearToStartLoadingSignal(clearToStartLoadingSignal)
             {
                 BusConnect(asset.GetId());
             }
@@ -3495,43 +3496,46 @@ namespace UnitTest
             void OnAssetReady(Asset<AssetData> asset) override
             {
                 ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady called \n");
-                m_signal.release();
-                m_signal.acquire();
+                m_onAssetReadySignal.release();
+                m_clearToStartLoadingSignal.acquire();
 
-                ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady resumed\n");
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Resumed\n");
                 m_otherAsset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetC, Default);
-                ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady GetAsset done\n");
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Got asset\n");
                 m_otherAsset.BlockUntilLoadComplete();
-                ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady asset loaded\n");
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Asset loaded\n");
             }
 
             AZ::Data::Asset<AZ::Data::AssetData> m_otherAsset;
             AZ::Data::Asset<AZ::Data::AssetData> m_asset;
-            SignalType& m_signal;
+            SignalType& m_onAssetReadySignal;
+            SignalType& m_clearToStartLoadingSignal;
         };
 
-        SignalType signal;
-        SignalType finishedSignal;
+        SignalType onAssetReadySignal;
+        SignalType clearToStartLoadingSignal;
+        SignalType threadBFinishedSignal;
 
         // This thread will wait until the initial OnAssetReady event has fired on threadA, at which point it will call GetAsset
         // and signal for threadA to continue after the AssetContainer lock has been acquired
-        AZStd::thread threadB([&signal, &finishedSignal]()
+        AZStd::thread threadB([&onAssetReadySignal, &clearToStartLoadingSignal, &threadBFinishedSignal]()
         {
-            signal.acquire();
+            // Wait for threadA to get into the OnAssetReady event
+            onAssetReadySignal.acquire();
 
-            ContainerListener listener(signal);
+            ContainerListener listener(clearToStartLoadingSignal);
 
             ColoredPrintf(COLOR_YELLOW, "ThreadB: Starting\n");
             auto asset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetB, Default);
             ColoredPrintf(COLOR_YELLOW, "ThreadB: Got asset\n");
             asset.BlockUntilLoadComplete();
             ColoredPrintf(COLOR_YELLOW, "ThreadB: Asset loaded\n");
-            finishedSignal.release();
+            threadBFinishedSignal.release();
         });
 
-        AssetBusHandler assetBusHandler(signal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
+        AssetBusHandler assetBusHandler(onAssetReadySignal, clearToStartLoadingSignal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
 
-        ASSERT_TRUE(finishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
+        ASSERT_TRUE(threadBFinishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
 
         running = false;
 
