@@ -1771,7 +1771,9 @@ namespace ScriptCanvasEditor
 
         AZ_VerifyWarning("ScriptCanvas", saveTabIndex >= 0, "MainWindow::OnSaveCallback failed to find saved graph in tab. Data has been saved, but the ScriptCanvas Editor needs to be closed and re-opened.s")
 
-        AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
+        AZ::IO::Path fileName = result.absolutePath.Filename();
+        fileName = fileName.ReplaceExtension();
+        AZStd::string tabName = fileName.Native();
 
         if (saveSuccess)
         {
@@ -1780,6 +1782,8 @@ namespace ScriptCanvasEditor
 
             AZ::Data::AssetInfo assetInfo;
             fileAssetId = SourceHandle::FromRelativePath(fileAssetId, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+
+            // this line is the most important, as it the assetInfo is as yet unknown for newly saved graphs
             fileAssetId = SourceHandle::MarkAbsolutePath(fileAssetId, result.absolutePath);
 
             // this path is questionable, this is a save request that is not the current graph
@@ -1792,8 +1796,6 @@ namespace ScriptCanvasEditor
                 saveTabIndex = -1;
             }
 
-            AzFramework::StringFunc::Path::GetFileName(memoryAsset.RelativePath().c_str(), tabName);
-                        
             if (tabName.at(tabName.size() - 1) == '*' || tabName.at(tabName.size() - 1) == '^')
             {
                 tabName = tabName.substr(0, tabName.size() - 2);
