@@ -98,6 +98,10 @@
     }
   },
   "python": {
-
+    "artifact": { 
+      "result": {
+        "external_run_output": "${PYTEST_XML_OUTPUT_DIR}"
+      }
+    }
   }
 }

@@ -197,6 +197,7 @@ endfunction()
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
 function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
     get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
+    get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
     
     # namespace is optional, in which case this component will be simply the test name
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
@@ -226,7 +227,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout} }")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"test_command\": \"${test_command}\", \"timeout\": ${test_timeout} }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")

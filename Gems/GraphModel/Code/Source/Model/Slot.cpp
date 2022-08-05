@@ -7,6 +7,7 @@
  */
 
 // AZ
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -313,6 +314,7 @@ namespace GraphModel
                 LoadAny<uint64_t>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<float>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<double>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::IO::Path>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZStd::string>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::Vector2>(slotValue, serializedSlotValue->value, context, result) ||
                 LoadAny<AZ::Vector3>(slotValue, serializedSlotValue->value, context, result) ||
@@ -371,6 +373,7 @@ namespace GraphModel
                     StoreAny<uint64_t>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<float>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<double>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::IO::Path>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZStd::string>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::Vector2>(slot->m_value, outputPropertyValue, context, result) ||
                     StoreAny<AZ::Vector3>(slot->m_value, outputPropertyValue, context, result) ||

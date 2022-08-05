@@ -34,8 +34,8 @@ namespace AtomToolsFramework
         virtual GraphModel::DataTypeList GetRegisteredDataTypes() = 0;
 
         //! Loads and registers all of the DynamicNodeConfig files matching given extensions
-        //! @param extensions Set of extensions used to enumerate DynamicNodeConfig files
-        virtual void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) = 0;
+        //! @param extension Extension to enumerate DynamicNodeConfig files
+        virtual void LoadConfigFiles(const AZStd::string& extension) = 0;
 
         //! Register a DynamicNodeConfig with the manager.
         //! @param configId Path or other unique identifier used to register a DynamicNodeConfig

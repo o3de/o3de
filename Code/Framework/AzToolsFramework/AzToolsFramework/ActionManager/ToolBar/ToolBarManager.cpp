@@ -8,7 +8,11 @@
 
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 
 #include <QWidget>
 
@@ -38,6 +42,11 @@ namespace AzToolsFramework
 
         AZ::Interface<ToolBarManagerInternalInterface>::Unregister(this);
         AZ::Interface<ToolBarManagerInterface>::Unregister(this);
+    }
+
+    void ToolBarManager::Reflect(AZ::ReflectContext* context)
+    {
+        EditorToolBar::Reflect(context);
     }
     
     ToolBarManagerOperationResult ToolBarManager::RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties)
@@ -377,6 +386,35 @@ namespace AzToolsFramework
         }
 
         m_toolBarsToRefresh.clear();
+    }
+
+    ToolBarManagerStringResult ToolBarManager::SerializeToolBar(const AZStd::string& toolBarIdentifier)
+    {
+        if (!m_toolBars.contains(toolBarIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "ToolBar Manager - Could not serialize toolBar \"%.s\" as it is not registered.", toolBarIdentifier.c_str()));
+        }
+
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+
+        // Generate toolbar dom using Json serialization system.
+        AZ::JsonSerializationResult::ResultCode result =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_toolBars[toolBarIdentifier], settings);
+
+        // Stringify dom to return it.
+        if (result.HasDoneWork())
+        {
+            rapidjson::StringBuffer prefabBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+            document.Accept(writer);
+
+            return AZ::Success(AZStd::string(prefabBuffer.GetString()));
+        }
+
+        return AZ::Failure(AZStd::string::format(
+            "ToolBar Manager - Could not serialize toolbar \"%.s\" - serialization error.", toolBarIdentifier.c_str()));
     }
 
     void ToolBarManager::OnSystemTick()

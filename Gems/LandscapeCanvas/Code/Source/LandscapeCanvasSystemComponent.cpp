@@ -70,6 +70,7 @@
 #include <Editor/Nodes/GradientModifiers/PosterizeGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h>
+#include <Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h>
 #include <Editor/Nodes/Shapes/BoxShapeNode.h>
 #include <Editor/Nodes/Shapes/CapsuleShapeNode.h>
 #include <Editor/Nodes/Shapes/CompoundShapeNode.h>
@@ -105,6 +106,7 @@ namespace LandscapeCanvas
     /* Area selector nodes */    \
     VISITOR_FUNCTION<AssetWeightSelectorNode>(Vegetation::EditorDescriptorWeightSelectorComponentTypeId, ##__VA_ARGS__);     \
     /* Shape nodes */    \
+    VISITOR_FUNCTION<AxisAlignedBoxShapeNode>(LmbrCentral::EditorAxisAlignedBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<BoxShapeNode>(LmbrCentral::EditorBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CapsuleShapeNode>(LmbrCentral::EditorCapsuleShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CompoundShapeNode>(LmbrCentral::EditorCompoundShapeComponentTypeId, ##__VA_ARGS__);     \
