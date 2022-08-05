@@ -122,28 +122,53 @@ namespace ONNX
         int totalFiles = 0;
         int64_t numOfCorrectInferences = 0;
         float totalRuntimeInMilliseconds = 0;
+        AZ::IO::FixedMaxPath mnistTestImageRoot;
 
         // This bit cycles through the folder with all the mnist test images, calling MnistExample() for the specified number of each digit.
         // The structure of the folder is as such: /testing/{digit}/{random_integer}.png    e.g /testing/3/10.png
-        for (int digit = 0; digit < 10; digit++)
+        auto TestImage = [&mnist, &numOfCorrectInferences, &totalFiles, &totalRuntimeInMilliseconds, &mnistTestImageRoot, numOfEach](AZ::IO::Path digitFilePath, bool isFile) -> bool
         {
-            std::filesystem::directory_iterator iterator =
-                std::filesystem::directory_iterator{ std::wstring{ W_GEM_ASSETS_PATH } + L"/mnist_png/testing/" + std::to_wstring(digit) +
-                                                     L"/" };
-            for (int version = 0; version < numOfEach; version++)
+            if (!isFile)
             {
-                std::string filepath = iterator->path().string();
-                MnistReturnValues returnedValues = MnistExample(mnist, filepath.c_str());
-
-                if (returnedValues.m_inference == digit)
+                AZ::IO::FixedMaxPath directoryName = digitFilePath.Filename();
+                char* directoryEnd;
+                AZ::s64 digit = strtoll(directoryName.c_str(), &directoryEnd, 10);
+                if (directoryName.c_str() != directoryEnd)
                 {
-                    numOfCorrectInferences += 1;
+                    // How many files of that digit have been tested
+                    int version = 0;
+
+                    // The current folder is the @gemroot:ONNX@/testing/{digit} folder
+                    // Search for any png files
+                    auto RunMnistExample = [&mnist, &numOfCorrectInferences, &totalFiles, &totalRuntimeInMilliseconds, &mnistTestImageRoot, &directoryName, &version, &digit, &numOfEach](AZ::IO::Path pngFilePath, bool) -> bool
+                    {
+                        // Stop running examples once version limit for that digit has been reached
+                        if ((version < numOfEach))
+                        {
+                            MnistReturnValues returnedValues = MnistExample(mnist, (mnistTestImageRoot / directoryName / pngFilePath).c_str());
+                            if (returnedValues.m_inference == digit)
+                            {
+                                numOfCorrectInferences += 1;
+                            }
+                            mnist.DispatchTimingSample();
+                            totalRuntimeInMilliseconds += returnedValues.m_runtime;
+                            totalFiles++;
+                            version++;
+                        }
+                        return true;
+                    };
+                    AZ::IO::SystemFile::FindFiles((mnistTestImageRoot / directoryName / "*.png").c_str(), RunMnistExample);
                 }
-                mnist.DispatchTimingSample();
-                totalRuntimeInMilliseconds += returnedValues.m_runtime;
-                iterator++;
-                totalFiles++;
             }
+            return true;
+        };
+
+        // Get the FileIOBase to resolve the path to the ONNX gem
+        AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
+        if (fileIo->ResolvePath(mnistTestImageRoot, "@gemroot:ONNX@/Assets/mnist_png/testing"))
+        {
+            // onnxGemRoot is set to the root folder of the ONNX gem
+            AZ::IO::SystemFile::FindFiles((mnistTestImageRoot / "*").c_str(), TestImage);
         }
 
         float accuracy = ((float)numOfCorrectInferences / (float)totalFiles) * 100.0f;

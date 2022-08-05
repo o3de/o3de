@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/IO/SystemFile.h>
+
 #include "Model.h"
 
 namespace ONNX
