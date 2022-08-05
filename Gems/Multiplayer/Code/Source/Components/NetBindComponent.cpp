@@ -312,7 +312,14 @@ namespace Multiplayer
             return; // nothing to change
         }
 
-        AZ_Assert(IsNetEntityRoleAuthority(), "Incorrect network role for allowing autonomy.");
+        if (!IsNetEntityRoleAuthority())
+        {
+            AZ_Error("NetBindComponent", false,
+                "Failed to enable player host autonomy for network entity (%s). Entity has incorrect network role (%s). This method only allows a player host to autonomously control their player entity.",
+                GetEntity()->GetName().c_str(),
+                GetEnumString(GetNetEntityRole()));
+            return;
+        }
 
         // If the entity is already activated then deactivate all of the entity's multiplayer controllers before changing autonomy.
         // Multiplayer controllers will commonly perform different logic during their "OnActivate" depending on if the entity is autonomous.

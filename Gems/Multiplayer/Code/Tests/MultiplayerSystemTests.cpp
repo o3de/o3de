@@ -20,8 +20,10 @@
 #include <IMultiplayerSpawnerMock.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
 #include <ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 
-namespace UnitTest
+
+namespace Multiplayer
 {
     class MultiplayerSystemTests
         : public AllocatorsFixture
@@ -78,6 +80,13 @@ namespace UnitTest
         void TestEndpointDisonnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
         {
             ++m_endpointDisonnectedCount;
+        }
+
+        void CreateAndRegisterNetBindComponent(AZ::Entity& playerEntity, NetworkEntityTracker& playerNetworkEntityTracker, NetEntityRole netEntityRole)
+        {
+            const auto playerNetBindComponent = playerEntity.CreateComponent<NetBindComponent>();
+            playerNetBindComponent->m_netEntityRole = netEntityRole;
+            playerNetworkEntityTracker.RegisterNetBindComponent(&playerEntity, playerNetBindComponent);
         }
 
         uint32_t m_initEventTriggerCount = 0;
@@ -159,41 +168,42 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestClientServerConnectingWithoutPlayerEntity)
     {
-        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
+        AZ::Interface<IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
 
-        m_mpSpawnerMock.m_networkEntityHandle = Multiplayer::NetworkEntityHandle();
+        m_mpSpawnerMock.m_networkEntityHandle = NetworkEntityHandle();
         EXPECT_FALSE(m_mpSpawnerMock.m_networkEntityHandle.Exists());
 
-        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::ClientServer);
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
         EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 1);
 
         // We don't have a player entity yet, so MultiplayerSystemComponent should request another player entity when root spawnable (a new level) is finished loading
         AzFramework::RootSpawnableNotificationBus::Broadcast(&AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZ::Data::Asset<AzFramework::Spawnable>(), 0);
         EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 2);
 
-        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
+        AZ::Interface<IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
 
     TEST_F(MultiplayerSystemTests, TestClientServerConnectingWithPlayerEntity)
     {
-        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
+        AZ::Interface<IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
 
         // Setup a net player entity
         AZ::Entity playerEntity;
-        const auto playerNetBindComponent = playerEntity.CreateComponent<Multiplayer::NetBindComponent>();
-        Multiplayer::NetworkEntityTracker playerNetworkEntityTracker;
-        playerNetworkEntityTracker.RegisterNetBindComponent(&playerEntity, playerNetBindComponent);
-        m_mpSpawnerMock.m_networkEntityHandle = Multiplayer::NetworkEntityHandle(&playerEntity, &playerNetworkEntityTracker);
+        NetworkEntityTracker playerNetworkEntityTracker;
+        CreateAndRegisterNetBindComponent(playerEntity, playerNetworkEntityTracker, NetEntityRole::Authority);
+        m_mpSpawnerMock.m_networkEntityHandle = NetworkEntityHandle(&playerEntity, &playerNetworkEntityTracker);
+
         EXPECT_TRUE(m_mpSpawnerMock.m_networkEntityHandle.Exists());
 
-        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::ClientServer);
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
         EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 1);
 
-        // MultiplayerSystemComponent already got its player entity and should not request another player entity when root spawnable (a new level) is finished loading
+        // MultiplayerSystemComponent already has a player entity and should not request another player entity when root spawnable (a new level) is finished loading
         AzFramework::RootSpawnableNotificationBus::Broadcast(
             &AzFramework::RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZ::Data::Asset<AzFramework::Spawnable>(), 0);
         EXPECT_EQ(m_mpSpawnerMock.m_playerEntityRequestedCount, 1);
 
-        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
+        AZ::Interface<IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
+
 }

@@ -609,8 +609,8 @@ namespace Multiplayer
                 }
                 else
                 {
-                    // If there wasn't any spawner available, wait until a level loads and check again
-					// This can happen if IMultiplayerSpawn depends on a level being loaded, but the client connects to the server before the server has started a level.
+                    // If there wasn't a player entity available, wait until a level loads and check again.
+                    // This can happen if IMultiplayerSpawn depends on a level being loaded, but the client connects to the server before the server has started a level.
                     m_playersWaitingToBeSpawned.emplace_back(userId, datum, connection);
                 }
             }
@@ -1008,7 +1008,7 @@ namespace Multiplayer
                 NetworkEntityHandle controlledEntity = spawner->OnPlayerJoin(userId, datum);
                 if (controlledEntity.Exists())
                 {
-                    // ControlledEntity likely doesn't exist at this time.
+                    // A controlled player entity likely doesn't exist at this time.
                     // Unless IMultiplayerSpawner has a way to return a player without being inside a level, the client-server's player won't be spawned until the next level is loaded.
                     EnableAutonomousControl(controlledEntity, InvalidConnectionId);
                 }
@@ -1354,15 +1354,17 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, IConnection* connection)
     {
-        ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-        AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
-        connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
-        connectionData->SetControlledEntity(controlledEntity);
-
-        // If this is a migrate or rejoin, immediately ready the connection for updates
-        if (userId != 0)
+        if (auto connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData()))
         {
-            connectionData->SetCanSendUpdates(true);
+            AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
+            connectionData->GetReplicationManager().SetReplicationWindow(AZStd::move(window));
+            connectionData->SetControlledEntity(controlledEntity);
+
+            // If this is a migrate or rejoin, immediately ready the connection for updates
+            if (userId != 0)
+            {
+                connectionData->SetCanSendUpdates(true);
+            }
         }
     }
 
