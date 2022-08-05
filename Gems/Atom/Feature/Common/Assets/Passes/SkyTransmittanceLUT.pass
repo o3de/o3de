@@ -17,7 +17,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "shaders/skyatmosphere/skytransmittancelut.shader"
+                    "FilePath": "Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader"
                 }
             }
         }

@@ -1,6 +1,6 @@
 {
     "Type": "JsonSerialization",
-    "Description" : "This is the pass template that renders the sky view LUT",
+    "Description": "This is the pass template that renders the sky view LUT",
     "Version": 1,
     "ClassName": "PassAsset",
     "ClassData": {
@@ -23,7 +23,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "shaders/skyatmosphere/skyviewlut.shader"
+                    "FilePath": "Shaders/SkyAtmosphere/SkyViewLUT.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }

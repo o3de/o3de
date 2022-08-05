@@ -63,7 +63,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "shaders/skyatmosphere/skyraymarching.shader"
+                    "FilePath": "Shaders/SkyAtmosphere/SkyRayMarching.shader"
                 },
                 "PipelineViewTag": "MainCamera"
             }
