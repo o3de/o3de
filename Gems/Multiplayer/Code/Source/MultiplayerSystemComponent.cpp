@@ -900,18 +900,22 @@ namespace Multiplayer
                     // Alert IMultiplayerSpawner that our spawned player has left.
                     if (playerSpawned)
                     {
-                        ServerToClientConnectionData* connectionData =
-                            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
-                        IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow();
-                        if (replicationWindow)
+                        if (auto connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData()))
                         {
-                            const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
-                            spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                            if (IReplicationWindow* replicationWindow = connectionData->GetReplicationManager().GetReplicationWindow())
+                            {
+                                const ReplicationSet& replicationSet = replicationWindow->GetReplicationSet();
+                                spawner->OnPlayerLeave(connectionData->GetPrimaryPlayerEntity(), replicationSet, reason);
+                            }
+                            else
+                            {
+                                AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
+                            } 
                         }
                         else
                         {
-                            AZLOG_ERROR("No IReplicationWindow found OnPlayerDisconnect.");
-                        }   
+                            AZLOG_ERROR("No ServerToClientConnectionData found OnPlayerDisconnect.");
+                        }
                     }
                 }
                 else

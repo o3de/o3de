@@ -352,8 +352,6 @@ namespace Multiplayer
             // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
             m_playerHostAutonomyEnabled = enabled;
         }
-        
-        
     }
 
     MultiplayerComponentInputVector NetBindComponent::AllocateComponentInputs()
