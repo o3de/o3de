@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 namespace AzToolsFramework
 {
@@ -69,7 +70,11 @@ namespace AzToolsFramework
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<SelectionComponent, EditorComponentBase>()->Version(2);
-                serializeContext->ClassDeprecate("SelectionComponent", "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}");
+                // only deprecate the type using the serializeContext if prefabs are not enabled (legacy level/slice)
+                if (!AzToolsFramework::GetRegistry("/Amazon/Preferences/EnablePrefabSystem", false))
+                {
+                    serializeContext->ClassDeprecate("SelectionComponent", "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}");
+                }
             }
 
             if (AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))
