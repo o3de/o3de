@@ -11,6 +11,7 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/smart_ptr/make_shared.h>

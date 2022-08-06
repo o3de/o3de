@@ -12,7 +12,7 @@ import sys
 import pathlib
 import traceback
 import re
-from tiaf import TestImpact
+from test_impact import NativeTestImpact
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
@@ -115,7 +115,8 @@ def parse_args():
     # Safe mode
     parser.add_argument(
         '--safe-mode',
-        action='store_true',
+        action='store_const',
+        const="on",
         help="Run impact analysis tests in safe mode (ignored when seeding)",
         required=False
     )
@@ -150,7 +151,7 @@ def parse_args():
 
 def main(args: dict):
     try:
-        tiaf = TestImpact(args)
+        tiaf = NativeTestImpact(args)
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")

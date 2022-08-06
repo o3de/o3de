@@ -10,13 +10,13 @@
 set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
 # Name of test impact framework console static library target
-set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
+set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
 
 # Name of test impact framework python coverage gem target
 set(LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET "PythonCoverage.Editor.Static")
 
 # Name of test impact framework console target
-set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
+set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console.Native")
 
 # Directory for test impact artifacts and data
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
@@ -197,6 +197,7 @@ endfunction()
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
 function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
     get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
+    get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
     
     # namespace is optional, in which case this component will be simply the test name
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
@@ -226,7 +227,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout} }")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"test_command\": \"${test_command}\", \"timeout\": ${test_timeout} }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")

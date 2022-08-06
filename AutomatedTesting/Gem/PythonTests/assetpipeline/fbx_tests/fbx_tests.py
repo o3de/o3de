@@ -455,6 +455,50 @@ blackbox_fbx_tests = [
             ]
         ),
     ),
+    pytest.param(
+        BlackboxAssetTest(
+            test_name="cubewithline_RunAP_CubeOutputsWithoutLine",
+            asset_folder="cubewithline",
+            scene_debug_file="cubewithline.dbgsg",
+            assets=[
+                asset_db_utils.DBSourceAsset(
+                    source_file_name="cubewithline.fbx",
+                    uuid=b'1ee8fbf7c1f25b8399395a112e51906c',
+                    jobs=[
+                        asset_db_utils.DBJob(
+                            job_key='Scene compilation',
+                            builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
+                            status=4,
+                            error_count=0,
+                            products=[
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.assetinfo.dbg',
+                                    sub_id=-1674123269,
+                                    asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.dbgsg',
+                                    sub_id=1173066699,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline.dbgsg.xml',
+                                    sub_id=1357518515,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline_fbx.procprefab',
+                                    sub_id=1800163200,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
+                                asset_db_utils.DBProduct(
+                                    product_name='cubewithline/cubewithline_fbx.procprefab.json',
+                                    sub_id=2139660816,
+                                    asset_type=b'00000000000000000000000000000000'
+                                ),
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        ),
+    ),
 ]
 
 blackbox_fbx_special_tests = [
@@ -577,7 +621,8 @@ class TestsFBX_AllPlatforms(object):
         self.run_fbx_test(workspace, ap_setup_fixture,
                           asset_processor, project, blackbox_param, True)
 
-    def populateAssetInfo(self, workspace, project, assets):
+    @staticmethod
+    def populate_asset_info(workspace, project, assets):
 
         # Check that each given source asset resulted in the expected jobs and products.
         for expected_source in assets:
@@ -587,7 +632,8 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
-    def compare_scene_debug_file(self, asset_processor, expected_file_path, actual_file_path):
+    @staticmethod
+    def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
 
@@ -599,6 +645,13 @@ class TestsFBX_AllPlatforms(object):
         with open(expected_debug_graph_path, "r") as scene_file:
             expected_lines = scene_file.readlines()
         assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
+
+    # Helper to run Asset Processor with debug output enabled and Atom output disabled
+    @staticmethod
+    def run_ap_debug_skip_atom_output(asset_processor):
+        result = asset_processor.batch_process(extra_params=["--debugOutput",
+                                                             "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        assert result, "Asset Processor Failed"
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset=False):
@@ -627,8 +680,7 @@ class TestsFBX_AllPlatforms(object):
             asset_processor.prepare_test_environment(ap_setup_fixture['tests_dir'], test_assets_folder,
                                                      use_current_root=True, add_scan_folder=False,
                                                      existing_function_name=blackbox_params.asset_folder)
-        asset_processor.batch_process(extra_params=["--debugOutput",
-                                                    "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        self.run_ap_debug_skip_atom_output(asset_processor)
 
         logger.info(f"Validating assets.")
         assetsToValidate = blackbox_params.override_assets if overrideAsset else blackbox_params.assets
@@ -662,7 +714,7 @@ class TestsFBX_AllPlatforms(object):
                                           blackbox_params.scene_debug_file + ".xml")
 
         # Check that each given source asset resulted in the expected jobs and products.
-        self.populateAssetInfo(workspace, project, assetsToValidate)
+        self.populate_asset_info(workspace, project, assetsToValidate)
         for expected_source in assetsToValidate:
             for job in expected_source.jobs:
                 for product in job.products:
@@ -690,9 +742,7 @@ class TestsFBX_AllPlatforms(object):
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "ModifiedFBXFile_ConsistentProductOutput")
         # Run AP against the FBX file and the .assetinfo file
-        result, _ = asset_processor.batch_process(extra_params=["--debugOutput",
-                                                    "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
-        assert result, "Asset Processor Failed"
+        self.run_ap_debug_skip_atom_output(asset_processor)
 
         # Set path to expected dbgsg output, copied from test folder
         scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", "modifiedfbxfile.dbgsg")
@@ -728,11 +778,75 @@ class TestsFBX_AllPlatforms(object):
             "Expected scene file missing in SceneDebug/modifiedfbxfile.dbgsg - Check test assets"
 
         # Run AP again to regenerate the .dbgsg files
-        asset_processor.batch_process(extra_params=["--debugOutput",
-                                                    "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+        self.run_ap_debug_skip_atom_output(asset_processor)
 
         # Compare the new .dbgsg files with their expected outputs
         self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
 
         # Run again for the .dbgsg.xml file
         self.compare_scene_debug_file(asset_processor, scene_debug_expected + ".xml", scene_debug_actual + ".xml")
+
+    def test_FBX_MixedCaseFileExtension_OutputSucceeds(self, workspace, ap_setup_fixture, asset_processor):
+        """
+        Test verifies FBX file with any combination of mixed casing in its file extension produces the
+        expected output.
+
+        Test Steps:
+            1. Create test environment with an FBX file
+            2. Change the .fbx file extension casing
+            2. Launch Asset Processor
+            3. Validate that Asset Processor generates the expected output
+            4. Modify the FBX file's extension to a different casing
+            5. Run asset processor
+            6. Validate that Asset Processor generates the expected output
+        """
+
+        extensionlist = [
+            "OneMeshOneMaterial.Fbx",
+            "OneMeshOneMaterial.fBX",
+            "OneMeshOneMaterial.FBX",
+        ]
+        original_extension = "OneMeshOneMaterial.fbx"
+
+        for extension in extensionlist:
+            asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "OneMeshOneMaterial")
+            rename_src = os.path.join(asset_processor.project_test_source_folder(), original_extension)
+            rename_dst = os.path.join(asset_processor.project_test_source_folder(), extension)
+            os.rename(rename_src, rename_dst)
+            assert os.path.exists(rename_dst), "Expected test file missing"
+
+            # Run AP while generating debug output and skipping atom output
+            self.run_ap_debug_skip_atom_output(asset_processor)
+
+            expectedassets = [
+                'onemeshonematerial/onemeshonematerial.assetinfo.dbg',
+                'onemeshonematerial/onemeshonematerial.dbgsg',
+                'onemeshonematerial/onemeshonematerial.dbgsg.xml',
+                'onemeshonematerial/onemeshonematerial_fbx.procprefab',
+                'onemeshonematerial/onemeshonematerial_fbx.procprefab.json'
+                ]
+
+            missing_assets, _ = utils.compare_assets_with_cache(expectedassets,
+                                                                asset_processor.project_test_cache_folder())
+
+            assert not missing_assets, \
+                f'The following assets were expected to be in when processing {extension}, but not found in cache: ' \
+                f'{str(missing_assets)}'
+
+            scene_debug_expected = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug",
+                                                "onemeshonematerial.dbgsg")
+            assert os.path.exists(scene_debug_expected), \
+                "Expected scene file missing in SceneDebug/onemeshonematerial.dbgsg - Check test assets"
+
+            # Set path to actual dbgsg output, obtained when running AP
+            scene_debug_actual = os.path.join(asset_processor.temp_project_cache(
+                asset_platform=ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]),
+                                              "onemeshonematerial", "onemeshonematerial.dbgsg")
+            assert os.path.exists(scene_debug_actual), f"Scene debug output missing after running AP on {extension}."
+
+            self.compare_scene_debug_file(asset_processor, scene_debug_expected, scene_debug_actual)
+
+            # Run again for the .dbgsg.xml file
+            self.compare_scene_debug_file(asset_processor,
+                                          scene_debug_expected + ".xml",
+                                          scene_debug_actual + ".xml")

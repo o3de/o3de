@@ -44,6 +44,7 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <EditorModeFeedback/EditorStateRequestsBus.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
@@ -103,6 +104,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
+    SetupEditModeMenu();
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
@@ -194,6 +196,13 @@ void CViewportTitleDlg::SetupResolutionDropdownMenu()
     resolutionMenu->addMenu(GetResolutionMenu());
     m_ui->m_resolutionMenu->setMenu(resolutionMenu);
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
+}
+
+void CViewportTitleDlg::SetupEditModeMenu()
+{
+    m_ui->m_editModeMenu->setMenu(GetEditModeMenu());
+    m_ui->m_editModeMenu->setAutoRaise(true);
+    m_ui->m_editModeMenu->setPopupMode(QToolButton::InstantPopup);
 }
 
 void CViewportTitleDlg::SetupViewportInformationMenu()
@@ -428,6 +437,18 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
+void CViewportTitleDlg::SetNormalEditMode()
+{
+    m_editMode = FocusModeUxSetting::Normal;
+    UpdateEditMode();
+}
+
+void CViewportTitleDlg::SetMonochromaticEditMode()
+{
+    m_editMode = FocusModeUxSetting::Monochromatic;
+    UpdateEditMode();
+}
+
 void CViewportTitleDlg::SetNoViewportInfo()
 {
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
@@ -453,6 +474,38 @@ void CViewportTitleDlg::SetCompactViewportInfo()
 }
 
 //////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdateEditMode()
+{
+    if (m_editModeMenu == nullptr)
+    {
+        // Nothing to update, just return;
+        return;
+    }
+
+    m_normalEditModeAction->setChecked(false);
+    m_monochromaticEditModeAction->setChecked(false);
+
+    switch (m_editMode)
+    {
+    case FocusModeUxSetting::Normal:
+        {
+            m_normalEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
+            break;
+        }
+    case FocusModeUxSetting::Monochromatic:
+        {
+            m_monochromaticEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, true);
+            break;
+        }
+    default:
+        AZ_Error("EditMode", false, AZStd::string::format("Unexpected edit mode: %zu", static_cast<size_t>(m_editMode)).c_str());
+    }
+}
+
 void CViewportTitleDlg::UpdateDisplayInfo()
 {
     if (m_viewportInformationMenu == nullptr)
@@ -701,6 +754,32 @@ QMenu* const CViewportTitleDlg::GetAspectMenu()
 {
     CreateAspectMenu();
     return m_aspectMenu;
+}
+
+QMenu* const CViewportTitleDlg::GetEditModeMenu()
+{
+    CreateEditModeMenu();
+    return m_editModeMenu;
+}
+
+void CViewportTitleDlg::CreateEditModeMenu()
+{
+    if (m_editModeMenu == nullptr)
+    {
+        m_editModeMenu = new QMenu("Edit Mode");
+
+        m_normalEditModeAction = new QAction(tr("Normal"), m_editModeMenu);
+        m_normalEditModeAction->setCheckable(true);
+        connect(m_normalEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalEditMode);
+        m_editModeMenu->addAction(m_normalEditModeAction);
+
+        m_monochromaticEditModeAction = new QAction(tr("Monochromatic"), m_editModeMenu);
+        m_monochromaticEditModeAction->setCheckable(true);
+        connect(m_monochromaticEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticEditMode);
+        m_editModeMenu->addAction(m_monochromaticEditModeAction);
+
+        UpdateEditMode();
+    }
 }
 
 QMenu* const CViewportTitleDlg::GetViewportInformationMenu()
@@ -1050,13 +1129,13 @@ void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
     m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
     m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
+    SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
     m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
+    SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
@@ -1071,14 +1150,14 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = SandboxEditor::GridSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
         m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = SandboxEditor::AngleSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
         m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);
