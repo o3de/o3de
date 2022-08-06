@@ -121,71 +121,22 @@ namespace JsonSerializationTests
 
         std::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec) override
         {
-            if (requestSpec.jsonStorage == DefaultJSONStorage::Store)
-            {
-                if (requestSpec.objectSupplied == DefaultObjectSuppliedInSerialization::True)
-                {
-                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
-                    {
-
-                    }
-                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
-                    {
-
-                    }
-                    else
-                    {
-                        // fully configured
-                    }
-                }
-                else
-                {
-                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
-                    {
-
-                    }
-                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
-                    {
-
-                    }
-                    else
-                    {
-                        // fully configured
-                    }
-                }
-            }
-            else
+            if (requestSpec.jsonStorage == DefaultJSONStorage::Drop)
             {
                 // dropping defaults
                 if (requestSpec.objectSupplied == DefaultObjectSuppliedInSerialization::True)
                 {
-                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
-                    {
-
-                    }
-                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
-                    {
-                        
-                    }
-                    else
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::None)
                     {
                         // fully configured
-                        return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
+                        return m_jsonForFullyConfiguredInstanceWithoutDefaults;
                     }
                 }
                 else
                 {
-                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::None)
                     {
-
-                    }
-                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
-                    {
-
-                    }
-                    else
-                    {
-                        return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
+                        return m_jsonForFullyConfiguredInstanceWithoutDefaults;
                     }
                 }
             }
@@ -195,14 +146,13 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            return m_jsonForPartialDefaultInstanceStrippedDefaults.begin();
+            return m_jsonForPartialDefaultInstanceStrippedDefaults;
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
-            return m_jsonForFullyConfiguredInstance.begin();
+            return m_jsonForFullyConfiguredInstance;
         }
-
         
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
         {
@@ -236,10 +186,10 @@ namespace JsonSerializationTests
             const char* withSomeDefaults = instanceWithSomeDefaults.m_jsonWithStrippedDefaults;
             const char* withKeptDefaults = instanceWithSomeDefaults.m_jsonWithKeptDefaults;
 
-            azsnprintf(m_jsonForFullyConfiguredInstance.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithDefaultsInJSON);
-            azsnprintf(m_jsonForFullyConfiguredInstanceWithoutDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithoutDefaultsInJSON);
-            azsnprintf(m_jsonForPartialDefaultInstanceStrippedDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withSomeDefaults);
-            azsnprintf(m_jsonForPartialDefaultInstanceKeptDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withKeptDefaults);
+            m_jsonForFullyConfiguredInstance = AZStd::fixed_string<2048>::format(ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithDefaultsInJSON);
+            m_jsonForFullyConfiguredInstanceWithoutDefaults = AZStd::fixed_string<2048>::format(ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithoutDefaultsInJSON);
+            m_jsonForPartialDefaultInstanceStrippedDefaults = AZStd::fixed_string<2048>::format(ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withSomeDefaults);
+            m_jsonForPartialDefaultInstanceKeptDefaults = AZStd::fixed_string<2048>::format(ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withKeptDefaults);
         }
 
         using JsonSerializerConformityTestDescriptor<AZStd::any>::Reflect;
