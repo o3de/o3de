@@ -9,6 +9,8 @@
 #include <SkyAtmosphere/SkyAtmosphereFeatureProcessor.h>
 #include <SkyAtmosphere/SkyAtmosphereParentPass.h>
 
+#include <AzCore/Name/NameDictionary.h>
+
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
@@ -187,7 +189,7 @@ namespace AZ::Render
 
         auto setClearValue = [&](RPI::Pass* pass)-> RPI::PassFilterExecutionFlow
         {
-            Name slotName = Name::FromStringLiteral(slot);
+            Name slotName = Name::FromStringLiteral(slot, AZ::Interface<AZ::NameDictionary>::Get());
             if (auto binding = pass->FindAttachmentBinding(slotName))
             {
                 binding->m_unifiedScopeDesc.m_loadStoreAction.m_clearValue = blackClearValue;
