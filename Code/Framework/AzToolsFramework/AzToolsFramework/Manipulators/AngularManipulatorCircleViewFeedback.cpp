@@ -59,11 +59,6 @@ namespace AzToolsFramework
         const AZ::Transform worldFromLocalWithOrientation =
             AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
 
-        debugDisplay.CullOn();
-        debugDisplay.DepthTestOff();
-        debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-        debugDisplay.SetColor(ed_angularManipulatorCircleFeedbackDisplayColor);
-
         const auto currentLocalHitPosition = localFromWorld.TransformPoint(m_mostRecentAction.m_current.m_worldHitPosition);
         const auto currentPointOnPlane = plane.GetProjected(currentLocalHitPosition);
         const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
@@ -73,6 +68,11 @@ namespace AzToolsFramework
         const auto angle = m_mostRecentAction.m_current.m_delta.GetAngle();
         const auto sign = Sign(currentPointToCenter.Dot(right));
         const auto rotationDirection = angle < AZ::Constants::Pi ? sign : -sign;
+
+        debugDisplay.CullOn();
+        debugDisplay.DepthTestOff();
+        debugDisplay.PushMatrix(worldFromLocalWithOrientation);
+        debugDisplay.SetColor(ed_angularManipulatorCircleFeedbackDisplayColor);
 
         constexpr auto totalAngle = AZ::DegToRad(360.0f);
         constexpr auto stepIncrement = totalAngle / 360.0f;
