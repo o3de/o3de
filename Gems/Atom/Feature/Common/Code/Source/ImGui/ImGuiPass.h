@@ -86,6 +86,8 @@ namespace AZ
             explicit ImGuiPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behaviour Overrides...
+            void OnHierarchyChange() override;
+            void OnOrphan() override;
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 

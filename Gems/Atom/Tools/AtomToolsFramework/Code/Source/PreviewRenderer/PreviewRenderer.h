@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
+#include <Atom/RPI.Public/SceneBus.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
@@ -23,6 +24,7 @@ namespace AtomToolsFramework
     class PreviewRenderer final
         : public PreviewRendererInterface
         , public PreviewerFeatureProcessorProviderBus::Handler
+        , public AZ::RPI::SceneNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator, 0);
@@ -51,8 +53,13 @@ namespace AtomToolsFramework
         void EndCapture();
 
     private:
-        //! AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
+        // AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
         void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
+
+        // AZ::RPI::SceneNotificationBus::Handler overrides...
+        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+
+        void DisableUnnecessaryPasses();
 
         static constexpr float AspectRatio = 1.0f;
         static constexpr float NearDist = 0.001f;

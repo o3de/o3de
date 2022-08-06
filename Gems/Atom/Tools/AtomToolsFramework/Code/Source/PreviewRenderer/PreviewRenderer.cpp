@@ -65,12 +65,16 @@ namespace AtomToolsFramework
         pipelineDesc.m_rootPassTemplate = "ToolsPipelineRenderToTexture";
         pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+       m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
+        DisableUnnecessaryPasses();
+
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
         m_passHierarchy.push_back(pipelineName);
         m_passHierarchy.push_back("CopyToSwapChain");
+        
+        AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_scene->GetId());
 
         // Connect camera to pipeline's default view after camera entity activated
         AZ::Matrix4x4 viewToClipMatrix;
@@ -82,10 +86,12 @@ namespace AtomToolsFramework
         m_state.reset(new PreviewRendererIdleState(this));
 
         AZ::Interface<PreviewRendererInterface>::Register(this);
+
     }
 
     PreviewRenderer::~PreviewRenderer()
     {
+        AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
         PreviewerFeatureProcessorProviderBus::Handler::BusDisconnect();
 
         m_state.reset();
@@ -100,6 +106,24 @@ namespace AtomToolsFramework
         m_frameworkScene->UnsetSubsystem(m_entityContext.get());
 
         AZ::Interface<PreviewRendererInterface>::Unregister(this);
+    }
+    
+    void PreviewRenderer::DisableUnnecessaryPasses()
+    {
+        // If there is an ImGuiPass, disable it because we don't need ImGui in previews and its presence makes
+        // debugging input difficult due to extra input processing callbacks.
+        if (AZ::RPI::Ptr<AZ::RPI::Pass> imGuiPass = m_renderPipeline->FindFirstPass(AZ::Name{"ImGuiPass"}))
+        {
+            imGuiPass->SetEnabled(false);
+        }
+    }
+
+    void PreviewRenderer::OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        if (m_renderPipeline.get() == renderPipeline)
+        {
+            DisableUnnecessaryPasses();
+        }
     }
 
     void PreviewRenderer::AddCaptureRequest(const PreviewRendererCaptureRequest& captureRequest)

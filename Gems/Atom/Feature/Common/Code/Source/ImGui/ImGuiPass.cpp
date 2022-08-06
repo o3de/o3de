@@ -569,6 +569,29 @@ namespace AZ
 
             Base::InitializeInternal();
         }
+        
+        void ImGuiPass::OnHierarchyChange()
+        {
+            Pass::OnHierarchyChange();
+
+            if (IsEnabled())
+            {
+                AzFramework::InputChannelEventListener::Connect();
+                AzFramework::InputTextEventListener::Connect();
+            }
+            else
+            {
+                AzFramework::InputChannelEventListener::Disconnect();
+                AzFramework::InputTextEventListener::Disconnect();
+            }
+        }
+        
+        void ImGuiPass::OnOrphan()
+        {
+            Pass::OnOrphan();
+            AzFramework::InputChannelEventListener::Disconnect();
+            AzFramework::InputTextEventListener::Disconnect();
+        }
 
         void ImGuiPass::FrameBeginInternal(FramePrepareParams params)
         {
