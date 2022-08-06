@@ -79,9 +79,9 @@ namespace AZ
         };
         static const uint32_t DiffuseProbeGridNumRaysPerProbeArraySize = RHI::ArraySize(DiffuseProbeGridNumRaysPerProbeArray);
 
-        static const char* DiffuseProbeGridIrradianceFileName = "Irradiance_lutrgba16f.dds";
-        static const char* DiffuseProbeGridDistanceFileName = "Distance_lutrg32f.dds";
-        static const char* DiffuseProbeGridProbeDataFileName = "ProbeData_lutrgba16f.dds";
+        static constexpr const char* DiffuseProbeGridIrradianceFileName = "Irradiance_lutrgba16f.dds";
+        static constexpr const char* DiffuseProbeGridDistanceFileName = "Distance_lutrg32f.dds";
+        static constexpr const char* DiffuseProbeGridProbeDataFileName = "ProbeData_lutrgba16f.dds";
 
         using DiffuseProbeGridBakeTexturesCallback = AZStd::function<void(
             DiffuseProbeGridTexture irradianceTexture,
@@ -106,7 +106,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessorInterface, "{6EF4F226-D473-4D50-8884-D407E4D145F4}");
+            AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessorInterface, "{6EF4F226-D473-4D50-8884-D407E4D145F4}", AZ::RPI::FeatureProcessor);
 
             virtual DiffuseProbeGridHandle AddProbeGrid(const AZ::Transform& transform, const AZ::Vector3& extents, const AZ::Vector3& probeSpacing) = 0;
             virtual void RemoveProbeGrid(DiffuseProbeGridHandle& handle) = 0;

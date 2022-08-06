@@ -66,7 +66,7 @@ def SlotConnections_UpdateComponentReferences():
     import azlmbr.paths
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.prefab_utils as PrefabUtils
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
 
     editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
@@ -164,7 +164,7 @@ def SlotConnections_UpdateComponentReferences():
                                                                                                       positionY))
     gradientMixerEntityId = newEntityId
 
-    PrefabUtils.wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     boundsSlotId = graph.GraphModelSlotId('Bounds')
     previewBoundsSlotId = graph.GraphModelSlotId('PreviewBounds')

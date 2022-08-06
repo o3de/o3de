@@ -14,6 +14,10 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
+
+
 namespace AZ
 {
     class ScriptContext;
@@ -36,6 +40,8 @@ namespace ScriptAutomation
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public ScriptAutomationRequestBus::Handler
+        , public AZ::Render::ProfilingCaptureNotificationBus::Handler
+        , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ScriptAutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", ScriptAutomationRequests);
@@ -50,8 +56,10 @@ namespace ScriptAutomation
         ScriptAutomationSystemComponent();
         ~ScriptAutomationSystemComponent();
 
-        void SetIdleFrames(int numFrames);
-        void SetIdleSeconds(float numSeconds);
+        void SetIdleFrames(int numFrames) override;
+        void SetIdleSeconds(float numSeconds) override;
+        void SetFrameCaptureId(uint32_t frameCaptureId) override;
+        void StartProfilingCapture() override;
 
     protected:
         // AZ::Component implementation
@@ -67,6 +75,16 @@ namespace ScriptAutomation
         void ResumeAutomation() override;
         void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
 
+        // FrameCaptureNotificationBus implementation
+        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+
+        // ProfilingCaptureNotificationBus implementation
+        void OnCaptureQueryTimestampFinished(bool result, const AZStd::string& info) override;
+        void OnCaptureCpuFrameTimeFinished(bool result, const AZStd::string& info) override;
+        void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override;
+        void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override;
+
+
         void ExecuteScript(const char* scriptFilePath);
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
@@ -81,8 +99,10 @@ namespace ScriptAutomation
 
         float m_scriptPauseTimeout = 0.0f;
         bool m_scriptPaused = false;
+        uint32_t m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
 
         bool m_isStarted = false;
         bool m_exitOnFinish = false;
+        bool m_doFinalCleanup = false;
     };
 } // namespace ScriptAutomation

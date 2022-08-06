@@ -33,6 +33,13 @@ namespace AtomToolsFramework
         using Node::PostLoadSetup;
         void PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id) override;
 
+        // Get the ID of the dynamic node config used to create this node
+        const AZStd::string& GetConfigId() const;
+
+        // Get the dynamic node config used to create this node. This will be necessary to look up any application or context specific data
+        // contained in the config.
+        const DynamicNodeConfig& GetConfig() const;
+
     protected:
         void RegisterSlots() override;
 

@@ -30,7 +30,7 @@ namespace AZStd::StringInternal
     template<class Element, size_t ElementSize = sizeof(Element)>
     struct Padding
     {
-        AZ::u8 m_padding[ElementSize - 1];
+        AZ::u8 m_packed[ElementSize - 1];
     };
 
     template<class Element>
@@ -91,7 +91,9 @@ namespace AZStd
 
         inline static constexpr size_type npos = size_type(-1);
 
-        inline basic_string(const Allocator& alloc = Allocator())
+        // Constructors and Assignment operators
+        // https://eel.is/c++draft/strings#string.cons
+        inline constexpr basic_string(const Allocator& alloc = Allocator())
             : m_storage{ skip_element_tag{}, alloc }
         {
             Traits::assign(m_storage.first().GetData()[0], Element());
@@ -150,6 +152,11 @@ namespace AZStd
         {
         }
 
+        basic_string(AZStd::basic_string_view<Element, Traits> view, size_type pos, size_type n, const Allocator& alloc = Allocator())
+            : basic_string(view.substr(pos, n), alloc)
+        {
+        }
+
         // C++23 overload to prevent initializing a string_view via a nullptr or integer type
         constexpr basic_string(AZStd::nullptr_t) = delete;
 
@@ -159,7 +166,7 @@ namespace AZStd
             deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
         }
 
-        operator AZStd::basic_string_view<Element, Traits>() const
+        constexpr operator AZStd::basic_string_view<Element, Traits>() const
         {
             return AZStd::basic_string_view<Element, Traits>(data(), size());
         }
@@ -1716,8 +1723,8 @@ namespace AZStd
             {
                 // Make sure the short string buffer is null-terminated
                 m_buffer[0] = Element{};
-                m_size = 0;
-                m_ssoActive = true;
+                m_packed.m_size = 0;
+                m_packed.m_ssoActive = true;
             }
 
             // bit offset: 0, bits: 184
@@ -1731,7 +1738,7 @@ namespace AZStd
             // to have the StringInternal::Padding<Element> struct
             // take 0 bytes when the Element type is 1-byte type like `char`
             // When C++20 support is added, this can be changed to use [[no_unique_address]]
-            struct
+            struct PackedSize
                 : StringInternal::Padding<Element>
             {
 
@@ -1740,7 +1747,7 @@ namespace AZStd
 
                 // bit offset: 191, bits: 1
                 AZ::u8 m_ssoActive : 1;
-            };
+            } m_packed;
             // Total size 192 bits(24 bytes)
         };
 
@@ -1762,7 +1769,7 @@ namespace AZStd
 
             bool ShortStringOptimizationActive() const
             {
-                return m_shortData.m_ssoActive;
+                return m_shortData.m_packed.m_ssoActive;
             }
             const_pointer GetData() const
             {
@@ -1789,14 +1796,14 @@ namespace AZStd
             }
             size_type GetSize() const
             {
-                return ShortStringOptimizationActive() ? m_shortData.m_size
+                return ShortStringOptimizationActive() ? m_shortData.m_packed.m_size
                     : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_size;
             }
             void SetSize(size_type size)
             {
                 if (ShortStringOptimizationActive())
                 {
-                    m_shortData.m_size = size;
+                    m_shortData.m_packed.m_size = size;
                 }
                 else
                 {
@@ -1812,11 +1819,11 @@ namespace AZStd
             {
                 if (capacity <= ShortStringData::Capacity)
                 {
-                    m_shortData.m_ssoActive = true;
+                    m_shortData.m_packed.m_ssoActive = true;
                 }
                 else
                 {
-                    m_shortData.m_ssoActive = false;
+                    m_shortData.m_packed.m_ssoActive = false;
                     reinterpret_cast<AllocatedStringData&>(m_shortData).m_capacity = capacity;
                 }
             }
@@ -1877,6 +1884,21 @@ namespace AZStd
         }
 #endif
     };
+
+    // AZStd::basic_string deduction guides
+    template<class InputIt, class Alloc = allocator>
+    basic_string(InputIt, InputIt, Alloc = Alloc())-> basic_string<typename iterator_traits<InputIt>::value_type,
+        AZStd::char_traits<typename iterator_traits<InputIt>::value_type>,
+        Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, const Alloc& = Alloc()) ->
+        basic_string<CharT,Traits, Alloc>;
+
+    template<class CharT, class Traits, class Alloc = allocator>
+    explicit basic_string(AZStd::basic_string_view<CharT, Traits>, typename allocator_traits<Alloc>::size_type,
+        typename allocator_traits<Alloc>::size_type, const Alloc& = Alloc()) ->
+        basic_string<CharT, Traits, Alloc>;
 
     template<class Element, class Traits, class Allocator>
     inline void swap(basic_string<Element, Traits, Allocator>& left, basic_string<Element, Traits, Allocator>& right)

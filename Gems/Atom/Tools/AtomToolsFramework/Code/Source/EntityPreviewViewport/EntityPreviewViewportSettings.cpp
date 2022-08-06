@@ -55,18 +55,8 @@ namespace AtomToolsFramework
                 ->Property("enableShadowCatcher", BehaviorValueProperty(&EntityPreviewViewportSettings::m_enableShadowCatcher))
                 ->Property("enableAlternateSkybox", BehaviorValueProperty(&EntityPreviewViewportSettings::m_enableAlternateSkybox))
                 ->Property("fieldOfView", BehaviorValueProperty(&EntityPreviewViewportSettings::m_fieldOfView))
-                ->Property("displayMapperOperationType", &EntityPreviewViewportSettings::GetDisplayMapperOperationType, &EntityPreviewViewportSettings::SetDisplayMapperOperationType)
+                ->Property("displayMapperOperationType", BehaviorValueProperty(&EntityPreviewViewportSettings::m_displayMapperOperationType))
                 ;
         }
-    }
-
-    AZ::Render::DisplayMapperOperationType EntityPreviewViewportSettings::GetDisplayMapperOperationType() const
-    {
-        return m_displayMapperOperationType;
-    }
-
-    void EntityPreviewViewportSettings::SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType opType)
-    {
-        m_displayMapperOperationType = opType;
     }
 } // namespace AtomToolsFramework

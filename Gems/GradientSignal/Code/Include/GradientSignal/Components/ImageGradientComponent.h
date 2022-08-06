@@ -150,7 +150,9 @@ namespace GradientSignal
 
         // ImageGradientRequestBus overrides...
         AZStd::string GetImageAssetPath() const override;
+        AZStd::string GetImageAssetSourcePath() const override;
         void SetImageAssetPath(const AZStd::string& assetPath) override;
+        void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
 
         float GetTilingX() const override;
         void SetTilingX(float tilingX) override;
