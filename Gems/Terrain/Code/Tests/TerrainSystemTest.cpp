@@ -238,7 +238,12 @@ namespace UnitTest
         // Create and activate the terrain system with our testing defaults for world bounds and query resolution.
         auto terrainSystem = CreateAndActivateTerrainSystem();
 
-        AZ::Aabb worldBounds = terrainSystem->GetTerrainAabb();
+        AzFramework::Terrain::FloatRange heightBounds;
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            heightBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightBounds);
+
+        // Create an arbitrary world bounds to test since the bounds of the terrain system will be 0 with no terrain areas.
+        AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-10.0f, -10.0f, -10.0f), AZ::Vector3(10.0f, 10.0f, 10.0f));
 
         // Loop through several points within the world bounds, including on the edges, and verify that they all return false for
         // terrainExists with default heights and normals.
@@ -251,7 +256,7 @@ namespace UnitTest
                 float height =
                     terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
                 EXPECT_FALSE(terrainExists);
-                EXPECT_FLOAT_EQ(height, worldBounds.GetMin().GetZ());
+                EXPECT_FLOAT_EQ(height, heightBounds.m_min);
 
                 terrainExists = true;
                 AZ::Vector3 normal =

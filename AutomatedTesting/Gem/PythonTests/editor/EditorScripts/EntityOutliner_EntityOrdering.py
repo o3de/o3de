@@ -35,7 +35,7 @@ def EntityOutliner_EntityOrdering():
     import azlmbr.legacy.general as general
     
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.wait_utils import PrefabWaiter
 
