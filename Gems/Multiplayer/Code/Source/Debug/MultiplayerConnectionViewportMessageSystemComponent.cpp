@@ -241,10 +241,10 @@ namespace Multiplayer
         m_centerViewportDebugText.clear();
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorServerProcessCrash()
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorServerProcessStoppedUnexpectedly()
     {
         m_centerViewportDebugTextColor = AZ::Colors::Red;
-        m_centerViewportDebugText = OnEditorServerCrashed;
+        m_centerViewportDebugText = OnEditorServerStoppedUnexpectedly;
     }
 
 }

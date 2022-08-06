@@ -33,7 +33,7 @@ namespace Multiplayer
         static constexpr char OnEditorConnectionAttemptsFailedMessage[] = "(2/3) Failed to connect to server after %i attempts!\nPlease exit play mode and try again.";  
         static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
         static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
-        static constexpr char OnEditorServerCrashed[] ="Editor server has crashed!";
+        static constexpr char OnEditorServerStoppedUnexpectedly[] ="Editor server has unexpectedly stopped running!";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -63,7 +63,7 @@ namespace Multiplayer
         void OnConnectToSimulationSuccess() override;
         void OnConnectToSimulationFail(uint16_t serverPort) override;
         void OnPlayModeEnd() override;
-        void OnEditorServerProcessCrash() override;
+        void OnEditorServerProcessStoppedUnexpectedly() override;
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);

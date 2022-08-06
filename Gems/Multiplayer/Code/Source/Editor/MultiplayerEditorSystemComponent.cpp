@@ -403,8 +403,8 @@ namespace Multiplayer
         if (m_serverProcessWatcher && !m_serverProcessWatcher->IsProcessRunning())
         {
             AZ::TickBus::Handler::BusDisconnect();
-            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorServerProcessCrash);
-            AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process crashed.")
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorServerProcessStoppedUnexpectedly);
+            AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process has unexpectedly stopped running. Did it crash or get accidentally closed?")
         }
 
         if (m_serverProcessTracePrinter)
