@@ -10,6 +10,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/std/numeric.h>
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -335,5 +336,46 @@ namespace MCore
         }
 
         return result;
+    }
+
+
+    void MovingAverageSmooth(AZStd::vector<AZ::Vector3>& data, size_t sampleNum)
+    {
+        AZStd::vector<AZ::Vector3> results;
+        results.resize(data.size());
+        for (size_t i = 0; i < data.size(); ++i)
+        {
+            AZ::Vector3& result = results[i];
+            result.Set(0.0f, 0.0f, 0.0f);
+
+            size_t left = AZStd::min(i, sampleNum);
+            size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
+            result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Vector3(0));
+            result /= (float)(left + right + 1);
+        }
+
+        data = results;
+    }
+
+    void MovingAverageSmooth(AZStd::vector<MCore::Compressed16BitQuaternion>& data, size_t sampleNum)
+    {
+        AZStd::vector<MCore::Compressed16BitQuaternion> results;
+        results.resize(data.size());
+        for (size_t i = 0; i < data.size(); ++i)
+        {
+            AZ::Quaternion result = AZ::Quaternion::CreateZero();
+
+            // For quaternion, taking the mathematical summation of the quaternions and taking average doesn't yield the most accurate result.
+            // However, it will yield close to the result when given quaternions within similar ranges.
+            size_t left = AZStd::min(i, sampleNum);
+            size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
+            result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Quaternion(0));
+            result /= (float)(left + right + 1);
+            result.Normalize();
+
+            results[i].FromQuaternion(result);
+        }
+
+        data = results;
     }
 } // namespace MCore

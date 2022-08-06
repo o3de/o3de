@@ -10,10 +10,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
-#if defined(EMOTIONFXANIMATION_EDITOR)
-#include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
-#endif
-
 namespace EMotionFX
 {
     void RootMotionExtractionData::Reflect(AZ::ReflectContext* context)
@@ -31,6 +27,7 @@ namespace EMotionFX
             ->Field("transitionZeroY", &RootMotionExtractionData::m_transitionZeroYAxis)
             ->Field("extractRotation", &RootMotionExtractionData::m_extractRotation)
             ->Field("smoothingMethod", &RootMotionExtractionData::m_smoothingMethod)
+            ->Field("smoothFrameNum", &RootMotionExtractionData::m_smoothFrameNum)
             ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -38,17 +35,25 @@ namespace EMotionFX
         {
             editContext->Class<RootMotionExtractionData>("Root motion extraction data", "Root motion extraction data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->DataElement("NodeListSelection", &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
-                    //->Attribute("ClassTypeIdFilter", AZ::SceneAPI::DataTypes::IBoneData::TYPEINFO_Uuid())
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_extractRotation, "Rotation extraction", "Extract the rotation value from sample joint.")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Transition Extraction")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroXAxis, "Ignore X-Axis transition", "Force X Axis movement to be zero.")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroYAxis, "Ignore Y-Axis transition", "Force Y Axis movement to be zero.")
                 ->DataElement(AZ::Edit::UIHandlers::ComboBox, &RootMotionExtractionData::m_smoothingMethod, "Smoothing method", "Select the smoothing method for the motion data.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->EnumAttribute(SmoothingMethod::None, "None")
-                    ->EnumAttribute(SmoothingMethod::MovingAverage, "Moving average");
+                    ->EnumAttribute(SmoothingMethod::MovingAverage, "Moving average")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_smoothFrameNum, "Smooth frame num", "If the number is 1, it will average the closest 3 frames. If the number is 2, it will average the closest 5 frames (2 frames before and 2 frames after), etc.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 10)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &RootMotionExtractionData::GetVisibilitySmoothFrameNum)
+                ->ClassElement(AZ::Edit::ClassElements::Group, "Transition Extraction")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroXAxis, "Ignore X-Axis transition", "Force X Axis movement to be zero.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroYAxis, "Ignore Y-Axis transition", "Force Y Axis movement to be zero.");
         }
+    }
+
+    AZ::Crc32 RootMotionExtractionData::GetVisibilitySmoothFrameNum() const
+    {
+        return m_smoothingMethod == SmoothingMethod::None ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
     }
 }

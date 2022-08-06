@@ -1268,39 +1268,28 @@ namespace EMotionFX
             m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
         }
 
-        if (data.m_smoothingMethod != RootMotionExtractionData::SmoothingMethod::None)
+        if (data.m_smoothingMethod == RootMotionExtractionData::SmoothingMethod::MovingAverage)
         {
-            SmoothData(true, false, 2);
+            SmoothData(true, false, data.m_smoothFrameNum);
         }
     }
 
-    void NonUniformMotionData::SmoothData(bool smoothPosition, bool smoothRotation, size_t sample)
+    void NonUniformMotionData::SmoothData(bool smoothPosition, bool smoothRotation, size_t smoothFrameNum)
     {
         if (smoothPosition)
         {
             for (size_t i = 0; i < m_jointData.size(); ++i)
             {
-                const AZStd::vector<AZ::Vector3>& positionTrack = m_jointData[i].m_positionTrack.m_values;
-                AZStd::vector<AZ::Vector3> sums;
-                sums.resize(positionTrack.size());
-                for (size_t j = 0; j < positionTrack.size(); ++j)
-                {
-                    AZ::Vector3& sum = sums[j];
-                    sum.Set(0.0f, 0.0f, 0.0f);
-
-                    size_t left = AZStd::min(j, sample);
-                    size_t right = AZStd::min(positionTrack.size() - 1 - j, sample);
-                    sum += AZStd::accumulate(positionTrack.begin() + j - left, positionTrack.begin() + j + right, AZ::Vector3(0));
-                    sum /= (float)(left + right + 1);
-                }
-
-                m_jointData[i].m_positionTrack.m_values = sums;
+                MCore::MovingAverageSmooth(m_jointData[i].m_positionTrack.m_values, smoothFrameNum);
             }
         }
 
         if (smoothRotation)
         {
-            // Implement smooth rotation.
+            for (size_t i = 0; i < m_jointData.size(); ++i)
+            {
+                MCore::MovingAverageSmooth(m_jointData[i].m_rotationTrack.m_values, smoothFrameNum);
+            }
         }
     }
 
