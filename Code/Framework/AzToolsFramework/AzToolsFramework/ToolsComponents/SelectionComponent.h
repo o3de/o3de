@@ -19,7 +19,7 @@ namespace AzToolsFramework
         class SelectionComponent : public EditorComponentBase
         {
         public:
-            AZ_COMPONENT(SelectionComponent, "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}", EditorComponentBase)
+            AZ_COMPONENT(SelectionComponent, "{A7CBE7BC-9B4A-47DC-962F-1BFAE85DBF3A}", EditorComponentBase)
             SelectionComponent() = default;
             ~SelectionComponent() override = default;
 
