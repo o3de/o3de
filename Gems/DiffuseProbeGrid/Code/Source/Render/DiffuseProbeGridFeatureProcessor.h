@@ -24,7 +24,7 @@ namespace AZ
             , private Data::AssetBus::MultiHandler
         {
         public:
-            AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessor, "{BCD232F9-1EBF-4D0D-A5F4-84AEC933A93C}", DiffuseProbeGridFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessor, "{BCD232F9-1EBF-4D0D-A5F4-84AEC933A93C}", AZ::Render::DiffuseProbeGridFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 

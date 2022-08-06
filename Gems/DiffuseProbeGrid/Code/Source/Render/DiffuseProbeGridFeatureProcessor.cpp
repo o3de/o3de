@@ -35,7 +35,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<DiffuseProbeGridFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

@@ -29,7 +29,7 @@ class Tests:
 
 def Docking_BasicDockedTools():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():

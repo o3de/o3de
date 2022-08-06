@@ -557,6 +557,37 @@ tags=tools,renderer,metal)"
             gemVisitParams.m_expectedActiveGemPaths.begin(), gemVisitParams.m_expectedActiveGemPaths.end()));
     }
 
+    TEST_P(SettingsRegistryGemVisitFixture, Validate_SettingsRegistryUtilsQueries_WorksWithLocalRegistry)
+    {
+        const AZ::IO::FixedMaxPath tempRootFolder(m_testFolder.GetDirectory());
+        AZ::IO::FixedMaxPath testPath = AZ::Utils::GetO3deManifestDirectory(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de"), testPath);
+
+        testPath = AZ::Utils::GetEnginePath(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "engine"), testPath);
+
+        testPath = AZ::Utils::GetProjectPath(m_registry.get());
+        EXPECT_EQ((tempRootFolder / "project"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outerGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outerGem2", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem2"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("innerGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "o3de/outerGem2/innerGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("engineGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "engine/engineGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("projectGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "project/projectGem1"), testPath);
+
+        testPath = AZ::Utils::GetGemPath("outsideGem1", m_registry.get());
+        EXPECT_EQ((tempRootFolder / "outsideGem1"), testPath);
+    }
+
     static auto MakeGemVisitTestingValues()
     {
         return AZStd::array{
@@ -577,7 +608,8 @@ tags=tools,renderer,metal)"
                 R"({
                     "project_name": "TestProject",
                     "external_subdirectories": [
-                        "projectGem1"
+                        "projectGem1",
+                        "../outsideGem1"
                     ]
                    })",
                 {
@@ -609,6 +641,11 @@ tags=tools,renderer,metal)"
                         "gem_name": "projectGem1",
                        })"
                     ),
+                    AZStd::make_tuple("outsideGem1",
+                    R"({
+                        "gem_name": "outsideGem1",
+                       })"
+                    ),
                 },
                 R"({
                     "O3DE": {
@@ -631,7 +668,8 @@ tags=tools,renderer,metal)"
                     "o3de/outerGem2",
                     "o3de/outerGem2/innerGem1",
                     "engine/engineGem1",
-                    "project/projectGem1"
+                    "project/projectGem1",
+                    "outsideGem1"
                 }
             } };
     }

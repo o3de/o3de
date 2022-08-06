@@ -170,17 +170,19 @@ namespace AZ
                     break;
                 }
 
-                vkCmdPipelineBarrier(
-                    commandList.GetNativeCommandBuffer(),
-                    barrier.m_srcStageMask,
-                    barrier.m_dstStageMask,
-                    barrier.m_dependencyFlags,
-                    memoryBarriers ? 1 : 0,
-                    memoryBarriers,
-                    bufferBarriers ? 1 : 0,
-                    bufferBarriers,
-                    imageBarriers ? 1 : 0,
-                    imageBarriers);
+                static_cast<Device&>(commandList.GetDevice())
+                    .GetContext()
+                    .CmdPipelineBarrier(
+                        commandList.GetNativeCommandBuffer(),
+                        barrier.m_srcStageMask,
+                        barrier.m_dstStageMask,
+                        barrier.m_dependencyFlags,
+                        memoryBarriers ? 1 : 0,
+                        memoryBarriers,
+                        bufferBarriers ? 1 : 0,
+                        bufferBarriers,
+                        imageBarriers ? 1 : 0,
+                        imageBarriers);
             }
         }
 
@@ -618,14 +620,16 @@ namespace AZ
                             region.dstSubresource.layerCount = dstImageSubresourceRange.layerCount;
                             region.dstSubresource.mipLevel = dstImageSubresourceRange.baseMipLevel;
 
-                            vkCmdResolveImage(
-                                commandList.GetNativeCommandBuffer(),
-                                srcImage.GetNativeImage(),
-                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                dstImage.GetNativeImage(),
-                                GetImageAttachmentLayout(*resolveAttachment),
-                                1,
-                                &region);
+                            static_cast<Device&>(commandList.GetDevice())
+                                .GetContext()
+                                .CmdResolveImage(
+                                    commandList.GetNativeCommandBuffer(),
+                                    srcImage.GetNativeImage(),
+                                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                    dstImage.GetNativeImage(),
+                                    GetImageAttachmentLayout(*resolveAttachment),
+                                    1,
+                                    &region);
 
                             break;
                         }

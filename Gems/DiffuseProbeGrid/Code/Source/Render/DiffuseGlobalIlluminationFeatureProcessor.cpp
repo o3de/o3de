@@ -24,7 +24,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<DiffuseGlobalIlluminationFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
