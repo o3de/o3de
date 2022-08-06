@@ -68,7 +68,7 @@ namespace ScriptCanvasBuilder
         ExecutionStateAsLightUserdata,
         UpdateDependencyHandling,
         AddExplicitDestructCallForMemberVariables,
-
+        FixEntityIdReturnValuesInEvents,
         // add new entries above
         Current,
     };
