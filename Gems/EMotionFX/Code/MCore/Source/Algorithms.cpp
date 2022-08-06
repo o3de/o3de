@@ -348,8 +348,8 @@ namespace MCore
             AZ::Vector3& result = results[i];
             result.Set(0.0f, 0.0f, 0.0f);
 
-            size_t left = AZStd::min(i, sampleNum);
-            size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
+            const size_t left = AZStd::min(i, sampleNum);
+            const size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
             result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Vector3(0));
             result /= (float)(left + right + 1);
         }
@@ -367,8 +367,8 @@ namespace MCore
 
             // For quaternion, taking the mathematical summation of the quaternions and taking average doesn't yield the most accurate result.
             // However, it will yield close to the result when given quaternions within similar ranges.
-            size_t left = AZStd::min(i, sampleNum);
-            size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
+            const size_t left = AZStd::min(i, sampleNum);
+            const size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
             result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Quaternion(0));
             result /= (float)(left + right + 1);
             result.Normalize();
