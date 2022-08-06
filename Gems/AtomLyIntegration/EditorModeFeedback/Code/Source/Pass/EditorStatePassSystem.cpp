@@ -177,7 +177,7 @@ namespace AZ::Render
             {
                 const auto entityIds = state->GetMaskedEntities();
                 auto& mask = entityMaskMap[state->GetEntityMaskDrawList()];
-                for (const auto entityId : entityIds)
+                for (const auto& entityId : entityIds)
                 {
                     mask.insert(entityId);
                 }
