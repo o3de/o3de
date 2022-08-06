@@ -8,15 +8,9 @@
 
 #include "AngularManipulator.h"
 
-#include <AzCore/Math/Plane.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/Manipulators/ManipulatorDebug.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
 
 namespace AzToolsFramework
 {
@@ -114,6 +108,7 @@ namespace AzToolsFramework
         }
 
         Action action;
+        action.m_fixed = fixed;
         action.m_start.m_space = actionInternal.m_start.m_worldFromLocal.GetRotation().GetNormalized();
         action.m_start.m_rotation = actionInternal.m_start.m_localTransform.GetRotation().GetNormalized();
         action.m_start.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
@@ -198,88 +193,9 @@ namespace AzToolsFramework
         const AzFramework::CameraState& cameraState,
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
-        [[maybe_unused]] auto action = CalculateManipulationDataAction(
-            m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal, m_actionInternal.m_start.m_localTransform,
-            AngleSnapping(mouseInteraction.m_interactionId.m_viewportId), AngleStep(mouseInteraction.m_interactionId.m_viewportId),
-            mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, mouseInteraction.m_keyboardModifiers);
-
-        const auto manipulatorState =
-            ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() };
-
         m_manipulatorView->Draw(
-            GetManipulatorManagerId(), managerState, GetManipulatorId(), manipulatorState, debugDisplay, cameraState, mouseInteraction);
-
-        const auto worldPosition = manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition);
-        const auto localFromWorld = manipulatorState.m_worldFromLocal.GetInverse();
-        const auto initialLocalHitPosition = localFromWorld.TransformPoint(action.m_start.m_worldHitPosition);
-        const auto currentLocalHitPosition = localFromWorld.TransformPoint(action.m_current.m_worldHitPosition);
-
-        const auto plane = AZ::Plane::CreateFromNormalAndPoint(m_fixed.m_axis, localFromWorld.GetTranslation());
-        const auto initialPointOnPlane = plane.GetProjected(initialLocalHitPosition);
-        const auto currentPointOnPlane = plane.GetProjected(currentLocalHitPosition);
-
-        const float viewScale = CalculateScreenToWorldMultiplier(worldPosition, cameraState);
-
-        const AZ::Transform orientation =
-            AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
-                                                 AZ::Quaternion::CreateShortestArc(m_fixed.m_axis, GetAxis()))
-                                                    .GetNormalized());
-
-        // transform circle based on delta between default z up axis and other axes
-        const AZ::Transform worldFromLocalWithOrientation =
-            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
-
-        if (PerformingAction())
-        {
-            if (ed_manipulatorDrawDebug)
-            {
-                // display the exact hit (ray intersection) of the mouse pick on the manipulator
-                // DrawTransformAxes(debugDisplay, GetSpace() * AZ::Transform::CreateTranslation(action.m_start.m_worldHitPosition));
-
-                DrawTransformAxes(
-                    debugDisplay,
-                    GetSpace() * AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.TransformPoint(initialPointOnPlane)));
-            }
-
-            const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
-            const auto currentPointToCenter = (currentPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
-
-            debugDisplay.CullOn();
-            debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-            auto color = AZ::Colors::CornflowerBlue;
-            color.SetA(0.25f);
-            debugDisplay.SetColor(color);
-
-            const auto totalAngle = AZ::DegToRad(360.0f);
-            const auto stepIncrement = totalAngle / 360.0f;
-
-            const auto right =
-                AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, AZ::DegToRad(90.0f)).TransformVector(initialPointToCenter);
-
-            const auto angle = action.m_current.m_delta.GetAngle();
-            const auto sign = Sign(currentPointToCenter.Dot(right));
-            const auto rotationDirection = angle < AZ::Constants::Pi ? sign : -sign;
-
-            const auto angleStr = AZStd::string::format("Angle %f", angle);
-            debugDisplay.Draw2dTextLabel(100, 100, 1.0f, angleStr.c_str());
-
-            for (auto step = 0.0f; step < angle; step += stepIncrement)
-            {
-                const auto first =
-                    AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, step * rotationDirection).TransformVector(initialPointToCenter);
-                const auto second = AZ::Quaternion::CreateFromAxisAngle(m_fixed.m_axis, (step - stepIncrement) * rotationDirection)
-                                        .TransformVector(initialPointToCenter);
-
-                debugDisplay.DrawTri(
-                    manipulatorState.m_localPosition, manipulatorState.m_localPosition + first * 2.0f * viewScale,
-                    manipulatorState.m_localPosition + second * 2.0f * viewScale);
-            }
-
-            debugDisplay.PopMatrix();
-            debugDisplay.CullOff();
-        }
-
-        // annotation drawing
+            GetManipulatorManagerId(), managerState, GetManipulatorId(), CalculateManipulatorState(), debugDisplay, cameraState,
+            mouseInteraction);
     }
 
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)
@@ -302,7 +218,8 @@ namespace AzToolsFramework
         m_manipulatorView->Invalidate(GetManipulatorManagerId());
     }
 
+    ManipulatorState AngularManipulator::CalculateManipulatorState() const
+    {
+        return ManipulatorState{ ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() };
+    }
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

@@ -17,6 +17,7 @@
 namespace AzToolsFramework
 {
     class ManipulatorView;
+    struct ManipulatorState;
 
     //! AngularManipulator serves as a visual tool for users to change a component's property based on rotation
     //! around an axis. The rotation angle increases if the rotation goes counter clock-wise when looking
@@ -41,6 +42,12 @@ namespace AzToolsFramework
         //! A Manipulator must only be created and managed through a shared_ptr.
         static AZStd::shared_ptr<AngularManipulator> MakeShared(const AZ::Transform& worldFromLocal);
 
+        //! Unchanging data set once for the angular manipulator.
+        struct Fixed
+        {
+            AZ::Vector3 m_axis = AZ::Vector3::CreateAxisX(); //!< Axis for this angular manipulator to rotate around.
+        };
+
         //! The state of the manipulator at the start of an interaction.
         struct Start
         {
@@ -59,6 +66,7 @@ namespace AzToolsFramework
         //! Mouse action data used by MouseActionCallback (wraps Start and Current manipulator state).
         struct Action
         {
+            Fixed m_fixed;
             Start m_start;
             Current m_current;
             ViewportInteraction::KeyboardModifiers m_modifiers;
@@ -83,15 +91,14 @@ namespace AzToolsFramework
             const ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
         void SetAxis(const AZ::Vector3& axis);
-        const AZ::Vector3& GetAxis() const
-        {
-            return m_fixed.m_axis;
-        }
-
-        void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
+        const AZ::Vector3& GetAxis() const;
 
         ManipulatorView* GetView();
         const ManipulatorView* GetView() const;
+
+        void SetView(AZStd::unique_ptr<ManipulatorView>&& view);
+
+        ManipulatorState CalculateManipulatorState() const;
 
     private:
         void OnLeftMouseDownImpl(const ViewportInteraction::MouseInteraction& interaction, float rayIntersectionDistance) override;
@@ -100,12 +107,6 @@ namespace AzToolsFramework
 
         void SetBoundsDirtyImpl() override;
         void InvalidateImpl() override;
-
-        //! Unchanging data set once for the angular manipulator.
-        struct Fixed
-        {
-            AZ::Vector3 m_axis = AZ::Vector3::CreateAxisX(); //!< Axis for this angular manipulator to rotate around.
-        };
 
         //! Initial data recorded when a press first happens with an angular manipulator.
         struct StartInternal
@@ -161,13 +162,18 @@ namespace AzToolsFramework
             ViewportInteraction::KeyboardModifiers keyboardModifiers);
     };
 
+    inline ManipulatorView* AngularManipulator::GetView()
+    {
+        return m_manipulatorView.get();
+    }
+
     inline const ManipulatorView* AngularManipulator::GetView() const
     {
         return m_manipulatorView.get();
     }
 
-    inline ManipulatorView* AngularManipulator::GetView()
+    inline const AZ::Vector3& AngularManipulator::GetAxis() const
     {
-        return m_manipulatorView.get();
+        return m_fixed.m_axis;
     }
 } // namespace AzToolsFramework

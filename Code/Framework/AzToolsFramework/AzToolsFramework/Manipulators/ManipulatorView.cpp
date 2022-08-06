@@ -39,17 +39,6 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "The scale factor to apply to the planar manipulator bounds");
 
-AZ_CVAR(bool, ed_normalDrawing, false, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-AZ_CVAR(float, ed_sweepAngle, 0.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-AZ_CVAR(float, ed_angleStep, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-AZ_CVAR(bool, ed_arc, false, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-// AZ_CVAR(bool, ed_arc, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     const float g_defaultManipulatorSphereRadius = 0.1f;
@@ -690,41 +679,9 @@ namespace AzToolsFramework
         debugDisplay.CullOn();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor));
-
-        if (ed_normalDrawing)
-        {
-            m_drawCircleFunc(
-                debugDisplay, manipulatorState.m_localPosition, torusBound.m_majorRadius,
-                worldFromLocalWithOrientation.GetInverse().TransformPoint(cameraState.m_position));
-        }
-
-        //debugDisplay.SetColor(AZ::Colors::Black);
-        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor));
-
-        if (ed_arc)
-        {
-            // debugDisplay.DrawArc(manipulatorState.m_localPosition, torusBound.m_majorRadius, 0.0f, ed_sweepAngle, ed_angleStep);
-        }
-
-        //const auto totalAngle = AZ::DegToRad(360.0f);
-        //const auto stepIncrement = totalAngle / 100.0f;
-        //auto step = 0.0f;
-
-        //while (step < totalAngle)
-        //{
-        //    auto first = AZ::Quaternion::CreateRotationZ(step).TransformVector(AZ::Vector3::CreateAxisY());
-        //    auto second = AZ::Quaternion::CreateRotationZ(step + stepIncrement).TransformVector(AZ::Vector3::CreateAxisY());
-        //    debugDisplay.DrawTri(
-        //        manipulatorState.m_localPosition, manipulatorState.m_localPosition + first * torusBound.m_majorRadius,
-        //        manipulatorState.m_localPosition + second * torusBound.m_majorRadius);
-
-        //    step += stepIncrement;
-        //}
-
-        // debugDisplay.DrawDisk(manipulatorState.m_localPosition, AZ::Vector3::CreateAxisZ(), torusBound.m_majorRadius);
-        // debugDisplay.DrawWireDisk(manipulatorState.m_localPosition, AZ::Vector3::CreateAxisZ(), torusBound.m_majorRadius);
-        // debugDisplay.DrawWireHemisphere(manipulatorState.m_localPosition, AZ::Vector3::CreateAxisZ(), torusBound.m_majorRadius);
-
+        m_drawCircleFunc(
+            debugDisplay, manipulatorState.m_localPosition, torusBound.m_majorRadius,
+            worldFromLocalWithOrientation.GetInverse().TransformPoint(cameraState.m_position));
         debugDisplay.PopMatrix();
         debugDisplay.CullOff();
 
@@ -906,12 +863,7 @@ namespace AzToolsFramework
     AZ::Vector3 CalculateViewDirection(const Manipulators& manipulators, const AZ::Vector3& worldViewPosition)
     {
         const AZ::Transform worldFromLocalWithTransform = manipulators.GetSpace() * manipulators.GetLocalTransform();
-
-        AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
-
+        const AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
         return TransformDirectionNoScaling(worldFromLocalWithTransform.GetInverse(), lookDirection);
     }
 } // namespace AzToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

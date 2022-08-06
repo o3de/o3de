@@ -23,9 +23,12 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Manipulators/AngularManipulatorCircleViewFeedback.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -41,8 +44,6 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
@@ -1431,6 +1432,10 @@ namespace AzToolsFramework
             RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
+        AZStd::shared_ptr<AngularManipulatorCircleViewFeedback> angularManipulatorCircleViewFeedback =
+            AZStd::make_shared<AngularManipulatorCircleViewFeedback>();
+        rotationManipulators->m_angularManipulatorFeedback = angularManipulatorCircleViewFeedback;
+
         struct SharedRotationState
         {
             AZ::Quaternion m_savedOrientation = AZ::Quaternion::CreateIdentity();
@@ -1442,8 +1447,11 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable
+            [this, sharedRotationState,
+             angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action) mutable
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
                 // important to sort entityIds based on hierarchy order when updating transforms
@@ -1459,9 +1467,11 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallMouseMoveCallback(
-            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(),
-             sharedRotationState](const AngularManipulator::Action& action) mutable
+            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState,
+             angularManipulatorCircleViewFeedback](const AngularManipulator::Action& action) mutable
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
                 const Influence influence = InfluenceFromModifiers(action.m_modifiers);
 
@@ -1553,8 +1563,10 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
+            [this, sharedRotationState, angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action)
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                     sharedRotationState->m_entityIds);
@@ -3290,7 +3302,8 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
+    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
     {
         m_componentModeSwitcher = componentModeSwitcher;
     }
@@ -4118,6 +4131,8 @@ namespace AzToolsFramework
             // if we have an active manipulator, ensure we refresh the view while drawing
             // in case it needs to be recalculated based on the current view position
             m_entityIdManipulators.m_manipulators->RefreshView(cameraState.m_position);
+            // do any additional drawing for this aggregate manipulator/view pairing
+            m_entityIdManipulators.m_manipulators->DisplayFeedback(debugDisplay, cameraState);
 
             if (m_entityIdManipulators.m_manipulators->PerformingAction())
             {
