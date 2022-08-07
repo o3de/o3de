@@ -6,20 +6,16 @@
 #
 #
 
-# Currently we are in the Code folder: ${CMAKE_CURRENT_LIST_DIR}
-# Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-# Note: o3de_pal_dir will take care of the details for us, as this may be a restricted platform
-#       in which case it will see if that platform is present here or in the restricted folder.
-#       i.e. It could here in our gem : Gems/ONNX/Code/Platform/<platorm_name>  or
-#            <restricted_folder>/<platform_name>/Gems/ONNX/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
-
-# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
-# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
-# is supported by this platform.
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
 find_package(Onnx REQUIRED)
+
+if(NOT PAL_TRAIT_ONNX_SUPPORTED OR NOT Onnx_FOUND)
+    # Don't create any Gem targets and aliases.  Nothing should depend on this
+    # Gem directly, because if it doesn't define targets it will cause an error.
+    return()
+endif()
 
 # The ONNX.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
@@ -60,7 +56,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
-            "${Onnx_LIBS_DIR}/onnxruntime.lib"
+            ${Onnx_LIB}
             Gem::ImguiAtom.Static
             Gem::ImGui.Static
             Gem::ImGui.ImGuiLYUtils
@@ -81,7 +77,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ONNX.API
-            "${Onnx_LIBS_DIR}/onnxruntime.lib"
+            ${Onnx_LIB}
         PRIVATE
             Gem::ONNX.Private.Object
         INTERFACE
@@ -138,7 +134,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::ONNX.Private.Object>
-                "${Onnx_LIBS_DIR}/onnxruntime.lib"
+                ${Onnx_LIB}
                 Gem::ImGui.Static
                 Gem::ImGui.ImGuiLYUtils
             INTERFACE
@@ -159,7 +155,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::ONNX.Editor.API
-                "${Onnx_LIBS_DIR}/onnxruntime.lib"
+                ${Onnx_LIB}
             PRIVATE
                 Gem::ONNX.Editor.Private.Object
             INTERFACE
@@ -209,7 +205,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzFramework
                     Gem::ONNX.Private.Object
                 PUBLIC
-                    "${Onnx_LIBS_DIR}/onnxruntime.lib"
+                    ${Onnx_LIB}
                     Gem::ONNX.API
         )
 
@@ -239,7 +235,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                         AZ::AzTest
                         Gem::ONNX.Private.Object
                     PUBLIC
-                        "${Onnx_LIBS_DIR}/onnxruntime.lib"
+                        ${Onnx_LIB}
             )
 
             # Add ONNX.Editor.Tests to googletest

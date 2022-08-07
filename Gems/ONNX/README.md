@@ -6,7 +6,7 @@ This is an experimental gem implementing [ONNX Runtime](https://onnxruntime.ai/)
 
 ## Setup
 
-1. Download the zip of the GPU version of ONNX Runtime v1.9.0 for x64 Windows from the [ONNX Runtime GitHub](https://github.com/microsoft/onnxruntime/releases/tag/v1.9.0), extract, and put inside the *External* folder in the gem. The path should look like *External/onnxruntime-win-x64-gpu-1.9.0/\<include and lib folders in here\>*.
+1. Download the zip of the GPU version of ONNX Runtime v1.9.0 (Windows or Linux) from the [ONNX Runtime GitHub](https://github.com/microsoft/onnxruntime/releases/tag/v1.9.0), extract, and put the contents inside the *External/onnxruntime* folder in the gem. The path should look like *External/onnxruntime/\<include and lib folders in here\>*.
 2. Put your *.onnx* file inside the *Assets* folder of the gem. By default the Model wrapper class looks for a file called *model.onnx*. To run the MNIST example you need an MNIST model, which you can get from the [ONNX GitHub](https://github.com/onnx/models/tree/main/vision/classification/mnist).
 3. Download Johnathan Orsolini's [MNIST.png dataset](https://www.kaggle.com/datasets/playlist/mnistzip) from Kaggle, unzip (takes a while, there are a lot of pictures), and place inside the *Assets* folder of the gem (i.e. the path should look like *Assets/mnist_png/\<testing and training folders in here\>*).
 4. Download the [uPNG source](https://github.com/elanthis/upng) from GitHub and copy into *Code/Source/Clients*. The source for uPNG has to be modified to work with the build, see [Modifying uPNG](#modifying-upng) below. You must have the following 2 files in these locations (the other uPNG files are unnecessary):
