@@ -324,6 +324,35 @@ function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FI
      configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
 endfunction()
 
+#! ly_extract_target_dependencies: extracts the target dependencies for the specified target as a comma separated list.
+function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_LIST)
+    set(dependencies "")
+    # Walk the dependency list
+    foreach(target_name_components ${INPUT_DEPENDENCY_LIST})
+        # Extract just the target name, ignoring the namespace
+        string(REPLACE "::" ";" target_name_components ${target_name_components})
+        list(LENGTH target_name_components num_name_components)
+        if(num_name_components GREATER 1)
+            list(GET target_name_components 0 target_namespace)
+            list(GET target_name_components 1 target_name)
+            # Skipt third party dependencies
+            if(NOT target_namespace STREQUAL "3rdParty")
+                list(APPEND dependencies "${target_name}")
+            endif()
+        else()
+            set(target_name ${target_name_components})
+            list(APPEND dependencies "${target_name}")
+        endif()
+    endforeach()
+
+    # Remove the access modifiers and convert to a comma separated list
+    string (REPLACE "PUBLIC;" "" dependencies "${dependencies}")
+    string (REPLACE "PRIVATE;" "" dependencies "${dependencies}")
+    string (REPLACE "INTERFACE;" "" dependencies "${dependencies}")
+    string (REPLACE ";" ",\n" dependencies "${dependencies}")
+    set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
+endfunction()
+
 #! ly_test_impact_export_source_target_mappings: exports the static source to target mappings to file.
 #
 # \arg:MAPPING_TEMPLATE_FILE path to source to target template file
@@ -349,6 +378,12 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
             # No custom output name was specified so use the target name
             set(target_output_name "${target}")
         endif()
+
+        # Dependencies
+        get_property(build_dependencies GLOBAL PROPERTY LY_ALL_TARGETS_${target}_BUILD_DEPENDENCIES)
+        get_property(runtime_dependencies GLOBAL PROPERTY LY_ALL_TARGETS_${target}_RUNTIME_DEPENDENCIES)
+        ly_extract_target_dependencies("${build_dependencies}" build_dependencies)
+        ly_extract_target_dependencies("${runtime_dependencies}" runtime_dependencies)
 
         # Autogen source file mappings
         get_target_property(autogen_input_files ${target} AUTOGEN_INPUT_FILES)
