@@ -12,7 +12,7 @@
 
 #include "Model.h"
 
-namespace ONNX
+namespace Mnist
 {
     //! Holds the digit that was inferenced and the time taken for a single inference run.
     //! Only used by MnistExample().
@@ -26,7 +26,7 @@ namespace ONNX
     //! Implements additional functionality useful to have for the example, such as keeping hold of the input and output vectors, and result
     //! (which the model doesn't do).
     struct Mnist
-        : public Model
+        : public ::ONNX::Model
         , public AZ::TickBus::Handler
     {
     public:
@@ -74,4 +74,4 @@ namespace ONNX
     //! ~9,000.
     //! @cudaEnable just specifies if the inferences should be run on gpu using CUDA or default cpu.
     void RunMnistSuite(int testsPerDigit, bool cudaEnable);
-} // namespace ONNX
+} // namespace Mnist

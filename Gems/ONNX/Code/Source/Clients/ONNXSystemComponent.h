@@ -17,10 +17,13 @@
 #include <ONNX/ONNXBus.h>
 #include <imgui/imgui.h>
 
-namespace ONNX
+namespace Mnist
 {
     struct Mnist;
+}
 
+namespace ONNX
+{
     class ONNXSystemComponent
         : public AZ::Component
         , protected ONNXRequestBus::Handler
@@ -46,8 +49,8 @@ namespace ONNX
         AZStd::unique_ptr<Ort::AllocatorWithDefaultOptions> m_allocator;
         Ort::AllocatorWithDefaultOptions* GetAllocator() override;
 
-        AZStd::unique_ptr<Mnist> m_mnist;
-        AZStd::unique_ptr<Mnist> m_mnistCuda;
+        AZStd::unique_ptr<::Mnist::Mnist> m_mnist;
+        AZStd::unique_ptr<::Mnist::Mnist> m_mnistCuda;
 
         void InitRuntimeMnistExamples();
 

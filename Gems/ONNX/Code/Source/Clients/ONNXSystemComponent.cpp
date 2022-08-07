@@ -221,7 +221,7 @@ namespace ONNX
         ONNXRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        m_mnist = AZStd::make_unique<Mnist>();
+        m_mnist = AZStd::make_unique<::Mnist::Mnist>();
 
         AZStd::vector<float> input(m_mnist->m_imageSize);
         m_mnist->m_input = input;
@@ -229,7 +229,7 @@ namespace ONNX
         AZStd::vector<float> output(10);
         m_mnist->m_output = output;
 
-        Mnist::InitSettings modelInitSettings;
+       ::Mnist::Mnist::InitSettings modelInitSettings;
         modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettings.m_outputShape = { 1, 10 };
         modelInitSettings.m_modelName = "MNIST (Realtime)";
@@ -247,11 +247,11 @@ namespace ONNX
         m_mnist->BusConnect();
 
 #ifdef ENABLE_CUDA
-        m_mnistCuda = AZStd::make_unique<Mnist>();
+        m_mnistCuda = AZStd::make_unique<::Mnist::Mnist>();
         m_mnistCuda->m_input = input;
         m_mnistCuda->m_output = output;
 
-        Mnist::InitSettings modelInitSettingsCuda;
+        ::Mnist::Mnist::InitSettings modelInitSettingsCuda;
         modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettingsCuda.m_outputShape = { 1, 10 };
         modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
@@ -275,10 +275,10 @@ namespace ONNX
         // These are run before the editor opens, and are used to compare the differences in inference times between precomputed and
         // realtime execution. Using this we are able to observe that both CPU and GPU inference times are far greater when run in real time
         // in the game tick. The results for these runs are displayed alongside the realtime data in the ImGui dashboard.
-        RunMnistSuite(20, false);
+        ::Mnist::RunMnistSuite(20, false);
 
 #ifdef ENABLE_CUDA
-        RunMnistSuite(20, true);
+        ::Mnist::RunMnistSuite(20, true);
 #endif
 
         InitRuntimeMnistExamples();

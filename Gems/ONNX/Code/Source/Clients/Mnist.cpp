@@ -8,7 +8,7 @@
 
 #include "Mnist.h"
 
-namespace ONNX
+namespace Mnist
 {
     template<typename T>
     static void Mnist::Softmax(T& input)
@@ -43,11 +43,11 @@ namespace ONNX
         // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
         if (m_cudaEnable)
         {
-            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta, m_modelColor);
+            ::ONNX::ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta, m_modelColor);
         }
         else
         {
-            ONNXRequestBus::Broadcast(&ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
+            ::ONNX::ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
         }
     }
 
@@ -177,8 +177,8 @@ namespace ONNX
         // This data is used to populate the header in the ImGui dashboard in the editor.
         if (cudaEnable)
         {
-            ONNXRequestBus::Broadcast(
-                &ONNXRequestBus::Events::SetPrecomputedTimingDataCuda,
+            ::ONNX::ONNXRequestBus::Broadcast(
+                &::ONNX::ONNXRequestBus::Events::SetPrecomputedTimingDataCuda,
                 totalFiles,
                 numOfCorrectInferences,
                 totalRuntimeInMilliseconds,
@@ -186,8 +186,8 @@ namespace ONNX
         }
         else
         {
-            ONNXRequestBus::Broadcast(
-                &ONNXRequestBus::Events::SetPrecomputedTimingData,
+            ::ONNX::ONNXRequestBus::Broadcast(
+                &::ONNX::ONNXRequestBus::Events::SetPrecomputedTimingData,
                 totalFiles,
                 numOfCorrectInferences,
                 totalRuntimeInMilliseconds,
@@ -198,4 +198,4 @@ namespace ONNX
         AZ_Printf("ONNX", " Evaluated: %d  Correct: %d  Accuracy: %f%%\n", totalFiles, numOfCorrectInferences, accuracy);
         AZ_Printf("ONNX", " Total Runtime: %fms  Avg Runtime: %fms\n", totalRuntimeInMilliseconds, avgRuntimeInMilliseconds);
     }
-} // namespace ONNX
+} // namespace Mnist
