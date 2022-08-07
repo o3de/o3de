@@ -19,7 +19,7 @@
 
 namespace ONNX
 {
-    struct MNIST;
+    struct Mnist;
 
     class ONNXSystemComponent
         : public AZ::Component
@@ -46,8 +46,8 @@ namespace ONNX
         AZStd::unique_ptr<Ort::AllocatorWithDefaultOptions> m_allocator;
         Ort::AllocatorWithDefaultOptions* GetAllocator() override;
 
-        AZStd::unique_ptr<MNIST> m_mnist;
-        AZStd::unique_ptr<MNIST> m_mnistCuda;
+        AZStd::unique_ptr<Mnist> m_mnist;
+        AZStd::unique_ptr<Mnist> m_mnistCuda;
 
         void InitRuntimeMnistExamples();
 

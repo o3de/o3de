@@ -221,7 +221,7 @@ namespace ONNX
         ONNXRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        m_mnist = AZStd::make_unique<MNIST>();
+        m_mnist = AZStd::make_unique<Mnist>();
 
         AZStd::vector<float> input(m_mnist->m_imageSize);
         m_mnist->m_input = input;
@@ -229,7 +229,7 @@ namespace ONNX
         AZStd::vector<float> output(10);
         m_mnist->m_output = output;
 
-        MNIST::InitSettings modelInitSettings;
+        Mnist::InitSettings modelInitSettings;
         modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettings.m_outputShape = { 1, 10 };
         modelInitSettings.m_modelName = "MNIST (Realtime)";
@@ -247,11 +247,11 @@ namespace ONNX
         m_mnist->BusConnect();
 
 #ifdef ENABLE_CUDA
-        m_mnistCuda = AZStd::make_unique<MNIST>();
+        m_mnistCuda = AZStd::make_unique<Mnist>();
         m_mnistCuda->m_input = input;
         m_mnistCuda->m_output = output;
 
-        MNIST::InitSettings modelInitSettingsCuda;
+        Mnist::InitSettings modelInitSettingsCuda;
         modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettingsCuda.m_outputShape = { 1, 10 };
         modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";

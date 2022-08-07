@@ -25,7 +25,7 @@ namespace ONNX
     //! Extension of ONNX Model used for Mnist example.
     //! Implements additional functionality useful to have for the example, such as keeping hold of the input and output vectors, and result
     //! (which the model doesn't do).
-    struct MNIST
+    struct Mnist
         : public Model
         , public AZ::TickBus::Handler
     {
@@ -67,7 +67,7 @@ namespace ONNX
     //! @mnist should be in a ready to run state, ie Load() should have been called.
     //! @path is the file location of the image you want to inference (this NEEDS to be an 8-bit color depth png else it won't work).
     //! Returns the inference digit and runtime.
-    MnistReturnValues MnistExample(MNIST& mnist, const char* path);
+    MnistReturnValues MnistExample(Mnist& mnist, const char* path);
 
     //! Runs through library of test mnist images in png format, calculating inference accuracy.
     //! @testsPerDigit specifies how many runs to do on each digit 0-9. Each run will be done on a unique image of that digit. Limit is

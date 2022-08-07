@@ -11,7 +11,7 @@
 namespace ONNX
 {
     template<typename T>
-    static void MNIST::Softmax(T& input)
+    static void Mnist::Softmax(T& input)
     {
         const float rowmax = *AZStd::ranges::max_element(input.begin(), input.end());
         AZStd::vector<float> y(input.size());
@@ -26,19 +26,19 @@ namespace ONNX
         }
     }
 
-    void MNIST::GetResult()
+    void Mnist::GetResult()
     {
         Softmax(m_output);
         m_result = AZStd::distance(m_output.begin(), AZStd::ranges::max_element(m_output.begin(), m_output.end()));
     }
 
-    void MNIST::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void Mnist::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         Run(m_input, m_output);
         DispatchTimingSample();
     }
 
-    void MNIST::DispatchTimingSample()
+    void Mnist::DispatchTimingSample()
     {
         // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
         if (m_cudaEnable)
@@ -51,7 +51,7 @@ namespace ONNX
         }
     }
 
-    void MNIST::LoadImage(const char* path)
+    void Mnist::LoadImage(const char* path)
     {
         // Gets the png image from file and decodes using upng library.
         upng_t* upng = upng_new_from_file(path);
@@ -79,7 +79,7 @@ namespace ONNX
         }
     }
 
-    MnistReturnValues MnistExample(MNIST& mnist, const char* path)
+    MnistReturnValues MnistExample(Mnist& mnist, const char* path)
     {
         mnist.LoadImage(path);
         mnist.Run(mnist.m_input, mnist.m_output);
@@ -95,13 +95,13 @@ namespace ONNX
     {
         // Initialises and loads the mnist model.
         // The same instance of the model is used for all runs.
-        MNIST mnist;
+        Mnist mnist;
         AZStd::vector<float> input(mnist.m_imageSize);
         mnist.m_input = input;
         AZStd::vector<float> output(10);
         mnist.m_output = output;
 
-        MNIST::InitSettings modelInitSettings;
+        Mnist::InitSettings modelInitSettings;
         modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
         modelInitSettings.m_outputShape = { 1, 10 };
 
