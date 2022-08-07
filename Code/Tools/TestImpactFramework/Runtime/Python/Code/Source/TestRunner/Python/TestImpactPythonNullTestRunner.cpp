@@ -30,15 +30,25 @@ namespace TestImpact
             {
                 JobMeta meta;
                 meta.m_result = JobResult::ExecutedWithSuccess;
-                Job job(jobInfo, JobMeta{}, outcome.TakeValue());
+                Job job(jobInfo, AZStd::move(meta), outcome.TakeValue());
                 jobs.push_back(job);
+
+                if (clientCallback.has_value())
+                {
+                    (*clientCallback)(job.GetJobInfo(), meta, StdContent{});
+                }
             }
             else
             {
                 JobMeta meta;
                 meta.m_result = JobResult::FailedToExecute;
-                Job job(jobInfo, JobMeta{}, AZStd::nullopt);
+                Job job(jobInfo, AZStd::move(meta), AZStd::nullopt);
                 jobs.push_back(job);
+
+                if (clientCallback.has_value())
+                {
+                    (*clientCallback)(job.GetJobInfo(), meta, StdContent{});
+                }
             }
         }
 

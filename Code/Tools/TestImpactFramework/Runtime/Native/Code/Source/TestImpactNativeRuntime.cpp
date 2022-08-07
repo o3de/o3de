@@ -505,7 +505,7 @@ namespace TestImpact
                 updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs)
             {
                 m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
-                    m_dynamicDependencyMap.get(),
+                    *m_dynamicDependencyMap.get(),
                     jobs,
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,
@@ -703,7 +703,7 @@ namespace TestImpact
         }
 
         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
-                    m_dynamicDependencyMap.get(),
+                    *m_dynamicDependencyMap.get(),
                     ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,
@@ -778,7 +778,7 @@ namespace TestImpact
         ClearDynamicDependencyMapAndRemoveExistingFile();
 
          m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
-                    m_dynamicDependencyMap.get(),
+                    *m_dynamicDependencyMap.get(),
                     testJobs,
                     m_failedTestCoveragePolicy,
                     m_integrationFailurePolicy,

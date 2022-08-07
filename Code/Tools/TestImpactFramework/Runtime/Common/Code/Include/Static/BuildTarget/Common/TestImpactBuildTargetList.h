@@ -38,6 +38,15 @@ namespace TestImpact
         //! @param name The name of the target to get.
         BuildTarget<ProductionTarget, TestTarget> GetBuildTargetOrThrow(const AZStd::string& name) const;
 
+        //! Attempts to get the target name from the target's output name.
+        //! @param outputName The output name of the target to get.
+        //! @returns If found, the name of the build target, otherwise an empty string.
+        AZStd::string GetTargetNameFromOutputName(const AZStd::string& outputName) const;
+        
+        //! Attempts to get the target name from the target's output name or throw TargetException.
+        //! @param outputName The output name of the target to get.
+        AZStd::string GetTargetNameFromOutputNameOrThrow(const AZStd::string& outputName) const;
+
         //! Get the list of test targets in the repository.
         const TargetList<TestTarget>& GetTestTargetList() const;
 
@@ -49,6 +58,9 @@ namespace TestImpact
 
         //! The sorted list of unique production targets in the repository.
         TargetList<ProductionTarget> m_productionTargets;
+
+        //! Mapping of target output names to their targets.
+        AZStd::unordered_map<AZStd::string, AZStd::string> m_outputNameToTargetNameMapping;
     };
 
     template<typename ProductionTarget, typename TestTarget>
@@ -57,6 +69,15 @@ namespace TestImpact
         : m_testTargets(AZStd::move(testTargetList))
         , m_productionTargets(AZStd::move(productionTargetList))
     {
+        for (const auto& target : m_testTargets.GetTargets())
+        {
+            m_outputNameToTargetNameMapping[target.GetOutputName()] = target.GetName();
+        }
+
+        for (const auto& target : m_productionTargets.GetTargets())
+        {
+            m_outputNameToTargetNameMapping[target.GetOutputName()] = target.GetName();
+        }
     }
 
     template<typename ProductionTarget, typename TestTarget>
@@ -101,5 +122,28 @@ namespace TestImpact
     const TargetList<ProductionTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetProductionTargetList() const
     {
         return m_productionTargets;
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
+    AZStd::string BuildTargetList<ProductionTarget, TestTarget>::GetTargetNameFromOutputName(const AZStd::string& outputName) const
+    {
+        const auto it = m_outputNameToTargetNameMapping.find(outputName);
+        if (it != m_outputNameToTargetNameMapping.end())
+        {
+            return it->second;
+        }
+
+        return "";
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
+    AZStd::string BuildTargetList<ProductionTarget, TestTarget>::GetTargetNameFromOutputNameOrThrow(const AZStd::string& outputName) const
+    {
+        const auto targetName = GetTargetNameFromOutputName(outputName);
+        AZ_TestImpact_Eval(
+            !targetName.empty(),
+            TargetException,
+            AZStd::string::format("Couldn't find target with output name %s", outputName.c_str()).c_str());
+        return targetName;
     }
 } // namespace TestImpact

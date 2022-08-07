@@ -27,6 +27,6 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
+            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback) override;
     };
 } // namespace TestImpact

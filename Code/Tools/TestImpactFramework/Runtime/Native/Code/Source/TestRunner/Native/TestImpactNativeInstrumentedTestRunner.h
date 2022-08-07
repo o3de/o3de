@@ -24,7 +24,7 @@ namespace TestImpact
         : public TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>
     {
     public:
-        using TestImpact::TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
+        using TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
 
     protected:
         JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override

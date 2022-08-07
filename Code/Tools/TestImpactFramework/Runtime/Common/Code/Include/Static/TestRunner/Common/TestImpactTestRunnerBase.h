@@ -33,7 +33,7 @@ namespace TestImpact
         //! @param clientCallback The optional client callback to be called whenever a run job changes state.
         //! @param stdContentCallback 
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
+        virtual AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
             const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,

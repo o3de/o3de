@@ -36,9 +36,14 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    // Type trait for the test runner
     template<>
     struct TestJobRunnerTrait<PythonTestRunner>
+    {
+        using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
+    };
+
+    template<>
+    struct TestJobRunnerTrait<PythonNullTestRunner>
     {
         using TestEngineJobType = TestEngineInstrumentedRun<typename PythonTestEngine::TestTargetType, typename PythonTestEngine::TestCaseCoverageType>;
     };
@@ -78,8 +83,6 @@ namespace TestImpact
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
-        DeleteArtifactXmls();
-
         const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
                                  [[maybe_unused]] const AZStd::string& stdOutput,
                                  [[maybe_unused]] const AZStd::string& stdError,
@@ -101,20 +104,9 @@ namespace TestImpact
 
         if (m_useNullTestRunner)
         {
-            m_nullTestRunner->RunTests(
-                m_testJobInfoGenerator->GenerateJobInfos(testTargets),
-                StdOutputRouting::ToParent,
-                StdErrorRouting::ToParent,
-                testTargetTimeout,
-                globalTimeout,
-                AZStd::nullopt,
-                stdPrint);
-            return { TestSequenceResult::Success, {} };
-        }
-        else
-        {
-            return GenerateJobInfosAndRunTests(
-                m_testRunner.get(),
+            return GenerateInstrumentedRunResult(
+            GenerateJobInfosAndRunTests(
+                m_nullTestRunner.get(),
                 m_testJobInfoGenerator.get(),
                 testTargets,
                 PythonInstrumentedTestRunnerErrorCodeChecker,
@@ -124,7 +116,27 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 callback,
-                stdPrint);
+                stdPrint),
+            integrityFailurePolicy);
+        }
+        else
+        {;
+            DeleteArtifactXmls();
+
+            return GenerateInstrumentedRunResult(
+                GenerateJobInfosAndRunTests(
+                    m_testRunner.get(),
+                    m_testJobInfoGenerator.get(),
+                    testTargets,
+                    PythonInstrumentedTestRunnerErrorCodeChecker,
+                    executionFailurePolicy,
+                    testFailurePolicy,
+                    targetOutputCapture,
+                    testTargetTimeout,
+                    globalTimeout,
+                    callback,
+                    stdPrint),
+                integrityFailurePolicy);
         }
     }
 } // namespace TestImpact

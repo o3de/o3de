@@ -676,7 +676,7 @@ namespace TestImpact
         ClearDynamicDependencyMapAndRemoveExistingFile();
         
         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
-                                      m_dynamicDependencyMap.get(),
+                                      *m_dynamicDependencyMap.get(),
                                       testJobs,
                                       m_failedTestCoveragePolicy,
                                       m_integrationFailurePolicy,

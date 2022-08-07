@@ -159,15 +159,22 @@ namespace TestImpact
             for (auto i = 0u; i < lines.size(); i++)
             {
                 const auto& line = lines[i];
-                RepoPath path;
+                if (line[0] == '\0')
+                {
+                    continue;
+                }
 
                 switch (i)
                 {
                 case ParentScript:
                     // Ignore
+
+                    // SHOULD THIS NOT BE ADDED TO TEST TARGET COVERAGE?
                     break;
                 case CallingScript:
                     // Ignore
+
+                    // SHOULD THIS NOT BE ADDED TO TEST TARGET COVERAGE?
                     break;
 
                 case Fixture:

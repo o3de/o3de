@@ -31,7 +31,8 @@ namespace TestImpact
             run = TestRun(
                 JUnit::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
                 AZStd::chrono::milliseconds{ 0 });
-        } catch (const Exception& e)
+        }
+        catch (const Exception& e)
         {
             // No run result is a failure as all Python tests will be exporting their results to JUnit format
             return AZ::Failure(e.whatString());
@@ -41,6 +42,7 @@ namespace TestImpact
         {
             AZStd::unordered_set<AZStd::string> coveredModules;
             const auto testCaseFiles = ListFiles(jobData.GetCoverageArtifactPath(), "*.pycoverage");
+
             for (const auto& testCaseFile : testCaseFiles)
             {
                 const auto coverage = PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestRunnerException>(testCaseFile));
@@ -57,8 +59,10 @@ namespace TestImpact
                 moduleCoverages.emplace_back(coveredModule, AZStd::vector<SourceCoverage>{});
             }
 
+            // No coverage is not a failure as not all Python tests are capable of producing coverage
             return AZ::Success(JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
-        } catch (const Exception& e)
+        }
+        catch (const Exception& e)
         {
             return AZ::Failure(AZStd::string(e.what()));
         }

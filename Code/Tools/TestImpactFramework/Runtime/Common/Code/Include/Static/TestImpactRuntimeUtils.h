@@ -85,7 +85,7 @@ namespace TestImpact
     //! Updates the dynamic dependency map and serializes the entire map to disk.
     template<typename ProductionTarget, typename TestTarget, typename TestCoverage>
     [[nodiscard]] AZStd::optional<bool> UpdateAndSerializeDynamicDependencyMap(
-        DynamicDependencyMap<ProductionTarget, TestTarget>* dynamicDependencyMap,
+        DynamicDependencyMap<ProductionTarget, TestTarget>& dynamicDependencyMap,
         const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::IntegrityFailure integrationFailurePolicy,
@@ -102,8 +102,8 @@ namespace TestImpact
                 return AZStd::nullopt;
             }
 
-            dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-            const auto sparTia = dynamicDependencyMap->ExportSourceCoverage();
+            dynamicDependencyMap.ReplaceSourceCoverage(sourceCoverageTestsList);
+            const auto sparTia = dynamicDependencyMap.ExportSourceCoverage();
             const auto sparTiaData = SerializeSourceCoveringTestsList(sparTia);
             WriteFileContents<RuntimeException>(sparTiaData, sparTiaFile);
             return true;
@@ -126,7 +126,7 @@ namespace TestImpact
     //! test engine instrumented run jobs.
     template<typename ProductionTarget, typename TestTarget, typename TestCoverage>
     SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
-        DynamicDependencyMap<ProductionTarget, TestTarget>* dynamicDependencyMap,
+        DynamicDependencyMap<ProductionTarget, TestTarget>& dynamicDependencyMap,
         const AZStd::vector<TestEngineInstrumentedRun<TestTarget, TestCoverage>>& jobs,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         const RepoPath& repoRoot)
@@ -136,7 +136,7 @@ namespace TestImpact
         {
             // First we must remove any existing coverage for the test target so as to not end up with source remnants from previous
             // coverage that is no longer covered by this revision of the test target
-            dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
+            dynamicDependencyMap.RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
 
             // Next we will update the coverage of test targets that completed (with or without failures), unless the failed test coverage
             // policy dictates we should instead discard the coverage of test targets with failing tests
@@ -170,12 +170,48 @@ namespace TestImpact
                 }
 
                 // Add the sources covered by this test target to the coverage map
-                for (const auto& source : job.GetCoverge().value().GetSourcesCovered())
+                const auto& jobCoverage = job.GetCoverge().value();
+                const auto* testTarget = job.GetTestTarget();
+                if (jobCoverage.GetCoverageLevel() == CoverageLevel::Module)
                 {
-                    coverage[source.String()].insert(job.GetTestTarget()->GetName());
+                    // Module coverage considers all sources that are parented by the module build target as being covered by the test
+                    // target(s) that cover the module
+                    for (const auto& coveredModule : job.GetCoverge().value().GetModuleCoverages())
+                    {
+                        const auto moduleName = AZ::IO::Path(coveredModule.m_path.Stem()).String();
+                        const auto buildTargetName = dynamicDependencyMap.GetBuildTargets()->GetTargetNameFromOutputNameOrThrow(moduleName);
+                        const auto buildTarget = dynamicDependencyMap.GetBuildTargets()->GetBuildTargetOrThrow(buildTargetName);
+                        buildTarget.Visit(
+                            [&coverage, &repoRoot, testTarget](auto&& target)
+                            {
+                                const auto addSourcesToCoverage = [&coverage, &repoRoot, testTarget](const AZStd::vector<RepoPath>& sources)
+                                {
+                                    for (const auto& coveredSource : sources)
+                                    {
+                                        const auto absoluteSourcePath = repoRoot / coveredSource;
+                                        coverage[absoluteSourcePath.String()].insert(testTarget->GetName());
+                                    }
+                                };
+
+                                const auto& sources = target->GetSources();
+                                addSourcesToCoverage(sources.m_staticSources);
+                                for (const auto& autogenPair : sources.m_autogenSources)
+                                {
+                                    addSourcesToCoverage(autogenPair.m_outputs);
+                                }
+                            });
+                    }
+                }
+                else
+                {
+                    // Line coverage isn't supported yet so use the source coverage for both line and source coverage
+                    for (const auto& coveredSource : job.GetCoverge().value().GetSourcesCovered())
+                    {
+                        coverage[coveredSource.String()].insert(testTarget->GetName());
+                    }
                 }
             }
-        }
+        }   
 
         AZStd::vector<SourceCoveringTests> sourceCoveringTests;
         sourceCoveringTests.reserve(coverage.size());
