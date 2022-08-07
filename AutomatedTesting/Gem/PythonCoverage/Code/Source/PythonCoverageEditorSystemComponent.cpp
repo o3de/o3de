@@ -157,7 +157,7 @@ namespace PythonCoverage
                     for (const auto* moduleComponentDescriptor : moduleData.GetModule()->GetComponentDescriptors())
                     {
                         m_moduleComponents[moduleComponentDescriptor->GetUuid()] =
-                            AZ::IO::Path(AZ::IO::Path(moduleData.GetDebugName()).Stem()).String();
+                            m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
                     }
                 }
     
