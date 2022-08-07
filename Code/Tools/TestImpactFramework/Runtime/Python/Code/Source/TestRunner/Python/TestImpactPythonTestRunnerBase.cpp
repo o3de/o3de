@@ -12,6 +12,8 @@
 
 #include <TestRunner/Python/TestImpactPythonTestRunnerBase.h>
 
+#include <AzCore/std/containers/unordered_set.h>
+
 namespace TestImpact
 {
     PythonTestRunnerBase::PythonTestRunnerBase(const ArtifactDir& artifactDir)
@@ -20,31 +22,45 @@ namespace TestImpact
     {
     }
 
-    typename PythonTestRunnerBase::PayloadMap PythonTestRunnerBase::PayloadMapProducer(
-        [[maybe_unused]] const typename PythonTestRunnerBase::JobDataMap& jobDataMap)
+    PythonTestRunnerBase::JobPayloadOutcome PythonTestRunnerBase::PayloadExtractor(
+        [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
     {
-        PayloadMap runs;
+        AZStd::optional<TestRun> run;
+        try
+        {
+            run = TestRun(
+                JUnit::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
+                AZStd::chrono::milliseconds{ 0 });
+        } catch (const Exception& e)
+        {
+            // No run result is a failure as all Python tests will be exporting their results to JUnit format
+            return AZ::Failure(e.whatString());
+        }
 
-        // 1. Get all pycoverage files in artifact dir
-        // 2. For each coverage file:
-        //      Add the parent script as the key to a map
-        //      Create module coverages with this test case covering
-        //      Add module coverages to map key's vector of module coverages
-        // 3. Walk the map:
-        //      Create a PythonTestCoverage for each entry
-        //      Add the PythonTestCoverage to the payload map
+        try
+        {
+            AZStd::unordered_set<AZStd::string> coveredModules;
+            const auto testCaseFiles = ListFiles(jobData.GetCoverageArtifactPath(), "*.pycoverage");
+            for (const auto& testCaseFile : testCaseFiles)
+            {
+                const auto coverage = PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestRunnerException>(testCaseFile));
 
+                for (const auto& coveredModule : coverage.m_components)
+                {
+                    coveredModules.insert(coveredModule);
+                }
+            }
 
-        /*
-        VERSION 2
+            AZStd::vector<ModuleCoverage> moduleCoverages;
+            for (const auto& coveredModule : coveredModules)
+            {
+                moduleCoverages.emplace_back(coveredModule, AZStd::vector<SourceCoverage>{});
+            }
 
-            MAKE A DIR FOR EACH TEST CASE'S TARGET NAME
-            PYCOVERAGE GEM TAKES PARENT SCRIPT, LOOKS UP IN ALL.TESTS AND FINDS TARGET NAME
-            PUT COVERAGE FILES IN TARGET NAME DIR
-            HAVE TestRunWithCoverageJobData JOB DATA PUT TARGET NAME DIR AS ARTIFACT PATH
-            PAYLOADEXTRACTOR READS ARTIFACT DIR, READS ALL FILES AND GENERATES COVERAGE FROM THAT
-        */
-
-        return runs;
+            return AZ::Success(JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
+        } catch (const Exception& e)
+        {
+            return AZ::Failure(AZStd::string(e.what()));
+        }
     }
 } // namespace TestImpact

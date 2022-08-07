@@ -44,10 +44,4 @@ namespace TestImpact
 
         return { ProcessSchedulerResult::Graceful, jobs };
     }
-
-    PythonNullTestRunner::JobPayloadOutcome PythonNullTestRunner::PayloadExtractor(
-        [[maybe_unused]] const JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta)
-    {
-        return AZ::Failure(AZStd::string("Not implemented"));
-    }
 } // namespace TestImpact

@@ -7,7 +7,7 @@
  */
 
 #include <Target/Python/TestImpactPythonTestTarget.h>
-#include <TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h>
+#include <TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.h>
 
 namespace TestImpact
 {

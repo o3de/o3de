@@ -28,8 +28,5 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<TestJobRunner::JobCallback> clientCallback,
             AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback);
-
-    protected:
-        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
     };
 } // namespace TestImpact

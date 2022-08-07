@@ -19,16 +19,13 @@ set(FILES
     Source/Target/Python/TestImpactPythonTargetListCompiler.h
     Source/TestRunner/Python/TestImpactPythonTestRunnerBase.cpp
     Source/TestRunner/Python/TestImpactPythonTestRunnerBase.h
-    Source/TestRunner/Python/TestImpactPythonTestRunner.cpp
     Source/TestRunner/Python/TestImpactPythonTestRunner.h
     Source/TestRunner/Python/TestImpactPythonNullTestRunner.cpp
     Source/TestRunner/Python/TestImpactPythonNullTestRunner.h
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h
-    Source/TestRunner/Python/Run/TestImpactPythonTestCoverage.cpp
-    Source/TestRunner/Python/Run/TestImpactPythonTestCoverage.h
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
-    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h
+    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
+    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.h
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
     Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp

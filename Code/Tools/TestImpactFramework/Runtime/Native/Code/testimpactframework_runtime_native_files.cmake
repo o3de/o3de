@@ -22,13 +22,13 @@ set(FILES
     Source/TestRunner/Native/TestImpactNativeTestEnumerator.h
     Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.cpp
     Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h
+    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
+    Source/TestRunner/Native/Job/TestImpactNativeTestJobInfoUtils.h
     Source/TestRunner/Native/Job/TestImpactNativeTestRunJobData.h
     Source/TestEngine/Native/TestImpactNativeTestEngine.cpp
     Source/TestEngine/Native/TestImpactNativeTestEngine.h
     Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.cpp
     Source/TestEngine/Native/TestImpactNativeErrorCodeChecker.h
     Source/TestEngine/Native/TestImpactNativeTestTargetExtension.h
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.cpp
-    Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h
     Source/TestImpactNativeRuntime.cpp
 )

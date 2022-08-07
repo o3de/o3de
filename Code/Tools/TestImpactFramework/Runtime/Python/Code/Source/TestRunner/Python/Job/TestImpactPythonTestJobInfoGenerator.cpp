@@ -7,7 +7,7 @@
  */
 
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
-#include <TestEngine/Python/Job/TestImpactPythonTestJobInfoUtils.h>
+#include <TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
 
@@ -32,8 +32,8 @@ namespace TestImpact
         return parentfolder;
     }
 
-    PythonTestRunner::JobInfo PythonTestRunJobInfoGenerator::GenerateJobInfo(
-        const PythonTestTarget* testTarget, PythonTestRunner::JobInfo::Id jobId) const
+    PythonTestRunnerBase::JobInfo PythonTestRunJobInfoGenerator::GenerateJobInfo(
+        const PythonTestTarget* testTarget, PythonTestRunnerBase::JobInfo::Id jobId) const
     {
         const auto parentFolderName = RepoPath(CompileParentFolderName(testTarget));
         const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir.m_testRunArtifactDirectory);

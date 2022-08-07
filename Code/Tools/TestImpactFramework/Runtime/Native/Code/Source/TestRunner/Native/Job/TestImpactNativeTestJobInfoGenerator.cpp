@@ -8,9 +8,9 @@
 
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestTargetExtension.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoUtils.h>
 #include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
 #include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
+#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoUtils.h>
 
 namespace TestImpact
 {

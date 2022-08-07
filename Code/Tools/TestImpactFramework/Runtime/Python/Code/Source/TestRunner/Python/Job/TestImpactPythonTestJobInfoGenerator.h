@@ -18,7 +18,7 @@ namespace TestImpact
 {
     //! Generates job information for the different test job runner types.
     class PythonTestRunJobInfoGenerator
-        : public TestJobInfoGenerator<PythonTestRunner, PythonTestTarget>
+        : public TestJobInfoGenerator<PythonTestRunnerBase, PythonTestTarget>
     {
     public:
         //! Configures the test job info generator with the necessary path information for launching test targets.
@@ -31,7 +31,7 @@ namespace TestImpact
         //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
         //! @param jobId The id to assign for this job.
-        PythonTestRunner::JobInfo GenerateJobInfo(const PythonTestTarget* testTarget, PythonTestRunner::JobInfo::Id jobId) const;
+        PythonTestRunnerBase::JobInfo GenerateJobInfo(const PythonTestTarget* testTarget, PythonTestRunnerBase::JobInfo::Id jobId) const;
 
     private:
         RepoPath m_repoDir;

@@ -15,7 +15,7 @@
 #include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/TestImpactTestEngine.h>
-#include <TestRunner/Python/Run/TestImpactPythonTestCoverage.h>
+#include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -33,7 +33,7 @@ namespace TestImpact
     {
     public:
         using TestTargetType = PythonTestTarget;
-        using TestCaseCoverageType = PythonTestCoverage;
+        using TestCaseCoverageType = TestCoverage;
         //!
         PythonTestEngine(
             const RepoPath& repoDir,

@@ -19,8 +19,5 @@ namespace TestImpact
     {
     public:
         using PythonTestRunnerBase::PythonTestRunnerBase;
-
-    protected:
-        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
     };
 } // namespace TestImpact

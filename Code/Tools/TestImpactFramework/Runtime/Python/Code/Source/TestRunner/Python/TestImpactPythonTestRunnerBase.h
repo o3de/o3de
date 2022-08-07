@@ -13,21 +13,22 @@
 
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestRunner/Common/TestImpactTestRunnerException.h>
 #include <TestRunner/Common/TestImpactTestRunnerWithCoverage.h>
-#include <TestRunner/Python/Run/TestImpactPythonTestCoverage.h>
+#include <TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h>
+#include <TestRunner/Common/Run/TestImpactTestCoverage.h>
 
 namespace TestImpact
 {
     class PythonTestRunnerBase
-        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, PythonTestCoverage>
+        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCoverage>
     {
     public:
         PythonTestRunnerBase(const ArtifactDir& artifactDir);
 
     protected:
-        typename PayloadMap PayloadMapProducer(const typename JobDataMap& jobDataMap) override;
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
+
         ArtifactDir m_artifactDir;
     };
 } // namespace TestImpact
