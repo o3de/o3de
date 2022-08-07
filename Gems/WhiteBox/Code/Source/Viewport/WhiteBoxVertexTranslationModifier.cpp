@@ -208,6 +208,17 @@ namespace WhiteBox
                 Api::CalculatePlanarUVs(*whiteBox);
             });
 
+        m_translationManipulator->InstallInvalidateCallback(
+            [this, sharedState]()
+            {
+                WhiteBoxMesh* whiteBox = nullptr;
+                EditorWhiteBoxComponentRequestBus::EventResult(
+                    whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+                EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::DeserializeWhiteBox);
+                
+                this->AZ::TickBus::Handler::BusDisconnect();
+            });
+
         m_translationManipulator->InstallLeftMouseUpCallback(
             [this, sharedState,
              translationManipulator = AZStd::weak_ptr<MultiLinearManipulator>(m_translationManipulator)](

@@ -67,6 +67,11 @@ namespace AzToolsFramework
             return;
         }
 
+        if (m_activeManipulator && m_activeManipulator->GetManipulatorId() == manipulator->GetManipulatorId())
+        {
+            m_activeManipulator = nullptr;
+        }
+
         m_manipulatorIdToPtrMap.erase(manipulator->GetManipulatorId());
         manipulator->Invalidate();
     }
