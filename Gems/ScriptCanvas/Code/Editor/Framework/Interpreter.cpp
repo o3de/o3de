@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
             {
                 MutexLock lock(m_mutex);
 
-                if (m_runtimePropertiesDirty || !m_executor.IsPure() && m_executor.GetRuntimeOverrides().m_runtimeAsset.IsReady())
+                if ((m_runtimePropertiesDirty || !m_executor.IsPure()) && m_executor.GetRuntimeOverrides().m_runtimeAsset.IsReady())
                 {
                     InitializeExecution(m_executor.GetRuntimeOverrides().m_runtimeAsset);
                     m_runtimePropertiesDirty = false;
