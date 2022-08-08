@@ -350,8 +350,9 @@ namespace MCore
 
             const size_t left = AZStd::min(i, sampleNum);
             const size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
-            result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Vector3(0));
-            result /= (float)(left + right + 1);
+            const size_t minSample = AZStd::min(left, right); // Make sure to take the same amount of samples from both size to calculate average.
+            result += AZStd::accumulate(data.begin() + i - minSample, data.begin() + i + minSample + 1, AZ::Vector3(0));
+            result /= (float)(minSample + minSample + 1);
         }
 
         data = results;
