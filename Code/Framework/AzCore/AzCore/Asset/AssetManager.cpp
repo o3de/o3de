@@ -1685,6 +1685,7 @@ namespace AZ::Data
                 }
             }
             // Call reloaded before we can call ReloadAsset below to preserve order
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
             // Release the lock before we call reload
             if (requeue)
@@ -1694,6 +1695,7 @@ namespace AZ::Data
         }
         else
         {
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
         }
     }
@@ -1829,6 +1831,7 @@ namespace AZ::Data
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;
 
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReady, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReady, asset);
     }
 
@@ -1858,6 +1861,7 @@ namespace AZ::Data
             AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
             m_reloads.erase(asset.GetId());
         }
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloadError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReloadError, asset);
     }
 
@@ -1867,6 +1871,7 @@ namespace AZ::Data
     void AssetManager::NotifyAssetError(Asset<AssetData> asset)
     {
         asset.Get()->m_status = AssetData::AssetStatus::Error;
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetError, asset);
     }
 
