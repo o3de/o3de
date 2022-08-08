@@ -39,6 +39,7 @@ namespace TestImpact
         explicit Exception(const AZStd::string& msg);
         explicit Exception(const char* msg);
         const char* what() const noexcept override;
+        const AZStd::string& whatString() const noexcept;
 
     private:
         //! Error message detailing the reason for the exception.

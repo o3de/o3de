@@ -28,7 +28,7 @@ ly_add_target(
 
 ly_add_target(
     NAME TestImpact.Frontend.Console.Native EXECUTABLE
-    OUTPUT_NAME tiaf
+    OUTPUT_NAME tiaf_native
     NAMESPACE AZ
     FILES_CMAKE
         testimpactframework_frontend_console_native_files.cmake
@@ -39,3 +39,29 @@ ly_add_target(
         PRIVATE
             AZ::TestImpact.Frontend.Console.Native.Static
 )
+
+################################################################################
+# Tests
+################################################################################
+
+# Disbled for future PR
+#ly_add_target(
+#    NAME TestImpact.Frontend.Console.Native.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+#    NAMESPACE AZ
+#    FILES_CMAKE
+#        testimpactframework_frontend_console_native_static_tests_files.cmake
+#    INCLUDE_DIRECTORIES
+#        PRIVATE
+#            Include
+#            Source
+#            Tests
+#    BUILD_DEPENDENCIES
+#        PRIVATE
+#            AZ::AzTestShared
+#            AZ::AzTest
+#            AZ::TestImpact.Frontend.Console.Native.Static
+#)
+#
+#ly_add_googletest(
+#    NAME AZ::TestImpact.Frontend.Console.Native.Tests
+#)

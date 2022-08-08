@@ -91,6 +91,9 @@ namespace TestImpact
         //! Returns the test target standard output capture policy to use.
         Policy::TargetOutputCapture GetTargetOutputCapture() const;
 
+        //! Returns the individual test target timeout to use (if any).
+        const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
+
         //! Returns the global test sequence timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
 
@@ -102,6 +105,9 @@ namespace TestImpact
 
         //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
         bool HasExcludedTests() const;
+
+        //! Returns true if the safe mode option has been enabled, otherwise false.
+        bool HasSafeMode() const;
 
     private:
         RepoPath m_configurationFile;
@@ -116,9 +122,11 @@ namespace TestImpact
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
+        AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;
         bool m_draftFailingTests = false;
         AZStd::vector<ExcludedTarget> m_excludedTests;
+        bool m_safeMode = false;
     };
 } // namespace TestImpact

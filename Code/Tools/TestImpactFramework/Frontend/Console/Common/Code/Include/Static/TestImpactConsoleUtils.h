@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
 #include <TestImpactFramework/TestImpactConsoleMain.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>

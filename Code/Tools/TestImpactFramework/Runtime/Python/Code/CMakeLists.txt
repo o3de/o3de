@@ -28,3 +28,41 @@ ly_add_target(
             AZ::AzCore
             AZ::TestImpact.Runtime.Common.Headers
 )
+
+################################################################################
+# Tests
+################################################################################
+ 
+# Disabled for future PRs
+#ly_add_target( 
+#    NAME TestImpact.Runtime.Python.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+#    NAMESPACE AZ
+#    FILES_CMAKE
+#        testimpactframework_runtime_python_tests_files.cmake
+#    INCLUDE_DIRECTORIES
+#        PRIVATE
+#            Include
+#            Source
+#            Tests
+#    BUILD_DEPENDENCIES
+#        PRIVATE
+#            AZ::AzTestShared
+#            AZ::AzTest
+#            AZ::TestImpact.Runtime.Python.Static
+#            AZ::TestImpact.Runtime.Common.Static
+#    RUNTIME_DEPENDENCIES
+#        AZ::AzTestRunner
+#    COMPILE_DEFINITIONS
+#        PRIVATE
+#            LY_TEST_IMPACT_AZ_TESTRUNNER_BIN="$<TARGET_FILE:AzTestRunner>"
+#            LY_TEST_IMPACT_TEST_TARGET_ENUMERATION_DIR="${GTEST_XML_OUTPUT_DIR}/TestImpact/Temp/Exclusive/Enum"
+#            LY_TEST_IMPACT_TEST_TARGET_RESULTS_DIR="${GTEST_XML_OUTPUT_DIR}/TestImpact/Temp/Exclusive/Result"
+#            LY_TEST_IMPACT_TEST_TARGET_COVERAGE_DIR="${GTEST_XML_OUTPUT_DIR}/TestImpact/Temp/Exclusive/Coverage"
+#            LY_TEST_IMPACT_MODULES_DIR="${CMAKE_BINARY_DIR}"
+#            LY_TEST_IMPACT_COVERAGE_SOURCES_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+#            LY_TEST_IMPACT_REPO_DIR="${CMAKE_SOURCE_DIR}"
+#)
+#
+#ly_add_googletest(
+#    NAME AZ::TestImpact.Runtime.Python.Tests
+#)

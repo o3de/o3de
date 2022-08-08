@@ -33,37 +33,18 @@ namespace TestImpact
         //! @param clientCallback The optional client callback to be called whenever a run job changes state.
         //! @param stdContentCallback 
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
-            const AZStd::vector<TestJobRunner::JobInfo>& jobInfos,
+        virtual AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestJobRunner::Job>> RunTests(
+            const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<TestJobRunner::StdContentCallback> stdContentCallback)
+            AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
+            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
         {
-            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
+            const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
             {
-                typename TestJobRunner::PayloadMap runs;
-                for (const auto& [jobId, jobData] : jobDataMap)
-                {
-                    const auto& [meta, jobInfo] = jobData;
-                    if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
-                    {
-                        if (auto outcome = PayloadFactory<AdditionalInfo, Payload>(*jobInfo, meta);
-                            outcome.IsSuccess())
-                        {
-                            runs[jobId] = AZStd::move(outcome.TakeValue());
-                        }
-                        else
-                        {
-                            runs[jobId] = AZStd::nullopt;
-                            AZ_Printf("RunTests", outcome.GetError().c_str());
-                        }
-                    }
-                }
-
-                return runs;
+                return PayloadMapProducer(jobDataMap);
             };
 
             return this->m_jobRunner.Execute(
@@ -75,5 +56,32 @@ namespace TestImpact
                 runnerTimeout,
                 clientCallback, stdContentCallback);
         }
+
+    protected:
+        virtual typename TestJobRunner::PayloadMap PayloadMapProducer(const typename TestJobRunner::JobDataMap& jobDataMap)
+        {
+            typename TestJobRunner::PayloadMap runs;
+            for (const auto& [jobId, jobData] : jobDataMap)
+            {
+                const auto& [meta, jobInfo] = jobData;
+                if (meta.m_result == JobResult::ExecutedWithSuccess || meta.m_result == JobResult::ExecutedWithFailure)
+                {
+                    if (auto outcome = PayloadExtractor(*jobInfo, meta); outcome.IsSuccess())
+                    {
+                        runs[jobId] = AZStd::move(outcome.TakeValue());
+                    }
+                    else
+                    {
+                        runs[jobId] = AZStd::nullopt;
+                        AZ_Printf("RunTests", outcome.GetError().c_str());
+                    }
+                }
+            }
+
+            return runs;
+        }
+
+        virtual typename TestJobRunner::JobPayloadOutcome PayloadExtractor(
+            [[maybe_unused]] const typename TestJobRunner::JobInfo& jobData, [[maybe_unused]] const JobMeta& jobMeta) = 0;
     };
 } // namespace TestImpact

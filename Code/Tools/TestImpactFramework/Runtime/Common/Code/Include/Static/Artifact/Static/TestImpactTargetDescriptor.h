@@ -37,5 +37,6 @@ namespace TestImpact
         AZStd::string m_name; //!< Build target name.
         RepoPath m_path; //!< Source path to target location in source tree (relative to repository root).
         TargetSources m_sources;
+        AZStd::string m_outputName; //!< Output name (sans extension) of build target binary.
     };
 } // namespace TestImpact
