@@ -30,9 +30,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void StartDownload();
-        void SetGemToDownload(const QString& gemName, bool downloadNow = true);
-        void SetProjectToDownload(const QString& projectName, bool downloadNow = true);
-        void SetTemplateToDownload(const QString& templateName, bool downloadNow = true);
+        void SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow = true);
 
     signals:
         void UpdateProgress(int bytesDownloaded, int totalBytes);

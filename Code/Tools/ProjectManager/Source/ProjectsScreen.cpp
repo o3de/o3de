@@ -16,7 +16,6 @@
 #include <ScreensCtrl.h>
 #include <SettingsInterface.h>
 #include <AddRemoteProjectDialog.h>
-#include <DownloadController.h>
 
 #include <AzCore/std/algorithm.h>
 #include <AzQtComponents/Components/FlowLayout.h>
@@ -86,7 +85,7 @@ namespace O3DE::ProjectManager
 
         m_downloadController = downloadController;
         connect(m_downloadController, &DownloadController::Done, this, &ProjectsScreen::HandleDownloadResult);
-        connect(m_downloadController, &DownloadController::ProjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
+        connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
     }
 
     ProjectsScreen::~ProjectsScreen() = default;
@@ -354,9 +353,10 @@ namespace O3DE::ProjectManager
                         currentButton->SetState(ProjectButtonState::NotDownloaded);
                         currentButton->SetProjectButtonAction(
                             tr("Download Project"),
-                            [this, project]
+                            [this, currentButton, project]
                             {
-                                m_downloadController->AddProjectDownload(project.m_projectName);
+                                m_downloadController->AddObjectDownload(project.m_projectName, DownloadController::DownloadObjectType::Project);
+                                currentButton->SetState(ProjectButtonState::Downloading);
                             });
                     }
                 }
@@ -673,7 +673,7 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::StartProjectDownload(const QString& projectName)
     {
-        m_downloadController->AddProjectDownload(projectName);
+        m_downloadController->AddObjectDownload(projectName, DownloadController::DownloadObjectType::Project);
 
         const auto valueList = m_projectButtons.values();
         auto foundButton = AZStd::find_if(
@@ -695,8 +695,13 @@ namespace O3DE::ProjectManager
         ResetProjectsContent();
     }
 
-    void ProjectsScreen::HandleDownloadProgress(const QString& projectName, int bytesDownloaded, int totalBytes)
+    void ProjectsScreen::HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
     {
+        if (objectType != DownloadController::DownloadObjectType::Project)
+        {
+            return;
+        }
+
         //Find button for project name
         const auto valueList = m_projectButtons.values();
         auto foundButton = AZStd::find_if(

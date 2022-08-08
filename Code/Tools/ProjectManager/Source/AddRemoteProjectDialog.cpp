@@ -123,6 +123,7 @@ namespace O3DE::ProjectManager
         m_requirementsContentLabel->setWordWrap(true);
         m_requirementsContentLabel->setAlignment(Qt::AlignLeft);
         m_requirementsContentLabel->setFixedWidth(350);
+        m_requirementsContentLabel->setText(tr("Test Requirements"));
         extraInfoGridLayout->addWidget(m_requirementsContentLabel, 1, 0);
 
         m_licensesContentLabel = new TextOverflowLabel(tr("Licenses"));
@@ -181,8 +182,8 @@ namespace O3DE::ProjectManager
     void AddRemoteProjectDialog::ValidateURI()
     {
         // validate URI, if it's a valid repository, get the project info and set the dialog as ready
-        bool validRepository = false;//!m_repoPath->lineEdit()->text().isEmpty();
-        // get project info
+        bool validRepository = false;
+
         auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
         if (repoProjectsResult.IsSuccess())
         {
@@ -237,6 +238,8 @@ namespace O3DE::ProjectManager
 
         m_downloadProjectLabel->setText(tr("Download Project ") + projectInfo.m_displayName);
         m_installPath->lineEdit()->setText(QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectInfo.m_projectName));
+        m_requirementsContentLabel->setText(projectInfo.m_requirements);
+        m_licensesContentLabel->setText(projectInfo.m_license);
     }
 
     void AddRemoteProjectDialog::SetDialogReady(bool isReady)

@@ -49,6 +49,7 @@ namespace O3DE::ProjectManager
         QPushButton* GetShowLogsButton();
         QLabel* GetDarkenOverlay();
         QProgressBar* GetProgressBar();
+        QLabel* GetProgressPercentage();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -71,6 +72,7 @@ namespace O3DE::ProjectManager
 
         QLabel* m_buildingAnimation = nullptr;
         QProgressBar* m_downloadProgessBar = nullptr;
+        QLabel* m_downloadProgressMessageLabel = nullptr;
 
         QPushButton* m_openEditorButton = nullptr;
         QPushButton* m_actionButton = nullptr;

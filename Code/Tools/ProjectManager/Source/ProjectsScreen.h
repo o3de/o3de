@@ -11,6 +11,8 @@
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
 
+#include <DownloadController.h>
+
 #include <QQueue>
 #endif
 
@@ -61,7 +63,7 @@ namespace O3DE::ProjectManager
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
         void StartProjectDownload(const QString& projectName);
-        void HandleDownloadProgress(const QString& projectName, int bytesDownloaded, int totalBytes);
+        void HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
         void HandleDownloadResult(const QString& projectName, bool succeeded);
 
         void ProjectBuildDone(bool success = true);

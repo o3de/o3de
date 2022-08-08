@@ -40,11 +40,8 @@ namespace O3DE::ProjectManager
         explicit DownloadController(QWidget* parent = nullptr);
         ~DownloadController();
 
-        void AddGemDownload(const QString& gemName);
-        void CancelGemDownload(const QString& gemName);
-
-        void AddProjectDownload(const QString& projectName);
-        void CancelProjectDownload(const QString& projectName);
+        void AddObjectDownload(const QString& objectName, DownloadObjectType objectType);
+        void CancelObjectDownload(const QString& objectName, DownloadObjectType objectType);
 
         bool IsDownloadQueueEmpty()
         {
@@ -73,16 +70,11 @@ namespace O3DE::ProjectManager
         void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
-        void StartGemDownload(const QString& gemName, bool downloadNow);
-        void StartProjectDownload(const QString& projectName, bool downloadNow);
-        void StartTemplateDownload(const QString& templateName, bool downloadNow);
+        void StartObjectDownload(const QString& gemName, DownloadObjectType objectType, bool downloadNow);
         void Done(const QString& gemName, bool success = true);
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
-        void ProjectDownloadAdded(const QString& projectName);
-        void ProjectDownloadRemoved(const QString& projectName);
-        void ProjectDownloadProgress(const QString& projectName, int bytesDownloaded, int totalBytes);
+        void ObjectDownloadAdded(const QString& ObjectName, DownloadObjectType objectType);
+        void ObjectDownloadRemoved(const QString& ObjectName, DownloadObjectType objectType);
+        void ObjectDownloadProgress(const QString& objectName, DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     private:
         DownloadWorker* m_worker;

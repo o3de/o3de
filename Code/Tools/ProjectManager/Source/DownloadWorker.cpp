@@ -44,30 +44,10 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void DownloadWorker::SetGemToDownload(const QString& gemName, bool downloadNow)
+    void DownloadWorker::SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow)
     {
-        m_objectName = gemName;
-        m_downloadType = DownloadController::DownloadObjectType::Gem;
-        if (downloadNow)
-        {
-            StartDownload();
-        }
-    }
-
-    void DownloadWorker::SetProjectToDownload(const QString& projectName, bool downloadNow)
-    {
-        m_objectName = projectName;
-        m_downloadType = DownloadController::DownloadObjectType::Project;
-        if (downloadNow)
-        {
-            StartDownload();
-        }
-    }
-
-    void DownloadWorker::SetTemplateToDownload(const QString& templateName, bool downloadNow)
-    {
-        m_objectName = templateName;
-        m_downloadType = DownloadController::DownloadObjectType::Template;
+        m_objectName = objectName;
+        m_downloadType = objectType;
         if (downloadNow)
         {
             StartDownload();

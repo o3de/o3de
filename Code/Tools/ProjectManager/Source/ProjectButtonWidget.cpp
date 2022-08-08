@@ -91,8 +91,7 @@ namespace O3DE::ProjectManager
 
         m_cloudIcon = new QLabel(this);
         m_cloudIcon->setObjectName("projectCloudIconOverlay");
-        m_cloudIcon->setPixmap(QIcon(":/Cloud.svg").pixmap(30, 70));
-        m_cloudIcon->setAlignment(Qt::AlignCenter);
+        m_cloudIcon->setPixmap(QIcon(":/Download.svg").pixmap(32, 32));
         m_cloudIcon->setVisible(false);
         horizontalWarningMessageLayout->addWidget(m_cloudIcon);
 
@@ -132,10 +131,34 @@ namespace O3DE::ProjectManager
         m_buildingAnimation->movie()->start();
         verticalCenterLayout->addWidget(m_buildingAnimation);
 
+        // Download Progress
+        QWidget* m_downloadProgress = new QWidget(this);
         m_downloadProgessBar = new QProgressBar(this);
-        m_downloadProgessBar->setObjectName("DownloadProgressBar");
-        m_downloadProgessBar->setValue(0);
-        verticalCenterLayout->addWidget(m_buildingAnimation);
+        m_downloadProgessBar->setVisible(false);
+
+        QVBoxLayout* downloadProgressLayout = new QVBoxLayout();
+        QHBoxLayout* downloadProgressTextLayout = new QHBoxLayout();
+
+        QLabel* downloadMessageLabel = new QLabel(tr("Downloading Project"), this);
+        downloadMessageLabel->setAlignment(Qt::AlignCenter);
+        downloadMessageLabel->setVisible(false);
+        verticalCenterLayout->addWidget(downloadMessageLabel);
+
+        downloadProgressTextLayout->addSpacing(25);
+        m_downloadProgressMessageLabel = new QLabel(tr("0%"), this);
+        m_downloadProgressMessageLabel->setAlignment(Qt::AlignRight);
+        m_downloadProgressMessageLabel->setVisible(false);
+        downloadProgressTextLayout->addWidget(m_downloadProgressMessageLabel);
+        downloadProgressTextLayout->addSpacing(25);
+        verticalCenterLayout->addLayout(downloadProgressTextLayout);
+
+        QHBoxLayout* progressbarLayout = new QHBoxLayout();
+        downloadProgressLayout->addLayout(progressbarLayout);
+        m_downloadProgress->setLayout(downloadProgressLayout);
+        progressbarLayout->addSpacing(20);
+        progressbarLayout->addWidget(m_downloadProgessBar);
+        progressbarLayout->addSpacing(20);
+        verticalCenterLayout->addWidget(m_downloadProgress);
 
         m_projectOverlayLayout->addWidget(middleWidget);
 
@@ -241,6 +264,11 @@ namespace O3DE::ProjectManager
     QProgressBar* LabelButton::GetProgressBar()
     {
         return m_downloadProgessBar;
+    }
+
+    QLabel* LabelButton::GetProgressPercentage()
+    {
+        return m_downloadProgressMessageLabel;
     }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
@@ -468,9 +496,10 @@ namespace O3DE::ProjectManager
         projectActionButton->setText(tr("Cancel Download"));
         projectActionButton->setMenu(nullptr);
 
+        m_projectImageLabel->GetDarkenOverlay()->setVisible(true);
+
         // Show progress bar
         m_projectImageLabel->GetProgressBar()->setVisible(true);
-        m_projectImageLabel->GetProgressBar()->setValue(30);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -511,6 +540,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetProgressBarPercentage(const float percent)
     {
         m_projectImageLabel->GetProgressBar()->setValue(percent*100);
+        m_projectImageLabel->GetProgressPercentage()->setText(QString("%1%").arg(static_cast<int>(percent*100)));
     }
 
     void ProjectButton::SetContextualText(const QString& text)
