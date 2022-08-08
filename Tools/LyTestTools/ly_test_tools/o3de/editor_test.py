@@ -51,6 +51,15 @@ __test__ = False  # This file contains ready-to-use test functions which are not
 
 logger = logging.getLogger(__name__)
 
+def compile_test_case_name(request, test_spec):
+    test_case_prefix = "::".join(str.split(str(request.node.nodeid), "::")[:2])
+    regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))   
+    if regex_result:         
+        class_name = str.split(regex_result.group(1), ".")[-1:] 
+        compiled_test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+    else:
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 def _split_batched_editor_log_file(workspace, starting_path, destination_file, log_file_to_split):
     """
@@ -885,10 +894,7 @@ class EditorTestSuite:
         test_result = None
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))            
-        class_name = str.split(regex_result.group(1), ".")[-1:] 
-        test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+        test_case_name = compile_test_case_name(request, test_spec)
         cmdline = [
             "--runpythontest", test_filename,
             f"-pythontestcase={test_case_name}",
@@ -979,15 +985,13 @@ class EditorTestSuite:
         test_script_list = ""
         test_case_list = ""
 
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
         for test_spec in test_spec_list:
             # Test script
             test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
 
             # Test case
-            regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))            
-            class_name = str.split(regex_result.group(1), ".")[-1:]
-            test_case_list += f"{'::'.join([test_case_prefix, class_name[0]])};"
+            test_case_name = compile_test_case_name(request, test_spec)
+            test_case_list += f"{test_case_name};"
 
         # Remove the trailing semicolon from the last entry
         test_script_list = test_script_list[:-1]
@@ -1105,8 +1109,10 @@ class EditorTestSuite:
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
         finally:
-            if temp_batched_file:
-                os.unlink(temp_batched_file.name)
+            if temp_batched_script_file:
+                os.unlink(temp_batched_script_file.name)
+            if temp_batched_case_file:
+                os.unlink(temp_batched_case_file.name)
         return results
     
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,

@@ -9,7 +9,9 @@
 #include <Tests/ActionManager/ActionManagerFixture.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 namespace UnitTest
@@ -26,6 +28,10 @@ namespace UnitTest
         ASSERT_TRUE(m_actionManagerInterface != nullptr);
         m_actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get();
         ASSERT_TRUE(m_actionManagerInternalInterface != nullptr);
+
+        m_hotKeyManager = AZStd::make_unique<AzToolsFramework::HotKeyManager>();
+        m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        ASSERT_TRUE(m_hotKeyManagerInterface != nullptr);
 
         m_menuManager = AZStd::make_unique<AzToolsFramework::MenuManager>(m_defaultParentWidget);
         m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();

@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 
 #include <QWidget>
 

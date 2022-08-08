@@ -653,86 +653,375 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    AZStd::vector<AZ::Vector3> directionVectors;
-    directionVectors.reserve(inPositions.size() * 4);
-    const AZ::Vector2 range(m_currentSettings.m_heightQueryResolution / 2.0f, m_currentSettings.m_heightQueryResolution / 2.0f);
-    size_t indexStepSize = 4;
-    for (auto& position : inPositions)
+    // We use different algorithms for calculating the normals depending on the input sampler type,
+    // with no real shared logic, so they've been split out into separate methods.
+    switch (sampler)
     {
-        directionVectors.emplace_back(position.GetX(), position.GetY() - range.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX() - range.GetX(), position.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX() + range.GetX(), position.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX(), position.GetY() + range.GetY(), 0.0f);
-    }
-
-    AZStd::vector<float> heights(directionVectors.size());
-    AZStd::vector<bool> exists(directionVectors.size());
-    GetHeightsSynchronous(directionVectors, sampler, heights, exists);
-
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
-    {
-        directionVectors[iteratorIndex].SetZ(heights[iteratorIndex]);
-        directionVectors[iteratorIndex + 1].SetZ(heights[iteratorIndex + 1]);
-        directionVectors[iteratorIndex + 2].SetZ(heights[iteratorIndex + 2]);
-        directionVectors[iteratorIndex + 3].SetZ(heights[iteratorIndex + 3]);
-
-        normals[i] = (directionVectors[iteratorIndex + 2] - directionVectors[iteratorIndex + 1]).
-                         Cross(directionVectors[iteratorIndex + 3] - directionVectors[iteratorIndex]).GetNormalized();
-
-        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
-        // any of the four points exist, then the terrain exists.
-        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists[iteratorIndex + 2] || exists[iteratorIndex + 3];
+    case Sampler::EXACT:
+        // This will return the normal of the requested point using the underlying height data at a much higher frequency than the
+        // query resolution, which means the normal can have significant fluctuations across each terrain grid square.
+        GetNormalsSynchronousExact(inPositions, normals, terrainExists);
+        break;
+    case Sampler::CLAMP:
+        // This will treat each terrain grid square as two triangles, and return the normal for the triangle that contains the requested
+        // point. There is no interpolation, so each terrain grid square will exactly have two possible normals that can get returned
+        // for any queried point within the square.
+        GetNormalsSynchronousClamp(inPositions, normals, terrainExists);
+        break;
+    case Sampler::BILINEAR:
+        // This will smoothly interpolate the normals from grid point to grid point across the entire terrain grid.
+        GetNormalsSynchronousBilinear(inPositions, normals, terrainExists);
+        break;
+    default:
+        AZ_Assert(false, "Unknown sampler type");
+        break;
     }
 }
 
-AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
+void TerrainSystem::GetNormalsSynchronousExact(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals,
+    AZStd::span<bool> terrainExists) const
 {
-    AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
+    // When querying for normals with an EXACT sampler, we get the normal by querying 4 points around the requested position
+    // in an extremely small + pattern, then get the cross product of the two lines of the plus sign.
 
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    // Because we're querying for exact heights from the underlying data, independent of the query resolution, we want to make
+    // the + as small as possible so that we can correctly capture high-frequency changes in the data.
+    // We've arbitrarily chosen the smaller of 1/32 of a meter or 1/32 of our query resolution as the size of each leg of the + sign.
+    // It's possible that we may want to expose this as a tuning variable at some point.
+    const float exactRange = AZStd::min(1.0f / 32.0f, m_currentSettings.m_heightQueryResolution / 32.0f);
 
-    const float range = m_currentSettings.m_heightQueryResolution / 2.0f;
-    AZStd::array<AZ::Vector3, 4> directionVectors = { AZ::Vector3(x, y - range, 0.0f),
-                                                      AZ::Vector3(x - range, y, 0.0f),
-                                                      AZ::Vector3(x + range, y, 0.0f),
-                                                      AZ::Vector3(x, y + range, 0.0f) };
+    // The number of points that we're querying for each normal.
+    const size_t queryCount = 4;
 
-    AZStd::array<float, 4> heights = { 0.0f, 0.0f, 0.0f, 0.0f };
-    AZStd::array<bool, 4> exists = { false, false, false, false };
-    GetHeightsSynchronous(directionVectors, sampler, heights, exists);
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
 
-    directionVectors[0].SetZ(heights[0]);
-    directionVectors[1].SetZ(heights[1]);
-    directionVectors[2].SetZ(heights[2]);
-    directionVectors[3].SetZ(heights[3]);
+    for (const auto& position : inPositions)
+    {
+        // For each input position, query the four outer points of the + sign.
+        queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() - exactRange, 0.0f)); // down
+        queryPositions.emplace_back(AZ::Vector3(position.GetX() - exactRange, position.GetY(), 0.0f)); // left
+        queryPositions.emplace_back(AZ::Vector3(position.GetX() + exactRange, position.GetY(), 0.0f)); // right
+        queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() + exactRange, 0.0f)); // up
+    }
 
-    outNormal = (directionVectors[2] - directionVectors[1]).Cross(directionVectors[3] - directionVectors[0]).GetNormalized();
+    // These constants are the relative index for each of the four positions that we pushed for each input above.
+    constexpr size_t down = 0;
+    constexpr size_t left = 1;
+    constexpr size_t right = 2;
+    constexpr size_t up = 3;
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // We want to query the underlying heights with an EXACT sampler as well, so that we get to the input data that might be
+    // at a much higher frequency than the height query resolution.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        terrainExists[inPosIndex] = true;
+
+        for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
+        {
+            // Combine the output heights with our query positions.
+            queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+
+            // We're querying at a much higher frequency than our query resolution, so we'll simply say that the terrain
+            // exists only if all 4 points of the + sign exist.
+            terrainExists[inPosIndex] = terrainExists[inPosIndex] && exists[queryPositionIndex + querySubindex];
+        }
+
+        if (terrainExists[inPosIndex])
+        {
+            // We have 4 vertices that make a + sign, cross the two lines to get the normal at the center.
+            // (right - left) x (up - down)
+            normals[inPosIndex] = (queryPositions[queryPositionIndex + right] - queryPositions[queryPositionIndex + left])
+                                .Cross(queryPositions[queryPositionIndex + up] - queryPositions[queryPositionIndex + down])
+                                .GetNormalized();
+        }
+        else
+        {
+            // If at least one of the 4 points of the + sign didn't exist, just give it a Z-up normal.
+            normals[inPosIndex] = AZ::Vector3::CreateAxisZ();
+        }
+    }
+}
+
+void TerrainSystem::GetNormalsSynchronousClamp(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals,
+    AZStd::span<bool> terrainExists) const
+{
+    // When querying for normals with a CLAMP sampler, we divide each terrain grid square into two triangles, and return the normal
+    // for the triangle that the requested position falls on.
+    // Right now, the terrain system will always split each terrain grid square like this:  |\|
+    // Eventually, the terrain system might get more complicated per-square logic, at which point the logic below would need
+    // to change to account for the per-square triangle split direction.
+
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
+
+    // The number of points we're querying for each normal
+    const size_t queryCount = 3;
+
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
+
+    for (const auto& position : inPositions)
+    {
+        // For each position, determine where in the square the point falls and get the bottom left corner of the square.
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 bottomLeft;
+        ClampPosition(position.GetX(), position.GetY(), queryResolution, bottomLeft, normalizedDelta);
+
+        // Calculate the four corners of our grid square:
+        //  2 *-* 3
+        //    |\|
+        //  0 *-* 1
+
+        AZStd::array<AZ::Vector3, 4> corners =
+        {
+            AZ::Vector3(bottomLeft.GetX()                  , bottomLeft.GetY(), 0.0f),
+            AZ::Vector3(bottomLeft.GetX() + queryResolution, bottomLeft.GetY(), 0.0f),
+            AZ::Vector3(bottomLeft.GetX()                  , bottomLeft.GetY() + queryResolution, 0.0f),
+            AZ::Vector3(bottomLeft.GetX() + queryResolution, bottomLeft.GetY() + queryResolution, 0.0f)
+        };
+
+        // Our grid squares are squares so the diagonal is a 45 degree angle. We can determine which triangle the query point
+        // falls in just by checking if (x + y) < 1. This arbitrarily assigns points on the diagonal to the upper triangle.
+        // We could use "<=" if we wanted them to go to the upper triangle.
+        bool bottomTriangle = (normalizedDelta.GetX() + normalizedDelta.GetY()) < 1.0f;
+
+        // We'll query for the 3 vertices of whichever triangle of the square the query point falls in.
+        // We'll order them in counter-clockwise order and follow a mirrored pattern between the two, so that we can calculate the
+        // normal from the results for either triangle by using (second - first) x (third - first).
+        if (bottomTriangle)
+        {
+            queryPositions.emplace_back(corners[0]);
+            queryPositions.emplace_back(corners[1]);
+            queryPositions.emplace_back(corners[2]);
+        }
+        else
+        {
+            queryPositions.emplace_back(corners[3]);
+            queryPositions.emplace_back(corners[2]);
+            queryPositions.emplace_back(corners[1]);
+        }
+    }
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // Since our query points are grid-aligned, we can use EXACT queries.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        // We'll set "exists" to true *only* if all three positions for calculating the normal exists.
+        terrainExists[inPosIndex] = exists[queryPositionIndex] && exists[queryPositionIndex + 1] && exists[queryPositionIndex + 2];
+
+        // Only calculate the normal if all the queried points exist.
+        if (terrainExists[inPosIndex])
+        {
+            // Combine the output heights with our query positions.
+            for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
+            {
+                queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+            }
+
+            // We have 3 vertices for a triangle, get the normal of the triangle.
+            normals[inPosIndex] = (queryPositions[queryPositionIndex + 1] - queryPositions[queryPositionIndex])
+                        .Cross(queryPositions[queryPositionIndex + 2] - queryPositions[queryPositionIndex])
+                        .GetNormalized();
+        }
+        else
+        {
+            normals[inPosIndex] = AZ::Vector3::CreateAxisZ();
+        }
+    }
+}
+
+void TerrainSystem::GetNormalsSynchronousBilinear(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
+{
+    // When querying for normals with a BILINEAR sampler, we calculate the normals at each corner of the terrain grid square that
+    // the query point fall in then interpolate between those normals to get the final result.
+
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
+    const float twiceQueryResolution = m_currentSettings.m_heightQueryResolution * 2.0f;
+
+    // We'll need a total of 12 unique positions queried to calculate the 4 normals that we'll be interpolating between.
+    // (We need 16 non-unique positions, but we can reuse the results for the middle 4 positions)
+    const size_t queryCount = 12;
+
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
+
+    for (const auto& position : inPositions)
+    {
+        // We'll query our 12 points in the following order, where the x represents the location of the query point.
+        //            10     11
+        //              *---*
+        //         6   7|   |8   9
+        //          *---*---*---*
+        //          |   | x |   |
+        //          *---*---*---*
+        //         2   3|   |4   5
+        //              *---*
+        //             0     1
+
+        // For each position, determine where in the square the point falls and get the bottom left corner of the center square
+        // (corner 3).
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 pos3;
+        ClampPosition(position.GetX(), position.GetY(), queryResolution, pos3, normalizedDelta);
+
+        // Corners 0-1
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() - queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() - queryResolution, 0.0f);
+        // Corners 2-5
+        queryPositions.emplace_back(pos3.GetX() - queryResolution       , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + twiceQueryResolution  , pos3.GetY(), 0.0f);
+        // Corners 6-9
+        queryPositions.emplace_back(pos3.GetX() - queryResolution       , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + twiceQueryResolution  , pos3.GetY() + queryResolution, 0.0f);
+        // Corners 10-11
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() + twiceQueryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() + twiceQueryResolution, 0.0f);
+    }
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // Since our query points are grid-aligned, we can use EXACT queries.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        // Combine the output heights with our query positions.
+        for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
+        {
+            queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+        }
+
+        // We calculate the normal by taking the cross product of the tips of a + shape around the point that we want the normal for.
+        auto CalculateNormal = [&exists, &queryPositions, &queryPositionIndex]
+            (uint8_t left, uint8_t center, uint8_t right, uint8_t up, uint8_t down) -> AZ::Vector3
+        {
+            const size_t centerQueryIdx = queryPositionIndex + center;
+            const size_t upQueryIdx = queryPositionIndex + up;
+            const size_t downQueryIdx = queryPositionIndex + down;
+            const size_t leftQueryIdx = queryPositionIndex + left;
+            const size_t rightQueryIdx = queryPositionIndex + right;
+
+            // Only calculate the normal if the center point and all the points around it exist. Otherwise, just return a Z-up vector.
+            if (exists[upQueryIdx] && exists[downQueryIdx] && exists[leftQueryIdx] && exists[centerQueryIdx] && exists[rightQueryIdx])
+            {
+                // Each normal is (right - left) x (up - down)
+                return (queryPositions[rightQueryIdx] - queryPositions[leftQueryIdx])
+                        .Cross(queryPositions[upQueryIdx] - queryPositions[downQueryIdx])
+                        .GetNormalized();
+            }
+            else
+            {
+                return AZ::Vector3::CreateAxisZ();
+            }
+        };
+
+        // Calculate the normals of the four corners of the square that our query point falls in by taking the cross product
+        // of + shapes:
+        //            10     11                normal0      normal1      normal2      normal3
+        //              *---*                     7            8           10           11
+        //         6   7|   |8   9                *            *            *            *    
+        //          *---*---*---*             2   |3  4    3   |4  5    6   |7  8    7   |8  9
+        //          |   | x |   |             *---*---*    *---*---*    *---*---*    *---*---*
+        //          *---*---*---*                 |            |            |            |    
+        //         2   3|   |4   5                *            *            *            *    
+        //              *---*                     0            1            3            4
+        //             0     1
+        const AZ::Vector3 normal0 = CalculateNormal(2, 3, 4, 7, 0);
+        const AZ::Vector3 normal1 = CalculateNormal(3, 4, 5, 8, 1);
+        const AZ::Vector3 normal2 = CalculateNormal(6, 7, 8, 10, 3);
+        const AZ::Vector3 normal3 = CalculateNormal(7, 8, 9, 11, 4);
+
+        // For each position, determine where in the square the point falls and get the bottom left corner of the center square
+        // (corner 3).
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 pos3;
+        ClampPosition(inPositions[inPosIndex].GetX(), inPositions[inPosIndex].GetY(), queryResolution, pos3, normalizedDelta);
+
+        // Then finally, interpolate between the 4 normals.
+        const float lerpX = normalizedDelta.GetX();
+        const float lerpY = normalizedDelta.GetY();
+        const float invLerpX = 1.0f - lerpX;
+        const float invLerpY = 1.0f - lerpY;
+
+        AZ::Vector3 combinedNormal =
+            (normal0 * (invLerpX * invLerpY)) +
+            (normal1 * (lerpX * invLerpY)) +
+            (normal2 * (invLerpX * lerpY)) +
+            (normal3 * (lerpX * lerpY));
+
+        normals[inPosIndex] = combinedNormal.GetNormalized();
+
+        // Use the "terrain exists" result from the nearest corner as the result we'll return.
+        if ((lerpX < 0.5f) && (lerpY < 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 3];
+        }
+        else if ((lerpX >= 0.5f) && (lerpY < 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 4];
+        }
+        else if ((lerpX < 0.5f) && (lerpY >= 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 7];
+        }
+        else
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 8];
+        }
+    }
+}
+
+AZ::Vector3 TerrainSystem::GetNormalSynchronous(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const
+{
+    AZ::Vector3 normal;
+    bool exists;
+
+    GetNormalsSynchronous(
+        AZStd::span<const AZ::Vector3>(&position, 1), sampler, AZStd::span<AZ::Vector3>(&normal, 1), AZStd::span<bool>(&exists, 1));
 
     if (terrainExistsPtr)
     {
-        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
-        // any of the four points exist, then the terrain exists.
-        *terrainExistsPtr = exists[0] || exists[1] || exists[2] || exists[3];
+        *terrainExistsPtr = exists;
     }
-
-    return outNormal;
+    return normal;
 }
 
 AZ::Vector3 TerrainSystem::GetNormal(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
+    return GetNormalSynchronous(position, sampler, terrainExistsPtr);
 }
 
 AZ::Vector3 TerrainSystem::GetNormalFromVector2(const AZ::Vector2& position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
+    return GetNormalSynchronous(AZ::Vector3(position), sampler, terrainExistsPtr);
 }
 
 AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(x, y, sampler, terrainExistsPtr);
+    return GetNormalSynchronous(AZ::Vector3(x, y, 0.0f), sampler, terrainExistsPtr);
 }
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
@@ -776,7 +1065,7 @@ void TerrainSystem::GetSurfacePoint(
     // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
     // so we want to prefer keeping the results from the height query if we end up querying both.
     // (Ideally at some point they will produce identical results)
-    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr);
+    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition, sampler, terrainExistsPtr);
     outSurfacePoint.m_position = inPosition;
     outSurfacePoint.m_position.SetZ(GetHeightSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr));
     GetSurfaceWeights(inPosition, outSurfacePoint.m_surfaceTags, sampler, nullptr);
@@ -1138,7 +1427,10 @@ void TerrainSystem::QueryList(
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
-        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        {
+            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
+            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        }
     }
     if (requestedData & TerrainDataMask::Heights)
     {
@@ -1335,7 +1627,10 @@ void TerrainSystem::QueryRegionInternal(
     if (requestedData & TerrainDataMask::Normals)
     {
         normals.resize(inPositions.size());
-        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        {
+            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
+            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        }
     }
     if (requestedData & TerrainDataMask::Heights)
     {
