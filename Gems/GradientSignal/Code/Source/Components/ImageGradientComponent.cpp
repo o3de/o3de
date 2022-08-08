@@ -206,6 +206,7 @@ namespace GradientSignal
 
                     ->GroupElementToggle("Advanced", &ImageGradientConfig::m_advancedMode)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse, "Channel To Use", "The channel to use from the image.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsAdvancedModeReadOnly)
@@ -294,7 +295,9 @@ namespace GradientSignal
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "vegetation")
                 ->Event("GetImageAssetPath", &ImageGradientRequestBus::Events::GetImageAssetPath)
+                ->Event("GetImageAssetSourcePath", &ImageGradientRequestBus::Events::GetImageAssetSourcePath)
                 ->Event("SetImageAssetPath", &ImageGradientRequestBus::Events::SetImageAssetPath)
+                ->Event("SetImageAssetSourcePath", &ImageGradientRequestBus::Events::SetImageAssetSourcePath)
                 ->VirtualProperty("ImageAssetPath", "GetImageAssetPath", "SetImageAssetPath")
                 ->Event("GetTilingX", &ImageGradientRequestBus::Events::GetTilingX)
                 ->Event("SetTilingX", &ImageGradientRequestBus::Events::SetTilingX)
@@ -808,6 +811,17 @@ namespace GradientSignal
         return assetPathString;
     }
 
+    AZStd::string ImageGradientComponent::GetImageAssetSourcePath() const
+    {
+        // The m_imageAsset path is to the product, so it will have an additional extension:
+        //      e.g. image.png.streamingimage
+        // So to provide just the source asset path we need to remove the product extension
+        AZStd::string imageAssetPath = GetImageAssetPath();
+        AZ::IO::Path imageSourceAssetPath = AZ::IO::Path(imageAssetPath).ReplaceExtension("");
+
+        return imageSourceAssetPath.c_str();
+    }
+
     void ImageGradientComponent::SetImageAssetPath(const AZStd::string& assetPath)
     {
         AZ::Data::AssetId assetId;
@@ -853,6 +867,16 @@ namespace GradientSignal
             AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
             LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
         }
+    }
+
+    void ImageGradientComponent::SetImageAssetSourcePath(const AZStd::string& assetPath)
+    {
+        // SetImageAssetPath expects a product asset path, so we need to append the product
+        // extension to the source asset path we are given
+        AZStd::string productAssetPath(assetPath);
+        productAssetPath += ".streamingimage";
+
+        SetImageAssetPath(productAssetPath);
     }
 
     float ImageGradientComponent::GetTilingX() const

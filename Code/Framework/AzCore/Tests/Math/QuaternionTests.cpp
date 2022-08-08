@@ -317,7 +317,11 @@ namespace UnitTest
         AZ::Quaternion(0.70f, -0.34f, -0.38f, 0.50f),
         AZ::Quaternion(0.00f, 0.00f, -0.28f, 0.96f),
         AZ::Quaternion(0.24f, -0.64f, 0.72f, 0.12f),
-        AZ::Quaternion(-0.66f, 0.62f, 0.42f, 0.06f)
+        AZ::Quaternion(-0.66f, 0.62f, 0.42f, 0.06f),
+        AZ::Quaternion(0.5f, 0.5f, 0.5f, 0.5f),
+        AZ::Quaternion(0.5f, -0.5f, 0.5f, -0.5f),
+        AZ::Quaternion(0.34f, 0.62f, -0.34f, -0.62f),
+        AZ::Quaternion(-0.1f, -0.7f, 0.1f, 0.7f)
     };
 
     TEST_P(QuaternionEulerFixture, EulerOrderCorrect)

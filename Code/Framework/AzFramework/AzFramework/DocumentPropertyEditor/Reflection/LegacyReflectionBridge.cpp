@@ -9,8 +9,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/DOM/DomUtils.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/Utils.h>
@@ -23,12 +23,13 @@ namespace AZ::Reflection
 {
     namespace DescriptorAttributes
     {
-        const Name Handler = Name::FromStringLiteral("Handler");
-        const Name Label = Name::FromStringLiteral("Label");
-        const Name SerializedPath = Name::FromStringLiteral("SerializedPath");
-        const Name Container = Name::FromStringLiteral("Container");
-        const Name ParentContainer = Name::FromStringLiteral("ParentContainer");
-        const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance");
+        const Name Handler = Name::FromStringLiteral("Handler", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Label = Name::FromStringLiteral("Label", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Description = Name::FromStringLiteral("Description", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name SerializedPath = Name::FromStringLiteral("SerializedPath", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Container = Name::FromStringLiteral("Container", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainer = Name::FromStringLiteral("ParentContainer", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
     namespace LegacyReflectionInternal
@@ -283,6 +284,8 @@ namespace AZ::Reflection
                 AZStd::string_view labelAttributeValue;
                 AZStd::fixed_string<128> labelAttributeBuffer;
 
+                AZStd::string_view descriptionAttributeValue;
+
                 DocumentPropertyEditor::PropertyEditorSystemInterface* propertyEditorSystem =
                     AZ::Interface<DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
                 AZ_Assert(propertyEditorSystem != nullptr, "LegacyReflectionBridge: Unable to retrieve PropertyEditorSystem");
@@ -376,6 +379,10 @@ namespace AZ::Reflection
                                 {
                                     labelAttributeValue = elementEditData->m_name;
                                 }
+                                if (elementEditData->m_description)
+                                {
+                                    descriptionAttributeValue = elementEditData->m_description;
+                                }
                             }
 
                             for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
@@ -409,6 +416,12 @@ namespace AZ::Reflection
                             {
                                 labelAttributeValue = nodeData.m_classData->m_name;
                             }
+                        }
+
+                        if (!isParentAttribute && descriptionAttributeValue.empty() &&
+                            nodeData.m_classData->m_editData && nodeData.m_classData->m_editData->m_description)
+                        {
+                            descriptionAttributeValue = nodeData.m_classData->m_editData->m_description;
                         }
 
                         for (auto it = nodeData.m_classData->m_attributes.begin(); it != nodeData.m_classData->m_attributes.end(); ++it)
@@ -458,6 +471,12 @@ namespace AZ::Reflection
                     const bool shouldCopy = !labelAttributeBuffer.empty();
                     nodeData.m_cachedAttributes.push_back({ group, DescriptorAttributes::Label, Dom::Value(labelAttributeValue, shouldCopy) });
                 }
+
+                if (!descriptionAttributeValue.empty())
+                {
+                    nodeData.m_cachedAttributes.push_back( { group, DescriptorAttributes::Description, Dom::Value(descriptionAttributeValue, false) });
+                }
+
                 nodeData.m_cachedAttributes.push_back({ group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueType.GetName(),
                                                         AZ::Dom::Utils::TypeIdToDomValue(nodeData.m_typeId) });
                 if (nodeData.m_classData->m_container)

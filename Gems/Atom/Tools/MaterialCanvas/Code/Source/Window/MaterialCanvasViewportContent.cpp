@@ -88,11 +88,13 @@ namespace MaterialCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        MaterialCanvasDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialCanvasViewportContent::~MaterialCanvasViewportContent()
     {
+        MaterialCanvasDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -129,12 +131,16 @@ namespace MaterialCanvas
 
     void MaterialCanvasViewportContent::OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId)
     {
+        m_lastOpenedDocumentId = documentId;
         ApplyMaterial(documentId);
     }
 
-    void MaterialCanvasViewportContent::OnDocumentModified(const AZ::Uuid& documentId)
+    void MaterialCanvasViewportContent::OnCompileGraphCompleted(const AZ::Uuid& documentId)
     {
-        ApplyMaterial(documentId);
+        if (m_lastOpenedDocumentId == documentId)
+        {
+            ApplyMaterial(documentId);
+        }
     }
 
     void MaterialCanvasViewportContent::OnViewportSettingsChanged()
