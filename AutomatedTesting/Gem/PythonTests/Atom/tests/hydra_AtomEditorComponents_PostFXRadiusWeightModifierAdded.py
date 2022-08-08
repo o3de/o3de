@@ -72,7 +72,7 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
     Test Steps:
     1) Create a Post FX Radius Weight Modifier entity with no components.
     2) Add Post FX Radius Weight Modifier component to Post FX Radius Weight Modifier entity.
-    3) Remove PostFX Radisu Weight Modifier component.
+    3) Remove PostFX Radius Weight Modifier component.
     4) UNDO the component removal.
     5) Verify PostFX Radius Weight Modifier component not enabled.
     6) Add PostFX Layer component since it is required by the PostFX Radius Weight Modifier component.
@@ -112,7 +112,7 @@ def AtomEditorComponents_PostFXRadiusWeightModifier_AddedToEntity():
             Tests.postfx_radius_weight_component,
             postfx_radius_weight_entity.has_component(AtomComponentProperties.postfx_radius()))
 
-        # 3. Remove PostFX Radisu Weight Modifier component
+        # 3. Remove PostFX Radius Weight Modifier component
         postfx_radius_component.remove()
         general.idle_wait_frames(1)
         Report.result(
