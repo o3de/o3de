@@ -21,27 +21,23 @@ namespace TestImpact
     {
     }
 
-    //! Returns the time point that the timer was instantiated.
     AZStd::chrono::high_resolution_clock::time_point Timer::GetStartTimePoint() const
     {
         return m_startTime;
     }
 
-    //! Returns the time point that the timer was instantiated relative to the specified starting time point.
     AZStd::chrono::high_resolution_clock::time_point Timer::GetStartTimePointRelative(const Timer& start) const
     {
         return AZStd::chrono::high_resolution_clock::time_point() +
             AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(m_startTime - start.GetStartTimePoint());
     }
 
-    //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
     AZStd::chrono::milliseconds Timer::GetElapsedMs() const
     {
         const auto endTime = AZStd::chrono::high_resolution_clock::now();
         return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(endTime - m_startTime);
     }
 
-    //! Returns the current time point relative to the time point the timer was instantiated.
     AZStd::chrono::high_resolution_clock::time_point Timer::GetElapsedTimepoint() const
     {
         const auto endTime = AZStd::chrono::high_resolution_clock::now();
