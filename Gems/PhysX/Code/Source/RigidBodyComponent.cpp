@@ -26,6 +26,7 @@ namespace PhysX
     void RigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
         RigidBody::Reflect(context);
+        RigidBodyConfiguration::Reflect(context);
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
