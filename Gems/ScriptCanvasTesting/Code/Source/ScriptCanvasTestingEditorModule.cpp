@@ -30,10 +30,6 @@ namespace ScriptCanvasTesting
                 ScriptCanvasTestingSystemComponent::CreateDescriptor(),
                 TraceMessageComponent::CreateDescriptor(),
             });
-
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(
-                GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasTestingEditorStatic));
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
         }
 
         /**

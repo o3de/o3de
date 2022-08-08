@@ -95,12 +95,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
+    m_assetBrowserModel->EnableTickBus();
 
     m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
     m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
 
-    connect(
-        m_ui->m_collapseAllButton, &QToolButton::clicked, this,
+    connect(m_ui->m_collapseAllButton, &QToolButton::clicked, this,
         [this]()
         {
             m_ui->m_assetBrowserTreeViewWidget->collapseAll();
@@ -118,30 +118,30 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setDynamicSortFilter(true);
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
 
-        connect(
-            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-            &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
-        connect(
-            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
-            &AzAssetBrowserWindow::SelectionChangedSlot);
-        connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-        connect(
-            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-            &AzAssetBrowser::SearchWidget::ClearStringFilter);
-        connect(
-            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-            &AzAssetBrowser::SearchWidget::ClearTypeFilter);
+        connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
+            this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
+
+        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal,
+            this, &AzAssetBrowserWindow::SelectionChangedSlot);
+
+        connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
+            this, &AzAssetBrowserWindow::DoubleClickedItem);
+
+        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter,
+            m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearStringFilter);
+
+        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
+            m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
 
-    connect(
-        m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(),
-        &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
-    connect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
+    connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
+        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
+
+    connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
         [this]()
         {
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
@@ -149,28 +149,29 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
         });
 
-    connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::selectionChangedSignal, this,
-        &AzAssetBrowserWindow::SelectionChangedSlot);
+    connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::selectionChangedSignal,
+        this, &AzAssetBrowserWindow::SelectionChangedSlot);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-    connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearStringFilter);
-    connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
+    connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter,
+        m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearStringFilter);
 
-    connect(
-        this, &AzAssetBrowserWindow::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
-        &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+    connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter,
+        m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
+
+    connect(m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
+        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::OpenItemForEditing);
+
+    connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
+        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
 {
+    m_assetBrowserModel->DisableTickBus();
     m_ui->m_assetBrowserTreeViewWidget->SaveState();
 }
 

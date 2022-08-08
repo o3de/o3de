@@ -68,6 +68,7 @@ namespace PhysX
         AZ::u32 OnConfigurationChanged();
         AZ::u32 OnToggleBakedHeightfield();
         AZ::u32 GetBakedHeightfieldVisibilitySetting() const;
+        bool IsHeightfieldInvalid() const;
 
         // Utility functions for heightfield baking
         void StartHeightfieldBakingJob();

@@ -145,10 +145,10 @@ namespace AzToolsFramework
             AZStd::vector<AZ::Data::AssetType>  m_genericAssetTypes;
             AZ::Data::AssetId                    m_sourceAssetId;
             AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;
-            Ui::AssetEditorHeader* m_header;
-            ReflectedPropertyEditor* m_propertyEditor;
+            Ui::AssetEditorHeader* m_header = nullptr;
+            ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
-            DocumentPropertyEditor* m_dpe;
+            DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
 
             // Ids can change when an asset goes from in-memory to saved on disk.

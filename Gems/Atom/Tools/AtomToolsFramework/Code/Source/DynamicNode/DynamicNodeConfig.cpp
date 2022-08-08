@@ -25,9 +25,9 @@ namespace AtomToolsFramework
                 ->Field("title", &DynamicNodeConfig::m_title)
                 ->Field("subTitle", &DynamicNodeConfig::m_subTitle)
                 ->Field("settings", &DynamicNodeConfig::m_settings)
+                ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
                 ->Field("inputSlots", &DynamicNodeConfig::m_inputSlots)
                 ->Field("outputSlots", &DynamicNodeConfig::m_outputSlots)
-                ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())

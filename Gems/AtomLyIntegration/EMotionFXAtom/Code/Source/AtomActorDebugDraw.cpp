@@ -32,6 +32,7 @@ namespace AZ::Render
         : m_entityId(entityId)
     {
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
+        AZ_Assert(m_auxGeomFeatureProcessor, "AuxGeomFeatureProcessor doesn't exist. Check if it is missing from AnimViewport.setreg file.");
     }
 
     // Function for providing data required for debug drawing colliders
@@ -177,6 +178,11 @@ namespace AZ::Render
         if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::MotionExtraction))
         {
             RenderTrajectoryPath(debugDisplay, instance, renderActorSettings.m_trajectoryHeadColor, renderActorSettings.m_trajectoryPathColor);
+        }
+
+        if (CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RootMotion))
+        {
+            RenderRootMotion(debugDisplay, instance, AZ::Colors::Red);
         }
 
         // Render vertex normal, face normal, tagent and wireframe.
@@ -1208,5 +1214,21 @@ namespace AZ::Render
             oldLeft = vertices[2];
             oldRight = vertices[3];
         }
+    }
+
+    void AtomActorDebugDraw::RenderRootMotion(AzFramework::DebugDisplayRequests* debugDisplay,
+        const EMotionFX::ActorInstance* actorInstance,
+        const AZ::Color& rootColor)
+    {
+        const AZ::Transform actorTransform = actorInstance->GetWorldSpaceTransform().ToAZTransform();
+
+        // Render two circle around the character position.
+        debugDisplay->SetColor(rootColor);
+        debugDisplay->DrawCircle(actorTransform.GetTranslation(), 1.0f);
+        debugDisplay->DrawCircle(actorTransform.GetTranslation(), 0.05f);
+
+        // Render the character facing direction.
+        const AZ::Vector3 forward = actorTransform.GetBasisY();
+        debugDisplay->DrawArrow(actorTransform.GetTranslation(), actorTransform.GetTranslation() + forward);
     }
 } // namespace AZ::Render

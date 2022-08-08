@@ -32,7 +32,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<RayTracingFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 

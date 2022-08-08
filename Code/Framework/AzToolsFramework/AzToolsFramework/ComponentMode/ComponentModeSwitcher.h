@@ -30,7 +30,7 @@ namespace AzToolsFramework
             Remove
         };
 
-        //! Struct containing relevant information about component for the switcher
+        //! Struct containing relevant information about component for the switcher.
         struct ComponentData
         {
             ComponentData() = default;
@@ -83,8 +83,9 @@ namespace AzToolsFramework
             void UpdateSwitcherOnEntitySelectionChange(const EntityIdList& newlyselectedEntityIds, const EntityIdList& newlydeselectedEntityIds);
             //! Clears all buttons from switcher.
             void ClearSwitcher();
-            void ActivateComponentMode(const ViewportUi::ButtonId);
+            //! Remove all components from the switcher that don't exist on all entities.
             void RemoveNonCommonComponents(const AZ::Entity&);
+            void ActivateComponentMode(const ViewportUi::ButtonId);
 
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(

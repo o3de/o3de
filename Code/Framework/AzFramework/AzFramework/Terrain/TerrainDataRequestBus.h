@@ -26,6 +26,36 @@ namespace AzFramework
         typedef AZStd::function<void(size_t xIndex, size_t yIndex, const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointRegionFillCallback;
         typedef AZStd::function<void(const SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)> SurfacePointListFillCallback;
 
+        struct FloatRange
+        {
+            AZ_TYPE_INFO(FloatRange, "{7E6319B6-1409-4865-8AD1-6F68272A94E9}");
+
+            static void Reflect(AZ::ReflectContext* context);
+
+            float m_min = 0.0f;
+            float m_max = 0.0f;
+
+            bool IsValid() const
+            {
+                return m_min <= m_max;
+            }
+
+            static FloatRange CreateNull()
+            {
+                return { 0.0f, -1.0f };
+            }
+
+            bool operator==(const FloatRange& other) const
+            {
+                return m_min == other.m_min && m_max == other.m_max;
+            }
+
+            bool operator!=(const FloatRange& other) const
+            {
+                return !(*this == other);
+            }
+        };
+
         //! Helper structure that defines a query region to use with the QueryRegion / QueryRegionAsync APIs.
         struct TerrainQueryRegion
         {
@@ -159,8 +189,11 @@ namespace AzFramework
             virtual float GetTerrainSurfaceDataQueryResolution() const = 0;
             virtual void SetTerrainSurfaceDataQueryResolution(float queryResolution) = 0;
 
+            // Returns a bounding box that contains all current terrain areas. There may still be areas inside the bounds which contain no terrain.
             virtual AZ::Aabb GetTerrainAabb() const = 0;
-            virtual void SetTerrainAabb(const AZ::Aabb& worldBounds) = 0;
+
+            virtual FloatRange GetTerrainHeightBounds() const = 0;
+            virtual void SetTerrainHeightBounds(const FloatRange& heightRange) = 0;
 
             // Returns true if any terrain area spawner intersects with the provided bounds
             virtual bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const = 0;
@@ -274,14 +307,14 @@ namespace AzFramework
                 SurfacePointRegionFillCallback perPositionCallback,
                 Sampler sampleFilter = Sampler::DEFAULT) const = 0;
 
-            //! Get the terrain raycast entity context id.
+            //! Get the terrain ray cast entity context id.
             virtual EntityContextId GetTerrainRaycastEntityContextId() const = 0;
 
             //! Given a ray, return the closest intersection with terrain.
             virtual RenderGeometry::RayResult GetClosestIntersection(const RenderGeometry::RayRequest& ray) const = 0;
 
             //! Asynchronous versions of the various 'Query*' API functions declared above.
-            //! It's the responsibility of the caller to ensure all callbacks are threadsafe.
+            //! It's the responsibility of the caller to ensure all callbacks are thread-safe.
             virtual AZStd::shared_ptr<TerrainJobContext> QueryListAsync(
                 const AZStd::span<const AZ::Vector3>& inPositions,
                 TerrainDataMask requestedData,

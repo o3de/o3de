@@ -52,7 +52,7 @@ namespace AzToolsFramework
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() = 0;
 
             /// The name for the ComponentMode to be displayed.
-            virtual AZStd::string GetComponentModeName() const { return "Edit Mode"; }
+            virtual AZStd::string GetComponentModeName() const = 0;
         };
 
         /// Alias for builder/factory function that is responsible for creating a new ComponentMode.

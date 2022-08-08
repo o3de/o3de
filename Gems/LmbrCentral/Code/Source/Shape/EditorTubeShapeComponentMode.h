@@ -47,6 +47,7 @@ namespace LmbrCentral
         // EditorBaseComponentMode
         void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
+        AZStd::string GetComponentModeName() const override;
 
         // Manipulator handling
         void CreateManipulators();

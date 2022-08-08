@@ -16,6 +16,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace AzToolsFramework::ComponentModeFramework
 {
@@ -50,12 +51,20 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::Alignment::TopLeft);
 
         // initial transform button
+        AzToolsFramework::Components::TransformComponent transformComponent;
+        AZStd::string transformIconPath;
+
+        AzToolsFramework::EditorRequestBus::BroadcastResult(
+            transformIconPath,
+            &AzToolsFramework::EditorRequestBus::Events::GetComponentTypeEditorIcon,
+            transformComponent.GetUnderlyingComponentType());
+
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_transformButtonId,
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
             m_switcherId,
-            "../../../../Assets/Editor/Icons/Components/Transform.svg",
+            transformIconPath.c_str(),
             "Transform");
 
         ViewportUi::ViewportUiRequestBus::Event(
@@ -96,9 +105,8 @@ namespace AzToolsFramework::ComponentModeFramework
     }
 
     void ComponentModeSwitcher::UpdateSwitcherOnEntitySelectionChange(
-        [[maybe_unused]] const EntityIdList& newlySelectedEntityIds, [[maybe_unused]] const EntityIdList& newlyDeselectedEntityIds)
+        const EntityIdList& newlySelectedEntityIds, const EntityIdList& newlyDeselectedEntityIds)
     {
-        AZ::Entity* entity = nullptr;
 
         auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
         const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
@@ -106,8 +114,10 @@ namespace AzToolsFramework::ComponentModeFramework
         
         if (!newlySelectedEntityIds.empty())
         {
+            
             for (auto entityId : newlySelectedEntityIds)
             {
+                AZ::Entity* entity = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(
                     entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(entityId));
 

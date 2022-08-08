@@ -54,7 +54,6 @@ namespace GraphCanvas
         }
             
         DataSlotRequestBus::EventResult(m_colorPalette, GetEntityId(), &DataSlotRequests::GetDataColorPalette);
-
         update();
     }
     

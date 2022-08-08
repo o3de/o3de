@@ -1,0 +1,19 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <EditorModeCommon.azsli>
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    // Copy the input buffer over to the output buffer
+    OUT.m_color.rgb = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+
+    return OUT;
+}

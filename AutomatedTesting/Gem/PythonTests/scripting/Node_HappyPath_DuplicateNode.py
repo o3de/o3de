@@ -9,7 +9,7 @@ from PySide2 import QtWidgets, QtTest
 from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import azlmbr.legacy.general as general
 import scripting_utils.scripting_tools as scripting_tools
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI,
