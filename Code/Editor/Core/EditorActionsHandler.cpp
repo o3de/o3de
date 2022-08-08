@@ -1374,6 +1374,7 @@ void EditorActionsHandler::InitializeMenus()
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleHelpers", 600);
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.toggleIcons", 700);
         }
+        m_menuManagerInterface->AddActionToMenu(ViewMenuIdentifier, "o3de.action.view.refreshEditorStyle", 300);
     }
 
     // Help
