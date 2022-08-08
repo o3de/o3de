@@ -14,7 +14,7 @@ namespace AZ::Render
 {
     namespace ImGuiShaderUtils
     {
-        void DrawShaderVariantTable(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId requestedVariantId, AZ::RPI::ShaderVariantId selectedVariantId)
+        inline void DrawShaderVariantTable(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId requestedVariantId, AZ::RPI::ShaderVariantId selectedVariantId)
         {
             AZ::RPI::ShaderOptionGroup requestedShaderVariantOptions{layout, requestedVariantId};
             AZ::RPI::ShaderOptionGroup selectedShaderVariantOptions{layout, selectedVariantId};

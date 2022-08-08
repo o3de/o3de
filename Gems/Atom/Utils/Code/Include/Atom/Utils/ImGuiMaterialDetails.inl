@@ -16,17 +16,17 @@
 
 namespace AZ::Render
 {
-    void ImGuiMaterialDetails::SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material)
+    inline void ImGuiMaterialDetails::SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material)
     {
         m_material = material;
     }
 
-    void ImGuiMaterialDetails::OpenDialog()
+    inline void ImGuiMaterialDetails::OpenDialog()
     {
         m_dialogIsOpen = true;
     }
 
-    void ImGuiMaterialDetails::Tick()
+    inline void ImGuiMaterialDetails::Tick()
     {
         if (m_dialogIsOpen)
         {
