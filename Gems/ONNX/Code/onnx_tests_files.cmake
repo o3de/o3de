@@ -8,4 +8,8 @@
 
 set(FILES
     Tests/MnistTests.cpp
+    Source/Clients/Mnist.h
+    Source/Clients/Mnist.cpp
+    Source/Clients/upng/upng.cpp
+    Source/Clients/upng/upng.h
 )
