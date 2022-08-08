@@ -23,7 +23,7 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "manualColor": [
                 0.7304646372795105,
                 0.6938735246658325,
                 0.6866865158081055,
