@@ -28,6 +28,7 @@ ARG_SOURCE_BRANCH = 'src_branch'
 ARG_DESTINATION_BRANCH = 'dst_branch'
 ARG_COMMIT = 'commit'
 ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
+ARG_SEQUENCE_OVERRIDE = 'sequence_override'
 ARG_INTEGRATION_POLICY = RuntimeArgs.COMMON_IPOLICY.driver_argument
 ARG_TEST_FAILURE_POLICY = RuntimeArgs.COMMON_FPOLICY.driver_argument
 ARG_CHANGE_LIST = RuntimeArgs.COMMON_CHANGELIST.driver_argument
@@ -39,7 +40,6 @@ TIA_NOWRITE = 'tianowrite'
 TIA_SEED = 'seed'
 TIA_ON = 'tia'
 TIA_REGULAR = 'regular'
-    
 
 
 class BaseTestImpact(ABC):
@@ -128,7 +128,7 @@ class BaseTestImpact(ABC):
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
-        args[ARG_SEQUENCE] = sequence_type
+        args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE, sequence_type)
         self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file

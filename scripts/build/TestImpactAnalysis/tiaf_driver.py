@@ -151,14 +151,22 @@ def parse_args():
         required=True
     )
 
+    parser.add_argument(
+        "--sequence-override",
+        help="Override sequence type",
+        required=False
+    )
+
     args = parser.parse_args()
 
     return args
 
+
 SUPPORTED_RUNTIMES = {
-    "python" : PythonTestImpact,
-    "native" : NativeTestImpact
+    "python": PythonTestImpact,
+    "native": NativeTestImpact
 }
+
 
 def main(args: dict):
     try:
