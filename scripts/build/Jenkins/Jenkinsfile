@@ -594,7 +594,10 @@ def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName,
             if(onlyMountEBSVolume) {
                 HandleDriveMount(snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName, environmentVars['WORKSPACE'], false)
             } else {
-                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], repository_name == "${EXTRAS_REPOSITORY_NAME}" ? true : false)
+                echo "Running snapshot: \"${snapshot}\" repository: \"${repositoryName}\", projectName: \"${projectName}\", pipeline: \"${pipelineName}\",  branchName: \"${branchName}\", platformName: \"${platformName}\", jobName: \"${jobName}\", extras_repo: \"${extras_repo}\" "
+                def extras_repo = false
+                if( repository_name == "${EXTRAS_REPOSITORY_NAME}" ) extras_repo = true
+                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], extras_repo)
             }
         }
     }
