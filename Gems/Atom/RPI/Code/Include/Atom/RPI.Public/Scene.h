@@ -102,6 +102,11 @@ namespace AZ
 
             void DisableAllFeatureProcessors();
 
+            //! Callback function that will be invoked with each non-pointer FeatureProcessor
+            //! return true to continue visiting or false to halt
+            using FeatureProcessorVisitCallback = AZStd::function<bool(FeatureProcessor&)>;
+            void VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const;
+
             //! Linear search to retrieve specific class of a feature processor.
             //! Returns nullptr if a feature processor with the specified id is
             //! not found.
@@ -281,6 +286,7 @@ namespace AZ
         };
 
         // --- Template functions ---
+
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::EnableFeatureProcessor()
         {
