@@ -39,6 +39,7 @@
 #include "native/ui/ui_MainWindow.h"
 #include "native/ui/JobTreeViewItemDelegate.h"
 #include <native/utilities/AssetServerHandler.h>
+#include <native/utilities/assetUtils.h>
 
 #include "../utilities/GUIApplicationManager.h"
 #include "../utilities/ApplicationServer.h"
@@ -63,58 +64,69 @@ static const qint64 AssetTabFilterUpdateIntervalMs = 5000;
 
 static const int MaxVisiblePopoutMenuRows = 20;
 static const QString productMenuTitle(QObject::tr("View product asset..."));
+static const QString intermediateMenuTitle(QObject::tr("View intermediate asset..."));
 
-struct ProductAssetRightClickMenuResult
+struct AssetRightClickMenuResult
 {
     QListWidget* m_listWidget = nullptr;
-    QMenu* m_productMenu = nullptr;
+    QMenu* m_assetMenu = nullptr;
 };
 
-ProductAssetRightClickMenuResult SetupProductAssetRightClickMenu(QMenu* parentMenu)
+AssetRightClickMenuResult SetupAssetRightClickMenu(QMenu* parentMenu, QString title, QString tooltip)
 {
-    ProductAssetRightClickMenuResult result;
+    AssetRightClickMenuResult result;
     if (!parentMenu)
     {
         return result;
     }
 
-    result.m_productMenu = parentMenu->addMenu(productMenuTitle);
-    QWidgetAction* productMenuListAction = new QWidgetAction(result.m_productMenu);
-    productMenuListAction->setToolTip(QObject::tr("Shows this product asset in the Product Assets tab."));
-    result.m_listWidget = new QListWidget(result.m_productMenu);
+    result.m_assetMenu = parentMenu->addMenu(title);
+    QWidgetAction* productMenuListAction = new QWidgetAction(result.m_assetMenu);
+    productMenuListAction->setToolTip(tooltip);
+    result.m_listWidget = new QListWidget(result.m_assetMenu);
     result.m_listWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     result.m_listWidget->setTextElideMode(Qt::ElideLeft);
     result.m_listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     result.m_listWidget->setSelectionMode(QAbstractItemView::NoSelection);
 
     productMenuListAction->setDefaultWidget(result.m_listWidget);
-    result.m_productMenu->addAction(productMenuListAction);
+    result.m_assetMenu->addAction(productMenuListAction);
     return result;
 }
 
-void CreateDisabledProductAssetRightClickMenu(QMenu* parentMenu, QMenu* existingProductMenu, QString tooltip)
+AssetRightClickMenuResult SetupProductAssetRightClickMenu(QMenu* parentMenu)
 {
-    if (!parentMenu || !existingProductMenu)
+    return SetupAssetRightClickMenu(parentMenu, productMenuTitle, QObject::tr("Shows this product asset in the Product Assets tab."));
+}
+
+AssetRightClickMenuResult SetupIntermediateAssetRightClickMenu(QMenu* parentMenu)
+{
+    return SetupAssetRightClickMenu(parentMenu, intermediateMenuTitle, QObject::tr("Shows this intermediate asset in the Intermediate Assets tab."));
+}
+
+void CreateDisabledAssetRightClickMenu(QMenu* parentMenu, QMenu* existingMenu, QString title, QString tooltip)
+{
+    if (!parentMenu || !existingMenu)
     {
         return;
     }
     // If there were no products, then show a disabled action with a tooltip.
     // Disabled menus don't support tooltips, so remove the menu first.
-    parentMenu->removeAction(existingProductMenu->menuAction());
-    existingProductMenu->deleteLater();
+    parentMenu->removeAction(existingMenu->menuAction());
+    existingMenu->deleteLater();
 
-    QAction* disabledProductTableAction = parentMenu->addAction(productMenuTitle);
+    QAction* disabledProductTableAction = parentMenu->addAction(title);
     disabledProductTableAction->setToolTip(tooltip);
     disabledProductTableAction->setDisabled(true);
 }
 
-void ResizeProductAssetRightClickMenuList(QListWidget* productAssetList, int productCount)
+void ResizeAssetRightClickMenuList(QListWidget* assetList, int assetCount)
 {
-    // Clamp the max products displayed at once. This is a list view, so it will show a scroll bar for anything over this.
-    productCount = AZStd::min(MaxVisiblePopoutMenuRows, productCount);
+    // Clamp the max assets displayed at once. This is a list view, so it will show a scroll bar for anything over this.
+    assetCount = AZStd::min(MaxVisiblePopoutMenuRows, assetCount);
     // Using fixed width and height because the size hints aren't working well within a qmenu popout menu.
-    productAssetList->setFixedHeight(productCount * productAssetList->sizeHintForRow(0));
-    productAssetList->setFixedWidth(productAssetList->sizeHintForColumn(0));
+    assetList->setFixedHeight(assetCount * assetList->sizeHintForRow(0));
+    assetList->setFixedWidth(assetList->sizeHintForColumn(0));
 }
 
 MainWindow::Config MainWindow::loadConfig(QSettings& settings)
@@ -256,7 +268,7 @@ void MainWindow::Activate()
     connect(ui->connectionTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::OnConnectionContextMenu);
 
     //allowed list connections
-    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::FirstTimeAddedToRejctedList, this, &MainWindow::FirstTimeAddedToRejctedList);
+    connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::FirstTimeAddedToRejctedList, this, &MainWindow::FirstTimeAddedToRejectedList);
     connect(m_guiApplicationManager->GetConnectionManager(), &ConnectionManager::SyncAllowedListAndRejectedList, this, &MainWindow::SyncAllowedListAndRejectedList);
     connect(ui->allowListAllowedListConnectionsListView, &QListView::clicked, this, &MainWindow::OnAllowedListConnectionsListViewClicked);
     ui->allowListAllowedListConnectionsListView->setModel(&m_allowedListAddresses);
@@ -399,6 +411,19 @@ void MainWindow::Activate()
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_sourceAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
+    m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
+    m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
+    m_intermediateModel->SetOnlyShowIntermediateAssets();
+    m_intermediateModel->Reset();
+    m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
+    ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
+    connect(
+        ui->assetDataFilteredSearchWidget,
+        &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+        m_intermediateAssetTreeFilterModel,
+        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
+
+
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
     m_productModel->Reset();
@@ -408,21 +433,48 @@ void MainWindow::Activate()
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_productAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
+    ui->intermediateAssetDetailsPanel->SetIsIntermediateAsset();
+
+    AZStd::optional<AZ::s64> intermediateAssetFolderId(m_guiApplicationManager->GetAssetProcessorManager()->GetIntermediateAssetScanFolderId());
+    ui->productAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    ui->sourceAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    ui->intermediateAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    m_intermediateModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    m_sourceModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
+    AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->productAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
 
     ui->sourceAssetDetailsPanel->RegisterAssociatedWidgets(
         ui->SourceAssetsTreeView,
         m_sourceModel,
         m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
+        m_intermediateAssetTreeFilterModel,
         ui->ProductAssetsTreeView,
         m_productModel,
         m_productAssetTreeFilterModel,
         ui->assetsTabWidget);
+    ui->intermediateAssetDetailsPanel->RegisterAssociatedWidgets(
+        ui->SourceAssetsTreeView,
+        m_sourceModel,
+        m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
+        m_intermediateAssetTreeFilterModel,
+        ui->ProductAssetsTreeView,
+        m_productModel,
+        m_productAssetTreeFilterModel,
+        ui->assetsTabWidget);    
     ui->productAssetDetailsPanel->RegisterAssociatedWidgets(
         ui->SourceAssetsTreeView,
         m_sourceModel,
         m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
+        m_intermediateAssetTreeFilterModel,
         ui->ProductAssetsTreeView,
         m_productModel,
         m_productAssetTreeFilterModel,
@@ -433,6 +485,7 @@ void MainWindow::Activate()
     ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
 
     connect(ui->SourceAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->sourceAssetDetailsPanel, &SourceAssetDetailsPanel::AssetDataSelectionChanged);
+    connect(ui->IntermediateAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->intermediateAssetDetailsPanel, &SourceAssetDetailsPanel::AssetDataSelectionChanged);
     connect(ui->ProductAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->productAssetDetailsPanel, &ProductAssetDetailsPanel::AssetDataSelectionChanged);
     connect(ui->assetsTabWidget, &QTabWidget::currentChanged, this, &MainWindow::OnAssetTabChange);
 
@@ -441,6 +494,9 @@ void MainWindow::Activate()
 
     ui->SourceAssetsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->SourceAssetsTreeView, &QWidget::customContextMenuRequested, this, &MainWindow::ShowSourceAssetContextMenu);
+
+    ui->IntermediateAssetsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->IntermediateAssetsTreeView, &QWidget::customContextMenuRequested, this, &MainWindow::ShowIntermediateAssetContextMenu);
 
     ui->productAssetDetailsPanel->GetOutgoingProductDependenciesTreeView()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(
@@ -595,14 +651,15 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 
         const auto builder = builders[index.row()];
         m_builderInfoPatterns->Reset(builder);
-        m_builderInfoMetrics->OnBuilderSelectionChanged(builder);
+        ui->builderInfoMetricsTreeView->setRootIndex(
+            m_builderInfoMetricsSort->mapFromSource(m_builderInfoMetrics->index(m_builderData->m_builderGuidToIndex[builder.m_busId], 0)));
         ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
         ui->builderInfoHeaderValueType->setText(
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
         ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
         ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());        
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());
     }
 }
 
@@ -971,6 +1028,7 @@ void MainWindow::SetupAssetSelectionCaching()
             // ClearSelection says in the Qt docs that the selectionChange signal will be sent, but that wasn't happening,
             // so force the details panel to refresh.
             ui->sourceAssetDetailsPanel->AssetDataSelectionChanged(QItemSelection(), QItemSelection());
+            ui->intermediateAssetDetailsPanel->AssetDataSelectionChanged(QItemSelection(), QItemSelection());
             return;
         }
         m_sourceAssetTreeFilterModel->ForceModelIndexVisible(goToIndex);
@@ -1234,7 +1292,7 @@ void MainWindow::SyncAllowedListAndRejectedList(QStringList allowedList, QString
     m_rejectedAddresses.setStringList(rejectedList);
 }
 
-void MainWindow::FirstTimeAddedToRejctedList(QString ipAddress)
+void MainWindow::FirstTimeAddedToRejectedList(QString ipAddress)
 {
     QMessageBox* msgBox = new QMessageBox(this);
     msgBox->setText(tr("!!!Rejected Connection!!!"));
@@ -1559,11 +1617,18 @@ void MainWindow::OnAssetTabChange(int index)
     {
     case AssetTabIndex::Source:
         ui->sourceAssetDetailsPanel->setVisible(true);
+        ui->intermediateAssetDetailsPanel->setVisible(false);
         ui->productAssetDetailsPanel->setVisible(false);
         break;
     case AssetTabIndex::Product:
         ui->sourceAssetDetailsPanel->setVisible(false);
+        ui->intermediateAssetDetailsPanel->setVisible(false);
         ui->productAssetDetailsPanel->setVisible(true);
+        break;
+    case AssetTabIndex::Intermediate:
+        ui->sourceAssetDetailsPanel->setVisible(false);
+        ui->intermediateAssetDetailsPanel->setVisible(true);
+        ui->productAssetDetailsPanel->setVisible(false);
         break;
     }
 }
@@ -1894,6 +1959,12 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         }
     });
 
+    menu.addAction("Reprocess Source Asset", this, [this, &item]()
+    {
+        QString pathToSource = FindAbsoluteFilePath(item);
+        m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(pathToSource);
+    });
+
     // Only completed items will be available in the assets tab.
     QAction* assetTabSourceAction = menu.addAction(tr("View source asset"), this, [&]()
     {
@@ -1917,7 +1988,8 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         assetTabSourceAction->setToolTip(tr("Show the source asset for this job in the Assets tab."));
 
-        ProductAssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
+        AssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
+        AssetRightClickMenuResult intermediateAssetMenu(SetupIntermediateAssetRightClickMenu(&menu));
 
         auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
         {
@@ -1930,9 +2002,22 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                 menu.close();
             }
         };
-
         connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
-
+        
+        auto intermediateMenuItemClicked = [this, &menu](QListWidgetItem* item)
+        {
+            if (item)
+            {
+                ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
+                AZStd::string assetFromQString(item->text().toUtf8().data());
+                ui->sourceAssetDetailsPanel->GoToSource(assetFromQString);
+                menu.close();
+            }
+        };
+        connect(intermediateAssetMenu.m_listWidget, &QListWidget::itemClicked, this, intermediateMenuItemClicked);
+        
+        int intermediateCount = 0;
         int productCount = 0;
         m_sharedDbConnection->QueryJobByJobRunKey(
             item->m_jobRunKey,
@@ -1946,8 +2031,17 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                 {
                     return true;
                 }
-                ++productCount;
-                productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+
+                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
+                {
+                    ++intermediateCount;
+                    intermediateAssetMenu.m_listWidget->addItem(AssetUtilities::StripAssetPlatform(productEntry.m_productName));
+                }
+                else
+                {
+                    ++productCount;
+                    productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+                }
                 return true; // Keep iterating, add all products.
             });
             return false; // Stop iterating, there should only be one job with this run key.
@@ -1955,12 +2049,22 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
 
         if (productCount == 0)
         {
-            CreateDisabledProductAssetRightClickMenu(&menu, productAssetMenu.m_productMenu, tr("This job created no products."));
-            productAssetMenu.m_productMenu = nullptr;
+            CreateDisabledAssetRightClickMenu(&menu, productAssetMenu.m_assetMenu, productMenuTitle, tr("This job created no products."));
+            productAssetMenu.m_assetMenu = nullptr;
         }
         else
         {
-            ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+            ResizeAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+        }
+        
+        if (intermediateCount == 0)
+        {
+            CreateDisabledAssetRightClickMenu(&menu, intermediateAssetMenu.m_assetMenu, intermediateMenuTitle, tr("This job created no intermediate product assets."));
+            intermediateAssetMenu.m_assetMenu = nullptr;
+        }
+        else
+        {
+            ResizeAssetRightClickMenuList(intermediateAssetMenu.m_listWidget, intermediateCount);
         }
     }
 
@@ -2037,6 +2141,55 @@ void MainWindow::SelectJobAndMakeVisible(const QModelIndex& index)
     ui->jobTreeView->selectionModel()->setCurrentIndex(proxyIndex, AssetProcessor::AssetTreeModel::GetAssetTreeSelectionFlags());
 }
 
+void MainWindow::ShowIntermediateAssetContextMenu(const QPoint& pos)
+{
+    using namespace AssetProcessor;
+    auto sourceAt = [this](const QPoint& pos)
+    {
+        const QModelIndex proxyIndex = ui->IntermediateAssetsTreeView->indexAt(pos);
+        const QModelIndex sourceIndex = m_intermediateAssetTreeFilterModel->mapToSource(proxyIndex);
+        return static_cast<AssetTreeItem*>(sourceIndex.internalPointer());
+    };
+
+    const AssetTreeItem* cachedAsset = sourceAt(pos);
+
+    if (!cachedAsset)
+    {
+        return;
+    }
+
+    // Intermediate assets are functionally source assets, with an upstream source asset that generated them.
+    QMenu menu(this);
+
+    QAction* sourceAssetAction = menu.addAction(tr("View source asset"), this, [&]()
+    {
+        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(cachedAsset->GetData());
+        // Generate the product path for this intermediate asset.
+        AZStd::string productPathForIntermediateAsset =
+            AssetUtilities::GetRelativeProductPathForIntermediateSourcePath(sourceItemData->m_assetDbName);
+
+        // Retrieve the source asset for that product.
+        m_sharedDbConnection->QueryProductByProductName(
+            productPathForIntermediateAsset.c_str(),
+            [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
+        {
+                m_sharedDbConnection->QuerySourceByProductID(
+                    productEntry.m_productID,
+                    [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                {
+                    ui->sourceAssetDetailsPanel->GoToSource(sourceEntry.m_sourceName);
+                    return false; // Don't keep iterating
+                });
+                return false;
+        });
+    });
+    sourceAssetAction->setToolTip(tr("Show the source asset for this intermediate asset."));
+    
+    BuildSourceAssetTreeContextMenu(menu, *cachedAsset);
+
+    menu.exec(ui->SourceAssetsTreeView->viewport()->mapToGlobal(pos));
+}
+
 void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
 {
     using namespace AssetProcessor;
@@ -2054,49 +2207,60 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
         return;
     }
     QMenu menu(this);
+    BuildSourceAssetTreeContextMenu(menu, *cachedAsset);
+
+    menu.exec(ui->SourceAssetsTreeView->viewport()->mapToGlobal(pos));
+}
+
+void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcessor::AssetTreeItem& sourceAssetTreeItem)
+{
+    using namespace AssetProcessor;
     menu.setToolTipsVisible(true);
-    const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(cachedAsset->GetData());
+    const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(sourceAssetTreeItem.GetData());
 
 
     QString jobMenuText(tr("View job..."));
-    QString productMenuText(tr("View product asset..."));
-    if (cachedAsset->getChildCount() > 0)
-    {
-        // Tooltips don't appear for disabled menus, so if this is a folder, create it as an action instead.
-        QAction* jobAction = menu.addAction(jobMenuText);
-        jobAction->setDisabled(true);
-        jobAction->setToolTip(tr("Folders do not have associated jobs."));
+    
+    AssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
+    AssetRightClickMenuResult intermediateAssetMenu(SetupIntermediateAssetRightClickMenu(&menu));
 
-        QAction* productAction = menu.addAction(productMenuText);
-        productAction->setDisabled(true);
-        productAction->setToolTip(tr("Folders do not have associated products."));
-    }
-    else
-    {
-        QMenu* jobMenu = menu.addMenu(jobMenuText);
-        jobMenu->setToolTipsVisible(true);
-        ProductAssetRightClickMenuResult productAssetMenu(SetupProductAssetRightClickMenu(&menu));
-        auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
-        {
-            if (item)
-            {
-                AZStd::string productFromQString(item->text().toUtf8().data());
-                ui->sourceAssetDetailsPanel->GoToProduct(productFromQString);
-                menu.close();
-            }
-        };
-        connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
+    QMenu* jobMenu = menu.addMenu(jobMenuText);
+    jobMenu->setToolTipsVisible(true);
 
-        int productCount = 0;
-        m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
-            [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+    auto productMenuItemClicked = [this, &menu](QListWidgetItem* item)
+    {
+        if (item)
         {
-            QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry]()
-            {
-                QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceItemData->m_assetDbName, jobEntry.m_platform, jobEntry.m_jobKey);
-                SelectJobAndMakeVisible(jobIndex);
-            });
-            jobAction->setToolTip(tr("Show this job in the Jobs tab."));
+            AZStd::string productFromQString(item->text().toUtf8().data());
+            ui->sourceAssetDetailsPanel->GoToProduct(productFromQString);
+            menu.close();
+        }
+    };
+    connect(productAssetMenu.m_listWidget, &QListWidget::itemClicked, this, productMenuItemClicked);
+
+    auto intermediateMenuItemClicked = [this, &menu](QListWidgetItem* item)
+    {
+        if (item)
+        {
+            AZStd::string assetFromQString(item->text().toUtf8().data());
+            ui->sourceAssetDetailsPanel->GoToSource(assetFromQString);
+            menu.close();
+        }
+    };
+    connect(intermediateAssetMenu.m_listWidget, &QListWidget::itemClicked, this, intermediateMenuItemClicked);
+    
+    int intermediateCount = 0;
+    int productCount = 0;
+    AZStd::string sourceName(sourceItemData->m_assetDbName);
+    m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
+        [&,sourceName](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+    {
+        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
+        {
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceName, jobEntry.m_platform, jobEntry.m_jobKey);
+            SelectJobAndMakeVisible(jobIndex);
+        });
+        jobAction->setToolTip(tr("Show this job in the Jobs tab."));
 
             m_sharedDbConnection->QueryProductByJobID(
                 jobEntry.m_jobID,
@@ -2106,37 +2270,55 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
                 {
                     return true;
                 }
-                ++productCount;
-                productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
+                {
+                    ++intermediateCount;
+                    intermediateAssetMenu.m_listWidget->addItem(AZStd::string(AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName)).c_str());
+                }
+                else
+                {
+                    ++productCount;
+                    productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+                }
                 return true; // Keep iterating, add all products.
             });
-            return true; // Stop iterating, there should only be one job with this run key.
-        });
-        if (productCount == 0)
-        {
-            CreateDisabledProductAssetRightClickMenu(&menu, productAssetMenu.m_productMenu, tr("This source asset has no products."));
-            productAssetMenu.m_productMenu = nullptr;
-        }
-        else
-        {
-            ResizeProductAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
-        }
+        return true;
+    });
+
+    if (productCount == 0)
+    {
+        CreateDisabledAssetRightClickMenu(&menu, productAssetMenu.m_assetMenu, productMenuTitle, tr("This source asset has no products."));
+        productAssetMenu.m_assetMenu = nullptr;
+    }
+    else
+    {
+        ResizeAssetRightClickMenuList(productAssetMenu.m_listWidget, productCount);
+    }
+
+    if (intermediateCount == 0)
+    {
+        CreateDisabledAssetRightClickMenu(&menu, intermediateAssetMenu.m_assetMenu, intermediateMenuTitle, tr("This job created no intermediate product asset."));
+        intermediateAssetMenu.m_assetMenu = nullptr;
+    }
+    else
+    {
+        ResizeAssetRightClickMenuList(intermediateAssetMenu.m_listWidget, intermediateCount);
     }
 
     QAction* fileBrowserAction = menu.addAction(AzQtComponents::fileBrowserActionName(), this, [&]()
     {
-        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(*cachedAsset);
+        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(sourceAssetTreeItem);
         if (pathToSource.IsSuccess())
         {
             AzQtComponents::ShowFileOnDesktop(pathToSource.GetValue());
         }
     });
-    QString fileOrFolder(cachedAsset->getChildCount() > 0 ? tr("folder") : tr("file"));
+    QString fileOrFolder(sourceAssetTreeItem.getChildCount() > 0 ? tr("folder") : tr("file"));
     fileBrowserAction->setToolTip(tr("Opens a window in your operating system's file explorer to view this %1.").arg(fileOrFolder));
 
     QAction* copyFullPathAction = menu.addAction(tr("Copy full path"), this, [&]()
     {
-        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(*cachedAsset);
+        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(sourceAssetTreeItem);
         if (pathToSource.IsSuccess())
         {
             QGuiApplication::clipboard()->setText(QDir::toNativeSeparators(pathToSource.GetValue()));
@@ -2148,18 +2330,16 @@ void MainWindow::ShowSourceAssetContextMenu(const QPoint& pos)
     QString reprocessFolder{ tr("Reprocess Folder") };
     QString reprocessFile{ tr("Reprocess File") };
 
-    QAction* reprocessAssetAction = menu.addAction(cachedAsset->getChildCount() ? reprocessFolder : reprocessFile, this, [&]()
+    QAction* reprocessAssetAction = menu.addAction(sourceAssetTreeItem.getChildCount() ? reprocessFolder : reprocessFile, this, [&]()
     {
-        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(*cachedAsset);
+        AZ::Outcome<QString> pathToSource = GetAbsolutePathToSource(sourceAssetTreeItem);
         m_guiApplicationManager->GetAssetProcessorManager()->RequestReprocess(pathToSource.GetValue());
     });
 
     QString reprocessFolderTip{ tr("Put the source assets in the selected folder back in the processing queue") };
     QString reprocessFileTip{ tr("Put the source asset back in the processing queue") };
 
-    reprocessAssetAction->setToolTip(cachedAsset->getChildCount() ? reprocessFolderTip : reprocessFileTip);
-
-    menu.exec(ui->SourceAssetsTreeView->viewport()->mapToGlobal(pos));
+    reprocessAssetAction->setToolTip(sourceAssetTreeItem.getChildCount() ? reprocessFolderTip : reprocessFileTip);
 }
 
 void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)

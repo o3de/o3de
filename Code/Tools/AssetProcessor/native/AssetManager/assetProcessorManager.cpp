@@ -3111,13 +3111,13 @@ namespace AssetProcessor
         {
             return;
         }
-        
+
         IFileStateRequests* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
         if (!fileStateCache)
         {
             return;
         }
-        
+
         // the strategy here is to only warm up the file cache if absolutely everything
         // is okay - the mod time must match last time, the file must exist, the hash must be present
         // and non zero from last time.  If anything at all is not correct, we will not warm the
@@ -3174,11 +3174,11 @@ namespace AssetProcessor
         AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
         WarmUpFileCache(filePaths);
         AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
-        
+
         int processedFileCount = 0;
-        
+
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
-        
+
         for (const AssetFileInfo& fileInfo : filePaths)
         {
             if (m_allowModtimeSkippingFeature)
@@ -3214,7 +3214,7 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
-        
+
         AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
     }
 
@@ -3888,7 +3888,7 @@ namespace AssetProcessor
                                 // source files which may mention the same dependency repeatedly.
                                 // Rather than require all of them do filtering on their end, it is
                                 // cleaner to do the de-duplication here and drop the duplicates.
-                                
+
                                 continue;
                             }
 
@@ -4659,6 +4659,15 @@ namespace AssetProcessor
         }
     }
 
+    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderId() const
+    {
+        if (!m_platformConfig)
+        {
+            return AZStd::nullopt;
+        }
+        return m_platformConfig->GetIntermediateAssetsScanFolderId();
+    }
+
     void AssetProcessorManager::CheckAssetProcessorIdleState()
     {
         Q_EMIT AssetProcessorManagerIdleState(IsIdle());
@@ -5367,29 +5376,6 @@ namespace AssetProcessor
 
         if (dirCheck.isDir())
         {
-            QString scanFolderName;
-            QString relativePathToFile;
-            QString searchPath;
-
-            if (!m_platformConfig->ConvertToRelativePath(normalizedSourcePath, relativePathToFile, scanFolderName))
-            {
-                return 0;
-            }
-
-            // If we have a path beyond the scanFolder we need to keep that as part of our search string
-            if (sourcePathRequest.length() > scanFolderName.length())
-            {
-                searchPath = sourcePathRequest.mid(scanFolderName.length() + 1);
-            }
-            // Forward slash intended regardless of platform, see inside FindWildcardMatches
-            if (searchPath.length() && !searchPath.endsWith('/'))
-            {
-                searchPath += "/*";
-            }
-            else
-            {
-                searchPath += "*";
-            }
             auto result = AzFramework::FileFunc::FindFilesInPath(sourcePathRequest.toUtf8().constData(), "*", true);
 
             if (result)

@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {

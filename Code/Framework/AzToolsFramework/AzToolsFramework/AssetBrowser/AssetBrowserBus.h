@@ -304,6 +304,10 @@ namespace AzToolsFramework
 
         using AssetBrowserModelNotificationBus = AZ::EBus<AssetBrowserModelNotifications>;
 
+        //////////////////////////////////////////////////////////////////////////
+        // AssetBrowserView
+        //////////////////////////////////////////////////////////////////////////
+
         //! Sends requests to the Asset Browser view.
         class AssetBrowserViewRequests
             : public AZ::EBusTraits
@@ -325,6 +329,40 @@ namespace AzToolsFramework
             virtual void Update() = 0;
         };
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // File creation notifications
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Used for sending and/or recieving notifications regarding events related to files created through the Asset Browser.
+        class AssetBrowserFileCreationNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            using BusIdType = AZ::Crc32;
+            //////////////////////////////////////////////////////////////////////////
+
+            //! Notifies the handler that a new asset was created from the editor so they can handle renaming or other behavior as necessary.
+            //! @param assetPath The full path to the asset that was created.
+            //! @param creatorBusId The file creator's bus handler address. A default constructed Crc32 implies no one is listening.
+            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/) {}
+
+            //! Notifies a given handler that an asset which was recently created has been given a non-default name.
+            //! @param assetPath The full path to the asset that had its initial name change.
+            virtual void HandleInitialFilenameChange(const AZStd::string_view /*fullFilepath*/) {}
+
+            //! The ebus address to use when notifying the Asset Browser component that a new file was created through the Asset Browser.
+            //! Note that addresses for individual asset creators should be specified in their respective code.
+            static constexpr AZ::Crc32 FileCreationNotificationBusId = AZ::Crc32("AssetBrowserFileCreationNotification");
+
+        protected:
+            ~AssetBrowserFileCreationNotifications() = default;
+        };
+        using AssetBrowserFileCreationNotificationBus = AZ::EBus<AssetBrowserFileCreationNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

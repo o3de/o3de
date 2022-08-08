@@ -68,7 +68,7 @@ namespace ScriptCanvasBuilder
         ExecutionStateAsLightUserdata,
         UpdateDependencyHandling,
         AddExplicitDestructCallForMemberVariables,
-
+        DoNotLoadScriptEventsDuringCreateJobs,
         // add new entries above
         Current,
     };

@@ -328,9 +328,9 @@ namespace AZ::DocumentPropertyEditor
                 }
             }
 
-            ExtractLabel(attributes);
             if (access.GetType() == azrtti_typeid<AZStd::string>())
             {
+                ExtractLabel(attributes);
                 AZStd::string& value = *reinterpret_cast<AZStd::string*>(access.Get());
                 VisitValue(
                     Dom::Utils::ValueFromType(value), &value, attributes,
@@ -342,44 +342,66 @@ namespace AZ::DocumentPropertyEditor
                     false);
                 return;
             }
-
-            auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
-            if (!containerAttribute.IsNull())
+            else
             {
-                auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(containerAttribute);
-                m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ container, access.Get() });
-                size_t containerSize = container->Size(access.Get());
-                if (containerSize == 1)
+                AZStd::string_view labelAttribute = "MISSING_LABEL";
+                Dom::Value label = attributes.Find(Reflection::DescriptorAttributes::Label);
+                if (!label.IsNull())
                 {
-                    m_builder.Label("1 element");
+                    if (!label.IsString())
+                    {
+                        AZ_Warning("DPE", false, "Unable to read Label from property, Label was not a string");
+                    }
+                    else
+                    {
+                        labelAttribute = label.GetString();
+                    }
+                }
+
+                auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
+                if (!containerAttribute.IsNull())
+                {
+                    auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(containerAttribute);
+                    m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ container, access.Get() });
+                    size_t containerSize = container->Size(access.Get());
+                    if (containerSize == 1)
+                    {
+                        m_builder.Label(AZStd::string::format("%s (1 element)", labelAttribute.data()));
+                    }
+                    else
+                    {
+                        m_builder.Label(AZStd::string::format("%s (%zu elements)", labelAttribute.data(), container->Size(access.Get())));
+                    }
+
+                    if (!container->IsFixedSize())
+                    {
+                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
+                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
+                        m_builder.EndPropertyEditor();
+
+                        m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                        m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
+                        m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
+                        m_builder.EndPropertyEditor();
+                    }
                 }
                 else
                 {
-                    m_builder.Label(AZStd::string::format("%zu elements", container->Size(access.Get())));
+                    m_builder.Label(labelAttribute.data());
                 }
 
-                if (!container->IsFixedSize())
-                {
-                    m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                    m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
-                    m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                    m_builder.EndPropertyEditor();
-
-                    m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
-                    m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
-                    m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
-                    m_builder.EndPropertyEditor();
-                }
+                AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
+                VisitValue(
+                    instancePointerValue,
+                    access.Get(),
+                    attributes,
+                    [](const Dom::Value& newValue)
+                    {
+                        return newValue;
+                    },
+                    false);
             }
-
-            AZ::Dom::Value instancePointerValue = AZ::Dom::Utils::MarshalTypedPointerToValue(access.Get(), access.GetType());
-            VisitValue(
-                instancePointerValue, access.Get(), attributes,
-                [](const Dom::Value& newValue)
-                {
-                    return newValue;
-                },
-                false);
         }
 
         void VisitObjectEnd([[maybe_unused]] Reflection::IObjectAccess& access, const Reflection::IAttributes& attributes) override

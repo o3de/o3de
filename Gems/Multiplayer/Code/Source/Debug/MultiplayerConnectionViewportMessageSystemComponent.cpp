@@ -99,7 +99,7 @@ namespace Multiplayer
             const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
             m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
-            m_drawParams.m_color = AZ::Colors::Yellow;
+            m_drawParams.m_color = m_centerViewportDebugTextColor;
             m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportDebugTitle);
             
             // Draw center debug text under the title
@@ -197,31 +197,37 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = OnServerLaunchedMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
     }   
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptMessage, connectionAttempts, maxAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttemptsFailed(uint16_t failedAttempts)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptsFailedMessage, failedAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnConnectToSimulationFailMessage, serverPort);
     }
 
@@ -234,4 +240,11 @@ namespace Multiplayer
     {
         m_centerViewportDebugText.clear();
     }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorServerProcessStoppedUnexpectedly()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
+        m_centerViewportDebugText = OnEditorServerStoppedUnexpectedly;
+    }
+
 }

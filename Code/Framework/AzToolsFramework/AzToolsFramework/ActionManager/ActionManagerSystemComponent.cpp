@@ -14,13 +14,25 @@
 
 namespace AzToolsFramework
 {
+    ActionManagerSystemComponent::~ActionManagerSystemComponent()
+    {
+        if (m_defaultParentObject)
+        {
+            delete m_defaultParentObject;
+            m_defaultParentObject = nullptr;
+        }
+    }
+
     void ActionManagerSystemComponent::Init()
     {
         if (IsNewActionManagerEnabled())
         {
+            m_defaultParentObject = new QWidget();
+
             m_actionManager = AZStd::make_unique<ActionManager>();
-            m_menuManager = AZStd::make_unique<MenuManager>();
-            m_toolBarManager = AZStd::make_unique<ToolBarManager>();
+            m_hotKeyManager = AZStd::make_unique<HotKeyManager>();
+            m_menuManager = AZStd::make_unique<MenuManager>(m_defaultParentObject);
+            m_toolBarManager = AZStd::make_unique<ToolBarManager>(m_defaultParentObject);
         }
     }
 
@@ -38,6 +50,9 @@ namespace AzToolsFramework
         {
             serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
+
+        MenuManager::Reflect(context);
+        ToolBarManager::Reflect(context);
     }
 
     void ActionManagerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

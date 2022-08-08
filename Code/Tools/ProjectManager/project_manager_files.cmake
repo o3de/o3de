@@ -23,6 +23,8 @@ set(FILES
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
+    Source/FormComboBoxWidget.h
+    Source/FormComboBoxWidget.cpp
     Source/FormFolderBrowseEditWidget.h
     Source/FormFolderBrowseEditWidget.cpp
     Source/FormImageBrowseEditWidget.h
