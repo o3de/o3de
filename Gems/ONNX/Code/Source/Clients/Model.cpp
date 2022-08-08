@@ -42,6 +42,7 @@ namespace ONNX
         Ort::Env* m_env;
         ONNXRequestBus::BroadcastResult(m_env, &ONNXRequestBus::Events::GetEnv);
 
+#ifdef ENABLE_CUDA
         // OrtCudaProviderOptions must be added to the session options to specify execution on CUDA.
         // Can specify a number of parameters about the CUDA execution here - currently all left at default.
         Ort::SessionOptions sessionOptions;
@@ -51,6 +52,7 @@ namespace ONNX
             sessionOptions.AppendExecutionProvider_CUDA(cuda_options);
         }
         m_cudaEnable = initSettings.m_cudaEnable;
+#endif
 
         // The model_path provided to Ort::Session needs to be const wchar_t*, even though the docs state const char* - doesn't work otherwise.
         AZStd::string onnxModelPathString = onnxModelPath.String();
