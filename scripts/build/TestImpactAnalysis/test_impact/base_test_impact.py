@@ -437,7 +437,9 @@ class BaseTestImpact(ABC):
                 report = json.load(json_file)
 
             # Grab the list of failing test targets for this sequence
-            test_runs = self._extract_test_runs_from_sequence_report(report)
+            # Commented out as this data is currently not used.
+            # TODO: Implement this 
+            # test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and self._persistent_storage:
