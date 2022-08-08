@@ -22,6 +22,14 @@ namespace Mnist
         float m_runtime;
     };
 
+    struct InferenceData
+    {
+        float m_totalRuntimeInMs;
+        float m_averageRuntimeInMs;
+        int m_totalNumberOfInferences;
+        int64_t m_numberOfCorrectInferences;
+    };
+
     //! Extension of ONNX Model used for Mnist example.
     //! Implements additional functionality useful to have for the example, such as keeping hold of the input and output vectors, and result
     //! (which the model doesn't do).
@@ -69,5 +77,5 @@ namespace Mnist
     //! @testsPerDigit specifies how many runs to do on each digit 0-9. Each run will be done on a unique image of that digit. Limit is
     //! ~9,000.
     //! @cudaEnable just specifies if the inferences should be run on gpu using CUDA or default cpu.
-    void RunMnistSuite(int testsPerDigit, bool cudaEnable);
+    InferenceData RunMnistSuite(int testsPerDigit, bool cudaEnable);
 } // namespace Mnist

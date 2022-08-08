@@ -15,40 +15,9 @@
 
 namespace ONNX
 {
-    void ONNXSystemComponent::SetPrecomputedTimingData(int totalCount, int64_t correctCount, float totalTime, float avgTime)
-    {
-        m_precomputedTimingData->m_totalNumberOfInferences = totalCount;
-        m_precomputedTimingData->m_numberOfCorrectInferences = correctCount;
-        m_precomputedTimingData->m_totalPrecomputedRuntime = totalTime;
-        m_precomputedTimingData->m_averagePrecomputedRuntime = avgTime;
-    }
-
-    PrecomputedTimingData* ONNXSystemComponent::GetPrecomputedTimingData()
-    {
-        return m_precomputedTimingData.get();
-    }
-
-    void ONNXSystemComponent::SetPrecomputedTimingDataCuda(int totalCount, int64_t correctCount, float totalTime, float avgTime)
-    {
-        m_precomputedTimingDataCuda->m_totalNumberOfInferences = totalCount;
-        m_precomputedTimingDataCuda->m_numberOfCorrectInferences = correctCount;
-        m_precomputedTimingDataCuda->m_totalPrecomputedRuntime = totalTime;
-        m_precomputedTimingDataCuda->m_averagePrecomputedRuntime = avgTime;
-    }
-
-    PrecomputedTimingData* ONNXSystemComponent::GetPrecomputedTimingDataCuda()
-    {
-        return m_precomputedTimingDataCuda.get();
-    }
-
     void ONNXSystemComponent::AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor)
     {
         m_timingStats.PushHistogramValue(modelName, inferenceTimeInMilliseconds, modelColor);
-    }
-
-    void ONNXSystemComponent::AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor)
-    {
-        m_timingStatsCuda.PushHistogramValue(modelName, inferenceTimeInMilliseconds, modelColor);
     }
 
     void ONNXSystemComponent::OnImGuiUpdate()
@@ -117,11 +86,6 @@ namespace ONNX
         m_timingStats.SetName("ONNX Inference Timing Statistics");
         m_timingStats.SetHistogramBinCount(200);
 
-#ifdef ENABLE_CUDA
-        m_timingStatsCuda.SetName("MNIST CUDA Timing Statistics");
-        m_timingStatsCuda.SetHistogramBinCount(200);
-#endif
-
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
     }
 
@@ -157,78 +121,12 @@ namespace ONNX
     {
         m_env = AZStd::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_VERBOSE, "test_log", OnnxLoggingFunction, nullptr);
         m_allocator = AZStd::make_unique<Ort::AllocatorWithDefaultOptions>();
-        m_precomputedTimingData = AZStd::make_unique<PrecomputedTimingData>();
-        m_precomputedTimingDataCuda = AZStd::make_unique<PrecomputedTimingData>();
-    }
-
-    // Creates two mnist model instances that live in the system component and hooks them into the game tick. These are used for the
-    // realtime inferencing demo in the editor.
-    void ONNXSystemComponent::InitRuntimeMnistExamples()
-    {
-        ONNXRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
-
-        m_mnist = AZStd::make_unique<::Mnist::Mnist>();
-
-        AZStd::vector<float> input(m_mnist->m_imageSize);
-        m_mnist->m_input = input;
-
-        AZStd::vector<float> output(10);
-        m_mnist->m_output = output;
-
-       ::Mnist::Mnist::InitSettings modelInitSettings;
-        modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
-        modelInitSettings.m_outputShape = { 1, 10 };
-        modelInitSettings.m_modelName = "MNIST (Realtime)";
-
-        m_mnist->Load(modelInitSettings);
-
-        // For simplicity, the demo inferences the same test image on each tick.
-        AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
-        AZ::IO::FixedMaxPath demoImagePath;
-        if (fileIo && fileIo->ResolvePath(demoImagePath, "@gemroot:ONNX@/Assets/mnist_png/testing/0/10.png"))
-        {
-            m_mnist->LoadImage(demoImagePath.c_str());
-        }
-
-        m_mnist->BusConnect();
-
-#ifdef ENABLE_CUDA
-        m_mnistCuda = AZStd::make_unique<::Mnist::Mnist>();
-        m_mnistCuda->m_input = input;
-        m_mnistCuda->m_output = output;
-
-        ::Mnist::Mnist::InitSettings modelInitSettingsCuda;
-        modelInitSettingsCuda.m_inputShape = { 1, 1, 28, 28 };
-        modelInitSettingsCuda.m_outputShape = { 1, 10 };
-        modelInitSettingsCuda.m_modelName = "MNIST CUDA (Realtime)";
-        modelInitSettingsCuda.m_modelColor = AZ::Color::CreateFromRgba(56, 229, 59, 255);
-        modelInitSettingsCuda.m_cudaEnable = true;
-
-        m_mnistCuda->Load(modelInitSettingsCuda);
-
-        m_mnistCuda->LoadImage(demoImagePath.c_str());
-
-        m_mnistCuda->BusConnect();
-#endif
     }
 
     void ONNXSystemComponent::Activate()
     {
         ONNXRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
-
-        // Sample collections of inferences are run both on CPU and GPU.
-        // These are run before the editor opens, and are used to compare the differences in inference times between precomputed and
-        // realtime execution. Using this we are able to observe that both CPU and GPU inference times are far greater when run in real time
-        // in the game tick. The results for these runs are displayed alongside the realtime data in the ImGui dashboard.
-        ::Mnist::RunMnistSuite(20, false);
-
-#ifdef ENABLE_CUDA
-        ::Mnist::RunMnistSuite(20, true);
-#endif
-
-        InitRuntimeMnistExamples();
     }
 
     void ONNXSystemComponent::Deactivate()

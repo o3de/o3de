@@ -7,31 +7,47 @@
  */
 
 #include <Mnist.h>
+#include <ONNXSystemComponent.h>
 
-#include <AzTest/AzTest.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Slice/SliceAssetHandler.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzTest/AzTest.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
-#include <UnitTest/ToolsTestApplication.h>
 #include <QApplication>
+#include <UnitTest/ToolsTestApplication.h>
 
 namespace Mnist
 {
     class MnistTestEnvironment : public AZ::Test::GemTestEnvironment
     {
-        AZ::ComponentApplication* CreateApplicationInstance() override
+        void AddGemsAndComponents() override
         {
-            // Using ToolsTestApplication to have AzFramework and AzToolsFramework components.
-            return aznew UnitTest::ToolsTestApplication("Mnist");
+            AddComponentDescriptors({ ::ONNX::ONNXSystemComponent::CreateDescriptor() });
+
+            AddRequiredComponents({ ::ONNX::ONNXSystemComponent::TYPEINFO_Uuid() });
         }
 
-        public:
-            MnistTestEnvironment() = default;
-            ~MnistTestEnvironment() override = default;
+        void PreCreateApplication() override
+        {
+            m_fileIO = AZStd::make_unique<AZ::IO::LocalFileIO>();
+            AZ::IO::FileIOBase::SetInstance(m_fileIO.get());
+        }
+
+        void PostDestroyApplication() override
+        {
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            m_fileIO.reset();
+        }
+
+    private:
+        AZStd::unique_ptr<AZ::IO::LocalFileIO> m_fileIO;
     };
 
     class MnistFixture : public ::testing::Test
@@ -39,6 +55,15 @@ namespace Mnist
     protected:
         void SetUp() override
         {
+            AZ::SettingsRegistryImpl localRegistry;
+            localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+
+            // Look up the path to the ONNX Gem Folder (don't assume it is in the Engine root)
+            // via searching through the gem paths that are registered in the o3de manifest files
+            // Adding the ONNX gem as an active gem allows the alias of @gemroot:ONNX@ to be
+            // set in the fileIO
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
+            AZ::Test::AddActiveGem("ONNX", localRegistry, AZ::IO::FileIOBase::GetInstance());
         }
 
         void TearDown() override
@@ -48,10 +73,9 @@ namespace Mnist
 
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCpu)
     {
-        ::ONNX::PrecomputedTimingData* timingData;
-        ::ONNX::ONNXRequestBus::BroadcastResult(timingData, &::ONNX::ONNXRequestBus::Events::GetPrecomputedTimingData);
+        InferenceData cpuInferenceData = RunMnistSuite(20, false);
 
-        float accuracy = (float)timingData->m_numberOfCorrectInferences / (float)timingData->m_totalNumberOfInferences;
+        float accuracy = (float)cpuInferenceData.m_numberOfCorrectInferences / (float)cpuInferenceData.m_totalNumberOfInferences;
 
         EXPECT_GT(accuracy, 0.9f);
     }
@@ -59,10 +83,9 @@ namespace Mnist
 #ifdef ENABLE_CUDA
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCuda)
     {
-        ::ONNX::PrecomputedTimingData* timingDataCuda;
-        ::ONNX::ONNXRequestBus::BroadcastResult(timingDataCuda, &::ONNX::ONNXRequestBus::Events::GetPrecomputedTimingDataCuda);
+        InferenceData gpuInferenceData = RunMnistSuite(20, true);
 
-        float accuracy = (float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences;
+        float accuracy = (float)gpuInferenceData.m_numberOfCorrectInferences / (float)gpuInferenceData.m_totalNumberOfInferences;
 
         EXPECT_GT(accuracy, 0.9f);
     }

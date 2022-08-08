@@ -49,11 +49,6 @@ namespace ONNX
         AZStd::unique_ptr<Ort::AllocatorWithDefaultOptions> m_allocator;
         Ort::AllocatorWithDefaultOptions* GetAllocator() override;
 
-        AZStd::unique_ptr<::Mnist::Mnist> m_mnist;
-        AZStd::unique_ptr<::Mnist::Mnist> m_mnistCuda;
-
-        void InitRuntimeMnistExamples();
-
         ONNXSystemComponent();
         ~ONNXSystemComponent();
 
@@ -61,19 +56,8 @@ namespace ONNX
         ////////////////////////////////////////////////////////////////////////
         // ONNXRequestBus interface implementation
         ImGui::LYImGuiUtils::HistogramGroup m_timingStats;
-        ImGui::LYImGuiUtils::HistogramGroup m_timingStatsCuda;
-
-        AZStd::unique_ptr<PrecomputedTimingData> m_precomputedTimingData;
-        AZStd::unique_ptr<PrecomputedTimingData> m_precomputedTimingDataCuda;
-
-        PrecomputedTimingData* GetPrecomputedTimingData() override;
-        void SetPrecomputedTimingData(int totalCount, int64_t correctCount, float totalTime, float avgTime) override;
-
-        PrecomputedTimingData* GetPrecomputedTimingDataCuda() override;
-        void SetPrecomputedTimingDataCuda(int totalCount, int64_t correctCount, float totalTime, float avgTime) override;
 
         void AddTimingSample(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) override;
-        void AddTimingSampleCuda(const char* modelName, float inferenceTimeInMilliseconds, AZ::Color modelColor) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

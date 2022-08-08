@@ -8,6 +8,8 @@
 
 #include "Model.h"
 
+#pragma optimize("", off)
+
 namespace ONNX
 {
     void Model::Load(const InitSettings& initSettings)
@@ -39,8 +41,8 @@ namespace ONNX
         m_modelColor = initSettings.m_modelColor;
 
         // Grabs environment created on init of system component.
-        Ort::Env* m_env;
-        ONNXRequestBus::BroadcastResult(m_env, &ONNXRequestBus::Events::GetEnv);
+        Ort::Env* env = nullptr;
+        ONNXRequestBus::BroadcastResult(env, &ONNXRequestBus::Events::GetEnv);
 
 #ifdef ENABLE_CUDA
         // OrtCudaProviderOptions must be added to the session options to specify execution on CUDA.
@@ -56,7 +58,7 @@ namespace ONNX
 
         // The model_path provided to Ort::Session needs to be const wchar_t*, even though the docs state const char* - doesn't work otherwise.
         AZStd::string onnxModelPathString = onnxModelPath.String();
-        m_session = Ort::Session(*m_env, AZStd::wstring(onnxModelPathString.cbegin(), onnxModelPathString.cend()).c_str(), sessionOptions);
+        m_session = Ort::Session(*env, AZStd::wstring(onnxModelPathString.cbegin(), onnxModelPathString.cend()).c_str(), sessionOptions);
         m_memoryInfo = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
 
         // Grabs memory allocator created on init of system component.
@@ -102,3 +104,4 @@ namespace ONNX
         ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
     }
 } // namespace ONNX
+#pragma optimize("", on)

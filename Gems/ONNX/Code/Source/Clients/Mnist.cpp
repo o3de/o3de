@@ -77,7 +77,7 @@ namespace Mnist
         return (returnValues);
     }
 
-    void RunMnistSuite(int testsPerDigit, bool cudaEnable)
+    InferenceData RunMnistSuite(int testsPerDigit, bool cudaEnable)
     {
         // Initialises and loads the mnist model.
         // The same instance of the model is used for all runs.
@@ -158,29 +158,16 @@ namespace Mnist
         float accuracy = ((float)numOfCorrectInferences / (float)totalFiles) * 100.0f;
         float avgRuntimeInMilliseconds = totalRuntimeInMilliseconds / (totalFiles);
 
-        // The stats for the run are broadcast to their respective timing data members in the system component.
-        // This data is used to populate the header in the ImGui dashboard in the editor.
-        if (cudaEnable)
-        {
-            ::ONNX::ONNXRequestBus::Broadcast(
-                &::ONNX::ONNXRequestBus::Events::SetPrecomputedTimingDataCuda,
-                totalFiles,
-                numOfCorrectInferences,
-                totalRuntimeInMilliseconds,
-                avgRuntimeInMilliseconds);
-        }
-        else
-        {
-            ::ONNX::ONNXRequestBus::Broadcast(
-                &::ONNX::ONNXRequestBus::Events::SetPrecomputedTimingData,
-                totalFiles,
-                numOfCorrectInferences,
-                totalRuntimeInMilliseconds,
-                avgRuntimeInMilliseconds);
-        }
-
         AZ_Printf("ONNX", " Run Type: %s\n", cudaEnable ? "CUDA" : "CPU");
         AZ_Printf("ONNX", " Evaluated: %d  Correct: %d  Accuracy: %f%%\n", totalFiles, numOfCorrectInferences, accuracy);
         AZ_Printf("ONNX", " Total Runtime: %fms  Avg Runtime: %fms\n", totalRuntimeInMilliseconds, avgRuntimeInMilliseconds);
+
+        InferenceData result;
+        result.m_averageRuntimeInMs = avgRuntimeInMilliseconds;
+        result.m_totalRuntimeInMs = totalRuntimeInMilliseconds;
+        result.m_totalNumberOfInferences = totalFiles;
+        result.m_numberOfCorrectInferences = numOfCorrectInferences;
+
+        return result;
     }
 } // namespace Mnist
