@@ -310,7 +310,7 @@ namespace AZ
             void InitDebugMessages(const GladVulkanContext& context, VkInstance instance, DebugMessageTypeFlag messageTypeMask)
             {
                 // First check if VK_EXT_debug_utils is supported since it has the same functionalities as VK_EXT_debug_report and more.
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     VkDebugUtilsMessengerCreateInfoEXT createInfo{};
                     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -347,7 +347,7 @@ namespace AZ
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
                 }
-                else if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_report))
+                else if (VK_INSTANCE_EXTENSION_SUPPORTED(context, EXT_debug_report))
                 {
                     VkDebugReportCallbackCreateInfoEXT dbgCreateInfo = {};
                     dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
@@ -439,7 +439,7 @@ namespace AZ
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
                 AZ_Assert(objectHandle != reinterpret_cast<uint64_t>(VK_NULL_HANDLE), "objectHandle is null.");
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_DEVICE_EXTENSION_SUPPORTED(device.GetContext(), EXT_debug_utils))
                 {
                     VkDebugUtilsObjectNameInfoEXT info{};
                     info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
@@ -458,7 +458,7 @@ namespace AZ
                 [[maybe_unused]] const AZ::Color color)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     VkDebugUtilsLabelEXT info = CreateVkDebugUtilLabel(label, color);
                     context.CmdBeginDebugUtilsLabelEXT(commandBuffer, &info);
@@ -469,7 +469,7 @@ namespace AZ
             void EndCmdDebugLabel([[maybe_unused]] const GladVulkanContext& context, [[maybe_unused]] VkCommandBuffer commandBuffer)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     context.CmdEndDebugUtilsLabelEXT(commandBuffer);
                 }
@@ -483,7 +483,7 @@ namespace AZ
                 [[maybe_unused]] const AZ::Color color)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     VkDebugUtilsLabelEXT info = CreateVkDebugUtilLabel(label, color);
                     context.QueueBeginDebugUtilsLabelEXT(queue, &info);
@@ -494,7 +494,7 @@ namespace AZ
             void EndQueueDebugLabel([[maybe_unused]] const GladVulkanContext& context, [[maybe_unused]] VkQueue queue)
             {
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-                if constexpr (VK_INSTANCE_EXTENSION_SUPPORTED(EXT_debug_utils))
+                if (VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_debug_utils))
                 {
                     context.QueueEndDebugUtilsLabelEXT(queue);
                 }
