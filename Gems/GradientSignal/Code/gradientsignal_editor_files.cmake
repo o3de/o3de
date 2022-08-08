@@ -11,6 +11,7 @@ set(FILES
     Include/GradientSignal/Editor/EditorGradientBakerRequestBus.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.inl
+    Include/GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h
     Include/GradientSignal/Editor/EditorGradientPainterComponent.h
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
     Include/GradientSignal/Editor/EditorGradientTypeIds.h

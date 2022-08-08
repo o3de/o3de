@@ -130,12 +130,14 @@ namespace GradientSignal
     void EditorGradientPainterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("GradientPainterService"));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void EditorGradientPainterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC_CE("GradientPainterService"));
         services.push_back(AZ_CRC_CE("GradientBakerService"));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void EditorGradientPainterComponent::Activate()
@@ -152,6 +154,8 @@ namespace GradientSignal
         // Setup the dependency monitor and listen for gradient requests
         SetupDependencyMonitor();
 
+        GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
+
         UpdatePreviewSettings();
     }
 
@@ -159,6 +163,8 @@ namespace GradientSignal
     {
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        GradientImageCreatorRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 

@@ -35,7 +35,7 @@
 // Gradient Signal
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 
 // Vegetation
 #include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
@@ -1581,8 +1581,8 @@ namespace LandscapeCanvasEditor
         // So we need to use the corresponding request bus APIs to update the image asset path on
         // the Image Gradient
         AZ::IO::Path outputImagePath;
-        GradientSignal::GradientBakerRequestBus::EventResult(
-            outputImagePath, sourceEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+        GradientSignal::GradientImageCreatorRequestBus::EventResult(
+            outputImagePath, sourceEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
         if (!outputImagePath.empty())
         {
@@ -3370,8 +3370,8 @@ namespace LandscapeCanvasEditor
                 }
 
                 AZ::IO::Path outputImagePath;
-                GradientSignal::GradientBakerRequestBus::EventResult(
-                    outputImagePath, nodeEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+                GradientSignal::GradientImageCreatorRequestBus::EventResult(
+                    outputImagePath, nodeEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
                 if (imageSourceAssetPath == outputImagePath)
                 {

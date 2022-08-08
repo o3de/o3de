@@ -383,6 +383,26 @@ namespace GradientSignal
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->Class<EditorGradientBakerComponent>()->RequestBus("GradientImageCreatorRequestBus");
+
+            behaviorContext->EBus<GradientImageCreatorRequestBus>("GradientImageCreatorRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Gradient")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "gradient")
+                ->Event("GetInputBounds", &GradientImageCreatorRequests::GetInputBounds)
+                ->Event("SetInputBounds", &GradientImageCreatorRequests::SetInputBounds)
+                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds")
+                ->Event("GetOutputResolution", &GradientImageCreatorRequests::GetOutputResolution)
+                ->Event("SetOutputResolution", &GradientImageCreatorRequests::SetOutputResolution)
+                ->VirtualProperty("OutputResolution", "GetOutputResolution", "SetOutputResolution")
+                ->Event("GetOutputFormat", &GradientImageCreatorRequests::GetOutputFormat)
+                ->Event("SetOutputFormat", &GradientImageCreatorRequests::SetOutputFormat)
+                ->VirtualProperty("OutputFormat", "GetOutputFormat", "SetOutputFormat")
+                ->Event("GetOutputImagePath", &GradientImageCreatorRequests::GetOutputImagePath)
+                ->Event("SetOutputImagePath", &GradientImageCreatorRequests::SetOutputImagePath)
+                ->VirtualProperty("OutputImagePath", "GetOutputImagePath", "SetOutputImagePath");
+
+
             behaviorContext->Class<EditorGradientBakerComponent>()->RequestBus("GradientBakerRequestBus");
 
             behaviorContext->EBus<GradientBakerRequestBus>("GradientBakerRequestBus")
@@ -390,18 +410,6 @@ namespace GradientSignal
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "gradient")
                 ->Event("BakeImage", &GradientBakerRequests::BakeImage)
-                ->Event("GetInputBounds", &GradientBakerRequests::GetInputBounds)
-                ->Event("SetInputBounds", &GradientBakerRequests::SetInputBounds)
-                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds")
-                ->Event("GetOutputResolution", &GradientBakerRequests::GetOutputResolution)
-                ->Event("SetOutputResolution", &GradientBakerRequests::SetOutputResolution)
-                ->VirtualProperty("OutputResolution", "GetOutputResolution", "SetOutputResolution")
-                ->Event("GetOutputFormat", &GradientBakerRequests::GetOutputFormat)
-                ->Event("SetOutputFormat", &GradientBakerRequests::SetOutputFormat)
-                ->VirtualProperty("OutputFormat", "GetOutputFormat", "SetOutputFormat")
-                ->Event("GetOutputImagePath", &GradientBakerRequests::GetOutputImagePath)
-                ->Event("SetOutputImagePath", &GradientBakerRequests::SetOutputImagePath)
-                ->VirtualProperty("OutputImagePath", "GetOutputImagePath", "SetOutputImagePath")
                 ;
         }
     }
@@ -439,6 +447,7 @@ namespace GradientSignal
         SetupDependencyMonitor();
 
         GradientBakerRequestBus::Handler::BusConnect(GetEntityId());
+        GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
         UpdatePreviewSettings();
 
@@ -461,6 +470,7 @@ namespace GradientSignal
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
 
+        GradientImageCreatorRequestBus::Handler::BusDisconnect();
         GradientBakerRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();

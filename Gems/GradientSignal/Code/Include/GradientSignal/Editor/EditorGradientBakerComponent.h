@@ -23,6 +23,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/GradientSampler.h>
 
@@ -81,6 +82,7 @@ namespace GradientSignal
         , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private GradientRequestBus::Handler
         , private GradientBakerRequestBus::Handler
+        , private GradientImageCreatorRequestBus::Handler
         , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private SectorDataNotificationBus::Handler
@@ -104,7 +106,7 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
-        //! GradientBakerRequestBus overrides ...
+        //! GradientImageCreatorRequestBus overrides ...
         AZ::EntityId GetInputBounds() const override;
         void SetInputBounds(const AZ::EntityId& inputBounds) override;
         AZ::Vector2 GetOutputResolution() const override;
@@ -113,6 +115,8 @@ namespace GradientSignal
         void SetOutputFormat(OutputFormat outputFormat) override;
         AZ::IO::Path GetOutputImagePath() const override;
         void SetOutputImagePath(const AZ::IO::Path& outputImagePath) override;
+
+        //! GradientBakerRequestBus overrides ...
         void BakeImage() override;
 
         //! LmbrCentral::DependencyNotificationBus overrides ...

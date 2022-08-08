@@ -22,7 +22,7 @@
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/GradientSampler.h>
 
@@ -51,6 +51,7 @@ namespace GradientSignal
         : public AzToolsFramework::Components::EditorComponentBase
         , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private GradientRequestBus::Handler
+        , private GradientImageCreatorRequestBus::Handler
         , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private SectorDataNotificationBus::Handler
@@ -73,14 +74,15 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
-        AZ::EntityId GetInputBounds() const;
-        void SetInputBounds(const AZ::EntityId& inputBounds);
-        AZ::Vector2 GetOutputResolution() const;
-        void SetOutputResolution(const AZ::Vector2& resolution);
-        OutputFormat GetOutputFormat() const;
-        void SetOutputFormat(OutputFormat outputFormat);
-        AZ::IO::Path GetOutputImagePath() const;
-        void SetOutputImagePath(const AZ::IO::Path& outputImagePath);
+        //! GradientImageCreatorRequestBus overrides ...
+        AZ::EntityId GetInputBounds() const override;
+        void SetInputBounds(const AZ::EntityId& inputBounds) override;
+        AZ::Vector2 GetOutputResolution() const override;
+        void SetOutputResolution(const AZ::Vector2& resolution) override;
+        OutputFormat GetOutputFormat() const override;
+        void SetOutputFormat(OutputFormat outputFormat) override;
+        AZ::IO::Path GetOutputImagePath() const override;
+        void SetOutputImagePath(const AZ::IO::Path& outputImagePath) override;
 
         //! LmbrCentral::DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
