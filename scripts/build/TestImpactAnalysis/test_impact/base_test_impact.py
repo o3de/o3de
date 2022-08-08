@@ -196,10 +196,10 @@ class BaseTestImpact(ABC):
         try:
             if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch)
+                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file)
             else:
                 return PersistentStorageLocal(
-                    self._config, suite, self._dst_commit)
+                    self._config, suite, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file)
         except SystemError as e:
             logger.warning(
                 f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
@@ -229,17 +229,33 @@ class BaseTestImpact(ABC):
         @param config_file: The runtime config file to obtain the runtime configuration data from.
         """
 
+        COMMON_CONFIG_KEY = "common"
+        WORKSPACE_KEY = "workspace"
+        HISTORIC_SEQUENCES_KEY = "historic_sequences"
+        ACTIVE_KEY = "active"
+        ROOT_KEY = "root"
+        TEMP_KEY = "temp"
+        REPO_KEY = "repo"
+        HISTORIC_KEY = "historic"
+        RELATIVE_PATHS_KEY = "relative_paths"
+        TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
+        PREVIOUS_TEST_RUN_DATA_FILE_KEY = "previous_test_run_data_file"
+        LAST_COMMIT_HASH_KEY = "last_commit_hash"
+        COVERAGE_DATA_KEY = "coverage_data"
+        PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
+        HISTORIC_DATA_FILE_KEY = "data"
+
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
         try:
             with open(config_file, "r") as config_data:
                 config = json.load(config_data)
-                self._repo_dir = config["common"]["repo"]["root"]
+                self._repo_dir = config[COMMON_CONFIG_KEY][REPO_KEY][ROOT_KEY]
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
                 self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = Path(config["common"]["repo"]["tiaf_bin"])
+                self._tiaf_bin = Path(config[self.runtime_type]["runtime_bin"])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -249,9 +265,15 @@ class BaseTestImpact(ABC):
                         f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
-                self._active_workspace = config["common"]["workspace"]["active"]["root"]
-                self._historic_workspace = config["common"]["workspace"]["historic"]["root"]
-                self._temp_workspace = config["common"]["workspace"]["temp"]["root"]
+                self._active_workspace = config[self.runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
+                self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
+                self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
+                self._unpacked_coverage_data_file = config[self.runtime_type][
+                    WORKSPACE_KEY][ACTIVE_KEY][RELATIVE_PATHS_KEY][TEST_IMPACT_DATA_FILE_KEY]
+                self._previous_test_run_data_file = config[self.runtime_type][WORKSPACE_KEY][
+                    ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+                self._historic_data_file = config[self.runtime_type][WORKSPACE_KEY][
+                    HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
