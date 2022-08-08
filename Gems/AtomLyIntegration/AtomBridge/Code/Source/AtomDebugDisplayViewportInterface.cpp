@@ -705,26 +705,7 @@ namespace AZ::AtomBridge
 
     void AtomDebugDisplayViewportInterface::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
     {
-        if (m_auxGeomPtr)
-        {
-            AZStd::vector<AZ::Vector3> wsPoints(static_cast<size_t>(numPoints));
-            for (int index = 0; index < numPoints; ++index)
-            {
-                wsPoints[index] = ToWorldSpacePosition(pnts[index]);
-            }
-            AZ::RPI::AuxGeomDraw::PolylineEnd polylineEnd = cycled ? AZ::RPI::AuxGeomDraw::PolylineEnd::Closed : AZ::RPI::AuxGeomDraw::PolylineEnd::Open;
-            AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-            drawArgs.m_verts = wsPoints.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(numPoints);
-            drawArgs.m_colors = &m_rendState.m_color;
-            drawArgs.m_colorCount = 1;
-            drawArgs.m_size = m_rendState.m_lineWidth;
-            drawArgs.m_opacityType = m_rendState.m_opacityType;
-            drawArgs.m_depthTest = m_rendState.m_depthTest;
-            drawArgs.m_depthWrite = m_rendState.m_depthWrite;
-            drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
-            m_auxGeomPtr->DrawPolylines(drawArgs, polylineEnd);
-        }
+        DrawPolyLine(AZStd::span<const AZ::Vector3>(pnts, numPoints), cycled);
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z)
