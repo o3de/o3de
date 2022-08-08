@@ -27,6 +27,7 @@
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
+#include <GradientSignal/Editor/EditorGradientPainterComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <UI/GradientPreviewDataWidget.h>
 
@@ -38,6 +39,7 @@ namespace GradientSignal
             GradientSignalEditorSystemComponent::CreateDescriptor(),
 
             EditorGradientBakerComponent::CreateDescriptor(),
+            EditorGradientPainterComponent::CreateDescriptor(),
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),

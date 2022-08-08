@@ -11,6 +11,7 @@ set(FILES
     Include/GradientSignal/Editor/EditorGradientBakerRequestBus.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.inl
+    Include/GradientSignal/Editor/EditorGradientPainterComponent.h
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
     Include/GradientSignal/Editor/EditorGradientTypeIds.h
     Source/UI/GradientPreviewDataWidget.cpp
@@ -22,6 +23,7 @@ set(FILES
     Source/Editor/EditorDitherGradientComponent.cpp
     Source/Editor/EditorDitherGradientComponent.h
     Source/Editor/EditorGradientBakerComponent.cpp
+    Source/Editor/EditorGradientPainterComponent.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.h
     Source/Editor/EditorGradientTransformComponent.cpp
