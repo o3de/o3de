@@ -23,6 +23,7 @@ namespace TestImpact
 
     namespace PythonCoverage
     {
+        //! Coverage artifact for PyCoverage files.
         struct PythonModuleCoverage
         {
             AZStd::string m_testCase;

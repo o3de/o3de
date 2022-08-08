@@ -13,7 +13,6 @@
 
 namespace TestImpact
 {
-    //!
     AZStd::tuple<TargetList<PythonProductionTarget>, TargetList<PythonTestTarget>> CompilePythonTargetLists(
         AZStd::vector<TargetDescriptor>&& buildTargetDescriptors, PythonTestTargetMetaMap&& testTargetMetaMap)
     {
