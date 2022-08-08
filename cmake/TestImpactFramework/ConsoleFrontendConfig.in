@@ -19,7 +19,7 @@
           "target_sources": {
             "static": {
               "include_filters": [
-                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
+                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx", ".py"
               ]
             },
             "autogen": {
