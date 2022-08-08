@@ -9,7 +9,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Frustum.h>
@@ -674,6 +676,30 @@ namespace AZ::AtomBridge
             drawArgs.m_depthWrite = m_rendState.m_depthWrite;
             drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
             m_auxGeomPtr->DrawLines(drawArgs);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawPolyLine(AZStd::span<const AZ::Vector3> points, bool cycled)
+    {
+        if (m_auxGeomPtr)
+        {
+            AZStd::vector<AZ::Vector3> wsPoints;
+            wsPoints.resize_no_construct(points.size());
+            AZStd::transform(points.begin(), points.end(), wsPoints.begin(), [&](auto& pnt) {
+                return ToWorldSpacePosition(pnt);
+            });
+            AZ::RPI::AuxGeomDraw::PolylineEnd polylineEnd = cycled ? AZ::RPI::AuxGeomDraw::PolylineEnd::Closed : AZ::RPI::AuxGeomDraw::PolylineEnd::Open;
+            AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
+            drawArgs.m_verts = wsPoints.data();
+            drawArgs.m_vertCount = wsPoints.size();
+            drawArgs.m_colors = &m_rendState.m_color;
+            drawArgs.m_colorCount = 1;
+            drawArgs.m_size = m_rendState.m_lineWidth;
+            drawArgs.m_opacityType = m_rendState.m_opacityType;
+            drawArgs.m_depthTest = m_rendState.m_depthTest;
+            drawArgs.m_depthWrite = m_rendState.m_depthWrite;
+            drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
+            m_auxGeomPtr->DrawPolylines(drawArgs, polylineEnd);
         }
     }
 
