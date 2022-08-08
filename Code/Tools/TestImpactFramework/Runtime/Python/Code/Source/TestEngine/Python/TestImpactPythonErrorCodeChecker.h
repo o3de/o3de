@@ -15,9 +15,9 @@
 
 namespace TestImpact
 {
-    //!
+    //! Checks the Python runtime error code to determine the result of the test run.
     AZStd::optional<Client::TestRunResult> CheckPythonErrorCode(ReturnCode returnCode);
 
-    //!
+    //! Checks the PyTest framework error code to determine the result of the test run.
     AZStd::optional<Client::TestRunResult> CheckPyTestErrorCode(ReturnCode returnCode);
 } // namespace TestImpact

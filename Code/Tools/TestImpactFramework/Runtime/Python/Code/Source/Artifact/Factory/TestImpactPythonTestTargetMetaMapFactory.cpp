@@ -15,7 +15,7 @@
 
 namespace TestImpact
 {
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -46,12 +46,12 @@ namespace TestImpact
             TestCommandKey
         };
 
-        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
+        AZ_TestImpact_Eval(!testListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
         PythonTestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
 
-        if (masterTestList.Parse(masterTestListData.c_str()).HasParseError())
+        if (masterTestList.Parse(testListData.c_str()).HasParseError())
         {
             throw TestImpact::ArtifactException("Could not parse test meta-data");
         }

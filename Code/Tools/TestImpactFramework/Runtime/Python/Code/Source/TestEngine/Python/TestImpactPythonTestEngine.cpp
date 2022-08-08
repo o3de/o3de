@@ -50,12 +50,11 @@ namespace TestImpact
 
     PythonTestEngine::PythonTestEngine(
         const RepoPath& repoDir,
-        const RepoPath& pythonBinary,
         const RepoPath& buildDir,
         const ArtifactDir& artifactDir,
         bool useNullTestRunner)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
-              AZStd::move(repoDir), AZStd::move(pythonBinary), AZStd::move(buildDir), artifactDir))
+              repoDir, buildDir, artifactDir))
         , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
         , m_nullTestRunner(AZStd::make_unique<PythonNullTestRunner>(artifactDir))
         , m_artifactDir(artifactDir)
@@ -83,6 +82,8 @@ namespace TestImpact
         [[maybe_unused]] AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         [[maybe_unused]] AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
     {
+        // We currently don't have a std out/error callback for the test engine users so output the Python
+        // error and output here for the time being
         const auto stdPrint = []([[maybe_unused]] const typename PythonNullTestRunner::JobInfo& jobInfo,
                                  [[maybe_unused]] const AZStd::string& stdOutput,
                                  [[maybe_unused]] const AZStd::string& stdError,
@@ -104,6 +105,7 @@ namespace TestImpact
 
         if (m_useNullTestRunner)
         {
+            // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
             return GenerateInstrumentedRunResult(
             GenerateJobInfosAndRunTests(
                 m_nullTestRunner.get(),
@@ -122,7 +124,6 @@ namespace TestImpact
         else
         {;
             DeleteArtifactXmls();
-
             return GenerateInstrumentedRunResult(
                 GenerateJobInfosAndRunTests(
                     m_testRunner.get(),

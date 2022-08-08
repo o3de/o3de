@@ -24,8 +24,6 @@ set(FILES
     Source/TestRunner/Python/TestImpactPythonNullTestRunner.h
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h
-    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.cpp
-    Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.h
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
     Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp

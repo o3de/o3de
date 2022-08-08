@@ -20,6 +20,7 @@
 
 namespace TestImpact
 {
+    //! Base class for Python test runners to derive from.
     class PythonTestRunnerBase
         : public TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCoverage>
     {
@@ -27,6 +28,7 @@ namespace TestImpact
         PythonTestRunnerBase(const ArtifactDir& artifactDir);
 
     protected:
+        // TestRunnerBase overrides ...
         JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override;
 
         ArtifactDir m_artifactDir;

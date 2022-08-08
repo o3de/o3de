@@ -50,6 +50,9 @@ namespace TestImpact
         AZStd::chrono::high_resolution_clock::time_point m_startTime;
     };
 
+    //! Attempts to read all of the target descriptor files from the specified configuration directories.
+    AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
+
     //! Handler for test run complete events.
     template<typename TestTarget>
     class TestRunCompleteCallbackHandler
@@ -232,9 +235,6 @@ namespace TestImpact
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
     }
 
-    //!
-    AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
-
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
     template<typename TestTarget>
     AZStd::unique_ptr<TestTargetExclusionList<TestTarget>> ConstructTestTargetExcludeList(
@@ -344,6 +344,7 @@ namespace TestImpact
         return tests;
     }
 
+    //! Transforms the test engine run result and test engine jobs into a client test run report.
     template<typename TestJob>
     Client::TestRunReport GenerateTestRunReport(
         TestSequenceResult result,

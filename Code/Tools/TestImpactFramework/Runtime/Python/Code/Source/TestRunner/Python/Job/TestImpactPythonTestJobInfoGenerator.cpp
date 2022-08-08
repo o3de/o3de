@@ -14,9 +14,8 @@
 namespace TestImpact
 {
     PythonTestRunJobInfoGenerator::PythonTestRunJobInfoGenerator(
-        const RepoPath& repoDir, const RepoPath& pythonBinary, const RepoPath& buildDir, const ArtifactDir& artifactDir)
+        const RepoPath& repoDir, const RepoPath& buildDir, const ArtifactDir& artifactDir)
         : m_repoDir(repoDir)
-        , m_pythonBinary(pythonBinary)
         , m_buildDir(buildDir)
         , m_artifactDir(artifactDir)
     {
@@ -37,20 +36,6 @@ namespace TestImpact
     {
         const auto parentFolderName = RepoPath(CompileParentFolderName(testTarget));
         const auto runArtifact = GenerateTargetRunArtifactFilePath(testTarget, m_artifactDir.m_testRunArtifactDirectory);
-        //const Command args = {
-        //    AZStd::string::format(
-        //        "\"%s\" " // 1. Python binary
-        //        "-m pytest -s " 
-        //        "\"%s\" " // 2. Python test script
-        //        "--build-directory \"%s\" " // 3. Build directory path
-        //        "--junitxml=\"%s\"", // 4. JUnit output file
-        //
-        //        m_pythonBinary.c_str(), // // 1. Python binary
-        //        GenerateTestScriptPath(testTarget, m_repoDir).c_str(), // 2. Python test script
-        //        m_buildDir.c_str(), // 3. Build directory path
-        //        runArtifact.c_str()) // 4. JUnit output 
-        //};
-
         const Command args = { testTarget->GetCommand() };
 
         return JobInfo(jobId, args, JobData(runArtifact, m_artifactDir.m_coverageArtifactDirectory / parentFolderName));

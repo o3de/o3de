@@ -167,14 +167,10 @@ namespace TestImpact
                 switch (i)
                 {
                 case ParentScript:
-                    // Ignore
-
-                    // SHOULD THIS NOT BE ADDED TO TEST TARGET COVERAGE?
+                    // Ignore for now, might possibly be tagged as test source coverage.
                     break;
                 case CallingScript:
-                    // Ignore
-
-                    // SHOULD THIS NOT BE ADDED TO TEST TARGET COVERAGE?
+                    // Ignore for now, might possibly be tagged as test source coverage.
                     break;
 
                 case Fixture:

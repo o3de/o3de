@@ -26,7 +26,7 @@ namespace TestImpact
     struct PythonTestTargetMeta
     {
         TestTargetMeta m_testTargetMeta; //<! The meta-data about this target's test suite.
-        PythonTargetScriptMeta m_scriptMeta;
+        PythonTargetScriptMeta m_scriptMeta; //!< The meta-data about this target's test script.
     };
 
     //! Map between test target name and test target meta-data.

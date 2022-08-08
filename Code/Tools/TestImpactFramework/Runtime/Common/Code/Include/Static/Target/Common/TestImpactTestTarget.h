@@ -15,6 +15,7 @@
 
 namespace TestImpact
 {
+    //! Representation of a generic test target in the repository.
     class TestTarget 
         : public Target
     {
@@ -27,6 +28,7 @@ namespace TestImpact
         //! Returns the test run timeout.
         AZStd::chrono::milliseconds GetTimeout() const;
 
+        //! Returns the namespace this test target resides in (if any).
         const AZStd::string& GetNamespace() const;
 
     private:

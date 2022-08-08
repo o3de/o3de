@@ -51,16 +51,16 @@ namespace TestImpact
     AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
     {
         AZStd::vector<TargetDescriptor> descriptors;
-        for (const auto& NativeTargetDescriptorFile :
+        for (const auto& targetDescriptorFile :
              std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
-            const auto NativeTargetDescriptorContents = ReadFileContents<RuntimeException>(NativeTargetDescriptorFile.path().string().c_str());
-            auto nativeTargetDescriptor = TargetDescriptorFactory(
-                NativeTargetDescriptorContents,
+            const auto targetDescriptorContents = ReadFileContents<RuntimeException>(targetDescriptorFile.path().string().c_str());
+            auto targetDescriptor = TargetDescriptorFactory(
+                targetDescriptorContents,
                 buildTargetDescriptorConfig.m_staticInclusionFilters,
                 buildTargetDescriptorConfig.m_inputInclusionFilters,
                 buildTargetDescriptorConfig.m_inputOutputPairer);
-            descriptors.emplace_back(AZStd::move(nativeTargetDescriptor));
+            descriptors.emplace_back(AZStd::move(targetDescriptor));
         }
 
         return descriptors;

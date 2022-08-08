@@ -14,8 +14,8 @@
 namespace TestImpact
 {
     //! Constructs a list of test target meta-data artifacts of the specified suite type from the specified master test list data.
-    //! @param masterTestListData The raw master test list data in JSON format.
+    //! @param testListData The raw test list data in JSON format.
     //! @param suiteType The suite type to select the target meta-data artifacts from.
     //! @return The constructed list of test target meta-data artifacts.
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, SuiteType suiteType);
 } // namespace TestImpact
