@@ -35,32 +35,31 @@ class Tests:
         "P0: Lut failed to generate.")
     has_look_modification_component = (
         "Entity has Look Modification component",
-        "Entity does not have expected Look Modification component")
+        "P0: Entity does not have expected Look Modification component")
     look_modification_is_enabled = (
         "Look Modification component is enabled",
         "P0: Look Modification component failed to enable")
-
     enter_game_mode = (
         "Entered game mode",
-        "Failed to enter game mode")
+        "P0: Failed to enter game mode")
     exit_game_mode = (
         "Exited game mode",
-        "Couldn't exit game mode")
+        "P0: Couldn't exit game mode")
     is_visible = (
         "Entity is visible",
-        "Entity was not visible")
+        "P0: Entity was not visible")
     is_hidden = (
         "Entity is hidden",
-        "Entity was not hidden")
+        "P0: Entity was not hidden")
     entity_deleted = (
         "Entity deleted",
-        "Entity was not deleted")
+        "P0: Entity was not deleted")
     deletion_undo = (
         "UNDO deletion success",
-        "UNDO deletion failed")
+        "P0: UNDO deletion failed")
     deletion_redo = (
         "REDO deletion success",
-        "REDO deletion failed")
+        "P0: REDO deletion failed")
 
 
 def AtomEditorComponents_HDRColorGrading_AddedToEntity():
@@ -81,7 +80,7 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
     2) Add HDR Color Grading component to HDR Color Grading entity.
     3) Remove the Color Grading component.
     4) Undo Color Grading component removal.
-    5) Verify HDR Color Grading component not enabled.
+    5) Verify HDR Color Grading component is not enabled.
     6) Add PostFX Layer component since it is required by the HDR Color Grading component.
     7) Verify HDR Color Grading component is enabled.
     8) Toggle "Enable HDR Color Grading" (default False)
@@ -138,7 +137,7 @@ def AtomEditorComponents_HDRColorGrading_AddedToEntity():
         Report.result(Tests.removal_undo,
                       hdr_color_grading_entity.has_component(AtomComponentProperties.hdr_color_grading()))
 
-        # 5. Verify HDR Color Grading component not enabled.
+        # 5. Verify HDR Color Grading component is not enabled.
         Report.result(Tests.hdr_color_grading_disabled, not hdr_color_grading_component.is_enabled())
 
         # 6. Add PostFX Layer component since it is required by the HDR Color Grading component.
