@@ -56,12 +56,6 @@ namespace AZ
 
                 DataTypes::MatrixType localTransform = GetLocalSpaceBindPoseTransform(scene, currentNode);
 
-                // Don't bother adding a node with the identity matrix
-                if (localTransform == DataTypes::MatrixType::Identity())
-                {
-                    return Events::ProcessingResult::Ignored;
-                }
-
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);
 
