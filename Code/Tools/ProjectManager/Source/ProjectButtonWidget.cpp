@@ -478,10 +478,6 @@ namespace O3DE::ProjectManager
 
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
-        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        projectActionButton->setVisible(true);
-        projectActionButton->setText(tr("Download Project"));
-        projectActionButton->setMenu(nullptr);
     }
 
     void ProjectButton::ShowDownloadingState()
@@ -491,10 +487,6 @@ namespace O3DE::ProjectManager
         SetProjectBuilding(false);
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
-        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
-        projectActionButton->setVisible(true);
-        projectActionButton->setText(tr("Cancel Download"));
-        projectActionButton->setMenu(nullptr);
 
         m_projectImageLabel->GetDarkenOverlay()->setVisible(true);
 
