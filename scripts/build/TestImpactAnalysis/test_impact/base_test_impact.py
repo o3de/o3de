@@ -425,8 +425,8 @@ class BaseTestImpact(ABC):
         """
         unpacked_args = " ".join(self._runtime_args)
         logger.info(f"Args: {unpacked_args}")
-        runtime_result = subprocess.run(
-            [str(self._tiaf_bin)] + self._runtime_args)
+        args = [str(self._tiaf_bin)] + self._runtime_args
+        runtime_result = subprocess.run(args, shell=True)
         report = None
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
