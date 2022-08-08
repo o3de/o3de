@@ -267,6 +267,17 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
         workspace.artifact_manager.save_artifact(last_log_name)
 
 
+def compile_test_case_name(request, test_spec):
+    test_case_prefix = "::".join(str.split(str(request.node.nodeid), "::")[:2])
+    regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))
+    if regex_result:
+        class_name = str.split(regex_result.group(1), ".")[-1:]
+        compiled_test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+    else:
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
+
+
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
     Checks to see if the asset log contains any errors or warnings. Also returns True is no regex is found because
