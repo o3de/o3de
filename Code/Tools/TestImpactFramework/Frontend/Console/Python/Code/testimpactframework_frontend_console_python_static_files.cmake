@@ -8,7 +8,6 @@
 
 set(FILES
     Source/TestImpactConsoleMain.cpp
-    Source/TestImpactPythonCommandLineOptions.cpp
     Source/TestImpactPythonCommandLineOptions.h
     Source/TestImpactPythonRuntimeConfigurationFactory.h
     Source/TestImpactPythonRuntimeConfigurationFactory.cpp

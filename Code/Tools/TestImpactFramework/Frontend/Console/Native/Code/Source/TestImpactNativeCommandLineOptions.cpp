@@ -21,7 +21,6 @@ namespace TestImpact
             // Options
             TestShardingPolicyKey,
             MaxConcurrencyKey,
-            
         };
 
         constexpr const char* OptionKeys[] = {

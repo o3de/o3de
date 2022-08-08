@@ -9,7 +9,6 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactRuntime.h>
-
 #include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 
 #include <AzCore/std/containers/unordered_set.h>
