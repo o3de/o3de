@@ -95,7 +95,12 @@ bool AreEntitiesSelected()
     return result;
 }
 
-void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
+static bool CompareLayoutNames(const QString& name1, const QString& name2)
+{
+    return name1.compare(name2, Qt::CaseInsensitive) < 0;
+}
+
+void EditorActionsHandler::Initialize(MainWindow* mainWindow)
 {
     m_mainWindow = mainWindow;
     m_cryEditApp = CCryEditApp::instance();
@@ -129,6 +134,17 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     InitializeMenus();
     InitializeToolBars();
 
+    // Ensure the layouts menu is refreshed when the layouts list changes.
+    QObject::connect(
+        m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
+        [&]()
+        {
+            RefreshLayoutActions();
+        }
+    );
+
+    RefreshLayoutActions();
+
     // Ensure the tools menu and toolbar are refreshed when the viewpanes change.
     QObject::connect(
         m_qtViewPaneManager, &QtViewPaneManager::registeredPanesChanged, m_mainWindow,
@@ -139,7 +155,6 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
     );
 
     const int DefaultViewportId = 0;
-
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -810,6 +825,65 @@ void EditorActionsHandler::InitializeActions()
 
     // --- View Actions
 
+    // Component Entity Layout
+    {
+        const AZStd::string_view& actionIdentifier = "o3de.action.layout.componentEntityLayout";
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Component Entity Layout (Default)";
+        actionProperties.m_category = "Layout";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this]()
+            {
+                m_mainWindow->m_viewPaneManager->RestoreDefaultLayout();
+            }
+        );
+    }
+
+    // Save Layout...
+    {
+        const AZStd::string_view& actionIdentifier = "o3de.action.layout.save";
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save Layout...";
+        actionProperties.m_description = "Save the current layout.";
+        actionProperties.m_category = "Layout";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this]()
+            {
+                m_mainWindow->SaveLayout();
+            }
+        );
+    }
+
+    // Restore Default Layout
+    {
+        const AZStd::string_view& actionIdentifier = "o3de.action.layout.restoreDefault";
+
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Restore Default Layout";
+        actionProperties.m_description = "Restored the default layout for the Editor.";
+        actionProperties.m_category = "Layout";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [this]()
+            {
+                m_mainWindow->m_viewPaneManager->RestoreDefaultLayout(true);
+            }
+        );
+    }
+
     // Go to Position...
     {
         const AZStd::string_view& actionIdentifier = "o3de.action.view.goToPosition";
@@ -1235,7 +1309,7 @@ void EditorActionsHandler::InitializeMenus()
             }
             {
                 AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Remember Location";
+                menuProperties.m_name = "Save Location";
                 m_menuManagerInterface->RegisterMenu(SaveLocationMenuIdentifier, menuProperties);
             }
     {
@@ -1349,6 +1423,14 @@ void EditorActionsHandler::InitializeMenus()
     {
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, LayoutsMenuIdentifier, 100);
         {
+            m_menuManagerInterface->AddActionToMenu(LayoutsMenuIdentifier, "o3de.action.layout.componentEntityLayout", 100);
+            m_menuManagerInterface->AddSeparatorToMenu(LayoutsMenuIdentifier, 200);
+
+            // Some of the contents of the Layouts menu are initialized in RefreshLayoutActions.
+
+            m_menuManagerInterface->AddSeparatorToMenu(LayoutsMenuIdentifier, 400);
+            m_menuManagerInterface->AddActionToMenu(LayoutsMenuIdentifier, "o3de.action.layout.save", 500);
+            m_menuManagerInterface->AddActionToMenu(LayoutsMenuIdentifier, "o3de.action.layout.restoreDefault", 600);
         }
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, ViewportMenuIdentifier, 200);
         {
@@ -1605,6 +1687,115 @@ void EditorActionsHandler::UpdateRecentFileActions()
     m_actionManagerInterface->TriggerActionUpdater(RecentFilesChangedUpdaterIdentifier);
 }
 
+void EditorActionsHandler::RefreshLayoutActions()
+{
+    m_menuManagerInterface->RemoveSubMenusFromMenu(LayoutsMenuIdentifier, m_layoutMenuIdentifiers);
+    m_layoutMenuIdentifiers.clear();
+
+    // Place all sub-menus in the same sort index in the menu.
+    // This will display them in order of addition (alphabetical) and ensure no external tool can add items in-between
+    const int sortKey = 300;
+
+    QStringList layoutNames = m_mainWindow->m_viewPaneManager->LayoutNames();
+    std::sort(layoutNames.begin(), layoutNames.end(), CompareLayoutNames);
+
+    for (const auto& layoutName : layoutNames)
+    {
+        AZStd::string layoutMenuIdentifier = AZStd::string::format("o3de.menu.layout[%s]", layoutName.toUtf8().data());
+
+        // Create the menu and related actions for the layout if they do not already exist.
+        if (!m_menuManagerInterface->IsMenuRegistered(layoutMenuIdentifier))
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = layoutName.toUtf8().data();
+            m_menuManagerInterface->RegisterMenu(layoutMenuIdentifier, menuProperties);
+
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].load", layoutName.toUtf8().data());
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Load";
+                actionProperties.m_description = AZStd::string::format("Load the \"%s\" layout.", layoutName.toUtf8().data());
+                actionProperties.m_category = "Layout";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [layout = layoutName, this]()
+                    {
+                        m_mainWindow->ViewLoadPaneLayout(layout);
+                    }
+                );
+
+                m_menuManagerInterface->AddActionToMenu(layoutMenuIdentifier, actionIdentifier, 0);
+            }
+
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].save", layoutName.toUtf8().data());
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Save";
+                actionProperties.m_description = AZStd::string::format("Save the \"%s\" layout.", layoutName.toUtf8().data());
+                actionProperties.m_category = "Layout";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [layout = layoutName, this]()
+                    {
+                        m_mainWindow->ViewSavePaneLayout(layout);
+                    }
+                );
+
+                m_menuManagerInterface->AddActionToMenu(layoutMenuIdentifier, actionIdentifier, 100);
+            }
+
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].rename", layoutName.toUtf8().data());
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Rename...";
+                actionProperties.m_description = AZStd::string::format("Rename the \"%s\" layout.", layoutName.toUtf8().data());
+                actionProperties.m_category = "Layout";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [layout = layoutName, this]()
+                    {
+                        m_mainWindow->ViewRenamePaneLayout(layout);
+                    }
+                );
+
+                m_menuManagerInterface->AddActionToMenu(layoutMenuIdentifier, actionIdentifier, 200);
+            }
+
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.layout[%s].delete", layoutName.toUtf8().data());
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Delete";
+                actionProperties.m_description = AZStd::string::format("Delete the \"%s\" layout.", layoutName.toUtf8().data());
+                actionProperties.m_category = "Layout";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [layout = layoutName, this]()
+                    {
+                        m_mainWindow->ViewDeletePaneLayout(layout);
+                    }
+                );
+
+                m_menuManagerInterface->AddActionToMenu(layoutMenuIdentifier, actionIdentifier, 300);
+            }
+        }
+
+        m_layoutMenuIdentifiers.push_back(layoutMenuIdentifier);
+        m_menuManagerInterface->AddSubMenuToMenu(LayoutsMenuIdentifier, layoutMenuIdentifier, sortKey);
+    }
+}
+
 void EditorActionsHandler::RefreshToolActions()
 {
     // If the tools are being displayed in the menu or toolbar already, remove them.
@@ -1632,7 +1823,7 @@ void EditorActionsHandler::RefreshToolActions()
         AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewpane.m_name.toUtf8().data());
 
         // Create the action if it does not already exist.
-        if (m_actionManagerInternalInterface->GetAction(toolActionIdentifier) == nullptr)
+        if (!m_actionManagerInterface->IsActionRegistered(toolActionIdentifier))
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name =

@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 class CCryEditApp;
+class MainWindow;
 class QMainWindow;
 class QtViewPaneManager;
 class QWidget;
@@ -37,7 +38,7 @@ class EditorActionsHandler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
-    void Initialize(QMainWindow* mainWindow);
+    void Initialize(MainWindow* mainWindow);
     ~EditorActionsHandler();
 
 private:
@@ -73,6 +74,9 @@ private:
     void OnGridSnappingChanged(bool enabled) override;
     void OnIconsVisibilityChanged(bool enabled) override;
 
+    // Layouts
+    void RefreshLayoutActions();
+
     // Recent Files
     bool IsRecentFileActionActive(int index);
     void UpdateRecentFileActions();
@@ -94,9 +98,10 @@ private:
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
     CCryEditApp* m_cryEditApp;
-    QMainWindow* m_mainWindow;
+    MainWindow* m_mainWindow;
     QtViewPaneManager* m_qtViewPaneManager;
 
+    AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
 
     bool m_isPrefabSystemEnabled = false;
