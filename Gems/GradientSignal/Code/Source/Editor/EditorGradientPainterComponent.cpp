@@ -146,7 +146,6 @@ namespace GradientSignal
 
         m_gradientEntityId = GetEntityId();
 
-        SectorDataNotificationBus::Handler::BusConnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
         GradientPreviewContextRequestBus::Handler::BusConnect(GetEntityId());
@@ -174,7 +173,6 @@ namespace GradientSignal
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
-        SectorDataNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
@@ -308,11 +306,6 @@ namespace GradientSignal
     {
         m_configuration.m_outputImagePath = outputImagePath;
 
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
-    }
-
-    void EditorGradientPainterComponent::OnSectorDataConfigurationUpdated() const
-    {
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

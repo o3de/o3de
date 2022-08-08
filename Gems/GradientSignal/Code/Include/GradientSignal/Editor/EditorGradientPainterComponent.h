@@ -8,12 +8,7 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Jobs/Job.h>
-#include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/std/parallel/condition_variable.h>
-#include <AzCore/std/parallel/mutex.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
@@ -21,7 +16,6 @@
 
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/GradientSampler.h>
@@ -54,7 +48,6 @@ namespace GradientSignal
         , private GradientImageCreatorRequestBus::Handler
         , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
-        , private SectorDataNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -95,9 +88,6 @@ namespace GradientSignal
         static constexpr const char* const s_helpUrl = "";
 
     protected:
-        //! SectorDataNotificationBus overrides ...
-        void OnSectorDataConfigurationUpdated() const override;
-
         //! AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;

@@ -21,7 +21,6 @@
 
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
@@ -85,7 +84,6 @@ namespace GradientSignal
         , private GradientImageCreatorRequestBus::Handler
         , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
-        , private SectorDataNotificationBus::Handler
         , private AZ::TickBus::Handler
     {
     public:
@@ -130,9 +128,6 @@ namespace GradientSignal
         static constexpr const char* const s_helpUrl = "";
 
     protected:
-        //! SectorDataNotificationBus overrides ...
-        void OnSectorDataConfigurationUpdated() const override;
-
         //! AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;
