@@ -18,9 +18,6 @@ class Tests:
     removal_undo = (
         "REDO CubeMap Capture Entity success",
         "P0: REDO CubeMap Capture Entity failed")
-    specular_ibl_cubemap_quality_values = (
-        "Specular IBL property set to Very High on CubeMap Capture Component",
-        "P1: Couldn't set Specular IBL property to Very High on CubeMap Capture Component")
     capture_type_property_set_to_Diffuse_ibl = (
         "Capture Type property set to Diffuse_IBL on CubeMap Capture Component",
         "P1: Couldn't set Capture Type property to Diffuse_IBL on CubeMap Capture Component")
@@ -56,14 +53,13 @@ def AtomEditorComponents_CubeMapCapture_AddedToEntity():
     2) Add Cubemap_Capture component to Cubemap_Capture entity.
     3) Remove the Cubemap_Capture component.
     4) UNDO the Cubemap_Capture component removal.
-    5) Set the Specular IBL property to Very High.
-    6) Set the Specular IBL property to Very Low.
-    7) Set Capture type property to Diffuse_IBL.
-    8) Set Exposure property.
-    9) Delete the Cubemap_Capture entity.
-    10) UNDO deletion.
-    11) REDO deletion.
-    12) Look for errors.
+    5) Test the Specular IBL property values.
+    6) Set Capture type property to Diffuse_IBL.
+    7) Set Exposure property.
+    8) Delete the Cubemap_Capture entity.
+    9) UNDO deletion.
+    10) REDO deletion.
+    11) Look for errors.
 
     :return: None
     """
@@ -116,12 +112,12 @@ def AtomEditorComponents_CubeMapCapture_AddedToEntity():
         Report.result(Tests.exposure_property_set, get_exposure_property == 16.0)
 
         # 7. Set Capture Type property: Diffuse IBL
-        cubemap_capture_component.set_component_property_value(AtomComponentProperties.cube_map_capture(
-            'Capture Type'), value=CUBEMAP_CAPTURE_TYPE['Diffuse ILB'])
+        cubemap_capture_component.set_component_property_value(
+            AtomComponentProperties.cube_map_capture('Capture Type'),
+            value=CUBEMAP_CAPTURE_TYPE['Diffuse ILB'])
         Report.result(
-            Tests.capture_type_property_set_to_Diffuse_ibl,
-            cubemap_capture_component.get_component_property_value(AtomComponentProperties.cube_map_capture(
-                'Capture Type')) == CUBEMAP_CAPTURE_TYPE['Diffuse ILB'])
+            Tests.capture_type_property_set_to_Diffuse_ibl, cubemap_capture_component.get_component_property_value(
+                AtomComponentProperties.cube_map_capture('Capture Type')) == CUBEMAP_CAPTURE_TYPE['Diffuse ILB'])
 
         # 8. Delete Cubemap_Capture entity.
         cubemap_capture_entity.delete()
