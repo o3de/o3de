@@ -69,6 +69,7 @@ namespace ScriptCanvasBuilder
         UpdateDependencyHandling,
         AddExplicitDestructCallForMemberVariables,
         FixEntityIdReturnValuesInEvents,
+        DoNotLoadScriptEventsDuringCreateJobs,
         // add new entries above
         Current,
     };
