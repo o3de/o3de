@@ -44,9 +44,6 @@ namespace AZ
             {
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
-                
-                // Set value for constants defined in SceneTimeSrg.azsli
-                scene->m_timeInputIndex = scene->m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
             }
 
             scene->m_name = sceneDescriptor.m_nameId;
@@ -183,7 +180,7 @@ namespace AZ
             {
                 if (renderPipeline->m_descriptor.m_allowModification)
                 {
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineChangedByFeatureProcessor);
                 }
             }
         }
@@ -279,22 +276,49 @@ namespace AZ
             }
             m_featureProcessors.clear();
         }
-        
+
+        void Scene::VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const
+        {
+            auto VisitInterface = [&callback](const FeatureProcessorPtr& featureProcessor)
+            {
+                return featureProcessor != nullptr ? callback(*featureProcessor) : true;
+            };
+
+            AZStd::ranges::all_of(m_featureProcessors, VisitInterface);
+        }
+
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
         {
-            AZ::TypeId featureProcessorTypeId = FeatureProcessorFactory::Get()->GetFeatureProcessorTypeId(featureProcessorId);
-
-            return GetFeatureProcessor(featureProcessorTypeId);
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (FeatureProcessorId(fp.RTTI_GetTypeName()) == featureProcessorId)
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const TypeId& featureProcessorTypeId) const
         {
-            auto foundFP = AZStd::find_if(
-                AZStd::begin(m_featureProcessors),
-                AZStd::end(m_featureProcessors),
-                [featureProcessorTypeId](const FeatureProcessorPtr& fp) { return fp->RTTI_IsTypeOf(featureProcessorTypeId); });
-
-            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorTypeId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (fp.RTTI_IsTypeOf(featureProcessorTypeId))
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)
@@ -403,7 +427,7 @@ namespace AZ
         void Scene::SimulateTaskGraph()
         {
             static const AZ::TaskDescriptor simulationTGDesc{"RPI::Scene::Simulate", "Graphics"};
-            AZ::TaskGraph simulationTG;
+            AZ::TaskGraph simulationTG{ "RPI::Scene::Simulate" };
 
             for (FeatureProcessorPtr& fp : m_featureProcessors)
             {
@@ -418,7 +442,7 @@ namespace AZ
                     });
             }
             simulationTG.Detach();
-            m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>();
+            m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>("RPI::Scene::Simulate Wait");
             simulationTG.Submit(m_simulationFinishedTGEvent.get());
         }
 
@@ -448,6 +472,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
+            m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
 
             // If previous simulation job wasn't done, wait for it to finish.
@@ -514,10 +539,8 @@ namespace AZ
         {
             if (m_srg)
             {
-                if (m_timeInputIndex.IsValid())
-                {
-                    m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
-                }
+                m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
+                m_srg->SetConstant(m_prevTimeInputIndex, m_prevSimulationTime);
 
                 // signal any handlers to update values for their partial scene srg
                 m_prepareSrgEvent.Signal(m_srg.get());
@@ -529,9 +552,9 @@ namespace AZ
         void Scene::CollectDrawPacketsTaskGraph()
         {
             AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
-            AZ::TaskGraphEvent collectDrawPacketsTGEvent;
+            AZ::TaskGraphEvent collectDrawPacketsTGEvent{ "CollectDrawPackets Wait" };
             static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
-            AZ::TaskGraph collectDrawPacketsTG;
+            AZ::TaskGraph collectDrawPacketsTG{ "CollectDrawPackets" };
 
             // Launch FeatureProcessor::Render() taskgraphs
             for (auto& fp : m_featureProcessors)
@@ -550,15 +573,15 @@ namespace AZ
             const bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
             m_cullingScene->BeginCulling(m_renderPacket.m_views);
             static const AZ::TaskDescriptor processCullablesDescriptor{"AZ::RPI::Scene::ProcessCullables", "Graphics"};
-            AZ::TaskGraphEvent processCullablesTGEvent;
-            AZ::TaskGraph processCullablesTG;
+            AZ::TaskGraphEvent processCullablesTGEvent{ "ProcessCullables Wait" };
+            AZ::TaskGraph processCullablesTG{ "ProcessCullables" };
             if (parallelOctreeTraversal)
             {
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     processCullablesTG.AddTask(processCullablesDescriptor, [this, &viewPtr, &processCullablesTGEvent]()
                         {
-                            AZ::TaskGraph subTaskGraph;
+                            AZ::TaskGraph subTaskGraph{ "ProcessCullables Subgraph" };
                             m_cullingScene->ProcessCullablesTG(*this, *viewPtr, subTaskGraph);
                             if (!subTaskGraph.IsEmpty())
                             {
@@ -632,10 +655,10 @@ namespace AZ
 
         void Scene::FinalizeDrawListsTaskGraph()
         {
-            AZ::TaskGraphEvent finalizeDrawListsTGEvent;
+            AZ::TaskGraphEvent finalizeDrawListsTGEvent{ "FinalizeDrawLists Wait" };
             static const AZ::TaskDescriptor finalizeDrawListsTGDesc{"RPI_Scene_PrepareRender_FinalizeDrawLists", "Graphics"};
 
-            AZ::TaskGraph finalizeDrawListsTG;
+            AZ::TaskGraph finalizeDrawListsTG{ "FinalizeDrawLists" };
             for (auto& view : m_renderPacket.m_views)
             {
                 finalizeDrawListsTG.AddTask(
@@ -693,6 +716,12 @@ namespace AZ
                         pipeline->OnStartFrame(simulationTime);
                     }
                 }
+            }
+
+            // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
+            if (m_pipelineStatesLookupNeedsRebuild)
+            {
+                RebuildPipelineStatesLookup();
             }
 
             // Return if there is no active render pipeline
@@ -885,7 +914,12 @@ namespace AZ
                 }
             }
         }
-        
+
+        void Scene::PipelineStateLookupNeedsRebuild()
+        {
+            m_pipelineStatesLookupNeedsRebuild = true;
+        }
+
         bool Scene::ConfigurePipelineState(RHI::DrawListTag drawListTag, RHI::PipelineStateDescriptorForDraw& outPipelineState) const
         {
             auto pipelineStatesItr = m_pipelineStatesLookup.find(drawListTag);
@@ -972,7 +1006,7 @@ namespace AZ
 
                             if (pipelineStatesItr == m_pipelineStatesLookup.end())
                             {
-                                m_pipelineStatesLookup[drawListTag].push_back();
+                                m_pipelineStatesLookup[drawListTag].emplace_back();
                                 m_pipelineStatesLookup[drawListTag][0].m_multisampleState = rasterPass->GetMultisampleState();
                                 m_pipelineStatesLookup[drawListTag][0].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                 rasterPass->SetPipelineStateDataIndex(0);
@@ -1005,7 +1039,7 @@ namespace AZ
                                 else
                                 {
                                     // No match found, add new pipeline state data
-                                    pipelineStateList.push_back();
+                                    pipelineStateList.emplace_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                     rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size));
@@ -1015,6 +1049,7 @@ namespace AZ
                     }
                 }
             }
+            m_pipelineStatesLookupNeedsRebuild = false;
         }
 
         RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)

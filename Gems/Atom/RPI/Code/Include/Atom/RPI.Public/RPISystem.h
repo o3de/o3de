@@ -94,10 +94,12 @@ namespace AZ
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
 
-            //Register/Unregister xr system with RPI and RHI
+            // Register/Unregister xr system with RPI and RHI
             void RegisterXRSystem(XRRenderingInterface* xrSystemInterface);
-            void UnRegisterXRSystem();
+            void UnregisterXRSystem();
 
+            // Get the Xr system
+            XRRenderingInterface* GetXRSystem() const override;
         private:
             // Initializes the system assets for tests. Should only be called from tests
             void InitializeSystemAssetsForTests();

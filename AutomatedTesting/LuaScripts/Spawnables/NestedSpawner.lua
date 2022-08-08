@@ -14,9 +14,9 @@ local NestedSpawner =
     Properties = 
     {
         Prefab = { default=SpawnableScriptAssetRef(), description="Prefab to spawn" },
-        Translation = { default=Vector3(0, 0, 0) },
-        Rotation = { default=Vector3(0, 0, 0) },
-        Scale = { default=1 }
+        Translation = { default=Vector3(0.0, 0.0, 0.0) },
+        Rotation = { default=Vector3(0.0, 0.0, 0.0) },
+        Scale = { default=1.0 }
     },
 }
 

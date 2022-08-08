@@ -16,10 +16,14 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078115")
     class AtomEditorComponents_GlobalSkylightIBLAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_GlobalSkylightIBLAdded as test_module
-        
+
     @pytest.mark.test_case_id("C32078122")
     class AtomEditorComponents_GridAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_GridAdded as test_module
+
+    @pytest.mark.test_case_id("C36553404")
+    class AtomEditorComponents_HairAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_HairAdded as test_module
 
     @pytest.mark.test_case_id("C36525671")
     class AtomEditorComponents_HDRColorGradingAdded(EditorBatchedTest):

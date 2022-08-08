@@ -28,6 +28,7 @@ namespace AZ::RPI
     void PassTree::RemovePasses()
     {
         AZ_PROFILE_SCOPE(RPI, "PassTree::RemovePasses");
+        m_state = PassTreeState::RemovingPasses;
 
         if (!m_removePassList.empty())
         {
@@ -40,11 +41,13 @@ namespace AZ::RPI
 
             m_removePassList.clear();
         }
+        m_state = PassTreeState::Idle;
     }
 
     void PassTree::BuildPasses()
     {
         AZ_PROFILE_SCOPE(RPI, "PassTree::BuildPasses");
+        m_state = PassTreeState::BuildingPasses;
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_buildPassList.empty();
 
@@ -77,18 +80,17 @@ namespace AZ::RPI
         if (m_passesChangedThisFrame)
         {
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
-            if (!m_isHotReloading)
-            {
-                AZ_Printf("PassSystem", "\nFinished building passes:\n");
-                DebugPrintPassHierarchy();
-            }
+            AZ_Printf("PassTree", "\nFinished building passes:\n");
+            m_rootPass->DebugPrint();
 #endif
         }
+        m_state = PassTreeState::Idle;
     }
 
     void PassTree::InitializePasses()
     {
         AZ_PROFILE_SCOPE(RPI, "PassTree::InitializePasses");
+        m_state = PassTreeState::InitializingPasses;
 
         m_passesChangedThisFrame = m_passesChangedThisFrame || !m_initializePassList.empty();
 
@@ -116,10 +118,13 @@ namespace AZ::RPI
             // Signal all passes that we have finished initialization
             m_rootPass->OnInitializationFinished();
         }
+        m_state = PassTreeState::Idle;
     }
 
     void PassTree::Validate()
     {
+        m_state = PassTreeState::ValidatingPasses;
+
         if (PassValidation::IsEnabled())
         {
             if (!m_passesChangedThisFrame)
@@ -133,6 +138,7 @@ namespace AZ::RPI
             m_rootPass->Validate(validationResults);
             validationResults.PrintValidationIfError();
         }
+        m_state = PassTreeState::Idle;
     }
 
     bool PassTree::ProcessQueuedChanges()

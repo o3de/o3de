@@ -95,11 +95,6 @@ namespace EMotionFX
                 ActorComponent::GetIncompatibleServices(incompatible);
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                ActorComponent::GetDependentServices(dependent);
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 ActorComponent::GetRequiredServices(required);
@@ -170,8 +165,10 @@ namespace EMotionFX
             bool                                m_renderBounds;             ///< Toggles rendering of the world bounding box.
             bool                                m_entityVisible;            ///< Entity visible from the EditorVisibilityNotificationBus
             SkinningMethod                      m_skinningMethod;           ///< The skinning method for this actor
+
             AttachmentType                      m_attachmentType;           ///< Attachment type.
             AZ::EntityId                        m_attachmentTarget;         ///< Target entity to attach to, if any.
+            AZ::EntityId                        m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             AZStd::string                       m_attachmentJointName;      ///< Joint name on target to which to attach (if ActorAttachment).
             size_t                              m_attachmentJointIndex;
             size_t                              m_lodLevel;

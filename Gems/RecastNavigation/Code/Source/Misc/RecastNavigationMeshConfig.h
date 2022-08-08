@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -20,6 +21,7 @@ namespace RecastNavigation
     //! some of them are in world units (regular O3DE world space) and others are
     //! in Recast voxels, which are defined by @m_cellSize. 1 voxel = 1 @m_cellSize in world units.
     class RecastNavigationMeshConfig final
+        : public AZ::ComponentConfig
     {
     public:
         AZ_RTTI(RecastNavigationMeshConfig, "{472141BB-7C36-4D2C-A508-78DB0D3C07F2}");
@@ -49,6 +51,12 @@ namespace RecastNavigation
         bool m_filterLowHangingObstacles = true;
         bool m_filterLedgeSpans = true;
         bool m_filterWalkableLowHeightSpans = true;
+
+        //! If enabled, draw the navigation mesh in the game.
+        bool m_enableDebugDraw = false;
+
+        //! If enabled, previews the navigation mesh in the Editor's viewport.
+        bool m_enableEditorPreview = false;
     };
 
 } // namespace RecastNavigation

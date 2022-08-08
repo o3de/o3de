@@ -1,86 +1,107 @@
 {
-  "meta": {
-    "platform": "${platform}",
-    "timestamp": "${timestamp}",
-    "build_config": "${build_config}"
-  },
-  "jenkins": {
-    "use_test_impact_analysis": ${use_tiaf}
-  },
-  "repo": {
-    "root": "${repo_dir}",
-    "tiaf_bin": "${tiaf_bin}"
-  },
-  "workspace": {
-    "temp": {
-      "root": "${temp_dir}",
-      "relative_paths": {
-        "artifact_dir": "RuntimeArtifact",
-        "enumeration_cache_dir": "EnumerationCache"
+  "common": {
+    "meta": {
+      "platform": "${platform}",
+      "timestamp": "${timestamp}",
+      "build_config": "${build_config}"
+    },
+    "jenkins": {
+      "use_test_impact_analysis": ${use_tiaf}
+    },
+    "repo": {
+      "root": "${repo_dir}",
+      "tiaf_bin": "${tiaf_bin}"
+    },
+    "workspace": {
+      "temp": {
+        "root": "${temp_dir}",
+        "relative_paths": {
+          "artifact_dir": "RuntimeArtifact",
+          "enumeration_cache_dir": "EnumerationCache"
+        }
+      },
+      "active": {
+        "root": "${active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
       }
     },
-    "active": {
-      "root": "${active_dir}",
-      "relative_paths": {
-        "test_impact_data_file": "TestImpactData.spartia"
-      }
-    },
-    "historic": {
-      "root": "${historic_dir}",
-      "relative_paths": {
-        "data": "historic_data.json"
-      }
-    }
-  },
-  "artifacts": {
-    "static": {
-      "build_target_descriptor": {
-        "dir": "${source_target_mapping_dir}",
-        "target_sources": {
-          "static": {
-            "include_filters": [
-              ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
-            ]
-          },
-          "autogen": {
-            "input_output_pairer": "(.*)\\..*",
-            "input": {
+    "artifacts": {
+      "static": {
+        "build_target_descriptor": {
+          "dir": "${source_target_mapping_dir}",
+          "target_sources": {
+            "static": {
               "include_filters": [
-                ".xml"
+                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
               ]
-            }
-          } 
+            },
+            "autogen": {
+              "input_output_pairer": "(.*)\\..*",
+              "input": {
+                "include_filters": [
+                  ".xml"
+                ]
+              }
+            } 
+          }
+        },
+        "dependency_graph_data": {
+          "dir": "${target_dependency_dir}",
+          "matchers": {
+            "target_dependency_file": "target\\.(.*)\\.(dependers)?",
+            "target_vertex": "(?:(.*)\\n|(.*)"
+          }
+        },
+        "test_target_meta": {
+          "file": "${test_target_type_file}"
+        },
+        "gem_target": {
+          "file": "${gem_target_file}"
         }
-      },
-      "dependency_graph_data": {
-        "dir": "${target_dependency_dir}",
-        "matchers": {
-          "target_dependency_file": "target\\.(.*)\\.(dependers)?",
-          "target_vertex": "(?:(.*)\\n|(.*)"
-        }
-      },
-      "test_target_meta": {
-        "file": "${test_target_type_file}"
-      },
-      "gem_target": {
-        "file": "${gem_target_file}"
       }
     }
   },
-  "test_engine": {
-    "test_runner": {
-        "bin": "${test_runner_bin}"
+  "native": {
+    "test_engine": {
+      "test_runner": {
+          "bin": "${test_runner_bin}"
+      },
+      "instrumentation": {
+        "bin": "${instrumentation_bin}"
+      }
     },
-    "instrumentation": {
-      "bin": "${instrumentation_bin}"
+    "target": {
+      "dir": "${bin_dir}",
+      "exclude": {
+        "regular": [
+        ],
+        "instrumented": [
+          {
+            "target": "AzCore.Tests",
+            "tests": [
+              "Components.EntityIdGeneration"
+            ]
+          }
+        ]
+      },
+      "shard": [
+      ]
     }
   },
-  "target": {
-    "dir": "${bin_dir}",
-    "exclude": [
-     
-    ],
-    "shard": [
-    ]
+  "python": {
+    "artifact": { 
+      "result": {
+        "external_run_output": "${PYTEST_XML_OUTPUT_DIR}"
+      }
+    }
   }
 }

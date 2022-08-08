@@ -17,6 +17,9 @@
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QElapsedTimer>
 #include <ui/BuilderListModel.h>
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/ui/CacheServerData.h>
 #endif
 
 namespace AzToolsFramework
@@ -40,9 +43,15 @@ namespace AssetProcessor
     class AssetTreeFilterModel;
     class JobSortFilterProxyModel;
     class JobsModel;
+    class AssetTreeItem;
     class ProductAssetTreeModel;
     class SourceAssetTreeModel;
+    class ProductDependencyTreeItem;
     class JobEntry;
+    class BuilderData;
+    class BuilderInfoPatternsModel;
+    class BuilderInfoMetricsModel;
+    class BuilderInfoMetricsSortModel;
 }
 
 class MainWindow
@@ -56,7 +65,8 @@ public:
     enum class AssetTabIndex
     {
         Source = 0,
-        Product = 1
+        Intermediate = 1,
+        Product = 2
     };
 
     // This order is actually driven by the layout in the UI file.
@@ -105,7 +115,7 @@ public Q_SLOTS:
     void ShowWindow();
 
     void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
-    void FirstTimeAddedToRejctedList(QString ipAddress);
+    void FirstTimeAddedToRejectedList(QString ipAddress);
     void SaveLogPanelState();
     void OnAssetProcessorStatusChanged(const AssetProcessor::AssetProcessorStatusEntry entry);
 
@@ -139,16 +149,24 @@ private:
     LogSortFilterProxy* m_logSortFilterProxy;
     AssetProcessor::JobsModel* m_jobsModel;
     AssetProcessor::SourceAssetTreeModel* m_sourceModel = nullptr;
+    AssetProcessor::SourceAssetTreeModel* m_intermediateModel = nullptr;
     AssetProcessor::ProductAssetTreeModel* m_productModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_sourceAssetTreeFilterModel = nullptr;
+    AssetProcessor::AssetTreeFilterModel* m_intermediateAssetTreeFilterModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_productAssetTreeFilterModel = nullptr;
     QPointer<AssetProcessor::LogPanel> m_loggingPanel;
     int m_processJobsCount = 0;
     int m_createJobCount = 0;
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
-    BuilderListModel* m_builderList;
-    BuilderListSortFilterProxy* m_builderListSortFilterProxy;
+
+    AssetProcessor::BuilderData* m_builderData = nullptr;
+    BuilderListModel* m_builderList = nullptr;
+    BuilderListSortFilterProxy* m_builderListSortFilterProxy = nullptr;
+    AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns = nullptr;
+    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics = nullptr;
+    AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
+    AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
@@ -191,6 +209,14 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    void ShowIntermediateAssetContextMenu(const QPoint& pos);
+
+    void BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcessor::AssetTreeItem& sourceAssetTreeItem);
+
+    // Helper function that retrieves the item selected in outgoing/incoming dependency TreeView
+    AssetProcessor::ProductDependencyTreeItem* GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos);
+    void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
+    void ShowIncomingProductDependenciesContextMenu(const QPoint& pos);
 
     void ResetTimers();
     void CheckStartAnalysisTimers();
@@ -205,6 +231,13 @@ private:
     void IntervalAssetTabFilterRefresh();
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();
+
+    void SetupAssetServerTab();
+    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable);
+    void AssembleAssetPatterns();
+    void CheckAssetServerStates();
+    void ResetAssetServerView();
+    void SetServerAddress(AZStd::string_view serverAddress);
 
     void SetupAssetSelectionCaching();
 

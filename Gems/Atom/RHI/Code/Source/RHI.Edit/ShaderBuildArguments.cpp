@@ -6,10 +6,13 @@
  *
  */
 
-#include <Atom/RHI.Edit/ShaderBuildArguments.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/regex.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
+#include <Atom/RHI.Edit/ShaderBuildArguments.h>
 #include <Atom/RHI.Edit/Utils.h>
 
 namespace AZ
@@ -18,7 +21,7 @@ namespace AZ
     {
         void ShaderBuildArguments::Reflect(ReflectContext* context)
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderBuildArguments>()
                     ->Version(1)
@@ -29,6 +32,46 @@ namespace AZ
                     ->Field("spirv-cross", &ShaderBuildArguments::m_spirvCrossArguments)
                     ->Field("metalair", &ShaderBuildArguments::m_metalAirArguments)
                     ->Field("metallib", &ShaderBuildArguments::m_metalLibArguments)
+                    ;
+
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ShaderBuildArguments>("ShaderBuildArguments", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_generateDebugInfo, "Generate Debug Info", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_preprocessorArguments, "Preprocessor Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_azslcArguments, "Azslc Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_dxcArguments, "Dxc Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_spirvCrossArguments, "Spirv Cross Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalAirArguments, "Metal Air Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderBuildArguments::m_metalLibArguments, "Metal Lib Arguments", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Class<ShaderBuildArguments>("ShaderBuildArguments")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RHI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rhi")
+                    ->Constructor()
+                    ->Constructor<const ShaderBuildArguments&>()
+                    ->Property("generateDebugInfo", BehaviorValueProperty(&ShaderBuildArguments::m_generateDebugInfo))
+                    ->Property("preprocessorArguments", BehaviorValueProperty(&ShaderBuildArguments::m_preprocessorArguments))
+                    ->Property("azslcArguments", BehaviorValueProperty(&ShaderBuildArguments::m_azslcArguments))
+                    ->Property("dxcArguments", BehaviorValueProperty(&ShaderBuildArguments::m_dxcArguments))
+                    ->Property("spirvCrossArguments", BehaviorValueProperty(&ShaderBuildArguments::m_spirvCrossArguments))
+                    ->Property("metalAirArguments", BehaviorValueProperty(&ShaderBuildArguments::m_metalAirArguments))
+                    ->Property("metalLibArguments", BehaviorValueProperty(&ShaderBuildArguments::m_metalLibArguments))
+                    ->Method("AddBuildArguments", &ShaderBuildArguments::operator+=)
+                    ->Method("RemoveBuildArguments", &ShaderBuildArguments::operator-=)
+                    ->Method("HasArgument", &ShaderBuildArguments::HasArgument)
+                    ->Method("AppendArguments", &ShaderBuildArguments::AppendArguments)
+                    ->Method("RemoveArguments", &ShaderBuildArguments::RemoveArguments)
+                    ->Method("AppendDefinitions", &ShaderBuildArguments::AppendDefinitions)
                     ;
             }
         }

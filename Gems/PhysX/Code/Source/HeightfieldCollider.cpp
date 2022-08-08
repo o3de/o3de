@@ -9,11 +9,11 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Jobs/MultipleDependentJob.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/utility/as_const.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -22,13 +22,15 @@
 #include <Source/RigidBodyStatic.h>
 #include <Source/Shape.h>
 #include <Source/Utils.h>
+#include <PhysX/Material/PhysXMaterial.h>
 
 
 namespace PhysX
 {
-    AZ_CVAR(float, physx_heightfieldColliderUpdateRegionSize, 128.0f, nullptr,
+    AZ_CVAR(size_t, physx_heightfieldColliderUpdateRegionSize, 512 * 512, nullptr,
         AZ::ConsoleFunctorFlags::Null,
-        "Size of a heightfield collider update region in meters, used for partitioning updates for faster cancellation.");
+        "Max size of a heightfield collider update region in heightfield points, used for partitioning updates for faster cancellation. "
+        "Each update will be the largest number of heightfield rows that stays below this total point count threshold.");
 
     // The HeightfieldUpdateJobContext is an extremely simplified way to manage the background update jobs.
     // On any heightfield change, the collider code will cancel any update job that's currently running, wait for it
@@ -46,20 +48,20 @@ namespace PhysX
         return m_isCanceled;
     }
 
-    void HeightfieldCollider::HeightfieldUpdateJobContext::OnJobStart()
+    void HeightfieldCollider::HeightfieldUpdateJobContext::OnRefreshStart()
     {
         // When the update job starts, track that it has started and that we shouldn't cancel anything yet.
         AZStd::unique_lock<AZStd::mutex> lock(m_jobsRunningNotificationMutex);
         m_isCanceled = false;
-        m_numRunningJobs++;
+        m_refreshInProgress = true;
     }
 
-    void HeightfieldCollider::HeightfieldUpdateJobContext::OnJobComplete()
+    void HeightfieldCollider::HeightfieldUpdateJobContext::OnRefreshComplete()
     {
         // On completion, track that the job has finished, and notify any listneers that it's done.
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_jobsRunningNotificationMutex);
-            m_numRunningJobs--;
+            m_refreshInProgress = false;
         }
         m_jobsRunning.notify_all();
     }
@@ -72,27 +74,72 @@ namespace PhysX
             lock,
             [this]
             {
-                return m_numRunningJobs <= 0;
+                return !m_refreshInProgress;
             });
     }
+
+
+    HeightfieldCollider::DirtyHeightfieldRegion::DirtyHeightfieldRegion()
+    {
+        SetNull();
+    }
+
+    void HeightfieldCollider::DirtyHeightfieldRegion::SetNull()
+    {
+        m_minRowVertex = AZStd::numeric_limits<size_t>::max();
+        m_minColumnVertex = AZStd::numeric_limits<size_t>::max();
+        m_maxRowVertex = AZStd::numeric_limits<size_t>::lowest();
+        m_maxColumnVertex = AZStd::numeric_limits<size_t>::lowest();
+    }
+
+    void HeightfieldCollider::DirtyHeightfieldRegion::AddAabb(const AZ::Aabb& dirtyRegion, AZ::EntityId entityId)
+    {
+        size_t startRowVertex = 0;
+        size_t startColumnVertex = 0;
+        size_t numRowVertices = 0;
+        size_t numColumnVertices = 0;
+
+        Physics::HeightfieldProviderRequestsBus::Event(
+            entityId,
+            &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldIndicesFromRegion,
+            dirtyRegion,
+            startColumnVertex,
+            startRowVertex,
+            numColumnVertices,
+            numRowVertices);
+
+        m_minRowVertex = AZStd::min(m_minRowVertex, startRowVertex);
+        m_minColumnVertex = AZStd::min(m_minColumnVertex, startColumnVertex);
+        // Note that if the heightfield size has decreased, these numbers can end up larger than the total current heightfield size.
+        m_maxRowVertex = AZStd::max(m_maxRowVertex, startRowVertex + numRowVertices);
+        m_maxColumnVertex = AZStd::max(m_maxColumnVertex, startColumnVertex + numColumnVertices);
+    }
+
+
 
     HeightfieldCollider::HeightfieldCollider(
         AZ::EntityId entityId,
         const AZStd::string& entityName,
         AzPhysics::SceneHandle sceneHandle,
         AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig,
-        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig)
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig,
+        DataSource dataSourceType)
         : m_entityId(entityId)
         , m_entityName(entityName)
         , m_colliderConfig(colliderConfig)
         , m_shapeConfig(shapeConfig)
         , m_attachedSceneHandle(sceneHandle)
+        , m_dataSourceType(dataSourceType)
     {
         m_jobContext = AZStd::make_unique<HeightfieldUpdateJobContext>(AZ::JobContext::GetGlobalContext()->GetJobManager());
 
         PhysX::ColliderShapeRequestBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderNotificationBus::Handler::BusConnect(entityId);
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(entityId);
+
+        // Make sure that we trigger a refresh on creation. Depending on initialization order, there might not be any other
+        // refreshes that occur.
+        RefreshHeightfield(Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings, AZ::Aabb::CreateNull());
     }
 
     HeightfieldCollider::~HeightfieldCollider()
@@ -108,6 +155,11 @@ namespace PhysX
         ClearHeightfield();
 
         m_jobContext.reset();
+    }
+
+    void HeightfieldCollider::BlockOnPendingJobs()
+    {
+        m_jobContext->BlockUntilComplete();
     }
 
     // ColliderShapeRequestBus
@@ -171,7 +223,7 @@ namespace PhysX
             m_colliderConfig->m_rotation.TransformVector(transform.GetTranslation() - baseTransform.GetTranslation());
 
         // Update material selection from the mapping
-        Utils::SetMaterialsFromHeightfieldProvider(m_entityId, m_colliderConfig->m_materialSelection);
+        Utils::SetMaterialsFromHeightfieldProvider(m_entityId, m_colliderConfig->m_materialSlots);
 
         // Create a new simulated body in the world from the given collision / shape configuration.
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -179,6 +231,94 @@ namespace PhysX
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
         }
     }
+
+    void HeightfieldCollider::InitStaticRigidBody()
+    {
+        AZ::Transform baseTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(baseTransform, m_entityId, &AZ::TransformInterface::GetWorldTM);
+        InitStaticRigidBody(baseTransform);
+    }
+    
+    void HeightfieldCollider::UpdateShapeConfigRows(
+        AZ::Job* updateCompleteJob, size_t startColumn, size_t startRow, size_t numColumns, size_t numRows)
+    {
+        // This method is called by an update job to update a portion of the heightfield shape configuration to contain the latest
+        // heightfield data.
+
+        // This callback is used by UpdateHeightsAndMaterialsAsync to update each point in the heightfield.
+        auto modifySample = [this](size_t col, size_t row, const Physics::HeightMaterialPoint& point)
+        {
+            m_shapeConfig->ModifySample(col, row, point);
+        };
+
+        // This callback is triggered when UpdateHeightsAndMaterialsAsync is complete.
+        // This triggers our empty UpdateComplete job which is used a placeholder to trigger the other jobs that depend on it completing.
+        auto updateComplete = [updateCompleteJob]()
+        {
+            updateCompleteJob->Start();
+        };
+
+        // If we're trying to cancel the update, or there's nothing to update, just trigger the update completion job and return.
+        if (m_jobContext->IsCanceled() || (numRows == 0) || (numColumns == 0))
+        {
+            updateComplete();
+            return;
+        }
+
+        // Update the shape configuration with the new height and material data for the heightfield.
+        // This assumes that the shape configuration already has been created with the correct number of samples.
+        if (Physics::HeightfieldProviderRequestsBus::HasHandlers(m_entityId))
+        {
+            Physics::HeightfieldProviderRequestsBus::Event(
+                m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterialsAsync,
+                modifySample, updateComplete, startColumn, startRow, numColumns, numRows);
+        }
+        else
+        {
+            // If nothing is connected to the bus, call updateComplete() directly so that the job processing chain completes.
+            updateComplete();
+        }
+    }
+
+    void HeightfieldCollider::UpdatePhysXHeightfieldRows(
+        AzPhysics::Scene* scene, AZStd::shared_ptr<Physics::Shape> shape,
+        size_t startColumn, size_t startRow, size_t numColumns, size_t numRows)
+    {
+        // This method is called by an update job to update a portion of the PhysX heightfield to contain the latest heightfield data.
+
+        if (!m_jobContext->IsCanceled() && (numRows > 0) && (numColumns > 0))
+        {
+            // Refresh a subset of the PhysX heightfield.
+            // This assumes that the shape configuration for this region has already been updated.
+            // NOTE: For a given heightfield, only one of these calls should be executed at a time, since the underlying PhysX
+            // heightfield has no thread safety protections and modifies min/max height data global to the heightfield on every refresh.
+            Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, startColumn, startRow, numColumns, numRows);
+
+            // Reduce our dirty region by the number of rows that we're processing in this piece of the update job chain.
+            // We've updated both the shape configuration and the PhysX heightfield at this point, so those rows have completed
+            // their update. Even if we cancel the job at this point, we'll only need to reprocess these rows if data in those rows
+            // have changed.
+            // This dirty region logic assumes that we're updating all dirty columns for a row on every call. If this assumption
+            // ever changes, we'll need more complicated dirty region logic to track which columns in each row are dirty.
+            m_dirtyRegion.m_minRowVertex = startRow + numRows;
+        }
+    }
+
+    void HeightfieldCollider::RefreshComplete()
+    {
+        // This method is called by an update job to signal that the chain of update jobs have completed.
+
+        // If the job hasn't been canceled, notify any listeners that the collider has changed.
+        if (!m_jobContext->IsCanceled())
+        {
+            m_dirtyRegion.SetNull();
+            Physics::ColliderComponentEventBus::Event(m_entityId, &Physics::ColliderComponentEvents::OnColliderChanged);
+        }
+
+        // Notify the job context that the job is completed, so that anything blocking on job completion knows it can proceed.
+        m_jobContext->OnRefreshComplete();
+    }
+
 
     void HeightfieldCollider::RefreshHeightfield(
         const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
@@ -189,17 +329,29 @@ namespace PhysX
         // If the change is only about heightfield materials mapping, we can simply update material selection in the heightfield shape
         if (changeMask == Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping)
         {
-            Physics::MaterialSelection updatedMaterialSelection;
-            Utils::SetMaterialsFromHeightfieldProvider(m_entityId, updatedMaterialSelection);
+            Physics::MaterialSlots updatedMaterialSlots;
+            Utils::SetMaterialsFromHeightfieldProvider(m_entityId, updatedMaterialSlots);
 
             // Make sure the number of slots is the same.
             // Otherwise the heightfield needs to be rebuilt to support updated indices.
-            if (updatedMaterialSelection.GetMaterialIdsAssignedToSlots().size() ==
-                m_colliderConfig->m_materialSelection.GetMaterialIdsAssignedToSlots().size())
+            if (updatedMaterialSlots.GetSlotsCount() ==
+                m_colliderConfig->m_materialSlots.GetSlotsCount())
             {
-                UpdateHeightfieldMaterialSelection(updatedMaterialSelection);
+                UpdateHeightfieldMaterialSlots(updatedMaterialSlots);
                 return;
             }
+        }
+
+        // Early out if Heightfield Collider works only with cached heightfield data
+        if (m_dataSourceType == DataSource::UseCachedHeightfield)
+        {
+            if (m_staticRigidBodyHandle == AzPhysics::InvalidSimulatedBodyHandle
+                && m_shapeConfig->GetCachedNativeHeightfield() != nullptr)
+            {
+                InitStaticRigidBody();
+            }
+
+            return;
         }
 
         AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
@@ -220,18 +372,17 @@ namespace PhysX
         requestRegion.Clamp(heightfieldAabb);
 
         // There are two refresh possibilities - resizing the area or updating the data.
-        // Resize: we need to cancel any running job, wait for it to finish, resize the area, and kick it off again.
+        // Resize: we need to cancel any running jobs, wait for them to finish, resize the area, and kick them off again.
         //   PhysX heightfields need to have a static number of points, so a resize requires a complete rebuild of the heightfield.
-        // Update: technically, we could get more clever with updates, and just perform in-place modifications to the PhysX heightfield
-        //   data, and potentially even keep the same job running with just a modified list of update regions. But for now, we're
-        //   keeping it simple and just cancel and re-runn the job on any update change, same as with resizing.
+        // Update: technically, we could get more clever with updates, and potentially keep the same job chain running with a running list
+        //   of update regions. But for now, we're keeping it simple. Our update job will update in multiples of heightfield rows so
+        //   that we can incrementally shrink the update region as we finish updating pieces of it and cancel at a more granular level.
+        //   On a new update, we can then cancel the job, grow our update region as needed, and start the job chain back up again.
 
-        // If we don't have a shape configuration yet, we need to recreate the entire heightfield.
-        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr);
-
-        // If the dirty region exactly matches the existing heightfield size, we could either recreate it or update it in place.
-        // For now, we'll choose to recreate it.
-        shouldRecreateHeightfield = shouldRecreateHeightfield || (requestRegion == heightfieldAabb);
+        // If we don't have a shape configuration yet, or if the configuration itself changed, we need to recreate the entire heightfield.
+        bool shouldRecreateHeightfield = (m_shapeConfig == nullptr) ||
+            ((changeMask & Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings) ==
+             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Settings);
 
         // Check if base configuration parameters have changed. If any of the sizes have changed, we'll recreate the entire heightfield.
         if (!shouldRecreateHeightfield)
@@ -243,16 +394,16 @@ namespace PhysX
             shouldRecreateHeightfield = shouldRecreateHeightfield || (baseConfiguration.GetMaxHeightBounds() != m_shapeConfig->GetMaxHeightBounds());
         }
 
-        // If any jobs are running, stop them and wait for them to complete.
+        // If the update job is running, stop it and wait for it to complete.
         m_jobContext->Cancel();
         m_jobContext->BlockUntilComplete();
-
-        // Destroy the existing heightfield. This will completely remove it from the world.
-        ClearHeightfield();
 
         // If our heightfield has changed size, recreate the configuration and initialize it.
         if (shouldRecreateHeightfield)
         {
+            // Destroy the existing heightfield. This will completely remove it from the world.
+            ClearHeightfield();
+
             *m_shapeConfig = Utils::CreateBaseHeightfieldShapeConfiguration(m_entityId);
             size_t numSamples = m_shapeConfig->GetNumRowVertices() * m_shapeConfig->GetNumColumnVertices();
 
@@ -270,71 +421,138 @@ namespace PhysX
             return;
         }
 
-        // Fetch our entity transform on the main thread, because transforms can't be safely requested from a job thread.
-        // This will be used to create our new heightfield at the end of the job.
-        AZ::Transform baseTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(baseTransform, m_entityId, &AZ::TransformInterface::GetWorldTM);
+        if (shouldRecreateHeightfield)
+        {
+            // Create a new rigid body for the heightfield on the main thread. This will ensure that other physics calls can safely
+            // request the rigid body even while we're asynchronously updating the heightfield itself on a separate thread.
+            InitStaticRigidBody();
+        }
 
-        // Get the number of meters to subdivide our update region into. We process the region as subdivided regions
+        // Add the new request region to our dirty heightfield region
+        m_dirtyRegion.AddAabb(requestRegion, m_entityId);
+
+        AZ_Assert(m_dirtyRegion.m_maxRowVertex >= m_dirtyRegion.m_minRowVertex,
+            "Invalid dirty region (min=%zu max=%zu)", m_dirtyRegion.m_minRowVertex, m_dirtyRegion.m_maxRowVertex);
+
+        AZ_Assert(m_dirtyRegion.m_maxColumnVertex >= m_dirtyRegion.m_minColumnVertex,
+            "Invalid dirty region (min=%zu max=%zu)", m_dirtyRegion.m_maxColumnVertex, m_dirtyRegion.m_minColumnVertex);
+
+        // If our heightfield size has just shrunk and we had a pre-existing dirty region, the max vertex values could be higher than
+        // our current size, so clamp them to the current size.
+        m_dirtyRegion.m_maxRowVertex = AZStd::min(m_dirtyRegion.m_maxRowVertex, m_shapeConfig->GetNumRowVertices());
+        m_dirtyRegion.m_maxColumnVertex = AZStd::min(m_dirtyRegion.m_maxColumnVertex, m_shapeConfig->GetNumColumnVertices());
+
+        size_t startColumn = m_dirtyRegion.m_minColumnVertex;
+        size_t numColumns = m_dirtyRegion.m_maxColumnVertex - m_dirtyRegion.m_minColumnVertex;
+        size_t numRows = m_dirtyRegion.m_maxRowVertex - m_dirtyRegion.m_minRowVertex;
+
+        auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+        auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
+
+        auto shape = GetHeightfieldShape();
+
+        // Get the number of rows to update in each job. We subdivide the region into multiple jobs when processing
         // so that cancellation requests can be detected and processed more quickly. If we just processed a single full dirty region,
         // regardless of size, there would be a lot more work that needs to complete before we could cancel a job.
-        const float regionDivider = physx_heightfieldColliderUpdateRegionSize;
+        const size_t rowsPerUpdate = AZStd::max(physx_heightfieldColliderUpdateRegionSize / numColumns, static_cast<size_t>(1));
 
-        auto jobLambda = [this, baseTransform, regionDivider, requestRegion]() -> void
-        {
-            // For each sub-region in our dirty region, get the updated height and material data for the heightfield.
-            for (float y = requestRegion.GetMin().GetY(); y <= requestRegion.GetMax().GetY(); y += regionDivider)
-            {
-                for (float x = requestRegion.GetMin().GetX(); x <= requestRegion.GetMax().GetX(); x += regionDivider)
-                {
-                    // On each sub-region, if a cancellation has been requested, early-out.
-                    if (m_jobContext->IsCanceled())
-                    {
-                        break;
-                    }
+        AZStd::vector<AZ::Job*> updateShapeConfigJobs;
+        AZStd::vector<AZ::MultipleDependentJob*> updateShapeConfigCompleteJobs;
+        AZStd::vector<AZ::Job*> updatePhysXHeightfieldJobs;
 
-                    // Create the sub-region to process.
-                    const float xMax = AZStd::min(x + regionDivider, requestRegion.GetMax().GetX());
-                    const float yMax = AZStd::min(y + regionDivider, requestRegion.GetMax().GetY());
-
-                    AZ::Aabb subRegion;
-                    subRegion.Set(
-                        AZ::Vector3(x, y, requestRegion.GetMin().GetZ()),
-                        AZ::Vector3(xMax, yMax, requestRegion.GetMax().GetZ()));
-
-                    // Update the shape configuration with the new height and material data for the heightfield.
-                    // This makes the assumption that the shape configuration already has been created with the correct number
-                    // of samples.
-                    Physics::HeightfieldProviderRequestsBus::Event(
-                        m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterials,
-                        [this](int32_t row, int32_t col, const Physics::HeightMaterialPoint& point)
-                        {
-                            m_shapeConfig->ModifySample(row, col, point);
-                        },
-                        subRegion);
-                }
-            }
-
-            // If the job hasn't been canceled, use the updated shape configuration to create a new heightfield in the world
-            // and notify any listeners that the collider has changed.
-            if (!m_jobContext->IsCanceled())
-            {
-                InitStaticRigidBody(baseTransform);
-                Physics::ColliderComponentEventBus::Event(m_entityId, &Physics::ColliderComponentEvents::OnColliderChanged);
-            }
-
-            // Notify the job context that the job is completed, so that anything blocking on job completion knows it can proceed.
-            m_jobContext->OnJobComplete();
-        };
-
-        // Kick off the job to update the heightfield configuration and create the heightfield.
         constexpr bool autoDelete = true;
-        auto* runningJob = AZ::CreateJobFunction(jobLambda, autoDelete, m_jobContext.get());
-        m_jobContext->OnJobStart();
-        runningJob->Start();
+
+        // The work for refreshing a heightfield is broken up into a series of jobs designed to maximize parallelization, avoid jobs
+        // blocking on other jobs, and to respond to cancellation requests reasonably quickly.
+        // 
+        // For each block of rows being processed we do the following:
+        // UpdateShapeConfigJob -> (UpdateHeightsAndMaterialsAsync) -> UpdateShapeConfigCompleteJob -> UpdatePhysXHeightfieldJob
+        // i.e. we update the shape configuration, then we update the PhysX Heightfield
+        // The final UpdatePhysXHeightfieldJob triggers the RefreshCompleteJob to signify that all the work is completed.
+        // 
+        // For simplicity in managing the job chain, the entire chain of jobs is still triggered on cancellation, but all
+        // of the updating logic is skipped.
+        //
+        // For better parallelization, we set up the job dependencies to overlap the jobs like this:
+        // Usc = UpdateShapeConfigJob
+        // Csc = UpdateShapeConfigCompleteJob
+        // Uph = UpdatePhysXHeightfieldJob
+        // RC  = RefreshCompleteJob
+        //
+        // Usc1 -> Csc1 -> Usc2 -> Csc2 -> Usc3 -> Csc3
+        //             \-> Uph1 ---->  \-> Uph2 ---->  \-> Uph3 -> RC
+        // Basically, the UpdateShapeConfig runs in parallel with the UpdatePhysXHeightfield, but each type of update runs sequentially
+        // to avoid threading update problems, and the UpdatePhysXHeightfield step can't run until the UpdateShapeConfig step it depends
+        // on is complete.
+
+        for (size_t row = 0; row < numRows; row += rowsPerUpdate)
+        {
+            size_t startRow = m_dirtyRegion.m_minRowVertex + row;
+            size_t subregionRows = AZStd::min(m_dirtyRegion.m_maxRowVertex - startRow, rowsPerUpdate);
+
+            // Create the jobs for this set of rows
+
+            auto* updateShapeConfigCompleteJob = aznew AZ::MultipleDependentJob(autoDelete, m_jobContext.get());
+
+            auto* updateShapeConfigJob = AZ::CreateJobFunction(
+                AZStd::bind(&HeightfieldCollider::UpdateShapeConfigRows,
+                    this, updateShapeConfigCompleteJob, startColumn, startRow, numColumns, subregionRows),
+                    autoDelete, m_jobContext.get());
+
+            auto* updatePhysXHeightfieldJob = AZ::CreateJobFunction(
+                AZStd::bind(&HeightfieldCollider::UpdatePhysXHeightfieldRows,
+                    this, scene, shape, startColumn, startRow, numColumns, subregionRows),
+                    autoDelete, m_jobContext.get());
+
+            // Set up the dependencies:
+            // UpdateShapeConfigJob 1 -> UpdateShapeConfigCompleteJob 1 -> UpdatePhysXHeightfieldJob 1
+            updateShapeConfigJob->SetDependent(updateShapeConfigCompleteJob);
+            updateShapeConfigCompleteJob->AddDependent(updatePhysXHeightfieldJob);
+
+            // Set up additional dependencies for all jobs past the first one:
+            // UpdateShapeConfigCompleteJob 1 -> UpdateShapeConfigJob 2
+            // UpdatePhysXHeightfieldJob 1 -> UpdatePhysXHeightfieldJob 2
+            if (!updateShapeConfigCompleteJobs.empty())
+            {
+                updateShapeConfigCompleteJobs.back()->AddDependent(updateShapeConfigJob);
+                updatePhysXHeightfieldJobs.back()->SetDependent(updatePhysXHeightfieldJob);
+            }
+
+            // Temporarily store all the jobs we're creating so that we can continue to set up dependencies and start the jobs at the end.
+            updateShapeConfigJobs.emplace_back(updateShapeConfigJob);
+            updateShapeConfigCompleteJobs.emplace_back(updateShapeConfigCompleteJob);
+            updatePhysXHeightfieldJobs.emplace_back(updatePhysXHeightfieldJob);
+        }
+
+        if (!updateShapeConfigJobs.empty())
+        {
+            // Set up the final completion job and dependency:
+            // UpdatePhysXHeightfieldJob -> RefreshCompleteJob
+            auto* refreshCompleteJob =
+                AZ::CreateJobFunction(AZStd::bind(&HeightfieldCollider::RefreshComplete, this), autoDelete, m_jobContext.get());
+            updatePhysXHeightfieldJobs.back()->SetDependent(refreshCompleteJob);
+
+            // Track that we're starting our refresh job chain.
+            m_jobContext->OnRefreshStart();
+
+            // Start all the jobs except the UpdateShapeConfigCompletion jobs.
+            // None of the jobs will actually start until all their dependencies are met, this just "primes" them so that they'll start
+            // as soon as they can.
+            // The completion jobs are started from the completion callback that's provided to UpdateHeightsAndMaterialsAsync. This 
+            // effectively lets us create an implicit dependency on all the jobs created by that API, because until we start the
+            // completion jobs, nothing downstream from them can start either.
+
+            for (size_t jobIndex = 0; jobIndex < updateShapeConfigJobs.size(); jobIndex++)
+            {
+                updateShapeConfigJobs[jobIndex]->Start();
+                updatePhysXHeightfieldJobs[jobIndex]->Start();
+            }
+
+            refreshCompleteJob->Start();
+        }
     }
 
-    void HeightfieldCollider::UpdateHeightfieldMaterialSelection(const Physics::MaterialSelection& updatedMaterialSelection)
+    void HeightfieldCollider::UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots)
     {
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
         AzPhysics::SimulatedBody* simulatedBody =
@@ -357,14 +575,12 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Shape> shape = rigidBody->GetShape(0);
         PhysX::Shape* physxShape = azdynamic_cast<PhysX::Shape*>(shape.get());
 
-        AZStd::vector<AZStd::shared_ptr<Physics::Material>> materials;
+        AZStd::vector<AZStd::shared_ptr<Material>> materials =
+            Material::FindOrCreateMaterials(updatedMaterialSlots);
 
-        Physics::PhysicsMaterialRequestBus::Broadcast(
-            &Physics::PhysicsMaterialRequestBus::Events::GetMaterials, updatedMaterialSelection, materials);
+        physxShape->SetPhysXMaterials(materials);
 
-        physxShape->SetMaterials(materials);
-
-        m_colliderConfig->m_materialSelection = updatedMaterialSelection;
+        m_colliderConfig->m_materialSlots = updatedMaterialSlots;
     }
 
     // SimulatedBodyComponentRequestsBus
@@ -410,8 +626,8 @@ namespace PhysX
     // SimulatedBodyComponentRequestsBus
     AzPhysics::SimulatedBodyHandle HeightfieldCollider::GetSimulatedBodyHandle() const
     {
-        // If there are any jobs running, wait for them to complete before returning the simulated body.
-        m_jobContext->BlockUntilComplete();
+        // The simulated body is created on the main thread, so it should be safe to return it even if we have active jobs
+        // running that are updating the simulated body.
         return m_staticRigidBodyHandle;
     }
 
@@ -423,8 +639,8 @@ namespace PhysX
 
     const AzPhysics::SimulatedBody* HeightfieldCollider::GetSimulatedBody() const
     {
-        // If there are any jobs running, wait for them to complete before returning the simulated body.
-        m_jobContext->BlockUntilComplete();
+        // The simulated body is created on the main thread, so it should be safe to return it even if we have active jobs
+        // running that are updating the simulated body.
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             return sceneInterface->GetSimulatedBodyFromHandle(m_attachedSceneHandle, m_staticRigidBodyHandle);

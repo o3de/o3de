@@ -43,6 +43,9 @@ namespace PhysX
             , m_physXSystem(AZStd::make_unique<PhysXSettingsRegistryManager>(), PxCooking::GetRealTimeCookingParams())
 #endif
         {
+            // PhysXSystemConfiguration needs to be 16-byte aligned since it contains a SIMD vector4.
+            // The vector4 itself is aligned relative to the module class, but if the module class is
+            // not also aligned, it will crash. This checks makes sure they will be aligned to 16 bytes.
             static_assert(alignof(PhysX::PhysXSystemConfiguration) == 16);
             static_assert(alignof(PhysX::PhysXSystem) == 16);
             static_assert(alignof(PhysX::Module) == 16);

@@ -53,11 +53,11 @@ namespace UnitTest
             RegisterSourceAsset("textures/gold.png");
             RegisterSourceAsset("textures/fuzz.png");
 
-            m_assetSystemStub.RegisterScanFolder(ResolvePath("@exefolder@/root1/projects/project1/assets/"));
-            m_assetSystemStub.RegisterScanFolder(ResolvePath("@exefolder@/root1/projects/project2/assets/"));
-            m_assetSystemStub.RegisterScanFolder(ResolvePath("@exefolder@/root1/o3de/gems/atom/assets/"));
-            m_assetSystemStub.RegisterScanFolder(ResolvePath("@exefolder@/root1/o3de/gems/atom/testdata/"));
-            m_assetSystemStub.RegisterScanFolder(ResolvePath("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/"));
+            m_assetSystemStub.RegisterScanFolder(AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/projects/project1/assets/"));
+            m_assetSystemStub.RegisterScanFolder(AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/projects/project2/assets/"));
+            m_assetSystemStub.RegisterScanFolder(AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/o3de/gems/atom/assets/"));
+            m_assetSystemStub.RegisterScanFolder(AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/o3de/gems/atom/testdata/"));
+            m_assetSystemStub.RegisterScanFolder(AtomToolsFramework::GetPathWithoutAlias("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/"));
         }
 
         void TearDown() override
@@ -68,17 +68,11 @@ namespace UnitTest
             m_localFileIO.reset();
         }
 
-        AZStd::string ResolvePath(const AZStd::string& path) const
-        {
-            auto result = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ path });
-            return result ? result->c_str() : AZStd::string();
-        }
-
         void RegisterSourceAsset(const AZStd::string& path)
         {
             const AZStd::string assetRoot = "@exefolder@/root1/project/assets/";
-            AZ::IO::FixedMaxPath assetRootPath(ResolvePath(assetRoot));
-            AZ::IO::FixedMaxPath normalizedPath(ResolvePath(assetRoot + path));
+            AZ::IO::FixedMaxPath assetRootPath(AtomToolsFramework::GetPathWithoutAlias(assetRoot));
+            AZ::IO::FixedMaxPath normalizedPath(AtomToolsFramework::GetPathWithoutAlias(assetRoot + path));
 
             AZ::Data::AssetInfo assetInfo = {};
             assetInfo.m_assetId = AZ::Uuid::CreateRandom();
@@ -91,64 +85,64 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_localFileIO;
     };
 
-    TEST_F(AtomToolsFrameworkTest, GetExteralReferencePath_Succeeds)
+    TEST_F(AtomToolsFrameworkTest, GetPathToExteralReference_Succeeds)
     {
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath("", "", true), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/materials/condor.material"), "", true), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/materials/talisman.material"), "", false), "");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/materials/talisman.material"), ResolvePath("@exefolder@/root1/project/assets/textures/gold.png"), true), "../textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/materials/talisman.material"), ResolvePath("@exefolder@/root1/project/assets/textures/gold.png"), false), "textures/gold.png");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material"), ResolvePath("@exefolder@/root1/project/assets/materials/condor.material"), true), "../../../materials/condor.material");
-        ASSERT_EQ(AtomToolsFramework::GetExteralReferencePath(ResolvePath("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material"), ResolvePath("@exefolder@/root1/project/assets/materials/condor.material"), false), "materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("", "", true), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/condor.material", "", true), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "", false), "");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "@exefolder@/root1/project/assets/textures/gold.png", true), "../textures/gold.png");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/materials/talisman.material", "@exefolder@/root1/project/assets/textures/gold.png", false), "textures/gold.png");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material", "@exefolder@/root1/project/assets/materials/condor.material", true), "../../../materials/condor.material");
+        ASSERT_EQ(AtomToolsFramework::GetPathToExteralReference("@exefolder@/root1/project/assets/objects/upgrades/materials/supercondor.material", "@exefolder@/root1/project/assets/materials/condor.material", false), "materials/condor.material");
     }
 
     TEST_F(AtomToolsFrameworkTest, IsDocumentPathInSupportedFolder_Succeeds)
     {
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/project/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project1/assets/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/projects/project2/assets/somerandomasset.json")));
-        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/projects/project2/assets/somerandomasset.json")));
-        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder(ResolvePath("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json")));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/project/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/projects/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/projects/project1/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root2/projects/project1/assets/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root2/projects/project2/assets/somerandomasset.json"));
+        ASSERT_FALSE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/projects/project1/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/projects/project2/assets/somerandomasset.json"));
+        ASSERT_TRUE(AtomToolsFramework::IsDocumentPathInSupportedFolder("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json"));
     }
 
     TEST_F(AtomToolsFrameworkTest, ValidateDocumentPath_Succeeds)
     {
         AZStd::string testPath;
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("somerandomasset.json");
+        testPath = "somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("../somerandomasset.json");
+        testPath = "../somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/somerandomasset.json");
+        testPath = "@exefolder@/root1/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/project/somerandomasset.json");
+        testPath = "@exefolder@/root1/project/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/projects/somerandomasset.json");
+        testPath = "@exefolder@/root1/projects/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/projects/project1/somerandomasset.json");
+        testPath = "@exefolder@/root1/projects/project1/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root2/projects/project1/assets/somerandomasset.json");
+        testPath = "@exefolder@/root2/projects/project1/assets/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json");
+        testPath = "@exefolder@/root2/projects/project1/assets/subfolder/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root2/projects/project2/assets/somerandomasset.json");
+        testPath = "@exefolder@/root2/projects/project2/assets/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json");
+        testPath = "@exefolder@/root2/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json";
         ASSERT_FALSE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/projects/project1/assets/somerandomasset.json");
+        testPath = "@exefolder@/root1/projects/project1/assets/somerandomasset.json";
         ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json");
+        testPath = "@exefolder@/root1/projects/project1/assets/subfolder/somerandomasset.json";
         ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/projects/project2/assets/somerandomasset.json");
+        testPath = "@exefolder@/root1/projects/project2/assets/somerandomasset.json";
         ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
-        testPath = ResolvePath("@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json");
+        testPath = "@exefolder@/root1/o3de/gems/atom/tools/materialeditor/assets/somerandomasset.json";
         ASSERT_TRUE(AtomToolsFramework::ValidateDocumentPath(testPath));
     }
 

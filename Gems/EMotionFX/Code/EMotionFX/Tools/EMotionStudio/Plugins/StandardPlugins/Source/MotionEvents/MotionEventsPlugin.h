@@ -25,7 +25,7 @@ namespace EMStudio
     class MotionEventsPlugin
         : public EMStudio::DockWidgetPlugin
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionEventsPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
@@ -35,7 +35,7 @@ namespace EMStudio
         };
 
         MotionEventsPlugin();
-        ~MotionEventsPlugin();
+        ~MotionEventsPlugin() = default;
 
         void Reflect(AZ::ReflectContext* context) override;
 
@@ -62,30 +62,13 @@ namespace EMStudio
         void OnColorChanged();
 
     public slots:
-        void ReInit();
-        void MotionSelectionChanged();
-        void WindowReInit(bool visible);
         void OnEventPresetDropped(QPoint position);
         bool CheckIfIsPresetReadyToDrop();
 
     private:
-        MCORE_DEFINECOMMANDCALLBACK(CommandAdjustMotionCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
-        CommandAdjustMotionCallback*    m_adjustMotionCallback;
-        CommandSelectCallback*          m_selectCallback;
-        CommandUnselectCallback*        m_unselectCallback;
-        CommandClearSelectionCallback*  m_clearSelectionCallback;
-
         MysticQt::DialogStack*          m_dialogStack;
         MotionEventPresetsWidget*       m_motionEventPresetsWidget;
 
         TimeViewPlugin*                 m_timeViewPlugin;
-        TrackHeaderWidget*              m_trackHeaderWidget;
-        TrackDataWidget*                m_trackDataWidget;
-        MotionWindowPlugin*             m_motionWindowPlugin;
-        MotionListWindow*               m_motionListWindow;
-        EMotionFX::Motion*              m_motion;
     };
 } // namespace EMStudio

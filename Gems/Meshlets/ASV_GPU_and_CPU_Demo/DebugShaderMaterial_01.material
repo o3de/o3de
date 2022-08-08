@@ -1,0 +1,16 @@
+{
+    "description": "",
+    "parentMaterial": "",
+    "materialType": "Materials/Types/DebugShaderPBR.materialtype",
+    "materialTypeVersion": 3,
+    "properties": {
+        "settings": {
+            "color": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ]
+        }
+    }
+}

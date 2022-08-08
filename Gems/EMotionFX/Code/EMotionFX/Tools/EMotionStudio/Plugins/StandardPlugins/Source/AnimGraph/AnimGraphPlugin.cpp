@@ -585,26 +585,12 @@ namespace EMStudio
         return result;
     }
 
-
     // set the gizmo offsets
-    void AnimGraphEventHandler::OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset)
+    void AnimGraphEventHandler::OnSetVisualManipulatorOffset(
+        [[maybe_unused]] EMotionFX::AnimGraphInstance* animGraphInstance,
+        [[maybe_unused]] size_t paramIndex,
+        [[maybe_unused]] const AZ::Vector3& offset)
     {
-        EMStudioManager* manager = GetManager();
-
-        // get the paremeter name
-        const AZStd::string& paramName = animGraphInstance->GetAnimGraph()->FindParameter(paramIndex)->GetName();
-
-        // iterate over all gizmos that are active
-        const AZStd::vector<MCommon::TransformationManipulator*>* gizmos = manager->GetTransformationManipulators();
-        for (MCommon::TransformationManipulator* gizmo : *gizmos)
-        {
-             // check the gizmo name
-            if (paramName == gizmo->GetName())
-            {
-                gizmo->SetRenderOffset(offset);
-                return;
-            }
-        }
     }
 
     void AnimGraphEventHandler::OnInputPortsChanged(EMotionFX::AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue)
@@ -865,7 +851,12 @@ namespace EMStudio
         {
             return;
         }
+        FileOpen(filename);
+    }
 
+    void AnimGraphPlugin::FileOpen(AZStd::string filename)
+    {
+        GetMainWindow()->activateWindow();
         // Auto-relocate to asset source folder.
 
         if (!GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(filename))

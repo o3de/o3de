@@ -8,6 +8,7 @@
 
 #include <AWSMetricsConstant.h>
 #include <AWSMetricsGemMock.h>
+#include <Framework/JsonWriter.h>
 #include <MetricsEvent.h>
 #include <MetricsQueue.h>
 

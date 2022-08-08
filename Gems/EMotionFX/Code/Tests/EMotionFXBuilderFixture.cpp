@@ -22,7 +22,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-using namespace AZ::Data;
 using ::testing::Return;
 using ::testing::_;
 
@@ -41,12 +40,12 @@ namespace EMotionFX
         m_assetHandlers.emplace_back(aznew EMotionFX::Integration::AnimGraphAssetBuilderHandler);
 
         // Initialize an AssetCatalog AssetStreamInfo that will appear valid.
-        AssetStreamInfo mockAssetStreamInfo;
+        AZ::Data::AssetStreamInfo mockAssetStreamInfo;
         mockAssetStreamInfo.m_streamFlags = AZ::IO::OpenMode::ModeRead;
         mockAssetStreamInfo.m_streamName = "test";
 
         m_assetCatalog.reset(aznew EMotionFXTest_MockCatalog());
-        EXPECT_CALL(*(m_assetCatalog.get()), GetAssetInfoById(_)).WillRepeatedly(Return(AssetInfo()));
+        EXPECT_CALL(*(m_assetCatalog.get()), GetAssetInfoById(_)).WillRepeatedly(Return(AZ::Data::AssetInfo()));
         EXPECT_CALL(*(m_assetCatalog.get()), GetStreamInfoForLoad(_, _)).WillRepeatedly(Return(mockAssetStreamInfo));
 
         AZ::Data::AssetManager::Instance().RegisterCatalog(m_assetCatalog.get(), azrtti_typeid<EMotionFX::Integration::MotionSetAsset>());

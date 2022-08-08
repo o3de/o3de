@@ -44,6 +44,7 @@ namespace NodeCpp
     {
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
+        AddName = 1,
 
         // add your named version above
         Current,
@@ -431,6 +432,9 @@ namespace ScriptCanvas
                 ->Field("Slots", &Node::m_slots)
                 ->Field("Datums", &Node::m_slotDatums)
                 ->Field("NodeDisabledFlag", &Node::m_disabledFlag)
+                ->Field("Name", &Node::m_name)
+                ->Field("ToolTip", &Node::m_toolTip)
+                ->Field("Style", &Node::m_nodeStyle)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -2963,27 +2967,60 @@ namespace ScriptCanvas
 
     AZStd::string Node::GetNodeName() const
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        if (serializeContext)
+        if (m_name.empty())
         {
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
-            if (classData)
+            if (serializeContext)
             {
-                if (classData->m_editData)
+                const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+
+                if (classData)
                 {
-                    return classData->m_editData->m_name;
-                }
-                else
-                {
-                    return classData->m_name;
+                    if (classData->m_editData)
+                    {
+                        return classData->m_editData->m_name;
+                    }
+                    else
+                    {
+                        return classData->m_name;
+                    }
                 }
             }
+            return "<unknown>";
         }
+        return m_name;
+    }
 
-        return "<unknown>";
+    const AZStd::string& Node::GetNodeToolTip() const
+    {
+        return m_toolTip;
+    }
+
+    const AZStd::string& Node::GetNodeStyle() const
+    {
+        return m_nodeStyle;
+    }
+
+    void Node::SetNodeName(const AZStd::string& name)
+    {
+        m_name = name;
+    }
+
+    void Node::SetNodeToolTip(const AZStd::string& toolTip)
+    {
+        m_toolTip = toolTip;
+    }
+
+    void Node::SetNodeStyle(const AZStd::string& nodeStyle)
+    {
+        m_nodeStyle = nodeStyle;
+    }
+
+    void Node::SetNodeLexicalId(const AZ::Crc32& nodeLexicalId)
+    {
+        m_nodeLexicalId = nodeLexicalId;
     }
 
     bool Node::IsEntryPoint() const

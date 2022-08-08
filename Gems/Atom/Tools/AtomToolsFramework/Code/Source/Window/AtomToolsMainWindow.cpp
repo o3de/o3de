@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/Factory.h>
 #include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
+#include <AtomToolsFramework/SettingsDialog/SettingsDialog.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
@@ -270,15 +271,15 @@ namespace AtomToolsFramework
         m_menuTools->addSeparator();
 
         m_menuTools->addAction("&Settings...", [this]() {
-            OpenSettings();
+            OpenSettingsDialog();
         }, QKeySequence::Preferences);
 
         m_menuHelp->addAction("&Help...", [this]() {
-            OpenHelp();
+            OpenHelpDialog();
         });
 
         m_menuHelp->addAction("&About...", [this]() {
-            OpenAbout();
+            OpenAboutDialog();
         });
     }
 
@@ -301,15 +302,74 @@ namespace AtomToolsFramework
         m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
     }
 
-    void AtomToolsMainWindow::OpenSettings()
+    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsMainWindow::GetSettingsDialogGroups() const
     {
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups;
+        groups.push_back(CreateSettingsGroup(
+            "Application Settings",
+            "Application Settings",
+            {
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/Application/ClearLogOnStart",
+                    "Clear Log On Start",
+                    "Clear the application log on startup",
+                    false),
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/Application/EnableSourceControl",
+                    "Enable Source Control",
+                    "Enable source control for the application if it is available",
+                    false),
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
+                    "Update Interval When Active",
+                    "Minimum delay between ticks (in milliseconds) when the application has focus",
+                    aznumeric_cast<AZ::s64>(1)),
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
+                    "Update Interval When Not Active",
+                    "Minimum delay between ticks (in milliseconds) when the application does not have focus",
+                    aznumeric_cast<AZ::s64>(250)),
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
+                    "Allow Multiple Instances",
+                    "Allow multiple instances of the application to run",
+                    false),
+            }));
+        groups.push_back(CreateSettingsGroup(
+            "Asset Browser Settings",
+            "Asset Browser Settings",
+            {
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles",
+                    "Prompt To Open Multiple Files",
+                    "Confirm before opening multiple files",
+                    true),
+                CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
+                    "Prompt To Open Multiple Files Threshold",
+                    "Maximum number of files that can be selected before prompting for confirmation",
+                    aznumeric_cast<AZ::s64>(10)),
+            }));
+        return groups;
     }
 
-    void AtomToolsMainWindow::OpenHelp()
+    void AtomToolsMainWindow::OpenSettingsDialog()
     {
+        SettingsDialog dialog(GetSettingsDialogGroups(), this);
+        dialog.exec();
     }
 
-    void AtomToolsMainWindow::OpenAbout()
+    AZStd::string AtomToolsMainWindow::GetHelpDialogText() const
+    {
+        return AZStd::string();
+    }
+
+    void AtomToolsMainWindow::OpenHelpDialog()
+    {
+        QMessageBox::information(this, windowTitle(), GetHelpDialogText().c_str());
+    }
+
+    void AtomToolsMainWindow::OpenAboutDialog()
     {
         QMessageBox::about(this, windowTitle(), QApplication::applicationName());
     }
@@ -322,7 +382,7 @@ namespace AtomToolsFramework
             m_defaultWindowState = m_advancedDockManager->saveState();
             m_mainWindowWrapper->showFromSettings();
             const AZStd::string windowState =
-                AtomToolsFramework::GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
+                GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
             m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
         }
 
@@ -334,7 +394,7 @@ namespace AtomToolsFramework
         if (closeEvent->isAccepted())
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
-            AtomToolsFramework::SetSettingsObject(
+            SetSettingsObject(
                 "/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
             AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }

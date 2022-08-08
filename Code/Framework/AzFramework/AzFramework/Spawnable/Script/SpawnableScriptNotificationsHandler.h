@@ -33,7 +33,7 @@ namespace AzFramework::Scripts
             Call(FN_OnSpawn, spawnTicket, entityList);
         }
 
-        virtual void OnDespawn(EntitySpawnTicket spawnTicket)
+        void OnDespawn(EntitySpawnTicket spawnTicket) override
         {
             Call(FN_OnDespawn, spawnTicket);
         }

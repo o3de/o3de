@@ -9,16 +9,14 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "../StandardPluginsConfig.h"
-#include <MCore/Source/StandardHeaders.h>
-#include "../../../../EMStudioSDK/Source/NodeSelectionWindow.h"
+#include <EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
+#include <MCore/Source/StandardHeaders.h>
 #include <QWidget>
 #endif
 
-
-QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
@@ -29,17 +27,13 @@ namespace MysticQt
 
 namespace EMStudio
 {
-    // forward declarations
-    class MotionWindowPlugin;
-
-    class MotionExtractionWindow
-        : public QWidget
+    class MotionExtractionWindow : public QWidget
     {
         Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionExtractionWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionExtractionWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin);
+        MotionExtractionWindow(QWidget* parent);
         ~MotionExtractionWindow();
 
         void Init();
@@ -58,26 +52,22 @@ namespace EMStudio
         void CreateFlagsWidget();
         void CreateWarningWidget();
 
-        // general
-        MotionWindowPlugin*             m_motionWindowPlugin;
-
         // flags widget
-        QWidget*                        m_flagsWidget;
-        QCheckBox*                      m_captureHeight;
+        QWidget* m_flagsWidget = nullptr;
+        QCheckBox* m_captureHeight = nullptr;
 
         //
-        QVBoxLayout*                    m_mainVerticalLayout;
-        QVBoxLayout*                    m_childVerticalLayout;
-        QWidget*                        m_warningWidget;
-        bool                            m_warningShowed;
+        QVBoxLayout* m_mainVerticalLayout = nullptr;
+        QVBoxLayout* m_childVerticalLayout = nullptr;
+        QWidget* m_warningWidget = nullptr;
+        bool m_warningShowed = false;
 
         // motion extraction node selection
-        NodeSelectionWindow*            m_motionExtractionNodeSelectionWindow;
-        AzQtComponents::BrowseEdit*     m_warningSelectNodeLink;
+        NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;
+        AzQtComponents::BrowseEdit* m_warningSelectNodeLink = nullptr;
 
         // Command callbacks
-        class SelectActorCallback
-            : public MCore::Command::Callback
+        class SelectActorCallback : public MCore::Command::Callback
         {
         public:
             SelectActorCallback(MotionExtractionWindow* motionExtractionWindow);
@@ -88,8 +78,7 @@ namespace EMStudio
             MotionExtractionWindow* m_motionExtractionWindow = nullptr;
         };
 
-        class UpdateMotionExtractionWindowCallback
-            : public MCore::Command::Callback
+        class UpdateMotionExtractionWindowCallback : public MCore::Command::Callback
         {
         public:
             UpdateMotionExtractionWindowCallback(MotionExtractionWindow* motionExtractionWindow);

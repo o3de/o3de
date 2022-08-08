@@ -100,7 +100,7 @@ namespace PhysX
         // - Remove "Read Only" m_readOnly
         if (classElement.GetVersion() == 1)
         {
-            result = classElement.RemoveElementByName(AZ_CRC("Read Only", 0x1eaf9877)) && result;
+            result = classElement.RemoveElementByName(AZ_CRC_CE("Read Only")) && result;
         }
 
         return result;
@@ -347,7 +347,7 @@ namespace PhysX
         // - Remove "Read Only" m_readOnly
         if (classElement.GetVersion() == 1)
         {
-            result = classElement.RemoveElementByName(AZ_CRC("Read Only", 0x1eaf9877)) && result;
+            result = classElement.RemoveElementByName(AZ_CRC_CE("Read Only")) && result;
         }
 
         // conversion from version 1 & 2:
@@ -359,7 +359,7 @@ namespace PhysX
         // conversion from version 1, 2 and 3: Replace quaternion representation of local rotation with rotation angles about axes in degrees.
         if (classElement.GetVersion() <= 3)
         {
-            const int localRotationIndex = classElement.FindElement(AZ_CRC("Local Rotation", 0x95f2be6d));
+            const int localRotationIndex = classElement.FindElement(AZ_CRC_CE("Local Rotation"));
             if (localRotationIndex >= 0)
             {
                 AZ::SerializeContext::DataElementNode& localRotationElement = classElement.GetSubElement(localRotationIndex);

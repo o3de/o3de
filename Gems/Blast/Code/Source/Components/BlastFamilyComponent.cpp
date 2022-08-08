@@ -17,12 +17,13 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
 #include <Material/BlastMaterial.h>
+#include <PhysX/Material/PhysXMaterial.h>
 #include <Common/Utils.h>
 #include <Components/BlastFamilyComponentNotificationBusHandler.h>
 #include <Components/BlastMeshDataComponent.h>
@@ -37,11 +38,11 @@ namespace Blast
     BlastFamilyComponent::BlastFamilyComponent(
         AZ::Data::Asset<BlastAsset> blastAsset,
         AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
-        Physics::MaterialId physicsMaterialId,
+        AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset,
         const BlastActorConfiguration& actorConfiguration)
         : m_blastAsset(blastAsset)
         , m_blastMaterialAsset(blastMaterialAsset)
-        , m_physicsMaterialId(physicsMaterialId)
+        , m_physicsMaterialAsset(physicsMaterialAsset)
         , m_actorConfiguration(actorConfiguration)
         , m_debugRenderMode(DebugRenderDisabled)
     {
@@ -57,10 +58,10 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastFamilyComponent, AZ::Component>()
-                ->Version(3)
+                ->Version(4)
                 ->Field("BlastAsset", &BlastFamilyComponent::m_blastAsset)
                 ->Field("BlastMaterialAsset", &BlastFamilyComponent::m_blastMaterialAsset)
-                ->Field("PhysicsMaterial", &BlastFamilyComponent::m_physicsMaterialId)
+                ->Field("PhysicsMaterialAsset", &BlastFamilyComponent::m_physicsMaterialAsset)
                 ->Field("ActorConfiguration", &BlastFamilyComponent::m_actorConfiguration);
         }
 
@@ -241,6 +242,15 @@ namespace Blast
             m_blastMaterial = AZStd::make_unique<Material>(MaterialConfiguration{});
         }
 
+        // Create physx material instance
+        m_physxMaterial = PhysX::Material::FindOrCreateMaterial(m_physicsMaterialAsset);
+        if (!m_physxMaterial)
+        {
+            m_physxMaterial =
+                AZStd::rtti_pointer_cast<PhysX::Material>(
+                    AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
+        }
+
         auto blastSystem = AZ::Interface<BlastSystemRequests>::Get();
 
         // Create family
@@ -248,7 +258,7 @@ namespace Blast
             {*m_blastAsset.Get(),
              this,
              blastSystem->CreateTkGroup(), // Blast system takes care of destroying this group when it's empty.
-             m_physicsMaterialId,
+             m_physxMaterial->GetId(),
              m_blastMaterial.get(),
              AZStd::make_shared<BlastActorFactoryImpl>(),
              EntityProvider::Create(),
@@ -264,22 +274,7 @@ namespace Blast
             const_cast<NvBlastFamily&>(*m_family->GetTkFamily()->getFamilyLL()), stressSolverSettings);
         m_solver = physx::unique_ptr<Nv::Blast::ExtStressSolver>(solverPtr);
 
-        AZStd::shared_ptr<Physics::Material> physicsMaterial;
-        Physics::PhysicsMaterialRequestBus::BroadcastResult(
-            physicsMaterial,
-            &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-            m_physicsMaterialId);
-        if (!physicsMaterial)
-        {
-            AZ_Warning("BlastFamilyComponent", false, "Material Id %s was not found, using default material instead.",
-                m_physicsMaterialId.GetUuid().ToString<AZStd::string>().c_str());
-
-            Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                physicsMaterial,
-                &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
-            AZ_Assert(physicsMaterial, "BlastFamilyComponent: Invalid default physics material");
-        }
-        m_solver->setAllNodesInfoFromLL(physicsMaterial->GetDensity());
+        m_solver->setAllNodesInfoFromLL(m_physxMaterial->GetDensity());
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(m_blastMaterial.get(), m_family->GetActorTracker());
@@ -329,6 +324,7 @@ namespace Blast
         m_solver.reset();
         m_family.reset();
         m_blastMaterial.reset();
+        m_physxMaterial.reset();
 
         m_isSpawned = false;
     }

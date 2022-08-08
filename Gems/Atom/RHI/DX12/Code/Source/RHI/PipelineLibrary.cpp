@@ -16,6 +16,7 @@ namespace AZ
         namespace
         {
             // Builds a wide-character name from a 64-bit hash.
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             void HashToName(uint64_t hash, AZStd::wstring& name)
             {
                 static const wchar_t s_hexValues[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
@@ -33,6 +34,7 @@ namespace AZ
                     name[nibbleCount - nibbleIndex - 1] = s_hexValues[nibble];
                 }
             }
+#endif
         }
 
         RHI::Ptr<PipelineLibrary> PipelineLibrary::Create()

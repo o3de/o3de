@@ -160,7 +160,7 @@ namespace EMotionFX::MotionMatching
             {
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(debugDisplay, currentPose, featureMatrix, currentFrame);
+                    feature->DebugDraw(debugDisplay, currentPose, featureMatrix, m_data->GetFeatureTransformer(), currentFrame);
                 }
             }
         }
@@ -420,6 +420,7 @@ namespace EMotionFX::MotionMatching
             const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
 
             Feature::QueryVectorContext queryVectorContext(m_queryPose, m_trajectoryQuery);
+            queryVectorContext.m_featureTransformer = m_data->GetFeatureTransformer();
 
             Feature::FrameCostContext frameCostContext(m_queryVector, featureMatrix);
             const size_t lowestCostFrameIndex = FindLowestCostFrameIndex(queryVectorContext, frameCostContext);
@@ -498,6 +499,11 @@ namespace EMotionFX::MotionMatching
             for (Feature* feature : featureSchema.GetFeatures())
             {
                 feature->FillQueryVector(m_queryVector, queryVectorContext);
+            }
+
+            if (FeatureMatrixTransformer* transformer = queryVectorContext.m_featureTransformer)
+            {
+                transformer->Transform(m_queryVector.GetData());
             }
         }
 

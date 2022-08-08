@@ -393,7 +393,7 @@
                                     "$type": "AzFramework::ScriptPropertyNumber",
                                     "id": 2316173759,
                                     "name": "DespawnTime",
-                                    "value": 3.0
+                                    "value": 5.0
                                 },
                                 {
                                     "$type": "AzFramework::ScriptPropertyGenericClass",

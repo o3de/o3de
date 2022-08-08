@@ -34,11 +34,6 @@ namespace Terrain
         [[maybe_unused]] const char* TerrainFPName = "TerrainFeatureProcessor";
     }
 
-    namespace SceneSrgInputs
-    {
-        static const char* const TerrainWorldData("m_terrainWorldData");
-    }
-
     namespace TerrainSrgInputs
     {
         static const char* const Textures("m_textures");
@@ -68,9 +63,6 @@ namespace Terrain
 
         auto sceneSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetSceneSrgLayout();
         
-        m_worldDataIndex = sceneSrgLayout->FindShaderInputConstantIndex(AZ::Name(SceneSrgInputs::TerrainWorldData));
-        AZ_Error(TerrainFPName, m_worldDataIndex.IsValid(), "Failed to find scene srg input constant %s.", SceneSrgInputs::TerrainWorldData);
-
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -111,7 +103,10 @@ namespace Terrain
         m_meshManager.Reset();
         m_macroMaterialManager.Reset();
         m_detailMaterialManager.Reset();
-        m_clipmapManager.Reset();
+        if (m_clipmapManager.IsClipmapEnabled())
+        {
+            m_clipmapManager.Reset();
+        }
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -121,38 +116,17 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainDataDestroyBegin()
     {
-        m_terrainBounds = AZ::Aabb::CreateNull();
-        m_dirtyRegion = AZ::Aabb::CreateNull();
+        m_zBounds = {};
     }
     
-    void TerrainFeatureProcessor::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
+    void TerrainFeatureProcessor::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
         {
-            TerrainHeightOrSettingsUpdated(dirtyRegion);
-        }
-    }
+            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                m_zBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightBounds);
 
-    void TerrainFeatureProcessor::TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion)
-    {
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-
-        const AZ::Aabb& regionToUpdate = dirtyRegion.IsValid() ? dirtyRegion : worldBounds;
-
-        m_dirtyRegion.AddAabb(regionToUpdate);
-        m_dirtyRegion.Clamp(worldBounds);
-
-        float queryResolution = 1.0f;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-
-        if (m_terrainBounds != worldBounds || m_sampleSpacing != queryResolution)
-        {
             m_terrainBoundsNeedUpdate = true;
-            m_terrainBounds = worldBounds;
-            m_sampleSpacing = queryResolution;
         }
     }
 
@@ -271,13 +245,16 @@ namespace Terrain
                 m_detailMaterialManager.Initialize(m_imageArrayHandler, m_terrainSrg, m_materialInstance);
             }
 
-            if (m_clipmapManager.IsInitialized())
+            if (m_clipmapManager.IsClipmapEnabled())
             {
-                m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
-            }
-            else
-            {
-                m_clipmapManager.Initialize(m_terrainSrg);
+                if (m_clipmapManager.IsInitialized())
+                {
+                    m_clipmapManager.UpdateSrgIndices(m_terrainSrg);
+                }
+                else
+                {
+                    m_clipmapManager.Initialize(m_terrainSrg);
+                }
             }
             m_meshManager.SetMaterial(m_materialInstance);
         }
@@ -286,7 +263,10 @@ namespace Terrain
             m_imageArrayHandler->Reset();
             m_macroMaterialManager.Reset();
             m_detailMaterialManager.Reset();
-            m_clipmapManager.Reset();
+            if (m_clipmapManager.IsClipmapEnabled())
+            {
+                m_clipmapManager.Reset();
+            }
         }
     }
 
@@ -294,7 +274,7 @@ namespace Terrain
     {
         AZ_PROFILE_FUNCTION(AzRender);
         
-        if (!m_terrainBounds.IsValid())
+        if (m_zBounds.m_min == 0.0f && m_zBounds.m_max == 0.0f)
         {
             return;
         }
@@ -322,7 +302,7 @@ namespace Terrain
 
                 if (m_macroMaterialManager.IsInitialized())
                 {
-                    m_macroMaterialManager.Update(m_terrainSrg);
+                    m_macroMaterialManager.Update(mainView, m_terrainSrg);
                 }
 
                 if (m_detailMaterialManager.IsInitialized())
@@ -330,9 +310,12 @@ namespace Terrain
                     m_detailMaterialManager.Update(cameraPosition, m_terrainSrg);
                 }
 
-                if (m_clipmapManager.IsInitialized())
+                if (m_clipmapManager.IsClipmapEnabled())
                 {
-                    m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
+                    if (m_clipmapManager.IsInitialized())
+                    {
+                        m_clipmapManager.Update(cameraPosition, GetParentScene(), m_terrainSrg);
+                    }
                 }
             }
             if (m_imageArrayHandler->IsInitialized())
@@ -352,8 +335,9 @@ namespace Terrain
             m_terrainBoundsNeedUpdate = false;
 
             WorldShaderData worldData;
-            m_terrainBounds.GetMin().StoreToFloat3(worldData.m_min.data());
-            m_terrainBounds.GetMax().StoreToFloat3(worldData.m_max.data());
+            worldData.m_zMin = m_zBounds.m_min;
+            worldData.m_zMax = m_zBounds.m_max;
+            worldData.m_zExtents = worldData.m_zMax - worldData.m_zMin;
 
             auto sceneSrg = GetParentScene()->GetShaderResourceGroup();
             sceneSrg->SetConstant(m_worldDataIndex, worldData);
@@ -388,11 +372,18 @@ namespace Terrain
     void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
         m_meshManager.SetConfiguration(config);
+        m_macroMaterialManager.SetRenderDistance(config.m_renderDistance);
+    }
+
+    void TerrainFeatureProcessor::SetClipmapConfiguration(const ClipmapConfiguration& config)
+    {
+        m_clipmapManager.SetConfiguration(config);
     }
     
     void TerrainFeatureProcessor::CachePasses()
     {
         m_passes.clear();
+
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
         rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();

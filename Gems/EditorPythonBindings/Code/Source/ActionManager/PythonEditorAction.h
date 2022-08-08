@@ -24,11 +24,11 @@ namespace EditorPythonBindings
 
         explicit PythonEditorAction(PyObject* handler);
 
-        PyObject* GetHandler();
-        const PyObject* GetHandler() const;
+        PyObject* GetPyObject();
+        const PyObject* GetPyObject() const;
 
     private:
-        PyObject* m_handler = nullptr;
+        PyObject* m_pythonCallableObject = nullptr;
     };
 
 } // namespace EditorPythonBindings

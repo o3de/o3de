@@ -27,42 +27,41 @@ void MainCS(
     uint numberOfGroups = TerrainSrg::m_clipmapData.m_macroDispatchGroupCountX * TerrainSrg::m_clipmapData.m_macroDispatchGroupCountY;
     uint numberOfGroupThreads = THREAD_NUM_X * THREAD_NUM_Y;
 
-    for (uint clipmapLevel = 0; clipmapLevel < TerrainSrg::m_clipmapData.m_macroClipmapStackSize; ++clipmapLevel)
+    for (uint regionIndex = 0; regionIndex < TerrainSrg::m_clipmapData.m_macroClipmapUpdateRegionCount; ++regionIndex)
     {
-        for (uint updateRegionIndex = 0; updateRegionIndex < UpdateRegionMax; ++updateRegionIndex)
+        TerrainSrg::ClipmapUpdateRegion updateRegion = TerrainSrg::m_macroClipmapUpdateRegions[regionIndex];
+        uint clipmapLevel = updateRegion.m_clipmapLevel;
+        uint4 aabb = updateRegion.m_clipmapRegion;
+        uint2 size = uint2(aabb.z - aabb.x, aabb.w - aabb.y);
+        uint totalNumberOfTexels = size.x * size.y;
+
+        uint totalStride = (totalNumberOfTexels + numberOfGroups - 1) / numberOfGroups;
+        uint totalBegin = min(totalStride * (groupID.x + groupID.y * TerrainSrg::m_clipmapData.m_macroDispatchGroupCountX), totalNumberOfTexels);
+        uint totalEnd = min(totalBegin + totalStride, totalNumberOfTexels);
+
+        uint groupTotal = totalEnd - totalBegin;
+        uint groupStride = (groupTotal + numberOfGroupThreads - 1) / numberOfGroupThreads;
+        uint groupBegin = min(groupStride * (groupThreadID.x + groupThreadID.y * THREAD_NUM_X), groupTotal);
+        uint groupEnd = min(groupBegin + groupStride, groupTotal);
+
+        for (uint i = groupBegin; i < groupEnd; ++i)
         {
-            uint4 updateRegion = TerrainSrg::m_clipmapData.m_macroClipmapBoundsRegions[clipmapLevel + MacroClipmapStackSizeMax * updateRegionIndex];
-            uint2 size = uint2(updateRegion.z - updateRegion.x, updateRegion.w - updateRegion.y);
-            uint totalNumberOfTexels = size.x * size.y;
+            uint texelFlatIndex = totalBegin + i;
+            uint2 texelPosition = uint2(texelFlatIndex % size.x + aabb.x, texelFlatIndex / size.x + aabb.y);
+            uint3 texelIndex = uint3(texelPosition, clipmapLevel);
 
-            uint totalStride = (totalNumberOfTexels + numberOfGroups - 1) / numberOfGroups;
-            uint totalBegin = min(totalStride * (groupID.x + groupID.y * TerrainSrg::m_clipmapData.m_macroDispatchGroupCountX), totalNumberOfTexels);
-            uint totalEnd = min(totalBegin + totalStride, totalNumberOfTexels);
+            float2 worldPosition = GetWorldPositionFromMacroClipmaps(texelPosition, clipmapLevel);
+            float clipmapToWorldScale = GetMacroClipmapToWorldScale(clipmapLevel);
+            float2 positionDdx = float2(clipmapToWorldScale, 0.0);
+            float2 positionDdy = float2(0.0, clipmapToWorldScale);
 
-            uint groupTotal = totalEnd - totalBegin;
-            uint groupStride = (groupTotal + numberOfGroupThreads - 1) / numberOfGroupThreads;
-            uint groupBegin = min(groupStride * (groupThreadID.x + groupThreadID.y * THREAD_NUM_X), groupTotal);
-            uint groupEnd = min(groupBegin + groupStride, groupTotal);
+            float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+            float3 macroNormal = float3(0.0, 0.0, 1.0);
+            bool hasNormal;
+            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal, hasNormal);
 
-            for (uint i = groupBegin; i < groupEnd; ++i)
-            {
-                uint texelFlatIndex = totalBegin + i;
-                uint2 texelPosition = uint2(texelFlatIndex % size.x + updateRegion.x, texelFlatIndex / size.x + updateRegion.y);
-                uint3 texelIndex = uint3(texelPosition, clipmapLevel);
-
-                float2 worldPosition = GetCurrentWorldPositionFromMacroClipmaps(texelPosition, clipmapLevel);
-                float clipmapScaleInv = GetMacroClipmapScaleInv(clipmapLevel);
-                float2 positionDdx = ddxPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
-                float2 positionDdy = ddyPosition(TerrainSrg::m_clipmapData.m_macroClipmapMaxRenderRadius, clipmapScaleInv);
-
-                float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-                float3 macroNormal = float3(0.0, 0.0, 1.0);
-                SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal);
-
-                PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, 1.0);
-                PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
-            }
+            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, hasNormal ? HAS_NORMAL : NO_NORMAL);
+            PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
         }
     }
 }
-

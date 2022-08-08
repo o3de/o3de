@@ -13,7 +13,7 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 
@@ -54,11 +54,7 @@ namespace ScriptCanvasPhysics
             }
             if (result)
             {
-                AZ::Crc32 surfaceType;
-                if (result.m_hits[0].m_material)
-                {
-                    surfaceType = result.m_hits[0].m_material->GetSurfaceType();
-                }
+                const AZ::Crc32 surfaceType(result.m_hits[0].m_physicsMaterialId.ToString<AZStd::string>());
                 return AZStd::make_tuple(
                     result.m_hits[0].IsValid(), result.m_hits[0].m_position, result.m_hits[0].m_normal, result.m_hits[0].m_distance,
                     result.m_hits[0].m_entityId, surfaceType);
@@ -234,11 +230,7 @@ namespace ScriptCanvasPhysics
             }
             if (result)
             {
-                AZ::Crc32 surfaceType;
-                if (result.m_hits[0].m_material)
-                {
-                    surfaceType = result.m_hits[0].m_material->GetSurfaceType();
-                }
+                const AZ::Crc32 surfaceType(result.m_hits[0].m_physicsMaterialId.ToString<AZStd::string>());
                 return AZStd::make_tuple(
                     result.m_hits[0].IsValid(), result.m_hits[0].m_position, result.m_hits[0].m_normal, result.m_hits[0].m_distance,
                     result.m_hits[0].m_entityId, surfaceType);

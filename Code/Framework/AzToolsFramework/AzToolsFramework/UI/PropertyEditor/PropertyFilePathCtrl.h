@@ -25,6 +25,9 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
+    //! Helper method to retrieve an absolute path given a relative source path
+    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath);
+
     //! A control for representing an AZ::IO::Path field with
     //! a BrowseEdit whose popup button triggers a native
     //! file dialog.
@@ -38,7 +41,6 @@ namespace AzToolsFramework
 
         const AZ::IO::Path& GetFilePath() const;
         void SetFilter(const QString& filter);
-        void SetProductExtension(AZStd::string extension);
         void SetDefaultFileName(AZ::IO::Path fileName);
 
     Q_SIGNALS:
@@ -51,7 +53,6 @@ namespace AzToolsFramework
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
         AZ::IO::Path m_currentFilePath;
         QString m_filter;
-        AZStd::string m_productExtension;
         AZ::IO::Path m_defaultFileName;
 
         void OnOpenButtonClicked();

@@ -298,7 +298,18 @@ namespace Multiplayer
                         return;
                     }
 
-                    const AZStd::vector<AZ::EntityId> allChildren = candidate->GetTransform()->GetChildren();
+                    AZStd::vector<AZ::EntityId> allChildren;
+                    if (candidate->GetTransform())
+                    {
+                        allChildren = candidate->GetTransform()->GetChildren();
+                    }
+                    else
+                    {
+                        // Child entities may not be in the Active state so skip for now.
+                        // They will notify when ready causing another rebuild.
+                        continue;
+                    }
+
                     for (const AZ::EntityId& newChildId : allChildren)
                     {
                         candidates.push_back(componentApplicationRequests->FindEntity(newChildId));
@@ -444,7 +455,7 @@ namespace Multiplayer
             AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
             // Build a set of Net IDs for the children
-            AZStd::unordered_set<NetEntityId> currentChildren;
+            NetEntityIdSet currentChildren;
             NetworkHierarchyRootComponent& component = GetParent();
             for (AZ::Entity* child : component.m_hierarchicalEntities)
             {

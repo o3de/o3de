@@ -12,7 +12,12 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-#include <ScriptCanvas/Libraries/Comparison/Comparison.h>
+#include <ScriptCanvas/Libraries/Comparison/EqualTo.h>
+#include <ScriptCanvas/Libraries/Comparison/Greater.h>
+#include <ScriptCanvas/Libraries/Comparison/GreaterEqual.h>
+#include <ScriptCanvas/Libraries/Comparison/Less.h>
+#include <ScriptCanvas/Libraries/Comparison/LessEqual.h>
+#include <ScriptCanvas/Libraries/Comparison/NotEqualTo.h>
 #include <ScriptCanvas/Libraries/Core/AzEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>

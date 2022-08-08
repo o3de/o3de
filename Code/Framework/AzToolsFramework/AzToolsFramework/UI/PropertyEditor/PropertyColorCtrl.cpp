@@ -400,7 +400,12 @@ namespace AzToolsFramework
             {
                 EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
             });
-        // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
+        connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+            });
+        // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         return newCtrl;
     }

@@ -71,7 +71,7 @@ namespace EditorPythonBindings
         AZStd::recursive_mutex m_lock;
         int m_lockRecursiveCounter = 0;
         AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
-        PythonEditorActionHandler m_pythonEditorActionHandler;
+        PythonActionManagerHandler m_pythonActionManagerHandler;
     
         enum class Result
         {

@@ -6,9 +6,3 @@
 #
 #
 
-# Lower warning level for RecastNavigation::Detour library
-set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY COMPILE_OPTIONS /W3
-)

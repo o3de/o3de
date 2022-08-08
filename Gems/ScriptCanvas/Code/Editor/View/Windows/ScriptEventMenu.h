@@ -28,6 +28,7 @@ namespace ScriptEvents
         {
             bool m_addHelpers = false;
             bool m_clear = false;
+            bool m_parse = false;
             bool m_save = false;
         };
 

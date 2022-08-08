@@ -30,10 +30,19 @@ namespace AtomToolsFramework
 {
     void DisplayErrorMessage(QWidget* parent, const QString& title, const QString& text)
     {
-        AZ_Error("AtomToolsDocumentSystem", false, text.toUtf8().constData());
+        AZ_Error("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", true))
         {
             QMessageBox::critical(parent, title, text);
+        }
+    }
+
+    void DisplayWarningMessage(QWidget* parent, const QString& title, const QString& text)
+    {
+        AZ_Warning("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", true))
+        {
+            QMessageBox::warning(parent, title, text);
         }
     }
 
@@ -72,8 +81,13 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("SaveAllModifiedDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllModifiedDocuments)
                 ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ->Event("IsDocumentOpen", &AtomToolsDocumentSystemRequestBus::Events::IsDocumentOpen)
+                ->Event("AddRecentFilePath", &AtomToolsDocumentSystemRequestBus::Events::AddRecentFilePath)
+                ->Event("ClearRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::ClearRecentFilePaths)
+                ->Event("SetRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::SetRecentFilePaths)
+                ->Event("GetRecentFilePaths", &AtomToolsDocumentSystemRequestBus::Events::GetRecentFilePaths)
                 ;
         }
     }
@@ -199,12 +213,17 @@ namespace AtomToolsFramework
             }
 
             // Send document open notification after creating new one
+            AddRecentFilePath(savePath);
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+        }
+        else
+        {
+            AddRecentFilePath(openPath);
         }
 
         if (traceRecorder.GetWarningCount(true) > 0)
         {
-            QMessageBox::warning(
+            DisplayWarningMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document opened with warnings"),
                 QObject::tr("Warnings encountered: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -238,6 +257,7 @@ namespace AtomToolsFramework
                 openDocumentPath, documentPair.first, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
             if (AZ::StringFunc::Equal(openDocumentPath, openPath))
             {
+                AddRecentFilePath(openPath);
                 AtomToolsDocumentNotificationBus::Event(
                     m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentPair.first);
                 return documentPair.first;
@@ -413,6 +433,7 @@ namespace AtomToolsFramework
             return false;
         }
 
+        AddRecentFilePath(savePath);
         return true;
     }
 
@@ -451,6 +472,7 @@ namespace AtomToolsFramework
             return false;
         }
 
+        AddRecentFilePath(savePath);
         return true;
     }
 
@@ -459,12 +481,33 @@ namespace AtomToolsFramework
         bool result = true;
         for (const auto& documentPair : m_documentMap)
         {
-            if (!SaveDocument(documentPair.first))
+            bool canSave = false;
+            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
+            if (canSave && !SaveDocument(documentPair.first))
             {
                 result = false;
             }
         }
 
+        return result;
+    }
+
+    bool AtomToolsDocumentSystem::SaveAllModifiedDocuments()
+    {
+        bool result = true;
+        for (const auto& documentPair : m_documentMap)
+        {
+            bool isModified = false;
+            AtomToolsDocumentRequestBus::EventResult(isModified, documentPair.first, &AtomToolsDocumentRequestBus::Events::IsModified);
+            bool canSave = false;
+            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
+            if (isModified && canSave && !SaveDocument(documentPair.first))
+            {
+                result = false;
+            }
+        }
+
+        m_queueSaveAllModifiedDocuments = false;
         return result;
     }
 
@@ -480,11 +523,64 @@ namespace AtomToolsFramework
         return result;
     }
 
+    void AtomToolsDocumentSystem::AddRecentFilePath(const AZStd::string& absolutePath)
+    {
+        if (!absolutePath.empty())
+        {
+            // Get the list of previously stored recent file paths from the settings registry
+            AZStd::vector<AZStd::string> paths = GetRecentFilePaths();
+
+            // If the new path is already in the list then remove it Because it will be moved to the front of the list
+            AZStd::erase_if(paths, [&absolutePath](const AZStd::string& currentPath) {
+                return AZ::StringFunc::Equal(currentPath, absolutePath);
+            });
+
+            paths.insert(paths.begin(), absolutePath);
+
+            constexpr const size_t recentFilePathsMax = 10;
+            if (paths.size() > recentFilePathsMax)
+            {
+                paths.resize(recentFilePathsMax);
+            }
+
+            SetRecentFilePaths(paths);
+        }
+    }
+
+    void AtomToolsDocumentSystem::ClearRecentFilePaths()
+    {
+        SetRecentFilePaths(AZStd::vector<AZStd::string>());
+    }
+
+    void AtomToolsDocumentSystem::SetRecentFilePaths(const AZStd::vector<AZStd::string>& absolutePaths)
+    {
+        SetSettingsObject("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/RecentFilePaths", absolutePaths);
+    }
+
+    const AZStd::vector<AZStd::string> AtomToolsDocumentSystem::GetRecentFilePaths() const
+    {
+        return GetSettingsObject("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/RecentFilePaths", AZStd::vector<AZStd::string>());
+    }
+
 
     void AtomToolsDocumentSystem::OnDocumentExternallyModified(const AZ::Uuid& documentId)
     {
         m_documentIdsWithExternalChanges.insert(documentId);
         QueueReopenDocuments();
+    }
+
+    void AtomToolsDocumentSystem::OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled", false))
+        {
+            if (!m_queueSaveAllModifiedDocuments)
+            {
+                m_queueSaveAllModifiedDocuments = true;
+                const int interval =static_cast<int>(
+                    GetSettingsValue<AZ::s64>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval", 250));
+                QTimer::singleShot(interval, [this] { SaveAllModifiedDocuments(); });
+            }
+        }
     }
 
     void AtomToolsDocumentSystem::OnDocumentDependencyModified(const AZ::Uuid& documentId)
@@ -506,7 +602,7 @@ namespace AtomToolsFramework
     {
         m_queueReopenDocuments = false;
 
-        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReload", true);
+        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
@@ -522,7 +618,7 @@ namespace AtomToolsFramework
         }
 
         const bool enableHotReloadPrompts =
-            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReloadPrompts", true);
+            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts", true);
 
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {

@@ -9,6 +9,4 @@
 set(FILES
     Source/AtomToolsFrameworkModule.cpp
     Source/AtomToolsFrameworkModule.h
-    Source/AtomToolsFrameworkSystemComponent.cpp
-    Source/AtomToolsFrameworkSystemComponent.h
 )

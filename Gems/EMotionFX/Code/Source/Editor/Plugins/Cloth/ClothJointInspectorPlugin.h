@@ -47,7 +47,6 @@ namespace EMotionFX
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
 
-        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         static bool IsJointInCloth(const QModelIndex& index);
 
     public slots:

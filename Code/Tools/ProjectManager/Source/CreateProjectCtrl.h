@@ -12,8 +12,6 @@
 #include <ProjectInfo.h>
 #endif
 
-#define TEMPLATE_GEM_CONFIGURATION_ENABLED
-
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -22,7 +20,7 @@ namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
-    QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
 
     class CreateProjectCtrl
@@ -38,18 +36,14 @@ namespace O3DE::ProjectManager
         void HandleBackButton();
         void HandlePrimaryButton();
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void OnChangeScreenRequest(ProjectManagerScreen screen);
         void HandleSecondaryButton();
         void ReinitGemCatalogForSelectedTemplate();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
     private:
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void Update();
         void NextScreen();
         void PreviousScreen();
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
         bool CurrentScreenIsValid();
         void CreateProject();
@@ -58,13 +52,10 @@ namespace O3DE::ProjectManager
         ScreenHeader* m_header = nullptr;
 
         QPushButton* m_primaryButton = nullptr;
-
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         QPushButton* m_secondaryButton = nullptr;
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
-        GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        ProjectGemCatalogScreen* m_projectGemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
     };
 

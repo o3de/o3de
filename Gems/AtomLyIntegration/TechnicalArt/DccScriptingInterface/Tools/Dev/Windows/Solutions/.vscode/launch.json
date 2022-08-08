@@ -10,7 +10,8 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}\\..\\..\\..\\..\\..\\..\\Tools\\Python\\3.7.5\\windows\\python.exe"
+            "cwd": "${env:PATH_DCCSIG}",
+            "python": "${env:DCCSI_PY_IDE}"
         }
     ]
 }

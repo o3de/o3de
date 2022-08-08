@@ -38,7 +38,7 @@ namespace AZ
                 : public AtomToolsFramework::InspectorWidget
                 , public AzToolsFramework::IPropertyEditorNotify
                 , public AZ::EntitySystemBus::Handler
-                , public AZ::TickBus::Handler
+                , public AZ::SystemTickBus::Handler
                 , public MaterialComponentNotificationBus::MultiHandler
                 , public EditorMaterialSystemComponentNotificationBus::Handler
             {
@@ -70,12 +70,10 @@ namespace AZ
                 //! Builds all of the properties and generates the user interface for the inspector
                 void Populate();
 
-                bool SaveMaterial() const;
-                bool SaveMaterialToSource() const;
-                bool HasMaterialSource() const;
-                bool HasMaterialParentSource() const;
-                void OpenMaterialSourceInEditor() const;
-                void OpenMaterialParentSourceInEditor() const;
+                AZStd::string GetRelativePath(const AZStd::string& path) const;
+                AZStd::string GetFileName(const AZStd::string& path) const;
+                bool IsSourceMaterial(const AZStd::string& path) const;
+                bool SaveMaterial(const AZStd::string& path) const;
                 void OpenMenu();
                 const EditorMaterialComponentUtil::MaterialEditData& GetEditData() const;
 
@@ -98,14 +96,14 @@ namespace AZ
                 void OnEntityDeactivated(const AZ::EntityId& entityId) override;
                 void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;
 
-                //! AZ::TickBus::Handler overrides...
-                void OnTick(float deltaTime, ScriptTimePoint time) override;
+                //! AZ::SystemTickBus::Handler overrides...
+                void OnSystemTick() override;
 
                 //! MaterialComponentNotificationBus::MultiHandler overrides...
                 void OnMaterialsEdited() override;
 
                 //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
-                void OnRenderMaterialPreviewComplete(
+                void OnRenderMaterialPreviewReady(
                     const AZ::EntityId& entityId,
                     const AZ::Render::MaterialAssignmentId& materialAssignmentId,
                     const QPixmap& pixmap) override;

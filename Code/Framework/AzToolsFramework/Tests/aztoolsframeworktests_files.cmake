@@ -11,7 +11,9 @@ set(FILES
     ActionManager/ActionManagerFixture.cpp
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
+    ActionManager/HotKeyManagerTests.cpp
     ActionManager/MenuManagerTests.cpp
+    ActionManager/ToolBarManagerTests.cpp
     ArchiveTests.cpp
     AssetFileInfoListComparison.cpp
     AssetSeedManager.cpp
@@ -131,6 +133,7 @@ set(FILES
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
     QtWidgetLimitsTests.cpp
+    Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
     Script/ScriptEntityTests.cpp
     Slice.cpp
@@ -161,5 +164,6 @@ set(FILES
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
     Viewport/ViewportInteractionTests.cpp
+    Viewport/ViewBookmarkTests.cpp
     Visibility/EditorVisibilityTests.cpp
 )

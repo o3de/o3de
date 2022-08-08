@@ -70,13 +70,22 @@ namespace Physics
             AzFramework::DebugDisplayRequests* debugDisplay,
             const Physics::CharacterColliderNodeConfiguration& nodeConfig,
             NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
-            const ColorSettings& colorSettings);
+            const ColorSettings& colorSettings,
+            uint32_t invalidShapeBitArray = 0);
 
         //! Debug draw all the colliders for an entire CharacterColliderConfiguration.
         void RenderColliders(
             AzFramework::DebugDisplayRequests* debugDisplay,
             const Physics::CharacterColliderConfiguration* colliderConfig,
             NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
+            const ColorSettings& colorSettings);
+
+        //! Debug draw all the colliders for an entire ragdoll
+        void RenderRagdollColliders(
+            AzFramework::DebugDisplayRequests* debugDisplay,
+            const Physics::CharacterColliderConfiguration* colliderConfig,
+            NodeDebugDrawDataFunction nodeDebugDrawDataFunction,
+            const ParentIndices& parentIndices,
             const ColorSettings& colorSettings);
 
         using JointDebugDrawDataFunction = AZStd::function<JointDebugDrawData(const RagdollNodeConfiguration& ragdollNodeConfig)>;

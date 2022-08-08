@@ -9,6 +9,19 @@
 
 #include <AzCore/std/containers/vector.h>
 
+#define REFLECT_GENERIC_FUNCTION_NODE(GenericFunction, Guid) \
+    struct GenericFunction \
+    { \
+        AZ_TYPE_INFO(GenericFunction, Guid); \
+        static void Reflect(AZ::ReflectContext* reflection) \
+        { \
+            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection)) \
+            { \
+                serializeContext->Class<GenericFunction>()->Version(0); \
+            } \
+        } \
+    };
+
 namespace AZ
 {
     class ReflectContext;

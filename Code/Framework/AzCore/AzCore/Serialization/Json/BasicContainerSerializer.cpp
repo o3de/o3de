@@ -50,6 +50,11 @@ namespace AZ
         }
     }
 
+    bool JsonBasicContainerSerializer::ShouldClearContainer(const JsonDeserializerContext& context) const
+    {
+        return context.ShouldClearContainers();
+    }
+
     JsonSerializationResult::Result JsonBasicContainerSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,
         const void* /*defaultValue*/, const Uuid& valueTypeId, JsonSerializerContext& context)
     {
@@ -176,7 +181,7 @@ namespace AZ
 
         JSR::ResultCode retVal(JSR::Tasks::ReadField);
         size_t containerSize = container->Size(outputValue);
-        if (containerSize > 0 && context.ShouldClearContainers())
+        if (containerSize > 0 && ShouldClearContainer(context))
         {
             JSR::Result result = context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Clearing basic container.");
             if (result.GetResultCode().GetOutcome() == JSR::Outcomes::Success)

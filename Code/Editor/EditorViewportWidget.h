@@ -32,6 +32,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
 #endif
@@ -96,6 +97,7 @@ class SANDBOX_API EditorViewportWidget final
     , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AZ::RPI::SceneNotificationBus::Handler
+    , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
 {
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -233,7 +235,12 @@ private:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
+    AZStd::optional<float> GetCameraFoV() override;
     bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
+
+    // AzToolsFramework::Prefab::PrefabPublicNotificationBus overrides ...
+    void OnRootPrefabInstanceLoaded() override;
 
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
@@ -390,7 +397,8 @@ private:
     // these are now forwarded to EntityVisibilityQuery
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
-    // Handlers for grid snapping/editor event callbacks
+    // Handlers for snapping/editor event callbacks
+    SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 

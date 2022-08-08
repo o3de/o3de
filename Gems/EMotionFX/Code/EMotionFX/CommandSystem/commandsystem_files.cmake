@@ -25,6 +25,8 @@ set(FILES
     Source/AnimGraphNodeGroupCommands.h
     Source/AnimGraphParameterCommands.cpp
     Source/AnimGraphParameterCommands.h
+    Source/AnimGraphParameterCommands_Impl.inl
+    Source/AnimGraphParameterCommands_Interface.inl
     Source/AnimGraphGroupParameterCommands.cpp
     Source/AnimGraphGroupParameterCommands.h
     Source/AnimGraphTriggerActionCommands.cpp
@@ -36,6 +38,8 @@ set(FILES
     Source/CommandSystemConfig.h
     Source/ImporterCommands.cpp
     Source/ImporterCommands.h
+    Source/JointLimitCommands.cpp
+    Source/JointLimitCommands.h
     Source/MetaData.cpp
     Source/MetaData.h
     Source/MiscCommands.cpp
@@ -52,6 +56,8 @@ set(FILES
     Source/NodeGroupCommands.h
     Source/ParameterMixins.cpp
     Source/ParameterMixins.h
+    Source/ParameterMixins_Impl.inl
+    Source/ParameterMixins_Interface.inl
     Source/RagdollCommands.cpp
     Source/RagdollCommands.h
     Source/SelectionCommands.cpp
@@ -60,4 +66,6 @@ set(FILES
     Source/SelectionList.h
     Source/SimulatedObjectCommands.cpp
     Source/SimulatedObjectCommands.h
+    Source/SimulatedObjectCommands_Impl.inl
+    Source/SimulatedObjectCommands_Interface.inl
 )

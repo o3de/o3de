@@ -99,31 +99,31 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}.qrc",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorModule.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.h",
-            "isTemplated": true
-        },
-        {
             "file": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/toolbar_icon.svg",
+            "file": "Code/Source/Tools/${Name}.qrc",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/toolbar_icon.svg",
             "isTemplated": false
         },
         {
-            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "file": "Code/Tests/Tools/${Name}EditorTest.cpp",
             "isTemplated": true
         },
         {
@@ -186,7 +186,13 @@
             "dir": "Code/Source"
         },
         {
+            "dir": "Code/Source/Tools"
+        },
+        {
             "dir": "Code/Tests"
+        },
+        {
+            "dir": "Code/Tests/Tools"
         },
         {
             "dir": "Registry"

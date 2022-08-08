@@ -56,6 +56,7 @@
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
+#include <Editor/Nodes/Gradients/GradientBakerNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -69,6 +70,7 @@
 #include <Editor/Nodes/GradientModifiers/PosterizeGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h>
+#include <Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h>
 #include <Editor/Nodes/Shapes/BoxShapeNode.h>
 #include <Editor/Nodes/Shapes/CapsuleShapeNode.h>
 #include <Editor/Nodes/Shapes/CompoundShapeNode.h>
@@ -104,6 +106,7 @@ namespace LandscapeCanvas
     /* Area selector nodes */    \
     VISITOR_FUNCTION<AssetWeightSelectorNode>(Vegetation::EditorDescriptorWeightSelectorComponentTypeId, ##__VA_ARGS__);     \
     /* Shape nodes */    \
+    VISITOR_FUNCTION<AxisAlignedBoxShapeNode>(LmbrCentral::EditorAxisAlignedBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<BoxShapeNode>(LmbrCentral::EditorBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CapsuleShapeNode>(LmbrCentral::EditorCapsuleShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CompoundShapeNode>(LmbrCentral::EditorCompoundShapeComponentTypeId, ##__VA_ARGS__);     \
@@ -119,6 +122,7 @@ namespace LandscapeCanvas
     /* Gradient nodes */    \
     VISITOR_FUNCTION<AltitudeGradientNode>(GradientSignal::EditorSurfaceAltitudeGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<ConstantGradientNode>(GradientSignal::EditorConstantGradientComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<GradientBakerNode>(GradientSignal::EditorGradientBakerComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<ImageGradientNode>(GradientSignal::EditorImageGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<ShapeAreaFalloffGradientNode>(GradientSignal::EditorShapeAreaFalloffGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<SlopeGradientNode>(GradientSignal::EditorSurfaceSlopeGradientComponentTypeId, ##__VA_ARGS__);     \

@@ -7,14 +7,16 @@
  */
 
 // AZ
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
+#include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace GraphModel
 {
@@ -76,6 +78,13 @@ namespace GraphModel
 
         AZ_Assert(m_allSlots.size() == m_propertySlots.size() + m_inputDataSlots.size() + m_outputDataSlots.size() + m_inputEventSlots.size() + m_outputEventSlots.size() + numExtendableSlots, "Slot counts don't match");
         AZ_Assert(m_allSlotDefinitions.size() == m_propertySlotDefinitions.size() + m_inputDataSlotDefinitions.size() + m_outputDataSlotDefinitions.size() + m_inputEventSlotDefinitions.size() + m_outputEventSlotDefinitions.size() + m_extendableSlotDefinitions.size(), "SlotDefinition counts don't match");
+    }
+
+    //! Returns the name that will be displayed as the sub-title of the Node in the UI
+
+    const char* Node::GetSubTitle() const
+    {
+        return "";
     }
 
     void Node::CreateSlotData()
@@ -216,9 +225,101 @@ namespace GraphModel
         CreateExtendableSlotData();
     }
 
+    
+//! Returns node type (general by default) which can be overriden for
+    //! other types, such as wrapper nodes
+
+    NodeType Node::GetNodeType() const
+    {
+        return NodeType::GeneralNode;
+    }
+
     NodeId Node::GetId() const
     {
         return m_id;
+    }
+
+    bool Node::HasConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (!slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasInputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasOutputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
+    {
+        if (node)
+        {
+            for (const auto& slotPair : GetSlots())
+            {
+                const auto& slot = slotPair.second;
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
+    {
+        if (node)
+        {
+            for (const auto& slotPair : GetSlots())
+            {
+                const auto& slot = slotPair.second;
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     bool Node::Contains(ConstSlotPtr slot) const
@@ -276,6 +377,7 @@ namespace GraphModel
         SlotId slotId(name);
         return GetSlot(slotId);
     }
+
     ConstSlotPtr Node::GetSlot(const SlotName& name) const
     {
         SlotId slotId(name);
@@ -305,24 +407,6 @@ namespace GraphModel
         }
 
         return InvalidExtendableSlot;
-    }
-
-    DataTypePtr Node::GetDataType(ConstSlotPtr slot) const
-    {
-        if (slot)
-        {
-            // TODO: This method allows Nodes to introduce extra logic when slots
-            // ask what their data type should be depending on existing connections.
-            // This has been partially implemented, so for now just return the first
-            // possible data type.
-            auto possibleDataTypes = slot->GetPossibleDataTypes();
-            if (possibleDataTypes.size())
-            {
-                return possibleDataTypes[0];
-            }
-        }
-
-        return nullptr;
     }
 
     void Node::DeleteSlot(SlotPtr slot)

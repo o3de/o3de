@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
@@ -33,8 +34,8 @@ namespace AzToolsFramework
         {
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
             m_prefabLoader.RegisterPrefabLoaderInterface();
-            m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
+            m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
@@ -47,8 +48,8 @@ namespace AzToolsFramework
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
-            m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
+            m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
         }
@@ -60,6 +61,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabPublicNotificationHandler::Reflect(context);
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
@@ -71,13 +73,12 @@ namespace AzToolsFramework
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-
                 behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
-                ;
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString)
+                    ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);

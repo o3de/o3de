@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Include/GradientSignal/Editor/EditorGradientBakerComponent.h
+    Include/GradientSignal/Editor/EditorGradientBakerRequestBus.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.h
     Include/GradientSignal/Editor/EditorGradientComponentBase.inl
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
@@ -20,7 +22,6 @@ set(FILES
     Source/Editor/EditorDitherGradientComponent.cpp
     Source/Editor/EditorDitherGradientComponent.h
     Source/Editor/EditorGradientBakerComponent.cpp
-    Source/Editor/EditorGradientBakerComponent.h
     Source/Editor/EditorGradientSurfaceDataComponent.cpp
     Source/Editor/EditorGradientSurfaceDataComponent.h
     Source/Editor/EditorGradientTransformComponent.cpp

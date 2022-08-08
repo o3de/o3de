@@ -332,6 +332,7 @@ namespace PhysX
         {
             serializeContext->Class<EditorRigidBodyComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Field("Configuration", &EditorRigidBodyComponent::m_config)
+                ->Field("PhysXSpecificConfiguration", &EditorRigidBodyComponent::m_physxSpecificConfig)
                 ->Version(1)
             ;
 
@@ -341,16 +342,24 @@ namespace PhysX
                 editContext->Class<EditorRigidBodyComponent>(
                     "PhysX Rigid Body", "The entity behaves as a movable rigid object in PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
-                ;
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorRigidBodyComponent::m_physxSpecificConfig,
+                        "PhysX-Specific Configuration",
+                        "Settings which are specific to PhysX, rather than generic.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
+                    ;
             }
         }
     }
@@ -370,7 +379,7 @@ namespace PhysX
     {
         // for now use Invalid scene which will fall back on default scene when entity is activated.
         // update to correct scene once multi-scene is fully supported.
-        gameEntity->CreateComponent<RigidBodyComponent>(m_config, AzPhysics::InvalidSceneHandle);
+        gameEntity->CreateComponent<RigidBodyComponent>(m_config, m_physxSpecificConfig, AzPhysics::InvalidSceneHandle);
     }
 
     void EditorRigidBodyComponent::DisplayEntityViewport(
@@ -400,7 +409,7 @@ namespace PhysX
                 return;
             }
         }
-        
+
         AZ::Transform colliderTransform = GetWorldTM();
         colliderTransform.ExtractUniformScale();
 
@@ -412,7 +421,6 @@ namespace PhysX
         configuration.m_startSimulationEnabled = false;
         configuration.m_colliderAndShapeData = Internal::GetCollisionShapes(GetEntity());
 
-        
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_editorRigidBodyHandle = sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -423,7 +431,7 @@ namespace PhysX
                 // AddSimulatedBody may update mass / CoM / Inertia tensor based on the config, so grab the updated values.
                 m_config.m_mass = body->GetMass();
                 m_config.m_centerOfMassOffset = body->GetCenterOfMassLocal();
-                m_config.m_inertiaTensor = body->GetInverseInertiaLocal();
+                m_config.m_inertiaTensor = body->GetInertiaLocal();
             }
         }
         AZ_Error("EditorRigidBodyComponent",

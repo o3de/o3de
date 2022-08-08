@@ -821,8 +821,7 @@ namespace AZ
                         return false;
                     }
 
-                    fileList.push_back();
-                    RegistryFile& registryFile = fileList.back();
+                    RegistryFile& registryFile = fileList.emplace_back();
                     if (ExtractFileDescription(registryFile, filename, specializations))
                     {
                         registryFile.m_isPlatformFile = isPlatformFile;

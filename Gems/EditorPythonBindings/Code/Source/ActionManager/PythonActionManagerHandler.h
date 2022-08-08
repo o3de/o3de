@@ -8,16 +8,22 @@
 
 #include <EditorPythonBindings/CustomTypeBindingBus.h>
 #include <Source/ActionManager/ActionManagerBus.h>
+#include <Source/ActionManager/MenuManagerBus.h>
 
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class MenuManagerInterface;
 }
 
 namespace EditorPythonBindings
 {
-    class PythonEditorActionHandler final
+    //! Handler for the Python integration of the Action Manager system.
+    //! Provides implementation for the Action Manager buses, and for marshaling Python callable objects as functions
+    //! for use in C++ with correct reference counting to prevent them from being garbage collected.
+    class PythonActionManagerHandler final
         : public ActionManagerRequestBus::Handler
+        , public MenuManagerRequestBus::Handler
         , private EditorPythonBindings::CustomTypeBindingNotificationBus::Handler
     {
     public:
@@ -25,16 +31,35 @@ namespace EditorPythonBindings
         using AllocationHandle = EditorPythonBindings::CustomTypeBindingNotifications::AllocationHandle;
         constexpr static Handle NoAllocation{ ~0LL };
 
-        PythonEditorActionHandler();
-        ~PythonEditorActionHandler();
+        PythonActionManagerHandler();
+        ~PythonActionManagerHandler();
+        
+        static void Reflect(AZ::ReflectContext* context);
 
         // ActionManagerPythonRequestBus overrides ...
-        ActionManagerOperationResult RegisterAction(
+        AzToolsFramework::ActionManagerOperationResult RegisterAction(
             const AZStd::string& contextIdentifier,
-            const AZStd::string& identifier,
+            const AZStd::string& actionIdentifier,
             const AzToolsFramework::ActionProperties& properties,
             PythonEditorAction handler) override;
-        ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
+        AzToolsFramework::ActionManagerOperationResult RegisterCheckableAction(
+            const AZStd::string& contextIdentifier,
+            const AZStd::string& actionIdentifier,
+            const AzToolsFramework::ActionProperties& properties,
+            PythonEditorAction handler,
+            PythonEditorAction updateCallback) override;
+        AzToolsFramework::ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) override;
+        AzToolsFramework::ActionManagerOperationResult UpdateAction(const AZStd::string& actionIdentifier) override;
+        
+        // MenuManagerPythonRequestBus overrides ...
+        AzToolsFramework::MenuManagerOperationResult RegisterMenu(
+            const AZStd::string& identifier, const AzToolsFramework::MenuProperties& properties) override;
+        AzToolsFramework::MenuManagerOperationResult AddActionToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddSeparatorToMenu(
+            const AZStd::string& menuIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddSubMenuToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
 
     private:
         AZStd::unordered_map<void*, AZ::TypeId> m_allocationMap;
@@ -46,22 +71,25 @@ namespace EditorPythonBindings
         bool CanConvertPythonToBehavior(AZ::BehaviorParameter::Traits traits, PyObject* pyObj) const override;
         void CleanUpValue(ValueHandle handle) override;
 
-        class PythonActionHandler
+        class PythonFunctionObject
         {
         public:
-            explicit PythonActionHandler(PyObject* handler);
-            PythonActionHandler(const PythonActionHandler& obj);
-            PythonActionHandler(PythonActionHandler&& obj);
-            PythonActionHandler& operator=(const PythonActionHandler& obj);
-            virtual ~PythonActionHandler();
+            explicit PythonFunctionObject(PyObject* handler);
+            PythonFunctionObject(const PythonFunctionObject& obj);
+            PythonFunctionObject(PythonFunctionObject&& obj);
+            PythonFunctionObject& operator=(const PythonFunctionObject& obj);
+            PythonFunctionObject& operator=(PythonFunctionObject&&) = delete;
+            virtual ~PythonFunctionObject();
 
         private:
-            PyObject* m_handler = nullptr;
+            PyObject* m_functionObject = nullptr;
         };
 
-        AZStd::unordered_map<AZStd::string, PythonActionHandler> m_actionHandlerMap;
+        AZStd::unordered_map<AZStd::string, PythonFunctionObject> m_actionHandlerMap;
+        AZStd::unordered_map<AZStd::string, PythonFunctionObject> m_actionUpdateCallbackMap;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
 } // namespace EditorPythonBindings

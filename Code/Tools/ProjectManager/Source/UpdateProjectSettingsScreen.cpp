@@ -7,9 +7,11 @@
  */
 
 #include <UpdateProjectSettingsScreen.h>
+#include <PythonBindingsInterface.h>
 #include <ProjectManagerDefs.h>
 #include <FormImageBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
+#include <FormComboBoxWidget.h>
 
 #include <QVBoxLayout>
 #include <QLineEdit>
@@ -17,6 +19,7 @@
 #include <QLabel>
 #include <QFileInfo>
 #include <QPushButton>
+#include <QComboBox>
 
 namespace O3DE::ProjectManager
 {
@@ -24,6 +27,13 @@ namespace O3DE::ProjectManager
         : ProjectSettingsScreen(parent)
         , m_userChangedPreview(false)
     {
+        // Engine combo box
+        m_projectEngine = new FormComboBoxWidget(tr("Engine"), {}, this);
+        connect(m_projectEngine->comboBox(), QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &UpdateProjectSettingsScreen::OnProjectEngineUpdated);
+        m_verticalLayout->addWidget(m_projectEngine);
+
+        // Project preview browse edit 
         m_projectPreview = new FormImageBrowseEditWidget(tr("Project Preview"), "", this);
         m_projectPreview->lineEdit()->setReadOnly(true);
         connect(m_projectPreview->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
@@ -31,13 +41,14 @@ namespace O3DE::ProjectManager
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &UpdateProjectSettingsScreen::UpdateProjectPreviewPath);
         m_verticalLayout->addWidget(m_projectPreview);
 
-        QVBoxLayout* previewExtrasLayout = new QVBoxLayout(this);
+        QVBoxLayout* previewExtrasLayout = new QVBoxLayout();
         previewExtrasLayout->setAlignment(Qt::AlignTop);
         previewExtrasLayout->setContentsMargins(30, 45, 30, 0);
 
         QLabel* projectPreviewLabel = new QLabel(tr("Project Preview"));
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
+        // Project preview image
         m_projectPreviewImage = new QLabel(this);
         m_projectPreviewImage->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectPreviewImage->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -120,6 +131,38 @@ namespace O3DE::ProjectManager
         m_projectId->lineEdit()->setText(projectInfo.m_id);
 
         UpdateProjectPreviewPath();
+
+        QComboBox* combobox = m_projectEngine->comboBox();
+        combobox->clear();
+
+        // we use engine path which is unique instead of engine name which may not be
+        QString enginePath{};
+        if(auto result = PythonBindingsInterface::Get()->GetProjectEngine(projectInfo.m_path); result)
+        {
+            enginePath = result.GetValue<EngineInfo>().m_path;
+        }
+
+        int index = 0;
+        if (auto result = PythonBindingsInterface::Get()->GetAllEngineInfos(); result)
+        {
+            for (auto engineInfo : result.GetValue<QVector<EngineInfo>>())
+            {
+                if (!engineInfo.m_name.isEmpty())
+                {
+                    combobox->addItem(
+                        QString("%1 (%2)").arg(engineInfo.m_name, engineInfo.m_path),
+                        QStringList{ engineInfo.m_path, engineInfo.m_name });
+
+                    if (!enginePath.isEmpty() && QDir(enginePath) == QDir(engineInfo.m_path))
+                    {
+                        combobox->setCurrentIndex(index);
+                    }
+                    index++;
+                }
+            }
+        }
+
+        combobox->setVisible(combobox->count() > 0);
     }
 
     void UpdateProjectSettingsScreen::UpdateProjectPreviewPath()
@@ -157,6 +200,17 @@ namespace O3DE::ProjectManager
     {
         ValidateProjectId();
     }
+
+    void UpdateProjectSettingsScreen::OnProjectEngineUpdated(int index)
+    {
+        auto value = m_projectEngine->comboBox()->itemData(index).value<QStringList>();
+        if (value.count() == 2)
+        {
+            m_projectInfo.m_enginePath = value[0];
+            m_projectInfo.m_engineName = value[1];
+        }
+    } 
+
 
     bool UpdateProjectSettingsScreen::ValidateProjectPath()
     {

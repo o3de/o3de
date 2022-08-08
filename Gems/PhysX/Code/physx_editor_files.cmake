@@ -8,6 +8,7 @@
 
 set(FILES
     Include/PhysX/EditorColliderComponentRequestBus.h
+    Include/PhysX/EditorHeightfieldColliderRequestBus.h
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
@@ -31,6 +32,10 @@ set(FILES
     Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
     Source/EditorJointComponent.h
+    Source/EditorPhysXJointInterface.cpp
+    Source/EditorPhysXJointInterface.h
+    Source/EditorJointOptimizer.cpp
+    Source/EditorJointOptimizer.h
     Source/Pipeline/MeshExporter.cpp
     Source/Pipeline/MeshExporter.h
     Source/Pipeline/MeshGroup.cpp
@@ -66,8 +71,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/MaterialIdWidget.h
-    Editor/MaterialIdWidget.cpp
     Editor/EditorClassConverters.cpp
     Editor/EditorClassConverters.h
     Editor/PvdWidget.h
@@ -76,10 +79,6 @@ set(FILES
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ConfigStringLineEditCtrl.h
-    Editor/ConfigStringLineEditCtrl.cpp
-    Editor/UniqueStringContainer.h
-    Editor/UniqueStringContainer.cpp
     Editor/ComboBoxEditButtonPair.h
     Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h
@@ -131,4 +130,15 @@ set(FILES
     Editor/Source/ComponentModes/Joints/JointsSubComponentModeTranslate.cpp
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.cpp
+    Editor/Source/Material/PhysXEditorMaterialAsset.cpp
+    Editor/Source/Material/PhysXEditorMaterialAsset.h
+    Editor/Source/Material/PhysXEditorMaterialAssetBuilder.cpp
+    Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.h
 )

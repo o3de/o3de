@@ -10,15 +10,16 @@ from __future__ import annotations
 from typing import List, Tuple, Union
 from enum import Enum
 import warnings
+import re
 
 # Open 3D Engine Imports
 import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.math as math
-import azlmbr.legacy.general as general
 
 # Helper file Imports
+from editor_python_test_tools.wait_utils import PrefabWaiter
 from editor_python_test_tools.utils import Report
 
 
@@ -74,9 +75,29 @@ class EditorComponent:
             build_prop_tree_outcome.IsSuccess()
         ), f"Failure: Could not build property tree editor of component: '{self.get_component_name()}'"
         prop_tree = build_prop_tree_outcome.GetValue()
-        Report.info(prop_tree.build_paths_list())
         self.property_tree_editor = prop_tree
         return self.property_tree_editor
+
+    def get_property_type_visibility(self):
+        """
+        Used to work with Property Tree Editor build_paths_list_with_types.
+        Some component properties have unclear type or return to much information to contain within one Report.info.
+        The iterable dictionary can be used to print each property path and type individually with a for loop.
+        :return: Dictionary where key is property path and value is a tuple (property az_type, UI visible)
+        """
+        if self.property_tree_editor is None:
+            self.get_property_tree()
+        path_type_re = re.compile(r"([ A-z_|]+)(?=\s) \(([A-z0-9:<> ]+),([A-z]+)")
+        result = {}
+        path_types = self.property_tree_editor.build_paths_list_with_types()
+        for path_type in path_types:
+            match_line = path_type_re.search(path_type)
+            if match_line is None:
+                Report.info(path_type)
+                continue
+            path, az_type, visible = match_line.groups()
+            result[path] = (az_type, visible)
+        return result
 
     def is_property_container(self, component_property_path: str) -> bool:
         """
@@ -243,7 +264,7 @@ class EditorComponent:
         assert (
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         self.get_property_tree(True)
 
     def is_enabled(self):
@@ -446,7 +467,6 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
-        PrefabUtils.wait_for_propagation()
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
@@ -468,6 +488,7 @@ class EditorEntity:
             new_comp.id = add_component_outcome.GetValue()[0]
             components.append(new_comp)
             self.components.append(new_comp)
+        PrefabWaiter.wait_for_propagation()
         return components
 
     def remove_component(self, component_name: str) -> None:
@@ -578,7 +599,7 @@ class EditorEntity:
         :return: None
         """
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
     def set_visibility_state(self, is_visible: bool) -> None:
         """
@@ -635,6 +656,12 @@ class EditorEntity:
         """
         new_rotation = convert_to_azvector3(new_rotation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldRotation", self.id, new_rotation)
+
+    def get_world_uniform_scale(self) -> float:
+        """
+        Gets the world uniform scale of the current entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldUniformScale", self.id)
 
     # Local Transform Functions
     def get_local_uniform_scale(self) -> float:
@@ -786,5 +813,3 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
-
-import editor_python_test_tools.prefab_utils as PrefabUtils

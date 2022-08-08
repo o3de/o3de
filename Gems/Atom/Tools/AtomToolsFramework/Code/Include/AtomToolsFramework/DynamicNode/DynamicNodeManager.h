@@ -28,14 +28,20 @@ namespace AtomToolsFramework
         virtual ~DynamicNodeManager();
 
         //! DynamicNodeManagerRequestBus::Handler overrides...
-        void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) override;
-        void RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) override;
+        void RegisterDataTypes(const GraphModel::DataTypeList& dataTypes) override;
+        GraphModel::DataTypeList GetRegisteredDataTypes() override;
+        void LoadConfigFiles(const AZStd::string& extension) override;
+        bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) override;
         DynamicNodeConfig GetConfig(const AZStd::string& configId) const override;
         void Clear() override;
         GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const override;
 
     private:
+        bool ValidateSlotConfig(const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const;
+        bool ValidateSlotConfigVec(const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
+
         const AZ::Crc32 m_toolId = {};
+        GraphModel::DataTypeList m_registeredDataTypes;
         AZStd::unordered_map<AZStd::string, DynamicNodeConfig> m_nodeConfigMap;
     };
 } // namespace AtomToolsFramework

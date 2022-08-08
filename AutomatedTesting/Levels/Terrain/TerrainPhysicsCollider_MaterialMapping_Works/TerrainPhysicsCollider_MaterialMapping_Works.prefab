@@ -367,6 +367,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -504,18 +511,33 @@
                             0.43792724609375,
                             0.0
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {},
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                    "Name": "Material 1"
                                 },
                                 {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                    "Name": "Material 2",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/glass.physicsmaterial"
+                                    }
+                                },
+                                {
+                                    "Name": "Material 3",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/rubber.physicsmaterial"
+                                    }
                                 }
                             ]
-                        },
-                        "propertyVisibilityFlags": 233
+                        }
                     },
                     "DebugDrawSettings": {
                         "LocallyEnabled": true
@@ -633,16 +655,24 @@
                                 "Surface": {
                                     "SurfaceTagCrc": 2062838596
                                 },
-                                "Material": {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/glass.physicsmaterial"
                                 }
                             },
                             {
                                 "Surface": {
                                     "SurfaceTagCrc": 1797181423
                                 },
-                                "Material": {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/rubber.physicsmaterial"
                                 }
                             }
                         ]
@@ -895,6 +925,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
