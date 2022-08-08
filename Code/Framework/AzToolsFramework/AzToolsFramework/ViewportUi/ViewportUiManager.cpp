@@ -101,6 +101,22 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::ChangeSwitcherButtonDetails(
+        const SwitcherId switcherId, const ButtonId buttonId, const AZStd::string& icon, const AZStd::string& name)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            auto buttonToChange = switcher->GetButton(buttonId);
+
+            buttonToChange->m_icon = icon;
+            buttonToChange->m_name = name;
+
+            UpdateSwitcherButtonIconUi(switcher.get(), buttonId);
+            Update();
+        }
+    }
+
     void ViewportUiManager::RegisterClusterEventHandler(const ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
@@ -351,6 +367,11 @@ namespace AzToolsFramework::ViewportUi
     void ViewportUiManager::UpdateSwitcherButtonGroupUi(Internal::ButtonGroup* buttonGroup)
     {
         m_viewportUi->UpdateSwitcher(buttonGroup->GetViewportUiElementId());
+    }
+
+    void ViewportUiManager::UpdateSwitcherButtonIconUi(Internal::ButtonGroup* buttonGroup, ButtonId buttonId)
+    {
+        m_viewportUi->UpdateSwitcherButtonIcon(buttonGroup->GetViewportUiElementId(), buttonId);
     }
 
     void ViewportUiManager::UpdateTextFieldUi(Internal::TextField* textField)

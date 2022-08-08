@@ -67,6 +67,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
+        void UpdateSwitcherButtonIcon(ViewportUiElementId switcherId, ButtonId buttonId);
 
         void AddTextField(AZStd::shared_ptr<TextField> textField);
         void UpdateTextField(ViewportUiElementId textFieldId);

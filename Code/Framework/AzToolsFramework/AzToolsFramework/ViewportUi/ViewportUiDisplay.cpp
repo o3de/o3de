@@ -17,6 +17,10 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
@@ -142,17 +146,17 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
     {
-        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            viewportUiSwitcher->AddButton(button);
+            switcher->AddButton(button);
         }
     }
 
     void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            cluster->RemoveButton(buttonId);
+            switcher->RemoveButton(buttonId);
         }
     }
 
@@ -161,6 +165,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             switcher->Update();
+        }
+    }
+
+    void ViewportUiDisplay::UpdateSwitcherButtonIcon(ViewportUiElementId switcherId, ButtonId buttonId)
+    {
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        {
+            switcher->UpdateButtonIcon(buttonId);
         }
     }
 
@@ -502,3 +514,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAutoFillBackground(false);
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()

@@ -70,6 +70,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         return buttonId;
     }
 
+    void ButtonGroup::RemoveButton(ButtonId buttonId)
+    {
+        m_buttons.erase(buttonId);
+    }
+
     Button* ButtonGroup::GetButton(ButtonId buttonId)
     {
         if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())

@@ -10,6 +10,25 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <QBitmap>
 
+#include <AzCore/Console/IConsole.h>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+//
+//static bool show_icon_a = true;
+//static const char* icon_a = "C:\\dev\\o3de2\\Assets\\Editor\\Icons\\Components\\NonUniformScale.svg";
+//static const char* icon_b = "C:\\dev\\o3de2\\Assets\\Editor\\Icons\\Components\\Box_Shape.svg";
+//
+//QAction* g_action = nullptr;
+//
+//void ChangeIcon([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+//{
+//    show_icon_a = !show_icon_a;
+//    g_action->setIcon(QIcon(QString(show_icon_a ? icon_a : icon_b)));
+//}
+//
+//AZ_CONSOLEFREEFUNC(ChangeIcon, AZ::ConsoleFunctorFlags::Null, "");
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -101,8 +120,9 @@ namespace AzToolsFramework::ViewportUi::Internal
 
             // resize to fit new area with minimum extra space
             resize(minimumSizeHint());
-
+            AZ_Printf("debugging", "removing button");
             m_buttonActionMap.erase(buttonId);
+            m_buttonGroup->RemoveButton(buttonId);
 
             // reset current active mode if its the button being removed
             if (buttonId == m_activeButtonId)
@@ -118,6 +138,27 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiSwitcher::Update()
     {
         m_widgetCallbacks.Update();
+    }
+
+    void ViewportUiSwitcher::UpdateButtonIcon(ButtonId buttonId)
+    {
+        const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
+        auto found = [buttonId](Button* button)
+        {
+            return (button->m_buttonId == buttonId);
+        };
+
+        if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
+        {
+            if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+            {
+               QAction* action = actionEntry->second;
+                AZ_Printf("debugging", "changing icon");
+                action->setIcon(QIcon(QString(((*buttonIt)->m_icon).c_str())));
+            }
+        }
+
+        
     }
 
     void ViewportUiSwitcher::SetActiveButton(ButtonId buttonId)
@@ -171,3 +212,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()

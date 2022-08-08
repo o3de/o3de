@@ -110,6 +110,8 @@ namespace AzToolsFramework::ViewportUi
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
+        virtual void ChangeSwitcherButtonDetails(
+            const SwitcherId switcherId, const ButtonId buttonIdToChange, const AZStd::string& icon, const AZStd::string& name) = 0;
     };
 
     /// The EBusTraits for ViewportInteractionRequests.
