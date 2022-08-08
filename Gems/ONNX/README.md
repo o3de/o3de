@@ -15,10 +15,7 @@ This is an experimental gem implementing [ONNX Runtime](https://onnxruntime.ai/)
 5. GPU inferencing using CUDA is ENABLED by default. Please see [Requirements to inference using GPU](#requirements-to-inference-using-gpu) below to make sure you have the correct dependencies installed. If you do not have a CUDA enabled NVIDIA GPU, or would like to run the gem without the CUDA example, then you must make sure that the definition `PUBLIC ENABLE_CUDA=true` on ***line 51*** in *Code/CMakeLists.txt* is either commented out or removed. When you do this, the Model class will inference using CPU regardless of params passed in.
 6. Add the [ONNX](#onnx) gem to your project using the [Project Manager](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/) or the [Command Line Interface (CLI)](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/#using-the-command-line-interface-cli). See the documentation on  [Adding and Removing Gems in a Project](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/).
 7. Compile your project and run.
-8. Once the editor starts, and you go to edit a level, you should be able to press the **HOME** (or equivalent) button on your keyboard to see the inference dashboard as shown above.
-    - The data shown above the graphs shows statistics for precomputed CPU inferences run before the editor starts up, on a selection of the MNIST testing images. The first (static) graph shows the individual runtimes for these inferences.
-    - The data in the second graph shows the runtimes for the real-time CPU inferences being run on each game tick, which are run repeatedly on the same image.
-    - If CUDA is enabled, a duplicate set of data and graphs will be shown for GPU inferences using CUDA.
+8. Once the editor starts, and you go to edit a level with an initialized ONNX Model, you should be able to press the **HOME** (or equivalent) button on your keyboard to see the inference dashboard containing runtime graphs for any initialised model run history.
 
 ## Modifying uPNG:
 

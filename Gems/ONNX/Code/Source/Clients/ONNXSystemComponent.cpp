@@ -58,59 +58,9 @@ namespace ONNX
             return;
         }
 
-        PrecomputedTimingData* timingData;
-        ONNXRequestBus::BroadcastResult(timingData, &ONNXRequestBus::Events::GetPrecomputedTimingData);
-
-        PrecomputedTimingData* timingDataCuda;
-        ONNXRequestBus::BroadcastResult(timingDataCuda, &ONNXRequestBus::Events::GetPrecomputedTimingDataCuda);
-
         if (ImGui::Begin("ONNX"))
         {
-            if (ImGui::CollapsingHeader("MNIST (Precomputed)", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-            {
-                if (ImGui::BeginTable("MNIST", 3))
-                {
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Total Inference Runtime: %.2f ms", timingData->m_totalPrecomputedRuntime);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Average Inference Runtime: %.2f ms", timingData->m_averagePrecomputedRuntime);
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Total No. Of Inferences: %d", timingData->m_totalNumberOfInferences);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("No. Of Correct Inferences: %d", timingData->m_numberOfCorrectInferences);
-                    ImGui::TableNextColumn();
-                    ImGui::Text(
-                        "Accuracy: %.2f%%",
-                        ((float)timingData->m_numberOfCorrectInferences / (float)timingData->m_totalNumberOfInferences) * 100.0f);
-                    ImGui::EndTable();
-                }
-            }
             m_timingStats.OnImGuiUpdate();
-
-#ifdef ENABLE_CUDA
-            if (ImGui::CollapsingHeader("MNIST CUDA (Precomputed)", ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed))
-            {
-                if (ImGui::BeginTable("MNIST", 3))
-                {
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Total Inference Runtime: %.2f ms", timingDataCuda->m_totalPrecomputedRuntime);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Average Inference Runtime: %.2f ms", timingDataCuda->m_averagePrecomputedRuntime);
-                    ImGui::TableNextRow();
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Total No. Of Inferences: %d", timingDataCuda->m_totalNumberOfInferences);
-                    ImGui::TableNextColumn();
-                    ImGui::Text("No. Of Correct Inferences: %d", timingDataCuda->m_numberOfCorrectInferences);
-                    ImGui::TableNextColumn();
-                    ImGui::Text(
-                        "Accuracy: %.2f%%",
-                        ((float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences) * 100.0f);
-                    ImGui::EndTable();
-                }
-            }
-            m_timingStatsCuda.OnImGuiUpdate();
-#endif
         }
     }
 
@@ -119,9 +69,6 @@ namespace ONNX
         if (ImGui::BeginMenu("ONNX"))
         {
             ImGui::MenuItem(m_timingStats.GetName(), "", &m_timingStats.m_show);
-#ifdef ENABLE_CUDA
-            ImGui::MenuItem(m_timingStatsCuda.GetName(), "", &m_timingStatsCuda.m_show);
-#endif
             ImGui::EndMenu();
         }
     }
@@ -167,7 +114,7 @@ namespace ONNX
             ONNXInterface::Register(this);
         }
 
-        m_timingStats.SetName("MNIST Timing Statistics");
+        m_timingStats.SetName("ONNX Inference Timing Statistics");
         m_timingStats.SetHistogramBinCount(200);
 
 #ifdef ENABLE_CUDA

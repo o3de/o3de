@@ -98,5 +98,7 @@ namespace ONNX
 
         float delta = 1000 * m_timer.GetDeltaTimeInSeconds(); // Finish timing of inference and get time in milliseconds.
         m_delta = delta;
+
+        ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
     }
 } // namespace ONNX

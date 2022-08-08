@@ -35,20 +35,6 @@ namespace Mnist
     void Mnist::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         Run(m_input, m_output);
-        DispatchTimingSample();
-    }
-
-    void Mnist::DispatchTimingSample()
-    {
-        // CPU and CUDA executions have different ImGui histogram groups, and so the inference data must be dispatched accordingly.
-        if (m_cudaEnable)
-        {
-            ::ONNX::ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSampleCuda, m_modelName.c_str(), m_delta, m_modelColor);
-        }
-        else
-        {
-            ::ONNX::ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
-        }
     }
 
     void Mnist::LoadImage(const char* path)
@@ -149,7 +135,6 @@ namespace Mnist
                             {
                                 numOfCorrectInferences += 1;
                             }
-                            mnist.DispatchTimingSample();
                             totalRuntimeInMilliseconds += returnedValues.m_runtime;
                             totalFiles++;
                             version++;

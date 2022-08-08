@@ -38,10 +38,6 @@ namespace Mnist
         //! Directly mutates m_output and m_result.
         void GetResult();
 
-        //! Invokes the correct setter function in ONNXBus, adding the value currently held in m_delta into an ImGui histogram group based
-        //! on the m_modelName.
-        void DispatchTimingSample();
-
         //! The MNIST dataset images are all 28 x 28 px, so you should probably be loading 28 x 28 images into the example.
         int m_imageWidth = 28;
         int m_imageHeight = 28;
