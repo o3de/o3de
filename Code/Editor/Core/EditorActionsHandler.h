@@ -64,12 +64,14 @@ private:
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
         const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
-    virtual void AfterUndoRedo() override;
+    void AfterUndoRedo() override;
     void OnEndUndo(const char* label, bool changed) override;
 
     // ViewportSettingsNotificationBus overrides ...
     void OnAngleSnappingChanged(bool enabled) override;
+    void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
+    void OnIconsVisibilityChanged(bool enabled) override;
 
     // Recent Files
     bool IsRecentFileActionActive(int index);
@@ -77,6 +79,9 @@ private:
 
     // Tools
     void RefreshToolActions();
+
+    // View Bookmarks
+    void InitializeViewBookmarkActions();
 
     bool m_initialized = false;
 
