@@ -374,6 +374,7 @@ class BaseTestImpact(ABC):
         result["return_code"] = return_code
         result["report"] = report
         result["change_list"] = self._change_list
+        result["runtime_type"] = self.runtime_type
         return result
 
     def _compile_s3_top_level_dir_name(self, dir_name: str):

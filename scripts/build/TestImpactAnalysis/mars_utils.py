@@ -30,6 +30,7 @@ S3_BUCKET_KEY = "s3_bucket"
 DRIVER_ARGS_KEY = "driver_args"
 RUNTIME_ARGS_KEY = "runtime_args"
 RUNTIME_RETURN_CODE_KEY = "return_code"
+RUNTIME_TYPE_KEY = "runtime_type"
 NAME_KEY = "name"
 RESULT_KEY = "result"
 NUM_PASSING_TESTS_KEY = "num_passing_tests"
@@ -202,7 +203,8 @@ def generate_mars_job(tiaf_result, driver_args, build_number: int):
         HAS_HISTORIC_DATA_KEY,
         S3_BUCKET_KEY,
         RUNTIME_ARGS_KEY,
-        RUNTIME_RETURN_CODE_KEY
+        RUNTIME_RETURN_CODE_KEY,
+        RUNTIME_TYPE_KEY
     ]}
 
     mars_job[DRIVER_ARGS_KEY] = driver_args
