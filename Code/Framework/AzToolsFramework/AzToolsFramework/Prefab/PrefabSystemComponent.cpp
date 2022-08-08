@@ -37,7 +37,6 @@ namespace AzToolsFramework
             m_prefabLoader.RegisterPrefabLoaderInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
-            m_prefabFocusHandler.RegisterPrefabFocusInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
 
             m_prefabPublicRequestHandler.Connect();
@@ -52,7 +51,6 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Disconnect();
 
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
-            m_prefabFocusHandler.UnregisterPrefabFocusInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();

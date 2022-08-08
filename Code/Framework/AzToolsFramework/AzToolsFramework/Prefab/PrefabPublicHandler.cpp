@@ -26,7 +26,6 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicHandler.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -43,6 +42,8 @@ namespace AzToolsFramework
     {
         void PrefabPublicHandler::RegisterPrefabPublicHandlerInterface()
         {
+            m_prefabFocusHandler.RegisterPrefabFocusInterface();
+
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceEntityMapperInterface");
 
@@ -71,6 +72,15 @@ namespace AzToolsFramework
             AZ::Interface<PrefabPublicInterface>::Unregister(this);
 
             m_prefabUndoCache.Destroy();
+
+            m_prefabSystemComponentInterface = nullptr;
+            m_prefabFocusPublicInterface = nullptr;
+            m_prefabFocusInterface = nullptr;
+            m_prefabLoaderInterface = nullptr;
+            m_instanceToTemplateInterface = nullptr;
+            m_instanceEntityMapperInterface = nullptr;
+
+            m_prefabFocusHandler.UnregisterPrefabFocusInterface();
         }
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)

@@ -50,8 +50,8 @@ namespace AzToolsFramework
             AZ_Assert(prefabFocusInterface, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
                 "Prefab Focus Interface couldn not be found.");
 
-            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
-            Instance* targetInstance = nullptr;
+            InstanceOptionalConstReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            const Instance* targetInstance = nullptr;
             if (focusedInstance.has_value())
             {
                 targetInstance = &(focusedInstance->get());
