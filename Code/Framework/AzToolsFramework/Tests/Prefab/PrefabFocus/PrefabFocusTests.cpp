@@ -79,6 +79,7 @@ namespace UnitTest
             PrefabTestFixture::SetUpEditorFixtureImpl();
 
             m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            //m_prefabFocusInterface->RegisterPrefabFocusHandlerInterface();
             ASSERT_TRUE(m_prefabFocusInterface != nullptr);
 
             m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
@@ -93,6 +94,7 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override
         {
             m_rootInstance->get().Reset();
+            m_prefabFocusInterface->EditorEntityContextNotificationBusDisconnect();
 
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }

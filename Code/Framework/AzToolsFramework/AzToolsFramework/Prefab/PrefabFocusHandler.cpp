@@ -60,7 +60,7 @@ namespace AzToolsFramework::Prefab
             "Check that it is being correctly initialized.");
 
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        EditorEntityContextNotificationBus::Handler::BusConnect();
+        EditorEntityContextNotificationBusConnect();
         PrefabPublicNotificationBus::Handler::BusConnect();
         AZ::Interface<PrefabFocusInterface>::Register(this);
         AZ::Interface<PrefabFocusPublicInterface>::Register(this);
@@ -73,8 +73,18 @@ namespace AzToolsFramework::Prefab
         AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
         AZ::Interface<PrefabFocusInterface>::Unregister(this);
         PrefabPublicNotificationBus::Handler::BusDisconnect();
-        EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        EditorEntityContextNotificationBusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+    }
+
+    void PrefabFocusHandler::EditorEntityContextNotificationBusConnect()
+    {
+        EditorEntityContextNotificationBus::Handler::BusConnect();
+    }
+
+    void PrefabFocusHandler::EditorEntityContextNotificationBusDisconnect()
+    {
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
     void PrefabFocusHandler::InitializeEditorInterfaces()

@@ -51,6 +51,9 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
+        void EditorEntityContextNotificationBusConnect() override;
+        void EditorEntityContextNotificationBusDisconnect() override;
+        
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
