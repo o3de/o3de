@@ -100,6 +100,8 @@ set(FILES
     Source/Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.cpp
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.cpp
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h
     Source/Editor/Nodes/Shapes/BaseShapeNode.cpp
     Source/Editor/Nodes/Shapes/BaseShapeNode.h
     Source/Editor/Nodes/Shapes/BoxShapeNode.cpp

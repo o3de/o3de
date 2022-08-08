@@ -12,6 +12,28 @@
 
 namespace AzFramework::Terrain
 {
+
+    void FloatRange::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<FloatRange>()
+                ->Version(1)
+                ->Field("Min", &FloatRange::m_min)
+                ->Field("Max", &FloatRange::m_max)
+                ;
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<FloatRange>()
+                ->Property("min", BehaviorValueProperty(&FloatRange::m_min))
+                ->Property("max", BehaviorValueProperty(&FloatRange::m_max))
+                ;
+        }
+
+    }
+
     TerrainQueryRegion::TerrainQueryRegion(
         const AZ::Vector3& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize)
         : m_startPoint(startPoint)
@@ -98,6 +120,8 @@ namespace AzFramework::Terrain
 
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
+        FloatRange::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             // Register all the tuple types used below so that they marshal to/from python correctly.
@@ -128,6 +152,7 @@ namespace AzFramework::Terrain
                     "SetTerrainSurfaceDataQueryResolution",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainSurfaceDataQueryResolution)
                 ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
+                ->Event("GetTerrainHeightBounds", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightBounds)
                 ->Event(
                     "GetHeight",
                     [](AzFramework::Terrain::TerrainDataRequests* handler, const AZ::Vector3& position,
