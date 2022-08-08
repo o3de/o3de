@@ -11,6 +11,7 @@ from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import Report
 import pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
 import azlmbr.editor as editor
 import azlmbr.math as math
 import azlmbr.bus as bus
@@ -23,7 +24,8 @@ from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_
                                                  VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES, EVENTS_QT, DEFAULT_SCRIPT_EVENT,
                                                  SCRIPT_EVENT_FILE_PATH, PARAMETERS_QT, VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT,
                                                  NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT, ADD_BUTTON_QT, VARIABLE_TYPES,
-                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
+                                                 SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, ENTITY_STATES)
+
 
 class Tests():
     new_event_created = ("New Script Event created", "Failed to create a new event")
@@ -411,7 +413,6 @@ def located_expected_tracer_lines(self, section_tracer, lines):
     for line in lines:
         for found_line in found_lines:
             if line == found_line:
-                print("found line: " + found_line)
                 matching_lines += 1
 
     return matching_lines >= expected_lines
@@ -484,3 +485,70 @@ def change_entity_sc_asset(entity, source_file, component_index = 0):
 
     return result
 
+def change_entity_sc_variable_entity(entity_name, target_entity_name, component_property_path, component_index = 0):
+    """
+    function for finding an entity by its name and changing an exposed entity variable on the script canvas component.
+
+    param entity_name: the string name of the entity you want to modify
+    param target_entity_name: The name of the entity you want to use as a variable
+    param component_property_path: The component property path to the variable.
+    param
+    parama component_index: the index of the sc component. default 0
+
+    returns None
+
+    """
+
+    entity = EditorEntity.find_editor_entity(entity_name)
+    target_entity = EditorEntity.find_editor_entity(target_entity_name)
+    sc_component = entity.get_components_of_type(["Script Canvas"])[component_index]
+    sc_component.set_component_property_value(component_property_path, target_entity.id)
+
+def change_entity_start_status(entity_name, start_status):
+    """
+    function for finding an entity by name and changing its start status
+
+    param entity_name: the string name of the entity you want to modify
+    param start_status: the start status to update (active/inactive)
+
+    returns None
+    """
+
+    entity = EditorEntity.find_editor_entity(entity_name)
+    entity.set_start_status(start_status)
+
+def validate_entity_start_state_by_name(entity_name, expected_state):
+    """
+    function for finding and validating the start state of an entity by name. If the actual state does not match
+    the expected state the function will attempt to set the state for you.
+
+    param entity_name: the name of the entity you want to modify
+    param expected_state: the expected start state of the entity
+    """
+
+    entity = EditorEntity.find_editor_entity(entity_name)
+
+    if expected_state.lower() not in ENTITY_STATES.keys():
+        raise ValueError(f"{expected_state} is an invalid option; valid options: active, inactive, or editor.")
+
+    state = entity.get_start_status()
+    if state != ENTITY_STATES[expected_state]:
+        # If state fails to set, set_start_status will assert
+        entity.set_start_status(expected_state)
+        state = entity.get_start_status()
+
+    # return the start state that we were able to set the entity to
+    return state == ENTITY_STATES[expected_state]
+
+def validate_entity_exists_by_name(entity_name, test_results):
+    """
+    function for validating if an entity was properly created
+
+    param entity_name: string name of the entity to validate
+    param test_results: pass/fail tuple of result strings
+    """
+
+    entity = EditorEntity.find_editor_entity(entity_name)
+    Report.critical_result(test_results, entity.id.IsValid())
+
+    return entity

@@ -43,7 +43,7 @@ namespace MaterialCanvas
         InitMaterialCanvasResources();
 
         QApplication::setOrganizationName("O3DE");
-        QApplication::setApplicationName("O3DE Material Canvas PROTOTYPE WIP");
+        QApplication::setApplicationName("O3DE Material Canvas EXPERIMENTAL WIP");
         QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
@@ -93,7 +93,7 @@ namespace MaterialCanvas
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
-        m_dynamicNodeManager->LoadConfigFiles({ "materialcanvasnode.azasset" });
+        m_dynamicNodeManager->LoadConfigFiles("materialcanvasnode");
 
         // Each graph document creates its own graph context but we want to use a shared graph context instead to avoid data duplication
         m_graphContext = AZStd::make_shared<GraphModel::GraphContext>(
@@ -149,7 +149,7 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialCanvas/" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/"});
     }
 
     QWidget* MaterialCanvasApplication::GetAppMainWindow()
