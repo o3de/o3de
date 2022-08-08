@@ -37,7 +37,6 @@ namespace Mnist
     //! (which the model doesn't do).
     struct Mnist
         : public ::ONNX::Model
-        , public AZ::TickBus::Handler
     {
     public:
         //! Loads an image from file into the correct format in m_input.
@@ -63,10 +62,6 @@ namespace Mnist
         // Converts vector of output values into vector of probabilities.
         template<typename T>
         static void Softmax(T& input);
-
-        // Hook into gametick - used to run realtime inference demo.
-        // The only thing that's in here is a call to Run() i.e. 1 inference run happens per tick.
-        virtual void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
     };
 
     //! This will run a single inference on the passed in MNIST instance.

@@ -32,11 +32,6 @@ namespace Mnist
         m_result = AZStd::distance(m_output.begin(), AZStd::ranges::max_element(m_output.begin(), m_output.end()));
     }
 
-    void Mnist::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-        Run(m_input, m_output);
-    }
-
     void Mnist::LoadImage(const char* path)
     {
         // Gets the png image from file and decodes using upng library.
