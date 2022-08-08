@@ -51,6 +51,7 @@
   "native": {
     "workspace": {
       "temp": {
+        "root": "${native_temp_dir}",
         "run_artifact_dir": "${GTEST_XML_OUTPUT_DIR}",
         "coverage_artifact_dir": "${native_temp_dir}/Coverage",
         "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache"
@@ -99,6 +100,7 @@
   "python": {
     "workspace": {
       "temp": {
+        "root": "${python_temp_dir}",
         "run_artifact_dir": "${PYTEST_XML_OUTPUT_DIR}",
         "coverage_artifact_dir": "${python_temp_dir}/Coverage",
         "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache"
