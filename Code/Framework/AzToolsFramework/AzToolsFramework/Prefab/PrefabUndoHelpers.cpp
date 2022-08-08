@@ -50,6 +50,26 @@ namespace AzToolsFramework
                 linkRemoveUndo->SetParent(undoBatch);
                 linkRemoveUndo->Redo();
             }
+
+            void AddEntity(
+                const PrefabDomValue& parentEntityDomBeforeAddingEntity,
+                const PrefabDomValue& parentEntityDomAfterAddingEntity,
+                const PrefabDomValue& newEntityDom,
+                AZ::EntityId entityId,
+                AZ::EntityId parentEntityId,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
+                addEntityUndoState->SetParent(undoBatch);
+                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
+                addEntityUndoState->Redo();
+
+                PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo parent entity update");
+                state->SetParent(undoBatch);
+                state->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityId);
+                state->Redo();
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
