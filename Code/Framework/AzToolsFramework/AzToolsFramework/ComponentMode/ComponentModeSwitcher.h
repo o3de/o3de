@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -36,6 +37,8 @@ namespace AzToolsFramework
             ComponentData() = default;
             ComponentData(AZ::EntityComponentIdPair pairId);
 
+            //ComponentData(ComponentData* source);
+
             // Member variables
             AZ::EntityComponentIdPair m_pairId; //!< Id of entity component pair.
             AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
@@ -51,6 +54,7 @@ namespace AzToolsFramework
             , private ViewportEditorModeNotificationsBus::Handler
             , private EntityCompositionNotificationBus::Handler
             , private ToolsApplicationNotificationBus::Handler
+            , private AZ::TickBus::Handler
         {
         public:
             ComponentModeSwitcher();
@@ -80,11 +84,13 @@ namespace AzToolsFramework
             //! Removes component button from switcher.
             void RemoveComponentButton(const AZ::EntityComponentIdPair);
             //! Add or remove component buttons to/from the switcher based on entities selected.
-            void UpdateSwitcherOnEntitySelectionChange(const EntityIdList& newlyselectedEntityIds, const EntityIdList& newlydeselectedEntityIds);
+            void UpdateSwitcherOnEntitySelectionChange(
+                const EntityIdList& newlyselectedEntityIds, const EntityIdList& newlydeselectedEntityIds);
             //! Clears all buttons from switcher.
             void ClearSwitcher();
             //! Remove all components from the switcher that don't exist on all entities.
             void RemoveNonCommonComponents(const AZ::Entity&);
+            void ChangeButtonInPlace(ComponentData& changingComponent, const ComponentData& incomingComponent);
             void ActivateComponentMode(const ViewportUi::ButtonId);
 
             // ViewportEditorModeNotificationsBus overrides ...
@@ -104,6 +110,9 @@ namespace AzToolsFramework
             void AfterEntitySelectionChanged(
                 const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
+            // TickBus overrides ...
+            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
             // Member variables
             AZ::Component* m_activeSwitcherComponent = nullptr; //!< The component that is currently in component mode
 
@@ -115,6 +124,9 @@ namespace AzToolsFramework
 
             AZ::EntityComponentIdPair m_componentModePair; //!< The component mode pair in onEntityCompositionChanged.
             AddOrRemoveComponent m_addOrRemove; //!< Setting to either add or remove component.
+
+            AZStd::vector<ComponentData> m_removedComponentsCache;
+            AZStd::unordered_map<AZ::EntityComponentIdPair, ComponentData> m_addedComponentsCache;
         };
 
     } // namespace ComponentModeFramework
