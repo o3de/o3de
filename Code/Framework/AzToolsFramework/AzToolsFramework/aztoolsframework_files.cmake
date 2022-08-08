@@ -628,6 +628,8 @@ set(FILES
     AssetBrowser/EBusFindAssetTypeByName.h
     AssetBrowser/Views/AssetBrowserTreeView.cpp
     AssetBrowser/Views/AssetBrowserTreeView.h
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
+    AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/EntryDelegate.cpp

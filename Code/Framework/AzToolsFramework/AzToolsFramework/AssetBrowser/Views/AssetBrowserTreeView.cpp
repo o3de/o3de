@@ -16,11 +16,13 @@
 
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -29,6 +31,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to be used by clients of class
                                                                     // 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
+#include <AzToolsFramework/AssetBrowser/Views/ui_AssetBrowserTreeViewDialog.h>
 #include <QMenu>
 #include <QFile>
 #include <QHeaderView>
@@ -39,6 +42,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QTimer>
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
+#include <QHBoxLayout>
 
 AZ_POP_DISABLE_WARNING
 
@@ -553,6 +557,27 @@ namespace AzToolsFramework
                 newPath.ReplaceFilename(temp);
                 newPath.ReplaceExtension(extension);
                 QFile::copy(oldPath.c_str(), newPath.c_str());
+            }
+        }
+
+        void AssetBrowserTreeView::MoveEntries()
+        {
+            EntryTypeFilter* foldersFilter = new EntryTypeFilter();
+            foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
+
+            auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::EverythingSelection();
+            selection.SetTitle("Pick folder to move to");
+            selection.SetMultiselect(false);
+            selection.SetDisplayFilter(FilterConstType(foldersFilter));
+            AssetBrowserTreeViewDialog * dialog = new  AssetBrowserTreeViewDialog(selection, this);
+            dialog->exec();
+
+            const AZStd::vector<AZStd::string> folderPaths = selection.GetSelectedFilePaths();
+
+            if (!folderPaths.empty())
+            {
+                AZStd::string folderPath = folderPaths[0];
+                AZ_TracePrintf("JJS", "FolderPath = %s\n", folderPath.c_str());
             }
         }
     } // namespace AssetBrowser

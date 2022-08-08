@@ -457,6 +457,13 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         treeView->DuplicateEntries();
                     })
                 ->setShortcut(QKeySequence("Ctrl+D"));
+            // Add Move to option
+            menu->addAction(
+                    QObject::tr("Move to"),
+                    [treeView]()
+                    {
+                        treeView->MoveEntries();
+                    });
         }
     }
     break;
