@@ -71,19 +71,20 @@ namespace Mnist
         }
     };
 
+    // Tests the MNIST model against 1000 images of each digit from the dataset (10,000 total), and checks model accuracy is above 90%.
+    // If CUDA is enabled, the same tests will be run using CUDA for inferencing.
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCpu)
     {
-        InferenceData cpuInferenceData = RunMnistSuite(20, false);
+        InferenceData cpuInferenceData = RunMnistSuite(1000, false);
 
         float accuracy = (float)cpuInferenceData.m_numberOfCorrectInferences / (float)cpuInferenceData.m_totalNumberOfInferences;
-
         EXPECT_GT(accuracy, 0.9f);
     }
 
 #ifdef ENABLE_CUDA
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCuda)
     {
-        InferenceData gpuInferenceData = RunMnistSuite(20, true);
+        InferenceData gpuInferenceData = RunMnistSuite(1000, true);
 
         float accuracy = (float)gpuInferenceData.m_numberOfCorrectInferences / (float)gpuInferenceData.m_totalNumberOfInferences;
 

@@ -16,6 +16,7 @@ This is an experimental gem implementing [ONNX Runtime](https://onnxruntime.ai/)
 6. Add the [ONNX](#onnx) gem to your project using the [Project Manager](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/) or the [Command Line Interface (CLI)](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/#using-the-command-line-interface-cli). See the documentation on  [Adding and Removing Gems in a Project](https://docs.o3de.org/docs/user-guide/project-config/add-remove-gems/).
 7. Compile your project and run.
 8. Once the editor starts, and you go to edit a level with an initialized ONNX Model, you should be able to press the **HOME** (or equivalent) button on your keyboard to see the inference dashboard containing runtime graphs for any initialised model run history.
+9. The MNIST example is located in the **ONNX.Tests** project, and demos the ONNX Model class by loading in the MNIST ONNX model file and running several thousand inferences against different digits in the MNIST testing dataset.
 
 ## Modifying uPNG:
 

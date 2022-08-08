@@ -18,8 +18,6 @@
 #include <ONNX/ONNXBus.h>
 #include <onnxruntime_cxx_api.h>
 
-#include "upng/upng.h"
-
 namespace ONNX
 {
     //! Generic ONNX model which can be used to create an inference session and run inferences.

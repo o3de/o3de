@@ -8,8 +8,6 @@
 
 #include "Model.h"
 
-#pragma optimize("", off)
-
 namespace ONNX
 {
     void Model::Load(const InitSettings& initSettings)
@@ -104,4 +102,3 @@ namespace ONNX
         ONNXRequestBus::Broadcast(&::ONNX::ONNXRequestBus::Events::AddTimingSample, m_modelName.c_str(), m_delta, m_modelColor);
     }
 } // namespace ONNX
-#pragma optimize("", on)

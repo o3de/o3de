@@ -11,6 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 
 #include "Model.h"
+#include "upng/upng.h"
 
 namespace Mnist
 {
@@ -22,6 +23,7 @@ namespace Mnist
         float m_runtime;
     };
 
+    //! Holds the data gathered from RunMnistSuite(), which tests the MNIST ONNX model against images from the MNIST dataset.
     struct InferenceData
     {
         float m_totalRuntimeInMs;
