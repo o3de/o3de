@@ -16,8 +16,6 @@
 #include <CubeMapCapture/CubeMapCaptureComponent.h>
 #include <Debug/RenderDebugComponent.h>
 #include <Decals/DecalComponent.h>
-#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
-#include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
 #include <Grid/GridComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
@@ -51,8 +49,6 @@
 #include <CubeMapCapture/EditorCubeMapCaptureComponent.h>
 #include <Debug/RenderDebugEditorComponent.h>
 #include <Decals/EditorDecalComponent.h>
-#include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
-#include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
 #include <Grid/EditorGridComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
@@ -120,8 +116,6 @@ namespace AZ
                         ShapeWeightModifierComponent::CreateDescriptor(),
                         EntityReferenceComponent::CreateDescriptor(),
                         GradientWeightModifierComponent::CreateDescriptor(),
-                        DiffuseProbeGridComponent::CreateDescriptor(),
-                        DiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
@@ -157,8 +151,6 @@ namespace AZ
                         EditorShapeWeightModifierComponent::CreateDescriptor(),
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
-                        EditorDiffuseProbeGridComponent::CreateDescriptor(),
-                        EditorDiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),

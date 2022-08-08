@@ -85,6 +85,5 @@ namespace TestImpact
             File, //!< Write captured output to file.
             StdOutAndFile //!< Send captured output to standard output and write to file.
         };
-
     } // namespace Policy
 } // namespace TestImpact

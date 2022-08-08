@@ -356,17 +356,17 @@ namespace AZ
         }
 
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
+        AZStd::unique_ptr<NameDictionary>           m_nameDictionary;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
+        AZStd::unique_ptr<AZ::IConsole>             m_console;
         EntityAddedEvent                            m_entityAddedEvent;
         EntityRemovedEvent                          m_entityRemovedEvent;
         EntityAddedEvent                            m_entityActivatedEvent;
         EntityRemovedEvent                          m_entityDeactivatedEvent;
-        AZ::IConsole*                               m_console{};
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };
         bool                                        m_isSystemAllocatorOwner{ false };
         bool                                        m_isOSAllocatorOwner{ false };
-        bool                                        m_ownsConsole{};
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;

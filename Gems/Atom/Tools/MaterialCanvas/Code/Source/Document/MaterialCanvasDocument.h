@@ -80,9 +80,6 @@ namespace MaterialCanvas
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
 
-        // Get a list of all of the graph nodes sorted in execution order based on input connections.
-        AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
-
         // Perform a search and replace operation on all of the strings stored in a container.
         void ReplaceStringsInContainer(
             const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
@@ -93,21 +90,23 @@ namespace MaterialCanvas
         // Convert a stored slot value into a string representation that can be injected into AZSL shader code.
         AZStd::string ConvertSlotValueToAZSL(const AZStd::any& slotValue) const;
 
+        // Collect instructions from a slot and perform substitutions based on node and slot types, names, values, and connections.
+        AZStd::vector<AZStd::string> GetInstructionsFromSlot(
+            GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
+
         // Determine if instructions contained on an input node should be used as part of code generation based on node connections.
         bool ShouldUseInstructionsFromInputNode(
             GraphModel::ConstNodePtr outputNode,
             GraphModel::ConstNodePtr inputNode,
             const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
-        // Collect instructions from a slot and perform substitutions based on node and slot types, names, values, and connections.
-        AZStd::vector<AZStd::string> GetInstructionsFromSlot(
-            GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
+        // Get a list of all of the graph nodes sorted in execution order based on input connections.
+        AZStd::vector<GraphModel::ConstNodePtr> GetInstructionNodesInExecutionOrder(
+            GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
         // Generate AZSL instructions for an output node by evaluating all of the sorted graph nodes for connections to input slots
         AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
-            GraphModel::ConstNodePtr outputNode,
-            const AZStd::vector<GraphModel::ConstNodePtr>& sortedNodes,
-            const AZStd::vector<AZStd::string>& inputSlotNames) const;
+            GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
         using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
 

@@ -13,6 +13,12 @@ ${static_sources}
     "target": {
         "name": "${target_name}",
         "output_name": "${target_output_name}",
-        "path": "${target_path}"
+        "path": "${target_path}",
+        "build_dependencies": [
+            ${build_dependencies}
+        ],
+        "runtime_dependencies": [
+            ${runtime_dependencies}
+        ]
     }
 }

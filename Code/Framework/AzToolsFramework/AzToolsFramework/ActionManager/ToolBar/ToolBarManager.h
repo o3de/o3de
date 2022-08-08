@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 
 namespace AzToolsFramework

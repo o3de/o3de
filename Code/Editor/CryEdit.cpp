@@ -51,6 +51,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/EBus/IEventScheduler.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/IO/SystemFile.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -1459,19 +1460,61 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
-        std::string fileStr;
+        // Separates the compound string of semicolon separated values into a vector of values
+        const auto extractSeparatedValues = [](const AZStd::string& compoundValues)
+        {
+            AZStd::vector<AZStd::string_view> values;
+            AZ::StringFunc::TokenizeVisitor(
+                compoundValues.c_str(),
+                [&values](AZStd::string_view elem)
+                {
+                    values.push_back(elem);
+                },
+                ';',
+                false /* keepEmptyStrings */
+            );
+
+            return values;
+        };
+
+        // Reads the contents of the specified file and returns a string of said contents
+        const auto readFileContents = [](const AZStd::string& path) -> AZStd::string
+        {
+            const auto fileSize = AZ::IO::SystemFile::Length(path.c_str());
+            if (fileSize == 0)
+            {
+                return "";
+            }
+
+            AZStd::vector<char> buffer(fileSize + 1);
+            buffer[fileSize] = '\0';
+            if (!AZ::IO::SystemFile::Read(path.c_str(), buffer.data()))
+            {
+                return "";
+            }
+
+            return AZStd::string(buffer.begin(), buffer.end());
+        };
+
         // We support specifying multiple files in the cmdline by separating them with ';'
         // If a semicolon list of .py files is provided we look at the arg string
+        AZStd::string scriptFileStr;
         if (cmdInfo.m_strFileName.endsWith(".py"))
         {
             // cmdInfo data is only available on startup, copy it
-            fileStr = cmdInfo.m_strFileName.toUtf8().constData();
+            scriptFileStr = cmdInfo.m_strFileName.toUtf8().constData();
         }
-        else if (std::ifstream inputFile = std::ifstream(cmdInfo.m_strFileName.toUtf8().data()); inputFile.is_open()) 
+        else if (cmdInfo.m_strFileName.endsWith(".txt"))
         {
             // Otherwise, we look to see if we can read the file for test modules
             // The file is expected to contain a single semicolon separated string of Editor pytest modules
-            std::getline(inputFile, fileStr);
+            if (scriptFileStr = readFileContents(cmdInfo.m_strFileName.toUtf8().data()); scriptFileStr.empty())
+            {
+                AZ_Error(
+                    "RunInitPythonScript",
+                    false, "Failed to read the file containing a semi colon separated list of python modules");
+                return;
+            }
         }
         else
         {
@@ -1479,14 +1522,9 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
                 "Expects a semi colon separated list of python modules or a file containing a semi colon separated list of python modules");
             return;
         }
-        AZStd::vector<AZStd::string_view> fileList;
-        AZ::StringFunc::TokenizeVisitor(
-            fileStr.c_str(),
-            [&fileList](AZStd::string_view elem)
-            {
-                fileList.push_back(elem);
-            }, ';', false /* keepEmptyStrings */
-        );
+
+        // Extract the discrete python script files
+        const auto fileList = extractSeparatedValues(scriptFileStr);
 
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
@@ -1501,27 +1539,50 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
 
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                // Multiple testcases can be specified them with ';', these should match the files to run
-                AZStd::vector<AZStd::string_view> testcaseList;
-                QByteArray pythonTestCase = cmdInfo.m_pythonTestCase.toUtf8();
-                testcaseList.resize(fileList.size());
+                // We support specifying multiple test case names in the cmdline by separating them
+                // with ';', either in a text file or as a string
+                AZStd::string testCaseStr;
+                if (cmdInfo.m_pythonTestCase.endsWith(".txt"))
                 {
-                    int i = 0;
-                    AZ::StringFunc::TokenizeVisitor(
-                        pythonTestCase.constData(),
-                        [&i, &testcaseList](AZStd::string_view elem)
-                        {
-                            testcaseList[i++] = (elem);
-                        }, ';', false /* keepEmptyStrings */
-                    );
+                    // A path to the file containing the test case names has been provided as the argument
+                    if (testCaseStr = readFileContents(cmdInfo.m_pythonTestCase.toUtf8().data()); testCaseStr.empty())
+                    {
+                        AZ_Error(
+                            "RunInitPythonScript",
+                            false,
+                            "Failed to read Python files from --pythontestcase arg. "
+                            "Expects a semi colon separated list of python test case names or a file containing a semi colon separated list of "
+                            "python test case names");
+                        return;
+                    }
+                }
+                else
+                {
+                    // Test case names have been passed as the argument
+                    testCaseStr = cmdInfo.m_pythonTestCase.toUtf8().data();
+                }
+
+                // Extract the discrete python test case names
+                const auto testCaseList = extractSeparatedValues(testCaseStr);
+
+                // The number of python script files must match the number of test case names for the test case names
+                // to properly correlate with their invoking scripts
+                if (fileList.size() != testCaseList.size())
+                {
+                    AZ_Error(
+                        "RunInitPythonScript",
+                        false,
+                        "The number of supplied test scripts (%zu) did not match the number of supplied test case names (%zu)",
+                        fileList.size(), testCaseList.size());
+                    return;
                 }
 
                 bool success = true;
-                auto ExecuteByFilenamesTests = [&pythonArgs, &fileList, &testcaseList, &success](EditorPythonRunnerRequests* pythonRunnerRequests)
+                auto ExecuteByFilenamesTests = [&pythonArgs, &fileList, &testCaseList, &success](EditorPythonRunnerRequests* pythonRunnerRequests)
                 {
                     for (int i = 0; i < fileList.size(); ++i)
                     {
-                        bool cur_success = pythonRunnerRequests->ExecuteByFilenameAsTest(fileList[i], testcaseList[i], pythonArgs);
+                        bool cur_success = pythonRunnerRequests->ExecuteByFilenameAsTest(fileList[i], testCaseList[i], pythonArgs);
                         success = success && cur_success;
                     }
                 };

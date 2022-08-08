@@ -25,7 +25,9 @@ namespace GradientSignal
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual AZStd::string GetImageAssetPath() const = 0;
+        virtual AZStd::string GetImageAssetSourcePath() const = 0;
         virtual void SetImageAssetPath(const AZStd::string& assetPath) = 0;
+        virtual void SetImageAssetSourcePath(const AZStd::string& assetPath) = 0;
 
         virtual float GetTilingX() const = 0;
         virtual void SetTilingX(float tilingX) = 0;
