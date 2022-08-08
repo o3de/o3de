@@ -337,7 +337,7 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
             list(GET target_name_components 1 target_name)
             # Skipt third party dependencies
             if(NOT target_namespace STREQUAL "3rdParty")
-                list(APPEND dependencies "${target_name}")
+                list(APPEND dependencies "\"${target_name}\"")
             endif()
         else()
             set(target_name ${target_name_components})
