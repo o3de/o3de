@@ -1860,7 +1860,7 @@ namespace AZ::Data
             AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
             m_reloads.erase(asset.GetId());
         }
-        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReady, asset); // Broadcast to any containers first
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloadError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReloadError, asset);
     }
 

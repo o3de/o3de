@@ -77,6 +77,7 @@ namespace AZ
             void OnAssetReady(Asset<AssetData> asset) override;
             void OnAssetReloaded(Asset<AssetData> asset) override;
             void OnAssetError(Asset<AssetData> asset) override;
+            void OnAssetReloadError(Asset<AssetData> asset) override;
         protected:
 
             virtual AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(

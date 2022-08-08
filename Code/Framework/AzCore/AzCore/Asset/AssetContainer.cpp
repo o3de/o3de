@@ -374,6 +374,12 @@ namespace AZ::Data
         HandleReadyAsset(asset);
     }
 
+    void AssetContainer::OnAssetReloadError(Asset<AssetData> asset)
+    {
+        AZ_Warning("AssetContainer", false, "Error loading asset %s", asset->GetId().ToString<AZStd::string>().c_str());
+        HandleReadyAsset(asset);
+    }
+
     void AssetContainer::HandleReadyAsset(Asset<AssetData> asset)
     {
         // Wait until we've finished initialization before allowing this
