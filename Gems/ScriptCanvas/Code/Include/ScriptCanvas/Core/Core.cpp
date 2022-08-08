@@ -284,6 +284,18 @@ namespace ScriptCanvas
         return SourceHandle(graph, path);
     }
 
+    SourceHandle SourceHandle::FromRelativePathAndScenFolder
+        ( AZStd::string_view relativePath
+        , AZStd::string_view scanFolder
+        , const AZ::Uuid& sourceId)
+    {
+        auto handle = SourceHandle::FromRelativePath(nullptr, sourceId, relativePath);
+        AZ::IO::Path path(scanFolder);
+        path /= relativePath;
+        handle = SourceHandle::MarkAbsolutePath(handle, path.MakePreferred());
+        return handle;
+    }
+
     ScriptCanvasEditor::GraphPtrConst SourceHandle::Get() const
     {
         return m_data ? m_data->GetEditorGraph() : nullptr;

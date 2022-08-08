@@ -56,16 +56,19 @@ namespace EMStudio
         m_frameworkScene = createSceneOutcome.TakeValue();
         m_frameworkScene->SetSubsystem<AzFramework::EntityContext::SceneStorageType>(m_entityContext.get());
 
-        // Create and register a scene with all available feature processors
+        // Create and register a scene with feature processors defined in the viewport settings
         AZ::RPI::SceneDescriptor sceneDesc;
         sceneDesc.m_nameId = AZ::Name("AnimViewport");
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        const char* viewportSettingPath = "/O3DE/Editor/Viewport/Animation/Scene";
+        bool sceneDescLoaded = settingsRegistry->GetObject(sceneDesc, viewportSettingPath);
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
-        m_scene->EnableAllFeatureProcessors();
-        // Disable the terrain feature processor as we don't need terrian in anim editor.
-        const AZ::Name terrainFeatureProcessor("TerrainFeatureProcessor");
-        if (m_scene->GetFeatureProcessor(terrainFeatureProcessor))
+
+        if (!sceneDescLoaded)
         {
-            m_scene->DisableFeatureProcessor(terrainFeatureProcessor);
+            AZ_Warning("AnimViewportRenderer", false, "Settings registry is missing the scene settings for this viewport, so all feature processors will be enabled. "
+                        "To enable only a minimal set, add the specific list of feature processors with a registry path of '%s'.", viewportSettingPath);
+            m_scene->EnableAllFeatureProcessors();
         }
 
         // Link our RPI::Scene to the AzFramework::Scene

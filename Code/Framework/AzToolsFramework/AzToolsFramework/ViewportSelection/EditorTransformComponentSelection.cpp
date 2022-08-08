@@ -41,6 +41,8 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
@@ -1038,6 +1040,7 @@ namespace AzToolsFramework
         ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
         ReadOnlyEntityPublicNotificationBus::Handler::BusConnect(entityContextId);
 
+        CreateComponentModeSwitcher();
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
@@ -3277,6 +3280,19 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
+    }
+
+    void EditorTransformComponentSelection::CreateComponentModeSwitcher()
+    {
+        if (ComponentSwitcherEnabled())
+        {
+            m_componentModeSwitcher = AZStd::make_shared<ComponentModeFramework::ComponentModeSwitcher>();
+        }
+    }
+
+    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
+    {
+        m_componentModeSwitcher = componentModeSwitcher;
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)

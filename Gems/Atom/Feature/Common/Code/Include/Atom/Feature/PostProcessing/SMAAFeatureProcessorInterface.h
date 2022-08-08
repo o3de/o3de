@@ -84,7 +84,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::SMAAFeatureProcessorInterface, "{7E6A9FB5-E42C-41C3-8F84-40A1D4433A94}");
+            AZ_RTTI(AZ::Render::SMAAFeatureProcessorInterface, "{7E6A9FB5-E42C-41C3-8F84-40A1D4433A94}", AZ::RPI::FeatureProcessor);
 
             //! Enable/disable SMAA feature.
             //! @param enable Flag for SMAA feature.
