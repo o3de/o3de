@@ -341,14 +341,14 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
             endif()
         else()
             set(target_name ${target_name_components})
-            list(APPEND dependencies "${target_name}")
+            list(APPEND dependencies "\"${target_name}\"")
         endif()
     endforeach()
 
     # Remove the access modifiers and convert to a comma separated list
-    string (REPLACE "PUBLIC;" "" dependencies "${dependencies}")
-    string (REPLACE "PRIVATE;" "" dependencies "${dependencies}")
-    string (REPLACE "INTERFACE;" "" dependencies "${dependencies}")
+    string (REPLACE "\"PUBLIC\";" "" dependencies "${dependencies}")
+    string (REPLACE "\"PRIVATE\";" "" dependencies "${dependencies}")
+    string (REPLACE "\"INTERFACE\";" "" dependencies "${dependencies}")
     string (REPLACE ";" ",\n" dependencies "${dependencies}")
     set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
 endfunction()
