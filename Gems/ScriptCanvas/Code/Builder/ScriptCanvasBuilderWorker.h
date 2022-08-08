@@ -68,8 +68,8 @@ namespace ScriptCanvasBuilder
         ExecutionStateAsLightUserdata,
         UpdateDependencyHandling,
         AddExplicitDestructCallForMemberVariables,
-        FixEntityIdReturnValuesInEvents,
         DoNotLoadScriptEventsDuringCreateJobs,
+        FixEntityIdReturnValuesInEvents,
         // add new entries above
         Current,
     };
