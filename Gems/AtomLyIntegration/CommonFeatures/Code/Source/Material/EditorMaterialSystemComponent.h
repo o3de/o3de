@@ -61,6 +61,9 @@ namespace AZ
                 const AZ::EntityId& primaryEntityId,
                 const AzToolsFramework::EntityIdSet& entityIdsToEdit,
                 const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
+            void OpenMaterialShaderDetails(
+                const AZ::EntityId& entityId,
+                const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
             void RenderMaterialPreview(const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) override;
             QPixmap GetRenderedMaterialPreview(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId) const override;

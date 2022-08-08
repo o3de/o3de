@@ -14,6 +14,7 @@
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
+#include <AtomToolsFramework/Shader/ShaderDetailsWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -187,6 +188,13 @@ namespace AZ
                     inspector->LoadMaterial(primaryEntityId, entityIdsToEdit, materialAssignmentId);
                 }
             }
+        }
+        
+        void EditorMaterialSystemComponent::OpenMaterialShaderDetails(
+            const AZ::EntityId& /*entityId*/,
+            const AZ::Render::MaterialAssignmentId& /*materialAssignmentId*/) 
+        {
+            // TODO
         }
 
         void EditorMaterialSystemComponent::RenderMaterialPreview(
@@ -378,6 +386,15 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+            
+            AzToolsFramework::ViewPaneOptions materialDetails;
+            materialDetails.canHaveMultipleInstances = true;
+            materialDetails.preferedDockingArea = Qt::NoDockWidgetArea;
+            materialDetails.paneRect = QRect(50, 50, 700, 700);
+            materialDetails.showInMenu = false;
+            materialDetails.showOnToolsToolbar = false;
+            AzToolsFramework::RegisterViewPane<AZ::Render::ShaderDetailsWidget>(
+                "Material Shader Details", LyViewPane::CategoryTools, materialDetails);
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(
