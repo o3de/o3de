@@ -18,36 +18,6 @@ namespace AZ
 {
     namespace RPI
     {
-        void FeatureProcessorDeleter::operator()(FeatureProcessor* featureProcessor) const
-        {
-            auto featureProcessorLib = FeatureProcessorFactory::Get();
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            FeatureProcessorId featureProcessorId{ featureProcessor->RTTI_GetTypeName() };
-
-            if (!serializeContext)
-            {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be destroyed since could not retrieve serialize context.", featureProcessorId.GetCStr());
-                return;
-            }
-
-            auto foundIt = featureProcessorLib->GetEntry(featureProcessorId);
-            if (foundIt == AZStd::end(featureProcessorLib->m_registry))
-            {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be destroyed since failed to find it in registry.", featureProcessorId.GetCStr());
-                return;
-            }
-
-            auto* classData = serializeContext->FindClassData(foundIt->m_typeId);
-            if (!classData)
-            {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be destroyed since failed to get class data.", featureProcessorId.GetCStr());
-                return;
-            }
-            
-            classData->m_factory->Destroy(featureProcessor);
-        }
 
         FeatureProcessorFactory* FeatureProcessorFactory::Get()
         {
@@ -75,24 +45,44 @@ namespace AZ
 
             if (!serializeContext)
             {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since could not retrieve serialize context.", featureProcessorId.GetCStr());
+                AZ_Warning("FeatureProcessorFactory", false, "Provided type '%s' could not be created since the serialize context could not be retrieved.", featureProcessorId.GetCStr());
                 return nullptr;
             }
 
+            AZ::Uuid typeId{};
+
+            // First check the registry for the feature processor id, otherwise fall back on the serialize context.
             auto foundIt = GetEntry(featureProcessorId);
-            if (foundIt == AZStd::end(m_registry))
+            if (foundIt != AZStd::end(m_registry))
             {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since failed to find it in registry.", featureProcessorId.GetCStr());
-                return nullptr;
+                typeId = foundIt->m_typeId;
+            }
+            else
+            {
+                auto foundUuids = serializeContext->FindClassId(AZ::Crc32(featureProcessorId.GetStringView()));
+
+                if (foundUuids.empty())
+                {
+                    AZ_Warning("FeatureProcessorFactory", false, "Provided type %s is either an invalid TypeId or does not match any class names", featureProcessorId.GetCStr());
+                }
+                else
+                {
+                    typeId = foundUuids[0];
+                }
             }
 
-            auto* classData = serializeContext->FindClassData(foundIt->m_typeId);
+            // Create the class from the type id.
+            auto* classData = serializeContext->FindClassData(typeId);
             if (!classData)
             {
-                AZ_Warning("FeatureProcessorFactory", false, "FeatureProcessor '%s' could not be created since failed to get class data.", featureProcessorId.GetCStr());
+                AZ_Warning("FeatureProcessorFactory", false, "Provided type '%s' could not be created since failed to get class data. Make sure it was reflected to the serialize context.", featureProcessorId.GetCStr());
                 return nullptr;
             }
-
+            else if (!(classData->m_azRtti && classData->m_azRtti->IsTypeOf(FeatureProcessor::RTTI_Type())))
+            {
+                AZ_Warning("FeatureProcessorFactory", false, "Provided type %s is not a Feature Processor, or could not find RTTI information.", featureProcessorId.GetCStr());
+                return nullptr;
+            }
             return FeatureProcessorPtr(reinterpret_cast<FeatureProcessor*>(classData->m_factory->Create("FeatureProcessor")));
         }
 
@@ -122,9 +112,9 @@ namespace AZ
 
         FeatureProcessorFactory::FeatureProcessorRegistry::const_iterator FeatureProcessorFactory::GetEntry(FeatureProcessorId featureProcessorId)
         {
-            auto findFn = [featureProcessorId](const FeatureProcessorEntry& entry) 
-            { 
-                return entry.m_featureProcessorId == featureProcessorId; 
+            auto findFn = [featureProcessorId](const FeatureProcessorEntry& entry)
+            {
+                return entry.m_featureProcessorId == featureProcessorId;
             };
 
             return AZStd::find_if(AZStd::begin(m_registry), AZStd::end(m_registry), findFn);
@@ -150,7 +140,7 @@ namespace AZ
                     continue;
                 }
 
-                FeatureProcessorPtr fp = FeatureProcessorPtr(reinterpret_cast<FeatureProcessor*>(classData->m_factory->Create("FeatureProcessor")));              
+                FeatureProcessorPtr fp = FeatureProcessorPtr(reinterpret_cast<FeatureProcessor*>(classData->m_factory->Create("FeatureProcessor")));
                 scene->AddFeatureProcessor(AZStd::move(fp));
             }
         }

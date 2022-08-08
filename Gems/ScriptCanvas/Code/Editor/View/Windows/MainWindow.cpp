@@ -1693,8 +1693,8 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                auto sourceHandlePath = sourceHandle.RelativePath();
-                suggestedFilename = sourceHandle.RelativePath().Native();
+                auto sourceHandlePath = sourceHandle.AbsolutePath();
+                suggestedFilename = sourceHandle.AbsolutePath().Native();
                 sourceHandlePath.RemoveFilename();
                 suggestedDirectoryPath = sourceHandlePath.Native();
             }
@@ -1706,7 +1706,7 @@ namespace ScriptCanvasEditor
         
         while (!isValidFileName)
         {
-            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Save As..."), suggestedDirectoryPath.data(), filter);
+            selectedFile = AzQtComponents::FileDialog::GetSaveFileName(this, QObject::tr("Save As..."), suggestedDirectoryPath.data(), QObject::tr("All ScriptCanvas Files (*.scriptcanvas)"));
 
             // If the selected file is empty that means we just cancelled.
             // So we want to break out.

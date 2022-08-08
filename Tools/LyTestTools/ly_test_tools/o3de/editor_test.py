@@ -51,6 +51,15 @@ __test__ = False  # This file contains ready-to-use test functions which are not
 
 logger = logging.getLogger(__name__)
 
+def compile_test_case_name(request, test_spec):
+    test_case_prefix = "::".join(str.split(str(request.node.nodeid), "::")[:2])
+    regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))   
+    if regex_result:         
+        class_name = str.split(regex_result.group(1), ".")[-1:] 
+        compiled_test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+    else:
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 def _split_batched_editor_log_file(workspace, starting_path, destination_file, log_file_to_split):
     """
@@ -885,8 +894,10 @@ class EditorTestSuite:
         test_result = None
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
+        test_case_name = compile_test_case_name(request, test_spec)
         cmdline = [
             "--runpythontest", test_filename,
+            f"-pythontestcase={test_case_name}",
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
@@ -970,19 +981,36 @@ class EditorTestSuite:
 
         results = {}
 
-        # We create a file containing a semicolon separated list for the Editor to read
-        temp_batched_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-        for test_spec in test_spec_list[:-1]:
-            temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec.test_module)
-                                    .replace('\\', '\\\\')+';')
-        # The last entry does not have a semicolon
-        temp_batched_file.write(editor_utils.get_testcase_module_filepath(test_spec_list[-1].test_module)
-                                .replace('\\', '\\\\'))
-        temp_batched_file.flush()
-        temp_batched_file.close()
+        # We create a files containing a semicolon separated scipts and test cases for the Editor to read
+        test_script_list = ""
+        test_case_list = ""
+
+        for test_spec in test_spec_list:
+            # Test script
+            test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
+
+            # Test case
+            test_case_name = compile_test_case_name(request, test_spec)
+            test_case_list += f"{test_case_name};"
+
+        # Remove the trailing semicolon from the last entry
+        test_script_list = test_script_list[:-1]
+        test_script_list = test_script_list.replace('\\', '/')
+        test_case_list = test_case_list[:-1]
+
+        temp_batched_script_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+        temp_batched_script_file.write(test_script_list.replace('\\', '\\\\'))
+        temp_batched_script_file.flush()
+        temp_batched_script_file.close()
+
+        temp_batched_case_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+        temp_batched_case_file.write(test_case_list)
+        temp_batched_case_file.flush()
+        temp_batched_case_file.close()
 
         cmdline = [
-            "--runpythontest", temp_batched_file.name,
+            "-runpythontest", temp_batched_script_file.name,
+            "-pythontestcase", temp_batched_case_file.name,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
@@ -1081,8 +1109,10 @@ class EditorTestSuite:
                                                          results[test_spec_name].output,
                                                          self.timeout_editor_shared_test, result.editor_log)
         finally:
-            if temp_batched_file:
-                os.unlink(temp_batched_file.name)
+            if temp_batched_script_file:
+                os.unlink(temp_batched_script_file.name)
+            if temp_batched_case_file:
+                os.unlink(temp_batched_case_file.name)
         return results
     
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,

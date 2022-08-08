@@ -31,7 +31,7 @@ class Tests:
 
 def ComponentCRUD_Add_Delete_Components():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():

@@ -40,9 +40,9 @@ namespace AZ::Internal
         AZ_Assert(m_useCount > 0, "m_useCount is already 0!");
         if (m_useCount.fetch_sub(1) == 1)
         {
-            if (AZ::NameDictionary::IsReady())
+            if (m_nameDictionary)
             {
-                AZ::NameDictionary::Instance().TryReleaseName(hash);
+                m_nameDictionary->TryReleaseName(hash);
             }
         }
     }

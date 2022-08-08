@@ -125,7 +125,7 @@ namespace AZ
         {
         public:
 
-            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", MeshFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 

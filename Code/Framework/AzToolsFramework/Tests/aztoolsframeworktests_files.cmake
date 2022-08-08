@@ -11,6 +11,7 @@ set(FILES
     ActionManager/ActionManagerFixture.cpp
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
+    ActionManager/HotKeyManagerTests.cpp
     ActionManager/MenuManagerTests.cpp
     ActionManager/ToolBarManagerTests.cpp
     ArchiveTests.cpp
