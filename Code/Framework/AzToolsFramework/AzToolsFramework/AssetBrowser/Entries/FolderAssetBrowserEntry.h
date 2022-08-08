@@ -34,10 +34,13 @@ namespace AzToolsFramework
 
             SharedThumbnailKey CreateThumbnailKey() override;
 
+            bool IsScanFolder() const;
+
         protected:
             void UpdateChildPaths(AssetBrowserEntry* child) const override;
 
         private:
+            bool m_isScanFolder = false;
 
             AZ_DISABLE_COPY_MOVE(FolderAssetBrowserEntry);
         };

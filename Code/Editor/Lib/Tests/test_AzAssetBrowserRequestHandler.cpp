@@ -8,6 +8,7 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/UnitTest/MockComponentApplication.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
@@ -37,7 +38,7 @@
 
 namespace UnitTest
 {
-    // --------------------- MOCKS ----- The tests are at the bottom of this fle -------------------
+    // --------------------- MOCKS ----- The tests are at the bottom of this file -------------------
 
     // a mock component that has the bare minimum interface of an editor component.
     class MockEditorComponent : public AzToolsFramework::Components::EditorComponentBase
@@ -94,31 +95,6 @@ namespace UnitTest
         }
     };
    
-    class MockComponentApplicationBusHandler : public AZ::ComponentApplicationBus::Handler
-    {
-        public:
-            MOCK_METHOD0(GetApplication, AZ::ComponentApplication*());
-            MOCK_METHOD1(RegisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
-            MOCK_METHOD1(UnregisterComponentDescriptor, void(const AZ::ComponentDescriptor*));
-            MOCK_METHOD1(RegisterEntityAddedEventHandler, void(AZ::EntityAddedEvent::Handler&));
-            MOCK_METHOD1(RegisterEntityRemovedEventHandler, void(AZ::EntityRemovedEvent::Handler&));
-            MOCK_METHOD1(RegisterEntityActivatedEventHandler, void(AZ::EntityActivatedEvent::Handler&));
-            MOCK_METHOD1(RegisterEntityDeactivatedEventHandler, void(AZ::EntityDeactivatedEvent::Handler&));
-            MOCK_METHOD1(SignalEntityActivated, void(AZ::Entity*));
-            MOCK_METHOD1(SignalEntityDeactivated, void(AZ::Entity*));
-            MOCK_METHOD1(AddEntity, bool(AZ::Entity*));
-            MOCK_METHOD1(RemoveEntity, bool(AZ::Entity*));
-            MOCK_METHOD1(DeleteEntity, bool(const AZ::EntityId&));
-            MOCK_METHOD1(EnumerateEntities, void(const EntityCallback& /*callback*/));
-            MOCK_METHOD0(GetSerializeContext, AZ::SerializeContext*());
-            MOCK_METHOD0(GetBehaviorContext, AZ::BehaviorContext*());
-            MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext*());
-            MOCK_CONST_METHOD0(GetEngineRoot, const char*());
-            MOCK_CONST_METHOD0(GetExecutableFolder, const char*());
-            MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery& /*appType*/));
-            MOCK_METHOD1(FindEntity, AZ::Entity*(const AZ::EntityId& inputId));
-    };
-
     class MockAzFrameworkApplicationRequestBusHandler : public AzFramework::ApplicationRequests::Bus::Handler
     {
     public:
@@ -157,6 +133,7 @@ namespace UnitTest
     class AzAssetBrowserRequestHandlerFixture : public AllocatorsTestFixture
     {
     public:
+        using MockComponentApplicationBusHandler = UnitTest::MockComponentApplication;
         void SetUp() override
         {
             using namespace AzToolsFramework;
@@ -175,7 +152,6 @@ namespace UnitTest
             m_editorRequestHandlerMock = AZStd::make_unique<testing::NiceMock<MockEditorRequestBusHandler>>();
             m_entityCompositionRequestBusMock = AZStd::make_unique<testing::NiceMock<MockEntityCompositionRequestBus>>();
 
-            m_componentApplicationMock.get()->BusConnect();
             m_frameworkApplicationMock.get()->BusConnect();
             m_editorRequestHandlerMock.get()->BusConnect();
             m_entityCompositionRequestBusMock.get()->BusConnect();
@@ -210,8 +186,12 @@ namespace UnitTest
                         return newEntity->GetId();
                     });
 
+            // AddEntity should just return true - to avoid asserts, etc.
+            ON_CALL(*m_componentApplicationMock.get(), AddEntity(::testing::_))
+                .WillByDefault(::testing::Return(true));
+
             // override the component application's mock to respond to FindEntity
-            // by searching this class's m_entiies list.
+            // by searching this class's m_entities list.
             ON_CALL(*m_componentApplicationMock.get(), FindEntity(::testing::_))
                 .WillByDefault(
                     [&](const AZ::EntityId& entity) -> AZ::Entity*
@@ -364,13 +344,10 @@ namespace UnitTest
             product4.second.m_productName = "testmodel_zzzz.actor";
             // note, the second one in this source is alphabetically last.
             m_rootAssetBrowserEntry->AddProduct(product4);
-
-            
         }
 
         void TearDown() override
         {
-            m_componentApplicationMock.get()->BusDisconnect();
             m_frameworkApplicationMock.get()->BusDisconnect();
             m_editorRequestHandlerMock.get()->BusDisconnect();
             m_entityCompositionRequestBusMock.get()->BusDisconnect();
@@ -408,7 +385,6 @@ namespace UnitTest
         AZ::Data::AssetType m_assetTypeOfActor;
         AZStd::vector<AZ::Entity*> m_createdEntities;
         AZ::ComponentTypeList m_componentsAddedToEntites;
-
     };
 
     TEST_F(AzAssetBrowserRequestHandlerFixture, DragEnterTest)
@@ -425,7 +401,7 @@ namespace UnitTest
         // empty mime data:  No response.
         DragAndDropEventsBus::Event(EditorViewport, &DragAndDropEvents::DragEnter, &enter, ctx);
 
-        EXPECT_EQ(enter.isAccepted(), false);
+        EXPECT_EQ(false, enter.isAccepted());
     }
 
     // in this test, we give it valid drag and drop assets, but they don't have any default behavior
@@ -455,7 +431,7 @@ namespace UnitTest
 
         // Because nobody opted in to the Asset Type Info bus to say what components
         // should spawn when certain asset types are dropped, we shouldn't see any entities spawned at all.
-        EXPECT_EQ(dropEvent.isAccepted(), false);
+        EXPECT_EQ(false, dropEvent.isAccepted());
         EXPECT_TRUE(m_createdEntities.empty());
     }
 
@@ -502,17 +478,17 @@ namespace UnitTest
 
         mockHandler.BusDisconnect();
 
-        EXPECT_EQ(dropEvent.isAccepted(), true);
-        ASSERT_EQ(m_createdEntities.size(), 1);
+        EXPECT_TRUE(dropEvent.isAccepted());
+        ASSERT_EQ(1, m_createdEntities.size());
 
         for (auto entity : m_createdEntities)
         {
-           MockEditorComponent* mockComponent = entity->FindComponent<MockEditorComponent>();
-           ASSERT_NE(mockComponent, nullptr);
+            MockEditorComponent* mockComponent = entity->FindComponent<MockEditorComponent>();
+            ASSERT_NE(nullptr, mockComponent);
 
-           // we expect the 'aaaa' asset, not the zzzz one.
-           EXPECT_EQ(mockComponent->m_primaryAssetSet, AZ::Data::AssetId(m_uuidOfSource1, 2))
-               << "Invalid component spawned.  Should have spawned the aaa one alphabetically.";
+            // we expect the 'aaaa' asset, not the zzzz one.
+            EXPECT_EQ(AZ::Data::AssetId(m_uuidOfSource1, 2), mockComponent->m_primaryAssetSet)
+                << "Invalid component spawned.  Should have spawned the aaa one alphabetically.";
         }
     }
 
@@ -554,16 +530,16 @@ namespace UnitTest
         mockHandler1.BusDisconnect();
         mockHandler2.BusDisconnect();
 
-        EXPECT_EQ(dropEvent.isAccepted(), true);
-        ASSERT_EQ(m_createdEntities.size(), 1);
+        EXPECT_TRUE(dropEvent.isAccepted());
+        ASSERT_EQ(1, m_createdEntities.size());
 
         for (auto entity : m_createdEntities)
         {
             MockEditorComponent* mockComponent = entity->FindComponent<MockEditorComponent>();
-            ASSERT_NE(mockComponent, nullptr);
+            ASSERT_NE(nullptr, mockComponent);
 
             // we expect the 'actor' asset, not the zzzz one.
-            EXPECT_EQ(mockComponent->m_primaryAssetSet, AZ::Data::AssetId(m_uuidOfSource2, 123))
+            EXPECT_EQ(AZ::Data::AssetId(m_uuidOfSource2, 123), mockComponent->m_primaryAssetSet)
                 << "Invalid component spawned.  Should have spawned the actor one due to higher priority.";
         }
     }
@@ -606,11 +582,11 @@ namespace UnitTest
         mockHandler1.BusDisconnect();
         mockHandler2.BusDisconnect();
 
-        EXPECT_EQ(dropEvent.isAccepted(), true);
+        EXPECT_TRUE(dropEvent.isAccepted());
         EXPECT_FALSE(m_createdEntities.empty());
 
         // inspect the created entities:
-        ASSERT_EQ(m_createdEntities.size(), 2);
+        ASSERT_EQ(2, m_createdEntities.size());
 
         // One entity should have the first source, subid 2
         // The other entity should have the second source, subid 123
@@ -625,9 +601,9 @@ namespace UnitTest
         for (auto entity : m_createdEntities)
         {
             auto allComponents = entity->FindComponents<MockEditorComponent>();
-            ASSERT_EQ(allComponents.size(), 1); // exactly 1 component per entty
+            ASSERT_EQ(1, allComponents.size()); // exactly 1 component per entty
             MockEditorComponent* mockComponent = allComponents[0];
-            ASSERT_NE(mockComponent, nullptr);
+            ASSERT_NE(nullptr, mockComponent);
 
             AZ::Data::AssetId currentAsset = mockComponent->m_primaryAssetSet;
 
@@ -671,8 +647,7 @@ namespace UnitTest
 
         // because we intercept the event at a pretty high level,
         // no entities should be spawned.
-        EXPECT_EQ(dropEvent.isAccepted(), true);
+        EXPECT_TRUE(dropEvent.isAccepted());
         EXPECT_TRUE(m_createdEntities.empty());
     }
-
 } // namespace UnitTest

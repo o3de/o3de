@@ -70,8 +70,8 @@ namespace AzQtComponents
     public:
         ///////////////////////////////////////////////////////////////////////
         using BusIdType = AZ::u32;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         ///////////////////////////////////////////////////////////////////////
 
         virtual int GetDragAndDropEventsPriority() const
@@ -119,8 +119,8 @@ namespace AzQtComponents
     public:
         ///////////////////////////////////////////////////////////////////////
         using BusIdType = AZ::u32;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         ///////////////////////////////////////////////////////////////////////
 
         virtual int GetDragAndDropItemViewEventsPriority() const

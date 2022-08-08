@@ -29,10 +29,10 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -95,7 +95,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
             validEntries.push_back(entry);
         }
 
-        if(validEntries.empty())
+        if (validEntries.empty())
         {
             return nullptr;
         }
@@ -107,7 +107,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
             {
                 return entry; // return the first one in the case of a weird disconnected situation
             }
-            if ((parentSource)&&(parentSource != entry->GetParent()))
+            if ((parentSource) && (parentSource != entry->GetParent()))
             {
                 return entry; // if they have different parents, something is wrong, return the first one we find.
             }
@@ -121,10 +121,9 @@ namespace AzAssetBrowserRequestHandlerPrivate
         {
             return nullptr; 
         }
-
-        AZStd::string parentName = parentSource->GetName();
-        AZStd::string parentNameWithoutExtension;
-        AzFramework::StringFunc::Path::GetFileName(parentName.c_str(), parentNameWithoutExtension);
+        AZ::IO::Path parentName = parentSource->GetName();
+        AZ::IO::PathView parentNameWithoutExtension = parentName.Stem();
+        AZ::IO::PathView parentNameWithoutExtensionCaseInsensitive(parentNameWithoutExtension.Native(), AZ::IO::WindowsPathSeparator);
 
         // if we get here, we know that all the entries have the same source parent and are thus related to each other.
         // in this case, we can run the heuristic.
@@ -158,15 +157,17 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 // Getting here means their sort priority is equal.  When this is the case, we use a
                 // secondary sort scheme, which is to prefer the assets that have the exact
                 // same name as the parent source asset:
-               
-                AZStd::string nameAWithoutExtension;
-                AZStd::string nameBWithoutExtension;
-                AzFramework::StringFunc::Path::GetFileName(a->GetName().c_str(), nameAWithoutExtension);
-                AzFramework::StringFunc::Path::GetFileName(b->GetName().c_str(), nameBWithoutExtension);
-                
-                bool aMatches = AZ::StringFunc::Equal(nameAWithoutExtension, parentNameWithoutExtension, false);
-                bool bMatches = AZ::StringFunc::Equal(nameBWithoutExtension, parentNameWithoutExtension, false);
-                if ((aMatches)&&(!bMatches))
+
+                // Make a temporary PathView that uses a WindowsPathSeparator, to have the path comparisons be case-insensitive on
+                // non-Windows platforms as well. By default Windows uses the WindowsPathSeparator so it is already case-insensitive on
+                // Windows
+                AZ::IO::PathView nameAWithoutExtension = AZ::IO::PathView(a->GetName(), AZ::IO::WindowsPathSeparator).Stem();
+                AZ::IO::PathView nameBWithoutExtension = AZ::IO::PathView(b->GetName(), AZ::IO::WindowsPathSeparator).Stem();
+
+                const bool aMatches = nameAWithoutExtension == parentNameWithoutExtensionCaseInsensitive;
+                const bool bMatches = nameBWithoutExtension == parentNameWithoutExtensionCaseInsensitive;
+
+                if ((aMatches) && (!bMatches))
                 {
                     return true; // A definitely before B
                 }
@@ -178,7 +179,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 // if nothing else, sort alphabetically.  A is before B if
                 // strcmp A, B < 0.  Otherwise A is not before B.  Use the extension
                 // here so as to eliminate ties.
-                return (azstricmp(a->GetName().c_str(), b->GetName().c_str()) < 0);
+                return a->GetName() < b->GetName();
             });
         
         // since the valid entries are already sorted, just return the first one.
@@ -271,23 +272,18 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
                 if (!componentTypeId.IsNull())
                 {
-                    AZStd::string entityName;
-
-                    // If the entity is being created from an asset, name it after said asset.
-                    AZStd::string assetPath;
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                        assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, product->GetAssetId());
-
-                    if (!assetPath.empty())
+                    AZ::IO::Path entryPath(product->GetName());
+                    AZStd::string entityName = entryPath.Stem().Native();
+                    if (entityName.empty())
                     {
-                        AZStd::string assetPathFileName;
-                        AzFramework::StringFunc::Path::GetFileName(assetPath.c_str(), assetPathFileName);
-                        if (assetPathFileName.empty())
+                        // if we can't use the file name, use the type of asset like "Model".
+                        AZ::AssetTypeInfoBus::EventResult(entityName, product->GetAssetType(), &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
+                        if (entityName.empty())
                         {
-                            assetPathFileName = "AssetEntity";
+                            entityName = "Entity";
                         }
-                        entityName = AZStd::string::format("%s%d", assetPathFileName.c_str(), GetIEditor()->GetObjectManager()->GetObjectCount());
                     }
+
                     AZ::EntityId targetEntityId;
                     EditorRequests::Bus::BroadcastResult(
                         targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), parentEntityId);
@@ -616,7 +612,7 @@ bool AzAssetBrowserRequestHandler::CanAcceptDragAndDropEvent(QDropEvent* event, 
 }
 
 bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
-    AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> outProducts) const
+    AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outProducts) const
 {
     using namespace AzToolsFramework;
     using namespace AzToolsFramework::AssetBrowser;
@@ -629,12 +625,6 @@ bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
     // once AB supports multi-select, the data might contain a mixture of
     // selected source files, selected products.  Selecting a source file should evaluate its products
     // selecting a product should always use the product.
-
-    AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> *outProductsVector = nullptr;
-    if (outProducts.has_value())
-    {
-        outProductsVector = outProducts.value();
-    }
 
     bool canAcceptEvent = false;
     AZStd::vector<const AssetBrowserEntry*> allEntries;
@@ -661,11 +651,11 @@ bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
             if (mostReasonable)
             {
                 canAcceptEvent = true;
-                if (outProductsVector)
+                if (outProducts)
                 {
-                    if (AZStd::find(outProductsVector->begin(), outProductsVector->end(), mostReasonable) == outProductsVector->end())
+                    if (AZStd::ranges::find(*outProducts, mostReasonable) == outProducts->end())
                     {
-                        outProductsVector->push_back(mostReasonable);
+                        outProducts->push_back(mostReasonable);
                     }
                 }
             }
@@ -679,11 +669,11 @@ bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
             {
                 // its a spawnable one.
                 canAcceptEvent = true;
-                if (outProductsVector)
+                if (outProducts)
                 {
-                    if (AZStd::find(outProductsVector->begin(), outProductsVector->end(), product) == outProductsVector->end())
+                    if (AZStd::ranges::find(*outProducts, product) == outProducts->end())
                     {
-                        outProductsVector->push_back(product);
+                        outProducts->push_back(product);
                     }
                 }
             }
@@ -745,7 +735,7 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
         return; // someone else already took this!
     }
 
-    if(EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
+    if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
     {
         // drop the item(s)
         AZStd::vector<const ProductAssetBrowserEntry*> products;

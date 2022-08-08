@@ -150,7 +150,7 @@ namespace AzToolsFramework
         }
 
         // viewport dragging:
-        void PrefabSaveHandler::DragEnter(QDragEnterEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        void PrefabSaveHandler::DragEnter(QDragEnterEvent* event, [[maybe_unused]] AzQtComponents::DragAndDropContextBase& context)
         {
             if (event->isAccepted())
             {
@@ -162,12 +162,9 @@ namespace AzToolsFramework
                 event->accept();
                 event->setDropAction(Qt::DropAction::CopyAction);
             }
-
-            (void)context;
-
         }
 
-        void PrefabSaveHandler::DragMove(QDragMoveEvent* event, AzQtComponents::DragAndDropContextBase& context)
+        void PrefabSaveHandler::DragMove(QDragMoveEvent* event, [[maybe_unused]] AzQtComponents::DragAndDropContextBase& context)
         {
             if (event->isAccepted())
             {
@@ -179,7 +176,6 @@ namespace AzToolsFramework
                 event->accept();
                 event->setDropAction(Qt::DropAction::CopyAction);
             }
-            (void)context;
         }
 
         void PrefabSaveHandler::DragLeave(QDragLeaveEvent* event)
@@ -201,7 +197,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            if (ViewportDragContext* viewportContext = azrtti_cast<ViewportDragContext*>(&context);viewportContext)
+            if (ViewportDragContext* viewportContext = azrtti_cast<ViewportDragContext*>(&context))
             {
                 AZ::Vector3 spawnLocation = viewportContext->m_hitLocation;
                 AZStd::vector<AZStd::string> thingsToSpawn;
@@ -261,25 +257,17 @@ namespace AzToolsFramework
                     // its a proc prefab file.
                     if (prefabsToSpawn)
                     {
-                        //GetFullPath actually returns the name of the fbx.  we want the actual procprefab.
-                        AZ::Data::AssetInfo thisAssetInfo;
-                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                            thisAssetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, entry->GetAssetId());
-                        if (thisAssetInfo.m_assetId.IsValid())
+                        AZStd::string actualPath = entry->GetFullPath();
+                        char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+                        if (AZ::IO::FileIOBase::GetInstance()->ResolvePath(actualPath.c_str(), resolvedPath, AZ_MAX_PATH_LEN))
                         {
-                            AZStd::string actualPath =
-                                AZStd::string::format("@products@/%s", thisAssetInfo.m_relativePath.c_str());
-                            char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-                            if (AZ::IO::FileIOBase::GetInstance()->ResolvePath(actualPath.c_str(), resolvedPath, AZ_MAX_PATH_LEN))
-                            {
-                                prefabsToSpawn->push_back(resolvedPath);
-                            }
+                            prefabsToSpawn->emplace_back(resolvedPath);
+                        }
 
-                            if ((prefabsToDetach)&&(!isSelected))
-                            {
-                                // this procprefab should auto detach if it is not directly selected:
-                                prefabsToDetach->push_back(resolvedPath);
-                            }
+                        if ((prefabsToDetach)&&(!isSelected))
+                        {
+                            // this procprefab should auto detach if it is not directly selected:
+                            prefabsToDetach->push_back(resolvedPath);
                         }
                     }
                     foundSomething = true;
@@ -305,7 +293,7 @@ namespace AzToolsFramework
                         // its a prefab file.
                         if (prefabsToSpawn)
                         {
-                            prefabsToSpawn->push_back(sourceEntry->GetFullPath().c_str());
+                            prefabsToSpawn->emplace_back(sourceEntry->GetFullPath());
                         }
                         foundSomething = true;
                     }
@@ -348,7 +336,7 @@ namespace AzToolsFramework
                 return;
             }
             using namespace AzToolsFramework;
-            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context); outlinerContext)
+            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
             {
                 if (CanDragAndDropData(outlinerContext->m_dataBeingDropped))
                 {
@@ -365,8 +353,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context);
-                outlinerContext)
+            if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
             {
                 AZStd::vector<AZStd::string> thingsToSpawn;
 

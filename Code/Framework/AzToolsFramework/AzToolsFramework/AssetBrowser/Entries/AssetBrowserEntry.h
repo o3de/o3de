@@ -97,6 +97,10 @@ namespace AzToolsFramework
             const AZStd::string& GetName() const;
             //! Display name represents how entry is shown in asset browser
             const QString& GetDisplayName() const;
+
+            //! Display name represents how the path to the file is shown in the asset browser.
+            //! It does not include the file name of the entry.
+            const QString& GetDisplayPath() const;
             //! Return path relative to scan folder
             const AZStd::string& GetRelativePath() const;
             //! Return absolute path. If called on product, return source absolute path

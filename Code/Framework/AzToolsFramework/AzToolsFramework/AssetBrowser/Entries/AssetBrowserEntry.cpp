@@ -162,6 +162,11 @@ namespace AzToolsFramework
             return m_displayName;
         }
 
+         const QString& AssetBrowserEntry::GetDisplayPath() const
+        {
+            return m_displayPath;
+        }
+
         const AZStd::string& AssetBrowserEntry::GetRelativePath() const
         {
             return m_relativePath.Native();
@@ -217,6 +222,8 @@ namespace AzToolsFramework
 
         void AssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
+            // by default, we just recurse here.
+            // sources will do this differently from folders and products...
             child->PathsUpdated();
         }
 

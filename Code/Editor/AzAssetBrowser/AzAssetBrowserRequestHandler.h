@@ -69,8 +69,7 @@ protected:
 
     bool CanAcceptDragAndDropEvent(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) const;
 
-    bool DecodeDragMimeData(
-        const QMimeData* mimeData,
-        AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> outProducts = AZStd::nullopt) const;
+    bool DecodeDragMimeData(const QMimeData* mimeData,
+                            AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outVector = nullptr) const;
 };
 

@@ -11,6 +11,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/GenericStreams.h>
+#include <AzCore/IO/FileIO.h>
 
 #include <QMimeData>
 #include <QUrl>
@@ -47,7 +48,18 @@ namespace AzToolsFramework
                 {
                     if (entry)
                     {
-                        urls.push_back(QUrl::fromLocalFile(QString::fromUtf8(entry->GetFullPath().c_str())));
+                        // entries may have aliased paths:
+                        AZStd::string entryPath = entry->GetFullPath();
+                        if (AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance())
+                        {
+                            AZ::IO::FixedMaxPath fixedPath;
+                            if (fileIO->ResolvePath(fixedPath, entryPath.c_str()))
+                            {
+                                entryPath = fixedPath.LexicallyNormal().String();
+                            }
+                        }
+
+                        urls.push_back(QUrl::fromLocalFile(QString::fromUtf8(entryPath.c_str())));
                     }
                 }
                 // Saving the buffer of asset browser entries back to the mime data
