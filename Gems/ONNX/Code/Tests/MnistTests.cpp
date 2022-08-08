@@ -6,24 +6,50 @@
  *
  */
 
-#include <Fixture.h>
 #include <Mnist.h>
 
-namespace ONNX
+#include <AzTest/AzTest.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Slice/SliceAssetHandler.h>
+#include <AzTest/GemTestEnvironment.h>
+#include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
+#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <UnitTest/ToolsTestApplication.h>
+#include <QApplication>
+
+namespace Mnist
 {
-    class MnistFixture : public Fixture
+    class MnistTestEnvironment : public AZ::Test::GemTestEnvironment
     {
-    public:
+        AZ::ComponentApplication* CreateApplicationInstance() override
+        {
+            // Using ToolsTestApplication to have AzFramework and AzToolsFramework components.
+            return aznew UnitTest::ToolsTestApplication("Mnist");
+        }
+
+        public:
+            MnistTestEnvironment() = default;
+            ~MnistTestEnvironment() override = default;
+    };
+
+    class MnistFixture : public ::testing::Test
+    {
+    protected:
         void SetUp() override
         {
-            Fixture::SetUp();
+        }
+
+        void TearDown() override
+        {
         }
     };
 
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCpu)
     {
-        PrecomputedTimingData* timingData;
-        ONNXRequestBus::BroadcastResult(timingData, &ONNXRequestBus::Events::GetPrecomputedTimingData);
+        ::ONNX::PrecomputedTimingData* timingData;
+        ::ONNX::ONNXRequestBus::BroadcastResult(timingData, &::ONNX::ONNXRequestBus::Events::GetPrecomputedTimingData);
 
         float accuracy = (float)timingData->m_numberOfCorrectInferences / (float)timingData->m_totalNumberOfInferences;
 
@@ -33,12 +59,23 @@ namespace ONNX
 #ifdef ENABLE_CUDA
     TEST_F(MnistFixture, ModelAccuracyGreaterThan90PercentWithCuda)
     {
-        PrecomputedTimingData* timingDataCuda;
-        ONNXRequestBus::BroadcastResult(timingDataCuda, &ONNXRequestBus::Events::GetPrecomputedTimingDataCuda);
+        ::ONNX::PrecomputedTimingData* timingDataCuda;
+        ::ONNX::ONNXRequestBus::BroadcastResult(timingDataCuda, &::ONNX::ONNXRequestBus::Events::GetPrecomputedTimingDataCuda);
 
         float accuracy = (float)timingDataCuda->m_numberOfCorrectInferences / (float)timingDataCuda->m_totalNumberOfInferences;
 
         EXPECT_GT(accuracy, 0.9f);
     }
 #endif
-} // namespace ONNX
+} // namespace Mnist
+
+AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
+{
+    ::testing::InitGoogleMock(&argc, argv);
+    QApplication app(argc, argv);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
+    AZ::Test::printUnusedParametersWarning(argc, argv);
+    AZ::Test::addTestEnvironments({ new Mnist::MnistTestEnvironment });
+    int result = RUN_ALL_TESTS();
+    return result;
+}

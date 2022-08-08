@@ -56,6 +56,7 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             ${Onnx_LIB}
             Gem::ImguiAtom.Static
             Gem::ImGui.Static
@@ -203,6 +204,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzFramework
+                    AZ::AzToolsFrameworkTestCommon
                     Gem::ONNX.Private.Object
                 PUBLIC
                     ${Onnx_LIB}
