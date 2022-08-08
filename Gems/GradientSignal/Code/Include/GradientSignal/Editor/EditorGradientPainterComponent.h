@@ -32,9 +32,6 @@ namespace GradientSignal
         AZ_RTTI(GradientPainterConfig, "{324D408C-2118-42CA-90BC-53DC3E5CF8A4}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        static AZStd::string GetSupportedImagesFilter();
-        static AZStd::vector<AZ::Edit::EnumConstant<OutputFormat>> SupportedOutputFormatOptions();
-
         AZ::EntityId m_inputBounds;
         AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
         OutputFormat m_outputFormat = OutputFormat::R32;

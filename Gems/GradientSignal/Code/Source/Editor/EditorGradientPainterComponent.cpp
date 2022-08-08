@@ -19,28 +19,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal
 {
-    AZStd::string GradientPainterConfig::GetSupportedImagesFilter()
-    {
-        // Build filter for supported streaming image formats that will be used on the
-        // native file dialog when creating/picking an output file for the painted image.
-        // ImageProcessingAtom::s_SupportedImageExtensions actually has more formats
-        // that will produce streaming image assets, but not all of them support
-        // all of the bit depths we care about (8/16/32), so we've reduced the list
-        // to the image formats that do.
-        return "Images (*.png *.tif *.tiff *.tga *.exr)";
-    }
-
-    AZStd::vector<AZ::Edit::EnumConstant<OutputFormat>> GradientPainterConfig::SupportedOutputFormatOptions()
-    {
-        AZStd::vector<AZ::Edit::EnumConstant<OutputFormat>> options;
-
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R8, "R8 (8-bit)"));
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R16, "R16 (16-bit)"));
-        options.push_back(AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R32, "R32 (32-bit)"));
-
-        return options;
-    }
-
     void GradientPainterConfig::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
@@ -72,11 +50,11 @@ namespace GradientSignal
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &GradientPainterConfig::m_outputFormat, "Output Format",
                         "Output format of the baked image.")
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &GradientPainterConfig::SupportedOutputFormatOptions)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &GradientImageCreatorRequests::SupportedOutputFormatOptions)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_outputImagePath, "Output Path",
                         "Output path to bake the image to.")
-                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GradientPainterConfig::GetSupportedImagesFilter())
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GradientImageCreatorRequests::GetSupportedImagesFilter())
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
                     ;
             }
@@ -129,14 +107,18 @@ namespace GradientSignal
 
     void EditorGradientPainterComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
+        services.push_back(AZ_CRC_CE("GradientImageCreatorService"));
         services.push_back(AZ_CRC_CE("GradientPainterService"));
-        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void EditorGradientPainterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
+        services.push_back(AZ_CRC_CE("GradientImageCreatorService"));
         services.push_back(AZ_CRC_CE("GradientPainterService"));
-        services.push_back(AZ_CRC_CE("GradientBakerService"));
+
+        // Don't put this on any entities with another gradient - the gradient previews won't work correctly because this component
+        // and the other gradient will both respond to all preview requests, since the requests are made based on an Entity ID,
+        // not a Component ID.
         services.push_back(AZ_CRC_CE("GradientService"));
     }
 
