@@ -30,8 +30,8 @@ namespace AtomToolsFramework
                 ->Field("name", &DynamicNodeSlotConfig::m_name)
                 ->Field("displayName", &DynamicNodeSlotConfig::m_displayName)
                 ->Field("description", &DynamicNodeSlotConfig::m_description)
-                ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
                 ->Field("supportedDataTypes", &DynamicNodeSlotConfig::m_supportedDataTypes)
+                ->Field("defaultValue", &DynamicNodeSlotConfig::m_defaultValue)
                 ->Field("settings", &DynamicNodeSlotConfig::m_settings)
                 ;
 
