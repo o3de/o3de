@@ -6,8 +6,8 @@
  *
  */
 
+#include <TestRunner/Common/Job/TestImpactTestJobInfoUtils.h>
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
-#include <TestRunner/Python/Job/TestImpactPythonTestJobInfoUtils.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
 
