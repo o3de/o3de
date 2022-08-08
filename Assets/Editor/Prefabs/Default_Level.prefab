@@ -18,7 +18,7 @@
             "Component_[14126657869720434043]": {
                 "$type": "EditorEntitySortComponent",
                 "Id": 14126657869720434043,
-				"Child Entity Order": [
+                "Child Entity Order": [
                     "Entity_[1176639161715]"
                 ]
             },
