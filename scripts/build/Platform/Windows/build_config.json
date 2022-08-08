@@ -25,8 +25,8 @@
     "steps": [
       "profile",
       "asset_profile",
-      "test_impact_analysis_native",
       "test_cpu_profile",
+      "test_impact_analysis_native",
       "test_impact_analysis_python"
     ]
   },
