@@ -13,16 +13,16 @@
 namespace TestImpact
 {
 
-    //!
+    //! Helper function for parsing test target exclusion lists in config files.
     ExcludedTargets ParseTargetExcludeList(const rapidjson::Value::ConstArray& testExcludes);
 
-    //!
+    //! Helper function for parsing temporary workspaces in config files.
     ArtifactDir ParseTempWorkspaceConfig(const rapidjson::Value& tempWorkspace);
 
-    //!
+    //! Helper function for parsing active workspaces in config files.
     WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace);
 
-    //!
+    //! Helper function for parsing workspaces in config files.
     WorkspaceConfig ParseWorkspaceConfig(const rapidjson::Value& workspace);
 
     //! Parses the common configuration data (in JSON format) and returns the constructed runtime configuration.

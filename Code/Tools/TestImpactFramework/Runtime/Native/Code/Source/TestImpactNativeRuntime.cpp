@@ -210,7 +210,7 @@ namespace TestImpact
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer =
-            AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
+            AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(m_dynamicDependencyMap.get(), BuildTargetDependencyGraph{});
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
         if (!testsToExclude.empty())
