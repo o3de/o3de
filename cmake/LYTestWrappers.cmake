@@ -411,7 +411,7 @@ function(ly_add_googletest)
     endif()
 
     string(REPLACE "::" "_" report_directory "${GTEST_XML_OUTPUT_DIR}/${ly_add_googletest_NAME}.xml")
-    
+
     # Invoke the lower level ly_add_test command to add the actual ctest and setup the test labels to add_dependencies on the target
     ly_add_test(
         NAME ${ly_add_googletest_NAME}
