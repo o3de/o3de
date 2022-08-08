@@ -17,11 +17,6 @@
 #include <ONNX/ONNXBus.h>
 #include <imgui/imgui.h>
 
-namespace Mnist
-{
-    struct Mnist;
-}
-
 namespace ONNX
 {
     class ONNXSystemComponent
