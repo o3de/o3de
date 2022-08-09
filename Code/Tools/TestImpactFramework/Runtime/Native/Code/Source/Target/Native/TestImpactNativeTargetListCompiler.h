@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeProductionTargetDescriptor.h>
-#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Artifact/Static/TestImpactTargetDescriptor.h>
+#include <Target/Common/TestImpactTargetList.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/tuple.h>
 
 namespace TestImpact
@@ -23,7 +24,6 @@ namespace TestImpact
     //! @param buildTargets The list of build target artifacts to be sorted into production and test artifact types.
     //! @param NativeTestTargetMetaMap The map of test target meta artifacts containing the additional meta-data about each test target.
     //! @return A tuple containing the production artifacts and test artifacts.
-    AZStd::tuple<AZStd::vector<AZStd::unique_ptr<NativeProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<NativeTestTargetDescriptor>>>
-    CompileTargetDescriptors(
-        AZStd::vector<NativeTargetDescriptor>&& buildTargets, NativeTestTargetMetaMap&& NativeTestTargetMetaMap);
+    AZStd::tuple<TargetList<NativeProductionTarget>, TargetList<NativeTestTarget>> CompileNativeTargetLists(
+        AZStd::vector<TargetDescriptor>&& buildTargetDescriptors, NativeTestTargetMetaMap&& testTargetMetaMap);
 } // namespace TestImpact
