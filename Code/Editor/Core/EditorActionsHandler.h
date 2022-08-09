@@ -85,6 +85,7 @@ private:
     void RefreshToolActions();
 
     // View Bookmarks
+    int m_defaultBookmarkCount = 12;
     void InitializeViewBookmarkActions();
 
     bool m_initialized = false;

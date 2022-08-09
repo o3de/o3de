@@ -134,6 +134,9 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
     InitializeMenus();
     InitializeToolBars();
 
+    // Retrieve the bookmark count from the loader.
+    m_defaultBookmarkCount = AzToolsFramework::LocalViewBookmarkLoader::DefaultViewBookmarkCount;
+
     // Ensure the layouts menu is refreshed when the layouts list changes.
     QObject::connect(
         m_mainWindow->m_viewPaneManager, &QtViewPaneManager::savedLayoutsChanged, m_mainWindow,
@@ -1420,6 +1423,8 @@ void EditorActionsHandler::InitializeMenus()
     }
 
     // View
+
+
     {
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, LayoutsMenuIdentifier, 100);
         {
@@ -1438,7 +1443,7 @@ void EditorActionsHandler::InitializeMenus()
             m_menuManagerInterface->AddActionToMenu(ViewportMenuIdentifier, "o3de.action.view.centerOnSelection", 200);
             m_menuManagerInterface->AddSubMenuToMenu(ViewportMenuIdentifier, GoToLocationMenuIdentifier, 300);
             {
-                for (int index = 0; index < 12; ++index)
+                for (int index = 0; index < m_defaultBookmarkCount; ++index)
                 {
                     const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].goTo", index);
                     m_menuManagerInterface->AddActionToMenu(GoToLocationMenuIdentifier, actionIdentifier, 0);
@@ -1446,7 +1451,7 @@ void EditorActionsHandler::InitializeMenus()
             }
             m_menuManagerInterface->AddSubMenuToMenu(ViewportMenuIdentifier, SaveLocationMenuIdentifier, 400);
             {
-                for (int index = 0; index < 12; ++index)
+                for (int index = 0; index < m_defaultBookmarkCount; ++index)
                 {
                     const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].save", index);
                     m_menuManagerInterface->AddActionToMenu(SaveLocationMenuIdentifier, actionIdentifier, 0);
@@ -1868,7 +1873,7 @@ void EditorActionsHandler::RefreshToolActions()
 void EditorActionsHandler::InitializeViewBookmarkActions()
 {
     // --- Go to Location
-    for (int index = 0; index < 12; ++index)
+    for (int index = 0; index < m_defaultBookmarkCount; ++index)
     {
         const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].goTo", index);
 
@@ -1926,7 +1931,7 @@ void EditorActionsHandler::InitializeViewBookmarkActions()
     }
 
     // --- Save Location
-    for (int index = 0; index < 12; ++index)
+    for (int index = 0; index < m_defaultBookmarkCount; ++index)
     {
         const AZStd::string actionIdentifier = AZStd::string::format("o3de.action.view.bookmark[%i].save", index);
 
