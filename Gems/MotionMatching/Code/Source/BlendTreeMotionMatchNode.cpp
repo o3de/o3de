@@ -303,6 +303,12 @@ namespace EMotionFX::MotionMatching
         Pose& outTransformPose = outputPose->GetPose();
         instance->Output(outTransformPose);
 
+        if (instance && instance->m_queryVectorWritten)
+        {
+            instance->m_poseWriter.WritePose(outTransformPose);
+            instance->m_queryVectorWritten = false;
+        }
+
         // Performance metrics
         m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
         {

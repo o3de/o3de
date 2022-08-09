@@ -107,6 +107,9 @@ namespace EMotionFX::MotionMatching
         m_queryPose.LinkToActorInstance(m_actorInstance);
         m_queryPose.InitFromBindPose(m_actorInstance);
 
+        m_lastPose.LinkToActorInstance(m_actorInstance);
+        m_lastPose.InitFromBindPose(m_actorInstance);
+
         // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
         const size_t numValuesInKdTree = m_data->GetKdTree().GetNumDimensions();
         m_kdTreeQueryVector.Resize(numValuesInKdTree);
@@ -125,6 +128,10 @@ namespace EMotionFX::MotionMatching
                 m_cachedTrajectoryFeature->GetFacingAxisDir(),
                 m_trajectorySecsToTrack);
         }
+
+        m_poseWriter.Begin("E:\\PoseDatabase.csv", m_actorInstance);
+        m_queryVectorWriter.Begin("E:\\QueryVector.csv", &featureSchema);
+        m_bestMatchingFrameWriter.Begin("E:\\BestMatchingFrames.csv");
     }
 
     void MotionMatchingInstance::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay)
@@ -249,6 +256,8 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
+        Transform previousDelta = m_motionExtractionDelta;
+
         // Blend the motion extraction deltas.
         // Note: Make sure to update the previous as well as the current/target motion instances.
         if (m_blendWeight >= 1.0f - AZ::Constants::FloatEpsilon)
@@ -266,6 +275,14 @@ namespace EMotionFX::MotionMatching
         {
             m_prevMotionInstance->ExtractMotion(m_motionExtractionDelta);
         }
+
+        //AZ_Printf("Motion Matching", "Trajectory delta: Pos=(%f, %f, %f), blendWeight = %f",
+        //    m_motionExtractionDelta.m_position.GetX(), m_motionExtractionDelta.m_position.GetY(), m_motionExtractionDelta.m_position.GetZ(), m_blendWeight);
+
+        ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushBlendWeight, m_blendWeight);
+
+        const float posDiff = (previousDelta.m_position - m_motionExtractionDelta.m_position).GetLength();
+        ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushMotionExtractionDistance, posDiff * 100.0f);
     }
 
     void MotionMatchingInstance::Output(Pose& outputPose)
@@ -320,6 +337,15 @@ namespace EMotionFX::MotionMatching
             }
             outputPose = m_blendSourcePose;
         }
+
+        AZ::Outcome<float> comp = m_lastPose.Compare(&outputPose);
+        if (comp.IsSuccess())
+        {
+            const float val = comp.GetValue();
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPoseCompareDistance, val);
+        }
+
+        m_lastPose.InitFromPose(&outputPose);
     }
 
     void MotionMatchingInstance::Update(float timePassedInSeconds,
@@ -427,9 +453,44 @@ namespace EMotionFX::MotionMatching
 
             const Frame& currentFrame = frameDatabase.GetFrame(currentFrameIndex);
             const Frame& lowestCostFrame = frameDatabase.GetFrame(lowestCostFrameIndex);
-            const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
+            
+            bool avoidJump = false;
+            {
+                const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
+
+                const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
+                if (sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.1f))
+                {
+                    avoidJump = true;
+                }
+
+                //if (sameMotion)
+                //{
+                //    const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
+
+                //    const float futureWindow = lowestCostSearchTimeInterval * 5.0f;
+                //    if (timeBetweenFrames > 0.0f && timeBetweenFrames > futureWindow)
+                //    {
+                //        avoidJump = true;
+                //    }
+
+                //    const float pastWindow = lowestCostSearchTimeInterval * 10.0f; // play at least 3 frames until looping back
+                //    if (timeBetweenFrames < 0.0f && AZ::Abs(timeBetweenFrames) > pastWindow)
+                //    {
+                //        avoidJump = true;
+                //    }
+                //}
+            }
+
+const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
+const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
+const bool sameLocation = sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.1f);
+
+            // OLD
+  /*          const bool sameMotion = (currentFrame.GetSourceMotion() == lowestCostFrame.GetSourceMotion());
             const float timeBetweenFrames = newMotionTime - lowestCostFrame.GetSampleTime();
-            const bool sameLocation = sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.1f);
+            const bool sameLocation = sameMotion && (AZ::GetAbs(timeBetweenFrames) < 0.1f);*/
+
 
             if (lowestCostFrameIndex != currentFrameIndex && !sameLocation)
             {
@@ -505,6 +566,9 @@ namespace EMotionFX::MotionMatching
             {
                 transformer->Transform(m_queryVector.GetData());
             }
+
+            m_queryVectorWriter.Write(&m_queryVector);
+            m_queryVectorWritten = true;
         }
 
         // 2. Broad-phase search using KD-tree
@@ -577,8 +641,18 @@ namespace EMotionFX::MotionMatching
                 frameCost += trajectoryFutureCost;
             }
 
+            bool isNearEnd = false;
+            //{
+            //    const Frame& frame = context.m_frameDatabase.GetFrame(frameIndex);
+            //    const float timeLeftInSecs = frame.GetSourceMotion()->GetDuration() - frame.GetSampleTime();
+            //    if (timeLeftInSecs < 1.0f)
+            //    {
+            //        isNearEnd = true;
+            //    }
+            //}
+
             // Track the minimum feature and frame costs.
-            if (frameCost < minCost)
+            if (frameCost < minCost && !isNearEnd)
             {
                 minCost = frameCost;
                 minCostFrameIndex = frameIndex;
@@ -623,6 +697,7 @@ namespace EMotionFX::MotionMatching
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
         }
 
+        m_bestMatchingFrameWriter.Write(minCostFrameIndex);
         return minCostFrameIndex;
     }
 } // namespace EMotionFX::MotionMatching
