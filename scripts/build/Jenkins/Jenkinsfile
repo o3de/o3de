@@ -25,10 +25,10 @@ EXTRAS_ORGANIZATION_NAME = 'o3de'
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
 
-// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
+// Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline parameter)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
 
-// The default build snapshot to be selected in the 'SNAPSHOT' pipeline paramater
+// The default build snapshot to be selected in the 'SNAPSHOT' pipeline parameter
 DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 
 // Branches with build snapshots as comma separated value string
@@ -310,7 +310,7 @@ def CheckoutRepo(boolean disableSubmodules = false, boolean extras = false) {
     }
 
     def the_dir = ENGINE_REPOSITORY_NAME
-    if (extras_repo){
+    if (extras_repo) {
         the_dir = EXTRAS_REPOSITORY_NAME
     }
 
@@ -382,10 +382,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         if(!fileExists('3rdParty')) {
             PlatformMkdir('3rdParty')
         }
+        CheckoutRepo(disableSubmodules, extras)
     }
-
-    CheckoutRepo(disableSubmodules, extras)
-
     dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
         // Get python
         if(env.IS_UNIX) {
