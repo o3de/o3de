@@ -370,7 +370,6 @@ namespace AZ::SceneAPI::Behaviors
             {
                 const auto thisNodeIndex = entry.first;
                 const auto meshNodeIndex = entry.second.m_meshIndex;
-                const auto propertyDataIndex = entry.second.m_propertyMapIndex;
 
                 Containers::SceneGraph::NodeIndex nodeIndexForEntityName;
                 nodeIndexForEntityName = meshNodeIndex.IsValid() ? meshNodeIndex : thisNodeIndex;
