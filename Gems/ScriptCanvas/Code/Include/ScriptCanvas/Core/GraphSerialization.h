@@ -40,6 +40,12 @@ namespace ScriptCanvas
         Yes,
     };
 
+    enum class LoadReferencedAssets
+    {
+        No,
+        Yes
+    };
+
     struct DeserializeResult
     {
         bool m_isSuccessful = false;
@@ -60,7 +66,8 @@ namespace ScriptCanvas
 
     DeserializeResult Deserialize
         ( AZStd::string_view source
-        , MakeInternalGraphEntitiesUnique makeUniqueEntities = MakeInternalGraphEntitiesUnique::Yes);
+        , MakeInternalGraphEntitiesUnique makeUniqueEntities = MakeInternalGraphEntitiesUnique::Yes
+        , LoadReferencedAssets loadReferencedAssets = LoadReferencedAssets::Yes);
 
     struct SerializationResult
     {

@@ -2393,7 +2393,12 @@ namespace ScriptCanvas
                 {
                     if (m_source.m_graphData->m_nodes.empty())
                     {
-                        AddError(AZ::EntityId(), nullptr, ScriptCanvas::ParseErrors::EmptyGraph);
+                        AddValidation(ValidationConstPtr
+                                ( aznew ParserValidation(AZ::EntityId{}
+                                , ValidationSeverity::Informative
+                                , ScriptCanvas::ParseErrors::EmptyGraph
+                                , ScriptCanvas::ParsingValidationIds::EmptyGraphCrc
+                                , ScriptCanvas::ParsingValidationIds::EmptyGraph)));
                     }
                     else
                     {

@@ -106,7 +106,8 @@ namespace ScriptCanvas
 
     DeserializeResult Deserialize
         ( AZStd::string_view source
-        , MakeInternalGraphEntitiesUnique makeUniqueEntities)
+        , MakeInternalGraphEntitiesUnique makeUniqueEntities
+        , LoadReferencedAssets loadReferencedAssets)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace GraphSerializationCpp;
@@ -187,8 +188,12 @@ namespace ScriptCanvas
         }
 
         graph->MarkOwnership(*result.m_graphDataPtr);
-        entity->Init();
-        entity->Activate();
+
+        if (loadReferencedAssets == LoadReferencedAssets::Yes)
+        {
+            entity->Init();
+            entity->Activate();
+        }
         // ...can be deprecated ECS management
 
         result.m_isSuccessful = true;
