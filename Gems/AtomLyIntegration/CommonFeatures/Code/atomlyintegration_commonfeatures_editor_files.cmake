@@ -26,10 +26,6 @@ set(FILES
     Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h

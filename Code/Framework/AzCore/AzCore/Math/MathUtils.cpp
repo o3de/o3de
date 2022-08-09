@@ -14,11 +14,15 @@ namespace AZ
 {
     Quaternion CreateRandomQuaternion(SimpleLcgRandom& rng)
     {
-        float u2 = rng.GetRandomFloat();
-        float u3 = rng.GetRandomFloat();
+        // Marsaglia, G., 1972. Choosing a point from the surface of a sphere. The Annals of Mathematical Statistics, 43(2), pp.645-646.
+        const float u0 = rng.GetRandomFloat();
+        const float u1 = rng.GetRandomFloat();
+        const float u2 = rng.GetRandomFloat();
         float x, y, z, w;
-        SinCos(Constants::TwoPi * u2, x, y);
-        SinCos(Constants::TwoPi * u3, z, w);
-        return Quaternion(x, y, z, w);
+        SinCos(Constants::TwoPi * u1, x, y);
+        SinCos(Constants::TwoPi * u2, z, w);
+        const float m0 = Sqrt(u0);
+        const float m1 = Sqrt(1 - u0);
+        return Quaternion(m0 * x, m0 * y, m1 * z, m1 * w);
     }
 } // namespace AZ

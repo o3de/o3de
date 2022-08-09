@@ -19,7 +19,7 @@ namespace AssetProcessor
     class BuilderDataItem
     {
     public:
-        enum class JobType
+        enum class TaskType
         {
             CreateJobs,
             ProcessJob,
@@ -28,29 +28,38 @@ namespace AssetProcessor
 
         enum class ItemType
         {
-            InvisibleRoot,
+            InvisibleRoot, // Items of this type serve as the root of the tree view. It will not be shown.
             Builder,
-            JobType,
+            TaskType,
             Entry,
             Max
         };
 
         BuilderDataItem(
             ItemType itemType, AZStd::string name, AZ::s64 jobCount, AZ::s64 totalDuration, AZStd::weak_ptr<BuilderDataItem> parent);
-        int ChildCount() const;
-        const char* GetName() const;
+
+        //! Metric getters
+        const AZStd::string& GetName() const;
         AZ::s64 GetJobCount() const;
         AZ::s64 GetTotalDuration() const;
+        ItemType GetItemType() const;
+
+        //! methods querying the tree structure
+        int ChildCount() const;
         AZStd::shared_ptr<BuilderDataItem> GetChild(int row) const;
         AZStd::weak_ptr<BuilderDataItem> GetParent() const;
         //! Returns this item's row number in its parent's children list.
         int GetRow() const; 
-        //! This method is only called on InvisibleRoot: set the passed-in builder as the only child.
-        bool SetBuilderChild(AZStd::shared_ptr<BuilderDataItem> builder);
-        //! This method is only called on Builder: create JobType children.
-        bool InitializeBuilder(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer);
+
+        //! methods that adds children to this item
+        //! This method is only called on InvisibleRoot: set itemToBeInserted as a child, and update m_childNameToIndex.
+        //! itemToBeInserted can only be of ItemType::InvisibleRoot or ItemType::Builder. Returns the inserted item.
+        AZStd::shared_ptr<BuilderDataItem> InsertChild(AZStd::shared_ptr<BuilderDataItem>&& itemToBeInserted);
+        //! This method is only called on Builder: create TaskType children. Returns whether the insertion succeeds.
+        bool InsertTaskTypesAsChildren(AZStd::weak_ptr<BuilderDataItem> builderWeakPointer);
+        //! This method is only called on Builder: inserts the entry as a child of entryTaskType in the tree. Returns the inserted item.
         AZStd::shared_ptr<BuilderDataItem> UpdateOrInsertEntry(
-            JobType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
+            TaskType entryTaskType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration);
     private:
         void UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff);
 

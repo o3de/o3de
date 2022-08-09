@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
+#include <QBitmap>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
@@ -46,7 +47,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
-        action->setCheckable(true);
+        action->setCheckable(false);
         action->setIcon(QIcon(QString(button->m_icon.c_str())));
 
         if (!action)
@@ -135,6 +136,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
             QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
+
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
         }
@@ -156,5 +158,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         m_activeButtonId = buttonId;
+    }
+
+    void ViewportUiSwitcher::SetButtonTooltip(const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        // get the action corresponding to the buttonId
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            // update the tooltip
+            auto action = actionEntry->second;
+            action->setToolTip(QString((tooltip).c_str()));
+        }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal

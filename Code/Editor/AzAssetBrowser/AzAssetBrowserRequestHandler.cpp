@@ -429,34 +429,38 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             if (calledFromAssetBrowser)
             {
                 // Add Rename option
-                menu->addAction(
-                        QObject::tr("Rename asset"),
-                        [treeView]()
-                        {
-                            treeView->RenameEntry();
-                        })
-                    ->setShortcut(Qt::Key_F2);
+                QAction* action = menu->addAction(
+                    QObject::tr("Rename asset"),
+                    [treeView]()
+                    {
+                        treeView->RenameEntry();
+                    });
+                action->setShortcut(Qt::Key_F2);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             }
         }
 
         if (calledFromAssetBrowser)
         {
             // Add Delete option
-            menu->addAction(
-                    QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
-                    [treeView]()
-                    {
-                        treeView->DeleteEntries();
-                    })
-                ->setShortcut(QKeySequence::Delete);
+            QAction* action = menu->addAction(
+                QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
+                [treeView]()
+                {
+                    treeView->DeleteEntries();
+                });
+            action->setShortcut(QKeySequence::Delete);
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
             // Add Duplicate option
-            menu->addAction(
-                    QObject::tr("Duplicate asset"),
-                    [treeView]()
-                    {
-                        treeView->DuplicateEntries();
-                    })
-                ->setShortcut(QKeySequence("Ctrl+D"));
+            action = menu->addAction(
+                QObject::tr("Duplicate asset"),
+                [treeView]()
+                {
+                    treeView->DuplicateEntries();
+                });
+            action->setShortcut(QKeySequence("Ctrl+D"));
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
         }
     }
     break;

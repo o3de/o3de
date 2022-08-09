@@ -43,6 +43,7 @@ namespace AzToolsFramework
         bool IsExpanded() const;
 
         // QLayout overrides
+        void invalidate() override;
         QSize sizeHint() const override;
         QSize minimumSize() const override;
         void setGeometry(const QRect& rect) override;
@@ -59,7 +60,13 @@ namespace AzToolsFramework
         bool m_showExpander = false;
         bool m_expanded = true;
         QCheckBox* m_expanderWidget = nullptr;
+
+    private:
+        // These cached sizes must be mutable since they are set inside of an overidden const function
+        mutable QSize m_cachedLayoutSize;
+        mutable QSize m_cachedMinLayoutSize;
     };
+
     class DPERowWidget : public QWidget
     {
         Q_OBJECT

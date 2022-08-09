@@ -28,7 +28,7 @@ import azlmbr.prefab as prefab
 from editor_python_test_tools.editor_entity_utils import EditorEntity
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.wait_utils import PrefabWaiter
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 
 
 def get_prefab_file_path(prefab_path):

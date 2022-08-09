@@ -122,7 +122,10 @@ namespace ScriptCanvas
         return AZ::Success(result);
     }
 
-    FileLoadResult LoadFromFile(AZStd::string_view path, MakeInternalGraphEntitiesUnique makeEntityIdsUnique)
+    FileLoadResult LoadFromFile
+        ( AZStd::string_view path
+        , MakeInternalGraphEntitiesUnique makeEntityIdsUnique
+        , LoadReferencedAssets loadReferencedAssets)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -137,7 +140,7 @@ namespace ScriptCanvas
         }
 
         const auto& asString = fileStringOutcome.GetValue();
-        result.m_deserializeResult = Deserialize(asString, makeEntityIdsUnique);
+        result.m_deserializeResult = Deserialize(asString, makeEntityIdsUnique, loadReferencedAssets);
         result.m_isSuccess = result.m_deserializeResult;
 
         result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);

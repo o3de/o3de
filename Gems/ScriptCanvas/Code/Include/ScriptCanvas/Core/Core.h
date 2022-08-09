@@ -358,6 +358,11 @@ namespace ScriptCanvas
 
         static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
+        static SourceHandle FromRelativePathAndScenFolder
+            ( AZStd::string_view relativePath
+            , AZStd::string_view scanFolder
+            , const AZ::Uuid& sourceId);
+
         static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
 
         SourceHandle();

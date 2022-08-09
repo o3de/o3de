@@ -47,9 +47,6 @@ namespace AtomToolsFramework
         result.Combine(ContinueLoadingFromJsonObjectField(
             &dynamicNodeSlotConfig->m_supportedDataTypes, azrtti_typeid<decltype(dynamicNodeSlotConfig->m_supportedDataTypes)>(),
             inputValue, "supportedDataTypes", context));
-        result.Combine(ContinueLoadingFromJsonObjectField(
-            &dynamicNodeSlotConfig->m_settings, azrtti_typeid<decltype(dynamicNodeSlotConfig->m_settings)>(), inputValue, "settings",
-            context));
 
         auto serializedSlotValue = inputValue.FindMember("defaultValue");
         if (serializedSlotValue != inputValue.MemberEnd())
@@ -80,6 +77,10 @@ namespace AtomToolsFramework
                 dynamicNodeSlotConfig->m_defaultValue = slotValue;
             }
         }
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &dynamicNodeSlotConfig->m_settings, azrtti_typeid<decltype(dynamicNodeSlotConfig->m_settings)>(), inputValue, "settings",
+            context));
 
         return context.Report(
             result,
@@ -145,16 +146,6 @@ namespace AtomToolsFramework
                 outputValue, "supportedDataTypes", currentMember, defaultMember, azrtti_typeid<decltype(*currentMember)>(), context));
         }
         {
-            AZ::ScopedContextPath subPath(context, "settings");
-            const DynamicNodeSettingsMap* currentMember = &dynamicNodeSlotConfig->m_settings;
-            const DynamicNodeSettingsMap* defaultMember =
-                defaultDynamicNodeSlotConfigInstance ? &defaultDynamicNodeSlotConfigInstance->m_settings : nullptr;
-
-            result.Combine(ContinueStoringToJsonObjectField(
-                outputValue, "settings", currentMember, defaultMember, azrtti_typeid<decltype(*currentMember)>(), context));
-        }
-
-        {
             AZ::ScopedContextPath subPath(context, "defaultValue");
             if (!dynamicNodeSlotConfig->m_defaultValue.empty())
             {
@@ -184,6 +175,15 @@ namespace AtomToolsFramework
                     outputValue.AddMember("defaultValue", outputPropertyValue, context.GetJsonAllocator());
                 }
             }
+        }
+        {
+            AZ::ScopedContextPath subPath(context, "settings");
+            const DynamicNodeSettingsMap* currentMember = &dynamicNodeSlotConfig->m_settings;
+            const DynamicNodeSettingsMap* defaultMember =
+                defaultDynamicNodeSlotConfigInstance ? &defaultDynamicNodeSlotConfigInstance->m_settings : nullptr;
+
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue, "settings", currentMember, defaultMember, azrtti_typeid<decltype(*currentMember)>(), context));
         }
 
         return context.Report(
