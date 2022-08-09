@@ -322,7 +322,8 @@ namespace GradientSignal
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorGradientBakerComponent, EditorComponentBase>()
-                ->Version(0)
+                ->Version(1)
+                ->Field("Previewer", &EditorGradientBakerComponent::m_previewer)
                 ->Field("Configuration", &EditorGradientBakerComponent::m_configuration)
                 ;
 
@@ -339,12 +340,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->UIElement(AZ_CRC_CE("GradientPreviewer"), "Previewer")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &EditorGradientBakerComponent::GetGradientEntityId)
-                    ->EndGroup()
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_previewer, "Previewer", "")
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientBakerComponent::m_configuration, "Configuration", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientBakerComponent::OnConfigurationChanged)
@@ -361,8 +357,6 @@ namespace GradientSignal
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<EditorGradientBakerComponent>()->RequestBus("GradientImageCreatorRequestBus");
-
             behaviorContext->EBus<GradientImageCreatorRequestBus>("GradientImageCreatorRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Gradient")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -381,7 +375,10 @@ namespace GradientSignal
                 ->VirtualProperty("OutputImagePath", "GetOutputImagePath", "SetOutputImagePath");
 
 
-            behaviorContext->Class<EditorGradientBakerComponent>()->RequestBus("GradientBakerRequestBus");
+            behaviorContext->Class<EditorGradientBakerComponent>()
+                ->RequestBus("GradientImageCreatorRequestBus")
+                ->RequestBus("GradientBakerRequestBus")
+                ;
 
             behaviorContext->EBus<GradientBakerRequestBus>("GradientBakerRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Gradient")
@@ -408,11 +405,7 @@ namespace GradientSignal
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
-        m_gradientEntityId = GetEntityId();
-
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
-        GradientPreviewContextRequestBus::Handler::BusConnect(GetEntityId());
 
         m_configuration.m_gradientSampler.m_ownerEntityId = GetEntityId();
 
@@ -428,7 +421,7 @@ namespace GradientSignal
         GradientBakerRequestBus::Handler::BusConnect(GetEntityId());
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
-        UpdatePreviewSettings();
+        m_previewer.Activate(GetEntityId(), m_configuration.m_inputBounds);
 
         // If we have a valid output image path set and the other criteria for baking
         // are met but the image doesn't exist, then bake it when we activate our component.
@@ -454,8 +447,7 @@ namespace GradientSignal
 
         m_dependencyMonitor.Reset();
 
-        // If the preview shouldn't be active, use an invalid entityId
-        m_gradientEntityId = AZ::EntityId();
+        m_previewer.Deactivate();
 
         // If we had a bake job running, delete it before deactivating
         // This delete will cancel the job and block waiting for it to complete
@@ -466,8 +458,6 @@ namespace GradientSignal
             m_bakeImageJob = nullptr;
         }
 
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
-        GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
@@ -477,32 +467,6 @@ namespace GradientSignal
     {
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-    }
-
-    void EditorGradientBakerComponent::UpdatePreviewSettings() const
-    {
-        // Trigger an update just for our specific preview (this means there was a preview-specific change, not an actual configuration
-        // change)
-        GradientSignal::GradientPreviewRequestBus::Event(m_gradientEntityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
-    }
-
-    AzToolsFramework::EntityIdList EditorGradientBakerComponent::CancelPreviewRendering() const
-    {
-        AzToolsFramework::EntityIdList entityIds;
-        AZ::EBusAggregateResults<AZ::EntityId> canceledPreviews;
-        GradientSignal::GradientPreviewRequestBus::BroadcastResult(
-            canceledPreviews, &GradientSignal::GradientPreviewRequestBus::Events::CancelRefresh);
-
-        // Gather up the EntityIds for any previews that were in progress when we canceled them
-        for (auto entityId : canceledPreviews.values)
-        {
-            if (entityId.IsValid())
-            {
-                entityIds.push_back(entityId);
-            }
-        }
-
-        return entityIds;
     }
 
     void EditorGradientBakerComponent::SetupDependencyMonitor()
@@ -542,7 +506,7 @@ namespace GradientSignal
             AZ::IO::SystemFile::Delete(fullPathIO.c_str());
         }
 
-        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), m_configuration.m_inputBounds);
+        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, m_previewer.GetPreviewBounds(), m_configuration.m_inputBounds);
         m_bakeImageJob->Start();
 
         // Force a refresh now so the bake button gets disabled
@@ -554,26 +518,6 @@ namespace GradientSignal
     {
         return m_configuration.m_outputImagePath.empty() || !m_configuration.m_gradientSampler.m_gradientId.IsValid() ||
             !m_configuration.m_inputBounds.IsValid() || m_bakeImageJob;
-    }
-
-    AZ::EntityId EditorGradientBakerComponent::GetPreviewEntity() const
-    {
-        // Our preview entity will always be ourself since we want to preview
-        // exactly what's going to be in the baked image.
-        return GetEntityId();
-    }
-
-    AZ::Aabb EditorGradientBakerComponent::GetPreviewBounds() const
-    {
-        AZ::Aabb bounds = AZ::Aabb::CreateNull();
-
-        if (m_configuration.m_inputBounds.IsValid())
-        {
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                bounds, m_configuration.m_inputBounds, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        }
-
-        return bounds;
     }
 
     void EditorGradientBakerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -609,11 +553,6 @@ namespace GradientSignal
             // activating the component and the output image doesn't exist
             StartBakeImageJob();
         }
-    }
-
-    AZ::EntityId EditorGradientBakerComponent::GetGradientEntityId() const
-    {
-        return m_gradientEntityId;
     }
 
     float EditorGradientBakerComponent::GetValue(const GradientSampleParams& sampleParams) const
@@ -679,20 +618,10 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
-    void EditorGradientBakerComponent::OnSelected()
-    {
-        UpdatePreviewSettings();
-    }
-
-    void EditorGradientBakerComponent::OnDeselected()
-    {
-        UpdatePreviewSettings();
-    }
-
     void EditorGradientBakerComponent::OnConfigurationChanged()
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
-        auto entityIds = CancelPreviewRendering();
+        auto entityIds = m_previewer.CancelPreviewRendering();
 
         // Re-setup the dependency monitor when the configuration changes because the gradient sampler
         // could've changed

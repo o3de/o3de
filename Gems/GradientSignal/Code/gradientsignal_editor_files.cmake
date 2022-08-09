@@ -15,6 +15,7 @@ set(FILES
     Include/GradientSignal/Editor/EditorGradientPainterComponent.h
     Include/GradientSignal/Editor/EditorGradientPreviewRenderer.h
     Include/GradientSignal/Editor/EditorGradientTypeIds.h
+    Include/GradientSignal/Editor/GradientPreviewer.h
     Source/UI/GradientPreviewDataWidget.cpp
     Source/UI/GradientPreviewDataWidget.h
     Source/UI/GradientPreviewWidget.cpp
@@ -59,4 +60,5 @@ set(FILES
     Source/Editor/EditorSurfaceSlopeGradientComponent.h
     Source/Editor/EditorThresholdGradientComponent.cpp
     Source/Editor/EditorThresholdGradientComponent.h
+    Source/Editor/GradientPreviewer.cpp
 )

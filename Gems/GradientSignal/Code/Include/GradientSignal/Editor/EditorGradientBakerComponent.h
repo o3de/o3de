@@ -15,15 +15,13 @@
 #include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/std/parallel/mutex.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
-#include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/GradientSampler.h>
 
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
@@ -78,11 +76,9 @@ namespace GradientSignal
 
     class EditorGradientBakerComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , private AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private GradientRequestBus::Handler
         , private GradientBakerRequestBus::Handler
         , private GradientImageCreatorRequestBus::Handler
-        , private GradientPreviewContextRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
         , private AZ::TickBus::Handler
     {
@@ -128,24 +124,10 @@ namespace GradientSignal
         static constexpr const char* const s_helpUrl = "";
 
     protected:
-        //! AzToolsFramework::EntitySelectionEvents overrides ...
-        void OnSelected() override;
-        void OnDeselected() override;
-
-        //! GradientPreviewContextRequestBus overrides ...
-        AZ::EntityId GetPreviewEntity() const override;
-        AZ::Aabb GetPreviewBounds() const override;
-
         //! AZ::TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         void OnConfigurationChanged();
-
-        // This is used by the preview so we can pass an invalid entity Id if our component is disabled
-        AZ::EntityId GetGradientEntityId() const;
-
-        void UpdatePreviewSettings() const;
-        AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
         void SetupDependencyMonitor();
 
@@ -153,8 +135,8 @@ namespace GradientSignal
         bool IsBakeDisabled() const;
 
     private:
+        GradientPreviewer m_previewer;
         GradientBakerConfig m_configuration;
-        AZ::EntityId m_gradientEntityId;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         BakeImageJob* m_bakeImageJob = nullptr;
     };

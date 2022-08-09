@@ -69,6 +69,7 @@ namespace GradientSignal
         {
             serializeContext->Class<EditorGradientPainterComponent, EditorComponentBase>()
                 ->Version(0)
+                ->Field("Previewer", &EditorGradientPainterComponent::m_previewer)
                 ->Field("Configuration", &EditorGradientPainterComponent::m_configuration)
                 ;
 
@@ -85,12 +86,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
-                    ->UIElement(AZ_CRC_CE("GradientPreviewer"), "Previewer")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &EditorGradientPainterComponent::GetGradientEntityId)
-                    ->EndGroup()
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientPainterComponent::m_previewer, "Preview", "")
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorGradientPainterComponent::m_configuration, "Configuration", "")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientPainterComponent::OnConfigurationChanged)
@@ -126,18 +122,14 @@ namespace GradientSignal
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
-        m_gradientEntityId = GetEntityId();
-
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(GetEntityId());
-        GradientPreviewContextRequestBus::Handler::BusConnect(GetEntityId());
 
         // Setup the dependency monitor and listen for gradient requests
         SetupDependencyMonitor();
 
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
-        UpdatePreviewSettings();
+        m_previewer.Activate(GetEntityId(), m_configuration.m_inputBounds);
     }
 
     void EditorGradientPainterComponent::Deactivate()
@@ -145,15 +137,12 @@ namespace GradientSignal
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
 
+        m_previewer.Deactivate();
+
         GradientImageCreatorRequestBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
 
-        // If the preview shouldn't be active, use an invalid entityId
-        m_gradientEntityId = AZ::EntityId();
-
-        AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
-        GradientPreviewContextRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
@@ -163,32 +152,6 @@ namespace GradientSignal
     {
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-    }
-
-    void EditorGradientPainterComponent::UpdatePreviewSettings() const
-    {
-        // Trigger an update just for our specific preview (this means there was a preview-specific change, not an actual configuration
-        // change)
-        GradientSignal::GradientPreviewRequestBus::Event(m_gradientEntityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
-    }
-
-    AzToolsFramework::EntityIdList EditorGradientPainterComponent::CancelPreviewRendering() const
-    {
-        AzToolsFramework::EntityIdList entityIds;
-        AZ::EBusAggregateResults<AZ::EntityId> canceledPreviews;
-        GradientSignal::GradientPreviewRequestBus::BroadcastResult(
-            canceledPreviews, &GradientSignal::GradientPreviewRequestBus::Events::CancelRefresh);
-
-        // Gather up the EntityIds for any previews that were in progress when we canceled them
-        for (auto entityId : canceledPreviews.values)
-        {
-            if (entityId.IsValid())
-            {
-                entityIds.push_back(entityId);
-            }
-        }
-
-        return entityIds;
     }
 
     void EditorGradientPainterComponent::SetupDependencyMonitor()
@@ -201,31 +164,6 @@ namespace GradientSignal
         // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
         // before listening for gradient queries.
         GradientRequestBus::Handler::BusConnect(GetEntityId());
-    }
-
-    AZ::EntityId EditorGradientPainterComponent::GetPreviewEntity() const
-    {
-        // Our preview entity will always be ourself since we want to preview
-        // exactly what's going to be in the baked image.
-        return GetEntityId();
-    }
-
-    AZ::Aabb EditorGradientPainterComponent::GetPreviewBounds() const
-    {
-        AZ::Aabb bounds = AZ::Aabb::CreateNull();
-
-        if (m_configuration.m_inputBounds.IsValid())
-        {
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                bounds, m_configuration.m_inputBounds, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-        }
-
-        return bounds;
-    }
-
-    AZ::EntityId EditorGradientPainterComponent::GetGradientEntityId() const
-    {
-        return m_gradientEntityId;
     }
 
     float EditorGradientPainterComponent::GetValue([[maybe_unused]] const GradientSampleParams& sampleParams) const
@@ -291,20 +229,10 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
-    void EditorGradientPainterComponent::OnSelected()
-    {
-        UpdatePreviewSettings();
-    }
-
-    void EditorGradientPainterComponent::OnDeselected()
-    {
-        UpdatePreviewSettings();
-    }
-
     void EditorGradientPainterComponent::OnConfigurationChanged()
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
-        auto entityIds = CancelPreviewRendering();
+        auto entityIds = m_previewer.CancelPreviewRendering();
 
         // Re-setup the dependency monitor when the configuration changes because the gradient sampler
         // could've changed
