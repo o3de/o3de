@@ -60,7 +60,6 @@ namespace ScriptCanvas
     static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
-    constexpr const char* k_ExecutionStateAzTypeIdString = "{0D1E4B9D-1A2C-4B9D-8364-052255BC691F}";
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 

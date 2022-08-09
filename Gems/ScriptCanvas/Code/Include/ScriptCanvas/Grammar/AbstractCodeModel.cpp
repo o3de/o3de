@@ -2579,8 +2579,9 @@ namespace ScriptCanvas
             if (auto functionNode = azrtti_cast<const Nodes::Core::FunctionCallNode*>(&node))
             {
                 Nodes::Core::FunctionCallNodeCompareConfig config;
+                const auto result = functionNode->IsOutOfDate(config, m_source.m_assetId.m_guid);
 
-                if (functionNode->IsOutOfDate(config))
+                if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::Yes)
                 {
                     AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));

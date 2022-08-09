@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Transform.h>
 
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #include "DatumBus.h"
 
