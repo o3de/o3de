@@ -96,6 +96,7 @@ namespace AtomImGuiTools
         {
             m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
         }
+        m_imguiMaterialDetails.Tick();
     }
 
     void AtomImGuiToolsSystemComponent::OnImGuiMainMenuUpdate()
@@ -110,9 +111,27 @@ namespace AtomImGuiTools
                     AZ::RHI::FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics, m_showTransientAttachmentProfiler);
             }
             ImGui::MenuItem("Shader Metrics", "", &m_showShaderMetrics);
+            if (ImGui::MenuItem("Material Shader Details", "", &m_showMaterialDetails))
+            {
+                if (m_showMaterialDetails)
+                {
+                    m_imguiMaterialDetails.OpenDialog();
+                }
+                else
+                {
+                    m_imguiMaterialDetails.CloseDialog();
+                }
+            }
             ImGui::EndMenu();
         }
     }
+    
+    void AtomImGuiToolsSystemComponent::ShowMaterialShaderDetails(AZ::Data::Instance<AZ::RPI::Material> material)
+    {
+        m_imguiMaterialDetails.SetMaterial(material);
+        m_imguiMaterialDetails.OpenDialog();
+    }
+
 #endif
 
     void AtomImGuiToolsSystemComponent::OnCryEditorInitialized()

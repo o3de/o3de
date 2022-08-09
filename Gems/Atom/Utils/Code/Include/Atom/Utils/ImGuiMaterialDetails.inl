@@ -25,6 +25,11 @@ namespace AZ::Render
     {
         m_dialogIsOpen = true;
     }
+    
+    inline void ImGuiMaterialDetails::CloseDialog()
+    {
+        m_dialogIsOpen = false;
+    }
 
     inline void ImGuiMaterialDetails::Tick()
     {

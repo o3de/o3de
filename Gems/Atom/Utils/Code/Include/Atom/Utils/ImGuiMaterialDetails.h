@@ -29,6 +29,7 @@ namespace AZ
         public:
             void SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material);
             void OpenDialog();
+            void CloseDialog();
             void Tick();
 
         private:

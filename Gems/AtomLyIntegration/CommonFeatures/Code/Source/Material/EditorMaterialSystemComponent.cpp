@@ -12,9 +12,9 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h>
-#include <AtomToolsFramework/Shader/ShaderDetailsWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -191,10 +191,13 @@ namespace AZ
         }
         
         void EditorMaterialSystemComponent::OpenMaterialShaderDetails(
-            const AZ::EntityId& /*entityId*/,
-            const AZ::Render::MaterialAssignmentId& /*materialAssignmentId*/) 
+            const AZ::EntityId& entityId,
+            const AZ::Render::MaterialAssignmentId& materialAssignmentId) 
         {
-            // TODO
+            MaterialAssignmentMap assignments;
+            MaterialComponentRequestBus::EventResult(assignments, entityId, &MaterialComponentRequests::GetMaterialMap);
+
+            AtomImGuiTools::AtomImGuiToolsBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetails, assignments[materialAssignmentId].m_materialInstance);
         }
 
         void EditorMaterialSystemComponent::RenderMaterialPreview(
@@ -386,15 +389,6 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
-            
-            AzToolsFramework::ViewPaneOptions materialDetails;
-            materialDetails.canHaveMultipleInstances = true;
-            materialDetails.preferedDockingArea = Qt::NoDockWidgetArea;
-            materialDetails.paneRect = QRect(50, 50, 700, 700);
-            materialDetails.showInMenu = false;
-            materialDetails.showOnToolsToolbar = false;
-            AzToolsFramework::RegisterViewPane<AZ::Render::ShaderDetailsWidget>(
-                "Material Shader Details", LyViewPane::CategoryTools, materialDetails);
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(

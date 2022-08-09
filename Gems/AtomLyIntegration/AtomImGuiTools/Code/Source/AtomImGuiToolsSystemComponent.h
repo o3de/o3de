@@ -19,7 +19,9 @@
 #include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiPassTree.h>
 #include <Atom/Utils/ImGuiShaderMetrics.h>
+#include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiTransientAttachmentProfiler.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
 #endif
 
 namespace AtomImGuiTools
@@ -28,6 +30,7 @@ namespace AtomImGuiTools
         : public AZ::Component
 #if defined(IMGUI_ENABLED)
         , public ImGui::ImGuiUpdateListenerBus::Handler
+        , public AtomImGuiToolsBus::Handler
 #endif
         , public CrySystemEventBus::Handler
     {
@@ -49,6 +52,9 @@ namespace AtomImGuiTools
         // ImGuiUpdateListenerBus overrides...
         void OnImGuiUpdate() override;
         void OnImGuiMainMenuUpdate() override;
+
+        // AtomImGuiToolsBus::Handler overrides...
+        void ShowMaterialShaderDetails(AZ::Data::Instance<AZ::RPI::Material> material) override;
 #endif
 
         // CrySystemEventBus overrides...
@@ -68,6 +74,9 @@ namespace AtomImGuiTools
 
         AZ::Render::ImGuiShaderMetrics m_imguiShaderMetrics;
         bool m_showShaderMetrics = false;
+
+        AZ::Render::ImGuiMaterialDetails m_imguiMaterialDetails;
+        bool m_showMaterialDetails = false;
 #endif
     };
 

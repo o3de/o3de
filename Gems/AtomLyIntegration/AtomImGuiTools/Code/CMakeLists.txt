@@ -7,6 +7,20 @@
 #
 
 ly_add_target(
+    NAME AtomImGuiTools.Public HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        atomimguitools_public_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+    BUILD_DEPENDENCIES
+        INTERFACE
+            Gem::Atom_RPI.Public
+            AZ::AzCore
+)
+
+ly_add_target(
     NAME AtomImGuiTools.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
@@ -19,6 +33,7 @@ ly_add_target(
             AZ::AzCore
             Gem::ImguiAtom.Static
             Gem::Atom_Utils.Static
+            Gem::AtomImGuiTools.Public
 )
 
 ly_add_target(
