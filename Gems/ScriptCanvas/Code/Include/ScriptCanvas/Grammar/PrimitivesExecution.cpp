@@ -35,7 +35,7 @@ namespace ScriptCanvas
 
         void ExecutionTree::AddInput(const ExecutionInput& input)
         {
-            if (!RefersToSelfEntityId() && IsInputSelf(input))
+            if (!RefersToSelfEntityId() && IsSelfInput(input))
             {
                 MarkRefersToSelfEntityId();
             }
@@ -50,6 +50,11 @@ namespace ScriptCanvas
 
         void ExecutionTree::AddReturnValue(const Slot* slot, ReturnValueConstPtr returnValue)
         {
+            if (!RefersToSelfEntityId() && IsSelfReturnValue(returnValue))
+            {
+                MarkRefersToSelfEntityId();
+            }
+
             m_returnValues.emplace_back(slot, returnValue);
         }
 
