@@ -190,14 +190,13 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                    commandList->Submit(dispatchItem);
+                    commandList->Submit(dispatchItem, index++);
                 }
 
                 // column irradiance
@@ -206,14 +205,13 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                    commandList->Submit(dispatchItem);
+                    commandList->Submit(dispatchItem, index++);
                 }
 
                 // row distance
@@ -222,14 +220,13 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                    commandList->Submit(dispatchItem);
+                    commandList->Submit(dispatchItem, index++);
                 }
 
                 // column distance
@@ -238,14 +235,13 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
-                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                    commandList->Submit(dispatchItem);
+                    commandList->Submit(dispatchItem, index++);
                 }
             }
         }
