@@ -6,9 +6,10 @@
  *
  */
 
+#include <AzCore/Component/TransformBus.h>
+#include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 
 namespace GradientSignal
 {
@@ -18,7 +19,11 @@ namespace GradientSignal
         {
             serializeContext->Class<GradientPreviewer>()
                 ->Version(0)
-                ;
+                ->Field("BoundsEntity", &GradientPreviewer::m_boundsEntityId)
+                ->Field("PreviewCenter", &GradientPreviewer::m_previewCenter)
+                ->Field("PreviewExtents", &GradientPreviewer::m_previewExtents)
+                ->Field("ConstrainToShape", &GradientPreviewer::m_constrainToShape)
+            ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
@@ -26,20 +31,44 @@ namespace GradientSignal
                     ->Class<GradientPreviewer>("Previewer", "")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+
                     ->UIElement(AZ_CRC_CE("GradientPreviewer"), "Previewer")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ_CRC_CE("GradientEntity"), &GradientPreviewer::GetGradientEntityId)
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ_CRC_CE("GradientEntity"), &GradientPreviewer::GetGradientEntityId)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Preview Settings")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
+                    ->DataElement(0, &GradientPreviewer::m_boundsEntityId, "Pin Preview to Shape", "The entity whose shape represents the bounds to render the gradient preview")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::PreviewSettingsAndSettingsVisibilityChanged)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
+                    ->DataElement(0, &GradientPreviewer::m_previewCenter, "Preview Position", "Center of the preview bounds")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewPositionVisibility)
+                    ->DataElement(0, &GradientPreviewer::m_previewExtents, "Preview Size", "Size of the preview bounds")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSizeVisibility)
+                    ->DataElement(0, &GradientPreviewer::m_constrainToShape, "Constrain to Shape", "If checked, only renders the parts of the gradient inside the component's shape and not its entire bounding box")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewConstrainToShapeVisibility)
                     ->EndGroup()
                     ;
             }
         }
     }
 
-    void GradientPreviewer::Activate(AZ::EntityId ownerEntityId, AZ::EntityId boundsEntityId)
+    void GradientPreviewer::Activate(AZ::EntityId ownerEntityId)
     {
         m_ownerEntityId = ownerEntityId;
-        m_boundsEntityId = boundsEntityId;
+
+        if (!m_boundsEntityId.IsValid())
+        {
+            // Default our preview entity to this entity
+            m_boundsEntityId = m_ownerEntityId;
+
+            // TODO: what to do with this, if anything?
+            //SetDirty();
+        }
+
 
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(ownerEntityId);
         GradientPreviewContextRequestBus::Handler::BusConnect(ownerEntityId);
@@ -57,6 +86,59 @@ namespace GradientSignal
         GradientPreviewContextRequestBus::Handler::BusDisconnect();
     }
 
+    bool GradientPreviewer::GetPreviewSettingsVisible() const
+    {
+        return m_previewSettingsVisible;
+    }
+
+    void GradientPreviewer::SetPreviewSettingsVisible(bool visible)
+    {
+        m_previewSettingsVisible = visible;
+    }
+
+    AZ::u32 GradientPreviewer::GetPreviewSettingsVisibility() const
+    {
+        return m_previewSettingsVisible ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+
+    AZ::u32 GradientPreviewer::GetPreviewPositionVisibility() const
+    {
+        return (m_boundsEntityId.IsValid() || !m_previewSettingsVisible)
+            ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+    }
+
+    AZ::u32 GradientPreviewer::GetPreviewSizeVisibility() const
+    {
+        if (m_boundsEntityId.IsValid())
+        {
+            AZ::Aabb bounds = AZ::Aabb::CreateNull();
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(
+                bounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+            if (bounds.IsValid())
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+        }
+        return m_previewSettingsVisible ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::u32 GradientPreviewer::GetPreviewConstrainToShapeVisibility() const
+    {
+        return (m_boundsEntityId.IsValid() && m_previewSettingsVisible)
+            ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::u32 GradientPreviewer::PreviewSettingsAndSettingsVisibilityChanged() const
+    {
+        UpdatePreviewSettings();
+
+        // We've changed the visibility of one or more properties, so refresh the entire component.
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+
+
     void GradientPreviewer::OnSelected()
     {
         UpdatePreviewSettings();
@@ -72,17 +154,35 @@ namespace GradientSignal
         return m_boundsEntityId;
     }
 
+    void GradientPreviewer::SetPreviewEntity(AZ::EntityId boundsEntityId)
+    {
+        m_boundsEntityId = boundsEntityId;
+    }
+
     AZ::Aabb GradientPreviewer::GetPreviewBounds() const
     {
-        AZ::Aabb bounds = AZ::Aabb::CreateNull();
+        AZ::Vector3 position = m_previewCenter;
 
+        // if a shape entity was supplied, attempt to use its shape bounds or position
         if (m_boundsEntityId.IsValid())
         {
+            AZ::Aabb bounds = AZ::Aabb::CreateNull();
             LmbrCentral::ShapeComponentRequestsBus::EventResult(
                 bounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+            if (bounds.IsValid())
+            {
+                return bounds;
+            }
+
+            AZ::TransformBus::EventResult(position, m_boundsEntityId, &AZ::TransformBus::Events::GetWorldTranslation);
         }
 
-        return bounds;
+        return AZ::Aabb::CreateCenterHalfExtents(position, m_previewExtents / 2.0f);
+    }
+
+    bool GradientPreviewer::GetConstrainToShape() const
+    {
+        return m_constrainToShape && m_boundsEntityId.IsValid();
     }
 
     AZ::EntityId GradientPreviewer::GetGradientEntityId() const
@@ -97,7 +197,7 @@ namespace GradientSignal
         GradientSignal::GradientPreviewRequestBus::Event(m_ownerEntityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
     }
 
-    AzToolsFramework::EntityIdList GradientPreviewer::CancelPreviewRendering() const
+    AzToolsFramework::EntityIdList GradientPreviewer::CancelPreviewRendering()
     {
         AzToolsFramework::EntityIdList entityIds;
         AZ::EBusAggregateResults<AZ::EntityId> canceledPreviews;

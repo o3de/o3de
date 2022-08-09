@@ -421,7 +421,9 @@ namespace GradientSignal
         GradientBakerRequestBus::Handler::BusConnect(GetEntityId());
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
-        m_previewer.Activate(GetEntityId(), m_configuration.m_inputBounds);
+        m_previewer.SetPreviewSettingsVisible(false);
+        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.Activate(GetEntityId());
 
         // If we have a valid output image path set and the other criteria for baking
         // are met but the image doesn't exist, then bake it when we activate our component.

@@ -129,7 +129,9 @@ namespace GradientSignal
 
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
-        m_previewer.Activate(GetEntityId(), m_configuration.m_inputBounds);
+        m_previewer.SetPreviewSettingsVisible(false);
+        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.Activate(GetEntityId());
     }
 
     void EditorGradientPainterComponent::Deactivate()
