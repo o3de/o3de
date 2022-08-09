@@ -777,14 +777,19 @@ namespace AzQtComponents
             return QSize();
         }
 
+        QSize size = style->baseStyle()->sizeFromContents(type, tabOption, contentsSize, widget);
+        size.setHeight(config.tabHeight);
+
         auto tabWidget = qobject_cast<TabWidget*>(tabBar->parent());
         if (!tabWidget)
         {
-            return {};
+            size.setWidth(size.width() + config.textRightPadding);
+            if (!tabBar->tabsClosable())
+            {
+                size -= QSize(config.closeButtonSize + 1, 0);
+            }
+            return size;
         }
-
-        QSize size = style->baseStyle()->sizeFromContents(type, tabOption, contentsSize, widget);
-        size.setHeight(config.tabHeight);
 
         int availableWidth = tabWidget->width() - tabWidget->count();
         if (tabWidget->isActionToolBarVisible())
@@ -831,13 +836,8 @@ namespace AzQtComponents
         }
         else
         {
-           // QStyleOptionTab selectedOptions;
-            //tabBar->initStyleOption(&selectedOptions, tabBar->currentIndex());
-           // QSize selectedSize = sizeFromContents(style, type, &selectedOptions, contentsSize, tabBar, config, false);
             availableWidth -= minButtonWidth;
-            //selectedSize.width();
             int w = availableWidth / (tabBar->count() - 1);
-            w *= 2;
             size.setWidth(w);
         }
 
