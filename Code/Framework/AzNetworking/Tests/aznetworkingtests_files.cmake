@@ -17,9 +17,9 @@ set(FILES
     DataStructures/TimeoutQueueTests.cpp
     Serialization/DeltaSerializerTests.cpp
     Serialization/HashSerializerTests.cpp
-    Serialization/NetworkInputSerializerTests.cpp
-    Serialization/NetworkOutputSerializerTests.cpp
+    Serialization/NetworkInputOutputSerializerTests.cpp
     Serialization/TrackChangedSerializerTests.cpp
+    Serialization/TypeValidatingSerializerTests.cpp
     TcpTransport/TcpTransportTests.cpp
     UdpTransport/UdpTransportTests.cpp
     Utilities/CidrAddressTests.cpp
