@@ -55,7 +55,7 @@ namespace AzToolsFramework
 
         AZStd::erase_if(
             m_menuItems[sortKey],
-            [&, actionIdentifier](const MenuItem& item)
+            [&](const MenuItem& item)
             {
                 removed = true;
                 return item.m_identifier == actionIdentifier;
@@ -64,7 +64,7 @@ namespace AzToolsFramework
 
         if (removed)
         {
-            m_subMenuToSortKeyMap.erase(actionIdentifier);
+            m_actionToSortKeyMap.erase(actionIdentifier);
         }
     }
 
@@ -81,7 +81,7 @@ namespace AzToolsFramework
 
         AZStd::erase_if(
             m_menuItems[sortKey],
-            [&, menuIdentifier](const MenuItem& item)
+            [&](const MenuItem& item)
             {
                 removed = true;
                 return item.m_identifier == menuIdentifier;
