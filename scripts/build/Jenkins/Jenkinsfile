@@ -294,7 +294,7 @@ def CheckoutEngineRepo(boolean disableSubmodules = false, boolean setEnvCommit =
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
-            userRemoteConfigs: [projectAndUrl.value]
+            userRemoteConfigs: [GetEngineRemoteConfig(scm.userRemoteConfigs)]
         ]
     }
 
