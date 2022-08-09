@@ -8,10 +8,11 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <Artifact/Static/TestImpactTargetDescriptor.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/tuple.h>
 
 namespace TestImpact
 {
@@ -21,7 +22,7 @@ namespace TestImpact
     //! @param autogenInputExtentsionIncludes The list of file extensions to include for autogen input sources.
     //! @param autogenMatcher The regex pattern used to match autogen input filenames with output filenames.
     //! @return The constructed build target artifact.
-    NativeTargetDescriptor NativeTargetDescriptorFactory(
+    TargetDescriptor TargetDescriptorFactory(
         const AZStd::string& buildTargetData,
         const AZStd::vector<AZStd::string>& staticSourceExtentsionIncludes,
         const AZStd::vector<AZStd::string>& autogenInputExtentsionIncludes,

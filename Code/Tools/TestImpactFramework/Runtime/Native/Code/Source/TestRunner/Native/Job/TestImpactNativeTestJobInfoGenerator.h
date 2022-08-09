@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
+
 #include <Target/Native/TestImpactNativeTestTarget.h>
-#include <TestEngine/Common/Job/TestImpactTestJobInfoGenerator.h>
+#include <TestRunner/Common/Job/TestImpactTestJobInfoGenerator.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
@@ -27,10 +29,10 @@ namespace TestImpact
         //! @param artifactDir Path to the transient directory where test artifacts are produced.
         //! @param testRunnerBinary Path to the binary responsible for launching test targets that have the TestRunner launch method.
         NativeTestEnumerationJobInfoGenerator(
-            RepoPath targetBinaryDir,
-            RepoPath cacheDir,
-            RepoPath artifactDir,
-            RepoPath testRunnerBinary);
+            const RepoPath& targetBinaryDir,
+            const RepoPath& cacheDir,
+            const ArtifactDir& artifactDir,
+            const RepoPath& testRunnerBinary);
 
         //! Generates the information for a test enumeration job.
         //! @param testTarget The test target to generate the job information for.
@@ -49,7 +51,7 @@ namespace TestImpact
     private:
         RepoPath m_targetBinaryDir;
         RepoPath m_cacheDir;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
         RepoPath m_testRunnerBinary;
 
         NativeTestEnumerator::JobInfo::CachePolicy m_cachePolicy;
@@ -64,7 +66,8 @@ namespace TestImpact
         //! @param targetBinaryDir Path to where the test target binaries are found.
         //! @param artifactDir Path to the transient directory where test artifacts are produced.
         //! @param testRunnerBinary Path to the binary responsible for launching test targets that have the TestRunner launch method.
-        NativeRegularTestRunJobInfoGenerator(RepoPath sourceDir, RepoPath targetBinaryDir, RepoPath artifactDir, RepoPath testRunnerBinary);
+        NativeRegularTestRunJobInfoGenerator(
+            const RepoPath& sourceDir, const RepoPath& targetBinaryDir, const ArtifactDir& artifactDir, const RepoPath& testRunnerBinary);
 
         //! Generates the information for a test run job.
         //! @param testTarget The test target to generate the job information for.
@@ -75,7 +78,7 @@ namespace TestImpact
     private:
         RepoPath m_sourceDir;
         RepoPath m_targetBinaryDir;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
         RepoPath m_testRunnerBinary;
     };
 
@@ -90,11 +93,11 @@ namespace TestImpact
         //! @param testRunnerBinary Path to the binary responsible for launching test targets that have the TestRunner launch method.
         //! @param instrumentBinary Path to the binary responsible for launching test targets with test coverage instrumentation.
         NativeInstrumentedTestRunJobInfoGenerator(
-            RepoPath sourceDir,
-            RepoPath targetBinaryDir,
-            RepoPath artifactDir,
-            RepoPath testRunnerBinary,
-            RepoPath instrumentBinary,
+            const RepoPath& sourceDir,
+            const RepoPath& targetBinaryDir,
+            const ArtifactDir& artifactDir,
+            const RepoPath& testRunnerBinary,
+            const RepoPath& instrumentBinary,
             CoverageLevel coverageLevel = CoverageLevel::Source);
 
         //! Generates the information for a test run job.
@@ -114,7 +117,7 @@ namespace TestImpact
         RepoPath m_sourceDir;
         RepoPath m_targetBinaryDir;
         RepoPath m_cacheDir;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
         RepoPath m_testRunnerBinary;
         RepoPath m_instrumentBinary;
         CoverageLevel m_coverageLevel;
