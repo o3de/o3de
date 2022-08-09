@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
@@ -44,7 +45,7 @@ namespace TestImpact
             const RepoPath& sourceDir,
             const RepoPath& targetBinaryDir,
             const RepoPath& cacheDir,
-            const RepoPath& artifactDir,
+            const ArtifactDir& artifactDir,
             const RepoPath& testRunnerBinary,
             const RepoPath& instrumentBinary,
             size_t maxConcurrentRuns);
@@ -79,7 +80,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>>
+        [[nodiscard]] TestEngineRegularRunResult<NativeTestTarget>
         RegularRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -99,7 +100,7 @@ namespace TestImpact
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
         //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
-        [[nodiscard]] AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>>
+        [[nodiscard]] TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>
         InstrumentedRun(
             const AZStd::vector<const NativeTestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
@@ -120,6 +121,6 @@ namespace TestImpact
         AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunner> m_instrumentedTestRunner;
         AZStd::unique_ptr<NativeRegularTestRunner> m_testRunner;
-        RepoPath m_artifactDir;
+        ArtifactDir m_artifactDir;
     };
 } // namespace TestImpact
