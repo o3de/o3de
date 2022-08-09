@@ -104,8 +104,7 @@ namespace AzToolsFramework
             AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
         }
 
-        void PrefabUndoEntityUpdate::Capture(
-            const PrefabDomValue& initialState, const PrefabDomValue& endState, const AZ::EntityId& entityId)
+        void PrefabUndoEntityUpdate::Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entityId)
         {
             //get the entity alias for future undo/redo
             auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
