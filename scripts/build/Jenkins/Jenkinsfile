@@ -19,10 +19,10 @@ EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_ORGANIZATION_NAME = 'o3de'
-ENGINE_URL = 'https://github.com/o3de/o3de.git'
+ENGINE_URL = 'https://github.com/aws-lumberyard-dev/o3de.git'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_ORGANIZATION_NAME = 'o3de'
-EXTRAS_URL = 'https://github.com/o3de/o3de-extras.git'
+EXTRAS_URL = 'https://github.com/aws-lumberyard-dev/o3de-extras.git'
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
