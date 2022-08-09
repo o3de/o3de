@@ -133,22 +133,22 @@ namespace O3DE::ProjectManager
 
         // Download Progress
         QWidget* m_downloadProgress = new QWidget(this);
-        m_downloadProgessBar = new QProgressBar(this);
-        m_downloadProgessBar->setVisible(false);
+        m_progessBar = new QProgressBar(this);
+        m_progessBar->setVisible(false);
 
         QVBoxLayout* downloadProgressLayout = new QVBoxLayout();
         QHBoxLayout* downloadProgressTextLayout = new QHBoxLayout();
 
-        QLabel* downloadMessageLabel = new QLabel(tr("Downloading Project"), this);
-        downloadMessageLabel->setAlignment(Qt::AlignCenter);
-        downloadMessageLabel->setVisible(false);
-        verticalCenterLayout->addWidget(downloadMessageLabel);
+        m_downloadMessageLabel = new QLabel(tr("Downloading Project"), this);
+        m_downloadMessageLabel->setAlignment(Qt::AlignCenter);
+        m_downloadMessageLabel->setVisible(false);
+        verticalCenterLayout->addWidget(m_downloadMessageLabel);
 
         downloadProgressTextLayout->addSpacing(25);
-        m_downloadProgressMessageLabel = new QLabel(tr("0%"), this);
-        m_downloadProgressMessageLabel->setAlignment(Qt::AlignRight);
-        m_downloadProgressMessageLabel->setVisible(false);
-        downloadProgressTextLayout->addWidget(m_downloadProgressMessageLabel);
+        m_progressMessageLabel = new QLabel(tr("0%"), this);
+        m_progressMessageLabel->setAlignment(Qt::AlignRight);
+        m_progressMessageLabel->setVisible(false);
+        downloadProgressTextLayout->addWidget(m_progressMessageLabel);
         downloadProgressTextLayout->addSpacing(25);
         verticalCenterLayout->addLayout(downloadProgressTextLayout);
 
@@ -156,7 +156,7 @@ namespace O3DE::ProjectManager
         downloadProgressLayout->addLayout(progressbarLayout);
         m_downloadProgress->setLayout(downloadProgressLayout);
         progressbarLayout->addSpacing(20);
-        progressbarLayout->addWidget(m_downloadProgessBar);
+        progressbarLayout->addWidget(m_progessBar);
         progressbarLayout->addSpacing(20);
         verticalCenterLayout->addWidget(m_downloadProgress);
 
@@ -263,12 +263,17 @@ namespace O3DE::ProjectManager
 
     QProgressBar* LabelButton::GetProgressBar()
     {
-        return m_downloadProgessBar;
+        return m_progessBar;
     }
 
     QLabel* LabelButton::GetProgressPercentage()
     {
-        return m_downloadProgressMessageLabel;
+        return m_progressMessageLabel;
+    }
+
+    QLabel* LabelButton::GetDownloadMessageLabel()
+    {
+        return m_downloadMessageLabel;
     }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
@@ -383,6 +388,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetState(enum ProjectButtonState state)
     {
         m_currentState = state;
+        ResetButtonWidgets();
 
         switch (state)
         {
@@ -428,11 +434,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowLaunchingState()
     {
-        HideContextualLabelButtonWidgets();
-
-        SetLaunchingEnabled(false);
-        SetProjectBuilding(false);
-
         // Hide button in-case it is still showing
         m_projectImageLabel->GetOpenEditorButton()->hide();
 
@@ -472,25 +473,17 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowNotDownloadedState()
     {
-        HideContextualLabelButtonWidgets();
-        SetLaunchingEnabled(false);
-        SetProjectBuilding(false);
-
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
     }
 
     void ProjectButton::ShowDownloadingState()
     {
-        HideContextualLabelButtonWidgets();
-        SetLaunchingEnabled(false);
-        SetProjectBuilding(false);
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-        m_projectImageLabel->GetDarkenOverlay()->setVisible(true);
-
-        // Show progress bar
+        m_projectImageLabel->GetDownloadMessageLabel()->setVisible(true);
+        m_projectImageLabel->GetProgressPercentage()->setVisible(true);
         m_projectImageLabel->GetProgressBar()->setVisible(true);
     }
 
@@ -567,6 +560,17 @@ namespace O3DE::ProjectManager
         connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMakeGUI(m_projectInfo); });
 
         projectActionButton->setMenu(menu);
+    }
+
+    void ProjectButton::ResetButtonWidgets()
+    {
+        HideContextualLabelButtonWidgets();
+        SetLaunchingEnabled(false);
+        SetProjectBuilding(false);
+
+        m_projectImageLabel->GetDownloadMessageLabel()->setVisible(false);
+        m_projectImageLabel->GetProgressPercentage()->setVisible(false);
+        m_projectImageLabel->GetProgressBar()->setVisible(false);
     }
 
     // Only setting message without setting submessage will hide submessage
