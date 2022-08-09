@@ -56,7 +56,7 @@ namespace AZ
                 uint32_t tileCount = 0;
                 for (const auto& heapTilesGroups : m_heapTiles)
                 {
-                    for (const auto& heapTiles: heapTilesGroups.second)
+                    for (const HeapTiles& heapTiles: heapTilesGroups.second)
                     {
                         tileCount += heapTiles.m_totalTileCount;
                     }

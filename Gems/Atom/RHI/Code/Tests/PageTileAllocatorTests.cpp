@@ -28,18 +28,22 @@ namespace UnitTest
         {
             AZStd::set<RHI::PageTileSpan, RHI::PageTileSpan::Compare> sortedTilesList;
 
-            for (const auto& tiles : tilesList)
+            for (const RHI::PageTileSpan& tiles : tilesList)
             {
                 sortedTilesList.insert(tiles);
             }
 
             uint32_t lastTile = 0;
-            for (const auto& tiles1 : sortedTilesList)
+            for (const RHI::PageTileSpan& tiles1 : sortedTilesList)
             {
-                uint32_t newlastTile = tiles1.m_offset + tiles1.m_tileCount;
-                if (lastTile < newlastTile)
+                if(lastTile > tiles1.m_offset)
                 {
-                    lastTile = newlastTile;
+                    return false;
+                }
+                uint32_t newLastTile = tiles1.m_offset + tiles1.m_tileCount;
+                if (lastTile < newLastTile)
+                {
+                    lastTile = newLastTile;
                 }
                 else
                 {
@@ -64,7 +68,7 @@ namespace UnitTest
     {
         RHI::PageTileAllocator allocator;
         
-        uint32_t pageTileCount = 256;
+        const uint32_t pageTileCount = 256;
         allocator.Init(pageTileCount);
 
         ASSERT_TRUE(allocator.GetFreeTileCount() == pageTileCount);
@@ -94,7 +98,7 @@ namespace UnitTest
     {
         RHI::PageTileAllocator allocator;
         
-        uint32_t pageTileCount = 20;
+        const uint32_t pageTileCount = 20;
         allocator.Init(pageTileCount);
 
         uint32_t allocated = 0;
@@ -120,12 +124,13 @@ namespace UnitTest
     {
         RHI::PageTileAllocator allocator;
         
-        uint32_t pageTileCount = 30;
+        const uint32_t pageTileCount = 30;
         allocator.Init(pageTileCount);
 
         uint32_t allocationCount = 100;
 
-        AZ::SimpleLcgRandom random(AZStd::GetTimeNowMicroSecond());
+        // always uses the same seed to get consistent test data
+        AZ::SimpleLcgRandom random(1234);
 
         AZStd::vector<RHI::PageTileSpan> allocatedTilesList;
 
@@ -152,7 +157,7 @@ namespace UnitTest
                 {
                     uint32_t position = (random.GetRandom() % allocatedTilesList.size());
                     tilesToBeRemoved.push_back(allocatedTilesList[position]);
-                    allocatedTilesList.erase(allocatedTilesList.begin() +position);
+                    allocatedTilesList.erase(allocatedTilesList.begin() + position);
                 }
                 allocator.DeAllocate(tilesToBeRemoved);
 

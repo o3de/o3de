@@ -264,8 +264,6 @@ namespace AZ
 
                 m_copyQueue->QueueCommand([=](void* commandQueue)
                 {
-                    AZ_TracePrintf("async upload", "Expand image %s from mip %d to %d\n", cachedRequest.m_image->GetName().GetCStr(), endMip, startMip);
-                
                     AZ_PROFILE_SCOPE(RHI, "Upload Image");
                     ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                     FramePacket* framePacket = BeginFramePacket();

@@ -20,15 +20,15 @@ namespace AZ
             m_freeList.push_back(PageTileSpan(0, totalTileCount));
         }
 
-        AZStd::vector<PageTileSpan> PageTileAllocator::TryAllocate(uint32_t tileCount, uint32_t& allocatedTileCount)
+        AZStd::vector<PageTileSpan> PageTileAllocator::TryAllocate(uint32_t tileCountRequested, uint32_t& tileCountAllocated)
         {
-            allocatedTileCount = 0;
+            tileCountAllocated = 0;
             AZStd::vector<PageTileSpan> allocatedTiles;
 
             // Allocate desired amount of tiles or until the free list is empty
-            while (allocatedTileCount < tileCount && m_freeList.size())
+            while (tileCountAllocated < tileCountRequested && m_freeList.size())
             {
-                uint32_t tileNeeded = tileCount-allocatedTileCount;
+                uint32_t tileNeeded = tileCountRequested - tileCountAllocated;
                 PageTileSpan tiles = m_freeList.back();
                 
                 if (tiles.m_tileCount <= tileNeeded)
@@ -40,17 +40,17 @@ namespace AZ
                 else
                 {
                     // the current node has more tiles than needed.
-                    // split existing one. Keep the first half in the free list and use the second half for allocation 
+                    // split existing one. Keep the first part in the free list and use the second part for allocation 
                     tiles.m_offset = tiles.m_offset + tiles.m_tileCount - tileNeeded;
                     tiles.m_tileCount = tileNeeded;
                     m_freeList.back().m_tileCount -= tileNeeded;
                 }
 
-                allocatedTileCount += tiles.m_tileCount;
+                tileCountAllocated += tiles.m_tileCount;
                 allocatedTiles.push_back(tiles);
             }
 
-            m_allocatedTileCount += allocatedTileCount; 
+            m_allocatedTileCount += tileCountAllocated; 
             AZ_Assert(m_allocatedTileCount <= m_totalTileCount, "Implementation error: tile count error.");
 
             return allocatedTiles;
@@ -76,7 +76,7 @@ namespace AZ
             if (pos > 0)
             {
                 // check if the tile can merge with the element in front of 
-                auto before = m_freeList.at(pos - 1);
+                PageTileSpan before = m_freeList.at(pos - 1);
                 if (before.m_offset + before.m_tileCount == tiles.m_offset)
                 {
                     tiles.m_offset = before.m_offset;
@@ -91,7 +91,7 @@ namespace AZ
             if (pos < aznumeric_cast<int64_t>(m_freeList.size()))
             {
                 // check if the tile can merge with the following element
-                auto after = m_freeList.at(pos);
+                PageTileSpan after = m_freeList.at(pos);
                 if (tiles.m_offset + tiles.m_tileCount == after.m_offset)
                 {
                     tiles.m_tileCount += after.m_tileCount;

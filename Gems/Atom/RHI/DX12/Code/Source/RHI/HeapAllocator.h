@@ -42,7 +42,7 @@ namespace AZ
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::DX12::ResourceTypeFlags)
 
-        //! Factory which is responding to allocate heap pages from gpu
+        //! Factory which is responsible for allocating heap pages from the GPU
         class HeapFactory
             : public RHI::ObjectFactoryBase<Heap>
         {
@@ -53,7 +53,7 @@ namespace AZ
             {
                 Device* m_device = nullptr;
                 uint32_t m_pageSizeInBytes = 0;
-                ResourceTypeFlags m_resourceTypeFlags;
+                ResourceTypeFlags m_resourceTypeFlags = ResourceTypeFlags::Image;
                 RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 RHI::HostMemoryAccess m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 bool m_recycleOnCollect = false;    // we want to release the heap page when the tile allocator de-allocates it
@@ -73,7 +73,7 @@ namespace AZ
 
         private:
             Descriptor m_descriptor;
-            D3D12_HEAP_FLAGS m_heapFlags;
+            D3D12_HEAP_FLAGS m_heapFlags = D3D12_HEAP_FLAG_NONE;
             D3D12_HEAP_TYPE m_heapType;
         };
 

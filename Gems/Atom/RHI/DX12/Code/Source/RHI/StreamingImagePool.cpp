@@ -25,6 +25,7 @@ namespace AZ
         namespace
         {
             const static uint32_t TileSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+            const static uint32_t TileCountPerPage = 256;
         }
 
         // The StreamingImagePoolResolver adds streaming image transition barriers when scope starts
@@ -152,7 +153,7 @@ namespace AZ
                 heapPageAllocatorDesc.m_device = &device;
                 // Heap allocator updates total resident memory
                 heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &GetDeviceHeapMemoryUsage();};
-                heapPageAllocatorDesc.m_pageSizeInBytes = TileSizeInBytes * 256; // 16M per page, 256 tiles
+                heapPageAllocatorDesc.m_pageSizeInBytes = TileSizeInBytes * TileCountPerPage; // 16M per page, 256 tiles
                 heapPageAllocatorDesc.m_resourceTypeFlags = ResourceTypeFlags::Image; 
                 heapPageAllocatorDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 heapPageAllocatorDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
@@ -181,6 +182,8 @@ namespace AZ
         {
             if (m_enableTileResource)
             {
+                m_tileAllocator.DeAllocate(AZStd::vector<HeapTiles>{m_defaultTile});
+                m_defaultTile = HeapTiles{ };
                 m_tileAllocator.Shutdown();
             }
         }
@@ -192,7 +195,7 @@ namespace AZ
             request.m_sourceMemory = image.GetMemoryView().GetMemory();
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
 
-            AZ_Assert(image.m_heapTiles[subresourceIndex].size() == 0, "Stoping on an existing tile allocation. This will leak.");
+            AZ_Assert(image.m_heapTiles[subresourceIndex].size() == 0, "Stopping on an existing tile allocation. This will leak.");
 
             uint32_t totalTiles = request.m_sourceRegionSize.NumTiles;
             image.m_heapTiles[subresourceIndex] = m_tileAllocator.Allocate(totalTiles);
@@ -214,26 +217,31 @@ namespace AZ
                 return;
             }
 
-            // Need to skip some tiles if there are tiles from more than one heap used for the sub-resource
+            // If the allocated tiles are spread across multiple heaps, we need one TileMapRequest for each heap.
+            // In the TileMapRequest for the heap, it maps the tiles from the heap to a subset tiles of the subresource
+            // and set the unmapped subresource tiles as skip.
+            // Note: the mapped subset of tiles of the subresource will always be continues. So the skip range could only happen
+            // in the front part of subresource tiles or the back part of them. 
             bool needSkipRange = image.m_heapTiles[subresourceIndex].size() > 1;
 
             uint32_t tileOffsetStart = 0;
             // send a tile map request for each heap
-            for (auto& heapTiles : image.m_heapTiles[subresourceIndex])
+            for (const HeapTiles& heapTiles : image.m_heapTiles[subresourceIndex])
             {
-                size_t rangeCount = heapTiles.m_tilesList.size();
+                size_t rangeCount = heapTiles.m_tileSpanList.size();
                 uint32_t startRangeIndex = 0;
 
                 if (needSkipRange)
                 {
                     if (tileOffsetStart == 0 || tileOffsetStart + heapTiles.m_totalTileCount == totalTiles)
                     {
-                        // only need one range for the first heap or the last heap
+                        // For the first heap, one extra range will indicate the subsequent subresource tiles that are not mapped in that heap.
+                        // For the last heap, one extra range will indicate the preceding subresource tiles that are not mapped in that heap.
                         rangeCount += 1;
                     }
                     else
                     {
-                        // add one range before and one range after
+                        // For all other heaps, two extra ranges will indicate both the preceding and subsequent subresource tiles that are not mapped in that heap.
                         rangeCount += 2;
                     }
 
@@ -271,7 +279,7 @@ namespace AZ
                 }
 
                 uint32_t rangeIdx = startRangeIndex;
-                for (auto& tiles : heapTiles.m_tilesList)
+                for (const auto& tiles : heapTiles.m_tileSpanList)
                 {
                     request.m_rangeFlags[rangeIdx] = D3D12_TILE_RANGE_FLAG_NONE;
                     request.m_rangeStartOffsets[rangeIdx] = tiles.m_offset;
@@ -286,8 +294,8 @@ namespace AZ
 
         void StreamingImagePool::DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
-            auto& heapTiles = image.m_heapTiles[subresourceIndex];
-            AZ_Assert(heapTiles.size() > 0, "Attempting to map a tile to null when it's already null.");
+            const AZStd::vector<HeapTiles>& heapTilesList = image.m_heapTiles[subresourceIndex];
+            AZ_Assert(heapTilesList.size() > 0, "Attempting to map a tile to null when it's already null.");
 
             // map all the tiles to NULL
             CommandList::TileMapRequest request;
@@ -297,7 +305,7 @@ namespace AZ
             GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
 
             // deallocate tiles and update image's sub-resource info
-            m_tileAllocator.DeAllocate(heapTiles);
+            m_tileAllocator.DeAllocate(heapTilesList);
             image.m_heapTiles[subresourceIndex] = {};
 
             // Garbage collect the allocator immediately.
@@ -503,7 +511,7 @@ namespace AZ
             if (image.IsTiled())
             {
                 m_tileMutex.lock();
-                for (auto& heapTiles : image.m_heapTiles)
+                for (const auto& heapTiles : image.m_heapTiles)
                 {
                     m_tileAllocator.DeAllocate(heapTiles.second);
                 }

@@ -51,14 +51,18 @@ namespace AZ
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
 
-            //streaming images are either committed resource or using tiles from heap pages. So there are no fragmentation
+            //streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
-            // whether can use heap tiles for an image 
+            // Check if we can use heap tiles for an image 
             bool ShouldUseTileHeap(const RHI::ImageDescriptor& imageDescriptor) const;
 
+            // Allocate and map heap tiles for specified subresource of the image.
+            // The allocated heap tiles will be saved in the image
             void AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
+            // Deallocate and unmap heap tiles for for specified subresource of the image.
+            // The heap tiles info for the image surresource is cleared. 
             void DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
 
             // Standard mips each have their own set of tiles.
@@ -77,16 +81,17 @@ namespace AZ
             // mutex to protect tile allocation and de-allocation from any threads
             AZStd::mutex m_tileMutex;
 
-            // for allocate heap page
+            // for allocating heap pages
             HeapAllocator m_heapPageAllocator;
 
-            // for allocate tile from heap page
+            // for allocating tiles from heap pages
             TileAllocator m_tileAllocator;
 
-            // The default tile for null tiles.
-            // This is for resources when there are not enough of gpu memory
+            // The default tile for null tiles. The default tile is initialized in order to support images that have no tiles.
+            // This is for resources when there is not enough of gpu memory
             // from https://docs.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_tiled_resources_tier
-            // "GPU reads or writes to NULL mappings are undefined. Applications are encouraged to workaround this limitation by repeatedly mapping the same page to everywhere a NULL mapping would've been used."
+            // "GPU reads or writes to NULL mappings are undefined. Applications are encouraged to workaround this limitation by
+            // repeatedly mapping the same page to everywhere a NULL mapping would've been used."
             HeapTiles m_defaultTile;
         };
     }

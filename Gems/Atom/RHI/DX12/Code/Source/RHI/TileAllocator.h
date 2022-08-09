@@ -17,11 +17,14 @@ namespace AZ
 {
     namespace DX12
     {
-        // A list of tile groups in a heap
+        //! A list of tile groups in a heap
         struct HeapTiles
         {
+            //! The heap object which is evenly divided to multiple tiles
             RHI::Ptr<Heap> m_heap;
-            AZStd::vector<RHI::PageTileSpan> m_tilesList;
+            //! Multiple tile spans. Each tile span represents a continous number of tiles in the heap
+            AZStd::vector<RHI::PageTileSpan> m_tileSpanList;
+            //! The total amount tiles in the m_tileSpanList
             uint32_t m_totalTileCount = 0;
         };
 
@@ -60,10 +63,10 @@ namespace AZ
             //! reset the allocator to a state before initialization
             void Shutdown();
 
-            //! get total tiles count
+            //! get total number of tiles that could fit in the current set of allocated heaps
             uint32_t GetTotalTileCount() const;
             
-            //! get tiles are in use count
+            //! get the number of tiles currently in use
             uint32_t GetAllocatedTileCount() const;
 
             const Descriptor& GetDescriptor() const;
@@ -71,12 +74,12 @@ namespace AZ
             //! Debug only. Print tile allocation info
             void DebugPrintInfo(const char* opName) const;
 
-            //! Release free heap page to HeapAllocator and run garbage collect for HeapAllocator
-            //! It may release unused heap ages
+            //! Release free heap pages to HeapAllocator and run garbage collect for HeapAllocator
+            //! It may release unused heap pages
             void GarbageCollect();
 
         private:            
-            uint32_t AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output);
+            void AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output);
 
             Descriptor m_descriptor;
 

@@ -102,7 +102,7 @@ namespace AZ
             // here instead of marking the entire routine mutable.
             mutable float m_fragmentation{ 0 };
 
-            // Totle number of bytes allocated on the physical memory. This may not exceed the budget if it's non zero.
+            // Total number of bytes allocated on the physical memory. This may not exceed the budget if it's non zero.
             AZStd::atomic_size_t m_totalResidentInBytes{ 0 };
 
             // Number of bytes are used for resources or objects. This ususally tracks the sub-allocations out of the total resident.

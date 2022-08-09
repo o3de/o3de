@@ -28,7 +28,7 @@ namespace AZ
             m_tileCountPerPage = m_heapAllocator->GetPageSize()/descriptor.m_tileSizeInBytes;
         }
 
-        uint32_t TileAllocator::AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output)
+        void TileAllocator::AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output)
         {
             uint32_t allocatedTileCount = 0;
 
@@ -36,7 +36,7 @@ namespace AZ
             {
                 uint32_t neededTileCount = tileCount - allocatedTileCount;
                 auto freeListItr = m_freeList.begin();
-                auto heap = *freeListItr;
+                RHI::Ptr<Heap> heap = *freeListItr;
                 auto itr = m_pageContexts.find(heap);
 
                 if (itr != m_pageContexts.end())
@@ -56,10 +56,10 @@ namespace AZ
 
                     // add tiles to result
                     HeapTiles heapTiles;
-                    for (auto& tiles:tilesGroups)
+                    for (const RHI::PageTileSpan& tileSpan:tilesGroups)
                     {
-                        heapTiles.m_tilesList.push_back(tiles);
-                        heapTiles.m_totalTileCount += tiles.m_tileCount;
+                        heapTiles.m_tileSpanList.push_back(tileSpan);
+                        heapTiles.m_totalTileCount += tileSpan.m_tileCount;
                     }
                     heapTiles.m_heap = itr->first;
                     output.emplace_back(heapTiles);
@@ -78,8 +78,6 @@ namespace AZ
             
             RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
             heapMemoryUsage->m_usedResidentInBytes += tileCount * m_descriptor.m_tileSizeInBytes;
-
-            return allocatedTileCount;
         }
 
         AZStd::vector<HeapTiles> TileAllocator::Allocate(uint32_t tileCount)
@@ -90,7 +88,7 @@ namespace AZ
             uint32_t freeTileCount = m_totalTileCount - m_allocatedTileCount;
             if (freeTileCount < tileCount)
             {
-                uint32_t newPageCount = (tileCount - freeTileCount + m_tileCountPerPage - 1)/m_tileCountPerPage;
+                uint32_t newPageCount = AZ::DivideAndRoundUp(tileCount - freeTileCount, m_tileCountPerPage);
 
                 for (uint32_t pageIdx = 0; pageIdx < newPageCount; pageIdx++)
                 {
@@ -113,9 +111,7 @@ namespace AZ
             }
 
             // allocate from free list
-            uint32_t allocatedTileCount = 0;
-            allocatedTileCount = AllocateFromFreeList(tileCount, tilesList);
-            AZ_Assert(allocatedTileCount == tileCount, "Implementation error: heap page context is missing.");
+            AllocateFromFreeList(tileCount, tilesList);
 
             DebugPrintInfo("Allocate");
 
@@ -125,7 +121,7 @@ namespace AZ
         void TileAllocator::DeAllocate(const AZStd::vector<HeapTiles>& tilesGroups)
         {
             RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
-            for (auto& heapTiles : tilesGroups)
+            for (const auto& heapTiles : tilesGroups)
             {
                 auto itr = m_pageContexts.find(heapTiles.m_heap);
                 if (itr == m_pageContexts.end())
@@ -134,7 +130,7 @@ namespace AZ
                 }
                 else
                 {
-                    itr->second.DeAllocate(heapTiles.m_tilesList);
+                    itr->second.DeAllocate(heapTiles.m_tileSpanList);
                     AZ_Assert(itr->second.GetFreeTileCount() > 0, "De-allocate tiles from heap failed");
                     m_freeList.insert(itr->first);
 

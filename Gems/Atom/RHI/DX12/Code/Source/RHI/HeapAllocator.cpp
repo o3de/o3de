@@ -15,21 +15,23 @@ namespace AZ
     {
         void HeapFactory::Init(const Descriptor& descriptor)
         {
+            AZ_Assert(descriptor.m_getHeapMemoryUsageFunction, "You must supply a valid function for getting heap memory usage.");
+
             m_descriptor = descriptor;
 
-            // use image alignment (since it's compatible with alilgnments for buffer and constant buffer) for all the resource types
+            // use image alignment (since it's compatible with alignments for buffer and constant buffer) for all the resource types
             m_descriptor.m_pageSizeInBytes = RHI::AlignUp(m_descriptor.m_pageSizeInBytes, Alignment::Image);
 
             // deny buffers if resource type doesn't include buffer
             if ((descriptor.m_resourceTypeFlags & ResourceTypeFlags::Buffer) != ResourceTypeFlags::Buffer)
             {
-                m_heapFlags = D3D12_HEAP_FLAG_DENY_BUFFERS;
+                m_heapFlags |= D3D12_HEAP_FLAG_DENY_BUFFERS;
             }
 
             // deny textures if resource type doesn't include image
             if ((descriptor.m_resourceTypeFlags & ResourceTypeFlags::Image) != ResourceTypeFlags::Image)
             {
-                m_heapFlags = D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
+                m_heapFlags |= D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES;
             }
 
             // deny render target and depth stencil if resource type doesn't include render target
@@ -44,7 +46,6 @@ namespace AZ
 
         RHI::Ptr<Heap> HeapFactory::CreateObject()
         {
-
             AZ_PROFILE_SCOPE(RHI, "Create heap Page: size %dk", m_descriptor.m_pageSizeInBytes/1024);
 
             RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
@@ -76,9 +77,8 @@ namespace AZ
             heapMemoryUsage->Validate();
         }
 
-        bool HeapFactory::CollectObject(Heap& object)
+        bool HeapFactory::CollectObject([[maybe_unused]] Heap& object)
         {
-            (void)object;
             return m_descriptor.m_recycleOnCollect;
         }
 
