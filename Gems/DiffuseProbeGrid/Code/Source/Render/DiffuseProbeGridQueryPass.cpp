@@ -254,14 +254,13 @@ namespace AZ
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 RHI::DispatchItem dispatchItem;
-                dispatchItem.m_submitIndex = index;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGridFeatureProcessor->GetIrradianceQueryCount();
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = 1;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
-                commandList->Submit(dispatchItem);
+                commandList->Submit(dispatchItem, index);
             }
         }
 
