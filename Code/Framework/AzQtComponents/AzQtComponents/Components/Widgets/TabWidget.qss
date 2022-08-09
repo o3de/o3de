@@ -10,7 +10,7 @@
 QTabWidget,
 QTabBar
 {
-    background-color: #444444;
+    background-color: #ff0000;
 }
 
 QTabBar::tab
@@ -48,7 +48,7 @@ AzQtComponents--TabBar
 
 AzQtComponents--TabBar:tab
 {
-    border: 1px solid #111111;
+    border: 0 none;
     background-color: #333333;
 
     text-align: left;
@@ -82,7 +82,7 @@ AzQtComponents--TabBar:focus
 
 AzQtComponents--TabWidget.Secondary
 {
-    background-color: #444444;
+    background-color: #000000;
 }
 
 AzQtComponents--TabWidget.Secondary.Bordered
@@ -93,9 +93,6 @@ AzQtComponents--TabWidget.Secondary.Bordered
 AzQtComponents--TabWidget.Secondary:pane
 {
     border: 0 none;
-    border-top: 2px solid #2B2B2B;
-    padding: 3px;
-    padding-top: 0;
 }
 
 AzQtComponents--TabWidget.Secondary:tab-bar
@@ -117,12 +114,12 @@ AzQtComponents--TabBar.Secondary.Bordered
 
 AzQtComponents--TabBar.Secondary::tab
 {
-    background-color: #444444;
+    background-color: #111111;
     border: 0 none;
-    border-bottom: 3px solid #333333;
+    border-right: 1px solid #555555;
     text-align: center;
     padding: 7px 0 5px 14px;
-    color: #959595;
+    color: #CCCCCC;
 }
 
 AzQtComponents--TabBar.Secondary::close-button
@@ -130,21 +127,18 @@ AzQtComponents--TabBar.Secondary::close-button
     image: url(":/stylesheet/img/close_small.svg");
 }
 
-AzQtComponents--TabBar.Secondary::tab:hover
-{
-    background: rgba(255,255,255,0.15);
-    border-bottom: 3px solid #444444;
-    color: #FFFFFF;
-}
-
-AzQtComponents--TabBar.Secondary.Bordered::tab
-{
-    border-top: 1px solid #111111;
-    padding: 6px 0 6px 14px;
-}
-
 AzQtComponents--TabBar.Secondary::tab:selected
 {
-    border-bottom: 3px solid #008DE5;
+    background-color: #333333;
     color: #FFFFFF;
+}
+
+AzQtComponents--TabBar.Secondary::tab:pressed
+{
+    background-color: #444444
+}
+
+QToolButton#tabWidgetOverflowButton
+{
+    color: 0xff0000;
 }

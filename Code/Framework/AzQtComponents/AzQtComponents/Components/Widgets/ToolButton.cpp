@@ -16,6 +16,7 @@
 #include <QSettings>
 #include <QSize>
 #include <QStyleOptionToolButton>
+#include <QStylePainter>
 #include <QToolButton>
 #include <QtWidgets/private/qstylehelper_p.h>
 
@@ -30,6 +31,9 @@ ToolButton::Config ToolButton::loadConfig(QSettings& settings)
     ConfigHelpers::read<int>(settings, QStringLiteral("DefaultButtonMargin"), config.defaultButtonMargin);
     ConfigHelpers::read<int>(settings, QStringLiteral("MenuIndicatorWidth"), config.menuIndicatorWidth);
     ConfigHelpers::read<QColor>(settings, QStringLiteral("CheckedStateBackgroundColor"), config.checkedStateBackgroundColor);
+    ConfigHelpers::read<QColor>(settings, QStringLiteral("InactiveBackgroundColor"), config.inactiveBackgroundColor);
+    ConfigHelpers::read<QColor>(settings, QStringLiteral("HoverBackgroundColor"), config.hoverBackgroundColor);
+    ConfigHelpers::read<QColor>(settings, QStringLiteral("PressedBackgroundColor"), config.pressedBackgroundColor);
     ConfigHelpers::read<QString>(settings, QStringLiteral("MenuIndicatorIcon"), config.menuIndicatorIcon);
     ConfigHelpers::read<QSize>(settings, QStringLiteral("MenuIndicatorIconSize"), config.menuIndicatorIconSize);
 
@@ -41,14 +45,19 @@ ToolButton::Config ToolButton::defaultConfig()
     Config config;
 
     config.buttonIconSize = 16;
-    config.defaultButtonMargin = 1;
+    config.defaultButtonMargin = 0;
     config.menuIndicatorWidth = 10;
     config.checkedStateBackgroundColor = QStringLiteral("#1E70EB");
+    config.inactiveBackgroundColor = QStringLiteral("#111111");
+    config.hoverBackgroundColor = QStringLiteral("#111111");
+    config.pressedBackgroundColor = QStringLiteral("#444444");
     config.menuIndicatorIcon = QStringLiteral(":/stylesheet/img/UI20/menu-indicator.svg");
     config.menuIndicatorIconSize = QSize(6, 3);
 
     return config;
 }
+
+
 
 bool ToolButton::polish(Style* style, QWidget* widget, const ToolButton::Config& config)
 {
@@ -60,6 +69,32 @@ bool ToolButton::polish(Style* style, QWidget* widget, const ToolButton::Config&
         return true;
     }
     return false;
+}
+
+ToolButton::ToolButton(QWidget* parent)
+    : QToolButton(parent)
+{
+    QWidget* topLevelWindow = window();
+    if (topLevelWindow)
+    {
+        topLevelWindow->installEventFilter(this);
+    }
+
+    setFocusPolicy(Qt::ClickFocus);
+
+    connect(this, &ToolButton::pressed, this, &ToolButton::buttonPressed);
+    connect(this, &ToolButton::released, this, &ToolButton::buttonReleased);
+}
+
+void ToolButton::buttonPressed()
+{
+    isPressed = true;
+    this->repaint();
+}
+
+void ToolButton::buttonReleased()
+{
+    isPressed = false;
 }
 
 int ToolButton::buttonIconSize(const Style* style, const QStyleOption* option, const QWidget* widget, const Config& config)
@@ -178,9 +213,20 @@ QRect ToolButton::subControlRect(const Style* style, const QStyleOptionComplex* 
     return rect;
 }
 
-bool ToolButton::drawToolButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config)
+void ToolButton::paintEvent(QPaintEvent*)
 {
-    auto toolButton = qobject_cast<const QToolButton*>(widget);
+    QStylePainter p(this);
+
+    QStyleOptionToolButton option;
+    initStyleOption(&option);
+
+    p.drawComplexControl(QStyle::CC_ToolButton, option);
+}
+
+bool ToolButton::drawToolButton(
+    const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config)
+{
+    auto toolButton = qobject_cast<const ToolButton*>(widget);
     auto buttonOption = qstyleoption_cast<const QStyleOptionToolButton*>(option);
     if (!toolButton || !buttonOption)
     {
@@ -194,7 +240,12 @@ bool ToolButton::drawToolButton(const Style* style, const QStyleOptionComplex* o
 
     QStyleOptionToolButton label = *buttonOption;
 
-    if (buttonOption->state & QStyle::State_On)
+    if (toolButton->isPressed)
+    {
+        QBrush brush(config.pressedBackgroundColor);
+        painter->fillRect(buttonOption->rect, brush);
+    }
+    else if (buttonOption->state & QStyle::State_On)
     {
         painter->setPen(Qt::NoPen);
         painter->setBrush(config.checkedStateBackgroundColor);
@@ -202,15 +253,26 @@ bool ToolButton::drawToolButton(const Style* style, const QStyleOptionComplex* o
         const QRect highlightRect = buttonOption->rect;
         painter->drawRect(highlightRect);
     }
+    else if (buttonOption->state & QStyle::State_MouseOver)
+    {
+        QBrush brush(config.hoverBackgroundColor);
+        painter->fillRect(buttonOption->rect, brush);
+    }
+    else
+    {
+        QBrush brush(config.inactiveBackgroundColor);
+        painter->fillRect(buttonOption->rect, brush);
+    }
 
     label.rect = buttonRect;
     style->drawControl(QStyle::CE_ToolButtonLabel, &label, painter, widget);
-
+    
     if (buttonOption->features & QStyleOptionToolButton::HasMenu)
     {
         label.rect = menuRect;
         style->drawPrimitive(QStyle::PE_IndicatorArrowDown, &label, painter, widget);
     }
+    
 
     painter->restore();
 

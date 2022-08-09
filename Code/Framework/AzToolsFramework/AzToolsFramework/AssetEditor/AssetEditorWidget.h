@@ -13,6 +13,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 
 #include <QWidget>
+#include <QToolButton>
 #endif
 
 namespace AZ
@@ -124,6 +125,7 @@ namespace AzToolsFramework
         private:
             AssetEditorTab* MakeNewTab(const QString& name);
             AssetEditorTab* FindTabForAsset(const AZ::Data::AssetId& assetId) const;
+            void ShowAddAssetMenu(const QToolButton* menuButton);
 
             void PopulateRecentMenu();
 
@@ -158,6 +160,7 @@ namespace AzToolsFramework
             QAction* m_saveAllAssetsAction;
 
             QMenu* m_recentFileMenu;
+            QMenu* m_newAssetMenu = nullptr;
 
             unsigned int m_nextNewAssetIndex = 1;
 

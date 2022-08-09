@@ -42,6 +42,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzQtComponents/Components/Widgets/ToolButton.h>
 
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
@@ -58,6 +59,7 @@ AZ_POP_DISABLE_WARNING
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QVBoxLayout>
+#include <QToolButton>
 
 AZ_CVAR_EXTERNED(bool, ed_enableDPE);
 
@@ -133,6 +135,7 @@ namespace AzToolsFramework
             m_tabs->setContentsMargins(0, 0, 0, 0);
             m_tabs->setTabsClosable(true);
             m_tabs->setMovable(true);
+            m_tabs->setExpandTabsToFillTabBar(true);
             mainLayout->addWidget(m_tabs);
 
             connect(m_tabs, &QTabWidget::tabCloseRequested, this, &AssetEditorWidget::onTabCloseButtonPressed);
@@ -151,7 +154,7 @@ namespace AzToolsFramework
             QMenuBar* mainMenu = new QMenuBar();
             QMenu* fileMenu = mainMenu->addMenu(tr("&File"));
             // Add Create New Asset menu and populate it with all asset types that have GenericAssetHandler
-            QMenu* newAssetMenu = fileMenu->addMenu(tr("&New"));
+            m_newAssetMenu = fileMenu->addMenu(tr("&New"));
 
             for (const auto& assetType : m_genericAssetTypes)
             {
@@ -160,7 +163,7 @@ namespace AzToolsFramework
 
                 if (!assetTypeName.isEmpty())
                 {
-                    QAction* newAssetAction = newAssetMenu->addAction(assetTypeName);
+                    QAction* newAssetAction = m_newAssetMenu->addAction(assetTypeName);
                     connect(
                         newAssetAction,
                         &QAction::triggered,
@@ -170,6 +173,20 @@ namespace AzToolsFramework
                             CreateAsset(assetType);
                         });
                 }
+            }
+
+            AzQtComponents::ToolButton* addItemButton = m_tabs->getAddItemButton();
+            if (addItemButton)
+            {
+                addItemButton->setVisible(true);
+                QObject::connect(
+                    addItemButton,
+                    &QToolButton::clicked,
+                    this,
+                    [this, addItemButton]
+                    {
+                        ShowAddAssetMenu(addItemButton);
+                    });
             }
 
             QAction* openAssetAction = fileMenu->addAction("&Open");
@@ -740,6 +757,12 @@ namespace AzToolsFramework
                     m_recentFileMenu->setEnabled(true);
                 }
             }
+        }
+        
+        void AssetEditorWidget::ShowAddAssetMenu(const QToolButton* menuButton)
+        {
+            const auto position = menuButton->mapToGlobal(menuButton->geometry().bottomLeft());
+            m_newAssetMenu->exec(position);
         }
 
     } // namespace AssetEditor

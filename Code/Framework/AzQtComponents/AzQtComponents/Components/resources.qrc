@@ -513,6 +513,7 @@
 </qresource>
 <qresource prefix="/stylesheet">
     <file>img/UI20/add-16.svg</file>
+    <file>img/UI20/add-16-dull.svg</file>
     <file>img/UI20/browse-edit.svg</file>
     <file>img/UI20/browse-edit-select-files.svg</file>
     <file>img/UI20/combobox-arrow.svg</file>
@@ -520,6 +521,7 @@
     <file>img/UI20/delete-16.svg</file>
     <file>img/UI20/docking/tabs_icon.svg</file>
     <file>img/UI20/dropdown-button-arrow.svg</file>
+    <file>img/UI20/dropdown-button-arrow-dull.svg</file>
     <file>img/UI20/filter.svg</file>
     <file>img/UI20/lineedit-error.svg</file>
     <file>img/UI20/lineedit-close.svg</file>

@@ -390,7 +390,13 @@ namespace AzQtComponents
                     // text alignment if not creating a new member variable for QStyleOptionTab (or to subclass QStyleOptionTab) on Qt
                     // side. To avoid doing either, we set a new variable to be used from Style::drawItemText, with a scope limited to
                     // the drawing of this specific control element (the tab label).
-                    QScopedValueRollback<QVariant> rollbackTabBarTabLabel(m_drawItemTextAlignmentOverride, {(int)(Qt::AlignLeft | Qt::AlignVCenter)});
+
+                    int align = (int)(Qt::AlignLeft | Qt::AlignVCenter);
+                    if (hasClass(widget, SecondaryStyleClass))
+                    {
+                        align = (int)Qt::AlignCenter;
+                    }
+                    QScopedValueRollback<QVariant> rollbackTabBarTabLabel(m_drawItemTextAlignmentOverride, {align});
                     if (TabBar::drawTabBarTabLabel(this, option, painter, widget, m_data->tabWidgetConfig))
                     {
                         return;
@@ -777,7 +783,7 @@ namespace AzQtComponents
     {
         if (m_drawItemTextAlignmentOverride.isValid())
         {
-            alignment = m_drawItemTextAlignmentOverride.value<Qt::Alignment>();
+            alignment = m_drawItemTextAlignmentOverride.value<int>();
         }
         QProxyStyle::drawItemText(painter, rectangle, alignment, palette, enabled, text, textRole);
     }

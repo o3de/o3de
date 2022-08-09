@@ -7,9 +7,11 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
-
 #include <QProxyStyle>
+#include <QToolButton>
+#endif
 
 class QSettings;
 class QSize;
@@ -22,7 +24,10 @@ namespace AzQtComponents
 
     //! Class to handle styling and painting of QToolButton controls.
     class AZ_QT_COMPONENTS_API ToolButton
+        : public QToolButton
     {
+        Q_OBJECT
+
     public:
         //! Style configuration for the ToolButton class.
         struct Config
@@ -31,6 +36,9 @@ namespace AzQtComponents
             int defaultButtonMargin;                //!< Margin around ToolButton controls, in pixels. All directions get the same margin.
             int menuIndicatorWidth;                 //!< Width of the menu indicator arrow in pixels.
             QColor checkedStateBackgroundColor;     //!< Background color for checkable ToolButtons set to the checked state.
+            QColor inactiveBackgroundColor;         //!< Background color for ToolButtons that are not checked and are not in a hover state.
+            QColor hoverBackgroundColor;            //!< Background color for ToolButtons that are not checked but are in a hover state.
+            QColor pressedBackgroundColor;          //!< Background color for ToolButtons that are being pressed.
             QString menuIndicatorIcon;              //!< Path to the indicator icon. Svg images recommended.
             QSize menuIndicatorIconSize;            //!< Size of the indicator icon. Size must be proportional to the icon's ratio.
         };
@@ -42,8 +50,18 @@ namespace AzQtComponents
         //! Gets the default ToolButton style configuration.
         static Config defaultConfig();
 
+        explicit ToolButton(QWidget* parent = nullptr);
+
+    protected:
+        void paintEvent(QPaintEvent* e) override;
+
     private:
         friend class Style;
+
+        bool isPressed = false;
+
+        void buttonPressed();
+        void buttonReleased();
 
         static bool polish(Style* style, QWidget* widget, const Config& config);
 
