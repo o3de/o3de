@@ -6,6 +6,7 @@
  *
  */
 
+#include <CommonBenchmarkSetup.h>
 #include <CommonHierarchySetup.h>
 #include <MockInterfaces.h>
 #include <AzCore/UnitTest/TestTypes.h>
