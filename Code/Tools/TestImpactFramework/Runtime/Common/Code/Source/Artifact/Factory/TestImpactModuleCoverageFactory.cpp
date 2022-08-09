@@ -11,6 +11,7 @@
 
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace TestImpact
 {
@@ -140,26 +141,52 @@ namespace TestImpact
 
     namespace PythonCoverage
     {
-        AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData)
+        PythonModuleCoverage ModuleCoveragesFactory(const AZStd::string& coverageData)
         {
-            AZStd::vector<ModuleCoverage> modules;
+            PythonModuleCoverage coverage;
 
-            size_t start;
-            size_t end = 0;
-            const char delim = '\n';
-
-            // Each line contains the name of a module binray
-            while ((start = coverageData.find_first_not_of(delim, end)) != AZStd::string::npos)
+            enum
             {
-                end = coverageData.find(delim, start);
+                ParentScript,
+                CallingScript,
+                Fixture,
+                TestCase
+            };
 
-                // Python test coverage consists only of module coverage, no soruce or line coverage
-                ModuleCoverage moduleCoverage;
-                moduleCoverage.m_path = coverageData.substr(start, end - start);
-                modules.emplace_back(AZStd::move(moduleCoverage));
+            AZStd::vector<AZStd::string> lines;
+            AZ::StringFunc::Tokenize(coverageData, lines, '\n');
+
+            for (auto i = 0u; i < lines.size(); i++)
+            {
+                const auto& line = lines[i];
+                if (line[0] == '\0')
+                {
+                    continue;
+                }
+
+                switch (i)
+                {
+                case ParentScript:
+                    // Ignore for now, might possibly be tagged as test source coverage.
+                    break;
+                case CallingScript:
+                    // Ignore for now, might possibly be tagged as test source coverage.
+                    break;
+
+                case Fixture:
+                    coverage.m_testSuite = line;
+                    break;
+
+                case TestCase:
+                    coverage.m_testCase = line;
+                    break;
+
+                default:
+                    coverage.m_components.push_back(line);
+                }
             }
 
-            return modules;
+            return coverage;
         }
     } // namespace PythonCoverage
 } // namespace TestImpact
