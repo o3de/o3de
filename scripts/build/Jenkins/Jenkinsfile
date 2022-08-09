@@ -290,13 +290,9 @@ def CheckoutRepo(boolean disableSubmodules = false, boolean extras = false) {
         retryAttempt = retryAttempt + 1
         projectsAndUrl.each { projectAndUrl ->
             dir(projectAndUrl.key) {
-                def branchName = scm.branches
-                if (projectAndUrl.key == "${ENGINE_REPOSITORY_NAME}") {
-                    branchName = [[name: params.ENGINE_BRANCH]]
-                }
                 checkout scm: [
                     $class: 'GitSCM',
-                    branches: branchName,
+                    branches: scm.branches,
                     extensions: [
                         [$class: 'PruneStaleBranch'],
                         [$class: 'AuthorInChangelog'],
