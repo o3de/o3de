@@ -123,9 +123,9 @@ NUM_RAYS_PER_PROBE = {
 
 # LUT Resolution options for the HDR Color Grading component.
 LUT_RESOLUTION = {
-    '16x16x16': 0,
-    '32x32x32': 1,
-    '64x64x64': 2,
+    '16x16x16': 16,
+    '32x32x32': 32,
+    '64x64x64': 64,
 }
 
 # Shaper Type options for the HDR Color Grading & Look Modification components.
@@ -809,6 +809,7 @@ class AtomComponentProperties:
           - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
           - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
           - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
+          - 'Generated LUT Path' absolute path to the generated look up table file (read-only)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -847,6 +848,7 @@ class AtomComponentProperties:
             'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
             'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
             'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
+            'Generated LUT Path': 'LUT Generation|Generated LUT Path',
         }
         return properties[property]
 
