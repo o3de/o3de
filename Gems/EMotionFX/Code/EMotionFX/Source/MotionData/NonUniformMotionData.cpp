@@ -1270,25 +1270,25 @@ namespace EMotionFX
 
         if (data.m_smoothingMethod == RootMotionExtractionData::SmoothingMethod::MovingAverage)
         {
-            SmoothData(true, false, data.m_smoothFrameNum);
+            SmoothData(data);
         }
     }
 
-    void NonUniformMotionData::SmoothData(bool smoothPosition, bool smoothRotation, size_t smoothFrameNum)
+    void NonUniformMotionData::SmoothData(const RootMotionExtractionData& data)
     {
-        if (smoothPosition)
+        if (data.m_smoothPosition)
         {
             for (size_t i = 0; i < m_jointData.size(); ++i)
             {
-                MCore::MovingAverageSmooth(m_jointData[i].m_positionTrack.m_values, smoothFrameNum);
+                MCore::MovingAverageSmooth(m_jointData[i].m_positionTrack.m_values, data.m_smoothFrameNum);
             }
         }
 
-        if (smoothRotation)
+        if (data.m_smoothRotation)
         {
             for (size_t i = 0; i < m_jointData.size(); ++i)
             {
-                MCore::MovingAverageSmooth(m_jointData[i].m_rotationTrack.m_values, smoothFrameNum);
+                MCore::MovingAverageSmooth(m_jointData[i].m_rotationTrack.m_values, data.m_smoothFrameNum);
             }
         }
     }

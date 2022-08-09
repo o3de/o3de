@@ -27,6 +27,8 @@ namespace EMotionFX
             ->Field("transitionZeroY", &RootMotionExtractionData::m_transitionZeroYAxis)
             ->Field("extractRotation", &RootMotionExtractionData::m_extractRotation)
             ->Field("smoothingMethod", &RootMotionExtractionData::m_smoothingMethod)
+            ->Field("smoothPosition", &RootMotionExtractionData::m_smoothPosition)
+            ->Field("smoothPosition", &RootMotionExtractionData::m_smoothPosition)
             ->Field("smoothFrameNum", &RootMotionExtractionData::m_smoothFrameNum)
             ;
 
@@ -42,17 +44,21 @@ namespace EMotionFX
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->EnumAttribute(SmoothingMethod::None, "None")
                     ->EnumAttribute(SmoothingMethod::MovingAverage, "Moving average")
-                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_smoothFrameNum, "Smooth frame num", "If the number is 1, it will average the closest 3 frames. If the number is 2, it will average the closest 5 frames (2 frames before and 2 frames after), etc.")
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_smoothPosition, "Smooth position", "Apply smooth on the position of the root bone animation.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &RootMotionExtractionData::GetVisibilitySmoothEnabled)
+                ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_smoothRotation, "Smooth rotation", "Apply smooth on the rotation of the root bone animation.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &RootMotionExtractionData::GetVisibilitySmoothEnabled)
+                ->DataElement(AZ::Edit::UIHandlers::SpinBox, &RootMotionExtractionData::m_smoothFrameNum, "Smooth frame num", "If the number is 1, it will average the closest 3 frames. If the number is 2, it will average the closest 5 frames (2 frames before and 2 frames after), etc.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 10)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &RootMotionExtractionData::GetVisibilitySmoothFrameNum)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &RootMotionExtractionData::GetVisibilitySmoothEnabled)
                 ->ClassElement(AZ::Edit::ClassElements::Group, "Transition Extraction")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroXAxis, "Ignore X-Axis transition", "Force X Axis movement to be zero.")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_transitionZeroYAxis, "Ignore Y-Axis transition", "Force Y Axis movement to be zero.");
         }
     }
 
-    AZ::Crc32 RootMotionExtractionData::GetVisibilitySmoothFrameNum() const
+    AZ::Crc32 RootMotionExtractionData::GetVisibilitySmoothEnabled() const
     {
         return m_smoothingMethod == SmoothingMethod::None ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
     }

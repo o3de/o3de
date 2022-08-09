@@ -12,6 +12,7 @@
 
 namespace EMotionFX
 {
+    // Root motion extraction data is a collection of export settings used to extract hip/pelvis animation to root bone.
     class RootMotionExtractionData
     {
     public:
@@ -26,12 +27,14 @@ namespace EMotionFX
 
         virtual ~RootMotionExtractionData() = default;
         static void Reflect(AZ::ReflectContext* context);
-        AZ::Crc32 GetVisibilitySmoothFrameNum() const;
+        AZ::Crc32 GetVisibilitySmoothEnabled() const;
 
         bool m_transitionZeroXAxis = false;
         bool m_transitionZeroYAxis = false;
         bool m_extractRotation = false;
         SmoothingMethod m_smoothingMethod = SmoothingMethod::None;
+        bool m_smoothPosition = true;
+        bool m_smoothRotation = true;
         // For moving average smoothing, smoothFrameNumber decides how many frames from the given frame you are taking it to calculate the average.
         // e.g when smoothFrameNum is 1, it takes the previous 1 frame and 1 frame after and the given frame, total of 3 frames and divided it by 3.
         //     when smoothFrameNum is 2, it takes the previous 2 frames and 2 frames after, total of 5 frames and divided it by 5.

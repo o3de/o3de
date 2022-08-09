@@ -11,6 +11,7 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/std/numeric.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -352,7 +353,7 @@ namespace MCore
             const size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
             const size_t minSample = AZStd::min(left, right); // Make sure to take the same amount of samples from both size to calculate average.
             result += AZStd::accumulate(data.begin() + i - minSample, data.begin() + i + minSample + 1, AZ::Vector3(0));
-            result /= (float)(minSample + minSample + 1);
+            result /= aznumeric_cast<float>(minSample + minSample + 1.0f);
         }
 
         data = results;
@@ -370,8 +371,9 @@ namespace MCore
             // However, it will yield close to the result when given quaternions within similar ranges.
             const size_t left = AZStd::min(i, sampleNum);
             const size_t right = AZStd::min(data.size() - 1 - i, sampleNum);
-            result += AZStd::accumulate(data.begin() + i - left, data.begin() + i + right + 1, AZ::Quaternion(0));
-            result /= (float)(left + right + 1);
+            const size_t minSample = AZStd::min(left, right); // Make sure to take the same amount of samples from both size to calculate average.
+            result += AZStd::accumulate(data.begin() + i - minSample, data.begin() + i + minSample + 1, AZ::Quaternion(0));
+            result /= aznumeric_cast<float>(minSample + minSample + 1.0f);
             result.Normalize();
 
             results[i].FromQuaternion(result);

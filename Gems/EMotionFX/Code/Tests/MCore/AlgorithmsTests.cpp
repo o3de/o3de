@@ -30,7 +30,7 @@ namespace EMotionFX
         {
             AZStd::vector<AZ::Vector3> smoothedData = motionData;
             MCore::MovingAverageSmooth(smoothedData, i);
-            ASSERT_EQ(smoothedData, motionData);
+            EXPECT_EQ(smoothedData, motionData);
         }
     }
 
@@ -42,7 +42,7 @@ namespace EMotionFX
         motionData.reserve(tests_size);
         for (size_t i = 0; i < tests_size; ++i)
         {
-            float num = static_cast<float>(i);
+            float num = aznumeric_caster(i);
             motionData.emplace_back(AZ::Vector3(num, 2.0f * num, 3.0f * num));
         }
 
@@ -51,7 +51,7 @@ namespace EMotionFX
         {
             AZStd::vector<AZ::Vector3> smoothedData = motionData;
             MCore::MovingAverageSmooth(smoothedData, i);
-            ASSERT_EQ(smoothedData, motionData);
+            EXPECT_EQ(smoothedData, motionData);
         }
     }
 } // namespace MCore
