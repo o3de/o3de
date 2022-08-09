@@ -604,12 +604,8 @@ namespace GradientSignal
             {
                 AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
 
-                QString outputImagePath = QString::fromUtf8(
-                    m_configuration.m_outputImagePath.c_str(), static_cast<int>(m_configuration.m_outputImagePath.Native().size()));
-                outputImagePath += ".streamingimage";
-
                 GradientSignal::ImageGradientRequestBus::Event(
-                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetPath, outputImagePath.toUtf8().constData());
+                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetSourcePath, m_configuration.m_outputImagePath.c_str());
 
                 undo.MarkEntityDirty(GetEntityId());
             }

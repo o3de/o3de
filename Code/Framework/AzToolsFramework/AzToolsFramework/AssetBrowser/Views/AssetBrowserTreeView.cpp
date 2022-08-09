@@ -71,6 +71,7 @@ namespace AzToolsFramework
 
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 deleteAction, &QAction::triggered, this, [this]()
                 {
@@ -80,6 +81,7 @@ namespace AzToolsFramework
 
             QAction* renameAction = new QAction("Rename Action", this);
             renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 renameAction, &QAction::triggered, this, [this]()
                 {
@@ -89,6 +91,7 @@ namespace AzToolsFramework
 
             QAction* duplicateAction = new QAction("Duplicate Action", this);
             duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 duplicateAction, &QAction::triggered, this, [this]()
                 {

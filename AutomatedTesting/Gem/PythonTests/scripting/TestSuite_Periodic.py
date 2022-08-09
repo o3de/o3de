@@ -50,15 +50,6 @@ class TestAutomation(TestAutomationBase):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
@@ -431,6 +422,25 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptCanvas_TwoComponents_InteractSuccessfully.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Successfully found controller entity",
+            "Successfully found activated entity",
+            "Successfully found deactivated entity",
+            "Start states set up successfully",
+            "Successfully entered game mode",
+            "Successfully found expected prints",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,

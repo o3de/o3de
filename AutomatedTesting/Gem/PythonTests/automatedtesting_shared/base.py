@@ -96,7 +96,9 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}",
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={compiled_test_case_name}",
                  "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
                  f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
 

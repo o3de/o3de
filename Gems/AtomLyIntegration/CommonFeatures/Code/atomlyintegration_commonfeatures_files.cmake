@@ -49,16 +49,6 @@ set(FILES
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
     Source/Decals/DecalComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.cpp
     Source/Grid/GridComponent.h
     Source/Grid/GridComponent.cpp
     Source/Grid/GridComponentConfig.cpp
