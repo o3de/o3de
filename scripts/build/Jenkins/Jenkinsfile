@@ -309,7 +309,12 @@ def CheckoutRepo(boolean disableSubmodules = false, boolean extras = false) {
         }
     }
 
-    dir(extras ? EXTRAS_REPOSITORY_NAME : ENGINE_REPOSITORY_NAME) {
+    def the_dir = ENGINE_REPOSITORY_NAME
+    if (extras_repo){
+        the_dir = EXTRAS_REPOSITORY_NAME
+    }
+
+    dir(the_dir) {
         // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
         PlatformSh('git rev-parse HEAD > commitid', 'Getting commit id')
         env.CHANGE_ID = readFile file: 'commitid'
@@ -594,10 +599,12 @@ def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName,
             if(onlyMountEBSVolume) {
                 HandleDriveMount(snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName, environmentVars['WORKSPACE'], false)
             } else {
-                echo "Running snapshot: \"${snapshot}\" repository: \"${repositoryName}\", projectName: \"${projectName}\", pipeline: \"${pipelineName}\",  branchName: \"${branchName}\", platformName: \"${platformName}\", jobName: \"${jobName}\", extras_repo: \"${extras_repo}\" "
                 def extras_repo = false
-                if( repository_name == "${EXTRAS_REPOSITORY_NAME}" ) extras_repo = true
-                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], extras_repo)
+                if( repository_name == "${EXTRAS_REPOSITORY_NAME}" ) {
+                    extras_repo = true
+                }
+                echo "extras_repo: \"${extras_repo}\""
+                PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'], false, extras_repo)
             }
         }
     }
