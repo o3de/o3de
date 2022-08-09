@@ -33,6 +33,10 @@ QTabBar::tab {
     border-bottom: 3px solid transparent;
 }
 
+QTabBar::tab:text {
+    text-align:left;
+}
+
 #createAGemTab QTabBar::tab {
     background-color: #444444;
     font-size:16px;
@@ -42,30 +46,17 @@ QTabBar::tab {
 
 }
 
-
 QTabWidget#createAGemTab::tab-bar {
     left: 0px;
 }
 
-
 QTabBar#createAGemTab::tab:text {
     text-align:left;
-    color: red;
 }
 
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
-}
- 
-QTabWidget#createAGemTab::pane {
-    background-color: #333333;
-    border:0 none;
-
-}
-
-#createAGemTab {
-    background-color: yellow;
 }
 
 QTabBar::tab:selected {
@@ -73,12 +64,6 @@ QTabBar::tab:selected {
     border-bottom: 3px solid #1e70eb;
     color: #1e70eb;
     font-weight: 500;
-}
-
-QTabBar#createAGemTab::tab:selected {
-    background-color: #333333;
-    border-bottom: 3px solid #1e70eb;
-    font-weight: 900;
 }
 
 QTabBar::tab:hover {
@@ -96,6 +81,34 @@ QTabBar::focus {
 QTabBar::tab:focus {
     background-color: #525252;
     color: #4082eb;
+}
+
+#formFrame QComboBox {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    color:red;
+    min-width:810px;
+    max-width:810px;
+    line-height: 26px;
+    font-size: 18px;
+    height: 26px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#formFrame QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    padding-right:20px;
+    min-width: 24px;
+    max-width: 24px;
+    width:24px;
+}
+
+#formFrame QComboBox QListView::item {
+    line-height: 30px;
+    font-size: 18px;
+    height: 40px;
 }
 
 #ToastNotification {
@@ -119,7 +132,8 @@ QTabBar::tab:focus {
 /************** General (Forms) **************/
 
 #formLineEditWidget,
-#formBrowseEditWidget {
+#formBrowseEditWidget,
+#formComboBoxWidget {
     max-width: 890px;
 }
 
@@ -216,19 +230,15 @@ QTabBar::tab:focus {
 #rightPaneSubheader {
     font-size:14px;
     qproperty-indent: 0;
+    padding-bottom: 20px;
 }
-
 
 #createAGemRightPane {
     padding-top: 25px;
     padding-left: 60px;
 }
 
-#leftPaneText {
-    font-size: 16px;
-}
-
-#qRadioButton {
+#createAGem #QRadioButton{
     padding-top: 15px;
     font-size: 14px;
 }
@@ -238,13 +248,6 @@ QTabBar::tab:focus {
     padding-left: 23px;
     font-size: 12;
 }
-
-#createAGemField {
-    qproperty-indent: 0;
-    padding-left: 0px;
-    margin-left: 0px;
-}
-
 
 /************** General (Modal windows) **************/
 

@@ -17,7 +17,6 @@
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
-#include <CreateAGemScreen.h>
 
 namespace O3DE::ProjectManager
 {

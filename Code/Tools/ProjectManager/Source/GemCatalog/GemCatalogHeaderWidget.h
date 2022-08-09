@@ -16,7 +16,6 @@
 #include <TagWidget.h>
 #include <DownloadController.h>
 
-
 #include <QFrame>
 #include <QScrollArea>
 #endif

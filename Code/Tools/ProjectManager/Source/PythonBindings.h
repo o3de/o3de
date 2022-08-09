@@ -40,6 +40,7 @@ namespace O3DE::ProjectManager
 
         // Gem
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetGemTemplates(const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
@@ -48,6 +49,7 @@ namespace O3DE::ProjectManager
 
         // Project
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) override;
+        AZ::Outcome<GemInfo> CreateGem(const GemInfo& createAGemInfo) override;
         AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         bool AddProject(const QString& path) override;

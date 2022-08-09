@@ -70,9 +70,9 @@ namespace O3DE::ProjectManager
 
         bool operator<(const GemInfo& gemInfo) const;
 
-        QString m_path;
-        QString m_name = "Unknown Gem Name";
-        QString m_displayName;
+        QString m_path; //Gem template path for Create a Gem
+        QString m_name = "Unknown Gem Name"; //Gem system anme for Create a Gem
+        QString m_displayName; 
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
@@ -91,6 +91,14 @@ namespace O3DE::ProjectManager
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
         QStringList m_dependencies;
+
+        //Additional fields for Create a Gem
+        QString m_originName;
+        QString m_originURL;
+        QString m_userAndGlobalGemTags; //Comma separated list
+        QString m_gemTemplateLocation;
+        QString m_gemIconPath;
+
     };
 } // namespace O3DE::ProjectManager
 

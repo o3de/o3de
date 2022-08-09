@@ -12,16 +12,23 @@
 #include <ScreenWidget.h>
 #include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
+#include <FormComboBoxWidget.h>
+#include <GemCatalog/GemInfo.h>
+#include <PythonBindings.h>
 
+#include <QHash>
 #include <QApplication>
 #include <QStyleOptionTab>
 #include <QStylePainter>
 #include <QTabBar>
 #include <QTabWidget>
+#include <QButtonGroup>
 #include <QDialogButtonBox>
+#include <QRadioButton>
 #include <QPushButton>
 #include <QScrollArea>
-
+#include <QComboBox>
+#include <QVBoxLayout>
 
 #endif
 
@@ -36,7 +43,7 @@ public:
     }
 
 protected:
-    void paintEvent(QPaintEvent* /*event*/)
+    void paintEvent(QPaintEvent*)
     {
         QStylePainter painter(this);
         QStyleOptionTab opt;
@@ -51,6 +58,7 @@ protected:
             painter.save();
             QSize s = opt.rect.size();
             s.transpose();
+            s.setWidth(130);
             QRect r(QPoint(), s);
             r.moveCenter(opt.rect.center());
             opt.rect = r;
@@ -59,9 +67,8 @@ protected:
             leftJustify.setX(30 + (int)(0.5 * opt.rect.width()));
             painter.translate(leftJustify);
             currentTopPosition.setY(currentTopPosition.y() + 55);
-            //painter.rotate(90);
+            painter.setFont(QFont("Open Sans", 12));
             painter.translate(-c);
-            // painter.drawControl(QStyle::CE_TabBarTabLabel, opt);
             painter.drawItemText(r, Qt::AlignLeft, QApplication::palette(), true, strs.at(i));
             painter.restore();
         }
@@ -85,46 +92,69 @@ namespace O3DE::ProjectManager
 
     class CreateAGemScreen : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit CreateAGemScreen(QWidget* parent = nullptr);
         ~CreateAGemScreen() = default;
 
-    public slots:
-
-    protected:
+    signals:
+        void CreateButtonPressed();
 
     private slots:
-        void OnGemDisplayNameUpdated();
-        void OnGemSystemNameUpdated();
-        void OnLicenseNameUpdated();
-        void OnCreatorNameUpdated();
-        void OnRepositoryURLUpdated();
         void HandleBackButton();
         void HandleNextButton();
-        void ConvertNextButtonToCreate();
+        void UpdateNextButtonToCreate();
 
     private:
+        void LoadButtonsFromGemTemplatePaths(QVBoxLayout* firstScreen);
         QScrollArea* CreateFirstScreen();
         QScrollArea* CreateSecondScreen();
         QScrollArea* CreateThirdScreen();
+        bool ValidateGemTemplateLocation();
         bool ValidateGemDisplayName();
         bool ValidateGemSystemName();
         bool ValidateLicenseName();
+        bool ValidateGlobalGemTag();
+        bool ValidateOptionalGemTags();
         bool ValidateCreatorName();
         bool ValidateRepositoryURL();
-        int m_numNextClicks = 0;
+        void AddDropdownActions(FormComboBoxWidget* dropdown);
 
-        FormLineEditWidget* m_gemDisplayName;
-        FormLineEditWidget* m_gemSystemName;
-        FormLineEditWidget* m_license;
-        FormLineEditWidget* m_creatorName;
-        FormLineEditWidget* m_repositoryURL;
+        //First Screen
+        QVector<ProjectTemplateInfo> m_gemTemplates;
+        QButtonGroup* m_radioButtonGroup;
+        QRadioButton* m_formFolderRadioButton = nullptr;
+        FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
+
+        //Second Screen
+        FormLineEditWidget* m_gemDisplayName = nullptr;
+        FormLineEditWidget* m_gemSystemName = nullptr;
+        FormLineEditWidget* m_gemSummary = nullptr;
+        FormLineEditWidget* m_requirements = nullptr;
+        FormLineEditWidget* m_license = nullptr;
+        FormLineEditWidget* m_licenseURL = nullptr;
+        FormLineEditWidget* m_origin = nullptr;
+        FormLineEditWidget* m_originURL = nullptr;
+        FormLineEditWidget* m_userDefinedGemTags = nullptr;
+        FormFolderBrowseEditWidget* m_gemLocation = nullptr;
+        FormComboBoxWidget* m_firstDropdown = nullptr;
+        FormComboBoxWidget* m_secondDropdown = nullptr;
+        FormComboBoxWidget* m_thirdDropdown = nullptr;
+        FormFolderBrowseEditWidget* m_gemIconPath = nullptr;
+        FormLineEditWidget* m_documentationURL = nullptr;
+
+        //Third Screen
+        FormLineEditWidget* m_creatorName = nullptr;
+        FormLineEditWidget* m_repositoryURL = nullptr;
+        
 
         TabWidget* m_tabWidget;
 
-        QDialogButtonBox* m_backNextButtons;
+        QDialogButtonBox* m_backNextButtons = nullptr;
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
+
+        GemInfo m_createAGemInfo;
     };
 
 

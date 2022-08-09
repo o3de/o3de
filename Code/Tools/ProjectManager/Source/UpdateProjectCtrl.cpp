@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
+        connect(m_createAGemScreen, &CreateAGemScreen::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -162,7 +163,16 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::HandleBackButton()
     {
-        if (m_stack->currentIndex() > 0)
+        if (m_stack->currentWidget() == m_createAGemScreen && UpdateProjectSettings(true))
+        {
+            m_stack->removeWidget(m_createAGemScreen);
+            delete m_createAGemScreen;
+            m_createAGemScreen = new CreateAGemScreen();
+            m_stack->addWidget(m_createAGemScreen);
+            m_stack->setCurrentIndex(1);
+            Update();
+        }
+        else if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
             Update();
@@ -247,8 +257,6 @@ namespace O3DE::ProjectManager
         }
         else if (m_stack->currentWidget() == m_createAGemScreen)
         {
-            //hide backnextbutton member variable or setvisible(false)
-            //
             m_backNextButtons->setVisible(false);
             m_header->setTitle(QString(tr("Create a New Project: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
             m_header->setSubTitle(QString(tr("Create a new Gem")));

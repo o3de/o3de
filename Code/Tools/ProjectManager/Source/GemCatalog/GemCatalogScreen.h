@@ -29,7 +29,6 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(GemModel)
     QT_FORWARD_DECLARE_CLASS(GemSortFilterProxyModel)
     QT_FORWARD_DECLARE_CLASS(DownloadController)
-    QT_FORWARD_DECLARE_CLASS(CreateAGemScreen)
 
     class GemCatalogScreen
         : public ScreenWidget

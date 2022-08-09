@@ -6,25 +6,14 @@
  *
  */
 
-#include <AdjustableHeaderWidget.h>
-#include <DownloadController.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
 #include <PythonBindingsInterface.h>
 
-
-#include <PythonBindingsInterface.h>
-#include <QDir>
-#include <QFileDialog>
-#include <QHBoxLayout>
-#include <QHash>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStackedWidget>
-#include <QStandardPaths>
-#include <QVBoxLayout>
-#include <QRadioButton>
 #include <QLabel>
 #include <QDialogButtonBox>
 
@@ -38,24 +27,13 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
-        QScrollArea* firstScreenScrollArea = CreateFirstScreen();
-        QScrollArea* secondScreenScrollArea = CreateSecondScreen();
-        QScrollArea* thirdScreenScrollArea = CreateThirdScreen();
-
-        connect(m_gemDisplayName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
-        connect(m_gemSystemName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnGemSystemNameUpdated);
-        connect(m_license->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnLicenseNameUpdated);
-        connect(m_creatorName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnCreatorNameUpdated);
-        connect(m_repositoryURL->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnRepositoryURLUpdated);
-
         m_tabWidget = new TabWidget();
-        m_tabWidget->setObjectName("createAGemTab");
-        m_tabWidget->addTab(firstScreenScrollArea, "1. Gem Setup");
-        m_tabWidget->addTab(secondScreenScrollArea, "2. Gem Details");
-        m_tabWidget->addTab(thirdScreenScrollArea, "3. Creator Details");
-        m_tabWidget->tabBar()->setEnabled(false);
-
         
+        m_tabWidget->setObjectName("createAGemTab");
+        m_tabWidget->addTab(CreateFirstScreen(), tr("1. Gem Setup"));
+        m_tabWidget->addTab(CreateSecondScreen(), tr("2. Gem Details"));
+        m_tabWidget->addTab(CreateThirdScreen(), tr("3. Creator Details"));
+        m_tabWidget->tabBar()->setEnabled(false);
         vLayout->addWidget(m_tabWidget);
 
         QFrame* footerFrame = new QFrame();
@@ -68,24 +46,59 @@ namespace O3DE::ProjectManager
         footerLayout->addWidget(m_backNextButtons);
         vLayout->addWidget(footerFrame);
 
-
         m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
         m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_tabWidget, &TabWidget::currentChanged, this, &CreateAGemScreen::ConvertNextButtonToCreate);
+        connect(m_tabWidget, &TabWidget::currentChanged, this, &CreateAGemScreen::UpdateNextButtonToCreate);
         connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::HandleBackButton);
         connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::HandleNextButton);
 
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemSystemNameUpdated);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnLicenseNameUpdated);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnCreatorNameUpdated);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnRepositoryURLUpdated);
-
         setObjectName("createAGemBody");
         setLayout(vLayout);
+    }
 
+    void CreateAGemScreen::LoadButtonsFromGemTemplatePaths(QVBoxLayout* firstScreen)
+    {
+        QHash<QString, QString> formattedNames;
+        formattedNames.insert(QString("Prebuilt Gem Tenokate"), QString(tr("Prebuilt Gem")));
+        formattedNames.insert(QString("Asset Gem Template"), QString(tr("Asset Gem")));
+        formattedNames.insert(QString("Default Gem Template"), QString(tr("Default Gem")));
+        formattedNames.insert(QString("CppToolGem"), QString(tr("C++ Tool Gem")));
+        formattedNames.insert(QString("PythonToolGem"), QString(tr("Python Tool Gem")));
+
+        m_radioButtonGroup = new QButtonGroup();
+        auto templatesResult = PythonBindingsInterface::Get()->GetGemTemplates();
+        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+        {
+            m_gemTemplates = templatesResult.GetValue();
+            for (int index = 0; index < m_gemTemplates.size(); ++index)
+            {
+                ProjectTemplateInfo gemTemplate = m_gemTemplates.at(index);
+                QString buttonName;
+                if (formattedNames.value(gemTemplate.m_displayName) == QString())
+                {
+                    buttonName = gemTemplate.m_displayName;
+                }
+                else
+                {
+                    buttonName = formattedNames.value(gemTemplate.m_displayName);
+                }
+                QRadioButton* button = new QRadioButton(buttonName);
+                button->setObjectName("createAGem");
+                m_radioButtonGroup->addButton(button, index);
+
+                QLabel* buttonSubtext = new QLabel();
+                buttonSubtext->setObjectName("qRadioButtonSubtext");
+                buttonSubtext->setText(gemTemplate.m_summary);
+                if (index == 0)
+                {
+                    button->click();
+                }
+                firstScreen->addWidget(button);
+                firstScreen->addWidget(buttonSubtext);
+            }
+        }
     }
 
     QScrollArea* CreateAGemScreen::CreateFirstScreen()
@@ -112,49 +125,16 @@ namespace O3DE::ProjectManager
         firstScreen->addWidget(rightPaneHeader);
         firstScreen->addWidget(rightPaneSubheader);
 
-        QRadioButton* button1 = new QRadioButton("Default Gem");
-        button1->setObjectName("qRadioButton");
-        QRadioButton* button2 = new QRadioButton("Prebuilt Gem");
-        button2->setObjectName("qRadioButton");
-        QRadioButton* button3 = new QRadioButton("Asset Gem");
-        button3->setObjectName("qRadioButton");
-        QRadioButton* button4 = new QRadioButton("C++ Tool Gem");
-        button4->setObjectName("qRadioButton");
-        QRadioButton* button5 = new QRadioButton("Python Tool Gem");
-        button5->setObjectName("qRadioButton");
-        QRadioButton* button6 = new QRadioButton("Choose existing template");
-        button6->setObjectName("qRadioButton");
+        LoadButtonsFromGemTemplatePaths(firstScreen);
+        m_formFolderRadioButton = new QRadioButton("Choose existing template");
+        m_formFolderRadioButton->setObjectName("createAGem");
 
-        QLabel* button1Subtext = new QLabel();
-        button1Subtext->setObjectName("qRadioButtonSubtext");
-        button1Subtext->setText(tr("A gem template that will be used if no gem template is specified during gem creation."));
-        QLabel* button2Subtext = new QLabel();
-        button2Subtext->setObjectName("qRadioButtonSubtext");
-        button2Subtext->setText(tr("A gem template that can be used to create a gem that where pre-built libraries can be hooked into."));
-        QLabel* button3Subtext = new QLabel();
-        button3Subtext->setObjectName("qRadioButtonSubtext");
-        button3Subtext->setText(tr("A gem template to create the minimal gem needed for adding asset(s)."));
-        QLabel* button4Subtext = new QLabel();
-        button4Subtext->setObjectName("qRadioButtonSubtext");
-        button4Subtext->setText(tr("A gem template for a custom tool in C++ that gets registered with the editor."));
-        QLabel* button5Subtext = new QLabel();
-        button5Subtext->setObjectName("qRadioButtonSubtext");
-        button5Subtext->setText(tr("A gem template for a custom tool in Python that gets registered with the editor."));
+        m_gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "");
+        QLabel* gemTemplateLocationLabel = m_gemTemplateLocation->getErrorLabel();
+        gemTemplateLocationLabel->setObjectName("createAGemFormErrorLabel");
 
-        FormFolderBrowseEditWidget* gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "");
-
-        firstScreen->addWidget(button1);
-        firstScreen->addWidget(button1Subtext);
-        firstScreen->addWidget(button2);
-        firstScreen->addWidget(button2Subtext);
-        firstScreen->addWidget(button3);
-        firstScreen->addWidget(button3Subtext);
-        firstScreen->addWidget(button4);
-        firstScreen->addWidget(button4Subtext);
-        firstScreen->addWidget(button5);
-        firstScreen->addWidget(button5Subtext);
-        firstScreen->addWidget(button6);
-        firstScreen->addWidget(gemTemplateLocation);
+        firstScreen->addWidget(m_formFolderRadioButton);
+        firstScreen->addWidget(m_gemTemplateLocation);
 
         return firstScreenScrollArea;
     }
@@ -194,15 +174,15 @@ namespace O3DE::ProjectManager
         gemSystemLineEdit->setPlaceholderText(tr("The name used in the O3DE Gem System"));
         secondScreen->addWidget(m_gemSystemName);
 
-        FormLineEditWidget* gemSummary = new FormLineEditWidget(tr("Gem Summary"), "");
-        QLineEdit* gemSummaryLineEdit = gemSummary->lineEdit();
+        m_gemSummary = new FormLineEditWidget(tr("Gem Summary"), "");
+        QLineEdit* gemSummaryLineEdit = m_gemSummary->lineEdit();
         gemSummaryLineEdit->setPlaceholderText(tr("A short description of your Gem"));
-        secondScreen->addWidget(gemSummary);
+        secondScreen->addWidget(m_gemSummary);
 
-        FormLineEditWidget* requirements = new FormLineEditWidget(tr("Requirements"), "");
-        QLineEdit* requirementsLineEdit = requirements->lineEdit();
+        m_requirements = new FormLineEditWidget(tr("Requirements"), "");
+        QLineEdit* requirementsLineEdit = m_requirements->lineEdit();
         requirementsLineEdit->setPlaceholderText(tr("Notice of any requirements your Gem. i.e. This requires X other gem"));
-        secondScreen->addWidget(requirements);
+        secondScreen->addWidget(m_requirements);
 
         m_license = new FormLineEditWidget(tr("License*"), "");
         QLabel* licenseErrorLabel = m_license->getErrorLabel();
@@ -211,40 +191,57 @@ namespace O3DE::ProjectManager
         licenseLineEdit->setPlaceholderText(tr("License uses goes here: i.e. Apache-2.0 or MIT"));
         secondScreen->addWidget(m_license);
 
-        FormLineEditWidget* licenseURL = new FormLineEditWidget(tr("License URL"), "");
-        QLineEdit* licenseURLLineEdit = licenseURL->lineEdit();
+        m_licenseURL = new FormLineEditWidget(tr("License URL"), "");
+        QLineEdit* licenseURLLineEdit = m_licenseURL->lineEdit();
         licenseURLLineEdit->setPlaceholderText(tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"));
-        secondScreen->addWidget(licenseURL);
+        secondScreen->addWidget(m_licenseURL);
 
-        FormLineEditWidget* origin = new FormLineEditWidget(tr("Origin"), "");
-        QLineEdit* originLineEdit = origin->lineEdit();
+        m_origin = new FormLineEditWidget(tr("Origin"), "");
+        QLineEdit* originLineEdit = m_origin->lineEdit();
         originLineEdit->setPlaceholderText(tr("The name of the originator goes. i.e. XYZ Inc."));
-        secondScreen->addWidget(origin);
+        secondScreen->addWidget(m_origin);
 
-        FormLineEditWidget* originURL = new FormLineEditWidget(tr("Origin URL"), "");
-        QLineEdit* originURLLineEdit = originURL->lineEdit();
+        m_originURL = new FormLineEditWidget(tr("Origin URL"), "");
+        QLineEdit* originURLLineEdit = m_originURL->lineEdit();
         originURLLineEdit->setPlaceholderText(tr("The primary repo for your Gem. i.e. http://www.mydomain.com"));
-        secondScreen->addWidget(originURL);
+        secondScreen->addWidget(m_originURL);
 
-        FormLineEditWidget* userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags"), "");
-        secondScreen->addWidget(userDefinedGemTags);
+        m_firstDropdown = new FormComboBoxWidget(tr("Global Gem Tag*"));
+        QLabel* firstDropdownErrorLabel = m_firstDropdown->getErrorLabel();
+        firstDropdownErrorLabel->setObjectName("createAGemFormErrorLabel");
+        AddDropdownActions(m_firstDropdown);
+        secondScreen->addWidget(m_firstDropdown);
 
-        FormFolderBrowseEditWidget* gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "");
-        QLineEdit* gemLocationLineEdit = gemLocation->lineEdit();
+        m_secondDropdown = new FormComboBoxWidget(tr("Optional Global Gem Tag"));
+        QLabel* secondDropdownErrorLabel = m_secondDropdown->getErrorLabel();
+        secondDropdownErrorLabel->setObjectName("createAGemFormErrorLabel");
+        AddDropdownActions(m_secondDropdown);
+        secondScreen->addWidget(m_secondDropdown);
+
+        m_thirdDropdown = new FormComboBoxWidget(tr("Optional Global Gem Tag"));
+        QLabel* thirdDropdownErrorLabel = m_thirdDropdown->getErrorLabel();
+        thirdDropdownErrorLabel->setObjectName("createAGemFormErrorLabel");
+        AddDropdownActions(m_thirdDropdown);
+        secondScreen->addWidget(m_thirdDropdown);
+
+        m_userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags (Comma separated list)"), "");
+        secondScreen->addWidget(m_userDefinedGemTags);
+
+        m_gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "");
+        QLineEdit* gemLocationLineEdit = m_gemLocation->lineEdit();
         const char* gemLocationPlaceholderText = R"(C:\O3DE\Project\Gems\YourGem)";
         gemLocationLineEdit->setPlaceholderText(tr(gemLocationPlaceholderText));
-        secondScreen->addWidget(gemLocation);
-
-        FormFolderBrowseEditWidget* gemIconPath = new FormFolderBrowseEditWidget(tr("Gem Icon Path"), "");
-        QLineEdit* gemIconPathLineEdit = gemIconPath->lineEdit();
+        secondScreen->addWidget(m_gemLocation);
+        
+        m_gemIconPath = new FormFolderBrowseEditWidget(tr("Gem Icon Path"), "");
+        QLineEdit* gemIconPathLineEdit = m_gemIconPath->lineEdit();
         gemIconPathLineEdit->setPlaceholderText(tr("Select Gem icon path"));
-        secondScreen->addWidget(gemIconPath);
+        secondScreen->addWidget(m_gemIconPath);
 
-        FormLineEditWidget* documentationURL = new FormLineEditWidget(tr("Documentation URL"), "");
-        QLineEdit* documentationURLLineEdit = documentationURL->lineEdit();
-        documentationURLLineEdit->setPlaceholderText(
-            tr("Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/..."));
-        secondScreen->addWidget(documentationURL);
+        m_documentationURL = new FormLineEditWidget(tr("Documentation URL"), "");
+        QLineEdit* documentationURLLineEdit = m_documentationURL->lineEdit();
+        documentationURLLineEdit->setPlaceholderText(tr("Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/..."));
+        secondScreen->addWidget(m_documentationURL);
 
         return secondScreenScrollArea;
     }
@@ -287,10 +284,30 @@ namespace O3DE::ProjectManager
         return thirdScreenScrollArea;
     }
 
+    bool CreateAGemScreen::ValidateGemTemplateLocation()
+    {
+        bool gemTemplateLocationFilled = true;
+        if (m_tabWidget->currentIndex() == 0)
+        {
+            if (m_formFolderRadioButton->isChecked())
+            {
+                if (m_gemTemplateLocation->lineEdit()->text().isEmpty())
+                {
+                    gemTemplateLocationFilled = false;
+                    m_gemTemplateLocation->setErrorLabelText(tr("A path must be provided."));
+                }
+
+            }
+            m_gemTemplateLocation->setErrorLabelVisible(!gemTemplateLocationFilled);
+
+        }
+        return gemTemplateLocationFilled;
+    }
+
     bool CreateAGemScreen::ValidateGemDisplayName()
     {
         bool gemScreenNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 2)
+        if (m_tabWidget->currentIndex() == 1)
         {
             if (m_gemDisplayName->lineEdit()->text().isEmpty())
             {
@@ -306,24 +323,38 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateGemSystemName()
     {
         bool gemSystemNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 2)
+        if (m_tabWidget->currentIndex() == 1)
         {
             if (m_gemSystemName->lineEdit()->text().isEmpty())
             {
                 gemSystemNameIsValid = false;
                 m_gemSystemName->setErrorLabelText(tr("A gem system name is required."));
             }
-
+            else
+            {
+                std::string gemSystemName = m_gemSystemName->lineEdit()->text().toStdString();
+                _int64 count = std::count_if(
+                    gemSystemName.begin(),
+                    gemSystemName.end(),
+                    [](char c)
+                    {
+                        return !(std::isalnum(c));
+                    });
+                if (count > 0)
+                {
+                    gemSystemNameIsValid = false;
+                    m_gemSystemName->setErrorLabelText(tr("A gem system name can only contain alphanumeric characters."));
+                }
+            }
             m_gemSystemName->setErrorLabelVisible(!gemSystemNameIsValid);
         }
         return gemSystemNameIsValid;
-
     }
 
     bool CreateAGemScreen::ValidateLicenseName()
     {
         bool licenseNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 2)
+        if (m_tabWidget->currentIndex() == 1)
         {
             if (m_license->lineEdit()->text().isEmpty())
             {
@@ -336,22 +367,61 @@ namespace O3DE::ProjectManager
         return licenseNameIsValid;
     }
 
+    bool CreateAGemScreen::ValidateGlobalGemTag()
+    {
+        bool globalGemTagIsValid = true;
+        if (m_tabWidget->currentIndex() == 1)
+        {
+            if (m_firstDropdown->comboBox()->currentIndex() == 0)
+            {
+                globalGemTagIsValid = false;
+                m_firstDropdown->setErrorLabelText(tr("At least one global gem tag is required."));
+            }
+
+            m_firstDropdown->setErrorLabelVisible(!globalGemTagIsValid);
+        }
+        return globalGemTagIsValid;
+    }
+
+    bool CreateAGemScreen::ValidateOptionalGemTags()
+    {
+        bool firstOptionalGemTagIsValid = true;
+        bool secondOptionalGemTagIsValid = true;
+        if (m_tabWidget->currentIndex() == 1)
+        {
+            if (m_secondDropdown->comboBox()->currentIndex() != 0 && m_secondDropdown->comboBox()->currentIndex() ==
+                m_firstDropdown->comboBox()->currentIndex())
+            {
+                firstOptionalGemTagIsValid = false;
+                m_secondDropdown->setErrorLabelText(tr("This gem has already been selected"));
+            }
+
+            if (m_thirdDropdown->comboBox()->currentIndex() != 0 && (m_thirdDropdown->comboBox()->currentIndex() == m_secondDropdown->comboBox()->currentIndex() ||
+                m_thirdDropdown->comboBox()->currentIndex() == m_firstDropdown->comboBox()->currentIndex()))
+            {
+                secondOptionalGemTagIsValid = false;
+                m_thirdDropdown->setErrorLabelText(tr("This gem has already been selected"));
+            }
+
+            m_secondDropdown->setErrorLabelVisible(!firstOptionalGemTagIsValid);
+            m_thirdDropdown->setErrorLabelVisible(!secondOptionalGemTagIsValid);
+        }
+        return firstOptionalGemTagIsValid && secondOptionalGemTagIsValid;
+    }
+
+
     bool CreateAGemScreen::ValidateCreatorName()
     {
         bool creatorNameIsValid = true;
         if (m_tabWidget->currentIndex() == 2)
         {
-            m_numNextClicks += 1;
-            if (m_numNextClicks > 1)
+            if (m_creatorName->lineEdit()->text().isEmpty())
             {
-                if (m_creatorName->lineEdit()->text().isEmpty())
-                {
-                    creatorNameIsValid = false;
-                    m_creatorName->setErrorLabelText(tr("A creator's name is required."));
-                }
-
-                m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
+                creatorNameIsValid = false;
+                m_creatorName->setErrorLabelText(tr("A creator's name is required."));
             }
+
+            m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
         }
         return creatorNameIsValid;
     }
@@ -361,43 +431,15 @@ namespace O3DE::ProjectManager
         bool repositoryURLIsValid = true;
         if (m_tabWidget->currentIndex() == 2)
         {
-            if (m_numNextClicks > 1)
+            if (m_repositoryURL->lineEdit()->text().isEmpty())
             {
-                if (m_repositoryURL->lineEdit()->text().isEmpty())
-                {
-                    repositoryURLIsValid = false;
-                    m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
-                }
-
-                m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
+                repositoryURLIsValid = false;
+                m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
             }
+
+            m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
         }
         return repositoryURLIsValid;
-    }
-
-    void CreateAGemScreen::OnGemDisplayNameUpdated()
-    {
-        ValidateGemDisplayName();
-    }
-
-    void CreateAGemScreen::OnGemSystemNameUpdated()
-    {
-        ValidateGemSystemName();
-    }
-
-    void CreateAGemScreen::OnLicenseNameUpdated()
-    {
-        ValidateLicenseName();
-    }
-
-    void CreateAGemScreen::OnCreatorNameUpdated()
-    {
-        ValidateCreatorName();
-    }
-
-    void CreateAGemScreen::OnRepositoryURLUpdated()
-    {
-        ValidateRepositoryURL();
     }
 
     void CreateAGemScreen::HandleBackButton()
@@ -405,11 +447,16 @@ namespace O3DE::ProjectManager
         if (m_tabWidget->currentIndex() == 2)
         {
             m_tabWidget->setCurrentIndex(1);
-            m_nextButton->setText("Next");
+            m_nextButton->setText(tr("Next"));
         }
         else if (m_tabWidget->currentIndex() == 1)
         {
+            m_backButton->setVisible(false);
             m_tabWidget->setCurrentIndex(0);
+        }
+        else if (m_tabWidget->currentIndex() == 0)
+        {
+            m_backButton->setVisible(false);
         }
     }
 
@@ -417,29 +464,131 @@ namespace O3DE::ProjectManager
     {
         if (m_tabWidget->currentIndex() == 0)
         {
-            m_tabWidget->setCurrentIndex(1);
+            bool templateLocationIsValid = ValidateGemTemplateLocation();
+            if (!m_formFolderRadioButton->isChecked())
+            {
+                m_createAGemInfo.m_gemTemplateLocation = m_gemTemplates.at(m_radioButtonGroup->checkedId()).m_path;
+                m_backButton->setVisible(true);
+                m_tabWidget->setCurrentIndex(1);
+            }
+            else if (templateLocationIsValid && m_formFolderRadioButton->isChecked())
+            {
+                m_createAGemInfo.m_gemTemplateLocation = m_gemTemplateLocation->lineEdit()->text();
+                m_backButton->setVisible(true);
+                m_tabWidget->setCurrentIndex(1);
+            }
         }
         else if (m_tabWidget->currentIndex() == 1)
         {
-            m_tabWidget->setCurrentIndex(2);
-            m_nextButton->setText("Create");
-        }
-    }
+            bool displayNameIsValid = ValidateGemDisplayName();
+            bool systemNameIsValid = ValidateGemSystemName();
+            bool licenseNameIsValid = ValidateLicenseName();
+            bool globalGemTagIsValid = ValidateGlobalGemTag();
+            bool optionalGemTagsAreValid = ValidateOptionalGemTags();
+            if (systemNameIsValid && licenseNameIsValid && globalGemTagIsValid && displayNameIsValid && optionalGemTagsAreValid)
+            {
+                m_createAGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
+                m_createAGemInfo.m_name = m_gemSystemName->lineEdit()->text();
+                m_createAGemInfo.m_summary = m_gemSummary->lineEdit()->text();
+                m_createAGemInfo.m_requirement = m_requirements->lineEdit()->text();
+                m_createAGemInfo.m_licenseText = m_license->lineEdit()->text();
+                m_createAGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
+                m_createAGemInfo.m_originName = m_origin->lineEdit()->text();
+                m_createAGemInfo.m_originURL = m_originURL->lineEdit()->text();
+                m_createAGemInfo.m_gemIconPath = m_gemIconPath->lineEdit()->text();
+                m_createAGemInfo.m_licenseText = m_license->lineEdit()->text();
+                m_createAGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
+                m_createAGemInfo.m_path = m_gemLocation->lineEdit()->text();
 
-    void CreateAGemScreen::ConvertNextButtonToCreate()
-    {
-        if (m_tabWidget->currentIndex() == 0)
-        {
-            m_nextButton->setText("Next");
-        }
-        else if (m_tabWidget->currentIndex() == 1)
-        {
-            m_nextButton->setText("Next");
+                m_createAGemInfo.m_userAndGlobalGemTags = QString();
+                m_createAGemInfo.m_userAndGlobalGemTags.append(m_firstDropdown->comboBox()->currentText());
+                m_createAGemInfo.m_userAndGlobalGemTags.append(",");
+                if (m_secondDropdown->comboBox()->currentIndex() != 0)
+                {
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(m_secondDropdown->comboBox()->currentText());
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(",");
+                }
+                if (m_thirdDropdown->comboBox()->currentIndex() != 0)
+                {
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(m_thirdDropdown->comboBox()->currentText());
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(",");
+                }
+                if (!m_userDefinedGemTags->lineEdit()->text().isEmpty())
+                {
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(m_userDefinedGemTags->lineEdit()->text());
+                    m_createAGemInfo.m_userAndGlobalGemTags.append(",");
+                }
+
+                m_tabWidget->setCurrentIndex(2);
+                m_nextButton->setText(tr("Create"));
+
+            }
         }
         else if (m_tabWidget->currentIndex() == 2)
         {
-            m_nextButton->setText("Create");
+            bool creatorNameIsValid = ValidateCreatorName();
+            bool repoURLIsValid = ValidateRepositoryURL();
+            if (creatorNameIsValid && repoURLIsValid)
+            {
+                m_createAGemInfo.m_creator = m_creatorName->lineEdit()->text();
+                m_createAGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
+                auto result = PythonBindingsInterface::Get()->CreateGem(m_createAGemInfo);
+                emit CreateButtonPressed();
+            }
         }
+    }
+
+    void CreateAGemScreen::UpdateNextButtonToCreate()
+    {
+        if (m_tabWidget->currentIndex() == 2)
+        {
+            m_nextButton->setText(tr("Create"));
+        }
+        else
+        {
+            m_nextButton->setText(tr("Next"));
+        }
+    }
+
+    void CreateAGemScreen::AddDropdownActions(FormComboBoxWidget* dropdown)
+    {
+        QComboBox* comboBox = dropdown->comboBox();
+        comboBox->addItem(tr(""));
+        comboBox->addItem(tr("AWS"));
+        comboBox->addItem(tr("Achievements"));
+        comboBox->addItem(tr("Animation"));
+        comboBox->addItem(tr("Assets"));
+        comboBox->addItem(tr("Audio"));
+        comboBox->addItem(tr("Barrier"));
+        comboBox->addItem(tr("Content"));
+        comboBox->addItem(tr("Core"));
+        comboBox->addItem(tr("Creation"));
+        comboBox->addItem(tr("DCC"));
+        comboBox->addItem(tr("Debug"));
+        comboBox->addItem(tr("Design"));
+        comboBox->addItem(tr("Digital"));
+        comboBox->addItem(tr("Editor"));
+        comboBox->addItem(tr("Environment"));
+        comboBox->addItem(tr("Framework"));
+        comboBox->addItem(tr("Gameplay"));
+        comboBox->addItem(tr("Input"));
+        comboBox->addItem(tr("Materials"));
+        comboBox->addItem(tr("Multiplayer"));
+        comboBox->addItem(tr("Network"));
+        comboBox->addItem(tr("PBR"));
+        comboBox->addItem(tr("Physics"));
+        comboBox->addItem(tr("Profiler"));
+        comboBox->addItem(tr("Rendering"));
+        comboBox->addItem(tr("SDK"));
+        comboBox->addItem(tr("Sample"));
+        comboBox->addItem(tr("Scripting"));
+        comboBox->addItem(tr("Simulation"));
+        comboBox->addItem(tr("Slices"));
+        comboBox->addItem(tr("Synergy"));
+        comboBox->addItem(tr("Terrain"));
+        comboBox->addItem(tr("Tools"));
+        comboBox->addItem(tr("UI"));
+        comboBox->addItem(tr("Unity"));
     }
 
 } // namespace O3DE::ProjectManager

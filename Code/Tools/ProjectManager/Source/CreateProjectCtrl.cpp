@@ -13,7 +13,6 @@
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
-#include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
@@ -186,6 +185,11 @@ namespace O3DE::ProjectManager
             m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Back"));
             m_primaryButton->setVisible(false);
+        }
+        else if (m_stack->currentWidget() == m_createAGemScreen)
+        {
+            m_buttons->setVisible(false);
+            m_header->setSubTitle(QString(tr("Create a new Gem")));
         }
         else
         {

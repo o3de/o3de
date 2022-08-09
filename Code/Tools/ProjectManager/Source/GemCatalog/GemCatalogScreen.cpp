@@ -20,7 +20,6 @@
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
-#include <CreateAGemScreen.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>

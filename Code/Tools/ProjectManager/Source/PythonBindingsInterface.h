@@ -84,6 +84,15 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
 
         /**
+         * Get info about a Gem Template.
+         * @param path The absolute path to the Gem
+         * @param projectPath (Optional) The absolute path to the Gem project
+         * @return an outcome with GemInfo on success
+         */
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetGemTemplates(const QString& projectPath = {}) = 0;
+
+
+        /**
          * Get all available gem infos. This concatenates gems registered by the engine and the project.
          * @param projectPath The absolute path to the project.
          * @return A list of gem infos.
@@ -130,7 +139,16 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfo on success 
          */
         virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
-        
+
+        /**
+         * Create a Gem from the Create A Gem Wizard
+         * @param projectTemplatePath the path to the project template to use
+         * @param projectInfo the project info to use
+         * @param registerProject whether to register the project or not
+         * @return an outcome with ProjectInfo on success
+         */
+        virtual AZ::Outcome<GemInfo> CreateGem(const GemInfo& createAGemInfo) = 0;
+
         /**
          * Get info about a project 
          * @param path the absolute path to the project 
