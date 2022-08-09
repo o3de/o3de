@@ -9,8 +9,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomPath.h>
 #include <AzCore/DOM/DomUtils.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/Utils.h>
@@ -23,13 +23,13 @@ namespace AZ::Reflection
 {
     namespace DescriptorAttributes
     {
-        const Name Handler = Name::FromStringLiteral("Handler");
-        const Name Label = Name::FromStringLiteral("Label");
-        const Name Description = Name::FromStringLiteral("Description");
-        const Name SerializedPath = Name::FromStringLiteral("SerializedPath");
-        const Name Container = Name::FromStringLiteral("Container");
-        const Name ParentContainer = Name::FromStringLiteral("ParentContainer");
-        const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance");
+        const Name Handler = Name::FromStringLiteral("Handler", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Label = Name::FromStringLiteral("Label", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Description = Name::FromStringLiteral("Description", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name SerializedPath = Name::FromStringLiteral("SerializedPath", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name Container = Name::FromStringLiteral("Container", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainer = Name::FromStringLiteral("ParentContainer", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
     namespace LegacyReflectionInternal

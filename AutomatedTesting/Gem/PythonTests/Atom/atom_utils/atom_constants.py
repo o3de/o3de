@@ -833,13 +833,15 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
+          - 'Cubemap Texture': Asset.id for the texture used in cubemap rendering (File Type *.exr.streamingimage).
+          - 'Exposure': Light exposure value for HDRi Skybox projection ('float', range -5.0 - 5.0, default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
             'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 

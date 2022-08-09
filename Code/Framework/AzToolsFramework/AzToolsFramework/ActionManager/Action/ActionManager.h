@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 #include <AzToolsFramework/ActionManager/Action/EditorActionContext.h>
 #include <AzToolsFramework/ActionManager/Action/EditorWidgetAction.h>
@@ -79,6 +80,8 @@ namespace AzToolsFramework
         // ActionManagerInternalInterface overrides ...
         QAction* GetAction(const AZStd::string& actionIdentifier) override;
         const QAction* GetActionConst(const AZStd::string& actionIdentifier) const override;
+        EditorAction* GetEditorAction(const AZStd::string& actionIdentifier) override;
+        const EditorAction* GetEditorActionConst(const AZStd::string& actionIdentifier) const override;
         bool GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const override;
         bool GetHideFromToolBarsWhenDisabled(const AZStd::string& actionIdentifier) const override;
         QWidget* GenerateWidgetFromWidgetAction(const AZStd::string& widgetActionIdentifier) override;

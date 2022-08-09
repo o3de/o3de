@@ -28,6 +28,7 @@
         "Gems/CustomAssetExample",
         "Gems/DebugDraw",
         "Gems/DevTextures",
+        "Gems/DiffuseProbeGrid",
         "Gems/EditorPythonBindings",
         "Gems/EMotionFX",
         "Gems/ExpressionEvaluation",

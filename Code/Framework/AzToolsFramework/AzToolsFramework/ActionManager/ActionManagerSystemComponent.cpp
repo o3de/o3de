@@ -30,6 +30,7 @@ namespace AzToolsFramework
             m_defaultParentObject = new QWidget();
 
             m_actionManager = AZStd::make_unique<ActionManager>();
+            m_hotKeyManager = AZStd::make_unique<HotKeyManager>();
             m_menuManager = AZStd::make_unique<MenuManager>(m_defaultParentObject);
             m_toolBarManager = AZStd::make_unique<ToolBarManager>(m_defaultParentObject);
         }
