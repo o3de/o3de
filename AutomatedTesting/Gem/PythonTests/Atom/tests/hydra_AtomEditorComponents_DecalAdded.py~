@@ -159,10 +159,10 @@ def AtomEditorComponents_Decal_AddedToEntity():
         get_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Opacity'))
         Report.result(Tests.opacity_property_set, get_opacity_property == 0.5)
 
-        # 8. Set Normal Map Opacity property on Decal component
-        decal_component.set_component_property_value(AtomComponentProperties.decal('Normal Map Opacity'), value=0.5)
-        get_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Normal Map Opacity'))
-        Report.result(Tests.normal_map_opacity_property_set, get_opacity_property == 0.5)
+        # 8. Set Opacity property on Decal component
+        decal_component.set_component_property_value(AtomComponentProperties.decal('Opacity'), value=0.5)
+        get_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Opacity'))
+        Report.result(Tests.opacity_property_set, get_opacity_property == 0.5)
 
         # 9. Set Sort Key property on Decal component
         decal_component.set_component_property_value(AtomComponentProperties.decal('Sort Key'), value=255.0)
@@ -189,26 +189,26 @@ def AtomEditorComponents_Decal_AddedToEntity():
         decal_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, decal_entity.is_hidden() is True)
 
-        # 13. Test IsVisible.
+        # 12. Test IsVisible.
         decal_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, decal_entity.is_visible() is True)
 
-        # 14. Delete Decal entity.
+        # 13. Delete Decal entity.
         decal_entity.delete()
         Report.result(Tests.entity_deleted, not decal_entity.exists())
 
-        # 15. UNDO deletion.
+        # 14. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, decal_entity.exists())
 
-        # 16. REDO deletion.
+        # 15. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not decal_entity.exists())
 
-        # 17. Look for errors and asserts.
+        # 16. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

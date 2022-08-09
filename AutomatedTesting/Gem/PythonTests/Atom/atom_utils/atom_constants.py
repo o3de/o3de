@@ -315,6 +315,7 @@ class AtomComponentProperties:
             'name': 'Decal',
             'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
             'Opacity': 'Controller|Configuration|Opacity',
+            'Normal Map Opacity': 'Controller|Configuration|Normal Map Opacity',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
