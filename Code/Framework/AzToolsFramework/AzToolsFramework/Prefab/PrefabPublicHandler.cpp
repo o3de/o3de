@@ -644,19 +644,19 @@ namespace AzToolsFramework
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
 
+            // Get the alias of the parent entity in the owning template's DOM.
             AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
             PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
-
             
             PrefabDom& owningTemplateDom =
                 m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
-            PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
+            const PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
             if (!parentEntityDomInOwningTemplate)
             {
                 return AZ::Failure<AZStd::string>("Could not load entity DOM from the owning template's DOM.");
             }
 
-            PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
+            const PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
 
             PrefabDom parentEntityDomAfterAddingEntity;
             AZ::Entity* parentEntity = GetEntityById(parentId);

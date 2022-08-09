@@ -78,9 +78,7 @@ namespace AzToolsFramework
 
             explicit PrefabUndoEntityUpdate(const AZStd::string& undoOperationName);
 
-            void Capture(
-                const PrefabDomValue& initialState,
-                const PrefabDomValue& endState, const AZ::EntityId& entity);
+            void Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entity);
 
             void Undo() override;
             void Redo() override;
