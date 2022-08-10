@@ -7,14 +7,16 @@
  */
 
 // AZ
-#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
+#include <GraphModel/Model/Connection.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/Node.h>
+#include <GraphModel/Model/Slot.h>
 
 namespace GraphModel
 {
@@ -235,6 +237,89 @@ namespace GraphModel
     NodeId Node::GetId() const
     {
         return m_id;
+    }
+
+    bool Node::HasConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (!slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasInputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasOutputConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output && !slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasInputConnectionFromNode(ConstNodePtr node) const
+    {
+        if (node)
+        {
+            for (const auto& slotPair : GetSlots())
+            {
+                const auto& slot = slotPair.second;
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetSourceNode() == node || connection->GetSourceNode()->HasInputConnectionFromNode(node))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    bool Node::HasOutputConnectionToNode(ConstNodePtr node) const
+    {
+        if (node)
+        {
+            for (const auto& slotPair : GetSlots())
+            {
+                const auto& slot = slotPair.second;
+                if (slot->GetSlotDirection() == GraphModel::SlotDirection::Output)
+                {
+                    for (const auto& connection : slot->GetConnections())
+                    {
+                        if (connection->GetTargetNode() == node || connection->GetTargetNode()->HasOutputConnectionToNode(node))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     bool Node::Contains(ConstSlotPtr slot) const

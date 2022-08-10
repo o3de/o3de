@@ -241,6 +241,9 @@ namespace AzToolsFramework
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
             {
             }
+            virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
+            {
+            }
 
         protected:
             ~ViewportSettingNotifications() = default;

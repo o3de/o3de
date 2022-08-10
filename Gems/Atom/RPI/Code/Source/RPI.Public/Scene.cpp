@@ -276,22 +276,49 @@ namespace AZ
             }
             m_featureProcessors.clear();
         }
-        
+
+        void Scene::VisitFeatureProcessor(FeatureProcessorVisitCallback callback) const
+        {
+            auto VisitInterface = [&callback](const FeatureProcessorPtr& featureProcessor)
+            {
+                return featureProcessor != nullptr ? callback(*featureProcessor) : true;
+            };
+
+            AZStd::ranges::all_of(m_featureProcessors, VisitInterface);
+        }
+
         FeatureProcessor* Scene::GetFeatureProcessor(const FeatureProcessorId& featureProcessorId) const
         {
-            AZ::TypeId featureProcessorTypeId = FeatureProcessorFactory::Get()->GetFeatureProcessorTypeId(featureProcessorId);
-
-            return GetFeatureProcessor(featureProcessorTypeId);
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (FeatureProcessorId(fp.RTTI_GetTypeName()) == featureProcessorId)
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
         
         FeatureProcessor* Scene::GetFeatureProcessor(const TypeId& featureProcessorTypeId) const
         {
-            auto foundFP = AZStd::find_if(
-                AZStd::begin(m_featureProcessors),
-                AZStd::end(m_featureProcessors),
-                [featureProcessorTypeId](const FeatureProcessorPtr& fp) { return fp->RTTI_IsTypeOf(featureProcessorTypeId); });
-
-            return foundFP == AZStd::end(m_featureProcessors) ? nullptr : (*foundFP).get();
+            FeatureProcessor* foundFp = nullptr;
+            VisitFeatureProcessor(
+                [featureProcessorTypeId, &foundFp](FeatureProcessor& fp)
+                {
+                    if (fp.RTTI_IsTypeOf(featureProcessorTypeId))
+                    {
+                        foundFp = &fp;
+                        return false;
+                    }
+                    return true;
+                }
+            );
+            return foundFp;
         }
 
         void Scene::TryApplyRenderPipelineChanges(RenderPipeline* pipeline)

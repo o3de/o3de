@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/IntersectPoint.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 #include <LyShine/UiSerializeHelpers.h>
@@ -287,8 +288,8 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
     for (const AZ::RPI::ModelLodAsset::Mesh& mesh : meshes)
     {
         // Find position and UV semantics
-        static const AZ::Name positionName = AZ::Name::FromStringLiteral("POSITION");
-        static const AZ::Name uvName = AZ::Name::FromStringLiteral("UV");
+        static const AZ::Name positionName = AZ::Name::FromStringLiteral("POSITION", AZ::Interface<AZ::NameDictionary>::Get());
+        static const AZ::Name uvName = AZ::Name::FromStringLiteral("UV", AZ::Interface<AZ::NameDictionary>::Get());
         auto streamBufferList = mesh.GetStreamBufferInfoList();
         const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
         const AZ::RPI::ModelLodAsset::Mesh::StreamBufferInfo* uvBuffer = nullptr;

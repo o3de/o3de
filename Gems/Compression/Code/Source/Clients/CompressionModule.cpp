@@ -10,6 +10,7 @@
 #include <CompressionModuleInterface.h>
 #include "CompressionSystemComponent.h"
 #include <Compression/DecompressionInterfaceAPI.h>
+#include "DecompressionFactoryImpl.h"
 
 namespace Compression
 {
@@ -20,9 +21,10 @@ namespace Compression
         AZ_RTTI(CompressionModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
         AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator, 0);
 
-         CompressionModule()
+        CompressionModule()
         {
             // Create and Register the Decompression Factory
+            m_decompressionFactoryInterface = AZStd::make_unique<DecompressionFactoryImpl>();
             if (DecompressionFactory::Get() == nullptr)
             {
                 DecompressionFactory::Register(m_decompressionFactoryInterface.get());
