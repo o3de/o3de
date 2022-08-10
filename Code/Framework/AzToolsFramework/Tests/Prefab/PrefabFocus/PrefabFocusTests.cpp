@@ -93,7 +93,6 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override
         {
             m_rootInstance->get().Reset();
-            m_prefabFocusInterface->EditorEntityContextNotificationBusDisconnect();
 
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
