@@ -597,7 +597,7 @@ namespace AZ::Render
     {
         if (!m_skinnedMeshInstance)
         {
-            AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor. ");
+            AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor.");
             return;
         }
         
