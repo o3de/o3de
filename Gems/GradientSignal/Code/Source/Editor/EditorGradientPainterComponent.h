@@ -12,6 +12,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
@@ -20,7 +21,7 @@
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/GradientSampler.h>
-
+#
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 
@@ -88,7 +89,12 @@ namespace GradientSignal
 
         void SetupDependencyMonitor();
 
+        bool InComponentMode();
+
     private:
+        using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
+        ComponentModeDelegate m_componentModeDelegate;
+
         GradientPreviewer m_previewer;
         GradientPainterConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;

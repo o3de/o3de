@@ -25,10 +25,10 @@
 #include <Editor/EditorGradientTransformComponent.h>
 #include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
+#include <Editor/EditorGradientPainterComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
-#include <GradientSignal/Editor/EditorGradientPainterComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <UI/GradientPreviewDataWidget.h>
 

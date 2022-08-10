@@ -11,7 +11,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientPainterComponent.h>
+#include <Editor/EditorGradientPainterComponent.h>
+#include <Editor/EditorGradientPainterComponentMode.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
@@ -71,6 +72,7 @@ namespace GradientSignal
                 ->Version(0)
                 ->Field("Previewer", &EditorGradientPainterComponent::m_previewer)
                 ->Field("Configuration", &EditorGradientPainterComponent::m_configuration)
+                ->Field("ComponentMode", &EditorGradientPainterComponent::m_componentModeDelegate)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -92,9 +94,15 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientPainterComponent::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "PaintImage", "Paint into an image asset")
-                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorGradientPainterComponent::m_componentModeDelegate,
+                        "Paint Image",
+                        "Paint into an image asset")
+
+                    //->UIElement(AZ::Edit::UIHandlers::Button, "PaintImage", "Paint into an image asset")
+                    //->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                    //->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                     ;
             }
         }
@@ -131,12 +139,17 @@ namespace GradientSignal
         m_previewer.SetPreviewSettingsVisible(false);
         m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
         m_previewer.Activate(GetEntityId());
+
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorGradientPainterComponent, EditorGradientPainterComponentMode>(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
     }
 
     void EditorGradientPainterComponent::Deactivate()
     {
         // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_componentModeDelegate.Disconnect();
 
         m_previewer.Deactivate();
 
@@ -165,6 +178,11 @@ namespace GradientSignal
         // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
         // before listening for gradient queries.
         GradientRequestBus::Handler::BusConnect(GetEntityId());
+    }
+
+    bool EditorGradientPainterComponent::InComponentMode()
+    {
+        return m_componentModeDelegate.AddedToComponentMode();
     }
 
     float EditorGradientPainterComponent::GetValue([[maybe_unused]] const GradientSampleParams& sampleParams) const
