@@ -24,7 +24,7 @@ namespace TestImpact
     class Target;
 
     //! Placeholder for dependency graph data.
-    struct BuildTargetDependencyGraph
+    class BuildTargetDependencyGraph
     {
     };
 
