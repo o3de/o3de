@@ -44,18 +44,18 @@ namespace GradientSignal
                         "Input bounds for where to sample the data.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_outputResolution, "Resolution",
-                        "Output resolution of the baked image.")
+                        "Output resolution of the saved image.")
                     ->Attribute(AZ::Edit::Attributes::Decimals, 0)
                     ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &GradientPainterConfig::m_outputFormat, "Output Format",
-                        "Output format of the baked image.")
+                        "Output format of the saved image.")
                     ->Attribute(AZ::Edit::Attributes::EnumValues, &GradientImageCreatorRequests::SupportedOutputFormatOptions)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_outputImagePath, "Output Path",
-                        "Output path to bake the image to.")
+                        "Output path to save the image to.")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GradientImageCreatorRequests::GetSupportedImagesFilter())
-                    ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
+                    ->Attribute(AZ::Edit::Attributes::DefaultAsset, "output_gsi")
                     ;
             }
         }
