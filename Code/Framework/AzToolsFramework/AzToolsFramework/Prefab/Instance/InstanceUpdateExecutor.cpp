@@ -74,11 +74,10 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::AddInstanceToQueue(InstanceOptionalReference instance)
         {
-            if (instance == AZStd::nullopt)
+            if (!instance.has_value())
             {
                 AZ_Warning(
-                    "Prefab", false,
-                    "InstanceUpdateExecutor::AddInstanceToQueue - "
+                    "Prefab", false, "InstanceUpdateExecutor::AddInstanceToQueue - "
                     "Caller tried to insert null instance into the queue.");
 
                 return;

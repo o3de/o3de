@@ -19,7 +19,7 @@ AZ_CVAR(
     false,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "If set, enables debugging change change notifications on DocumentPropertyEditor adapters by validating their contents match their "
+    "If set, enables debugging change notifications on DocumentPropertyEditor adapters by validating their contents match their "
     "emitted patches");
 
 namespace AZ::DocumentPropertyEditor

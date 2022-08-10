@@ -15,6 +15,11 @@ namespace AZ::DocumentPropertyEditor
 {
     struct ReflectionAdapterReflectionImpl;
 
+    namespace Nodes
+    {
+        enum class ValueChangeType;
+    }
+
     //! ReflectionAdapter turns an in-memory instance of an object backed by
     //! the AZ Reflection system (via SerializeContext & EditContext) and creates
     //! a property grid that supports editing its members in a manner outlined by
@@ -22,6 +27,16 @@ namespace AZ::DocumentPropertyEditor
     class ReflectionAdapter : public RoutingAdapter
     {
     public:
+        //! Holds the parameters that define a specific property change event
+        struct PropertyChangeInfo
+        {
+            const AZ::Dom::Path& path;
+            const AZ::Dom::Value& newValue;
+            Nodes::ValueChangeType changeType;
+        };
+
+        using PropertyChangeEvent = Event<const PropertyChangeInfo&>;
+
         //! Creates an uninitialized (empty) ReflectionAdapter.
         ReflectionAdapter();
         //! Creates a ReflectionAdapter with a contents comrpised of the reflected data of
@@ -38,6 +53,13 @@ namespace AZ::DocumentPropertyEditor
         //! with a tree refresh if needed.
         static void InvokeChangeNotify(const AZ::Dom::Value& domNode);
 
+        //! Connects a listener to the event fired when a property has been changed.
+        //! This can be used to notify the view of changes to the DOM, e.g. notifying an editor of document changes.
+        void ConnectPropertyChangeHandler(PropertyChangeEvent::Handler& handler);
+        //! Call this to trigger a PropertyChangeEvent to notify the view that one of this adapter's
+        //! property editor instances has altered its value.
+        void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
+
     protected:
         Dom::Value GenerateContents() override;
         Dom::Value HandleMessage(const AdapterMessage& message) override;
@@ -47,6 +69,8 @@ namespace AZ::DocumentPropertyEditor
         AZ::TypeId m_typeId = AZ::TypeId::CreateNull();
 
         AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
+
+        PropertyChangeEvent m_propertyChangeEvent;
 
         friend struct ReflectionAdapterReflectionImpl;
     };

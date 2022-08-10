@@ -24,20 +24,16 @@
 
 namespace AzToolsFramework::Prefab
 {
-    void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
+    void PrefabFocusHandler::RegisterPrefabFocusInterface()
     {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
-        {
-            behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                ->Attribute(AZ::Script::Attributes::Module, "prefab")
-                ->Event("FocusOnOwningPrefab", &PrefabFocusPublicInterface::FocusOnOwningPrefab);
-        }
-    }
+        AZ::Interface<PrefabFocusInterface>::Register(this);
+        AZ::Interface<PrefabFocusPublicInterface>::Register(this);
 
-    void PrefabFocusHandler::RegisterPrefabFocusHandlerInterface()
-    {
+        EditorEntityInfoNotificationBus::Handler::BusConnect();
+        EditorEntityContextNotificationBus::Handler::BusConnect();
+        PrefabPublicNotificationBus::Handler::BusConnect();
+        PrefabFocusPublicRequestBus::Handler::BusConnect();
+
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         AZ_Assert(
             m_instanceEntityMapperInterface,
@@ -67,14 +63,18 @@ namespace AzToolsFramework::Prefab
         PrefabFocusPublicRequestBus::Handler::BusConnect();
     }
 
-    void PrefabFocusHandler::UnregisterPrefabFocusHandlerInterface()
+    void PrefabFocusHandler::UnregisterPrefabFocusInterface()
     {
+        m_instanceUpdateExecutorInterface = nullptr;
+        m_instanceEntityMapperInterface = nullptr;
+
         PrefabFocusPublicRequestBus::Handler::BusDisconnect();
-        AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
-        AZ::Interface<PrefabFocusInterface>::Unregister(this);
         PrefabPublicNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+
+        AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
+        AZ::Interface<PrefabFocusInterface>::Unregister(this);
     }
 
     void PrefabFocusHandler::EditorEntityContextNotificationBusConnect()
@@ -339,6 +339,13 @@ namespace AzToolsFramework::Prefab
             m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
         }
 
+        // Force propagation on both the previous and the new focused instances to ensure they are represented correctly.
+        if (previousFocusedInstance.has_value())
+        {
+            m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
+        }
+        m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
+
         return AZ::Success();
     }
     
@@ -385,7 +392,7 @@ namespace AzToolsFramework::Prefab
             InstanceOptionalConstReference instance = owningInstance;
             AZStd::vector<InstanceOptionalConstReference> instancePath;
 
-            auto climbUpResult = PrefabInstanceUtils::GetRelativePathBetweenInstances(&instance->get(), &focusedPrefabInstance->get());
+            auto climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(&instance->get(), &focusedPrefabInstance->get());
             if (climbUpResult.first != &focusedPrefabInstance->get())
             {
                 AZ_Error(
@@ -694,5 +701,4 @@ namespace AzToolsFramework::Prefab
 
         return AZStd::nullopt;
     }
-
 } // namespace AzToolsFramework::Prefab

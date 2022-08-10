@@ -44,10 +44,8 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* context);
-
-        void RegisterPrefabFocusHandlerInterface();
-        void UnregisterPrefabFocusHandlerInterface();
+        void RegisterPrefabFocusInterface();
+        void UnregisterPrefabFocusInterface();
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
@@ -100,6 +98,9 @@ namespace AzToolsFramework::Prefab
         int m_rootAliasFocusPathLength = 0;
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
+
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;

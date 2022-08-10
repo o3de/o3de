@@ -27,7 +27,7 @@ namespace AzToolsFramework
              * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
              * of startInstance), and targetInstance's relative path to startInstance.
              */
-            AZStd::pair<const Instance*, AZStd::vector<InstanceOptionalConstReference>> GetRelativePathBetweenInstances(
+            AZStd::pair<const Instance*, AZStd::vector<InstanceOptionalConstReference>> ClimbUpToTargetOrRootInstance(
                 const Instance* startInstance, const Instance* targetInstance);
 
             /**
@@ -39,7 +39,7 @@ namespace AzToolsFramework
              * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
              * of startInstance), and a string of startInstance's relative path to targetInstance.
              */
-            AZStd::pair<const Instance*, AZStd::string> GetRelativePathStringBetweenInstances(
+            AZStd::pair<const Instance*, AZStd::string> GetRelativePathBetweenInstances(
                 const Instance* startInstance, const Instance* targetInstance);
 
         } // namespace PrefabInstanceUtils

@@ -50,6 +50,7 @@ namespace AzToolsFramework
 
         // Remove Menu Items
         void RemoveAction(AZStd::string actionIdentifier);
+        void RemoveSubMenu(AZStd::string menuIdentifier);
 
         // Returns whether the action or menu queried is contained in this menu.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
