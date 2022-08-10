@@ -33,7 +33,7 @@ ly_add_target(
 
 ly_add_target(
     NAME TestImpact.Frontend.Console.Python EXECUTABLE
-    OUTPUT_NAME tiaf_py
+    OUTPUT_NAME tiaf_python
     NAMESPACE AZ
     FILES_CMAKE
         testimpactframework_frontend_console_python_files.cmake

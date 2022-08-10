@@ -231,6 +231,15 @@ function(ly_add_target)
         )
     endif()
 
+    # Add the target dependencies so they can be walked later
+    if(ly_add_target_BUILD_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES})
+    endif()
+
+    if(ly_add_target_RUNTIME_DEPENDENCIES)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS_${ly_add_target_NAME}_RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES})
+    endif()
+
     if (ly_add_target_SHARED OR ly_add_target_MODULE OR ly_add_target_EXECUTABLE OR ly_add_target_APPLICATION)
 
         if (ly_add_target_OUTPUT_SUBDIRECTORY)

@@ -182,12 +182,6 @@ struct SSelectObjectDialogSettings
 //////////////////////////////////////////////////////////////////////////
 struct SGUI_Settings
 {
-    bool bWindowsVista;        // true when running on windows Vista
-    QFont hSystemFont;         // Default system GUI font.
-    QFont hSystemFontBold;     // Default system GUI bold font.
-    QFont hSystemFontItalic;   // Default system GUI italic font.
-    int nDefaultFontHieght;    // Default font height for 8 logical units.
-
     int nToolbarIconSize;      // Override size of the toolbar icons
 };
 
