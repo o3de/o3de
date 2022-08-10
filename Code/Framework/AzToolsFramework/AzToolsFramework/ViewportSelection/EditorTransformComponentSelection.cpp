@@ -52,9 +52,6 @@ static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
 
-// #pragma optimize("", off)
-// #pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -1740,8 +1737,6 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::DeselectEntities()
     {
-        // AZ_Printf("debugging", "DeselectEntities\n");
-
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!UndoRedoOperationInProgress())
@@ -1770,16 +1765,12 @@ namespace AzToolsFramework
 
     bool EditorTransformComponentSelection::SelectDeselect(const AZ::EntityId entityId)
     {
-        // AZ_Printf("debugging", "SelectDeselect\n");
-
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (entityId.IsValid())
         {
             if (IsEntitySelectedInternal(entityId, m_selectedEntityIds))
             {
-                // AZ_Printf("debugging", "SelectDeselect - Internal\n");
-
                 if (!UndoRedoOperationInProgress())
                 {
                     RemoveEntityFromSelection(entityId);
@@ -1805,8 +1796,6 @@ namespace AzToolsFramework
             {
                 if (!UndoRedoOperationInProgress())
                 {
-                    // AZ_Printf("debugging", "SelectDeselect - External\n");
-
                     AddEntityToSelection(entityId);
 
                     const auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
@@ -1835,7 +1824,6 @@ namespace AzToolsFramework
         // ensure deselect/select is tracked as an atomic undo/redo operation
         ScopedUndoBatch undoBatch(ChangeEntitySelectionUndoRedoDesc);
 
-        // AZ_Printf("debugging", "ChangeSelectedEntity\n");
         DeselectEntities();
         SelectDeselect(entityId);
     }
@@ -3412,8 +3400,6 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::SetSelectedEntities(const EntityIdList& entityIds)
     {
-        // AZ_Printf("debugging", "SetSelectedEntities\n");
-
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // we are responsible for updating the current selection
@@ -4547,6 +4533,3 @@ namespace AzToolsFramework
     template Etcs::PivotOrientationResult Etcs::CalculateSelectionPivotOrientation<EntityIdManipulatorLookups>(
         const EntityIdManipulatorLookups&, const OptionalFrame&, const ReferenceFrame referenceFrame);
 } // namespace AzToolsFramework
-
-// #pragma optimize("", on)
-// #pragma inline_depth(1)

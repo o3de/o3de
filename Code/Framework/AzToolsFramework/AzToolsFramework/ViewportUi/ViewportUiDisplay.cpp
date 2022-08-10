@@ -17,10 +17,6 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
@@ -506,5 +502,3 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAutoFillBackground(false);
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
-#pragma optimize("", on)
-#pragma inline_depth()

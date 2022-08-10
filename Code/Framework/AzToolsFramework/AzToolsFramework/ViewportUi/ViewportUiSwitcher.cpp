@@ -10,8 +10,6 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <QBitmap>
 
-#include <AzCore/Console/IConsole.h>
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
