@@ -40,6 +40,7 @@ namespace AzToolsFramework
         // MenuManagerInterface overrides ...
         MenuManagerOperationResult RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties) override;
         MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) override;
+        bool IsMenuRegistered(const AZStd::string& menuIdentifier) const override;
         MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddActionsToMenu(
@@ -51,6 +52,12 @@ namespace AzToolsFramework
         MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddSubMenusToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& subMenus) override;
+        MenuManagerOperationResult RemoveSubMenuFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) override;
+        MenuManagerOperationResult RemoveSubMenusFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& subMenuIdentifiers) override;
         MenuManagerOperationResult AddWidgetToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddMenuToMenuBar(
