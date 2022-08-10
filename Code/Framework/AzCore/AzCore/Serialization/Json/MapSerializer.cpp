@@ -322,7 +322,7 @@ namespace AZ
         {
             if (context.ShouldKeepDefaults() && keyValues.Empty())
             {
-                outputValue.SetArray();
+                outputValue.SetObject();
                 return context.Report(code, "Successfully stored associative container.");
             }
 
