@@ -4838,9 +4838,17 @@ namespace AZ
 
             static bool Disconnect(BusHandler* handler, BehaviorArgument* id)
             {
-                if (id && id->ConvertTo<typename BusHandler::BusType::BusIdType>())
+                if (id)
                 {
-                    handler->BusDisconnect(*id->GetAsUnsafe<typename BusHandler::BusType::BusIdType>());
+                    if (id->ConvertTo<typename BusHandler::BusType::BusIdType>())
+                    {
+                        handler->BusDisconnect(*id->GetAsUnsafe<typename BusHandler::BusType::BusIdType>());
+                        return true;
+                    }
+                }
+                else // null id passed, attempt id-less disconnect
+                {
+                    handler->BusDisconnect();
                     return true;
                 }
                 return false;
