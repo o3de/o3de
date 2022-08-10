@@ -47,11 +47,11 @@ namespace AzToolsFramework::Prefab
         void RegisterPrefabFocusInterface();
         void UnregisterPrefabFocusInterface();
 
+        static void Reflect(AZ::ReflectContext* context);
+
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
-        void EditorEntityContextNotificationBusConnect() override;
-        void EditorEntityContextNotificationBusDisconnect() override;
-        
+
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
@@ -101,12 +101,10 @@ namespace AzToolsFramework::Prefab
 
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
+        InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
-        InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
-        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 

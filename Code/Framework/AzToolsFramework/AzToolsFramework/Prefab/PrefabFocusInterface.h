@@ -31,10 +31,6 @@ namespace AzToolsFramework::Prefab
         //! but won't trigger the Editor APIs to visualize focus mode on the UI.
         virtual void InitializeEditorInterfaces() = 0;
 
-        //! Connect/Disconnect EditorEntityContextNotificationBus.
-        virtual void EditorEntityContextNotificationBusConnect() = 0;
-        virtual void EditorEntityContextNotificationBusDisconnect() = 0;
-
         //! Set the focused prefab instance to the owning instance of the entityId provided.
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;

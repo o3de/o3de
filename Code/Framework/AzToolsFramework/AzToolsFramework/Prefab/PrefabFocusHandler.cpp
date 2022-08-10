@@ -56,7 +56,7 @@ namespace AzToolsFramework::Prefab
             "Check that it is being correctly initialized.");
 
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        EditorEntityContextNotificationBusConnect();
+        EditorEntityContextNotificationBus::Handler::BusConnect();
         PrefabPublicNotificationBus::Handler::BusConnect();
         AZ::Interface<PrefabFocusInterface>::Register(this);
         AZ::Interface<PrefabFocusPublicInterface>::Register(this);
@@ -70,21 +70,23 @@ namespace AzToolsFramework::Prefab
 
         PrefabFocusPublicRequestBus::Handler::BusDisconnect();
         PrefabPublicNotificationBus::Handler::BusDisconnect();
-        EditorEntityContextNotificationBusDisconnect();
+        EditorEntityContextNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
 
         AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
         AZ::Interface<PrefabFocusInterface>::Unregister(this);
     }
 
-    void PrefabFocusHandler::EditorEntityContextNotificationBusConnect()
+    void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
     {
-        EditorEntityContextNotificationBus::Handler::BusConnect();
-    }
-
-    void PrefabFocusHandler::EditorEntityContextNotificationBusDisconnect()
-    {
-        EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context); behaviorContext)
+        {
+            behaviorContext->EBus<PrefabFocusPublicRequestBus>("PrefabFocusPublicRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Prefab")
+                ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                ->Event("FocusOnOwningPrefab", &PrefabFocusPublicInterface::FocusOnOwningPrefab);
+        }
     }
 
     void PrefabFocusHandler::InitializeEditorInterfaces()
@@ -271,7 +273,6 @@ namespace AzToolsFramework::Prefab
 
         const RootAliasPath previousContainerRootAliasPath = m_rootAliasFocusPath;
         const InstanceOptionalReference previousFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
-
         m_rootAliasFocusPath = focusedInstance->get().GetAbsoluteInstanceAliasPath();
         m_rootAliasFocusPathLength = aznumeric_cast<int>(AZStd::distance(m_rootAliasFocusPath.begin(), m_rootAliasFocusPath.end()));
 
@@ -322,29 +323,27 @@ namespace AzToolsFramework::Prefab
         SetInstanceContainersOpenStateOfAllDescendantContainers(
             GetInstanceReference(m_rootAliasFocusPath), m_prefabEditScope == PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT);
 
-        PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged,
-            previousFocusedInstance->get().GetContainerEntityId(), focusedInstance->get().GetContainerEntityId());
-
-        // Force propagation both the previous and the new focused instances to ensure they are represented correctly.
-        if (m_instanceUpdateExecutorInterface)
+        AZ::EntityId previousFocusedInstanceContainerEntityId = previousFocusedInstance.has_value() ?
+            previousFocusedInstance->get().GetContainerEntityId() : AZ::EntityId();
+        AZ::EntityId currentFocusedInstanceContainerEntityId = focusedInstance.has_value() ?
+            focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
+        if (previousFocusedInstanceContainerEntityId != currentFocusedInstanceContainerEntityId)
         {
-            auto previouslyFocusedInstance = GetInstanceReference(previousContainerRootAliasPath);
-
-            // The most common operation is focusing a prefab instance nested in the currently focused instance.
-            // Queuing the previous focus before the new one saves some time in the propagation loop on average.
-            if (previouslyFocusedInstance.has_value())
-            {
-                m_instanceUpdateExecutorInterface->AddInstanceToQueue(previouslyFocusedInstance);
-            }
-            m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
+            PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged,
+                previousFocusedInstanceContainerEntityId, currentFocusedInstanceContainerEntityId);
         }
 
         // Force propagation on both the previous and the new focused instances to ensure they are represented correctly.
+        // The most common operation is focusing a prefab instance nested in the currently focused instance.
+        // Queuing the previous focus before the new one saves some time in the propagation loop on average.
         if (previousFocusedInstance.has_value())
         {
             m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
         }
-        m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
+        if (focusedInstance.has_value())
+        {
+            m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
+        }
 
         return AZ::Success();
     }

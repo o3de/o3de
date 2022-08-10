@@ -57,7 +57,7 @@ namespace AzToolsFramework
                 targetInstance = &(focusedInstance->get());
             }
 
-            auto climbUpToDomSourceInstanceResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, targetInstance);
+            auto climbUpToDomSourceInstanceResult = PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, targetInstance);
             auto domSourceInstance = climbUpToDomSourceInstanceResult.first;
             AZStd::string& relativePathToDomSourceInstance = climbUpToDomSourceInstanceResult.second;
 
@@ -78,7 +78,7 @@ namespace AzToolsFramework
             if (domSourceInstance != targetInstance)
             {
                 auto climbUpToFocusedInstanceAncestorResult =
-                    PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(targetInstance, instance);
+                    PrefabInstanceUtils::GetRelativePathBetweenInstances(targetInstance, instance);
                 auto focusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.first;
                 AZStd::string& relativePathToFocusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.second;
 
@@ -127,7 +127,7 @@ namespace AzToolsFramework
             const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const
         {
             // Climb from the focused instance to the root and store the path.
-            auto climbUpToFocusedInstanceResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(focusedInstance, nullptr);
+            auto climbUpToFocusedInstanceResult = PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance, nullptr);
             auto rootInstance = climbUpToFocusedInstanceResult.first;
             AZStd::string& rootToFocusedInstance = climbUpToFocusedInstanceResult.second;
 
