@@ -161,8 +161,8 @@ def AtomEditorComponents_Decal_AddedToEntity():
 
         # 8. Set Normal Map Opacity property on Decal component
         decal_component.set_component_property_value(AtomComponentProperties.decal('Normal Map Opacity'), value=0.5)
-        get_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Normal Map Opacity'))
-        Report.result(Tests.normal_map_opacity_property_set, get_opacity_property == 0.5)
+        get_normal_map_opacity_property = decal_component.get_component_property_value(AtomComponentProperties.decal('Normal Map Opacity'))
+        Report.result(Tests.normal_map_opacity_property_set, get_normal_map_opacity_property == 0.5)
 
         # 9. Set Sort Key property on Decal component
         decal_component.set_component_property_value(AtomComponentProperties.decal('Sort Key'), value=255.0)
