@@ -242,8 +242,7 @@ namespace AZ
                     const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
                     if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                     {
-                        drawItemProperties.m_item->m_submitIndex = index;
-                        commandList->Submit(*drawItemProperties.m_item);
+                        commandList->Submit(*drawItemProperties.m_item, index);
                     }
                 }
             }
