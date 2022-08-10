@@ -2295,7 +2295,7 @@ void EditorViewportWidget::EndUndoTransaction()
 
 void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
 {
-    // Even when the mouse cursor is not in a constrained mode, we still return the this viewport as the constraint window,
+    // Even when the mouse cursor is not in a constrained mode, we still return the viewport as the constraint window,
     // so that the engine's mouse coordinates will be normalized to the editor viewport rather than the entire application window.
     // This ensures that viewport mouse interactions are in the correct 2D coordinate space, for example when using ImGuiManager's
     // debug tools.

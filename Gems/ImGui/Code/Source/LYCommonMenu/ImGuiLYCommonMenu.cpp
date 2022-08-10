@@ -514,7 +514,7 @@ namespace ImGui
 
                     // Discrete Input Mode
                     // Not available in edit mode because inputs are discrete there anyway.
-                    if(!gEnv->IsEditor() || gEnv->IsEditorGameMode())
+                    if (!gEnv->IsEditor() || gEnv->IsEditorGameMode())
                     {
                         bool discreteInputEnabledCheckbox = discreteInputEnabled;
                         ImGui::Checkbox(AZStd::string::format("Discrete Input %s (Click Checkbox to Toggle)", discreteInputEnabledCheckbox ? "On" : "Off").c_str(), &discreteInputEnabledCheckbox);
