@@ -355,7 +355,7 @@ namespace AZ::IO
         constexpr int ComparePathView(const PathView& other) const;
         constexpr AZStd::string_view root_name_view() const;
         constexpr AZStd::string_view root_directory_view() const;
-        constexpr AZStd::string_view root_path_raw_view() const;
+        constexpr AZStd::string_view root_path_view() const;
         constexpr AZStd::string_view relative_path_view() const;
         constexpr AZStd::string_view parent_path_view() const;
         constexpr AZStd::string_view filename_view() const;
@@ -372,7 +372,7 @@ namespace AZ::IO
     //! then their hash values are also equal
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
-    size_t hash_value(const PathView& pathToHash) noexcept;
+    constexpr size_t hash_value(const PathView& pathToHash) noexcept;
 
     // path.comparison
     constexpr bool operator==(const PathView& lhs, const PathView& rhs) noexcept;
@@ -726,7 +726,7 @@ namespace AZ::IO
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
     template <typename StringType>
-    size_t hash_value(const BasicPath<StringType>& pathToHash);
+    constexpr size_t hash_value(const BasicPath<StringType>& pathToHash);
 
     // path.append
     template <typename StringType>

@@ -27,6 +27,12 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyMenuIsRegistered)
+    {
+        auto outcome = m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
+        EXPECT_TRUE(m_menuManagerInterface->IsMenuRegistered("o3de.menu.test"));
+    }
+
     TEST_F(ActionManagerFixture, RegisterMenuBar)
     {
         auto outcome = m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
@@ -278,6 +284,115 @@ namespace UnitTest
         m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
         auto outcome = m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
         EXPECT_FALSE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, AddSubMenusToMenu)
+    {
+        // Register menu and submenus.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
+
+        // Add the sub-menus to the menu.
+        AZStd::vector<AZStd::pair<AZStd::string, int>> testMenus;
+        testMenus.emplace_back("o3de.menu.testSubMenu1", 100);
+        testMenus.emplace_back("o3de.menu.testSubMenu2", 200);
+
+        m_menuManagerInterface->AddSubMenusToMenu("o3de.menu.testMenu", testMenus);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menus are now in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu1 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu1");
+        QMenu* submenu2 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu2");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 2);
+        EXPECT_EQ(actions[0]->menu(), submenu1);
+        EXPECT_EQ(actions[1]->menu(), submenu2);
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenu)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Remove the sub-menu from the menu.
+        m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify the sub-menu is not in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenuWithoutAdding)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+
+        // Remove the sub-menu from the menu.
+        auto outcome = m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveSubMenuFromMenuTwice)
+    {
+        // Register menu and submenu.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu", {});
+
+        // Add the sub-menu to the menu.
+        m_menuManagerInterface->AddSubMenuToMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu", 42);
+
+        // Remove the sub-menu from the menu twice.
+        m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        auto outcome = m_menuManagerInterface->RemoveSubMenuFromMenu("o3de.menu.testMenu", "o3de.menu.testSubMenu");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+    
+    TEST_F(ActionManagerFixture, RemoveSubMenusFromMenu)
+    {
+        // Register menu and submenus.
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testMenu", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu1", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu2", {});
+        m_menuManagerInterface->RegisterMenu("o3de.menu.testSubMenu3", {});
+
+        // Add the sub-menus to the menu.
+        AZStd::vector<AZStd::pair<AZStd::string, int>> testMenuAdds;
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu1", 100);
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu2", 200);
+        testMenuAdds.emplace_back("o3de.menu.testSubMenu3", 300);
+
+        m_menuManagerInterface->AddSubMenusToMenu("o3de.menu.testMenu", testMenuAdds);
+
+        // Remove two sub-menus from the menu.
+        AZStd::vector<AZStd::string> testMenuRemoves;
+        testMenuRemoves.emplace_back("o3de.menu.testSubMenu1");
+        testMenuRemoves.emplace_back("o3de.menu.testSubMenu2");
+        m_menuManagerInterface->RemoveSubMenusFromMenu("o3de.menu.testMenu", testMenuRemoves);
+
+        // Manually trigger Menu refresh - Editor will call this once per tick.
+        m_menuManagerInternalInterface->RefreshMenus();
+
+        // Verify only one sub-menu is now in the menu.
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu3 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu3");
+        const auto& actions = menu->actions();
+
+        EXPECT_EQ(actions.size(), 1);
+        EXPECT_EQ(actions[0]->menu(), submenu3);
     }
 
     TEST_F(ActionManagerFixture, AddUnregisteredWidgetInMenu)
