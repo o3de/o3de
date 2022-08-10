@@ -38,17 +38,21 @@ namespace GradientSignal
                         ->Attribute(AZ_CRC_CE("GradientEntity"), &GradientPreviewer::GetGradientEntityId)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview Settings")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
-                    ->DataElement(0, &GradientPreviewer::m_boundsEntityId, "Pin Preview to Shape", "The entity whose shape represents the bounds to render the gradient preview")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_boundsEntityId, "Pin Preview to Shape",
+                        "The entity whose shape represents the bounds to render the gradient preview")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::PreviewSettingsAndSettingsVisibilityChanged)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSettingsVisibility)
-                    ->DataElement(0, &GradientPreviewer::m_previewCenter, "Preview Position", "Center of the preview bounds")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewCenter, "Preview Position",
+                        "Center of the preview bounds")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewPositionVisibility)
-                    ->DataElement(0, &GradientPreviewer::m_previewExtents, "Preview Size", "Size of the preview bounds")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_previewExtents, "Preview Size", "Size of the preview bounds")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewSizeVisibility)
-                    ->DataElement(0, &GradientPreviewer::m_constrainToShape, "Constrain to Shape", "If checked, only renders the parts of the gradient inside the component's shape and not its entire bounding box")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::UpdatePreviewSettings)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &GradientPreviewer::m_constrainToShape, "Constrain to Shape",
+                        "If checked, only renders the parts of the gradient inside the component's shape and not its entire bounding box")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GradientPreviewer::RefreshPreview)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &GradientPreviewer::GetPreviewConstrainToShapeVisibility)
                     ->EndGroup()
                     ;
@@ -60,20 +64,16 @@ namespace GradientSignal
     {
         m_ownerEntityId = ownerEntityId;
 
+        // If there's no bounds entity already set, then default it to the owning entity.
         if (!m_boundsEntityId.IsValid())
         {
-            // Default our preview entity to this entity
             m_boundsEntityId = m_ownerEntityId;
-
-            // TODO: what to do with this, if anything?
-            //SetDirty();
         }
-
 
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(ownerEntityId);
         GradientPreviewContextRequestBus::Handler::BusConnect(ownerEntityId);
 
-        UpdatePreviewSettings();
+        RefreshPreview();
     }
 
     void GradientPreviewer::Deactivate()
@@ -131,22 +131,20 @@ namespace GradientSignal
 
     AZ::u32 GradientPreviewer::PreviewSettingsAndSettingsVisibilityChanged() const
     {
-        UpdatePreviewSettings();
+        RefreshPreview();
 
         // We've changed the visibility of one or more properties, so refresh the entire component.
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
-
-
     void GradientPreviewer::OnSelected()
     {
-        UpdatePreviewSettings();
+        RefreshPreview();
     }
 
     void GradientPreviewer::OnDeselected()
     {
-        UpdatePreviewSettings();
+        RefreshPreview();
     }
 
     AZ::EntityId GradientPreviewer::GetPreviewEntity() const
@@ -190,11 +188,19 @@ namespace GradientSignal
         return m_ownerEntityId;
     }
 
-    void GradientPreviewer::UpdatePreviewSettings() const
+    void GradientPreviewer::RefreshPreview() const
     {
         // Trigger an update just for our specific preview (this means there was a preview-specific change, not an actual configuration
         // change)
-        GradientSignal::GradientPreviewRequestBus::Event(m_ownerEntityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
+        RefreshPreviews({ m_ownerEntityId });
+    }
+
+    void GradientPreviewer::RefreshPreviews(const AzToolsFramework::EntityIdList& entities)
+    {
+        for (auto entityId : entities)
+        {
+            GradientSignal::GradientPreviewRequestBus::Event(entityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
+        }
     }
 
     AzToolsFramework::EntityIdList GradientPreviewer::CancelPreviewRendering()

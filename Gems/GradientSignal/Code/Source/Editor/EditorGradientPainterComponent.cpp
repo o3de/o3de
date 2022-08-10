@@ -95,7 +95,6 @@ namespace GradientSignal
                     ->UIElement(AZ::Edit::UIHandlers::Button, "PaintImage", "Paint into an image asset")
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
-                    //->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorGradientPainterComponent::BakeImage)
                     ;
             }
         }
@@ -241,12 +240,9 @@ namespace GradientSignal
         SetupDependencyMonitor();
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
-        for (auto entityId : entityIds)
-        {
-            GradientSignal::GradientPreviewRequestBus::Event(entityId, &GradientSignal::GradientPreviewRequestBus::Events::Refresh);
-        }
+        m_previewer.RefreshPreviews(entityIds);
 
-        // This OnCompositionChanged notification will refresh our own preview so we don't need to call UpdatePreviewSettings explicitly
+        // This OnCompositionChanged notification will refresh our own preview so we don't need to call RefreshPreview explicitly
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 } // namespace GradientSignal

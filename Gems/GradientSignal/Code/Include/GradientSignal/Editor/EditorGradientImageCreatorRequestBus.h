@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <GradientSignal/Util.h>
 
