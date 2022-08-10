@@ -46,7 +46,7 @@
 
 #include <Data/Data.h>
 
-
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
 #include <ScriptCanvas/Bus/UnitTestVerificationBus.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -576,31 +576,42 @@ namespace ScriptCanvasEditor
         Reporter reporter;
         UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestStart, asset.Id());
 
-        ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunAssetGraph, asset, mode);
-
-        UnitTestResult testResult;
-
-        UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
-        UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.Id(), testResult);
-
-        m_pendingTests.Add(asset, mode);
-
-        ++m_testMetrics[static_cast<int>(mode)].m_graphsTested;
-
-        if (testResult.m_compiled)
+        // load it
+        auto result = ScriptCanvas::LoadFromFile(asset.RelativePath().c_str());
+        if (result.m_isSuccess)
         {
-            if (testResult.m_completed)
+            ScriptCanvasExecutionBus::BroadcastResult(reporter, &ScriptCanvasExecutionRequests::RunAssetGraph, result.m_handle, mode);
+
+            UnitTestResult testResult;
+
+            UnitTestVerificationBus::BroadcastResult(testResult, &UnitTestVerificationRequests::Verify, reporter);
+            UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.Id(), testResult);
+
+            m_pendingTests.Add(asset, mode);
+
+            ++m_testMetrics[static_cast<int>(mode)].m_graphsTested;
+
+            if (testResult.m_compiled)
             {
-                ++m_testMetrics[static_cast<int>(mode)].m_success;
+                if (testResult.m_completed)
+                {
+                    ++m_testMetrics[static_cast<int>(mode)].m_success;
+                }
+                else
+                {
+                    ++m_testMetrics[static_cast<int>(mode)].m_failures;
+                }
             }
             else
             {
-                ++m_testMetrics[static_cast<int>(mode)].m_failures;
+                ++m_testMetrics[static_cast<int>(mode)].m_compilationFailures;
             }
         }
         else
         {
-            ++m_testMetrics[static_cast<int>(mode)].m_compilationFailures;
+            UnitTestResult testResult;
+            UnitTestWidgetNotificationBus::Broadcast(&UnitTestWidgetNotifications::OnTestResult, asset.Id(), testResult);
+            ++m_testMetrics[static_cast<int>(mode)].m_failures;
         }
 
         m_pendingTests.Complete(asset, mode);

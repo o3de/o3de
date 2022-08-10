@@ -13,7 +13,7 @@
 namespace ScriptCanvasEditor
 {
     struct UnitTestResult
-    {   
+    {
         bool m_compiled = false;
         bool m_running = false;
         bool m_completed = false;
