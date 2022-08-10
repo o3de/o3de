@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
@@ -171,6 +172,16 @@ namespace ScriptCanvas
 
     void AutoGenRegistryManager::UnregisterRegistry(const char* registryName)
     {
-        m_registries.erase(registryName);
+        auto it = m_registries.find(registryName);
+        if (it != m_registries.end())
+        {
+            auto componentDescriptors = it->second->GetComponentDescriptors();
+            for (auto descriptor : componentDescriptors)
+            {
+                descriptor->ReleaseDescriptor();
+            }
+
+            m_registries.erase(it);
+        }
     }
 } // namespace ScriptCanvas
