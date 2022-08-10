@@ -39,6 +39,7 @@ namespace AzToolsFramework
             return;
         }
 
+        // note: we know at this point the view has to be a circle view due to the constraints we make about this type (see name)
         const auto* view = static_cast<const ManipulatorViewCircle*>(angularManipulator->GetView());
 
         const auto manipulatorState = angularManipulator->CalculateManipulatorState();
@@ -76,11 +77,12 @@ namespace AzToolsFramework
         const float viewScale = CalculateScreenToWorldMultiplier(worldPosition, cameraState);
         const auto angle = m_mostRecentAction.m_current.m_deltaRadians;
         const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
+        const auto angleSign = Sign(angle);
         for (auto step = 0.0f; step < AZ::GetAbs(angle); step += stepIncrement)
         {
-            const auto first = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, step * -Sign(angle)).TransformVector(initialPointToCenter);
+            const auto first = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, step * angleSign).TransformVector(initialPointToCenter);
             const auto second =
-                AZ::Quaternion::CreateFromAxisAngle(fixedAxis, (step - stepIncrement) * -Sign(angle)).TransformVector(initialPointToCenter);
+                AZ::Quaternion::CreateFromAxisAngle(fixedAxis, (step - stepIncrement) * angleSign).TransformVector(initialPointToCenter);
             debugDisplay.DrawTri(
                 manipulatorState.m_localPosition,
                 manipulatorState.m_localPosition + first * view->m_radius * viewScale,

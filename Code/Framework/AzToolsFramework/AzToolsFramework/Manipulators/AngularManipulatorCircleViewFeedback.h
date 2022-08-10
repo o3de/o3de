@@ -18,8 +18,6 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
-    class AngularManipulator;
-
     //! A visual segment indicator of how much rotation has occurred about an AngularManipulator using a ManipulatorCircleView.
     class AngularManipulatorCircleViewFeedback
     {

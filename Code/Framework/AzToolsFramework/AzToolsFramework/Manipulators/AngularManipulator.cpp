@@ -81,7 +81,7 @@ namespace AzToolsFramework
 
         // determine the direction (clockwise or counter clockwise) the rotation is happening
         const float direction = !currentWorldHitVector.IsClose(previousWorldHitVector)
-            ? Sign(worldAxis.Dot(currentWorldHitVector.Cross(previousWorldHitVector)))
+            ? Sign(worldAxis.Dot(previousWorldHitVector.Cross(currentWorldHitVector)))
             : 0.0f;
 
         // how far did we rotate this frame
