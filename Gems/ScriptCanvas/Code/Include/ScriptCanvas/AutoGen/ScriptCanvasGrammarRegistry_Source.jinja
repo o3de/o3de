@@ -108,7 +108,7 @@ namespace ScriptCanvas
 {%     endfor %}
 {% endfor %}
             });
-            m_cachedDescriptors.insert(m_cachedDescriptors.end(), descriptors.begin(), descriptors.end());
+            m_cachedDescriptors = AZStd::move(descriptors);
         }
         return m_cachedDescriptors;
     }

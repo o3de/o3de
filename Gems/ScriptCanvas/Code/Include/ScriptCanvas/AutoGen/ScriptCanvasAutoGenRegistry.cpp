@@ -172,16 +172,15 @@ namespace ScriptCanvas
 
     void AutoGenRegistryManager::UnregisterRegistry(const char* registryName)
     {
-        auto it = m_registries.find(registryName);
-        if (it != m_registries.end())
+        if (auto it = m_registries.find(registryName);
+            it != m_registries.end())
         {
-            auto componentDescriptors = it->second->GetComponentDescriptors();
-            for (auto descriptor : componentDescriptors)
+            for (AZ::ComponentDescriptor* descriptor : it->second->GetComponentDescriptors())
             {
                 descriptor->ReleaseDescriptor();
             }
-
             m_registries.erase(it);
         }
     }
+
 } // namespace ScriptCanvas
