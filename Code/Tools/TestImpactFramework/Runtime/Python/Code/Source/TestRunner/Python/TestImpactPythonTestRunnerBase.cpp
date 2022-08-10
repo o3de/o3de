@@ -35,7 +35,7 @@ namespace TestImpact
         catch (const Exception& e)
         {
             // No run result is a failure as all Python tests will be exporting their results to JUnit format
-            return AZ::Failure(e.whatString());
+            return AZ::Failure(AZStd::string(e.what()));
         }
 
         try
