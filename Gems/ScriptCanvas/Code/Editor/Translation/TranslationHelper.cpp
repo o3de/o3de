@@ -111,7 +111,7 @@ namespace ScriptCanvasEditor::TranslationHelper
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             success, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
         auto fileIO = AZ::IO::FileIOBase::GetInstance();
-        
+
         if (fileIO && success && !fileName.empty())
         {
             AZStd::string fileNameWithExtension = AZStd::string::format("%s.names", fileName.c_str());
