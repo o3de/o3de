@@ -57,8 +57,6 @@ namespace AzToolsFramework::ViewportUi
         void RemoveViewportBorder() override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
-        void ChangeSwitcherButtonDetails(
-            const SwitcherId switcherId, const ButtonId buttonIdToChange, const AZStd::string& icon, const AZStd::string& name) override;
 
         //! Connects to the correct viewportId bus address.
         void ConnectViewportUiBus(const int viewportId);
@@ -91,6 +89,5 @@ namespace AzToolsFramework::ViewportUi
         void UpdateSwitcherButtonGroupUi(Internal::ButtonGroup* buttonGroup);
         //! Update the corresponding ui element for the given text field.
         void UpdateTextFieldUi(Internal::TextField* textField);
-        void UpdateSwitcherButtonIconUi(Internal::ButtonGroup*, ButtonId buttonId);
     };
 } // namespace AzToolsFramework::ViewportUi

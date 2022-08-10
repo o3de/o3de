@@ -38,7 +38,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetActiveButton(ButtonId buttonId);
         //! Updates the button's tooltip to the passed string.
         void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
-        void UpdateButtonIcon(ButtonId buttonId);
 
     private:
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.

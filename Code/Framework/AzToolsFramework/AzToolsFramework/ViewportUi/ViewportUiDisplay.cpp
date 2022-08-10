@@ -168,14 +168,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::UpdateSwitcherButtonIcon(ViewportUiElementId switcherId, ButtonId buttonId)
-    {
-        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
-        {
-            switcher->UpdateButtonIcon(buttonId);
-        }
-    }
-
     void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
         if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))

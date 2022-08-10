@@ -57,7 +57,15 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ButtonId ButtonGroup::AddButton(const AZStd::string& icon, const AZStd::string& name)
     {
-        auto buttonId = ButtonId(m_buttons.size() + 1);
+        auto max = ButtonId(0);
+        for (const auto& button : m_buttons)
+        {
+            if (button.first > max)
+            {
+                max = button.first;
+            }
+        }
+        auto buttonId = ButtonId(max + 1);
 
         if (name.empty())
         {

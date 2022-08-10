@@ -161,7 +161,6 @@ set(FILES
     Viewport/ViewportEditorModeTests.cpp
     Viewport/ViewportScreenTests.cpp
     Viewport/ViewportUiClusterTests.cpp
-    Viewport/ViewportUiSwitcherTests.cpp
     Viewport/ViewportUiDisplayTests.cpp
     Viewport/ViewportUiManagerTests.cpp
     Viewport/ViewportUiWidgetManagerTests.cpp
