@@ -54,18 +54,12 @@ namespace AzToolsFramework::Prefab
             "Prefab - PrefabFocusHandler - "
             "Instance Update Executor Interface could not be found. "
             "Check that it is being correctly initialized.");
-
-        EditorEntityInfoNotificationBus::Handler::BusConnect();
-        EditorEntityContextNotificationBus::Handler::BusConnect();
-        PrefabPublicNotificationBus::Handler::BusConnect();
-        AZ::Interface<PrefabFocusInterface>::Register(this);
-        AZ::Interface<PrefabFocusPublicInterface>::Register(this);
-        PrefabFocusPublicRequestBus::Handler::BusConnect();
     }
 
     void PrefabFocusHandler::UnregisterPrefabFocusInterface()
     {
         m_instanceUpdateExecutorInterface = nullptr;
+        m_instanceToTemplateInterface = nullptr;
         m_instanceEntityMapperInterface = nullptr;
 
         PrefabFocusPublicRequestBus::Handler::BusDisconnect();
