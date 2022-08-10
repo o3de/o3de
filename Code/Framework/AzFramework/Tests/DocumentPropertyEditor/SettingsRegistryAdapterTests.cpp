@@ -79,36 +79,42 @@ namespace AZ::DocumentPropertyEditor::Tests
         ASSERT_TRUE(CreateTestFile(filePath1, R"(
            {
                "O3DE": {
-                   "Settings": {
-                       "ArrayValue": [
-                           3,
-                           7,
-                           4000
-                       ],
-                       "ObjectValue": {
-                           "StringKey1": "Hello",
-                           "BoolKey1": true
-                       }
-                   }
+                    "ArrayValue": [
+                        3,
+                        7,
+                        4000
+                    ],
+                    "ObjectValue": {
+                        "StringKey1": "Hello",
+                        "BoolKey1": true
+                    }
                }
            }
        )"));
         ASSERT_TRUE(CreateTestFile(filePath2, R"(
            {
-               "O3DE": {
-                   "Settings": {
-                       "ArrayValue": [
-                           27,
-                           39
-                       ],
-                       "ObjectValue": {
-                           "StringKey1": "Hi",
-                           "IntKey2": 9001,
-                        },
-                       "DoubleValue": 4.0
-                   }
-               }
+            "O3DE": {
+                    "ArrayValue": [
+                        27,
+                        39
+                    ],
+                    "ObjectValue": {
+                        "StringKey1": "Hi",
+                        "IntKey2": 9001,
+                    },
+                    "DoubleValue": 4.0
+                }
            }
        )"));
+        m_settingsRegistry->MergeSettingsFile(
+            filePath1.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
+        m_settingsRegistry->MergeSettingsFile(
+            filePath2.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
+
+        Dom::Value result = m_adapter->GetContents();
+        AZStd::string_view stringKey1Path = "/O3DE/ObjectValue/StringKey1";
+        AZStd::string_view stringKey1NewValue = R"(Greetings)";
+        ASSERT_TRUE(m_settingsRegistry->Set(stringKey1Path, stringKey1NewValue));
+        result = m_adapter->GetContents();
     }
 }

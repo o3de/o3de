@@ -12,6 +12,8 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/JSON/rapidjson.h>
 
 namespace AZ::DocumentPropertyEditor
@@ -24,9 +26,31 @@ namespace AZ::DocumentPropertyEditor
     SettingsRegistryAdapter::SettingsRegistryAdapter(AZ::SettingsRegistryOriginTracker* originTracker)
         : m_originTracker(originTracker)
     {
+        if (m_originTracker)
+        {
+            AZ::SettingsRegistryInterface& settingsRegistry = m_originTracker->GetSettingsRegistry();
+            m_notifyHandler = settingsRegistry.RegisterNotifier(SettingsNotificationHandler(*this));
+        }
     }
 
     SettingsRegistryAdapter::~SettingsRegistryAdapter() = default;
+
+    SettingsRegistryOriginTracker* SettingsRegistryAdapter::GetSettingsRegistryOriginTracker()
+        return m_originTracker;
+    }
+
+    SettingsRegistryAdapter::SettingsNotificationHandler::SettingsNotificationHandler(SettingsRegistryAdapter& adapter)
+        : m_settingsRegistryAdapter(adapter)
+    {
+    }
+
+    SettingsRegistryAdapter::SettingsNotificationHandler::~SettingsNotificationHandler() = default;
+
+    void SettingsRegistryAdapter::SettingsNotificationHandler::operator()(
+        const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+    {
+        m_settingsRegistryAdapter.NotifyResetDocument();
+    }
 
     bool SettingsRegistryAdapter::BuildField(
         AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type)
@@ -46,6 +70,7 @@ namespace AZ::DocumentPropertyEditor
         else if (type == AZ::SettingsRegistryInterface::Type::Integer)
         {
             using SettingsType = AZ::SettingsRegistryInterface::SettingsType;
+
             const SettingsType settingsType = settingsRegistry.GetType(path);
             if (settingsType.m_signedness == AZ::SettingsRegistryInterface::Signedness::Signed)
             {

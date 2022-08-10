@@ -27,14 +27,29 @@ namespace AZ::DocumentPropertyEditor
         ~SettingsRegistryAdapter();
 
         // Recurses through the Settings Registry associated with the supplied Settings Registry Origin Tracker
-        // populates PropertyEditorNOdes
+        // populates PropertyEditorNodes
         bool BuildField(AZStd::string_view path, AZStd::string_view fieldName, AZ::SettingsRegistryInterface::Type type);
+
+        SettingsRegistryOriginTracker* GetSettingsRegistryOriginTracker();
+        const SettingsRegistryOriginTracker* GetSettingsRegistryOriginTracker() const;
 
     protected:
         Dom::Value GenerateContents() override;
 
     private:
+        struct SettingsNotificationHandler
+        {
+            SettingsNotificationHandler(SettingsRegistryAdapter& adapter);
+            ~SettingsNotificationHandler();
+
+            void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs);
+
+        private:
+            SettingsRegistryAdapter& m_settingsRegistryAdapter;
+        };
+
         AdapterBuilder m_builder;
         AZ::SettingsRegistryOriginTracker* m_originTracker = nullptr;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_notifyHandler;
     };
 }
