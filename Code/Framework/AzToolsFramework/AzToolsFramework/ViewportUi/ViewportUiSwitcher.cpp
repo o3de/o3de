@@ -83,7 +83,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             {
                 updateCallback(static_cast<QAction*>(object.data()));
             });
-  
+
         m_buttonActionMap.insert({ button->m_buttonId, action });
         m_buttonGroup->AddButton(button->m_icon, button->m_name);
     }

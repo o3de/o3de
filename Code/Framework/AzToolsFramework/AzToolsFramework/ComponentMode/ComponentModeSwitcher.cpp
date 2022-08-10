@@ -145,7 +145,7 @@ namespace AzToolsFramework::ComponentModeFramework
         }
         else if (!newlyDeselectedEntityIds.empty())
         {
-            // CLear the switcher then add the components back if entities are still selected
+            // Clear the switcher then add the components back if entities are still selected
             ClearSwitcher();
 
             if (selectedEntityIds.size() >= 1)
@@ -314,6 +314,7 @@ namespace AzToolsFramework::ComponentModeFramework
                     &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
                     m_switcherId,
                     componentDataIt->m_buttonId);
+
                 m_activeSwitcherComponent = componentDataIt->m_component;
             }
         }
@@ -416,5 +417,4 @@ namespace AzToolsFramework::ComponentModeFramework
                 }
             });
     }
-
 } // namespace AzToolsFramework::ComponentModeFramework

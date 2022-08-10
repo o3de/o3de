@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
