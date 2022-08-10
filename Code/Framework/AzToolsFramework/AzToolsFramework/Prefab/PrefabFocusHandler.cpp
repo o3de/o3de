@@ -14,6 +14,7 @@
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
@@ -21,8 +22,16 @@
 
 namespace AzToolsFramework::Prefab
 {
-    PrefabFocusHandler::PrefabFocusHandler()
+    void PrefabFocusHandler::RegisterPrefabFocusInterface()
     {
+        AZ::Interface<PrefabFocusInterface>::Register(this);
+        AZ::Interface<PrefabFocusPublicInterface>::Register(this);
+
+        EditorEntityInfoNotificationBus::Handler::BusConnect();
+        EditorEntityContextNotificationBus::Handler::BusConnect();
+        PrefabPublicNotificationBus::Handler::BusConnect();
+        PrefabFocusPublicRequestBus::Handler::BusConnect();
+
         m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
         AZ_Assert(
             m_instanceEntityMapperInterface,
@@ -30,22 +39,26 @@ namespace AzToolsFramework::Prefab
             "Instance Entity Mapper Interface could not be found. "
             "Check that it is being correctly initialized.");
 
-        EditorEntityInfoNotificationBus::Handler::BusConnect();
-        EditorEntityContextNotificationBus::Handler::BusConnect();
-        PrefabPublicNotificationBus::Handler::BusConnect();
-        AZ::Interface<PrefabFocusInterface>::Register(this);
-        AZ::Interface<PrefabFocusPublicInterface>::Register(this);
-        PrefabFocusPublicRequestBus::Handler::BusConnect();
+        m_instanceUpdateExecutorInterface = AZ::Interface<InstanceUpdateExecutorInterface>::Get();
+        AZ_Assert(
+            m_instanceUpdateExecutorInterface,
+            "Prefab - PrefabFocusHandler - "
+            "Instance Update Executor Interface could not be found. "
+            "Check that it is being correctly initialized.");
     }
 
-    PrefabFocusHandler::~PrefabFocusHandler()
+    void PrefabFocusHandler::UnregisterPrefabFocusInterface()
     {
+        m_instanceUpdateExecutorInterface = nullptr;
+        m_instanceEntityMapperInterface = nullptr;
+
         PrefabFocusPublicRequestBus::Handler::BusDisconnect();
-        AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
-        AZ::Interface<PrefabFocusInterface>::Unregister(this);
         PrefabPublicNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
+
+        AZ::Interface<PrefabFocusPublicInterface>::Unregister(this);
+        AZ::Interface<PrefabFocusInterface>::Unregister(this);
     }
 
     void PrefabFocusHandler::Reflect(AZ::ReflectContext* context)
@@ -278,6 +291,13 @@ namespace AzToolsFramework::Prefab
         SetInstanceContainersOpenState(m_rootAliasFocusPath, true);
 
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+
+        // Force propagation on both the previous and the new focused instances to ensure they are represented correctly.
+        if (previousFocusedInstance.has_value())
+        {
+            m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
+        }
+        m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
 
         return AZ::Success();
     }
@@ -585,5 +605,4 @@ namespace AzToolsFramework::Prefab
 
         return AZStd::nullopt;
     }
-
 } // namespace AzToolsFramework::Prefab

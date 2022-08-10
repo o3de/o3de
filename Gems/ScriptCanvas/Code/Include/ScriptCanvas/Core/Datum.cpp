@@ -1291,15 +1291,19 @@ namespace ScriptCanvas
         const_cast<bool&>(m_isOverloadedStorage) = isOverloadedStorage;
     }
 
-    void Datum::DeepCopyDatum(const Datum& source)
+    void Datum::CopyDatumTypeAndValue(const Datum& source)
     {
         if (this != &source)
         {
-            m_originality = eOriginality::Original;
-            InitializeOverloadedStorage(source.m_type, m_originality);
-            m_class = source.m_class;
-            m_type = source.m_type;
+            SetType(source.m_type);
+            CopyDatumStorage(source);
+        }
+    }
 
+    void Datum::CopyDatumStorage(const Datum& source)
+    {
+        if (this != &source)
+        {
             if (!Data::IsValueType(m_type))
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;
@@ -1320,6 +1324,19 @@ namespace ScriptCanvas
                 m_storage.value = source.m_storage.value;
                 m_conversionStorage = source.m_conversionStorage;
             }
+        }
+    }
+
+    void Datum::DeepCopyDatum(const Datum& source)
+    {
+        if (this != &source)
+        {
+            m_originality = eOriginality::Original;
+            InitializeOverloadedStorage(source.m_type, m_originality);
+            m_class = source.m_class;
+            m_type = source.m_type;
+
+            CopyDatumStorage(source);
 
             m_notificationId = source.m_notificationId;
 

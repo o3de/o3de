@@ -178,14 +178,14 @@ namespace AzToolsFramework
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::InProgressEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
         }
 
         void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
