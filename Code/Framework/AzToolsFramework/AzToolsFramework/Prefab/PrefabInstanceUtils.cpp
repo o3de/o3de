@@ -24,15 +24,15 @@ namespace AzToolsFramework
 
                 // Climb up the instance hierarchy from this instance until you hit the target or the root.
                 InstanceOptionalConstReference instance = *startInstance;
-                AZStd::vector<InstanceOptionalConstReference> instancePath;
+                AZStd::vector<InstanceOptionalConstReference> instancesInHierarchy;
 
                 while (&instance->get() != targetInstance && instance->get().GetParentInstance() != AZStd::nullopt)
                 {
-                    instancePath.emplace_back(instance);
+                    instancesInHierarchy.emplace_back(instance);
                     instance = instance->get().GetParentInstance();
                 }
 
-                return AZStd::make_pair(&instance->get(), AZStd::move(instancePath));
+                return AZStd::make_pair(&instance->get(), AZStd::move(instancesInHierarchy));
             }
 
             AZStd::pair<const Instance*, AZStd::string> GetRelativePathStringBetweenInstances(
