@@ -71,37 +71,56 @@ namespace AZ
         //! Retrieves the full path of the directory containing the executable
         AZ::IO::FixedMaxPathString GetExecutableDirectory();
 
-        //! Retrieves the full path to the engine from settings registry
-        AZ::IO::FixedMaxPathString GetEnginePath();
+        //! Retrieves the full path to the engine from the settings registry
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetEnginePath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
-        //! Retrieves the full path to the project from settings registry
-        AZ::IO::FixedMaxPathString GetProjectPath();
+        //! Retrieves the full path to the project from the settings registry
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the project name from the settings registry
-        AZ::SettingsRegistryInterface::FixedValueString GetProjectName();
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
-        //! Retrieves the full directory to the Home directory, i.e. "<userhome> or overrideHomeDirectory"
-        AZ::IO::FixedMaxPathString GetHomeDirectory();
+        //! Lookups the full path for a gem, given it's name from the settings registry
+        //! @param gemName path of the gem whose paths will be queried from within the settings registry
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetGemPath(AZStd::string_view gemName, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full directory to the Home directory, i.e. "<userhome>" or overrideHomeDirectory
+        //! @param settingsRegistry pointer to the SettingsRegistry to lookup the overrideHomeDirectory
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE manifest directory, i.e. "<userhome>/.o3de"
-        AZ::IO::FixedMaxPathString GetO3deManifestDirectory();
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3deManifestDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
-        AZ::IO::FixedMaxPathString GetO3deManifestPath();
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
-        AZ::IO::FixedMaxPathString GetO3deLogsDirectory();
+        //! //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
-        //! Retrieves the App root path to use on the current platform
-        //! If the optional is not engaged the AppRootPath should be calculated based
-        //! on the location of the bootstrap.cfg file
+        //! Retrieves the application root path for a non-host platform
+        //! On host platforms this returns a nullopt
         AZStd::optional<AZ::IO::FixedMaxPathString> GetDefaultAppRootPath();
 
         //! Retrieves the development write storage path to use on the current platform, may be considered
         //! temporary or cache storage
         AZStd::optional<AZ::IO::FixedMaxPathString> GetDevWriteStoragePath();
 
-        // Attempts the supplied path to an absolute path.
+        //! Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
         AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
         bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path);
@@ -109,6 +128,7 @@ namespace AZ
 
         //! Save a string to a file. Otherwise returns a failure with error message.
         AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);
+        AZ::Outcome<void, AZStd::string> WriteFile(AZStd::span<AZStd::byte const> content, AZStd::string_view filePath);
 
         //! Read a file into a string. Returns a failure with error message if the content could not be loaded or if
         //! the file size is larger than the max file size provided.

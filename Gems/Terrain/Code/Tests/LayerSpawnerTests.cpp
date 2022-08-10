@@ -57,7 +57,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 
     ActivateEntity(entity.get());
 
-    AZ::u32 priority = 999, layer = 999;
+    int32_t priority = 999;
+    uint32_t layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
 
     EXPECT_EQ(0, priority);
@@ -89,7 +90,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
 
     ActivateEntity(entity.get());
 
-    AZ::u32 priority = 999, layer = 999;
+    int32_t priority = 999;
+    uint32_t layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
 
     EXPECT_EQ(testPriority, priority);
@@ -176,4 +178,84 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
         LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
 
     entity.reset();
+}
+
+TEST_F(LayerSpawnerComponentTest, LayerSpawnerCreatesGroundPlaneWhenUseGroundPlaneSet)
+{
+    // Create a terrain world with height bounds from -128 to 128.
+    const float queryResolution = 1.0f;
+    const AzFramework::Terrain::FloatRange heightBounds = { -128.0f, 128.0f };
+    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
+
+    // Create a terrain spawner with useGroundPlane enabled and a box from 0 to 32.
+    Terrain::TerrainLayerSpawnerConfig config;
+    config.m_useGroundPlane = true;
+    const float SpawnerBoxHalfBounds = 16.0f;
+    auto entity = CreateTestBoxEntity(SpawnerBoxHalfBounds);
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
+    ActivateEntity(entity.get());
+
+    // Querying for terrain heights at the center of the spawner box should give us a valid point with a height equal to the min
+    // height of the spawner box, not the min height of the terrain world.
+    bool terrainExists = false;
+    AZStd::array<AZ::Vector3, 1> positionList = { AZ::Vector3(16.0f, 16.0f, 16.0f) };
+    float height = terrainSystem->GetHeight(
+        positionList[0], AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
+
+    EXPECT_TRUE(terrainExists);
+    EXPECT_EQ(height, 0.0f);
+
+    // Verify that the results from QueryList also use the "useGroundPlane" setting.
+    terrainSystem->QueryList(
+        positionList,
+        AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
+        [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+        {
+            EXPECT_TRUE(terrainExists);
+            EXPECT_EQ(surfacePoint.m_position.GetZ(), 0.0f);
+        },
+        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+
+
+    entity.reset();
+    terrainSystem.reset();
+}
+
+TEST_F(LayerSpawnerComponentTest, LayerSpawnerDoesNotCreateGroundPlaneWhenUseGroundPlaneNotSet)
+{
+    // Create a terrain world with height bounds from -128 to 128.
+    const float queryResolution = 1.0f;
+    const AzFramework::Terrain::FloatRange heightBounds = { -128.0f, 128.0f };
+    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
+
+    // Create a terrain spawner with useGroundPlane disabled and a box from 0 to 32.
+    Terrain::TerrainLayerSpawnerConfig config;
+    config.m_useGroundPlane = false;
+    const float SpawnerBoxHalfBounds = 16.0f;
+    auto entity = CreateTestBoxEntity(SpawnerBoxHalfBounds);
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
+    ActivateEntity(entity.get());
+
+    // Querying for terrain heights at the center of the spawner box should give us a invalid point because useGroundPlane isn't enabled.
+    bool terrainExists = false;
+    AZStd::array<AZ::Vector3, 1> positionList = { AZ::Vector3(16.0f, 16.0f, 16.0f) };
+    float height = terrainSystem->GetHeight(positionList[0], AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
+
+    EXPECT_FALSE(terrainExists);
+    EXPECT_EQ(height, -128.0f);
+
+    // Verify that the results from QueryList also use the "useGroundPlane" setting.
+    terrainSystem->QueryList(
+        positionList,
+        AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
+        [](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+        {
+            EXPECT_FALSE(terrainExists);
+            EXPECT_EQ(surfacePoint.m_position.GetZ(), -128.0f);
+        },
+        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+
+
+    entity.reset();
+    terrainSystem.reset();
 }

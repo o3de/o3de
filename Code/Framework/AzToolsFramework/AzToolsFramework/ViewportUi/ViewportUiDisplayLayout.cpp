@@ -67,21 +67,21 @@ namespace AzToolsFramework::ViewportUi::Internal
             // TopRight and BottomLeft are special cases
             // place the spacer differently according to whether it's a vertical or horizontal layout
             case Qt::AlignTop | Qt::AlignRight:
-                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                if (qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
                 {
                     index = layoutForAlignment->second->count() - 1;
                 }
-                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                else if (qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
                 {
                     index = layoutForAlignment->second->count();
                 }
                 break;
             case Qt::AlignBottom | Qt::AlignLeft:
-                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                if (qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
                 {
                     index = layoutForAlignment->second->count();
                 }
-                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                else if (qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
                 {
                     index = layoutForAlignment->second->count() - 1;
                 }

@@ -29,6 +29,7 @@ namespace AzToolsFramework
 namespace AzToolsFramework::Prefab
 {
     class InstanceEntityMapperInterface;
+    class InstanceUpdateExecutorInterface;
     class PrefabSystemComponentInterface;
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
@@ -42,29 +43,28 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_CLASS_ALLOCATOR(PrefabFocusHandler, AZ::SystemAllocator, 0);
 
-        PrefabFocusHandler();
-        ~PrefabFocusHandler();
+        void RegisterPrefabFocusInterface();
+        void UnregisterPrefabFocusInterface();
 
         static void Reflect(AZ::ReflectContext* context);
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
-        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
-            AZ::EntityId entityId, FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) override;
+        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
-        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(
-            AzFramework::EntityContextId entityContextId,
-            FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) override;
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
+        PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
+        void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
@@ -77,10 +77,13 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
-        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, FocusChangeBehavior focusChangeBehavior);
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusPath();
 
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
+        void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
+
+        void SwitchToEditScope() const;
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
@@ -90,10 +93,14 @@ namespace AzToolsFramework::Prefab
         AZ::IO::Path m_filenameFocusPath;
         //! The length of the current focus path. Stored to simplify internal checks.
         int m_rootAliasFocusPathLength = 0;
+        //! The current focus mode.
+        PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
+
+        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
 
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         ReadOnlyEntityQueryInterface* m_readOnlyEntityQueryInterface = nullptr;
     };
 

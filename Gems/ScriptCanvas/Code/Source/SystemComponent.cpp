@@ -28,6 +28,7 @@
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
@@ -81,7 +82,7 @@ namespace ScriptCanvas
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic, context);
+        ScriptCanvas::AutoGenRegistryManager::Reflect(context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         SourceHandle::Reflect(context);

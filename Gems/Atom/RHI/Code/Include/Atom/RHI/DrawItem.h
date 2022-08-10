@@ -8,7 +8,6 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI/SubmitItem.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectBufferView.h>
@@ -114,7 +113,6 @@ namespace AZ
         };
 
         struct DrawItem
-            : public SubmitItem
         {
             DrawItem() = default;
 

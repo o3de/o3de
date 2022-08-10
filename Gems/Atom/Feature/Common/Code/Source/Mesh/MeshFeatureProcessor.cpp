@@ -44,7 +44,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -1384,7 +1384,7 @@ namespace AZ
                         // take the last handle from the list, which will be the smallest (most influential) probe
                         ReflectionProbeHandle handle = reflectionProbeHandles.back();
 
-                        objectSrg->SetConstant(modelToWorldConstantIndex, reflectionProbeFeatureProcessor->GetTransform(handle));
+                        objectSrg->SetConstant(modelToWorldConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)));
                         objectSrg->SetConstant(modelToWorldInverseConstantIndex, Matrix3x4::CreateFromTransform(reflectionProbeFeatureProcessor->GetTransform(handle)).GetInverseFull());
                         objectSrg->SetConstant(outerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths());
                         objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths());

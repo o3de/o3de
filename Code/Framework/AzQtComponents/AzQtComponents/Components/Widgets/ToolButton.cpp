@@ -63,7 +63,7 @@ bool ToolButton::polish(Style* style, QWidget* widget, const ToolButton::Config&
 {
     Q_UNUSED(config);
 
-    if (auto toolButton = qobject_cast<QToolButton*>(widget))
+    if (qobject_cast<QToolButton*>(widget))
     {
         style->repolishOnSettingsChange(widget);
         return true;
@@ -103,7 +103,7 @@ int ToolButton::buttonIconSize(const Style* style, const QStyleOption* option, c
     Q_UNUSED(option);
 
     int size = -1;
-    if (auto toolButton = qobject_cast<const QToolButton*>(widget))
+    if (qobject_cast<const QToolButton*>(widget))
     {
         size = config.buttonIconSize;
     }
@@ -133,7 +133,7 @@ int ToolButton::menuButtonIndicatorWidth(const Style* style, const QStyleOption*
     Q_UNUSED(option);
 
     int size = -1;
-    if (auto toolButton = qobject_cast<const QToolButton*>(widget))
+    if (qobject_cast<const QToolButton*>(widget))
     {
         size = config.menuIndicatorWidth;
     }

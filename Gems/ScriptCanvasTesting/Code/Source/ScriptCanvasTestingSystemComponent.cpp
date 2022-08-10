@@ -42,7 +42,6 @@ namespace ScriptCanvasTesting
 
         ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
         ScriptCanvasTesting::Reflect(context);
-        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, context);
     }
 
     void ScriptCanvasTestingSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -67,7 +66,6 @@ namespace ScriptCanvasTesting
 
     void ScriptCanvasTestingSystemComponent::Init()
     {
-        INIT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic);
     }
 
     void ScriptCanvasTestingSystemComponent::Activate()

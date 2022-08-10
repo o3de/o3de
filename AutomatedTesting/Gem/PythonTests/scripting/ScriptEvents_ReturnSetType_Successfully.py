@@ -7,14 +7,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Test Case Title: Event can return a value of set type successfully
 """
 
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report, Tracer
 import azlmbr.legacy.general as general
 import scripting_utils.scripting_tools as scripting_tools
 import azlmbr.paths as paths
 import editor_python_test_tools.hydra_editor_utils as hydra
-from scripting_utils.scripting_constants import WAIT_TIME_3
+from scripting_utils.scripting_constants import (WAIT_TIME_3, BASE_LEVEL_NAME)
 
 # fmt: off
 class Tests():
@@ -24,7 +24,7 @@ class Tests():
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
 # fmt: on
 
-LEVEL_NAME = "Base"
+
 EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"]
 SC_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
 
@@ -34,19 +34,6 @@ class ScriptEvents_ReturnSetType_Successfully:
     def __init__(self):
         self.editor_main_window = None
 
-    def locate_expected_lines(self, section_tracer, lines):
-
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-
-        expected_lines = len(lines)
-        matching_lines = 0
-
-        for line in lines:
-            for found_line in found_lines:
-                if line == found_line:
-                    matching_lines += 1
-
-        return matching_lines >= expected_lines
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -84,7 +71,7 @@ class ScriptEvents_ReturnSetType_Successfully:
 
         # 1) Open the base level
         hydra.open_base_level()
-        helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME_3)
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
         general.close_pane("Error Report")
 
         # 2) Create test entity
@@ -99,7 +86,9 @@ class ScriptEvents_ReturnSetType_Successfully:
             helper.enter_game_mode(Tests.enter_game_mode)
 
             # 5) Read for line
-            lines_located = helper.wait_for_condition(lambda: self.locate_expected_lines(section_tracer, EXPECTED_LINES), WAIT_TIME_3)
+            lines_located = helper.wait_for_condition(
+                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES), WAIT_TIME_3)
+
             Report.result(Tests.lines_found, lines_located)
 
             # 6) Exit Game Mode

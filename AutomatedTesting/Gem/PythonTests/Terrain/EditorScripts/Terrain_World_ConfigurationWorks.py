@@ -61,8 +61,8 @@ def Terrain_World_ConfigurationWorks():
     import azlmbr.terrain as terrain
     import math
 
-    SET_BOX_X_SIZE = 2048.0
-    SET_BOX_Y_SIZE = 2048.0
+    SET_BOX_X_SIZE = 1024.0
+    SET_BOX_Y_SIZE = 1024.0
     SET_BOX_Z_SIZE = 100.0
     CLAMP = 1
 
@@ -91,17 +91,17 @@ def Terrain_World_ConfigurationWorks():
         general.idle_wait_frames(1)
 
         # 5) Set the base Terrain World values
-        world_bounds_max = azmath.Vector3(1100.0, 1100.0, 1100.0)
-        world_bounds_min = azmath.Vector3(10.0, 10.0, 10.0)
+        world_height_min = 10.0
+        world_height_max = 1100.0
         height_query_resolution = 1.0
-        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)", world_bounds_max)
-        hydra.set_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)", world_bounds_min)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Min Height", world_height_min)
+        hydra.set_component_property_value(terrain_world_component, "Configuration|Max Height", world_height_max)
         hydra.set_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)", height_query_resolution)
-        world_max = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Max)")
-        world_min = hydra.get_component_property_value(terrain_world_component, "Configuration|World Bounds (Min)")
+        world_min = hydra.get_component_property_value(terrain_world_component, "Configuration|Min Height")
+        world_max = hydra.get_component_property_value(terrain_world_component, "Configuration|Max Height")
         world_query = hydra.get_component_property_value(terrain_world_component, "Configuration|Height Query Resolution (m)")
-        Report.result(Tests.bounds_max_changed, world_max == world_bounds_max)
-        Report.result(Tests.bounds_min_changed, world_min == world_bounds_min)
+        Report.result(Tests.bounds_min_changed, world_min == world_height_min)
+        Report.result(Tests.bounds_max_changed, world_max == world_height_max)
         Report.result(Tests.height_query_changed, world_query == height_query_resolution)
 
         # 6) Change the Axis Aligned Box Shape dimensions
@@ -137,14 +137,14 @@ def Terrain_World_ConfigurationWorks():
         terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(10.0, 10.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
-        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1100.0, 1100.0, 0.0), CLAMP)
+        terrainExists = not terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1023.0, 1023.0, 0.0), CLAMP)
         Report.result(Tests.terrain_exists, terrainExists)
 
         # 12) Check terrain does not exist at a known position outside the world
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1101.0, 1101.0, 0.0), CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(1025.0, 1025.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
-        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(9.0, 9.0, 0.0), CLAMP)
+        terrainDoesNotExist = terrain.TerrainDataRequestBus(bus.Broadcast, 'GetIsHole', azmath.Vector3(-1.0, -1.0, 0.0), CLAMP)
         Report.result(Tests.terrain_does_not_exist, terrainDoesNotExist)
 
         # 13) Check height value is the expected one when query resolution is changed

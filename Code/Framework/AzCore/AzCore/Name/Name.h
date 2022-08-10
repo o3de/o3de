@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Internal/NameData.h>
 #include <AzCore/std/parallel/thread.h>
 
@@ -98,7 +99,7 @@ namespace AZ
         //!
         //! \warning FromStringLiteral is not thread-safe and should only be called from the
         //! main thread.
-        static Name FromStringLiteral(AZStd::string_view name);
+        static Name FromStringLiteral(AZStd::string_view name,  NameDictionary* nameDictionary);
 
         Name& operator=(const Name&);
         Name& operator=(Name&&);
@@ -109,11 +110,16 @@ namespace AZ
         //! The name string is used as a key to lookup an entry in the dictionary, and is not
         //! internally held after the call.
         explicit Name(AZStd::string_view name);
+        Name(AZStd::string_view name, NameDictionary& nameDictionary);
 
         //! Creates an instance of a name from a hash.
         //! The hash will be used to find an existing name in the dictionary. If there is no
         //! name with this hash, the resulting name will be empty.
         explicit Name(Hash hash);
+
+        //! Lookup an instance of a name from a hash.
+        //! This overload uses the supplied nameDictionary
+        Name(Hash hash, NameDictionary& nameDictionary);
 
         //! Creates a name from a NameRef, an already existent name within the name dictionary.
         Name(NameRef name);
@@ -179,12 +185,13 @@ namespace AZ
         // internally held after the call.
         // This is needed for reflection into behavior context.
         void SetName(AZStd::string_view name);
+        void SetName(AZStd::string_view name, NameDictionary& nameDictionary);
 
         // Assigns a new name.
         // The name string is stored persistently and used as a key to look up an entry in the dictionary.
         // If this is called before the dictionary is available, the key will be used when the name dictionary
         // becomes available.
-        void SetNameLiteral(AZStd::string_view name);
+        void SetNameLiteral(AZStd::string_view name, NameDictionary* nameDictionary);
 
         // This constructor is used by NameDictionary to construct from a dictionary-held NameData instance.
         Name(Internal::NameData* nameData);
@@ -211,7 +218,7 @@ namespace AZ
         // Most of the time this same information is available in m_data, but keeping it here too...
         // - Removes an indirection when accessing the name value.
         // - Allows functions like data() to return an empty string instead of null for empty Name objects.
-        AZStd::string_view m_view;
+        AZStd::string_view m_view{ "" };
 
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
@@ -228,12 +235,12 @@ namespace AZ
 } // namespace AZ
 
 //! Defines a cached name literal that describes an AZ::Name. Subsequent calls to this macro will retrieve the cached name from the
-//! dictionary.
+//! global dictionary.
 #define AZ_NAME_LITERAL(str)                                                                                                               \
     (                                                                                                                                      \
         []() -> const AZ::Name&                                                                                                            \
         {                                                                                                                                  \
-            static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str));                                                           \
+            static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str, AZ::Interface<AZ::NameDictionary>::Get()));                 \
             return nameLiteral;                                                                                                            \
         })()
 
