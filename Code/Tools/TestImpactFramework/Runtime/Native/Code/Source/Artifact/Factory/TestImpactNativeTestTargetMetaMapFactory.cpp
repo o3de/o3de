@@ -28,6 +28,7 @@ namespace TestImpact
             "launch_method",
             "test_runner",
             "stand_alone",
+            "namespace",
             "name",
             "command",
             "timeout"
@@ -43,6 +44,7 @@ namespace TestImpact
             LaunchMethodKey,
             TestRunnerKey,
             StandAloneKey,
+            Namespacekey,
             NameKey,
             CommandKey,
             TimeoutKey
@@ -69,16 +71,18 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testMeta.m_suiteMeta.m_name = suiteName;
-                    testMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
-                    testMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
-                    if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
+                    testMeta.m_testTargetMeta.m_namespace = test[Keys[Namespacekey]].GetString();
+                    testMeta.m_testTargetMeta.m_suiteMeta.m_name = suiteName;
+                    testMeta.m_testTargetMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                    testMeta.m_launchMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
+                    if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString();
+                        strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
                     {
-                        testMeta.m_launchMethod = LaunchMethod::TestRunner;
+                        testMeta.m_launchMeta.m_launchMethod = LaunchMethod::TestRunner;
                     }
                     else if (strcmp(buildTypeString, Keys[StandAloneKey]) == 0)
                     {
-                        testMeta.m_launchMethod = LaunchMethod::StandAlone;
+                        testMeta.m_launchMeta.m_launchMethod = LaunchMethod::StandAlone;
                     }
                     else
                     {

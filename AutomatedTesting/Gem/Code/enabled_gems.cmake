@@ -53,6 +53,7 @@ set(ENABLED_GEMS
     AWSCore
     AWSClientAuth
     AWSMetrics
+    PythonCoverage
     PrefabBuilder
     AudioSystem
     Terrain
