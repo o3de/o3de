@@ -44,6 +44,7 @@ namespace GradientSignal
                         "Output resolution of the saved image.")
                     ->Attribute(AZ::Edit::Attributes::Decimals, 0)
                     ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 8192.0f)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &GradientPainterConfig::m_outputFormat, "Output Format",
                         "Output format of the saved image.")
@@ -52,7 +53,7 @@ namespace GradientSignal
                         AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_outputImagePath, "Output Path",
                         "Output path to save the image to.")
                     ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GradientImageCreatorRequests::GetSupportedImagesFilter())
-                    ->Attribute(AZ::Edit::Attributes::DefaultAsset, "output_gsi")
+                    ->Attribute(AZ::Edit::Attributes::DefaultAsset, "gradientimage_gsi")
                     ;
             }
         }
@@ -136,6 +137,8 @@ namespace GradientSignal
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
         GradientPainterRequestBus::Handler::BusConnect(GetEntityId());
 
+        ResizePixelBuffer(AZ::Vector2(0.0f), m_configuration.m_outputResolution);
+
         m_previewer.SetPreviewSettingsVisible(false);
         m_previewer.SetPreviewEntity(GetEntityId());
         m_previewer.Activate(GetEntityId());
@@ -158,15 +161,34 @@ namespace GradientSignal
 
         m_dependencyMonitor.Reset();
 
+        // Free the pixel buffer while the component isn't active.
+        ClearPixelBuffer();
+
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
+    }
+
+    void EditorGradientPainterComponent::ClearPixelBuffer()
+    {
+        ResizePixelBuffer(m_pixelBufferResolution, AZ::Vector2(0.0f));
+    }
+
+    void EditorGradientPainterComponent::ResizePixelBuffer([[maybe_unused]] const AZ::Vector2& oldSize, const AZ::Vector2& newSize)
+    {
+        m_pixelBuffer.resize(aznumeric_cast<size_t>(newSize.GetX() * newSize.GetY()));
+        m_pixelBufferResolution = newSize;
     }
 
     void EditorGradientPainterComponent::OnCompositionChanged()
     {
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
+
+    void EditorGradientPainterComponent::OnResolutionChanged()
+    {
+        ResizePixelBuffer(m_configuration.m_outputResolution, m_configuration.m_outputResolution);
     }
 
     void EditorGradientPainterComponent::SetupDependencyMonitor()
@@ -186,14 +208,50 @@ namespace GradientSignal
         return m_componentModeDelegate.AddedToComponentMode();
     }
 
-    float EditorGradientPainterComponent::GetValue([[maybe_unused]] const GradientSampleParams& sampleParams) const
+    float EditorGradientPainterComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        return 0.0f;
+        float outValue = 0.0f;
+        GetValues(AZStd::span<const AZ::Vector3>(&sampleParams.m_position, 1), AZStd::span<float>(&outValue, 1));
+
+        return outValue;
     }
 
     void EditorGradientPainterComponent::GetValues(
-        [[maybe_unused]] AZStd::span<const AZ::Vector3> positions, [[maybe_unused]] AZStd::span<float> outValues) const
+        AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
+        AZ::Aabb bounds = AZ::Aabb::CreateNull();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
+
+        AZ::Vector3 boundsToPixelIndex = AZ::Vector3(m_configuration.m_outputResolution) / bounds.GetExtents();
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // Convert input position to pixel lookup.
+            const auto& position = positions[index];
+            if (bounds.Contains(position))
+            {
+                AZ::Vector3 pixelIndex = (position - bounds.GetMin()) * boundsToPixelIndex;
+                size_t pixelIndexInt =
+                    aznumeric_cast<size_t>((pixelIndex.GetY() * m_configuration.m_outputResolution.GetX()) + pixelIndex.GetX());
+
+                outValues[index] = m_pixelBuffer[pixelIndexInt];
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
+    }
+
+    AZStd::vector<float>* EditorGradientPainterComponent::GetPixelBuffer()
+    {
+        return &m_pixelBuffer;
+    }
+
+    void EditorGradientPainterComponent::RefreshPreview()
+    {
+        m_previewer.RefreshPreview();
     }
 
     bool EditorGradientPainterComponent::IsEntityInHierarchy([[maybe_unused]] const AZ::EntityId& entityId) const
@@ -208,6 +266,7 @@ namespace GradientSignal
 
     void EditorGradientPainterComponent::SetOutputResolution(const AZ::Vector2& resolution)
     {
+        ResizePixelBuffer(m_configuration.m_outputResolution, resolution);
         m_configuration.m_outputResolution = resolution;
 
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -245,6 +304,11 @@ namespace GradientSignal
         // Re-setup the dependency monitor when the configuration changes because the gradient sampler
         // could've changed
         SetupDependencyMonitor();
+
+        if (m_configuration.m_outputResolution != m_pixelBufferResolution)
+        {
+            ResizePixelBuffer(m_pixelBufferResolution, m_configuration.m_outputResolution);
+        }
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
         m_previewer.RefreshPreviews(entityIds);
@@ -316,7 +380,7 @@ namespace GradientSignal
         {
             // Write out the sample value for the pixel based on output format
             size_t index = (pixel * channels);
-            float sample = 0.0f;
+            float sample = m_pixelBuffer[pixel];
             switch (m_configuration.m_outputFormat)
             {
             case OutputFormat::R8:

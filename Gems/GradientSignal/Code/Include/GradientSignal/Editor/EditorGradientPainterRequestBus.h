@@ -20,7 +20,9 @@ namespace GradientSignal
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
+        virtual void RefreshPreview() = 0;
         virtual void SaveImage() = 0;
+        virtual AZStd::vector<float>* GetPixelBuffer() = 0;
     };
 
     using GradientPainterRequestBus = AZ::EBus<GradientPainterRequests>;

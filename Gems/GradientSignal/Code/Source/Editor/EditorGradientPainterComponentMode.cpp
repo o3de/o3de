@@ -44,9 +44,22 @@ namespace GradientSignal
     }
 
     bool EditorGradientPainterComponentMode::HandleMouseInteraction(
-        [[maybe_unused]] const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         bool result = false;
+
+        if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Down)
+        {
+            AZStd::vector<float>* pixelBuffer;
+            GradientPainterRequestBus::EventResult(pixelBuffer, GetEntityId(), &GradientPainterRequests::GetPixelBuffer);
+
+            for (auto& pixel : *pixelBuffer)
+            {
+                pixel = (1.0f - pixel);
+            }
+        }
+
+        GradientPainterRequestBus::Event(GetEntityId(), &GradientPainterRequests::RefreshPreview);
 
         return result;
     }

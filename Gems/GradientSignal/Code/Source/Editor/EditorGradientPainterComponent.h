@@ -78,7 +78,9 @@ namespace GradientSignal
         void OnCompositionChanged() override;
 
         //! GradientPainterRequestBus overrides ...
+        void RefreshPreview() override;
         void SaveImage() override;
+        AZStd::vector<float>* GetPixelBuffer() override;
 
         static constexpr const char* const s_categoryName = "Gradients";
         static constexpr const char* const s_componentName = "Gradient Painter";
@@ -87,17 +89,28 @@ namespace GradientSignal
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
         static constexpr const char* const s_helpUrl = "";
 
+        bool InComponentMode();
+        void OnResolutionChanged();
+
     protected:
         void OnConfigurationChanged();
         void SetupDependencyMonitor();
-        bool InComponentMode();
+
+        void ClearPixelBuffer();
+        void ResizePixelBuffer(const AZ::Vector2& oldSize, const AZ::Vector2& newSize);
 
     private:
+        //! Delegates the handling of component editing mode to a paint controller.
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate;
-
+        //! Preview of the gradient image
         GradientPreviewer m_previewer;
+        //! Image configuration
         GradientPainterConfig m_configuration;
+        //! Temporary buffer for storing all of the image data in a format that's quick to read and modify. 
+        AZStd::vector<float> m_pixelBuffer;
+        AZ::Vector2 m_pixelBufferResolution{ 0.0f };
+
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 } // namespace GradientSignal
