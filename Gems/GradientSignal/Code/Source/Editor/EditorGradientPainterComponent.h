@@ -18,6 +18,7 @@
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientPainterRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/GradientSampler.h>
@@ -43,6 +44,7 @@ namespace GradientSignal
         : public AzToolsFramework::Components::EditorComponentBase
         , private GradientRequestBus::Handler
         , private GradientImageCreatorRequestBus::Handler
+        , private GradientPainterRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
@@ -74,6 +76,9 @@ namespace GradientSignal
 
         //! LmbrCentral::DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
+
+        //! GradientPainterRequestBus overrides ...
+        void SaveImage() override;
 
         static constexpr const char* const s_categoryName = "Gradients";
         static constexpr const char* const s_componentName = "Gradient Painter";

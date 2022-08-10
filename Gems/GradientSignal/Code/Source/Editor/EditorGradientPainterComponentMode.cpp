@@ -11,6 +11,7 @@
  */
 
 #include <Editor/EditorGradientPainterComponentMode.h>
+#include <GradientSignal/Editor/EditorGradientPainterRequestBus.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -28,6 +29,7 @@ namespace GradientSignal
 
     EditorGradientPainterComponentMode::~EditorGradientPainterComponentMode()
     {
+        GradientPainterRequestBus::Event(GetEntityId(), &GradientPainterRequests::SaveImage);
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorGradientPainterComponentMode::PopulateActionsImpl()
