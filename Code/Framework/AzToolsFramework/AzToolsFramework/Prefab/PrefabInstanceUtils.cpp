@@ -6,9 +6,9 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
-
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 
 namespace AzToolsFramework
 {
@@ -16,32 +16,88 @@ namespace AzToolsFramework
     {
         namespace PrefabInstanceUtils
         {
-            AZStd::pair<const Instance*, AZStd::string> ClimbUpToTargetInstance(
-                const Instance* startInstance, const Instance* targetInstance)
+            namespace Internal
             {
-                if (!startInstance)
+                static AZStd::string JoinInstanceAliases(const AZStd::vector<InstanceAlias>& instanceAliases)
                 {
-                    return AZStd::make_pair(nullptr, "");
+                    AZStd::string relativePath = "";
+                    for (auto instanceAliasIter = instanceAliases.rbegin(); instanceAliasIter != instanceAliases.rend();
+                         ++instanceAliasIter)
+                    {
+                        relativePath.append(PrefabDomUtils::PathStartingWithInstances);
+                        relativePath.append(*instanceAliasIter);
+                    }
+
+                    return relativePath;
+                }
+            } // namespace Internal
+
+            const Instance* ClimbUpToTargetOrRootInstance(
+                AZStd::string& relativePath, const Instance& startInstance, InstanceOptionalConstReference targetInstance)
+            {
+                // Climbs up the instance hierarchy from start instance until hitting the target or the root instance.
+                const Instance* instance = &startInstance;
+                AZStd::vector<InstanceAlias> instanceAliases;
+                while (!CompareInstances(*instance, targetInstance) && instance->HasParentInstance())
+                {
+                    instanceAliases.emplace_back(instance->GetInstanceAlias());
+                    instance = &(instance->GetParentInstance()->get());
                 }
 
-                // Climb up the instance hierarchy from this instance until you hit the target or the root.
-                InstanceOptionalConstReference instance = *startInstance;
-                AZStd::vector<InstanceOptionalConstReference> instancePath;
+                // Generates relative path.
+                relativePath = Internal::JoinInstanceAliases(instanceAliases);
 
-                while (&instance->get() != targetInstance && instance->get().GetParentInstance() != AZStd::nullopt)
+                return instance;
+            }
+
+            AZStd::string GetRelativePathBetweenInstances(const Instance& fromInstance, const Instance& toInstance)
+            {
+                const Instance* instance = &toInstance;
+                AZStd::vector<InstanceAlias> instanceAliases;
+                while (!CompareInstances(*instance, fromInstance) && instance->HasParentInstance())
                 {
-                    instancePath.emplace_back(instance);
-                    instance = instance->get().GetParentInstance();
+                    instanceAliases.emplace_back(instance->GetInstanceAlias());
+                    instance = &(instance->GetParentInstance()->get());
                 }
 
-                AZStd::string relativePathToStartInstance;
-                for (auto instanceIter = instancePath.rbegin(); instanceIter != instancePath.rend(); ++instanceIter)
+                // Generates relative path.
+                return Internal::JoinInstanceAliases(instanceAliases);
+            }
+
+            bool IsHierarchical(const Instance& childInstance, const Instance& parentInstance)
+            {
+                const Instance* instance = &childInstance;
+
+                while (instance)
                 {
-                    relativePathToStartInstance.append("/Instances/");
-                    relativePathToStartInstance.append((*instanceIter)->get().GetInstanceAlias());
+                    if (CompareInstances(*instance, parentInstance))
+                    {
+                        return true;
+                    }
+                    instance = instance->HasParentInstance() ? &(instance->GetParentInstance()->get()) : nullptr;
                 }
 
-                return AZStd::make_pair(&instance->get(), AZStd::move(relativePathToStartInstance));
+                return false;
+            }
+
+            bool IsProperlyHierarchical(const Instance& childInstance, const Instance& parentInstance)
+            {
+                if (!childInstance.HasParentInstance())
+                {
+                    return false;
+                }
+
+                return IsHierarchical(childInstance.GetParentInstance()->get(), parentInstance);
+            }
+
+            bool CompareInstances(InstanceOptionalConstReference instanceA, InstanceOptionalConstReference instanceB)
+            {
+                if (!instanceA.has_value())
+                {
+                    return !instanceB.has_value();
+                }
+
+                return instanceB.has_value() && &(instanceA->get()) == &(instanceB->get());
             }
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
