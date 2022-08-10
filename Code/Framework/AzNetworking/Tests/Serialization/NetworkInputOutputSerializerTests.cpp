@@ -64,8 +64,11 @@ namespace UnitTest
     TEST_F(InputOutputSerializerTests, TestTypeValidatingSerializer)
     {
         const size_t Capacity = 2048;
-        const int8_t ExpectedSerializedBytes = 61;
+        const uint8_t ExpectedSerializedBytes = 61;
+        const uint8_t CopyBufferSize = 4;
         AZStd::array<uint8_t, Capacity> buffer;
+        AZStd::array<uint8_t, CopyBufferSize> copyBuffer;
+        copyBuffer.fill(1);
 
         InputOutputDataElement inElement;
         AzNetworking::NetworkInputSerializer inSerializer(
@@ -73,8 +76,10 @@ namespace UnitTest
 
         EXPECT_NE(inSerializer.GetBuffer(), nullptr);
         EXPECT_EQ(inSerializer.GetCapacity(), Capacity);
-        EXPECT_TRUE(inElement.Serialize(inSerializer));       
+        EXPECT_TRUE(inElement.Serialize(inSerializer));
         EXPECT_EQ(inSerializer.GetSize(), ExpectedSerializedBytes);
+        EXPECT_TRUE(inSerializer.CopyToBuffer(copyBuffer.data(), static_cast<uint32_t>(copyBuffer.size())));
+        EXPECT_EQ(inSerializer.GetSize(), ExpectedSerializedBytes + CopyBufferSize);
         inSerializer.ClearTrackedChangesFlag();
         EXPECT_FALSE(inSerializer.GetTrackedChangesFlag());
 

@@ -96,6 +96,8 @@ namespace UnitTest
         TrackChangedSerializerOutElement outElement;
         AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> trackChangedSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
 
+        EXPECT_EQ(trackChangedSerializer.GetSerializerMode(), AzNetworking::SerializerMode::WriteToObject);
+
         trackChangedSerializer.ClearTrackedChangesFlag();
         trackChangedSerializer.Serialize(outElement.testBool, "TestBool");
         EXPECT_TRUE(trackChangedSerializer.GetTrackedChangesFlag());

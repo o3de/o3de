@@ -76,6 +76,7 @@ namespace UnitTest
     TEST_F(HashSerializerTests, TestHashSerializerDefaults)
     {
         AzNetworking::HashSerializer hashSerializer;
+        EXPECT_EQ(hashSerializer.GetSerializerMode(), AzNetworking::SerializerMode::ReadFromObject);
         EXPECT_EQ(hashSerializer.GetCapacity(), 0);
         EXPECT_EQ(hashSerializer.GetSize(), 0);
         EXPECT_EQ(hashSerializer.GetBuffer(), nullptr);

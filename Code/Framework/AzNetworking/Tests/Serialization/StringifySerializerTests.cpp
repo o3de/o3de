@@ -82,6 +82,7 @@ namespace UnitTest
     TEST_F(StringifySerializerTests, TestHashSerializerDefaults)
     {
         AzNetworking::StringifySerializer stringifySerializer;
+        EXPECT_EQ(stringifySerializer.GetSerializerMode(), AzNetworking::SerializerMode::ReadFromObject);
         EXPECT_EQ(stringifySerializer.GetCapacity(), 0);
         EXPECT_EQ(stringifySerializer.GetSize(), 0);
         EXPECT_EQ(stringifySerializer.GetBuffer(), nullptr);
