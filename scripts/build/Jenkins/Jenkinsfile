@@ -378,12 +378,12 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         dir(ENGINE_REPOSITORY_NAME) {
             def setEnvCommit = false
             def branches = branchName
-            if(repository_name == "${ENGINE_REPOSITORY_NAME}") {
+            if(repositoryName == "${ENGINE_REPOSITORY_NAME}") {
                 setEnvCommit = true
-                echo 'Build request is for the engine, set env.CHANGE_ID and env.CHANGE_DATE and pull branch ${branches}'
+                echo 'Build request is for the engine, set env.CHANGE_ID and env.CHANGE_DATE and pull branch \"${branches}\"'
             } else {
                 branches = ENGINE_DEVELOPMENT_BRANCH
-                echo 'Build request is for the extras: pull development branch: ${branches}'
+                echo 'Build request is for the extras: pull development branch: \"${branchName}\"'
             }
 
             CheckoutRepo(branches, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
@@ -410,12 +410,12 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         dir(EXTRAS_REPOSITORY_NAME) {
             def setEnvCommit = false
             def branches = branchName
-            if(repository_name == "${EXTRAS_REPOSITORY_NAME}") {
+            if(repositoryName == "${EXTRAS_REPOSITORY_NAME}") {
                 setEnvCommit = true
-                echo 'Build request is for the extras, set env.CHANGE_ID and env.CHANGE_DATE and pull branch ${branches}'
+                echo 'Build request is for the extras, set env.CHANGE_ID and env.CHANGE_DATE and pull branch \"${branchName}\"'
             } else {
                 branches = EXTRAS_DEVELOPMENT_BRANCH
-                echo 'Build request is for the engine, pull development branch: ${branches}'
+                echo 'Build request is for the engine, pull development branch: \"${branchName}\"'
             }
             CheckoutRepo(branches, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
         }
