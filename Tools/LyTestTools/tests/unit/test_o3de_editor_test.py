@@ -11,6 +11,7 @@ import unittest.mock as mock
 
 import ly_test_tools
 import ly_test_tools.o3de.editor_test as editor_test
+import ly_test_tools.o3de.editor_test_utils as editor_test_utils
 import ly_test_tools.launchers.exceptions
 
 pytestmark = pytest.mark.SUITE_smoke
@@ -33,29 +34,31 @@ class TestEditorTest(unittest.TestCase):
         assert mock_editorsharedtest.is_batchable
         assert not mock_editorsharedtest.is_parallelizable
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
         mock_workspace = mock.MagicMock()
         starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
         destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
-        log_file_to_split = "(1)editor_test.log"
+
         mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
                     'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
                     '\\SurfaceDataRefreshes_RemainsStable.py (testcase ) \n plus some other text \n'
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
-            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+            editor_test_utils.split_batched_editor_log_file(mock_workspace, starting_path, destination_file)
 
         assert mock_workspace.artifact_manager.save_artifact.call_count == 2
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
         mock_workspace = mock.MagicMock()
         starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
         destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
-        log_file_to_split = "(1)editor_test.log"
+
         mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
                     'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
                     '\\SurfaceDataRefreshes_RemainsStable.\n plus some other text \n'
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
-            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+            editor_test_utils.split_batched_editor_log_file(mock_workspace, starting_path, destination_file)
 
         assert mock_workspace.artifact_manager.save_artifact.call_count == 1
 
@@ -79,70 +82,79 @@ class TestResultType(unittest.TestCase):
 
     def test_GetEditorLogStr_HasOutput_ReturnsCorrectly(self):
         self.mock_result.editor_log = 'expected log output'
-        assert self.mock_result.get_editor_log_str() == 'expected log output'
+        assert self.mock_result.get_log_attribute_str(self.mock_result.editor_log) == 'expected log output'
 
     def test_GetEditorLogStr_NoOutput_ReturnsCorrectly(self):
         self.mock_result.editor_log = None
-        assert self.mock_result.get_editor_log_str() == '-- No editor log found --'
+        assert self.mock_result.get_log_attribute_str(self.mock_result.editor_log) == '-- No editor log found --'
 
 
 class TestResultPass(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
-        mock_test_spec = mock.MagicMock()
-        mock_output = mock.MagicMock()
-        mock_editor_log = mock.MagicMock()
-
-        under_test = editor_test.Result.Pass(mock_test_spec, mock_output, mock_editor_log)
-        assert under_test.test_spec == mock_test_spec
-        assert under_test.output == mock_output
-        assert under_test.editor_log == mock_editor_log
-
-    def test_Str_ValidString_ReturnsOutput(self):
+        mock_log_attribute = 'mock_log_attribute'
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
-        mock_editor_log = mock.MagicMock()
+        mock_log_output = 'mock_log_output'
 
-        under_test = editor_test.Result.Pass(mock_test_spec, mock_output, mock_editor_log)
+        under_test = editor_test.Result.Pass(mock_log_attribute, mock_test_spec, mock_output, mock_log_output)
+        assert mock_log_attribute == under_test.log_attribute
+        assert mock_test_spec == under_test.test_spec
+        assert mock_output == under_test.output
+        assert mock_log_output == under_test.log_output
+
+    def test_Str_ValidString_ReturnsOutput(self):
+        mock_log_attribute = 'mock_log_attribute'
+        mock_test_spec = mock.MagicMock()
+        mock_output = 'mock_output'
+        mock_log_output = 'mock_log_output'
+
+        under_test = editor_test.Result.Pass(mock_log_attribute, mock_test_spec, mock_output, mock_log_output)
         assert mock_output in str(under_test)
 
 
 class TestResultFail(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
-        mock_test_spec = mock.MagicMock()
-        mock_output = mock.MagicMock()
-        mock_editor_log = mock.MagicMock()
-
-        under_test = editor_test.Result.Fail(mock_test_spec, mock_output, mock_editor_log)
-        assert under_test.test_spec == mock_test_spec
-        assert under_test.output == mock_output
-        assert under_test.editor_log == mock_editor_log
-
-    def test_Str_ValidString_ReturnsOutput(self):
+        mock_log_attribute = 'mock_log_attribute'
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
-        mock_editor_log = 'mock_editor_log'
+        mock_log_output = 'mock_log_output'
 
-        under_test = editor_test.Result.Fail(mock_test_spec, mock_output, mock_editor_log)
+        under_test = editor_test.Result.Fail(mock_log_attribute, mock_test_spec, mock_output, mock_log_output)
+        assert mock_log_attribute == under_test.log_attribute
+        assert mock_test_spec == under_test.test_spec
+        assert mock_output == under_test.output
+        assert mock_log_output == under_test.log_output
+
+    def test_Str_ValidString_ReturnsOutput(self):
+        mock_log_attribute = 'mock_log_attribute'
+        mock_test_spec = mock.MagicMock()
+        mock_output = 'mock_output'
+        mock_log_output = 'mock_log_output'
+
+        under_test = editor_test.Result.Fail(mock_log_attribute, mock_test_spec, mock_output, mock_log_output)
         assert mock_output in str(under_test)
-        assert mock_editor_log in str(under_test)
+        assert mock_log_attribute in str(under_test)
 
 
 class TestResultCrash(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
+        mock_log_attribute = 'mock_log_attribute'
         mock_test_spec = mock.MagicMock()
         mock_output = mock.MagicMock()
-        mock_editor_log = mock.MagicMock()
         mock_ret_code = mock.MagicMock()
         mock_stacktrace = mock.MagicMock()
+        mock_log_output = 'mock_log_output'
 
-        under_test = editor_test.Result.Crash(mock_test_spec, mock_output, mock_ret_code, mock_stacktrace,
-                                                    mock_editor_log)
+        under_test = editor_test.Result.Crash(
+            mock_log_attribute, mock_test_spec, mock_output, mock_ret_code, mock_stacktrace, mock_log_output)
+
+        assert under_test.log_attribute == mock_log_attribute
         assert under_test.test_spec == mock_test_spec
         assert under_test.output == mock_output
-        assert under_test.editor_log == mock_editor_log
+        assert under_test.log_output == mock_log_output
         assert under_test.ret_code == mock_ret_code
         assert under_test.stacktrace == mock_stacktrace
 
@@ -620,7 +632,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 0
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_single_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Pass)
         assert mock_cycle_crash.called
@@ -644,7 +656,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 15
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_single_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Fail)
@@ -671,7 +683,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.get_returncode.return_value = 1
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_single_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
         assert mock_cycle_crash.call_count == 2
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
@@ -697,7 +709,7 @@ class TestRunningTests(unittest.TestCase):
         mock_editor.wait.side_effect = ly_test_tools.launchers.exceptions.WaitTimeoutError()
         mock_get_output_results.return_value = {}
 
-        results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
+        results = mock_test_suite._exec_single_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
 
         assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Timeout)
@@ -886,22 +898,22 @@ class TestRunningTests(unittest.TestCase):
         assert results[mock_test_spec_2.__name__].extra_info, "Extra info missing from Unknown failure"
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._report_result')
-    @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._exec_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._exec_single_test')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
-    def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_editor_test, mock_report_result):
+    def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_single_test, mock_report_result):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_test_data = mock.MagicMock()
         mock_test_spec = mock.MagicMock()
         mock_result = mock.MagicMock()
         mock_test_name = 'mock_test_result'
-        mock_exec_editor_test.return_value = {mock_test_name: mock_result}
+        mock_exec_single_test.return_value = {mock_test_name: mock_result}
 
         mock_test_suite._run_single_test(mock.MagicMock(), mock.MagicMock(), mock.MagicMock(), mock_test_data,
                                          mock_test_spec)
 
         assert mock_setup_test.called
-        assert mock_exec_editor_test.called
+        assert mock_exec_single_test.called
         assert mock_test_data.results.update.called
         mock_report_result.assert_called_with(mock_test_name, mock_result)
 

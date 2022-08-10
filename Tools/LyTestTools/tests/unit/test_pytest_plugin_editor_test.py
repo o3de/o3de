@@ -9,7 +9,7 @@ import os
 import unittest.mock as mock
 import unittest
 
-import ly_test_tools._internal.pytest_plugin.editor_test as editor_test
+import ly_test_tools._internal.pytest_plugin.multi_testing as editor_test
 
 pytestmark = pytest.mark.SUITE_smoke
 

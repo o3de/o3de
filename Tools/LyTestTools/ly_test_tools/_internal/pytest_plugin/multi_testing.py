@@ -28,7 +28,7 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     parser.addoption("--no-test-parallel", action="store_true", help="Don't run multiple instances in parallel")
     parser.addoption("--parallel-executables", type=int, action="store",
                      help="Override the number of program executables to run at the same time. Default value is: "
-                     f"{ly_test_tools.o3de.multi_test_framework.AbstractTestSuite.get_number_parallel_instances()}")
+                     f"{ly_test_tools.o3de.multi_test_framework.AbstractTestSuite.get_number_parallel_executables()}")
 
 
 def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> _pytest.python.Module:

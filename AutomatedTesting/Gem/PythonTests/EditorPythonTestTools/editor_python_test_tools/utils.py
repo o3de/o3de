@@ -15,7 +15,7 @@ from typing import Callable, Tuple
 import azlmbr
 try:
     import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
-except ModuleNotFoundError:  # Editor test.
+except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
     import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
