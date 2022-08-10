@@ -1112,6 +1112,9 @@ m_{{ LowerFirst(Property.attrib['Name']) }} = m_{{ LowerFirst(Property.attrib['N
 {%      if Property.attrib['ExposeToEditor'] | booleanTrue %}
 ->DataElement(AZ::Edit::UIHandlers::Default, &{{ ClassName }}::m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ UpperFirst(Property.attrib['Name']) }}", "{{ Property.attrib['Desc'] }}")
 {%      endif %}
+{%      if Property.attrib['Suffix'] %}
+->Attribute(AZ::Edit::Attributes::Suffix, " {{ Property.attrib['Suffix'] }}")
+{%      endif %}
 {% endcall %}
 {% endmacro %}
 {#
