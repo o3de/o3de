@@ -28,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -54,7 +54,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -80,7 +80,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -104,7 +104,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = clamp(O3DE_NODEID_inValue1, O3DE_NODEID_inValue2, O3DE_NODEID_inValue3);"
+                        "SLOTTYPE NODEID_SLOTNAME = clamp(NODEID_inValue1, NODEID_inValue2, NODEID_inValue3);"
                     ]
                 }
             }
