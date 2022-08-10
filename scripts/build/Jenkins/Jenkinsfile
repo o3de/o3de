@@ -386,7 +386,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 echo 'Build request is for the extras: pull development branch: ${branches}'
             }
 
-            CheckoutRepo(branches, GetEngineRemoteConfig(), disableSubmodules, setEnvCommit)
+            CheckoutRepo(branches, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
             // Get python
             dir('python') {
@@ -417,7 +417,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 branches = EXTRAS_DEVELOPMENT_BRANCH
                 echo 'Build request is for the engine, pull development branch: ${branches}'
             }
-            CheckoutRepo(branches, GetExtrasRemoteConfig(), disableSubmodules, setEnvCommit)
+            CheckoutRepo(branches, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
         }
     }
 }
