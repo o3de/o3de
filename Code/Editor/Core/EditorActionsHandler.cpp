@@ -1485,8 +1485,6 @@ void EditorActionsHandler::InitializeMenus()
     }
 
     // View
-
-
     {
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, LayoutsMenuIdentifier, 100);
         {
@@ -1545,6 +1543,13 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSeparatorToMenu(HelpMenuIdentifier, 500);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
+    }
+
+    // Add helper actions to the Viewport top toolbar helpers button.
+    // This is temporary until that toolbar is completely refactored.
+    {
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
     }
 }
 
