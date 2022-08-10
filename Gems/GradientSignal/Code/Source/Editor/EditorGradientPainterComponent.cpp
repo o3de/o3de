@@ -27,7 +27,6 @@ namespace GradientSignal
         {
             serialize->Class<GradientPainterConfig, AZ::ComponentConfig>()
                 ->Version(2)
-                ->Field("InputBounds", &GradientPainterConfig::m_inputBounds)
                 ->Field("OutputResolution", &GradientPainterConfig::m_outputResolution)
                 ->Field("OutputFormat", &GradientPainterConfig::m_outputFormat)
                 ->Field("OutputImagePath", &GradientPainterConfig::m_outputImagePath)
@@ -40,9 +39,6 @@ namespace GradientSignal
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_inputBounds, "Input Bounds",
-                        "Input bounds for where to sample the data.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientPainterConfig::m_outputResolution, "Resolution",
                         "Output resolution of the saved image.")
@@ -99,10 +95,7 @@ namespace GradientSignal
                         &EditorGradientPainterComponent::m_componentModeDelegate,
                         "Paint Image",
                         "Paint into an image asset")
-
-                    //->UIElement(AZ::Edit::UIHandlers::Button, "PaintImage", "Paint into an image asset")
-                    //->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                    //->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -125,6 +118,11 @@ namespace GradientSignal
         services.push_back(AZ_CRC_CE("GradientService"));
     }
 
+    void EditorGradientPainterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("ShapeService"));
+    }
+
     void EditorGradientPainterComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -137,7 +135,7 @@ namespace GradientSignal
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
 
         m_previewer.SetPreviewSettingsVisible(false);
-        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.SetPreviewEntity(GetEntityId());
         m_previewer.Activate(GetEntityId());
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorGradientPainterComponent, EditorGradientPainterComponentMode>(
@@ -198,18 +196,6 @@ namespace GradientSignal
     bool EditorGradientPainterComponent::IsEntityInHierarchy([[maybe_unused]] const AZ::EntityId& entityId) const
     {
         return false;
-    }
-
-    AZ::EntityId EditorGradientPainterComponent::GetInputBounds() const
-    {
-        return m_configuration.m_inputBounds;
-    }
-
-    void EditorGradientPainterComponent::SetInputBounds(const AZ::EntityId& inputBounds)
-    {
-        m_configuration.m_inputBounds = inputBounds;
-
-        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     AZ::Vector2 EditorGradientPainterComponent::GetOutputResolution() const

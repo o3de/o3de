@@ -21,7 +21,7 @@
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 #include <GradientSignal/GradientSampler.h>
-#
+
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 
@@ -34,7 +34,6 @@ namespace GradientSignal
         AZ_RTTI(GradientPainterConfig, "{324D408C-2118-42CA-90BC-53DC3E5CF8A4}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::EntityId m_inputBounds;
         AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
         OutputFormat m_outputFormat = OutputFormat::R32;
         AZ::IO::Path m_outputImagePath;
@@ -52,6 +51,7 @@ namespace GradientSignal
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
         EditorGradientPainterComponent() = default;
 
@@ -65,8 +65,6 @@ namespace GradientSignal
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
         //! GradientImageCreatorRequestBus overrides ...
-        AZ::EntityId GetInputBounds() const override;
-        void SetInputBounds(const AZ::EntityId& inputBounds) override;
         AZ::Vector2 GetOutputResolution() const override;
         void SetOutputResolution(const AZ::Vector2& resolution) override;
         OutputFormat GetOutputFormat() const override;
@@ -86,9 +84,7 @@ namespace GradientSignal
 
     protected:
         void OnConfigurationChanged();
-
         void SetupDependencyMonitor();
-
         bool InComponentMode();
 
     private:

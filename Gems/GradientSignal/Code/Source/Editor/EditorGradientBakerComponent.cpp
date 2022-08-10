@@ -361,9 +361,6 @@ namespace GradientSignal
                 ->Attribute(AZ::Script::Attributes::Category, "Gradient")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "gradient")
-                ->Event("GetInputBounds", &GradientImageCreatorRequests::GetInputBounds)
-                ->Event("SetInputBounds", &GradientImageCreatorRequests::SetInputBounds)
-                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds")
                 ->Event("GetOutputResolution", &GradientImageCreatorRequests::GetOutputResolution)
                 ->Event("SetOutputResolution", &GradientImageCreatorRequests::SetOutputResolution)
                 ->VirtualProperty("OutputResolution", "GetOutputResolution", "SetOutputResolution")
@@ -385,7 +382,9 @@ namespace GradientSignal
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "gradient")
                 ->Event("BakeImage", &GradientBakerRequests::BakeImage)
-                ;
+                ->Event("GetInputBounds", &GradientBakerRequests::GetInputBounds)
+                ->Event("SetInputBounds", &GradientBakerRequests::SetInputBounds)
+                ->VirtualProperty("InputBounds", "GetInputBounds", "SetInputBounds");
         }
     }
 

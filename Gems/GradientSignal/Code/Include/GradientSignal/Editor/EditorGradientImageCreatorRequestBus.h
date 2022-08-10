@@ -47,9 +47,6 @@ namespace GradientSignal
                      AZ::Edit::EnumConstant<OutputFormat>(OutputFormat::R32, "R32 (32-bit)") };
         }
 
-        virtual AZ::EntityId GetInputBounds() const = 0;
-        virtual void SetInputBounds(const AZ::EntityId& inputBounds) = 0;
-
         virtual AZ::Vector2 GetOutputResolution() const = 0;
         virtual void SetOutputResolution(const AZ::Vector2& resolution) = 0;
 

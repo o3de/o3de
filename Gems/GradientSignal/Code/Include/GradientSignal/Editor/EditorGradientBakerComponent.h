@@ -101,8 +101,6 @@ namespace GradientSignal
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
         //! GradientImageCreatorRequestBus overrides ...
-        AZ::EntityId GetInputBounds() const override;
-        void SetInputBounds(const AZ::EntityId& inputBounds) override;
         AZ::Vector2 GetOutputResolution() const override;
         void SetOutputResolution(const AZ::Vector2& resolution) override;
         OutputFormat GetOutputFormat() const override;
@@ -112,6 +110,8 @@ namespace GradientSignal
 
         //! GradientBakerRequestBus overrides ...
         void BakeImage() override;
+        AZ::EntityId GetInputBounds() const override;
+        void SetInputBounds(const AZ::EntityId& inputBounds) override;
 
         //! LmbrCentral::DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;

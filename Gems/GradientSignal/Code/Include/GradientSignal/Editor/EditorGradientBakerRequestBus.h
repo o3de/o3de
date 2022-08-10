@@ -21,6 +21,9 @@ namespace GradientSignal
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual void BakeImage() = 0;
+
+        virtual AZ::EntityId GetInputBounds() const = 0;
+        virtual void SetInputBounds(const AZ::EntityId& inputBounds) = 0;
     };
 
     using GradientBakerRequestBus = AZ::EBus<GradientBakerRequests>;
