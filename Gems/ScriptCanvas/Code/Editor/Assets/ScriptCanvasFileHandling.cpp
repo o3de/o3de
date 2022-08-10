@@ -139,7 +139,9 @@ namespace ScriptCanvasFileHandlingCpp
 
         const auto subgraphInterfaceAssetTypeID = azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>();
 
-        auto onBeginElement = [&subgraphInterfaceAssetTypeID, &result]
+        AZStd::vector<SourceTreeLoader> possibleDependencies;
+
+        auto onBeginElement = [&subgraphInterfaceAssetTypeID, &possibleDependencies]
             ( void* instance
             , const AZ::SerializeContext::ClassData* classData
             , const AZ::SerializeContext::ClassElement* classElement) -> bool
@@ -160,8 +162,7 @@ namespace ScriptCanvasFileHandlingCpp
                 auto id = reinterpret_cast<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>*>(instance)->GetId();
                 SourceTreeLoader dependencyLoader;
                 dependencyLoader.m_source = ScriptCanvas::SourceHandle(nullptr, id.m_guid);
-                result.m_dependencies.push_back(dependencyLoader);
-                result.m_dependencies.back().AssignParents(result);
+                possibleDependencies.push_back(dependencyLoader);
             }
 
             return true;
@@ -174,25 +175,31 @@ namespace ScriptCanvasFileHandlingCpp
         const ScriptCanvasEditor::EditorGraph* graph = result.m_source.Get();
         serializeContext->EnumerateObject(graph, onBeginElement, nullptr, AZ::SerializeContext::ENUM_ACCESS_FOR_READ);
 
-        for (auto& dependentAsset : result.m_dependencies)
+        for (auto& possibleDependency : possibleDependencies)
         {
             // do not count locally defined functions as dependencies
-            if (!result.m_source.AnyEquals(dependentAsset.m_source))
+            if (!result.m_source.AnyEquals(possibleDependency.m_source))
             {
-                // check for circular dependencies...
+                // now that circular dependencies can be guarded against, load each dependency from disk only once
+                {
+                    SourceTreeLoader dependencyLoader;
+                    dependencyLoader.m_source = possibleDependency.m_source;
+                    result.m_dependencies.push_back(dependencyLoader);
+                    result.m_dependencies.back().AssignParents(result);
+                }
+
+                SourceTreeLoader& dependentAsset = result.m_dependencies.back();
                 AZStd::string path;
                 if (result.IsLoading(dependentAsset.m_source, path))
-                {
+                {   // check for circular dependencies...
                     return AZ::Failure(AZStd::string::format("LoadEditorAsset tree failed to load. Circular dependency detected: %s", path.c_str()));
                 }
-                // check at the level root if the dependency is loaded already...
                 else if (auto sourceTreeOptional = result.ModRoot()->FindDependency(dependentAsset.m_source))
-                {
+                {   // check at the level root if the dependency is loaded already...
                     dependentAsset.m_source = sourceTreeOptional->m_source;
                 }
                 else
-                {
-                    // ...and if not, load and add the value to the in process-loads at this step...
+                {   // ...and if not, load and add the value to the in process-loads at this step...
                     auto loadDependentOutcome = ScriptCanvasFileHandlingCpp::LoadEditorAssetTree(dependentAsset);
                     if (!loadDependentOutcome.IsSuccess())
                     {

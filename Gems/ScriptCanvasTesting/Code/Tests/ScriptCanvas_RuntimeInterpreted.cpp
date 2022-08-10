@@ -885,7 +885,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedDivideByNumber)
     RunUnitTestGraph("LY_SC_UnitTest_DivideByNumber");
 }
 
-// move to in-editor test
+// move to in-editor test, where (required) assetids are available
 // TEST_F(ScriptCanvasTestFixture, InterpretedUseLocallyDefinedFunction)
 // {
 //     RunUnitTestGraph("LY_SC_UnitTest_UseLocallyDefinedFunction", ExecutionMode::Interpreted);

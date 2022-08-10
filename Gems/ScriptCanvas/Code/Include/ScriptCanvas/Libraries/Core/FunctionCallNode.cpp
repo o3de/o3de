@@ -435,6 +435,11 @@ namespace ScriptCanvas
                 return m_prettyName;
             }
 
+            Grammar::FunctionSourceId FunctionCallNode::GetSourceId() const
+            {
+                return m_sourceId;
+            }
+
             void FunctionCallNode::Initialize(AZ::Data::AssetId assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)
             {
                 PopulateNodeType();
@@ -790,6 +795,11 @@ namespace ScriptCanvas
             const SlotExecution::Map* FunctionCallNode::GetSlotExecutionMap() const
             {
                 return &m_slotExecutionMap;
+            }
+
+            const Grammar::SubgraphInterface& FunctionCallNode::GetSlotExecutionMapSource() const
+            {
+                return m_slotExecutionMapSourceInterface;
             }
 
             const Grammar::SubgraphInterface* FunctionCallNode::GetSubgraphInterface() const

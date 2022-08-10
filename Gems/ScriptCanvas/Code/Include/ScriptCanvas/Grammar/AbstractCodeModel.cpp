@@ -2363,6 +2363,8 @@ namespace ScriptCanvas
             ParseUserFunctionTopology();
             // culls unused variables, and determine whether the the graph defines an object or static functionality
             ParseExecutionCharacteristics();
+            // subgraph interface is available, use it to check this function
+            ParseLocallyDefinedFunctionCalls();
             // now that variables have been culled, determined what data needs to be initialized by an external source
             ParseConstructionInputVariables();
             // now that externally initialized data has been identified, associate local, static initializers with individual functions
@@ -2586,6 +2588,10 @@ namespace ScriptCanvas
                     AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", node.GetNodeName().c_str());
                     AddError(nullptr, aznew NodeCompatiliblity::NodeOutOfDate(node.GetEntityId(), node.GetNodeName()));
                     return false;
+                }
+                else if (result == Nodes::Core::IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition)
+                {
+                    m_locallyDefinedFunctionCallNodes.push_back(functionNode);
                 }
             }
             else if (node.IsOutOfDate(m_source.m_graph->GetVersion()))
@@ -4457,7 +4463,7 @@ namespace ScriptCanvas
                 {
                     auto node2 = execution->GetId().m_node;
                     AddError(execution, aznew ParseError(node2->GetEntityId(), AZStd::string::format
-                    ("Failed to find member variable for Node: %s Id: %s"
+                        ( "Failed to find member variable for Node: %s Id: %s"
                         , node2->GetNodeName().data()
                         , node2->GetEntityId().ToString().data()).data()));
                 }
@@ -4488,13 +4494,31 @@ namespace ScriptCanvas
                 {
                     auto node2 = execution->GetId().m_node;
                     AddError(execution, aznew ParseError(node2->GetEntityId(), AZStd::string::format
-                    ("Failed to find member variable for Node: %s Id: %s"
+                        ( "Failed to find member variable for Node: %s Id: %s"
                         , node2->GetNodeName().data()
                         , node2->GetEntityId().ToString().data()).data()));
                 }
             }
 
             return true;
+        }
+
+        void AbstractCodeModel::ParseLocallyDefinedFunctionCalls()
+        {
+            using namespace Nodes::Core;
+
+            const FunctionCallNodeCompareConfig compareConfig;
+
+            for (auto functionCallNode : m_locallyDefinedFunctionCallNodes)
+            {
+                if (IsLocallyDefinedFunctionCallNodeOutOfDate(*functionCallNode, compareConfig, m_subgraphInterface))
+                {
+                    AZ_Warning("ScriptCanvas", false, "%s node is out-of-date.", functionCallNode->GetNodeName().c_str());
+                    AddError
+                        ( nullptr
+                        , aznew NodeCompatiliblity::NodeOutOfDate(functionCallNode->GetEntityId(), functionCallNode->GetNodeName()));
+                }
+            }
         }
 
         void AbstractCodeModel::ParseMetaData(ExecutionTreePtr execution)
