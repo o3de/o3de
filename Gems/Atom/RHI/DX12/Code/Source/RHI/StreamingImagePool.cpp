@@ -317,7 +317,6 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RHI);
 
             AZ_Assert(image.IsTiled(), "This method is only valid for tiled resources.");
-            AZ_Assert(image.GetDescriptor().m_arraySize == 1, "Not implemented for image arrays.");
 
             const ImageTileLayout& tileLayout = image.m_tileLayout;
             if (tileLayout.m_mipCountPacked)
@@ -391,20 +390,21 @@ namespace AZ
                     return false;
                 }
 
-                /**
-                * DirectX has weird limitation in the implementation where texture arrays are not currently supported
-                * (despite the spec saying they are):
-                *
-                * 'On a device with Tier 2 Tiled Resources support, Tiled Resources cannot be created with both more
-                *  than one array slice and any mipmap that has a dimension less than a tile in extent.
-                *  Hardware support in this area was not able to be standardized in time to be included in D3D'
-                *
-                * Need to follow up to figure out if this is a permanent limitation or whether it will be lifted in an
-                * upcoming version of windows. For now, a committed resource is created when texture arrays are in use.
-                */
+                // ID3D12Device::CreateReservedResource limitation
+                // D3D12 ERROR: ID3D12Device::CreateReservedResource: On a device with Tier 2 & 3 Tiled Resources support, Tiled Resources cannot be created
+                // with both more than one array slice and any mipmap that has a dimension less than a tile in extent.
                 if (imageDescriptor.m_arraySize > 1)
                 {
-                    return false;
+                    // get smallest mip size
+                    uint32_t formatDiemensionAlignment = RHI::GetFormatDimensionAlignment(imageDescriptor.m_format);
+                    uint32_t minMipWidth = AZStd::max(imageDescriptor.m_size.m_width >> (imageDescriptor.m_mipLevels-1), 1u);
+                    uint32_t minMipHeight = AZStd::max(imageDescriptor.m_size.m_height >> (imageDescriptor.m_mipLevels-1), 1u);
+                    uint32_t minMipSize = AZ::DivideAndRoundUp(minMipWidth, formatDiemensionAlignment) * AZ::DivideAndRoundUp(minMipHeight, formatDiemensionAlignment)
+                        * RHI::GetFormatSize(imageDescriptor.m_format);
+                    if (minMipSize < TileSizeInBytes)
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
