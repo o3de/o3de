@@ -79,9 +79,11 @@ namespace AzToolsFramework
         const AZ::Vector3 currentWorldHitVector = (worldHitPosition - center).GetNormalizedSafe();
         const AZ::Vector3 previousWorldHitVector = (actionInternal.m_current.m_worldHitPosition - center).GetNormalizedSafe();
 
-        // calculate which direction we rotated
-        const AZ::Vector3 worldAxisRight = worldAxis.Cross(previousWorldHitVector);
-        const float rotateSign = Sign(currentWorldHitVector.Dot(worldAxisRight));
+        // determine the direction (clockwise or counter clockwise) the rotation is happening
+        const float direction = !currentWorldHitVector.IsClose(previousWorldHitVector)
+            ? Sign(worldAxis.Dot(currentWorldHitVector.Cross(previousWorldHitVector)))
+            : 0.0f;
+
         // how far did we rotate this frame
         const float rotationAngleRad = AZ::Acos(AZ::GetMin<float>(1.0f, currentWorldHitVector.Dot(previousWorldHitVector)));
         actionInternal.m_current.m_worldHitPosition = worldHitPosition;
@@ -90,7 +92,7 @@ namespace AzToolsFramework
         // preSnapRadians is greater than the angleStep
         if (snapping && AZStd::abs(angleStepDegrees) > 0.0f)
         {
-            actionInternal.m_current.m_preSnapRadians += rotationAngleRad * rotateSign;
+            actionInternal.m_current.m_preSnapRadians += rotationAngleRad * direction;
 
             const float angleStepRad = AZ::DegToRad(angleStepDegrees);
             const float preSnapRotateSign = Sign(actionInternal.m_current.m_preSnapRadians);
@@ -104,7 +106,7 @@ namespace AzToolsFramework
         else
         {
             // no snapping, just update current radius immediately
-            actionInternal.m_current.m_radians += rotationAngleRad * rotateSign;
+            actionInternal.m_current.m_radians += rotationAngleRad * direction;
         }
 
         Action action;
@@ -112,6 +114,7 @@ namespace AzToolsFramework
         action.m_start.m_space = actionInternal.m_start.m_worldFromLocal.GetRotation().GetNormalized();
         action.m_start.m_rotation = actionInternal.m_start.m_localTransform.GetRotation().GetNormalized();
         action.m_start.m_worldHitPosition = actionInternal.m_start.m_worldHitPosition;
+        action.m_current.m_deltaRadians = actionInternal.m_current.m_radians;
         action.m_current.m_delta = AZ::Quaternion::CreateFromAxisAngle(fixed.m_axis, actionInternal.m_current.m_radians).GetNormalized();
         action.m_current.m_worldHitPosition = actionInternal.m_current.m_worldHitPosition;
         action.m_modifiers = keyboardModifiers;

@@ -59,6 +59,7 @@ namespace AzToolsFramework
         //! The state of the manipulator during an interaction.
         struct Current
         {
+            float m_deltaRadians; //!< Signed amount of rotation for manipulator (in radians).
             AZ::Quaternion m_delta; //!< Amount of rotation to apply to manipulator during action.
             AZ::Vector3 m_worldHitPosition; //!< World space hit position.
         };

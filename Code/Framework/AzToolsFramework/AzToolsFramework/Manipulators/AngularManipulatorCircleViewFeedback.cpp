@@ -9,10 +9,14 @@
 #include "AngularManipulatorCircleViewFeedback.h"
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Plane.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorDebug.h>
+#include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Manipulators/ManipulatorView.h>
+#include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 AZ_CVAR(
@@ -34,6 +38,8 @@ namespace AzToolsFramework
         {
             return;
         }
+
+        const auto* view = static_cast<const ManipulatorViewCircle*>(angularManipulator->GetView());
 
         const auto manipulatorState = angularManipulator->CalculateManipulatorState();
         const auto fixedAxis = m_mostRecentAction.m_fixed.m_axis;
@@ -59,16 +65,6 @@ namespace AzToolsFramework
         const AZ::Transform worldFromLocalWithOrientation =
             AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
 
-        const auto currentLocalHitPosition = localFromWorld.TransformPoint(m_mostRecentAction.m_current.m_worldHitPosition);
-        const auto currentPointOnPlane = plane.GetProjected(currentLocalHitPosition);
-        const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
-        const auto currentPointToCenter = (currentPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
-
-        const auto right = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, AZ::DegToRad(90.0f)).TransformVector(initialPointToCenter).GetNormalized();
-        const auto angle = m_mostRecentAction.m_current.m_delta.GetAngle();
-        const auto sign = Sign(currentPointToCenter.Dot(right));
-        const auto rotationDirection = angle < AZ::Constants::Pi ? sign : -sign;
-
         debugDisplay.CullOn();
         debugDisplay.DepthTestOff();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
@@ -78,16 +74,17 @@ namespace AzToolsFramework
         constexpr auto stepIncrement = totalAngle / 360.0f;
         const auto worldPosition = manipulatorState.m_worldFromLocal.TransformPoint(manipulatorState.m_localPosition);
         const float viewScale = CalculateScreenToWorldMultiplier(worldPosition, cameraState);
-        for (auto step = 0.0f; step < angle; step += stepIncrement)
+        const auto angle = m_mostRecentAction.m_current.m_deltaRadians;
+        const auto initialPointToCenter = (initialPointOnPlane - manipulatorState.m_localPosition).GetNormalized();
+        for (auto step = 0.0f; step < AZ::GetAbs(angle); step += stepIncrement)
         {
-            const auto first =
-                AZ::Quaternion::CreateFromAxisAngle(fixedAxis, step * rotationDirection).TransformVector(initialPointToCenter);
-            const auto second = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, (step - stepIncrement) * rotationDirection)
-                                    .TransformVector(initialPointToCenter);
-
+            const auto first = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, step * -Sign(angle)).TransformVector(initialPointToCenter);
+            const auto second =
+                AZ::Quaternion::CreateFromAxisAngle(fixedAxis, (step - stepIncrement) * -Sign(angle)).TransformVector(initialPointToCenter);
             debugDisplay.DrawTri(
-                manipulatorState.m_localPosition, manipulatorState.m_localPosition + first * 2.0f * viewScale,
-                manipulatorState.m_localPosition + second * 2.0f * viewScale);
+                manipulatorState.m_localPosition,
+                manipulatorState.m_localPosition + first * view->m_radius * viewScale,
+                manipulatorState.m_localPosition + second * view->m_radius * viewScale);
         }
 
         debugDisplay.PopMatrix();

@@ -20,6 +20,7 @@ namespace AzToolsFramework
 {
     class AngularManipulator;
 
+    //! A visual segment indicator of how much rotation has occurred about an AngularManipulator using a ManipulatorCircleView.
     class AngularManipulatorCircleViewFeedback
     {
     public:
@@ -30,6 +31,7 @@ namespace AzToolsFramework
             AzFramework::DebugDisplayRequests& debugDisplayRequests,
             const AzFramework::CameraState& cameraState);
 
+         //! The last action that occurred for an AngularManipulator (note: Must be updated in the AngularManipulator callbacks).
         AngularManipulator::Action m_mostRecentAction;
     };
 } // namespace AzToolsFramework
