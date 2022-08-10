@@ -76,7 +76,7 @@ namespace LandscapeCanvas
             };
 
             m_nodeFactory[typeId] = factory;
-            m_nodeComponentTypeIds[AZ::RttiTypeId<NodeType>()] = AZStd::make_pair(typeId, m_nodeComponentTypeIds.size());
+            m_nodeComponentTypeIds[AZ::RttiTypeId<NodeType>()] = AZStd::make_pair(typeId, aznumeric_cast<AZ::u32>(m_nodeComponentTypeIds.size()));
         }
 
         AZ::SerializeContext* m_serializeContext = nullptr;
