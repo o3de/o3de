@@ -1123,13 +1123,15 @@ class AtomComponentProperties:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Radius' Radius of the PostFX modification (float deafult 0.0 to infinity)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Radius Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Radius': 'Controller|Configuration|Radius',
         }
         return properties[property]
 
