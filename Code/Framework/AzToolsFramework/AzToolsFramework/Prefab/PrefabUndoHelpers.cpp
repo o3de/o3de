@@ -60,7 +60,7 @@ namespace AzToolsFramework
                 TemplateId templateId,
                 UndoSystem::URSequencePoint* undoBatch)
             {
-                // Create undo node for adding entity to the apprpriate prefab template.
+                // Create undo node for adding entity to the appropriate prefab template.
                 PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
                 addEntityUndoState->SetParent(undoBatch);
                 addEntityUndoState->Capture(newEntityDom, entityId, templateId);
