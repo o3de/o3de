@@ -18,6 +18,7 @@ set(FILES
     Serialization/DeltaSerializerTests.cpp
     Serialization/HashSerializerTests.cpp
     Serialization/NetworkInputOutputSerializerTests.cpp
+    Serialization/StringifySerializerTests.cpp
     Serialization/TrackChangedSerializerTests.cpp
     Serialization/TypeValidatingSerializerTests.cpp
     TcpTransport/TcpTransportTests.cpp
