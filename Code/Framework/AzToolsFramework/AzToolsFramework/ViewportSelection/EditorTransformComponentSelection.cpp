@@ -155,9 +155,9 @@ namespace AzToolsFramework
     static const char* const DuplicateUndoRedoDesc = DuplicateTitle;
     static const char* const DeleteUndoRedoDesc = DeleteTitle;
 
-    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode";
-    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode";
-    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode";
+    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode (1)";
+    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode (2)";
+    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode (3)";
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
