@@ -312,7 +312,8 @@ namespace AZ::SceneAPI::Behaviors
             meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
             for (const auto& meshGoupNamePair : nodeDataMap)
             {
-                if (meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
+                if (meshGoupNamePair.second.m_meshIndex.IsValid()
+                    && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
                 {
                     const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
                     meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
