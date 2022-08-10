@@ -48,7 +48,7 @@ namespace Terrain
         static constexpr uint16_t MacroMaterialsPerTile = 4;
 
         using MaterialHandle = AZ::RHI::Handle<uint16_t, class Material>;
-        using TileHandle = AZ::RHI::Handle<uint16_t, class Tile>;
+        using TileHandle = AZ::RHI::Handle<uint32_t, class Tile>;
         using TileMaterials = AZStd::array<MaterialHandle, MacroMaterialsPerTile>;
 
         static constexpr TileMaterials DefaultTileMaterials
