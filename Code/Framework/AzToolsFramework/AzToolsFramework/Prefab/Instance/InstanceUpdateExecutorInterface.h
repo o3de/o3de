@@ -33,7 +33,7 @@ namespace AzToolsFramework
             virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) = 0;
 
             //! Updates instances in the waiting queue.
-            //! @return bool on wheter the operation succeeds.
+            //! @return bool on whether the operation succeeds.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
 
             //! Removes an instance from the waiting queue.

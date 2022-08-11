@@ -72,7 +72,8 @@ namespace AzToolsFramework::Prefab
         m_backButton->hide();
     }
 
-    void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()
+    void PrefabViewportFocusPathHandler::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
     {
         Refresh();
     }
