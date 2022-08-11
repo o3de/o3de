@@ -1,0 +1,64 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ // Based on https://github.com/sebh/UnrealEngineSkyAtmosphere by Sébastien Hillaire
+
+#define ENABLE_ATMOSPHERE_SHADOWS 0
+
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <SkyAtmosphereCommon.azsli>
+
+struct SkyTransmittanceLUTPSOutput
+{
+    float4 m_skyTransmittanceLut : SV_Target0;
+};
+
+void UvToLutTransmittanceParams(AtmosphereParameters atmosphere, out float viewHeight, out float viewZenithCosAngle, in float2 uv)
+{
+    float x_mu = uv.x;
+    float x_r = uv.y;
+
+    float H = sqrt(atmosphere.TopRadius * atmosphere.TopRadius - atmosphere.BottomRadius * atmosphere.BottomRadius);
+    float rho = H * x_r;
+    viewHeight = sqrt(rho * rho + atmosphere.BottomRadius * atmosphere.BottomRadius);
+
+    float d_min = atmosphere.TopRadius - viewHeight;
+    float d_max = rho + H;
+    float d = d_min + x_mu * (d_max - d_min);
+    viewZenithCosAngle = d == 0.0 ? 1.0f : (H * H - rho * rho - d * d) / (2.0 * viewHeight * d);
+    viewZenithCosAngle = clamp(viewZenithCosAngle, -1.0, 1.0);
+}
+
+SkyTransmittanceLUTPSOutput SkyTransmittanceLUTPS(VSOutput Input)
+{
+    SkyTransmittanceLUTPSOutput OUT = (SkyTransmittanceLUTPSOutput)0;
+
+    float2 pixPos = Input.m_position.xy;
+    AtmosphereParameters atmosphere = GetAtmosphereParameters();
+
+    // Compute camera position from LUT coords
+    float2 uv = Input.m_texCoord;
+    float viewHeight;
+    float viewZenithCosAngle;
+    UvToLutTransmittanceParams(atmosphere, viewHeight, viewZenithCosAngle, uv);
+
+    float3 worldPos = float3(0.0f, 0.0f, viewHeight);
+    float3 worldDir = float3(0.0f, sqrt(1.0 - viewZenithCosAngle * viewZenithCosAngle), viewZenithCosAngle);
+
+    const bool ground = false;
+    const float sampleCount = 40.0f;
+    const float depth = -1.0;
+    const bool variableSampleCount = false;
+    const bool mieRayPhase = false;
+    const float3 sunDir = float3(0,0,1); // not actually used to calculate optical depth
+    float3 transmittance = exp(-IntegrateScatteredLuminance(pixPos, uv, worldPos, worldDir, sunDir, atmosphere, ground, sampleCount, depth, variableSampleCount, mieRayPhase).OpticalDepth);
+
+    OUT.m_skyTransmittanceLut = float4(transmittance, 1.0f);
+
+    return OUT;
+}

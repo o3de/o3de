@@ -84,6 +84,7 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
+    Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Source/CoreLights/PhotometricValue.cpp
     Source/MorphTargets/MorphTargetInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
