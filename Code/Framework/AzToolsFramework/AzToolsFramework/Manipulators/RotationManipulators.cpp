@@ -135,7 +135,7 @@ namespace AzToolsFramework
 
         const float viewAlignedScale = 1.12f;
         m_viewAngularManipulator->SetView(CreateManipulatorViewCircle(
-            *m_viewAngularManipulator, AZ::Color(1.0f, 1.0f, 1.0f, 1.0f), radius * viewAlignedScale, m_circleBoundWidth, DrawFullCircle));
+            *m_viewAngularManipulator, AZ::Colors::White, radius * viewAlignedScale, m_circleBoundWidth, DrawFullCircle));
     }
 
     bool RotationManipulators::PerformingActionViewAxis() const
