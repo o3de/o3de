@@ -54,7 +54,6 @@
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/GradientBakerNode.h>
-#include <Editor/Nodes/Gradients/GradientPainterNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -150,7 +149,6 @@ namespace LandscapeCanvas
     VISITOR_FUNCTION<AltitudeGradientNode>(GradientSignal::EditorSurfaceAltitudeGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<ConstantGradientNode>(GradientSignal::EditorConstantGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<GradientBakerNode>(GradientSignal::EditorGradientBakerComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<GradientPainterNode>(GradientSignal::EditorGradientPainterComponentTypeId, ##__VA_ARGS__);                  \
     VISITOR_FUNCTION<ImageGradientNode>(GradientSignal::EditorImageGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<ShapeAreaFalloffGradientNode>(GradientSignal::EditorShapeAreaFalloffGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<SlopeGradientNode>(GradientSignal::EditorSurfaceSlopeGradientComponentTypeId, ##__VA_ARGS__);     \
