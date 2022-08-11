@@ -28,7 +28,7 @@ namespace EMotionFX
             ->Field("extractRotation", &RootMotionExtractionData::m_extractRotation)
             ->Field("smoothingMethod", &RootMotionExtractionData::m_smoothingMethod)
             ->Field("smoothPosition", &RootMotionExtractionData::m_smoothPosition)
-            ->Field("smoothPosition", &RootMotionExtractionData::m_smoothPosition)
+            ->Field("smoothRotation", &RootMotionExtractionData::m_smoothRotation)
             ->Field("smoothFrameNum", &RootMotionExtractionData::m_smoothFrameNum)
             ;
 
