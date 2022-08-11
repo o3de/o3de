@@ -824,12 +824,10 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        // WIP - Re-generate patches to add correct path.
                         PrefabDom newPatch;
                         m_instanceToTemplateInterface->GeneratePatch(newPatch, beforeState, afterState);
                         LinkId linkId = m_prefabFocusInterface->AppendPathFromFocusedInstanceToPatchPaths(newPatch, entityId);
 
-                        // WIP - Store patch to the link closest to the focused prefab.
                         Internal_HandleContainerOverride(parentUndoBatch, entityId, newPatch, linkId);
                     }
                 }
