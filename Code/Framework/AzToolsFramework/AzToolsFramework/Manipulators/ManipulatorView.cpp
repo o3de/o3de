@@ -11,7 +11,6 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
@@ -388,7 +387,7 @@ namespace AzToolsFramework
 
         if (manipulatorState.m_mouseOver)
         {
-            debugDisplay.SetColor(Vector3ToVector4(m_mouseOverColor.GetAsVector3(), 0.5f));
+            debugDisplay.SetColor(AZ::Vector4(m_mouseOverColor.GetAsVector3(), 0.5f));
 
             debugDisplay.CullOff();
             debugDisplay.DrawQuad(
