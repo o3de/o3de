@@ -413,6 +413,24 @@ class BaseTestImpact(ABC):
             return dir_name
         raise SystemError(
             "s3_top_level_dir not set while trying to access s3 instance.")
+    
+    def _extract_test_runs_from_test_run_report(self, report: dict):
+        test_runs = []
+        test_runs += report["passing_test_runs"]
+        test_runs += report["failing_test_runs"]
+        test_runs += report["execution_failure_test_runs"]
+        test_runs += report["timed_out_test_runs"]
+        test_runs += report["unexecuted_test_runs"]
+        return test_runs
+
+    def _extract_test_runs_from_sequence_report(self, report):
+        report_type = report['type']
+        test_runs = self._extract_test_runs_from_test_run_report(report['selected_test_run_report'])
+
+        if report_type == "impact_analysis" or report_type == "safe_impact_analysis":
+            test_runs = test_runs + self._extract_test_runs_from_test_run_report(report["drafted_test_run_report"])
+            if report_type == "safe_impact_analysis":
+                test_runs = test_runs + self._extract_test_runs_from_test_run_report(report["discarded_test_run_report"])
 
     def run(self):
         """
@@ -437,10 +455,7 @@ class BaseTestImpact(ABC):
                 report = json.load(json_file)
 
             # Grab the list of failing test targets for this sequence
-            # Commented out as this data is currently not used.
-            # TODO: Implement this 
-            # test_runs = self._extract_test_runs_from_sequence_report(report)
-            test_runs = []
+            test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and self._persistent_storage:
