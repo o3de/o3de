@@ -211,6 +211,11 @@ namespace EMStudio
         AzQtComponents::SliderDoubleCombo* floatSlider = static_cast<AzQtComponents::SliderDoubleCombo*>(sender());
         const int morphTargetIndex = floatSlider->property("MorphTargetIndex").toInt();
         EMotionFX::MorphTarget* morphTarget = m_morphTargets[morphTargetIndex].m_morphTarget;
+        if (!morphTarget)
+        {
+            return;
+        }
+
         EMotionFX::MorphSetupInstance::MorphTarget* morphTargetInstance = m_morphTargets[morphTargetIndex].m_morphTargetInstance;
 
         // set the old weight to have the undo correct
