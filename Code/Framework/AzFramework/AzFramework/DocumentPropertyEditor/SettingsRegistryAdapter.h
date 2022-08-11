@@ -10,6 +10,7 @@
 
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
+#include <AzCore/DOM/DomPrefixTree.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 
@@ -33,8 +34,28 @@ namespace AZ::DocumentPropertyEditor
         SettingsRegistryOriginTracker* GetSettingsRegistryOriginTracker();
         const SettingsRegistryOriginTracker* GetSettingsRegistryOriginTracker() const;
 
+        bool BuildBool(AZStd::string_view path);
+
+        bool BuildInt64(AZStd::string_view path);
+
+        bool BuildUInt64(AZStd::string_view path);
+
+        bool BuildFloat(AZStd::string_view path);
+
+        bool BuildString(AZStd::string_view path);
+
+        struct SettingsRegistryDomData
+        {
+            AZStd::string m_settingsKeyPath;
+            // Maps to the DOM Property Editor OnChanged callback which is sent
+            // when an edit changes a field
+            using FieldChangeCallback = AZStd::function<Dom::Value(AZStd::string_view keyPath, const Dom::Value&)>;
+            FieldChangeCallback m_callback;
+        };
+
     protected:
         Dom::Value GenerateContents() override;
+        Dom::Value HandleMessage(const AdapterMessage& message) override;
 
     private:
         struct SettingsNotificationHandler
@@ -51,5 +72,7 @@ namespace AZ::DocumentPropertyEditor
         AdapterBuilder m_builder;
         AZ::SettingsRegistryOriginTracker* m_originTracker = nullptr;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_notifyHandler;
+        AZ::Dom::DomPrefixTree<SettingsRegistryDomData> m_fieldCallbackPrefixTree;
+        bool m_inEdit = false;
     };
 }

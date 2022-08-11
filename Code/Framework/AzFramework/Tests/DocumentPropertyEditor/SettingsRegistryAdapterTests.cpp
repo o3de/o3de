@@ -90,10 +90,10 @@ namespace AZ::DocumentPropertyEditor::Tests
                     }
                }
            }
-       )"));
+        )"));
         ASSERT_TRUE(CreateTestFile(filePath2, R"(
            {
-            "O3DE": {
+               "O3DE": {
                     "ArrayValue": [
                         27,
                         39
@@ -105,7 +105,7 @@ namespace AZ::DocumentPropertyEditor::Tests
                     "DoubleValue": 4.0
                 }
            }
-       )"));
+        )"));
         m_settingsRegistry->MergeSettingsFile(
             filePath1.FixedMaxPathString(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", nullptr);
         m_settingsRegistry->MergeSettingsFile(
