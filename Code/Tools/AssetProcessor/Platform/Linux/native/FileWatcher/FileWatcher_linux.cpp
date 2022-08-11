@@ -98,7 +98,7 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
             [[maybe_unused]] const auto err = errno;
             [[maybe_unused]] AZStd::fixed_string<255> errorString;
             AZ_Warning("FileWatcher", false, "inotify_add_watch failed for path %s: %s", dirName.toUtf8().constData(), strerror_r(err, errorString.data(), errorString.capacity()));
-            return;
+            continue;
         }
 
         QMutexLocker lock{&m_handleToFolderMapLock};
