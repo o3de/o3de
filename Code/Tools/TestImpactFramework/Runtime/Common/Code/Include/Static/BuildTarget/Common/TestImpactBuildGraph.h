@@ -19,16 +19,16 @@ namespace TestImpact
     template<typename ProductionTarget, typename TestTarget>
     struct BuildGraphVertex;
     
-    //! List of vertices for dependencies or dependers.
+    //! Build graph target set for dependencies or dependers.
     template<typename ProductionTarget, typename TestTarget>
-    using BuildTargetDependencyList = AZStd::unordered_set<const BuildGraphVertex<ProductionTarget, TestTarget>*>;
+    using TargetBuildGraphSet = AZStd::unordered_set<const BuildGraphVertex<ProductionTarget, TestTarget>*>;
     
-    //! Build and runtime dependencies or dependers for a given vertex.
+    //! Build graph for the dependencies and dependers of a given build target.
     template<typename ProductionTarget, typename TestTarget>
-    struct BuildTargetDependencies
+    struct TargetBuildGraph
     {
-        BuildTargetDependencyList<ProductionTarget, TestTarget> m_build; //!< Build dependencies/dependers.
-        BuildTargetDependencyList<ProductionTarget, TestTarget> m_runtime; //!< Runtime dependencies/dependers.
+        TargetBuildGraphSet<ProductionTarget, TestTarget> m_build; //!< Build dependencies/dependers.
+        TargetBuildGraphSet<ProductionTarget, TestTarget> m_runtime; //!< Runtime dependencies/dependers.
     };
     
     //! Vertex in the build graph
@@ -41,8 +41,8 @@ namespace TestImpact
         }
 
         BuildTarget<ProductionTarget, TestTarget> m_buildTarget; //!< The build target for this vertex.
-        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependencies; //!< The dependencies of this build target.
-        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependers; //!< The dependers of this build target.
+        TargetBuildGraph<ProductionTarget, TestTarget> m_dependencies; //!< The dependencies of this build target.
+        TargetBuildGraph<ProductionTarget, TestTarget> m_dependers; //!< The dependers of this build target.
     };
     
     //! Build graph of all build targets in the repository, including their depenency and depender graphs.
@@ -89,8 +89,8 @@ namespace TestImpact
                 }
             };
 
-            const auto resolveDependencies = [&](const DependencyList& unresolvedDependencies,
-                                                 BuildTargetDependencyList<ProductionTarget, TestTarget>& resolveDependencies)
+            const auto resolveDependencies =
+                [&](const DependencyList& unresolvedDependencies, TargetBuildGraphSet<ProductionTarget, TestTarget>& resolveDependencies)
             {
                 for (const auto& buildDependency : unresolvedDependencies)
                 {
