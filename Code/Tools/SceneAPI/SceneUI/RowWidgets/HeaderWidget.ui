@@ -37,6 +37,24 @@
        <verstretch>16</verstretch>
       </sizepolicy>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
+     <property name="baseSize">
+      <size>
+       <width>16</width>
+       <height>16</height>
+      </size>
+     </property>
     </widget>
    </item>
    <item>

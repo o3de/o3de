@@ -190,7 +190,8 @@ namespace AZ
                 }
                 else
                 {
-                    ui->m_icon->setPixmap(QPixmap(iconPath.c_str()));
+                    ui->m_icon->setPixmap(QIcon(iconPath.c_str()).pixmap(QSize(ui->m_icon->size())));
+                    
                     ui->m_icon->show();
                 }
             }
