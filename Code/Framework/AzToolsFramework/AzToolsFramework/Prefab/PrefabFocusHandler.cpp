@@ -334,10 +334,7 @@ namespace AzToolsFramework::Prefab
         {
             m_instanceUpdateExecutorInterface->AddInstanceToQueue(previousFocusedInstance);
         }
-        if (focusedInstance.has_value())
-        {
-            m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
-        }
+        m_instanceUpdateExecutorInterface->AddInstanceToQueue(focusedInstance);
 
         return AZ::Success();
     }
