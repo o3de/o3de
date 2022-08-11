@@ -183,8 +183,9 @@ namespace Multiplayer
                 const auto dedicatedServerClientCount = AZStd::fixed_string<MaxMessageLength>::format(
                     DedicatedServerHostingClientCount, networkInterface->GetConnectionSet().GetConnectionCount());
 
-                DrawConnectionStatusLine(dedicatedServerClientCount.c_str(), AZ::Colors::Green);
-                DrawConnectionStatusLine(dedicatedServerHostingPort.c_str(), AZ::Colors::Green);
+                const AZ::Color serverHostStatusColor = networkInterface->GetConnectionSet().GetConnectionCount() > 0 ? AZ::Colors::Green : AZ::Colors::Yellow;
+                DrawConnectionStatusLine(dedicatedServerClientCount.c_str(), serverHostStatusColor);
+                DrawConnectionStatusLine(dedicatedServerHostingPort.c_str(), serverHostStatusColor);
                 DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
                 break;
             }
