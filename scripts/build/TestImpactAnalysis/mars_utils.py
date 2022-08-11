@@ -188,7 +188,7 @@ def generate_mars_job(tiaf_result, driver_args, build_number: int):
     @return:            The MARS job document with the job meta-data.
     """
 
-    mars_job = {key:tiaf_result[key] for key in 
+    mars_job = {key:tiaf_result.get(key, None) for key in 
     [
         SRC_COMMIT_KEY,
         DST_COMMIT_KEY,
@@ -234,7 +234,7 @@ def generate_mars_test_run_selections(test_run_selection, test_run_report, t0_ti
     @return:                   The list of TIAF test runs.
     """
 
-    mars_test_run_selection = {key:test_run_report[key] for key in 
+    mars_test_run_selection = {key:test_run_report.get(key, None) for key in 
     [        
         RESULT_KEY,
         NUM_PASSING_TEST_RUNS_KEY,
@@ -294,7 +294,7 @@ def generate_mars_sequence(sequence_report: dict, mars_job: dict, change_list:di
     @return:                The MARS sequence document for the specified TIAF sequence report.
     """
 
-    mars_sequence = {key:sequence_report[key] for key in 
+    mars_sequence = {key:sequence_report.get(key, None) for key in 
     [
         SEQUENCE_TYPE_KEY, 
         RESULT_KEY, 
@@ -353,7 +353,7 @@ def extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp: 
     @return:                The MARS test target documents for the specified TIAF test target.
     """
 
-    mars_test_run = {key:test_run[key] for key in 
+    mars_test_run = {key:test_run.get(key, None) for key in 
     [
         NAME_KEY,
         RESULT_KEY,
