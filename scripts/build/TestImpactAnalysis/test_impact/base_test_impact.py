@@ -244,6 +244,9 @@ class BaseTestImpact(ABC):
         COVERAGE_DATA_KEY = "coverage_data"
         PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
         HISTORIC_DATA_FILE_KEY = "data"
+        JENKINS_KEY = "jenkins"
+        USE_TIAF_KEY = "use_test_impact_analysis"
+        RUNTIME_BIN_KEY = "runtime_bin"
 
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
@@ -254,8 +257,8 @@ class BaseTestImpact(ABC):
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = Path(config[self.runtime_type]["runtime_bin"])
+                self._use_test_impact_analysis = config[COMMON_CONFIG_KEY][JENKINS_KEY][USE_TIAF_KEY]
+                self._tiaf_bin = Path(config[self.runtime_type][RUNTIME_BIN_KEY])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -419,12 +422,17 @@ class BaseTestImpact(ABC):
         Extract all test runs from a test run report and store in one list
         @param report: The test run report.
         """
+        PASSING_TEST_RUNS = "passing_test_runs"
+        FAILING_TEST_RUNS = "failing_test_runs"
+        EXECUTION_FAIL_TEST_RUNS = "execution_failure_test_runs"
+        TIMED_OUT_TEST_RUNS = "timed_out_test_runs"
+        UNEXECUTED_TEST_RUNS = "unexecuted_test_runs"
         test_runs = []
-        test_runs += report["passing_test_runs"]
-        test_runs += report["failing_test_runs"]
-        test_runs += report["execution_failure_test_runs"]
-        test_runs += report["timed_out_test_runs"]
-        test_runs += report["unexecuted_test_runs"]
+        test_runs += report[PASSING_TEST_RUNS]
+        test_runs += report[FAILING_TEST_RUNS]
+        test_runs += report[EXECUTION_FAIL_TEST_RUNS]
+        test_runs += report[TIMED_OUT_TEST_RUNS]
+        test_runs += report[UNEXECUTED_TEST_RUNS]
         return test_runs
 
     def _extract_test_runs_from_sequence_report(self, report):
