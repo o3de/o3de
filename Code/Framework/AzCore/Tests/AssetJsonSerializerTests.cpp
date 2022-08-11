@@ -276,5 +276,5 @@ namespace JsonSerializationTests
     };
 
     using AssetConformityTestTypes = ::testing::Types<AssetSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(Asset, JsonSerializerConformityTests, AssetConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Asset, JsonSerializerConformityTests, AssetConformityTestTypes));
 } // namespace JsonSerializationTests

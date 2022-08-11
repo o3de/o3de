@@ -46,6 +46,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
 
+        //! Returns whether a menu with the identifier queried is registered to the Menu Manager.
+        //! @param menuIdentifier The identifier for the menu to query.
+        //! @return True if a Menu with the identifier provided was found, false otherwise.
+        virtual bool IsMenuRegistered(const AZStd::string& menuIdentifier) const = 0;
+        
         //! Add an Action to a Menu. Will prompt an update of the menu.
         //! @param menuIdentifier The identifier for the menu the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the menu.
@@ -89,6 +94,27 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
+
+        //! Add multiple Sub-Menus to a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menus are being added to.
+        //! @param actions A vector of pairs of identifiers for the sub-menus to add to the menu and their sort position.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult AddSubMenusToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& subMenus) = 0;
+
+        //! Removes a Sub-Menu from a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menu is being removed from.
+        //! @param subMenuIdentifier The identifier for the sub-menu to remove from the menu.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult RemoveSubMenuFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) = 0;
+
+        //! Removes multiple Sub-Menus from a Menu.
+        //! @param menuIdentifier The identifier for the menu the sub-menus are being removed from.
+        //! @param subMenuIdentifiers A vector of identifiers for the sub-menus to remove from the menu.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult RemoveSubMenusFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& subMenuIdentifiers) = 0;
 
         //! Add a Widget to a Menu.
         //! @param menuIdentifier The identifier for the menu the sub-menu is being added to.

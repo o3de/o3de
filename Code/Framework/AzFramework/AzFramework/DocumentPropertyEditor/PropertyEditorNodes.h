@@ -77,21 +77,22 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
     };
 
+    //! Specifies types describing a value change's state.
+    //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack or to
+    //! otherwise notify interested parties that a property's value has been changed, or is being changed, by a property editor.
+    enum class ValueChangeType
+    {
+        //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
+        InProgressEdit,
+        //! This is a "final" edit provided by the user doing something to signal a decision
+        //! e.g. releasing the mouse or pressing enter.
+        FinishedEdit,
+    };
+
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
     //! that can edit an associated value.
     struct PropertyEditor : NodeWithVisiblityControl
     {
-        //! Specifies the type of value change specifeid in OnChanged.
-        //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack.
-        enum class ValueChangeType
-        {
-            //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
-            InProgressEdit,
-            //! This is a "final" edit provided by the user doing something to signal a decision
-            //! e.g. releasing the mouse or pressing enter.
-            FinishedEdit,
-        };
-
         static constexpr AZStd::string_view Name = "PropertyEditor";
         static constexpr auto Description = AttributeDefinition<AZStd::string_view>("Description");
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");

@@ -85,6 +85,11 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
+    bool MenuManager::IsMenuRegistered(const AZStd::string& menuIdentifier) const
+    {
+        return m_menus.contains(menuIdentifier);
+    }
+
     MenuManagerOperationResult MenuManager::AddActionToMenu(
         const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex)
     {
@@ -277,6 +282,123 @@ namespace AzToolsFramework
 
         menuIterator->second.AddSubMenu(sortIndex, subMenuIdentifier);
         m_menusToRefresh.insert(menuIdentifier);
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::AddSubMenusToMenu(const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& subMenus)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not add sub-menus to menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "Menu Manager - Errors on AddSubMenusToMenu for menu \"%s\" - some sub-menus were not added:", menuIdentifier.c_str());
+        bool couldNotAddSubMenu = false;
+
+        for (const auto& pair : subMenus)
+        {
+            if (!IsMenuRegistered(pair.first))
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddSubMenu = true;
+                continue;
+            }
+
+            if (menuIterator->second.ContainsSubMenu(pair.first))
+            {
+                errorMessage += AZStd::string(" ") + pair.first;
+                couldNotAddSubMenu = true;
+                continue;
+            }
+
+            menuIterator->second.AddSubMenu(pair.second, pair.first);
+        }
+
+        m_menusToRefresh.insert(menuIdentifier);
+
+        if (couldNotAddSubMenu)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::RemoveSubMenuFromMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove sub-menu \"%s\" from menu \"%s\" - menu has not been registered.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        if (!IsMenuRegistered(subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove sub-menu \"%s\" from menu \"%s\" - sub-menu has not been registered.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        if (!menuIterator->second.ContainsSubMenu(subMenuIdentifier))
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove sub-menu \"%s\" from menu \"%s\" - menu does not contain sub-menu.",
+                subMenuIdentifier.c_str(),
+                menuIdentifier.c_str()));
+        }
+
+        menuIterator->second.RemoveSubMenu(subMenuIdentifier);
+
+        m_menusToRefresh.insert(menuIdentifier);
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::RemoveSubMenusFromMenu(const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& subMenuIdentifiers)
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not remove sub-menus from menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        AZStd::string errorMessage = AZStd::string::format(
+            "Menu Manager - Errors on RemoveSubMenusFromMenu for menu \"%s\" - some sub-menus were not removed:", menuIdentifier.c_str());
+        bool couldNotRemoveSubMenus = false;
+
+        for (const AZStd::string& subMenuIdentifier : subMenuIdentifiers)
+        {
+            if (!IsMenuRegistered(subMenuIdentifier))
+            {
+                errorMessage += AZStd::string(" ") + subMenuIdentifier;
+                couldNotRemoveSubMenus = true;
+                continue;
+            }
+
+            if (!menuIterator->second.ContainsSubMenu(subMenuIdentifier))
+            {
+                errorMessage += AZStd::string(" ") + subMenuIdentifier;
+                couldNotRemoveSubMenus = true;
+                continue;
+            }
+
+            menuIterator->second.RemoveSubMenu(subMenuIdentifier);
+        }
+
+        m_menusToRefresh.insert(menuIdentifier);
+
+        if (couldNotRemoveSubMenus)
+        {
+            return AZ::Failure(errorMessage);
+        }
+
         return AZ::Success();
     }
 
