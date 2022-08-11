@@ -28,6 +28,7 @@ namespace TestImpact
     class NativeTestEnumerator;
     class NativeInstrumentedTestRunner;
     class NativeRegularTestRunner;
+    
     //! Provides the front end for performing test enumerations and test runs.
     class NativeTestEngine
     {
