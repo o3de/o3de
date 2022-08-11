@@ -175,6 +175,9 @@ class TestTIAFNativeUnitTests():
 
     @pytest.fixture
     def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native versions of the tests run in this example, as we are only testing the NativeTestImpact class.
+        """
         return "native"
 
     @pytest.mark.parametrize("safemode, arg_val", [("on", "on")])
@@ -230,6 +233,9 @@ class TestTIAFPythonUnitTests():
 
     @pytest.fixture
     def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only python versions of the tests run in this example, as we are only testing the PythonTestImpact class.
+        """
         return "python"
 
     #@pytest.mark.skip(reason="To fix before PR")
@@ -257,6 +263,9 @@ class TestTIAFBaseUnitTests():
 
     @pytest.fixture
     def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native tests run in this example, as we have hardcoded ConcreteBaseTestImpact to act as a NativeTestImpact object in many cases.
+        """
         return "native"
 
     def test_create_TestImpact_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
