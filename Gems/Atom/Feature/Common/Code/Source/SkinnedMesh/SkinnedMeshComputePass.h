@@ -36,6 +36,7 @@ namespace AZ
             void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
 
         private:
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // ShaderReloadNotificationBus::Handler overrides...

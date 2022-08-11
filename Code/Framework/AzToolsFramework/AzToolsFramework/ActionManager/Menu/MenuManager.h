@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenu.h>
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
 
@@ -30,13 +31,16 @@ namespace AzToolsFramework
         , private ActionManagerNotificationBus::Handler
     {
     public:
-        MenuManager();
+        MenuManager(QWidget* defaultParentWidget);
         virtual ~MenuManager();
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         // MenuManagerInterface overrides ...
         MenuManagerOperationResult RegisterMenu(const AZStd::string& menuIdentifier, const MenuProperties& properties) override;
         MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) override;
+        bool IsMenuRegistered(const AZStd::string& menuIdentifier) const override;
         MenuManagerOperationResult AddActionToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddActionsToMenu(
@@ -48,12 +52,19 @@ namespace AzToolsFramework
         MenuManagerOperationResult AddSeparatorToMenu(const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        MenuManagerOperationResult AddSubMenusToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& subMenus) override;
+        MenuManagerOperationResult RemoveSubMenuFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) override;
+        MenuManagerOperationResult RemoveSubMenusFromMenu(
+            const AZStd::string& menuIdentifier, const AZStd::vector<AZStd::string>& subMenuIdentifiers) override;
         MenuManagerOperationResult AddWidgetToMenu(
-            const AZStd::string& menuIdentifier, QWidget* widget, int sortIndex) override;
+            const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
         MenuManagerOperationResult AddMenuToMenuBar(
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
         MenuManagerIntegerResult GetSortKeyOfActionInMenu(const AZStd::string& menuIdentifier, const AZStd::string& actionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfSubMenuInMenu(const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier) const override;
+        MenuManagerIntegerResult GetSortKeyOfWidgetInMenu(const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier) const override;
         MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const override;
 
         // MenuManagerInterface overrides ...
@@ -64,6 +75,8 @@ namespace AzToolsFramework
         MenuManagerOperationResult QueueRefreshForMenuBar(const AZStd::string& menuBarIdentifier) override;
         void RefreshMenus() override;
         void RefreshMenuBars() override;
+        MenuManagerStringResult SerializeMenu(const AZStd::string& menuIdentifier) override;
+        MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

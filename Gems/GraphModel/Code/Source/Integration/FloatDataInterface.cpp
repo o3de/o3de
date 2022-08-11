@@ -33,11 +33,11 @@ namespace GraphModelIntegration
         {
             if (static_cast<float>(value) != slot->GetValue<float>())
             {
-                slot->SetValue(static_cast<float>(value));
-
                 GraphCanvas::GraphId graphCanvasSceneId;
                 IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, graphCanvasSceneId);
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                slot->SetValue(static_cast<float>(value));
             }
         }
     }

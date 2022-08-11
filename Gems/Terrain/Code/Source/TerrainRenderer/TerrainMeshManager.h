@@ -285,7 +285,7 @@ namespace Terrain
         // Set up the initial camera position impossible to force an update.
         AZ::Vector3 m_cameraPosition = AZ::Vector3::CreateAxisX(AZStd::numeric_limits<float>::max());
 
-        AZ::Aabb m_worldBounds{ AZ::Aabb::CreateNull() };
+        AzFramework::Terrain::FloatRange m_worldHeightBounds;
         float m_sampleSpacing = 1.0f;
         AZ::RPI::Material::ChangeId m_lastMaterialChangeId;
 

@@ -103,6 +103,9 @@ namespace AzToolsFramework
 
             void OnNewAsset();
 
+            // For subscribing to document property editor adapter property specific changes
+            void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
+
         Q_SIGNALS:
             void OnAssetSavedSignal();
             void OnAssetSaveFailedSignal(const AZStd::string& error);
@@ -145,10 +148,10 @@ namespace AzToolsFramework
             AZStd::vector<AZ::Data::AssetType>  m_genericAssetTypes;
             AZ::Data::AssetId                    m_sourceAssetId;
             AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;
-            Ui::AssetEditorHeader* m_header;
-            ReflectedPropertyEditor* m_propertyEditor;
+            Ui::AssetEditorHeader* m_header = nullptr;
+            ReflectedPropertyEditor* m_propertyEditor = nullptr;
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
-            DocumentPropertyEditor* m_dpe;
+            DocumentPropertyEditor* m_dpe = nullptr;
             AZ::SerializeContext* m_serializeContext = nullptr;
 
             // Ids can change when an asset goes from in-memory to saved on disk.
@@ -174,6 +177,8 @@ namespace AzToolsFramework
 
             AZStd::intrusive_ptr<AssetEditorWidgetUserSettings> m_userSettings;
             AZStd::unique_ptr< Ui::AssetEditorStatusBar > m_statusBar;
+
+            AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
 
             void PopulateGenericAssetTypes();
             void CreateAssetImpl(AZ::Data::AssetType assetType);

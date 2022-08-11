@@ -49,6 +49,21 @@ SHADOW_FILTER_METHOD = {
     'None': 0,
 }
 
+# CubeMap capture type options for the Cubemap Capture Component
+CUBEMAP_CAPTURE_TYPE = {
+    'Specular IBL': 0,
+    'Diffuse ILB': 1,
+}
+
+# Specular IBL property options for the Cubemap Capture Component
+SPECULAR_IBL_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4,
+}
+
 # Qualiity Level settings for Diffuse Global Illumination level component
 GLOBAL_ILLUMINATION_QUALITY = {
     'Low': 0,
@@ -108,9 +123,9 @@ NUM_RAYS_PER_PROBE = {
 
 # LUT Resolution options for the HDR Color Grading component.
 LUT_RESOLUTION = {
-    '16x16x16': 0,
-    '32x32x32': 1,
-    '64x64x64': 2,
+    '16x16x16': 16,
+    '32x32x32': 32,
+    '64x64x64': 64,
 }
 
 # Shaper Type options for the HDR Color Grading & Look Modification components.
@@ -130,6 +145,24 @@ HAIR_LIGHTING_MODEL = {
     'GGX': 0,
     'Marschner': 1,
     'Kajiya': 2,
+}
+
+# Physical Sky Intensity Mode
+PHYSICAL_SKY_INTENSITY_MODE = {
+    'Ev100': 4,
+    'Nit': 3,
+}
+
+# PostFX Layer Category as defined in
+# ./Gems/AtomLyIntegration/CommonFeatures/Assets/PostProcess/default.postfxlayercategories
+POSTFX_LAYER_CATEGORY = {
+    'FrontEnd': 1000000,
+    'Cinematics': 2000000,
+    'Gameplay': 3000000,
+    'Camera': 4000000,
+    'Volume': 5000000,
+    'Level': 6000000,
+    'Default': 2147483647,
 }
 
 # Level list used in Editor Level Load Test
@@ -253,11 +286,17 @@ class AtomComponentProperties:
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
+          - 'Specular ILB' controls the quality of Specular IBL created
+          - 'Capture Type': controls if CubeMap Capture component uses 'Diffuse ILB' or 'Specular ILB'
+          - 'Exposure': Controls the exposure light in the image taken
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'CubeMap Capture'
+            'name': 'CubeMap Capture',
+            'Specular IBL CubeMap Quality': 'Controller|Configuration|Specular IBL CubeMap Quality',
+            'Capture Type': 'Controller|Configuration|Capture Type',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -267,6 +306,7 @@ class AtomComponentProperties:
         Decal component properties.
           - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
           - 'Opacity' where one is opaque and zero is transparent
+          - 'Normal Map Opacity' normal map set to one is opaque and zero is transparent
           - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
@@ -276,6 +316,7 @@ class AtomComponentProperties:
             'name': 'Decal',
             'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
             'Opacity': 'Controller|Configuration|Opacity',
+            'Normal Map Opacity': 'Controller|Configuration|Normal Map Opacity',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
@@ -770,6 +811,7 @@ class AtomComponentProperties:
           - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
           - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
           - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
+          - 'Generated LUT Path' absolute path to the generated look up table file (read-only)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -808,6 +850,7 @@ class AtomComponentProperties:
             'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
             'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
             'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
+            'Generated LUT Path': 'LUT Generation|Generated LUT Path',
         }
         return properties[property]
 
@@ -815,13 +858,15 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
+          - 'Cubemap Texture': Asset.id for the texture used in cubemap rendering (File Type *.exr.streamingimage).
+          - 'Exposure': Light exposure value for HDRi Skybox projection ('float', range -5.0 - 5.0, default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
             'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -976,13 +1021,30 @@ class AtomComponentProperties:
     def physical_sky(property: str = 'name') -> str:
         """
         Physical Sky component properties.
-        - 'Sky Intensity' float that determines sky intensity value, default value is 4.
+        - 'Intensity Mode' Specifying the light unit type (emum, Ev100, Nit, default Ev100).
+        - 'Sky Intensity' Brightness of the sky (float, range -4.0 - 11.0, default 4.0).
+        - 'Sun Intensity' Brightness of the sun (float, range -4.0 - 11.0, default 8.0).
+        - 'Turbidity' A measure of the aerosol content in the air (int, range 1-10, default of 1).
+        - 'Sun Radius Factor' A factor for Physical sun radius in millions of km. 1 unit is 695,508 km
+         (float, range 0.1 - 2, default 1.0). /n
+        - 'Enable Fog' Toggle fog on or off (bool, default False).
+        - 'Fog Color' Color of the fog (math.Color(float x, float y, float z, float a) where ranges are 0 to 255).
+        - 'Fog Top Height' Height of the fog upwards from the horizon (float, range 0.0 - 0.5 default 0.01).
+        - 'Fog Bottom Height' Height of the fog downwards from the horizon (float, range 0.0 - 0.3 default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Physical Sky',
+            'Intensity Mode': 'Controller|Configuration|Intensity Mode',
             'Sky Intensity': 'Controller|Configuration|Sky Intensity',
+            'Sun Intensity': 'Controller|Configuration|Sun Intensity',
+            'Turbidity': 'Controller|Configuration|Turbidity',
+            'Sun Radius Factor': 'Controller|Configuration|Sun Radius Factor',
+            'Enable Fog': 'Controller|Configuration|Fog|Enable Fog',
+            'Fog Color': 'Controller|Configuration|Fog|Fog Color',
+            'Fog Top Height': 'Controller|Configuration|Fog|Fog Top Height',
+            'Fog Bottom Height': 'Controller|Configuration|Fog|Fog Bottom Height',
         }
         return properties[property]
 
@@ -990,11 +1052,23 @@ class AtomComponentProperties:
     def postfx_layer(property: str = 'name') -> str:
         """
         PostFX Layer component properties.
+          - 'Layer Category' frequency at which the settings will be applied from atom_constants.py POSTFX_LAYER_CATEGORY
+          - 'Priority' this will take over other settings with the same frequency. lower takes precedence (int)
+          - 'Weight' how much these settings override previous settings. (float 0.0 to default 1.0)
+          - 'Select Camera Tags Only' property container list of tags.
+            Only cameras with these tags will include this effect.
+          - 'Excluded Camera Tags' property container list of tags.
+            Cameras with these tags will not be included in the effect.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Layer',
+            'Layer Category': 'Controller|Configuration|Layer Category',
+            'Priority': 'Controller|Configuration|Priority',
+            'Weight': 'Controller|Configuration|Weight',
+            'Select Camera Tags Only': 'Controller|Configuration|Select Camera Tags Only',
+            'Excluded Camera Tags': 'Controller|Configuration|Excluded Camera Tags',
         }
         return properties[property]
 
@@ -1003,13 +1077,44 @@ class AtomComponentProperties:
         """
         PostFX Gradient Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Gradient Entity Id' a separate entity id containing a gradient component.
+          - 'Opacity' factor multiplied by the current gradient before mixing. (float 0.0 to 1.0)
+          - 'Invert Input' swap the gradient input order black/white behave oppositely (bool)
+          - 'Enable Levels' toggle the application of input/output levels (bool)
+          - 'Input Max' adjustment to the white point for the input
+            treating more of the gradient as max value. (float 0.0 to default 1.0)
+          - 'Input Min' adjustment to the black point for the input
+            treating more of the gradient as min value. (float 0.0 default to 1.0)
+          - 'Input Mid' adjustment to the midtone point for the input
+            effecting all values of the gradient to be more toward min or max. (float 0.0 to 10.0, default 1.0)
+          - 'Output Max' adjusts the output white point of the effective gradient after input levels are applied
+            (float 0.0 to default 1.0)
+          - 'Output Min' adjusts the output black point of the effective gradient after input levels are applied
+            (float 0.0 default to 1.0)
+          - 'Enable Transform' toggle the ability to apply transform to the gradient input (bool)
+          - 'Scale' adjusts the gradient size (Vector3 default 1.0,1.0,1.0)
+          - 'Rotate' rotates the gradient (Vector3 rotation degrees; default 0.0,0.0,0.0)
+          - 'Translate' moves the gradient position (Vector3 default 0.0,0.0,0.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Gradient Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Gradient Entity Id': 'Controller|Configuration|Gradient Sampler|Gradient Entity Id',
+            'Opacity': 'Controller|Configuration|Gradient Sampler|Opacity',
+            'Invert Input': 'Controller|Configuration|Gradient Sampler|Advanced|Invert Input',
+            'Enable Levels': 'Controller|Configuration|Gradient Sampler|Enable Levels',
+            'Input Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Max',
+            'Input Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Min',
+            'Input Mid': 'Controller|Configuration|Gradient Sampler|Enable Levels|Input Mid',
+            'Output Max': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Max',
+            'Output Min': 'Controller|Configuration|Gradient Sampler|Enable Levels|Output Min',
+            'Enable Transform': 'Controller|Configuration|Gradient Sampler|Enable Transform',
+            'Scale': 'Controller|Configuration|Gradient Sampler|Enable Transform|Scale',
+            'Rotate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Rotate',
+            'Translate': 'Controller|Configuration|Gradient Sampler|Enable Transform|Translate',
         }
         return properties[property]
 
@@ -1018,13 +1123,15 @@ class AtomComponentProperties:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Radius' Radius of the PostFX modification (float deafult 0.0 to infinity)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Radius Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Radius': 'Controller|Configuration|Radius',
         }
         return properties[property]
 
@@ -1033,8 +1140,9 @@ class AtomComponentProperties:
         """
         PostFX Shape Weight Modifier component properties. Requires PostFX Layer and one of 'shapes' listed.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'shapes' a list of supported shapes as component names. 'Tube Shape' is also supported but requires 'Spline'.
+          - 'Fall-off Distance' Distance from the shape to smoothly transition the PostFX.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -1043,6 +1151,7 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'shapes': ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
                        'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Shape Reference'],
+            'Fall-off Distance': 'Controller|Configuration|Fall-off Distance',
         }
         return properties[property]
 

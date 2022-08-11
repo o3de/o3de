@@ -22,7 +22,8 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
@@ -88,14 +89,14 @@ def DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     # Test undo/redo on prefab duplication
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     common_parent_children_ids_after_duplicate_undo = set([child_id.ToString() for child_id in
                                                            common_parent.get_children_ids()])
     assert common_parent_children_ids_before_duplicate == common_parent_children_ids_after_duplicate_undo, \
         "Undo Failed: Found unexpected children of common parent after Undo"
 
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     Prefab.validate_duplicated_prefab([new_prefab], common_parent_children_ids_before_duplicate,
                                       common_parent_children_ids_after_duplicate, duplicate_container_entity_ids,
                                       common_parent)

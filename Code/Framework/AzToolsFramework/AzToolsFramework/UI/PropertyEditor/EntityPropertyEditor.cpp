@@ -742,6 +742,19 @@ namespace AzToolsFramework
             ClearComponentEditorSelection();
             ClearComponentEditorState();
         }
+
+        // Clear the focus of the current widget in order to trigger editing
+        // completion before the selected entity list is modified. Otherwise,
+        // the entity will not automatically be marked as dirty since it will
+        // no longer be selected when receiving the BeforePropertyModified event
+        if (DoesOwnFocus())
+        {
+            QWidget* widget = QApplication::focusWidget();
+            if (this != widget)
+            {
+                widget->clearFocus();
+            }
+        }
     }
 
     void EntityPropertyEditor::AfterEntitySelectionChanged(
@@ -3434,6 +3447,13 @@ namespace AzToolsFramework
             return false;
         }
 
+        SelectionEntityTypeInfo selectionTypeInfo = GetSelectionEntityTypeInfo(m_selectedEntityIds);
+        if (!CanAddComponentsToSelection(selectionTypeInfo))
+        {
+            // Can't paste components if there is a mixed selection or read only entities
+            return false;
+        }
+
         // Grab component data from clipboard, if exists
         const QMimeData* mimeData = ComponentMimeData::GetComponentMimeDataFromClipboard();
 
@@ -3480,9 +3500,9 @@ namespace AzToolsFramework
         {
             if (componentClassData)
             {
-                // A component can be pasted onto an entity if it appears in the game component menu or if it already exists on the entity
+                // A component can be pasted onto an entity if it appears in the add component menu or if it already exists on the entity
                 auto existingComponent = entity->FindComponent(componentClassData->m_typeId);
-                if (!existingComponent && !AppearsInGameComponentMenu(*componentClassData))
+                if (!existingComponent && (!m_componentFilter || !m_componentFilter(*componentClassData)))
                 {
                     canPaste = false;
                     break;

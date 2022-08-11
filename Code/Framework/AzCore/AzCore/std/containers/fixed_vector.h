@@ -9,8 +9,8 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
-#include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd::Internal
@@ -437,10 +437,11 @@ namespace AZStd
             rhs.clear();
         }
 
-        // Extension csontructor for copying other vector like container types
-        // into a fixed_vector given that the type in question isn't the same type as this fixed_vector type
+        // Extension constructor for copying other container types that models a span
+        // into a fixed_vector
         template <typename VectorContainer, typename = AZStd::enable_if_t<!AZStd::is_same_v<VectorContainer, fixed_vector>
-            && !AZStd::is_convertible_v<VectorContainer, size_type>>>
+            && !AZStd::is_convertible_v<VectorContainer, size_type>
+            && AZStd::constructible_from<value_type, AZStd::ranges::range_reference_t<VectorContainer>>>>
         fixed_vector(VectorContainer&& rhs)
         {
             constexpr bool is_const_or_lvalue_reference = AZStd::is_lvalue_reference_v<VectorContainer>
@@ -718,17 +719,18 @@ namespace AZStd
             }
         }
 
-        template<class InputIt, typename = AZStd::enable_if_t<input_iterator<InputIt>>>
-        void insert(const_iterator insertPos, InputIt first, InputIt last)
+        template<class InputIt>
+        auto insert(const_iterator insertPos, InputIt first, InputIt last)
+            -> enable_if_t<input_iterator<InputIt>, iterator>
         {
             // specialize for iterator categories.
             AZSTD_CONTAINER_ASSERT(insertPos >= cbegin() && insertPos <= cend(), "insert position must be in range of container");
-            insert_iter(insertPos, first, last, typename iterator_traits<InputIt>::iterator_category());
+            return insert_iter(insertPos, first, last, typename iterator_traits<InputIt>::iterator_category());
         };
 
-        void insert(const_iterator insertPos, AZStd::initializer_list<value_type> ilist)
+        iterator insert(const_iterator insertPos, initializer_list<value_type> ilist)
         {
-            insert(insertPos, ilist.begin(), ilist.end());
+            return insert(insertPos, ilist.begin(), ilist.end());
         }
 
         iterator erase(const_iterator elementIter)
@@ -809,12 +811,6 @@ namespace AZStd
             return isf_valid | isf_can_dereference;
         }
 
-        // pushes back an empty without a provided instance.
-        void push_back()
-        {
-            emplace_back();
-        }
-
         void leak_and_reset()
         {
             resize_no_construct(0);
@@ -883,15 +879,16 @@ namespace AZStd
         }
 
         template<class Iterator>
-        void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const forward_iterator_tag&)
+        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last, const forward_iterator_tag&)
         {
             size_type numElements = AZStd::distance(first, last);
             if (numElements == 0)
             {
-                return;
+                return begin();
             }
 
-            pointer insertPosPtr = data() + AZStd::distance(cbegin(), insertPos);
+            const size_type offset = AZStd::ranges::distance(cbegin(), insertPos);
+            pointer insertPosPtr = data() + offset;
 
             AZSTD_CONTAINER_ASSERT(Capacity >= size() + numElements, "AZStd::fixed_vector::insert_iter - capacity is reached!");
 
@@ -931,10 +928,12 @@ namespace AZStd
 
                 resize_no_construct(AZStd::distance(dataStart, newLast));
             }
+
+            return AZStd::ranges::next(begin(), offset);
         }
 
         template<class Iterator>
-        void insert_iter(const_iterator insertPos, Iterator first, Iterator last, const input_iterator_tag&)
+        iterator insert_iter(const_iterator insertPos, Iterator first, Iterator last, const input_iterator_tag&)
         {
             iterator dataStart = data();
             size_type offset = AZStd::distance(dataStart, insertPos);
@@ -943,6 +942,8 @@ namespace AZStd
             {
                 insert(dataStart + offset, *iter);
             }
+
+            return AZStd::ranges::next(begin(), offset);
         }
     };
 

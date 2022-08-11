@@ -20,7 +20,7 @@ namespace AZ
         class ReflectionScreenSpaceTracePass
             : public RPI::FullscreenTrianglePass
         {
-            AZ_RPI_PASS(DiffuseProbeGridDownsamplePass);
+            AZ_RPI_PASS(ReflectionScreenSpaceTracePass);
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceTracePass, "{70FD45E9-8363-4AA1-A514-3C24AC975E53}", FullscreenTrianglePass);

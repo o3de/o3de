@@ -37,6 +37,7 @@ namespace ScriptCanvas
         namespace Core
         {
             class Start;
+            class FunctionCallNode;
             class FunctionDefinitionNode;
         }
     }
@@ -382,6 +383,8 @@ namespace ScriptCanvas
 
             bool ParseInputThisPointer(ExecutionTreePtr execution);
 
+            void ParseLocallyDefinedFunctionCalls();
+
             void ParseMetaData(ExecutionTreePtr execution);
 
             void ParseMultiExecutionPost(ExecutionTreePtr execution);
@@ -407,6 +410,8 @@ namespace ScriptCanvas
             void ParseReturnValue(ExecutionTreePtr execution, const Slot& returnValueSlot);
 
             void ParseReturnValue(ExecutionTreePtr execution, VariableConstPtr variable, const Slot* returnValueSlot);
+
+            void ParseSubgraphInterface(const Node& node);
 
             void ParseUserFunctionTopology();
 
@@ -565,6 +570,8 @@ namespace ScriptCanvas
             AZStd::unordered_map<const Datum*, const GraphVariable*> m_sourceVariableByDatum;
             AZStd::unordered_set<const Node*> m_subgraphStartCalls;
             AZStd::unordered_set<const Node*> m_activeDefaultObject;
+
+            AZStd::vector<const Nodes::Core::FunctionCallNode*> m_locallyDefinedFunctionCallNodes;
 
             SubgraphInterface m_subgraphInterface;
 

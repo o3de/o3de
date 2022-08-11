@@ -220,6 +220,23 @@ namespace AZ
                 deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
+#if defined(USE_NSIGHT_AFTERMATH)
+            requiredExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+
+            // Set up device creation info for Aftermath feature flag configuration.
+            VkDeviceDiagnosticsConfigFlagsNV aftermathFlags =
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV | // Enable tracking of resources.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV | // Capture call stacks for all draw calls, compute
+                                                                                   // dispatches, and resource copies.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // Generate debug information for shaders.
+
+            VkDeviceDiagnosticsConfigCreateInfoNV aftermathInfo = {};
+            aftermathInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
+            aftermathInfo.flags = aftermathFlags;
+            aftermathInfo.pNext = deviceInfo.pNext;
+            deviceInfo.pNext = &aftermathInfo;
+#endif
+
             // set raytracing features if we are running Vulkan >= 1.2
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
@@ -245,6 +262,7 @@ namespace AZ
             deviceInfo.pEnabledFeatures = &m_enabledDeviceFeatures;
 
             RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            Instance& instance = Instance::GetInstance();
             if (xrSystem)
             {
                 //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
@@ -258,21 +276,26 @@ namespace AZ
             }
             else
             {
-                const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                const VkResult vkResult =
+                    instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
             }
-           
+
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
             }
 
-            Instance& instance = Instance::GetInstance();
-            instance.GetFunctionLoader().LoadProcAddresses(instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice);
+            if (!instance.GetFunctionLoader().LoadProcAddresses(
+                    &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
+            {
+                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                return RHI::ResultCode::Fail;
+            }
 
             //Load device features now that we have loaded all extension info
-            physicalDevice.LoadSupportedFeatures();
+            physicalDevice.LoadSupportedFeatures(m_context);
             return RHI::ResultCode::Success;
         }
 
@@ -355,6 +378,11 @@ namespace AZ
             return m_nativeDevice;
         }
 
+        const GladVulkanContext& Device::GetContext() const
+        {
+            return m_context;
+        }
+
         uint32_t Device::FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
@@ -410,7 +438,7 @@ namespace AZ
                 VkBuffer vkBuffer = CreateBufferResouce(descriptor);
                 AZ_Assert(vkBuffer != VK_NULL_HANDLE, "Failed to get memory requirements");
                 VkMemoryRequirements memoryRequirements = {};
-                vkGetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
+                m_context.GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
                 auto it2 = cache.insert(hash, memoryRequirements);
                 DestroyBufferResource(vkBuffer);
                 return it2.first->second;
@@ -572,7 +600,7 @@ namespace AZ
             {
                 if (m_nativeDevice != VK_NULL_HANDLE)
                 {
-                    vkDestroyDevice(m_nativeDevice, nullptr);
+                    m_context.DestroyDevice(m_nativeDevice, nullptr);
                     m_nativeDevice = VK_NULL_HANDLE;
                 }
             }
@@ -633,7 +661,7 @@ namespace AZ
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            physicalDevice.CompileMemoryStatistics(builder);
+            physicalDevice.CompileMemoryStatistics(m_context, builder);
         }
 
         void Device::UpdateCpuTimingStatisticsInternal() const
@@ -653,7 +681,8 @@ namespace AZ
             }
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             uint32_t surfaceFormatCount = 0;
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
+            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, nullptr));
             if (surfaceFormatCount == 0)
             {
                 AZ_Assert(false, "Surface support no format.");
@@ -661,7 +690,8 @@ namespace AZ
             }
 
             AZStd::vector<VkSurfaceFormatKHR> surfaceFormats(surfaceFormatCount);
-            AssertSuccess(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
+            AssertSuccess(m_context.GetPhysicalDeviceSurfaceFormatsKHR(
+                physicalDevice.GetNativePhysicalDevice(), surface->GetNativeSurface(), &surfaceFormatCount, surfaceFormats.data()));
 
             AZStd::set<RHI::Format> formats;
             for (const VkSurfaceFormatKHR& surfaceFormat : surfaceFormats)
@@ -818,15 +848,18 @@ namespace AZ
 
         void Device::BuildDeviceQueueInfo(const PhysicalDevice& physicalDevice)
         {
+            Instance& instance = Instance::GetInstance();
+
             m_queueFamilyProperties.clear();
             VkPhysicalDevice nativePhysicalDevice = physicalDevice.GetNativePhysicalDevice();
 
             uint32_t queueFamilyCount = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, nullptr);
+            instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, nullptr);
             AZ_Assert(queueFamilyCount, "No queue families were found for physical device %s", physicalDevice.GetName().GetCStr());
 
             m_queueFamilyProperties.resize(queueFamilyCount);
-            vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());            
+            instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(
+                nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());
         }
 
         RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
@@ -929,14 +962,14 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 
             VkBuffer vkBuffer = VK_NULL_HANDLE;
-            VkResult vkResult = vkCreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
+            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
             AssertSuccess(vkResult);
             return vkBuffer;
         }
 
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
-            vkDestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
         }
     }
 }

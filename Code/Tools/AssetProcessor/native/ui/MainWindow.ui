@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1177</width>
-    <height>793</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -613,7 +613,27 @@
                </item>
               </layout>
              </widget>
-             <widget class="QWidget" name="ProductAssetsTab">
+              <widget class="QWidget" name="IntermediateAssetsTab">
+                <attribute name="title">
+                  <string>Intermediate Assets</string>
+                </attribute>
+                <layout class="QVBoxLayout" name="IntermediateAssetsVerticalLayout" stretch="0">
+                  <item>
+                    <widget class="QTreeView" name="IntermediateAssetsTreeView">
+                      <property name="editTriggers">
+                        <set>QAbstractItemView::NoEditTriggers</set>
+                      </property>
+                      <property name="sortingEnabled">
+                        <bool>true</bool>
+                      </property>
+                      <attribute name="headerDefaultSectionSize">
+                        <number>300</number>
+                      </attribute>
+                    </widget>
+                  </item>
+                </layout>
+              </widget>
+              <widget class="QWidget" name="ProductAssetsTab">
               <attribute name="title">
                <string>Product Assets</string>
               </attribute>
@@ -639,6 +659,13 @@
            <item>
             <widget class="AssetProcessor::SourceAssetDetailsPanel" name="sourceAssetDetailsPanel"/>
            </item>
+            <item>
+              <widget class="AssetProcessor::SourceAssetDetailsPanel" name="intermediateAssetDetailsPanel">
+                <property name="visible">
+                  <bool>false</bool>
+                </property>
+              </widget>
+            </item>
            <item>
             <widget class="AssetProcessor::ProductAssetDetailsPanel" name="productAssetDetailsPanel">
              <property name="visible">
@@ -685,7 +712,6 @@
            </item>
           </layout>
          </widget>
-			
         </widget>
         <widget class="QWidget" name="LogDialog">
          <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -1190,7 +1216,10 @@
          </layout>
         </widget>
         <widget class="QWidget" name="BuildersPage">
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <layout class="QVBoxLayout" name="BuildersPageVerticalLayout">
+          <property name="spacing">
+           <number>6</number>
+          </property>
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -1204,54 +1233,287 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Below is a list of all builders loaded by Asset Processor.  Builders are used by the asset processor to transform source assets into product assets. Builders are mostly defined in C++, and the source for them can be in Gems, the engine, or your project.  If a builder is missing from the list, make sure the owning gem is enabled and the component is activated. &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/pipeline/asset-builders/&quot;&gt;Click here&lt;/a&gt; for documentation on creating a builder.</string>
+           <widget class="QLabel" name="buildersPageDescription">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Below is a list of all builders loaded by Asset Processor.  Builders are used by the asset processor to transform source assets into product assets. Builders are mostly defined in C++, and the source for them can be in Gems, the engine, or your project.  If a builder is missing from the list, make sure the owning gem is enabled and the component is activated. &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/pipeline/asset-builders/&quot;&gt;Click here&lt;/a&gt; for documentation on creating a builder.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="openExternalLinks">
+             <bool>true</bool>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSplitter" name="buildersPageSplitter">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <widget class="QListView" name="builderList">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>2</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+            </widget>
+            <widget class="QWidget" name="builderInfo" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>3</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QVBoxLayout" name="builderInfoLayout" stretch="0,0">
+              <property name="leftMargin">
+               <number>0</number>
               </property>
-              <property name="wordWrap">
-               <bool>true</bool>
+              <property name="topMargin">
+               <number>0</number>
               </property>
-              <property name="openExternalLinks">
-               <bool>true</bool>
+              <property name="rightMargin">
+               <number>0</number>
               </property>
-              <property name="textInteractionFlags">
-               <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+              <property name="bottomMargin">
+               <number>0</number>
               </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
               <item>
-               <widget class="QListView" name="builderList">
-                <property name="alternatingRowColors">
-                 <bool>true</bool>
-                </property>
-               </widget>
+               <layout class="QGridLayout" name="builderInfoHeader" columnstretch="1,4">
+                <item row="3" column="0">
+                 <widget class="QLabel" name="builderInfoHeaderTitleVersionNumber">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>Version Number</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QLabel" name="builderInfoHeaderValueName">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="builderInfoHeaderTitleName">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>Name</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="builderInfoHeaderValueType">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="builderInfoHeaderTitleFingerprint">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>Fingerprint</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="builderInfoHeaderTitleType">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>Type</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="builderInfoHeaderTitleBusId">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <italic>false</italic>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                  </property>
+                  <property name="text">
+                   <string>BusID</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLabel" name="builderInfoHeaderValueFingerprint">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLabel" name="builderInfoHeaderValueVersionNumber">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1">
+                 <widget class="QLabel" name="builderInfoHeaderValueBusId">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
               <item>
-               <widget class="QPlainTextEdit" name="builderDetails">
-                <property name="inputMethodHints">
-                 <set>Qt::ImhMultiLine|Qt::ImhNoEditMenu</set>
+               <widget class="QTabWidget" name="builderInfoTabWidget">
+                <property name="currentIndex">
+                 <number>0</number>
                 </property>
-                <property name="horizontalScrollBarPolicy">
-                 <enum>Qt::ScrollBarAlwaysOff</enum>
-                </property>
-                <property name="undoRedoEnabled">
-                 <bool>false</bool>
-                </property>
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-                <property name="backgroundVisible">
-                 <bool>false</bool>
-                </property>
+                <widget class="QWidget" name="builderInfoPatternsTab">
+                 <attribute name="title">
+                  <string>Patterns</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_2">
+                  <item>
+                   <widget class="AzQtComponents::TableView" name="builderInfoPatternsTableView">
+                    <property name="indentation">
+                     <number>0</number>
+                    </property>
+                    <property name="itemsExpandable">
+                     <bool>false</bool>
+                    </property>
+                    <property name="sortingEnabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="expandsOnDoubleClick">
+                     <bool>false</bool>
+                    </property>
+                    <attribute name="headerShowSortIndicator" stdset="0">
+                     <bool>false</bool>
+                    </attribute>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QWidget" name="builderInfoDetailsTab">
+                 <attribute name="title">
+                  <string>Details</string>
+                 </attribute>
+                </widget>
+                <widget class="QWidget" name="builderInfoMetricsTab">
+                 <attribute name="title">
+                  <string>Metrics</string>
+                 </attribute>
+                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <item>
+                   <widget class="AzQtComponents::TableView" name="builderInfoMetricsTreeView">
+                    <property name="sortingEnabled">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
                </widget>
               </item>
              </layout>
-            </item>
-           </layout>
+            </widget>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -1329,7 +1591,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_6">
             <item>
-             <spacer name="indentSpacer1">
+             <spacer name="indentSpacer2">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -1360,7 +1622,7 @@
            </layout>
           </item>
           <item>
-           <spacer name="gapSpacer1">
+           <spacer name="gapSpacer2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -1388,7 +1650,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_12">
             <item>
-             <spacer name="indentSpacer2">
+             <spacer name="indentSpacer3">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -1465,7 +1727,7 @@
            </layout>
           </item>
           <item>
-           <spacer name="gapSpacer2">
+           <spacer name="gapSpacer3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
@@ -1476,6 +1738,234 @@
              </size>
             </property>
            </spacer>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="SharedCachePage">
+         <layout class="QGridLayout" name="gridLayout_2">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QWidget" name="widget_sharedCache" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
+             <property name="leftMargin">
+              <number>10</number>
+             </property>
+             <property name="rightMargin">
+              <number>10</number>
+             </property>
+             <property name="bottomMargin">
+              <number>10</number>
+             </property>
+             <item row="0" column="0" colspan="2">
+              <widget class="QLabel" name="sharedCacheTitle">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string># Shared Cache Settings</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="3">
+              <widget class="QPushButton" name="sharedCacheSubmitButton">
+               <property name="text">
+                <string>Save Changes</string>
+               </property>
+               <property name="autoDefault">
+                <bool>true</bool>
+               </property>
+               <property name="default">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0" colspan="4">
+              <widget class="QLineEdit" name="serverAddressLineEdit"/>
+             </item>
+             <item row="9" column="4">
+              <widget class="QPushButton" name="sharedCacheDiscardButton">
+               <property name="text">
+                <string>Discard</string>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0" colspan="5">
+              <widget class="QTableWidget" name="sharedCacheTable">
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+               <property name="rowCount">
+                <number>3</number>
+               </property>
+               <property name="columnCount">
+                <number>5</number>
+               </property>
+               <attribute name="horizontalHeaderCascadingSectionResizes">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <row>
+                <property name="text">
+                 <string>New Row</string>
+                </property>
+               </row>
+               <row/>
+               <row/>
+               <column>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="toolTip">
+                 <string>Toggle pattern activity.</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Name</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Type</string>
+                </property>
+                <property name="toolTip">
+                 <string extracomment="Choose how the pattern text will be used. Wildcard or regular expression supported. "/>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Pattern</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="toolTip">
+                 <string>Remove the pattern.</string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Step 2: Select a remote folder</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Step 3: Manage shared cache asset patterns</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="0">
+              <widget class="QPushButton" name="sharedCacheAddPattern">
+               <property name="toolTip">
+                <string>Add an asset pattern to cache to the remote folder.</string>
+               </property>
+               <property name="text">
+                <string>+ Add Pattern</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0" colspan="4">
+              <widget class="QComboBox" name="serverCacheModeOptions">
+               <property name="toolTip">
+                <string>Select the mode the project should use to cache asset products.</string>
+               </property>
+               <property name="currentText">
+                <string>Placeholder</string>
+               </property>
+               <property name="placeholderText">
+                <string>Placeholder</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Step 1: Set shared cache mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="4">
+              <widget class="QToolButton" name="serverAddressToolButton">
+               <property name="text">
+                <string>Choose a remote folder.</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="4">
+              <widget class="QLabel" name="sharedCacheStatus">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+               <property name="margin">
+                <number>5</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4">
+              <widget class="QPushButton" name="sharedCacheSupport">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </item>
          </layout>
         </widget>

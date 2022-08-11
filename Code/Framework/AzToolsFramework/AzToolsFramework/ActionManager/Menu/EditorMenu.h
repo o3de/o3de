@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
 #include <QWidgetAction>
@@ -26,30 +30,37 @@ namespace AzToolsFramework
     
     //! Editor Menu class definitions.
     //! Wraps a QMenu and provides additional functionality to handle and sort its items.
-    class EditorMenu
+    class EditorMenu final
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorMenu, "{6B6F6802-C587-4734-A5DB-5732329EED03}");
+
         EditorMenu();
         explicit EditorMenu(const AZStd::string& name);
 
-        static void Initialize();
+        static void Initialize(QWidget* defaultParentWidget);
+        static void Reflect(AZ::ReflectContext* context);
 
         // Add Menu Items
         void AddAction(int sortKey, AZStd::string actionIdentifier);
-        void AddSeparator(int sortKey);
         void AddSubMenu(int sortKey, AZStd::string menuIdentifier);
-        void AddWidget(int sortKey, QWidget* widget);
+        void AddWidget(int sortKey, AZStd::string widgetActionIdentifier);
+        void AddSeparator(int sortKey);
 
         // Remove Menu Items
         void RemoveAction(AZStd::string actionIdentifier);
+        void RemoveSubMenu(AZStd::string menuIdentifier);
 
         // Returns whether the action or menu queried is contained in this menu.
         bool ContainsAction(const AZStd::string& actionIdentifier) const;
         bool ContainsSubMenu(const AZStd::string& menuIdentifier) const;
+        bool ContainsWidget(const AZStd::string& widgetActionIdentifier) const;
 
         // Returns the sort key for the queried action or menu, or 0 if it's not found.
         AZStd::optional<int> GetActionSortKey(const AZStd::string& actionIdentifier) const;
         AZStd::optional<int> GetSubMenuSortKey(const AZStd::string& menuIdentifier) const;
+        AZStd::optional<int> GetWidgetSortKey(const AZStd::string& widgetActionIdentifier) const;
         
         // Returns the pointer to the menu.
         QMenu* GetMenu();
@@ -62,26 +73,35 @@ namespace AzToolsFramework
         enum class MenuItemType
         {
             Action = 0,
-            Separator,
             SubMenu,
-            Widget
+            Widget,
+            Separator
         };
 
-        struct MenuItem
+        struct MenuItem final
         {
-            explicit MenuItem(MenuItemType type = MenuItemType::Separator, AZStd::string identifier = "");
-            explicit MenuItem(QWidget* widget);
+            AZ_CLASS_ALLOCATOR(MenuItem, AZ::SystemAllocator, 0);
+            AZ_RTTI(MenuItem, "{1AB076C8-CF8F-42C1-98DB-856A067A4D21}");
+
+            explicit MenuItem(
+                MenuItemType type = MenuItemType::Separator,
+                AZStd::string identifier = ""
+            );
 
             MenuItemType m_type;
 
             AZStd::string m_identifier;
+
             QWidgetAction* m_widgetAction = nullptr;
         };
 
         QMenu* m_menu = nullptr;
-        AZStd::multimap<int, MenuItem> m_menuItems;
-        AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
-        AZStd::map<AZStd::string, int> m_subMenuToSortKeyMap;
+        AZStd::map<int, AZStd::vector<MenuItem>> m_menuItems;
+        AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;
+        AZStd::unordered_map<AZStd::string, int> m_subMenuToSortKeyMap;
+
+        inline static QWidget* m_defaultParentWidget = nullptr;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

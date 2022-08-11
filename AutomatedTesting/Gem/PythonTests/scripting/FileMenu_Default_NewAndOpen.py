@@ -9,7 +9,7 @@ from PySide2 import QtWidgets
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 
 class Tests():
 

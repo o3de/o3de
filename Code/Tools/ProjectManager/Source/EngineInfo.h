@@ -19,6 +19,7 @@ namespace O3DE::ProjectManager
     public:
         EngineInfo() = default;
         EngineInfo(const QString& path, const QString& name, const QString& version, const QString& thirdPartyPath);
+        bool operator<(const EngineInfo& engineInfo) const;
 
         // from engine.json
         QString m_version;
@@ -34,6 +35,7 @@ namespace O3DE::ProjectManager
         QString m_defaultRestrictedFolder;
 
         bool m_registered = false;
+        bool m_thisEngine = false;
 
         bool IsValid() const;
     };

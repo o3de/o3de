@@ -26,14 +26,14 @@ AZ_DEFINE_BUDGET(Terrain);
 
 bool TerrainLayerPriorityComparator::operator()(const AZ::EntityId& layer1id, const AZ::EntityId& layer2id) const
 {
-    // Comparator for insertion/keylookup.
+    // Comparator for insertion/key lookup.
     // Sorts into layer/priority order, highest priority first.
-    AZ::u32 priority1 = 0;
-    AZ::u32 layer1 = 0;
+    int32_t priority1 = 0;
+    uint32_t layer1 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer1id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer1, priority1);
 
-    AZ::u32 priority2 = 0;
-    AZ::u32 layer2 = 0;
+    int32_t priority2 = 0;
+    uint32_t layer2 = 0;
     Terrain::TerrainSpawnerRequestBus::Event(layer2id, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer2, priority2);
 
     if (layer1 < layer2)
@@ -60,10 +60,10 @@ TerrainSystem::TerrainSystem()
     AZ::TickBus::Handler::BusConnect();
 
     m_currentSettings.m_systemActive = false;
-    m_currentSettings.m_worldBounds = AZ::Aabb::CreateNull();
+    m_currentSettings.m_heightRange = AzFramework::Terrain::FloatRange::CreateNull();
 
     m_requestedSettings = m_currentSettings;
-    m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-512.0f), AZ::Vector3(512.0f));
+    m_requestedSettings.m_heightRange = { -512.0f, 512.0f };
 
     // Use the global JobManager for terrain jobs (we could create our own dedicated terrain JobManager if needed).
     AZ::JobManagerBus::BroadcastResult(m_terrainJobManager, &AZ::JobManagerEvents::GetManager);
@@ -88,6 +88,7 @@ void TerrainSystem::Activate()
     m_terrainSettingsDirty = true;
     m_terrainSurfacesDirty = true;
     m_requestedSettings.m_systemActive = true;
+    m_cachedAreaBounds = AZ::Aabb::CreateNull();
 
     {
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -145,9 +146,9 @@ void TerrainSystem::Deactivate()
         &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataDestroyEnd);
 }
 
-void TerrainSystem::SetTerrainAabb(const AZ::Aabb& worldBounds)
+void TerrainSystem::SetTerrainHeightBounds(const AzFramework::Terrain::FloatRange& heightRange)
 {   
-    m_requestedSettings.m_worldBounds = worldBounds;
+    m_requestedSettings.m_heightRange = heightRange;
     m_terrainSettingsDirty = true;
 }
 
@@ -177,7 +178,12 @@ void TerrainSystem::SetTerrainSurfaceDataQueryResolution(float queryResolution)
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
 {
-    return m_currentSettings.m_worldBounds;
+    return ClampZBoundsToHeightBounds(m_cachedAreaBounds);
+}
+
+AzFramework::Terrain::FloatRange TerrainSystem::GetTerrainHeightBounds() const
+{
+    return m_currentSettings.m_heightRange;
 }
 
 float TerrainSystem::GetTerrainHeightQueryResolution() const
@@ -190,7 +196,7 @@ float TerrainSystem::GetTerrainSurfaceDataQueryResolution() const
     return m_currentSettings.m_surfaceDataQueryResolution;
 }
 
-void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const
+void TerrainSystem::ClampPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta)
 {
     // Given an input position, clamp the values to our terrain grid, where it will always go to the terrain grid point
     // at a lower value, whether positive or negative.  Ex: 3.3 -> 3, -3.3 -> -4
@@ -198,68 +204,128 @@ void TerrainSystem::ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ
 
     // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
     // and fractional values are the amount in-between each grid point, in the range [0-1).
-    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / m_currentSettings.m_heightQueryResolution;
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / queryResolution;
     normalizedDelta = AZ::Vector2(
         normalizedPosition.GetX() - floor(normalizedPosition.GetX()), normalizedPosition.GetY() - floor(normalizedPosition.GetY()));
 
     // Remove the fractional part, then scale back down into world space.
-    outPosition = (normalizedPosition - normalizedDelta) * m_currentSettings.m_heightQueryResolution;
+    outPosition = (normalizedPosition - normalizedDelta) * queryResolution;
 }
 
-bool TerrainSystem::InWorldBounds(float x, float y) const
+void TerrainSystem::RoundPosition(float x, float y, float queryResolution, AZ::Vector2& outPosition)
 {
-    const float zTestValue = m_currentSettings.m_worldBounds.GetMin().GetZ();
-    const AZ::Vector3 testValue{ x, y, zTestValue };
-    if (m_currentSettings.m_worldBounds.Contains(testValue))
+    // Given an input position, clamp the values to our terrain grid, where it will always go to the nearest terrain grid point
+    // whether positive or negative.  Ex: 3.3 -> 3, 3.6 -> 4, -3.3 -> -3, -3.6 -> -4
+
+    // Scale the position by the query resolution, so that integer values represent exact steps on the grid,
+    // and fractional values are the amount in-between each grid point, in the range [0-1).
+    AZ::Vector2 normalizedPosition = AZ::Vector2(x, y) / queryResolution;
+
+    // Round the fractional part, then scale back down into world space.
+    // Note that we use "floor(pos + 0.5f)" instead of round() because round() will round to the nearest even integer (banker's rounding)
+    // on the 0.5 points instead of to the nearest integer biased away from 0 (symmetric arithmetic rounding), which is what we want.
+    // "floor(pos + 0.5f)" will round 1.5 -> 2, 2.5 -> 3, -1.5 -> -2, -2.5 -> -3, etc. 
+    // (i.e. don't use: outPosition = normalizedPosition.GetRound() * queryResolution;)
+    outPosition = (normalizedPosition + AZ::Vector2(0.5f)).GetFloor() * queryResolution;
+}
+
+void TerrainSystem::InterpolateHeights(const AZStd::array<float,4>& heights, const AZStd::array<bool,4>& exists,
+    float lerpX, float lerpY, float& outHeight, bool& outExists)
+{
+    // When interpolating between 4 height points, we also need to take the existence of the 4 points into account.
+    // The logic below uses a precomputed lookup table to determine how to interpolate the points in each combination of existence.
+    // The final "terrain exists" flag gets computed based on the existence of the corner that's closest to the interpolated point.
+
+    uint8_t indexLookup = (exists[3] << 3) | (exists[2] << 2) | (exists[1] << 1) | (exists[0] << 0);
+
+    constexpr uint8_t heightIndices[16][4] =
     {
-        return true;
+                        // x0y0 x1y0 x0y1 x1y1  output
+        { 0, 0, 0, 0 }, // F    F    F    F     x0y0
+        { 0, 0, 0, 0 }, // T    F    F    F     x0y0
+        { 1, 1, 1, 1 }, // F    T    F    F     x1y0
+        { 0, 1, 0, 1 }, // T    T    F    F     lerp(x0y0, x1y0)
+        { 2, 2, 2, 2 }, // F    F    T    F     x0y1
+        { 0, 0, 2, 2 }, // T    F    T    F     lerp(x0y0, x0y1)
+        { 1, 1, 2, 2 }, // F    T    T    F     lerp(x1y0, x0y1)
+        { 0, 1, 2, 2 }, // T    T    T    F     lerp(lerp(x0y0, x1y0), x0y1)
+
+        { 3, 3, 3, 3 }, // F    F    F    T     x1y1
+        { 0, 0, 3, 3 }, // T    F    F    T     lerp(x0y0, x1y1)
+        { 1, 1, 3, 3 }, // F    T    F    T     lerp(x1y0, x1y1)
+        { 0, 1, 3, 3 }, // T    T    F    T     lerp(lerp(x0y0, x1y0), x1y1)
+        { 2, 3, 2, 3 }, // F    F    T    T     lerp(x0y1, x1y1)
+        { 0, 0, 2, 3 }, // T    F    T    T     lerp(x0y0, lerp(x0y1, x1y1))
+        { 1, 1, 2, 2 }, // F    T    T    T     lerp(x1y0, lerp(x0y1, x1y1))
+        { 0, 1, 2, 3 }, // T    T    T    T     lerp(lerp(x0y0, x1y0), lerp(x0y1, x1y1))
+    };
+
+    const float heightX0Y0 = heights[heightIndices[indexLookup][0]];
+    const float heightX1Y0 = heights[heightIndices[indexLookup][1]];
+    const float heightX0Y1 = heights[heightIndices[indexLookup][2]];
+    const float heightX1Y1 = heights[heightIndices[indexLookup][3]];
+
+    const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, lerpX);
+    const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, lerpX);
+    outHeight = AZ::Lerp(heightXY0, heightXY1, lerpY);
+
+    // "Terrain exists" is set based on the existance of the nearest vertex to the point,
+    // which is determined by which 1/4 of the quad the point falls in. We can determine that based on
+    // which side of 0.5 our lerp X and Y values land on.
+    uint8_t existsIndex = ((lerpY >= 0.5f) << 1) | (lerpX >= 0.5f);
+    outExists = exists[existsIndex];
+}
+
+void TerrainSystem::RecalculateCachedBounds()
+{
+    m_cachedAreaBounds = AZ::Aabb::CreateNull();
+    for (const auto& [entityid, area] : m_registeredAreas)
+    {
+        m_cachedAreaBounds.AddAabb(area.m_areaBounds);
     }
-    return false;
+}
+
+AZ::Aabb TerrainSystem::ClampZBoundsToHeightBounds(const AZ::Aabb& aabb) const
+{
+    if (!aabb.IsValid())
+    {
+        return aabb; // Don't try to clamp invalid aabbs
+    }
+    AZ::Vector3 min = aabb.GetMin();
+    AZ::Vector3 max = aabb.GetMax();
+    min.SetZ(AZ::GetClamp<float>(min.GetZ(), m_currentSettings.m_heightRange.m_min, m_currentSettings.m_heightRange.m_max));
+    max.SetZ(AZ::GetClamp<float>(max.GetZ(), m_currentSettings.m_heightRange.m_min, m_currentSettings.m_heightRange.m_max));
+    return AZ::Aabb::CreateFromMinMax(min, max);
 }
 
 // Generate positions to be queried based on the sampler type.
 void TerrainSystem::GenerateQueryPositions(const AZStd::span<const AZ::Vector3>& inPositions,
-    AZStd::vector<AZ::Vector3>& outPositions,
+    AZStd::vector<AZ::Vector3>& outPositions, float queryResolution,
     Sampler sampler) const
 {
     AZ_PROFILE_FUNCTION(Terrain);
 
-    const float minHeight = m_currentSettings.m_worldBounds.GetMin().GetZ();
+    const float minHeight = m_currentSettings.m_heightRange.m_min;
     for (auto& position : inPositions)
     {
         switch(sampler)
         {
         case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
             {
-                if (InWorldBounds(position.GetX(), position.GetY()))
-                {
-                    AZ::Vector2 normalizedDelta;
-                    AZ::Vector2 pos0;
-                    ClampPosition(position.GetX(), position.GetY(), pos0, normalizedDelta);
-                    const AZ::Vector2 pos1(
-                        pos0.GetX() + m_currentSettings.m_heightQueryResolution, pos0.GetY() + m_currentSettings.m_heightQueryResolution);
-                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
-                }
-                else
-                {
-                    // If the query position isn't within the world bounds, we'll place that position 4x into the query list
-                    // instead of the normal bilinear positions, because we don't want to interpolate between partially inside and
-                    // partially outside. We just want to give it a min height and "terrain doesn't exist".
-                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                    outPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY(), minHeight));
-                }
+                AZ::Vector2 normalizedDelta;
+                AZ::Vector2 pos0;
+                ClampPosition(position.GetX(), position.GetY(), queryResolution, pos0, normalizedDelta);
+                const AZ::Vector2 pos1(pos0.GetX() + queryResolution, pos0.GetY() + queryResolution);
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos0.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos0.GetX(), pos1.GetY(), minHeight));
+                outPositions.emplace_back(AZ::Vector3(pos1.GetX(), pos1.GetY(), minHeight));
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
             {
-                AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(position.GetX(), position.GetY(), clampedPosition, normalizedDelta);
+                RoundPosition(position.GetX(), position.GetY(), queryResolution, clampedPosition);
                 outPositions.emplace_back(AZ::Vector3(clampedPosition.GetX(), clampedPosition.GetY(), minHeight));
             }
             break;
@@ -380,9 +446,11 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
     outPositions.reserve(inPositions.size() * indexStepSize);
     outTerrainExists.resize(inPositions.size() * indexStepSize);
 
-    GenerateQueryPositions(inPositions, outPositions, sampler);
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
 
-    auto callback = []([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
+    GenerateQueryPositions(inPositions, outPositions, queryResolution, sampler);
+
+    auto callback = [this]([[maybe_unused]] const AZStd::span<const AZ::Vector3> inPositions,
                         AZStd::span<AZ::Vector3> outPositions,
                         AZStd::span<bool> outTerrainExists,
                         [[maybe_unused]] AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeights,
@@ -392,6 +460,23 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                                 "The sizes of the terrain exists list and in/out positions list should match.");
                             Terrain::TerrainAreaHeightRequestBus::Event(areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeights,
                                 outPositions, outTerrainExists);
+
+                            // If the area has "use ground plane" checked, make sure any points that fall in the area that didn't
+                            // return data are filled in with the area's minimum height.
+                            const auto& area = m_registeredAreas.find(areaId);
+                            if ((area != m_registeredAreas.end()) && area->second.m_useGroundPlane)
+                            {
+                                const float areaMin = area->second.m_areaBounds.GetMin().GetZ();
+
+                                for (size_t index = 0; index < outPositions.size(); index++)
+                                {
+                                    if (!outTerrainExists[index])
+                                    {
+                                        outTerrainExists[index] = true;
+                                        outPositions[index].SetZ(areaMin);
+                                    }
+                                }
+                            }
                         };
 
     // This will be unused for heights. It's fine if it's empty.
@@ -408,15 +493,18 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
                 // We now need to compute the final height after all the bulk queries are done.
                 AZ::Vector2 normalizedDelta;
                 AZ::Vector2 clampedPosition;
-                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), clampedPosition, normalizedDelta);
-                const float heightX0Y0 = outPositions[iteratorIndex].GetZ();
-                const float heightX1Y0 = outPositions[iteratorIndex + 1].GetZ();
-                const float heightX0Y1 = outPositions[iteratorIndex + 2].GetZ();
-                const float heightX1Y1 = outPositions[iteratorIndex + 3].GetZ();
-                const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
-                const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
-                heights[i] = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
-                terrainExists[i] = outTerrainExists[iteratorIndex];
+                ClampPosition(inPositions[i].GetX(), inPositions[i].GetY(), queryResolution, clampedPosition, normalizedDelta);
+                AZStd::array<float,4> queriedHeights = { outPositions[iteratorIndex].GetZ(),
+                                     outPositions[iteratorIndex + 1].GetZ(),
+                                     outPositions[iteratorIndex + 2].GetZ(),
+                                     outPositions[iteratorIndex + 3].GetZ() };
+                AZStd::array<bool, 4> queriedExistsFlags = { outTerrainExists[iteratorIndex],
+                    outTerrainExists[iteratorIndex + 1],
+                    outTerrainExists[iteratorIndex + 2],
+                    outTerrainExists[iteratorIndex + 3]};
+
+                InterpolateHeights(queriedHeights, queriedExistsFlags,
+                    normalizedDelta.GetX(), normalizedDelta.GetY(), heights[i], terrainExists[i]);
             }
             break;
         case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
@@ -435,18 +523,11 @@ void TerrainSystem::GetHeightsSynchronous(const AZStd::span<const AZ::Vector3>& 
 float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
     bool terrainExists = false;
-    float height = m_currentSettings.m_worldBounds.GetMin().GetZ();
-
-    if (!InWorldBounds(x, y))
-    {
-        if (terrainExistsPtr)
-        {
-            *terrainExistsPtr = terrainExists;
-            return height;
-        }
-    }
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+
+    float height = m_currentSettings.m_heightRange.m_min;
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
 
     switch (sampler)
     {
@@ -458,25 +539,24 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
             // Ex: (3.3, 4.4) would have a pos0 of (3, 4), a pos1 of (4, 5), and a delta of (0.3, 0.4).
             AZ::Vector2 normalizedDelta;
             AZ::Vector2 pos0;
-            ClampPosition(x, y, pos0, normalizedDelta);
-            const AZ::Vector2 pos1 = pos0 + AZ::Vector2(m_currentSettings.m_heightQueryResolution);
+            ClampPosition(x, y, queryResolution, pos0, normalizedDelta);
+            const AZ::Vector2 pos1 = pos0 + AZ::Vector2(queryResolution);
 
-            const float heightX0Y0 = GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), terrainExists);
-            const float heightX1Y0 = GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), terrainExists);
-            const float heightX0Y1 = GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), terrainExists);
-            const float heightX1Y1 = GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), terrainExists);
-            const float heightXY0 = AZ::Lerp(heightX0Y0, heightX1Y0, normalizedDelta.GetX());
-            const float heightXY1 = AZ::Lerp(heightX0Y1, heightX1Y1, normalizedDelta.GetX());
-            height = AZ::Lerp(heightXY0, heightXY1, normalizedDelta.GetY());
+            AZStd::array<bool,4> exists = { false, false, false, false };
+            const AZStd::array<float, 4> queriedHeights = { GetTerrainAreaHeight(pos0.GetX(), pos0.GetY(), exists[0]),
+                                                            GetTerrainAreaHeight(pos1.GetX(), pos0.GetY(), exists[1]),
+                                                            GetTerrainAreaHeight(pos0.GetX(), pos1.GetY(), exists[2]),
+                                                            GetTerrainAreaHeight(pos1.GetX(), pos1.GetY(), exists[3]) };
+
+            InterpolateHeights(queriedHeights, exists, normalizedDelta.GetX(), normalizedDelta.GetY(), height, terrainExists);
         }
         break;
 
     //! Clamp the input point to the terrain sample grid, then get the height at the given grid location.
     case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
         {
-            AZ::Vector2 normalizedDelta;
             AZ::Vector2 clampedPosition;
-            ClampPosition(x, y, clampedPosition, normalizedDelta);
+            RoundPosition(x, y, queryResolution, clampedPosition);
 
             height = GetTerrainAreaHeight(clampedPosition.GetX(), clampedPosition.GetY(), terrainExists);
         }
@@ -497,12 +577,12 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
     }
 
     return AZ::GetClamp(
-        height, m_currentSettings.m_worldBounds.GetMin().GetZ(), m_currentSettings.m_worldBounds.GetMax().GetZ());
+        height, m_currentSettings.m_heightRange.m_min, m_currentSettings.m_heightRange.m_max);
 }
 
 float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists) const
 {
-    const float worldMin = m_currentSettings.m_worldBounds.GetMin().GetZ();
+    const float worldMin = m_currentSettings.m_heightRange.m_min;
     AZ::Vector3 inPosition(x, y, worldMin);
     float height = worldMin;
     terrainExists = false;
@@ -513,7 +593,7 @@ float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists)
     {
         const float areaMin = areaData.m_areaBounds.GetMin().GetZ();
         inPosition.SetZ(areaMin);
-        if (areaData.m_areaBounds.Contains(inPosition))
+        if (SurfaceData::AabbContains2DMaxExclusive(areaData.m_areaBounds, inPosition))
         {
             AZ::Vector3 outPosition;
             Terrain::TerrainAreaHeightRequestBus::Event(
@@ -573,97 +653,375 @@ bool TerrainSystem::GetIsHoleFromFloats(float x, float y, Sampler sampler) const
 void TerrainSystem::GetNormalsSynchronous(const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler, 
     AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
 {
-    AZ_PROFILE_FUNCTION(Terrain);
-
-    AZStd::vector<AZ::Vector3> directionVectors;
-    directionVectors.reserve(inPositions.size() * 4);
-    const AZ::Vector2 range(m_currentSettings.m_heightQueryResolution / 2.0f, m_currentSettings.m_heightQueryResolution / 2.0f);
-    size_t indexStepSize = 4;
-    for (auto& position : inPositions)
+    // We use different algorithms for calculating the normals depending on the input sampler type,
+    // with no real shared logic, so they've been split out into separate methods.
+    switch (sampler)
     {
-        directionVectors.emplace_back(position.GetX(), position.GetY() - range.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX() - range.GetX(), position.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX() + range.GetX(), position.GetY(), 0.0f);
-        directionVectors.emplace_back(position.GetX(), position.GetY() + range.GetY(), 0.0f);
-    }
-
-    AZStd::vector<float> heights(directionVectors.size());
-    AZStd::vector<bool> exists(directionVectors.size());
-    GetHeightsSynchronous(directionVectors, sampler, heights, exists);
-
-    for (size_t i = 0, iteratorIndex = 0; i < inPositions.size(); i++, iteratorIndex += indexStepSize)
-    {
-        directionVectors[iteratorIndex].SetZ(heights[iteratorIndex]);
-        directionVectors[iteratorIndex + 1].SetZ(heights[iteratorIndex + 1]);
-        directionVectors[iteratorIndex + 2].SetZ(heights[iteratorIndex + 2]);
-        directionVectors[iteratorIndex + 3].SetZ(heights[iteratorIndex + 3]);
-
-        normals[i] = (directionVectors[iteratorIndex + 2] - directionVectors[iteratorIndex + 1]).
-                         Cross(directionVectors[iteratorIndex + 3] - directionVectors[iteratorIndex]).GetNormalized();
-
-        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
-        // any of the four points exist, then the terrain exists.
-        terrainExists[i] = exists[iteratorIndex] || exists[iteratorIndex + 1] || exists [iteratorIndex + 2] || exists[iteratorIndex + 3];
+    case Sampler::EXACT:
+        // This will return the normal of the requested point using the underlying height data at a much higher frequency than the
+        // query resolution, which means the normal can have significant fluctuations across each terrain grid square.
+        GetNormalsSynchronousExact(inPositions, normals, terrainExists);
+        break;
+    case Sampler::CLAMP:
+        // This will treat each terrain grid square as two triangles, and return the normal for the triangle that contains the requested
+        // point. There is no interpolation, so each terrain grid square will exactly have two possible normals that can get returned
+        // for any queried point within the square.
+        GetNormalsSynchronousClamp(inPositions, normals, terrainExists);
+        break;
+    case Sampler::BILINEAR:
+        // This will smoothly interpolate the normals from grid point to grid point across the entire terrain grid.
+        GetNormalsSynchronousBilinear(inPositions, normals, terrainExists);
+        break;
+    default:
+        AZ_Assert(false, "Unknown sampler type");
+        break;
     }
 }
 
-AZ::Vector3 TerrainSystem::GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
+void TerrainSystem::GetNormalsSynchronousExact(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals,
+    AZStd::span<bool> terrainExists) const
 {
-    AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+    // When querying for normals with an EXACT sampler, we get the normal by querying 4 points around the requested position
+    // in an extremely small + pattern, then get the cross product of the two lines of the plus sign.
 
-    bool terrainExists = false;
+    // Because we're querying for exact heights from the underlying data, independent of the query resolution, we want to make
+    // the + as small as possible so that we can correctly capture high-frequency changes in the data.
+    // We've arbitrarily chosen the smaller of 1/32 of a meter or 1/32 of our query resolution as the size of each leg of the + sign.
+    // It's possible that we may want to expose this as a tuning variable at some point.
+    const float exactRange = AZStd::min(1.0f / 32.0f, m_currentSettings.m_heightQueryResolution / 32.0f);
 
-    AZ::Vector3 outNormal = AZ::Vector3::CreateAxisZ();
+    // The number of points that we're querying for each normal.
+    const size_t queryCount = 4;
 
-    if (!InWorldBounds(x, y))
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
+
+    for (const auto& position : inPositions)
     {
-        if (terrainExistsPtr)
+        // For each input position, query the four outer points of the + sign.
+        queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() - exactRange, 0.0f)); // down
+        queryPositions.emplace_back(AZ::Vector3(position.GetX() - exactRange, position.GetY(), 0.0f)); // left
+        queryPositions.emplace_back(AZ::Vector3(position.GetX() + exactRange, position.GetY(), 0.0f)); // right
+        queryPositions.emplace_back(AZ::Vector3(position.GetX(), position.GetY() + exactRange, 0.0f)); // up
+    }
+
+    // These constants are the relative index for each of the four positions that we pushed for each input above.
+    constexpr size_t down = 0;
+    constexpr size_t left = 1;
+    constexpr size_t right = 2;
+    constexpr size_t up = 3;
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // We want to query the underlying heights with an EXACT sampler as well, so that we get to the input data that might be
+    // at a much higher frequency than the height query resolution.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        terrainExists[inPosIndex] = true;
+
+        for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
         {
-            *terrainExistsPtr = terrainExists;
-            return outNormal;
+            // Combine the output heights with our query positions.
+            queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+
+            // We're querying at a much higher frequency than our query resolution, so we'll simply say that the terrain
+            // exists only if all 4 points of the + sign exist.
+            terrainExists[inPosIndex] = terrainExists[inPosIndex] && exists[queryPositionIndex + querySubindex];
+        }
+
+        if (terrainExists[inPosIndex])
+        {
+            // We have 4 vertices that make a + sign, cross the two lines to get the normal at the center.
+            // (right - left) x (up - down)
+            normals[inPosIndex] = (queryPositions[queryPositionIndex + right] - queryPositions[queryPositionIndex + left])
+                                .Cross(queryPositions[queryPositionIndex + up] - queryPositions[queryPositionIndex + down])
+                                .GetNormalized();
+        }
+        else
+        {
+            // If at least one of the 4 points of the + sign didn't exist, just give it a Z-up normal.
+            normals[inPosIndex] = AZ::Vector3::CreateAxisZ();
         }
     }
-    float range = m_currentSettings.m_heightQueryResolution / 2.0f;
-    const AZ::Vector2 left (x - range, y);
-    const AZ::Vector2 right(x + range, y);
-    const AZ::Vector2 up   (x, y - range);
-    const AZ::Vector2 down (x, y + range);
+}
 
-    bool terrainExists1 = false;
-    bool terrainExists2 = false;
-    bool terrainExists3 = false;
-    bool terrainExists4 = false;
+void TerrainSystem::GetNormalsSynchronousClamp(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals,
+    AZStd::span<bool> terrainExists) const
+{
+    // When querying for normals with a CLAMP sampler, we divide each terrain grid square into two triangles, and return the normal
+    // for the triangle that the requested position falls on.
+    // Right now, the terrain system will always split each terrain grid square like this:  |\|
+    // Eventually, the terrain system might get more complicated per-square logic, at which point the logic below would need
+    // to change to account for the per-square triangle split direction.
 
-    AZ::Vector3 v1(up.GetX(), up.GetY(), GetHeightSynchronous(up.GetX(), up.GetY(), sampler, &terrainExists1));
-    AZ::Vector3 v2(left.GetX(), left.GetY(), GetHeightSynchronous(left.GetX(), left.GetY(), sampler, &terrainExists2));
-    AZ::Vector3 v3(right.GetX(), right.GetY(), GetHeightSynchronous(right.GetX(), right.GetY(), sampler, &terrainExists3));
-    AZ::Vector3 v4(down.GetX(), down.GetY(), GetHeightSynchronous(down.GetX(), down.GetY(), sampler, &terrainExists4));
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
 
-    outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
+    // The number of points we're querying for each normal
+    const size_t queryCount = 3;
+
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
+
+    for (const auto& position : inPositions)
+    {
+        // For each position, determine where in the square the point falls and get the bottom left corner of the square.
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 bottomLeft;
+        ClampPosition(position.GetX(), position.GetY(), queryResolution, bottomLeft, normalizedDelta);
+
+        // Calculate the four corners of our grid square:
+        //  2 *-* 3
+        //    |\|
+        //  0 *-* 1
+
+        AZStd::array<AZ::Vector3, 4> corners =
+        {
+            AZ::Vector3(bottomLeft.GetX()                  , bottomLeft.GetY(), 0.0f),
+            AZ::Vector3(bottomLeft.GetX() + queryResolution, bottomLeft.GetY(), 0.0f),
+            AZ::Vector3(bottomLeft.GetX()                  , bottomLeft.GetY() + queryResolution, 0.0f),
+            AZ::Vector3(bottomLeft.GetX() + queryResolution, bottomLeft.GetY() + queryResolution, 0.0f)
+        };
+
+        // Our grid squares are squares so the diagonal is a 45 degree angle. We can determine which triangle the query point
+        // falls in just by checking if (x + y) < 1. This arbitrarily assigns points on the diagonal to the upper triangle.
+        // We could use "<=" if we wanted them to go to the upper triangle.
+        bool bottomTriangle = (normalizedDelta.GetX() + normalizedDelta.GetY()) < 1.0f;
+
+        // We'll query for the 3 vertices of whichever triangle of the square the query point falls in.
+        // We'll order them in counter-clockwise order and follow a mirrored pattern between the two, so that we can calculate the
+        // normal from the results for either triangle by using (second - first) x (third - first).
+        if (bottomTriangle)
+        {
+            queryPositions.emplace_back(corners[0]);
+            queryPositions.emplace_back(corners[1]);
+            queryPositions.emplace_back(corners[2]);
+        }
+        else
+        {
+            queryPositions.emplace_back(corners[3]);
+            queryPositions.emplace_back(corners[2]);
+            queryPositions.emplace_back(corners[1]);
+        }
+    }
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // Since our query points are grid-aligned, we can use EXACT queries.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        // We'll set "exists" to true *only* if all three positions for calculating the normal exists.
+        terrainExists[inPosIndex] = exists[queryPositionIndex] && exists[queryPositionIndex + 1] && exists[queryPositionIndex + 2];
+
+        // Only calculate the normal if all the queried points exist.
+        if (terrainExists[inPosIndex])
+        {
+            // Combine the output heights with our query positions.
+            for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
+            {
+                queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+            }
+
+            // We have 3 vertices for a triangle, get the normal of the triangle.
+            normals[inPosIndex] = (queryPositions[queryPositionIndex + 1] - queryPositions[queryPositionIndex])
+                        .Cross(queryPositions[queryPositionIndex + 2] - queryPositions[queryPositionIndex])
+                        .GetNormalized();
+        }
+        else
+        {
+            normals[inPosIndex] = AZ::Vector3::CreateAxisZ();
+        }
+    }
+}
+
+void TerrainSystem::GetNormalsSynchronousBilinear(
+    const AZStd::span<const AZ::Vector3>& inPositions,
+    AZStd::span<AZ::Vector3> normals, AZStd::span<bool> terrainExists) const
+{
+    // When querying for normals with a BILINEAR sampler, we calculate the normals at each corner of the terrain grid square that
+    // the query point fall in then interpolate between those normals to get the final result.
+
+    const float queryResolution = m_currentSettings.m_heightQueryResolution;
+    const float twiceQueryResolution = m_currentSettings.m_heightQueryResolution * 2.0f;
+
+    // We'll need a total of 12 unique positions queried to calculate the 4 normals that we'll be interpolating between.
+    // (We need 16 non-unique positions, but we can reuse the results for the middle 4 positions)
+    const size_t queryCount = 12;
+
+    // The full set of positions to query to be able to calculate all the normals.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size() * queryCount);
+
+    for (const auto& position : inPositions)
+    {
+        // We'll query our 12 points in the following order, where the x represents the location of the query point.
+        //            10     11
+        //              *---*
+        //         6   7|   |8   9
+        //          *---*---*---*
+        //          |   | x |   |
+        //          *---*---*---*
+        //         2   3|   |4   5
+        //              *---*
+        //             0     1
+
+        // For each position, determine where in the square the point falls and get the bottom left corner of the center square
+        // (corner 3).
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 pos3;
+        ClampPosition(position.GetX(), position.GetY(), queryResolution, pos3, normalizedDelta);
+
+        // Corners 0-1
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() - queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() - queryResolution, 0.0f);
+        // Corners 2-5
+        queryPositions.emplace_back(pos3.GetX() - queryResolution       , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY(), 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + twiceQueryResolution  , pos3.GetY(), 0.0f);
+        // Corners 6-9
+        queryPositions.emplace_back(pos3.GetX() - queryResolution       , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() + queryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + twiceQueryResolution  , pos3.GetY() + queryResolution, 0.0f);
+        // Corners 10-11
+        queryPositions.emplace_back(pos3.GetX()                         , pos3.GetY() + twiceQueryResolution, 0.0f);
+        queryPositions.emplace_back(pos3.GetX() + queryResolution       , pos3.GetY() + twiceQueryResolution, 0.0f);
+    }
+
+    AZStd::vector<float> heights(queryPositions.size());
+    AZStd::vector<bool> exists(queryPositions.size());
+
+    // Since our query points are grid-aligned, we can use EXACT queries.
+    GetHeightsSynchronous(queryPositions, Sampler::EXACT, heights, exists);
+
+    for (size_t inPosIndex = 0, queryPositionIndex = 0; inPosIndex < inPositions.size(); inPosIndex++, queryPositionIndex += queryCount)
+    {
+        // Combine the output heights with our query positions.
+        for (size_t querySubindex = 0; querySubindex < queryCount; querySubindex++)
+        {
+            queryPositions[queryPositionIndex + querySubindex].SetZ(heights[queryPositionIndex + querySubindex]);
+        }
+
+        // We calculate the normal by taking the cross product of the tips of a + shape around the point that we want the normal for.
+        auto CalculateNormal = [&exists, &queryPositions, &queryPositionIndex]
+            (uint8_t left, uint8_t center, uint8_t right, uint8_t up, uint8_t down) -> AZ::Vector3
+        {
+            const size_t centerQueryIdx = queryPositionIndex + center;
+            const size_t upQueryIdx = queryPositionIndex + up;
+            const size_t downQueryIdx = queryPositionIndex + down;
+            const size_t leftQueryIdx = queryPositionIndex + left;
+            const size_t rightQueryIdx = queryPositionIndex + right;
+
+            // Only calculate the normal if the center point and all the points around it exist. Otherwise, just return a Z-up vector.
+            if (exists[upQueryIdx] && exists[downQueryIdx] && exists[leftQueryIdx] && exists[centerQueryIdx] && exists[rightQueryIdx])
+            {
+                // Each normal is (right - left) x (up - down)
+                return (queryPositions[rightQueryIdx] - queryPositions[leftQueryIdx])
+                        .Cross(queryPositions[upQueryIdx] - queryPositions[downQueryIdx])
+                        .GetNormalized();
+            }
+            else
+            {
+                return AZ::Vector3::CreateAxisZ();
+            }
+        };
+
+        // Calculate the normals of the four corners of the square that our query point falls in by taking the cross product
+        // of + shapes:
+        //            10     11                normal0      normal1      normal2      normal3
+        //              *---*                     7            8           10           11
+        //         6   7|   |8   9                *            *            *            *    
+        //          *---*---*---*             2   |3  4    3   |4  5    6   |7  8    7   |8  9
+        //          |   | x |   |             *---*---*    *---*---*    *---*---*    *---*---*
+        //          *---*---*---*                 |            |            |            |    
+        //         2   3|   |4   5                *            *            *            *    
+        //              *---*                     0            1            3            4
+        //             0     1
+        const AZ::Vector3 normal0 = CalculateNormal(2, 3, 4, 7, 0);
+        const AZ::Vector3 normal1 = CalculateNormal(3, 4, 5, 8, 1);
+        const AZ::Vector3 normal2 = CalculateNormal(6, 7, 8, 10, 3);
+        const AZ::Vector3 normal3 = CalculateNormal(7, 8, 9, 11, 4);
+
+        // For each position, determine where in the square the point falls and get the bottom left corner of the center square
+        // (corner 3).
+        AZ::Vector2 normalizedDelta;
+        AZ::Vector2 pos3;
+        ClampPosition(inPositions[inPosIndex].GetX(), inPositions[inPosIndex].GetY(), queryResolution, pos3, normalizedDelta);
+
+        // Then finally, interpolate between the 4 normals.
+        const float lerpX = normalizedDelta.GetX();
+        const float lerpY = normalizedDelta.GetY();
+        const float invLerpX = 1.0f - lerpX;
+        const float invLerpY = 1.0f - lerpY;
+
+        AZ::Vector3 combinedNormal =
+            (normal0 * (invLerpX * invLerpY)) +
+            (normal1 * (lerpX * invLerpY)) +
+            (normal2 * (invLerpX * lerpY)) +
+            (normal3 * (lerpX * lerpY));
+
+        normals[inPosIndex] = combinedNormal.GetNormalized();
+
+        // Use the "terrain exists" result from the nearest corner as the result we'll return.
+        if ((lerpX < 0.5f) && (lerpY < 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 3];
+        }
+        else if ((lerpX >= 0.5f) && (lerpY < 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 4];
+        }
+        else if ((lerpX < 0.5f) && (lerpY >= 0.5f))
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 7];
+        }
+        else
+        {
+            terrainExists[inPosIndex] = exists[queryPositionIndex + 8];
+        }
+    }
+}
+
+AZ::Vector3 TerrainSystem::GetNormalSynchronous(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const
+{
+    AZ::Vector3 normal;
+    bool exists;
+
+    GetNormalsSynchronous(
+        AZStd::span<const AZ::Vector3>(&position, 1), sampler, AZStd::span<AZ::Vector3>(&normal, 1), AZStd::span<bool>(&exists, 1));
 
     if (terrainExistsPtr)
     {
-        // This needs better logic for handling cases where some points exist and some don't, but for now we'll say that if
-        // any of the four points exist, then the terrain exists.
-        *terrainExistsPtr = terrainExists1 || terrainExists2 || terrainExists3 || terrainExists4;
+        *terrainExistsPtr = exists;
     }
-
-    return outNormal;
+    return normal;
 }
 
 AZ::Vector3 TerrainSystem::GetNormal(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
+    return GetNormalSynchronous(position, sampler, terrainExistsPtr);
 }
 
 AZ::Vector3 TerrainSystem::GetNormalFromVector2(const AZ::Vector2& position, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(position.GetX(), position.GetY(), sampler, terrainExistsPtr);
+    return GetNormalSynchronous(AZ::Vector3(position), sampler, terrainExistsPtr);
 }
 
 AZ::Vector3 TerrainSystem::GetNormalFromFloats(float x, float y, Sampler sampler, bool* terrainExistsPtr) const
 {
-    return GetNormalSynchronous(x, y, sampler, terrainExistsPtr);
+    return GetNormalSynchronous(AZ::Vector3(x, y, 0.0f), sampler, terrainExistsPtr);
 }
 
 AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeight(
@@ -688,15 +1046,6 @@ AzFramework::SurfaceData::SurfaceTagWeight TerrainSystem::GetMaxSurfaceWeightFro
 
     AzFramework::SurfaceData::SurfaceTagWeightList weightSet;
 
-    if (!InWorldBounds(x, y))
-    {
-        if (terrainExistsPtr)
-        {
-            *terrainExistsPtr = false;
-            return {};
-        }
-    }
-
     GetOrderedSurfaceWeights(x, y, sampler, weightSet, terrainExistsPtr);
 
     if (weightSet.empty())
@@ -713,9 +1062,12 @@ void TerrainSystem::GetSurfacePoint(
     Sampler sampler,
     bool* terrainExistsPtr) const
 {
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
+    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition, sampler, terrainExistsPtr);
     outSurfacePoint.m_position = inPosition;
     outSurfacePoint.m_position.SetZ(GetHeightSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, terrainExistsPtr));
-    outSurfacePoint.m_normal = GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), sampler, nullptr);
     GetSurfaceWeights(inPosition, outSurfacePoint.m_surfaceTags, sampler, nullptr);
 }
 
@@ -897,7 +1249,8 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& posi
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
     for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        if (SurfaceData::AabbContains2D(areaData.m_areaBounds, position))
+        // We use min-inclusive-max-exclusive so that two spawners with a shared edge will have a single owner for that edge.
+        if (SurfaceData::AabbContains2DMaxExclusive(areaData.m_areaBounds, position))
         {
             bounds = areaData.m_areaBounds;
             return areaId;
@@ -909,7 +1262,7 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(const AZ::Vector3& posi
 
 void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     const AZStd::span<const AZ::Vector3>& inPositions,
-    [[maybe_unused]] Sampler sampler,
+    Sampler sampler,
     AZStd::span<AzFramework::SurfaceData::SurfaceTagWeightList> outSurfaceWeightsList,
     AZStd::span<bool> terrainExists) const
 {
@@ -920,6 +1273,14 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
         AZStd::vector<float> heights(inPositions.size());
         GetHeightsSynchronous(inPositions, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, heights, terrainExists);
     }
+
+    // queryPositions contains the modified positions based on our sampler type. For surface queries, we don't currently perform bilinear
+    // interpolation of any results, so our query position size will always match our input size.
+    AZStd::vector<AZ::Vector3> queryPositions;
+    queryPositions.reserve(inPositions.size());
+    const float queryResolution = m_currentSettings.m_surfaceDataQueryResolution;
+    Sampler querySampler = (sampler == Sampler::EXACT) ? Sampler::EXACT : Sampler::CLAMP;
+    GenerateQueryPositions(inPositions, queryPositions, queryResolution, querySampler);
 
     auto callback = [](const AZStd::span<const AZ::Vector3> inPositions,
                         [[maybe_unused]] AZStd::span<AZ::Vector3> outPositions,
@@ -943,20 +1304,17 @@ void TerrainSystem::GetOrderedSurfaceWeightsFromList(
     
     // This will be unused for surface weights. It's fine if it's empty.
     AZStd::vector<AZ::Vector3> outPositions;
-    MakeBulkQueries(inPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
+    MakeBulkQueries(queryPositions, outPositions, terrainExists, outSurfaceWeightsList, callback);
 }
 
 void TerrainSystem::GetOrderedSurfaceWeights(
     const float x,
     const float y,
-    [[maybe_unused]] Sampler sampler,
+    Sampler sampler,
     AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
     bool* terrainExistsPtr) const
 {
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
-
-    AZ::Aabb bounds;
-    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(AZ::Vector3(x, y, 0.0f), bounds);
 
     if (terrainExistsPtr)
     {
@@ -965,12 +1323,39 @@ void TerrainSystem::GetOrderedSurfaceWeights(
 
     outSurfaceWeights.clear();
 
+    const float queryResolution = m_currentSettings.m_surfaceDataQueryResolution;
+
+    AZ::Vector3 inPosition;
+
+    switch (sampler)
+    {
+    // Both bilinear and clamp samplers will clamp the input position to the surface data query grid and get the surface data there.
+    // At some point we might want to consider interpolation of surface weights for the bilinear case, but it's unclear if that's
+    // actually a desired outcome.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+        [[fallthrough]];
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+        {
+            AZ::Vector2 clampedPosition;
+            RoundPosition(x, y, queryResolution, clampedPosition);
+            inPosition = AZ::Vector3(clampedPosition);
+        }
+        break;
+    //! Directly get the value at the location, regardless of terrain sample grid density.
+    case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+        [[fallthrough]];
+    default:
+        inPosition = AZ::Vector3(x, y, 0.0f);
+        break;
+    }
+
+    AZ::Aabb bounds;
+    AZ::EntityId bestAreaId = FindBestAreaEntityAtPosition(inPosition, bounds);
+
     if (!bestAreaId.IsValid())
     {
         return;
     }
-
-    const AZ::Vector3 inPosition = AZ::Vector3(x, y, 0.0f);
 
     // Get all the surfaces with weights at the given point.
     Terrain::TerrainAreaSurfaceRequestBus::Event(
@@ -1036,15 +1421,21 @@ void TerrainSystem::QueryList(
     AZStd::vector<AZ::Vector3> normals;
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
+    if (requestedData & TerrainDataMask::Normals)
+    {
+        normals.resize(inPositions.size());
+        {
+            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
+            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        }
+    }
     if (requestedData & TerrainDataMask::Heights)
     {
         heights.resize(inPositions.size());
         GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    }
-    if (requestedData & TerrainDataMask::Normals)
-    {
-        normals.resize(inPositions.size());
-        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
     }
     if (requestedData & TerrainDataMask::SurfaceData)
     {
@@ -1181,6 +1572,19 @@ void TerrainSystem::SubdivideRegionForJobs(
         subdivisionsY, maxNumJobs);
 }
 
+bool TerrainSystem::ContainedAabbTouchesEdge(const AZ::Aabb& outerAabb, const AZ::Aabb& innerAabb)
+{
+    return outerAabb.Contains(innerAabb) &&
+        (
+            outerAabb.GetMin().GetX() == innerAabb.GetMin().GetX() ||
+            outerAabb.GetMin().GetY() == innerAabb.GetMin().GetY() ||
+            outerAabb.GetMin().GetZ() == innerAabb.GetMin().GetZ() ||
+            outerAabb.GetMax().GetX() == innerAabb.GetMax().GetX() ||
+            outerAabb.GetMax().GetY() == innerAabb.GetMax().GetY() ||
+            outerAabb.GetMax().GetZ() == innerAabb.GetMax().GetZ()
+        );
+}
+
 void TerrainSystem::QueryRegion(
     const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
     TerrainDataMask requestedData,
@@ -1217,15 +1621,21 @@ void TerrainSystem::QueryRegionInternal(
     AZStd::vector<AZ::Vector3> normals;
     AZStd::vector<AzFramework::SurfaceData::SurfaceTagWeightList> surfaceWeights;
 
+    // Query normals before heights because the height query produces better results for the terrainExists flag for a given point,
+    // so we want to prefer keeping the results from the height query if we end up querying both.
+    // (Ideally at some point they will produce identical results)
+    if (requestedData & TerrainDataMask::Normals)
+    {
+        normals.resize(inPositions.size());
+        {
+            AZ_PROFILE_SCOPE(Terrain, "GetNormalsSynchronous");
+            GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
+        }
+    }
     if (requestedData & TerrainDataMask::Heights)
     {
         heights.resize(inPositions.size());
         GetHeightsSynchronous(inPositions, sampler, heights, terrainExists);
-    }
-    if (requestedData & TerrainDataMask::Normals)
-    {
-        normals.resize(inPositions.size());
-        GetNormalsSynchronous(inPositions, sampler, normals, terrainExists);
     }
     if (requestedData & TerrainDataMask::SurfaceData)
     {
@@ -1266,7 +1676,6 @@ void TerrainSystem::QueryRegionInternal(
     }
 }
 
-
 void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 {
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
@@ -1281,6 +1690,7 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
     m_dirtyRegion.AddAabb(aabb);
     m_terrainHeightDirty = true;
     m_terrainSurfacesDirty = true;
+    m_cachedAreaBounds.AddAabb(aabb);
 }
 
 void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
@@ -1300,6 +1710,12 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
                 m_dirtyRegion.AddAabb(areaData.m_areaBounds);
                 m_terrainHeightDirty = true;
                 m_terrainSurfacesDirty = true;
+
+                if (ContainedAabbTouchesEdge(m_cachedAreaBounds, areaData.m_areaBounds))
+                {
+                    RecalculateCachedBounds();
+                }
+
                 return true;
             }
             return false;
@@ -1308,8 +1724,6 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
-    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
-
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     auto areaAabb = m_registeredAreas.find(areaId);
@@ -1322,7 +1736,34 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
     AZ::Aabb expandedAabb = oldAabb;
     expandedAabb.AddAabb(newAabb);
 
-    m_dirtyRegion.AddAabb(expandedAabb);
+    RefreshRegion(expandedAabb, changeMask);
+
+    // Check to see which axis the aabbs changed in
+    bool xDiff = oldAabb.GetMin().GetX() != newAabb.GetMin().GetX() || oldAabb.GetMax().GetX() != newAabb.GetMax().GetX();
+    bool yDiff = oldAabb.GetMin().GetY() != newAabb.GetMin().GetY() || oldAabb.GetMax().GetY() != newAabb.GetMax().GetY();
+    bool zDiff = oldAabb.GetMin().GetZ() != newAabb.GetMin().GetZ() || oldAabb.GetMax().GetZ() != newAabb.GetMax().GetZ();
+
+    if ((xDiff && (m_cachedAreaBounds.GetMin().GetX() == oldAabb.GetMin().GetX() || m_cachedAreaBounds.GetMax().GetX() == oldAabb.GetMax().GetX())) ||
+        (yDiff && (m_cachedAreaBounds.GetMin().GetY() == oldAabb.GetMin().GetY() || m_cachedAreaBounds.GetMax().GetY() == oldAabb.GetMax().GetY())) ||
+        (zDiff && (m_cachedAreaBounds.GetMin().GetZ() == oldAabb.GetMin().GetZ() || m_cachedAreaBounds.GetMax().GetZ() == oldAabb.GetMax().GetZ())))
+    {
+        // Old aabb is on the edge of the bounds in at least one axis, and moved on that axis, so it will require a full refresh
+        RecalculateCachedBounds();
+    }
+    else if(!m_cachedAreaBounds.Contains(newAabb))
+    {
+        // Old Aabb was inside the bounds and new aabb is outside the bounds, so just add it.
+        m_cachedAreaBounds.AddAabb(newAabb);
+    }
+
+}
+
+void TerrainSystem::RefreshRegion(
+    const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
+{
+    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
+    m_dirtyRegion.AddAabb(dirtyRegion);
 
     // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
 
@@ -1341,27 +1782,30 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
         terrainSettingsChanged = true;
         m_terrainSettingsDirty = false;
+        if (m_currentSettings.m_heightRange.IsValid())
+        {
+            m_dirtyRegion = ClampZBoundsToHeightBounds(m_cachedAreaBounds);
+        }
 
         // This needs to happen before the "system active" check below, because activating the system will cause the various
         // terrain layer areas to request the current world bounds.
-        if (m_requestedSettings.m_worldBounds != m_currentSettings.m_worldBounds)
+        if (m_requestedSettings.m_heightRange != m_requestedSettings.m_heightRange)
         {
-            m_dirtyRegion = m_currentSettings.m_worldBounds;
-            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainHeightDirty = true;
             m_terrainSurfacesDirty = true;
-            m_currentSettings.m_worldBounds = m_requestedSettings.m_worldBounds;
+            m_currentSettings.m_heightRange = m_requestedSettings.m_heightRange;
+
+            // Add the cached area bounds clamped to the new range, so both the old and new range are included.
+            m_dirtyRegion.AddAabb(ClampZBoundsToHeightBounds(m_cachedAreaBounds));
         }
 
         if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
         {
-            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainHeightDirty = true;
         }
 
         if (m_requestedSettings.m_surfaceDataQueryResolution != m_currentSettings.m_surfaceDataQueryResolution)
         {
-            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainSurfacesDirty = true;
         }
 
@@ -1388,7 +1832,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 
         // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will
         // cause the data to become dirty again.
-        AZ::Aabb dirtyRegion = m_dirtyRegion;
+        AZ::Aabb dirtyRegion = ClampZBoundsToHeightBounds(m_dirtyRegion);
         m_terrainHeightDirty = false;
         m_terrainSurfacesDirty = false;
         m_dirtyRegion = AZ::Aabb::CreateNull();

@@ -130,10 +130,6 @@ set(FILES
     Passes/DepthExponentiation.pass
     Passes/DepthMax.pass
     Passes/DepthMSAA.pass
-    Passes/DepthMSAA2x.pass
-    Passes/DepthMSAA4x.pass
-    Passes/DepthMSAA8x.pass
-    Passes/DepthMSAAParent.pass
     Passes/DepthOfField.pass
     Passes/DepthOfFieldBlurBokeh.pass
     Passes/DepthOfFieldComposite.pass
@@ -143,36 +139,16 @@ set(FILES
     Passes/DepthOfFieldPrepare.pass
     Passes/DepthOfFieldReadBackFocusDepth.pass
     Passes/DepthOfFieldWriteFocusDepthFromGpu.pass
+    Passes/DepthParent.pass
     Passes/DepthToLinearDepth.pass
     Passes/DepthUpsample.pass
-    Passes/DiffuseComposite.pass
     Passes/DiffuseGlobalFullscreen.pass
-    Passes/DiffuseGlobalIllumination.pass
-    Passes/DiffuseProbeGridBlendDistance.pass
-    Passes/DiffuseProbeGridBlendIrradiance.pass
-    Passes/DiffuseProbeGridBorderUpdate.pass
-    Passes/DiffuseProbeGridClassification.pass
-    Passes/DiffuseProbeGridDownsample.pass
-    Passes/DiffuseProbeGridPrepare.pass
-    Passes/DiffuseProbeGridQuery.pass
-    Passes/DiffuseProbeGridRayTracing.pass
-    Passes/DiffuseProbeGridRelocation.pass
-    Passes/DiffuseProbeGridRender.pass
-    Passes/DiffuseProbeGridUpdate.pass
-    Passes/DiffuseProbeGridVisualizationAccelerationStructure.pass
-    Passes/DiffuseProbeGridVisualizationComposite.pass
-    Passes/DiffuseProbeGridVisualizationPrepare.pass
-    Passes/DiffuseProbeGridVisualizationRayTracing.pass
     Passes/DiffuseSpecularMerge.pass
     Passes/DisplayMapper.pass
     Passes/DownsampleLuminanceMinAvgMaxCS.pass
     Passes/DownsampleMinAvgMaxCS.pass
     Passes/DownsampleMipChain.pass
-    Passes/EnvironmentCubeMapDepthMSAA.pass
-    Passes/EnvironmentCubeMapForwardMSAA.pass
-    Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass
     Passes/EnvironmentCubeMapPipeline.pass
-    Passes/EnvironmentCubeMapSkyBox.pass
     Passes/EsmShadowmaps.pass
     Passes/EyeAdaptation.pass
     Passes/FastDepthAwareBlur.pass
@@ -180,8 +156,7 @@ set(FILES
     Passes/FastDepthAwareBlurVer.pass
     Passes/Forward.pass
     Passes/ForwardCheckerboard.pass
-    Passes/ForwardMSAA.pass
-    Passes/ForwardSubsurfaceMSAA.pass
+    Passes/ForwardSubsurface.pass
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/FullscreenShadow.pass
@@ -393,14 +368,8 @@ set(FILES
     Shaders/Depth/DepthPassSkin.shader
     Shaders/Depth/DepthPassTransparentMax.shader
     Shaders/Depth/DepthPassTransparentMin.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.azsl
-    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationComposite.shader
     Shaders/ImGui/ImGui.azsl
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
@@ -464,8 +433,8 @@ set(FILES
     Shaders/PostProcessing/DiffuseSpecularMerge.shader
     Shaders/PostProcessing/DisplayMapper.azsl
     Shaders/PostProcessing/DisplayMapper.shader
-    Shaders/PostProcessing/DisplayMapperOnlyGammaCorrection.azsl
-    Shaders/PostProcessing/DisplayMapperOnlyGammaCorrection.shader
+    Shaders/PostProcessing/DisplayMapperSRGB.azsl
+    Shaders/PostProcessing/DisplayMapperSRGB.shader
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.azsl
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.shader
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.azsl

@@ -235,24 +235,35 @@ namespace UnitTest
         EXPECT_TRUE(actions[0]->isSeparator());
     }
 
-    TEST_F(ActionManagerFixture, AddNullWidgetInToolBar)
+    TEST_F(ActionManagerFixture, AddUnregisteredWidgetInToolBar)
     {
         // Register toolbar.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
 
         // Try to add a nullptr widget.
-        auto outcome = m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", nullptr, 42);
+        auto outcome = m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", "someUnregisteredWidgetIdentifier", 42);
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ActionManagerFixture, VerifyWidgetInToolBar)
     {
-        // Register toolbar and create a QWidget.
+        // Register toolbar and widget action.
         m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
         QWidget* widget = new QWidget();
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            [widget]()
+            {
+                // Note: the WidgetAction generator function should create a new widget every time it's called.
+                // This implementation is technically incorrect, but it allows us to test the correct behavior.
+                return widget;
+            }
+        );
 
         // Add the widget to the toolbar.
-        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", widget, 42);
+        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", "o3de.widgetAction.test", 42);
 
         // Manually trigger ToolBar refresh - Editor will call this once per tick.
         m_toolBarManagerInternalInterface->RefreshToolBars();
@@ -335,6 +346,53 @@ namespace UnitTest
 
         // Verify the API fails as the action is registered but was not added to the toolbar.
         auto outcome = m_toolBarManagerInterface->GetSortKeyOfActionInToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Add the widget to the toolBar.
+        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", "o3de.widgetAction.test", 42);
+
+        // Verify the API returns the correct sort key.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_EQ(outcome.GetValue(), 42);
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfUnregisteredWidgetInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Verify the API fails as the widget is not registered.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, GetSortKeyOfWidgetNotInToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        // Verify the API fails as the widget is registered but was not added to the toolBar.
+        auto outcome = m_toolBarManagerInterface->GetSortKeyOfWidgetInToolBar("o3de.toolbar.test", "o3de.widgetAction.test");
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
