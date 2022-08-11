@@ -2967,11 +2967,11 @@ namespace AzToolsFramework
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Translation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Translation;
                 }
@@ -2996,11 +2996,11 @@ namespace AzToolsFramework
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Rotation;
                 }
@@ -3025,11 +3025,11 @@ namespace AzToolsFramework
                 EditorMainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Scale;
                 }

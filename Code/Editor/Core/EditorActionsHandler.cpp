@@ -1881,9 +1881,9 @@ void EditorActionsHandler::RefreshToolboxMacroActions()
     auto tools = GetIEditor()->GetToolBoxManager();
     const int macroCount = tools->GetMacroCount(true);
 
-    for (int i = 0; i < macroCount; ++i)
+    for (int macroIndex = 0; macroIndex < macroCount; ++macroIndex)
     {
-        auto macro = tools->GetMacro(i, true);
+        auto macro = tools->GetMacro(macroIndex, true);
         const int toolbarId = macro->GetToolbarId();
         if (toolbarId == -1 || toolbarId == ID_TOOLS_TOOL1)
         {
