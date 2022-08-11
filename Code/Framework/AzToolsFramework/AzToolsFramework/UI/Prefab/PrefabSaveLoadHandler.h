@@ -9,7 +9,10 @@
 #pragma once
 
 #include <AzCore/UserSettings/UserSettings.h>
-
+namespace AZ
+{
+    class Vector3;
+}
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
@@ -127,8 +130,14 @@ namespace AzToolsFramework
 
             bool CanDragAndDropData(
                 const QMimeData* data,
-                AZStd::vector<AZStd::string>* prefabsToSpawn = nullptr,
+                AZStd::vector<AZStd::string>* prefabsToInstantiate = nullptr,
                 AZStd::vector<AZStd::string>* prefabsToDetach = nullptr) const;
+
+            void DoDragAndDropData(
+                const AZ::Vector3& instantiateLocation,
+                const AZ::EntityId& parentEntity,
+                const AZStd::vector<AZStd::string>& prefabsToInstantiate,
+                const AZStd::vector<AZStd::string>& prefabsToDetach);
         };
     }
 }

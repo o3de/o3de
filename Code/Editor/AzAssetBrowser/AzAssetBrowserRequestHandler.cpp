@@ -64,7 +64,8 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
     // given a list of products all belonging to the same parent source file
     // select just one that can best represent the entire source file.
-    // it does so by collecting all of the spawnable assets and sorts them using
+    // it does so by collecting all of the assets that have valid create-able
+    // components associated with them and sorts them using
     // a heuristic which prefers exact name matches, and operates in alphabetic order otherwise.
     // for example in the scenario, where we pass in the products all from bike.fbx:
     // bike.fbx
@@ -128,7 +129,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
         // if we get here, we know that all the entries have the same source parent and are thus related to each other.
         // in this case, we can run the heuristic.
         // sort the valid entries so that they are arranged from most preferred to least preferred
-        // asset to spawn a component for:
+        // asset to create a component for:
 
         AZStd::sort(
             validEntries.begin(),
@@ -196,7 +197,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
         if (product->GetAssetType() == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
         {
-            return true; // we can always spawn slices.
+            return true; // we can always instantiate slices.
         }
 
         bool canCreateComponent = false;
@@ -217,15 +218,15 @@ namespace AzAssetBrowserRequestHandlerPrivate
         return true;
     }
 
-    // given a list of product assets, spawn an entity for each one where
+    // given a list of product assets, create an entity for each one where
     // appropriate.  Note that the list of product assets is expected to already have been filtered
     // by the above functions, or are expected to be direct user choices, not sources.
-    void SpawnEntitiesAtPoint(
+    void CreateEntitiesAtPoint(
         AZStd::vector<const ProductAssetBrowserEntry*> products,
         AZ::Vector3 location,
         AZ::EntityId parentEntityId, // if valid, will treat the location as a local transform relative to this entity.
-        EntityIdList& spawnList,
-        AzFramework::SliceInstantiationTicket& spawnTicket)
+        EntityIdList& createdEntities,
+        AzFramework::SliceInstantiationTicket& sliceTicket)
     {
         if (products.empty())
         {
@@ -261,7 +262,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                 if (asset)
                 {
                     SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
-                        spawnTicket, &SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
+                        sliceTicket, &SliceEditorEntityOwnershipServiceRequests::InstantiateEditorSlice, asset, worldTransform);
                 }
             }
             else
@@ -350,14 +351,14 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     }
 
                     ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, newEntity->GetId());
-                    spawnList.push_back(newEntity->GetId());
+                    createdEntities.push_back(newEntity->GetId());
                 }
             }
         }
         // Select the new entity (and deselect others).
-        if (!spawnList.empty())
+        if (!createdEntities.empty())
         {
-            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, spawnList);
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, createdEntities);
         }
     }
 }
@@ -618,7 +619,7 @@ bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
     using namespace AzToolsFramework::AssetBrowser;
     using namespace AzAssetBrowserRequestHandlerPrivate;
 
-    // what we'd like to do with drop events is spawn an entity per selected logical asset
+    // what we'd like to do with drop events is create an entity per selected logical asset
     // Note that some types of source files (FBX,...) produce more than one product.  In this case,
     // this default fallback handler will choose the most likely representitive one using a heuristic
     // and only return that one.
@@ -667,7 +668,7 @@ bool AzAssetBrowserRequestHandler::DecodeDragMimeData(const QMimeData* mimeData,
             // since its an explicit user action
             if (ProductHasAssociatedComponent(product))
             {
-                // its a spawnable one.
+                // its a creatable one.
                 canAcceptEvent = true;
                 if (outProducts)
                 {
@@ -744,15 +745,15 @@ void AzAssetBrowserRequestHandler::DoDropItemView(bool& accepted, AzQtComponents
             accepted = true;
             // in this case, it should behave just like dropping the entity into the world at world origin.
             // Make a scoped undo that covers the ENTIRE operation.
-            AZ::Vector3 spawnLocation = AZ::Vector3::CreateZero();
+            AZ::Vector3 createLocation = AZ::Vector3::CreateZero();
             if (!outlinerContext->m_parentEntity.IsValid())
             {
-                EditorRequestBus::BroadcastResult(spawnLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                EditorRequestBus::BroadcastResult(createLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
             }
 
-            EntityIdList spawnedEntities;
-            AzFramework::SliceInstantiationTicket spawnTicket;
-            SpawnEntitiesAtPoint(products, spawnLocation, outlinerContext->m_parentEntity, spawnedEntities, spawnTicket);
+            EntityIdList createdEntities;
+            AzFramework::SliceInstantiationTicket sliceTicket;
+            CreateEntitiesAtPoint(products, createLocation, outlinerContext->m_parentEntity, createdEntities, sliceTicket);
         }
     }
 }
@@ -782,10 +783,10 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     event->setDropAction(Qt::CopyAction);
     event->setAccepted(true);
 
-    EntityIdList spawnedEntities;
-    AzFramework::SliceInstantiationTicket spawnTicket;
+    EntityIdList createdEntities;
+    AzFramework::SliceInstantiationTicket sliceTicket;
 
-    SpawnEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), spawnedEntities, spawnTicket);
+    CreateEntitiesAtPoint(products, viewportDragContext->m_hitLocation, AZ::EntityId(), createdEntities, sliceTicket);
 }
 
 void AzAssetBrowserRequestHandler::AddSourceFileOpeners(

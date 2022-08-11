@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 
 
 #include <QMimeData>
@@ -23,7 +24,7 @@ namespace AssetDropHelpers
         using namespace AzToolsFramework;
 
         AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
-        AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
+        AssetBrowser::Utils::FromMimeData(mimeData, entries);
 
         AZStd::vector<const AssetBrowser::ProductAssetBrowserEntry*> products;
         products.reserve(entries.size());

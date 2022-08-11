@@ -33,6 +33,7 @@ namespace AzToolsFramework
                 {
                     return;
                 }
+
                 if (entries.empty())
                 {
                     return;
@@ -40,8 +41,16 @@ namespace AzToolsFramework
 
                 AZStd::string outputString = ToString(entries);
 
-                // capture the URLs (full paths to items) in case you're about to drop this mimedata
-                // onto something which does not understand "asset browser entry" but does understand URLs.
+                // When constructing a QMimeData object, it is unknown what other applications will use it for.
+                // Other applications will examine the object and based on what different types of data are packed
+                // into it, take appropriate action.  In general, its better to pack whatever information
+                // other applications might need in order to make decisions.
+                // For this purpose, pack them as special AssetBrowserEntry objects (in case it is dropped into
+                // another window in this application or another O3DE application that understands these objects),
+                // but also pack them as Plain Text (so you could drag it into, say, a text editor and get something),
+                // and also as URLs to the files (so that you could drag an image into, say, an image editing tool
+                // and have the image editor tool understand and load the files.
+                // Without the URLs, other applications will not understand that these entries represent files on disk.
                 QList<QUrl> urls;
 
                 for (const AssetBrowserEntry* entry : entries)
@@ -112,25 +121,35 @@ namespace AzToolsFramework
             {
                 AZStd::unordered_set<const AssetBrowserEntry*> alreadyAdded;
 
+                bool anyFound = false;
                 size_t newline_pos = inputString.find('\n', 0);
                 while (newline_pos != AZStd::string_view::npos)
                 {
                     AZStd::string_view subLine(inputString.begin(), newline_pos);
                     const AssetBrowserEntry* target = FindFromString(subLine);
-                    if ((target)&&(alreadyAdded.find(target) == alreadyAdded.end()))
+                    if (target)
                     {
-                        entries.push_back(target);
-                        alreadyAdded.insert(target);
+                        anyFound = true;
+                        if (alreadyAdded.find(target) == alreadyAdded.end())
+                        {
+                            entries.push_back(target);
+                            alreadyAdded.insert(target);
+                        }
                     }
                     inputString = AZStd::string_view(inputString.begin() + newline_pos + 1, inputString.end());
                     newline_pos = inputString.find('\n', 0);
                 }
-                return !entries.empty();
+                return anyFound;
             }
 
             bool FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries)
             {
-                if (!mimeData || !mimeData->hasFormat(AssetBrowserEntry::GetMimeType()))
+                if (!mimeData)
+                {
+                    return false;
+                }
+
+                if (!mimeData->hasFormat(AssetBrowserEntry::GetMimeType()))
                 {
                     return false;
                 }

@@ -54,7 +54,6 @@ namespace AzToolsFramework
             static const SourceAssetBrowserEntry* GetSourceByUuid(const AZ::Uuid& sourceUuid);
 
         protected:
-            void UpdateChildPaths(AssetBrowserEntry* child) const override;
             void PathsUpdated() override;
 
         private:

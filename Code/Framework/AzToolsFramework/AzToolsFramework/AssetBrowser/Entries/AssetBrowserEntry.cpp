@@ -6,6 +6,9 @@
  *
  */
 
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/FileIO.h>
+
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -172,8 +175,16 @@ namespace AzToolsFramework
             return m_relativePath.Native();
         }
 
-        const AZStd::string& AssetBrowserEntry::GetFullPath() const
+        const AZStd::string AssetBrowserEntry::GetFullPath() const
         {
+            // the full path could use a decoding:
+            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
+            {
+                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+                instance->ResolvePath(m_fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+                return AZStd::string(resolvedPath);
+            }
+
             return m_fullPath.Native();
         }
 

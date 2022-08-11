@@ -29,16 +29,26 @@ namespace AzToolsFramework
             //! than one callstack.
             AZStd::string ToString(const AZStd::vector<const AssetBrowserEntry*>& entries);
 
-            //! The opposite of ToString - given a string that contains encoded entries,
+            //! The opposite of ToString - given a string that may contain encoded entries,
             //! resolve them to the real entries.
             //! Note that the entries returned are pointers to the actual real entries in the real
             //! asset browser view, and should not be cached for longer than this call.
+            //! Returns true if the inputString contained any AssetBrowserEntry encodings.  Note that this
+            //! call de-duplicates, but will still return true if it found any valid entries in the data, 
+            //! regardless of whether it added any NEW ones or not due to de-duplication.
             bool FromString(AZStd::string_view inputString, AZStd::vector<const AssetBrowserEntry*>& entries);
 
-            //! Write the list of entries into a data format that can be read back by FromMimeData.
+            //! Stores a given vector of AssetBrowserEntry*, writes it to the given QMimeData object
+            //! in a way that can be read back even across applications (ie, no pointers are serialized, only
+            //! identifiers that can be looked up).
             void ToMimeData(QMimeData* mimeData, const AZStd::vector<const AssetBrowserEntry*>& entries);
 
-            //! Things like filtering lists, making queries, etc.
+            //! Given a QMimeData object, parses any AssetBrowserEntry* objects encoded in it and writes
+            //! them to the given vector.
+            //! Note that this is a lookup/find operation, not a deserialize operation, so the pointers you recieve
+            //! are to the actual AssetBrowserEntries in your actual Asset Browser tree local to this application.
+            //! Returns true if any entries were encoded in the mimeData (regardless of whether they were added to the
+            //! vector or not, since it de-duplicates).
             bool FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries);
 
             //! Write a single AssetBrowserEntry to a string in a stable and machine-readable way that can be read back later.
@@ -46,9 +56,10 @@ namespace AzToolsFramework
             AZStd::string WriteEntryToString(const AssetBrowserEntry* entry);
 
             //! This function takes a string written by the WriteEntryToString function above,
-            //! and reads it back, searches for the associated element and resolves it if it can.
-            //! note that what is being returned is the actual entry, it is not deserializing or creating a new one,
-            //! or nullptr if it cannot be found locally.
+            //! and reads it back, searches for the associated element in the Asset Browser Entry tree,
+            //! and resolves it if it can.
+            //! Note that what is being returned is a pointer to the actual entry in the actual Asset Browser tree,
+            //! it is not deserializing or creating a new one.
             const AssetBrowserEntry* FindFromString(AZStd::string_view data);
         } 
     }

@@ -128,16 +128,6 @@ namespace AzToolsFramework
             return nullptr;
         }
 
-        void SourceAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
-        {
-            // note that the children of sources are products.
-            // products do NOT live in the same folder or a child folder of source
-            // they live entirely in another location in cache, so even if they are a child
-            // of this in source in the entry model, they can't compute their paths or display
-            // based on this entry.
-            AssetBrowserEntry::UpdateChildPaths(child);
-        }
-
         void SourceAssetBrowserEntry::PathsUpdated()
         {
             AssetBrowserEntry::PathsUpdated();

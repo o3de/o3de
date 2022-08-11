@@ -53,6 +53,7 @@
 #include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include  <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include "OutlinerDisplayOptionsMenu.h"
@@ -802,7 +803,10 @@ void OutlinerListModel::DecodeAssetMimeData(const QMimeData* data, AZStd::vector
     using namespace AzToolsFramework;
 
     AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
-    AssetBrowser::AssetBrowserEntry::FromMimeData(data, entries);
+    if (!AssetBrowser::Utils::FromMimeData(data, entries))
+    {
+        return;
+    }
 
     AZStd::vector<const AssetBrowser::ProductAssetBrowserEntry*> products;
     products.reserve(entries.size());

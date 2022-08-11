@@ -240,7 +240,29 @@ namespace UnitTest
             }
         );
 
+        using namespace testing;
 
+        // a function that "resolves" a path by just copying it from the input to the output
+        auto resolveToCopyChars = [](const char* unresolvedPath, char* resolvedPath, AZ::u64 pathLength) -> bool
+        {
+            if ((!resolvedPath) || (!unresolvedPath) || (pathLength < strlen(unresolvedPath) + 1))
+            {
+                return false;
+            }
+            azstrcpy(resolvedPath, pathLength, unresolvedPath);
+            return true;
+        };
+
+        auto resolveToCopyPaths = [](AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path) -> bool
+        {
+            resolvedPath = path;
+            return true;
+        };
+
+        // a function that "resolves" a path by just 
+        ON_CALL(*m_fileIOMock.get(), ResolvePath(_, _, _)).WillByDefault(resolveToCopyChars);
+        ON_CALL(*m_fileIOMock.get(), ResolvePath(_, _)).WillByDefault(resolveToCopyPaths);
+                
         AddScanFolder(m_folderIds.at(2), s_scanFolders[0], "Misc");
         CreateSourceEntry(m_folderIds.at(3), m_folderIds.at(2), "SubFolder", AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Folder);
         AZ::Uuid sourceUuid_4 = CreateSourceEntry(m_sourceIDs.at(4), m_folderIds.at(2), "SubFolder/Source_4");

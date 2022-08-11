@@ -9,6 +9,7 @@
 #include <AzToolsFramework/UI/Prefab/PrefabSaveLoadHandler.h>
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -146,7 +147,7 @@ namespace AzToolsFramework
         // Drag and drop overrides:
         int PrefabSaveHandler::GetDragAndDropEventsPriority() const
         {
-            return 10; // higher than 0 so this class gets ahead of other built in 
+            return CommonDragAndDropBusTraits::s_HighPriority; // This class gets ahead of other built in ones
         }
 
         // viewport dragging:
@@ -186,6 +187,35 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabSaveHandler::DoDragAndDropData(
+            const AZ::Vector3& instantiateLocation,
+            const AZ::EntityId& parentEntity,
+            const AZStd::vector<AZStd::string>& prefabsToInstantiate,
+            const AZStd::vector<AZStd::string>& prefabsToDetach)
+        {
+            for (const AZStd::string& entry : prefabsToInstantiate)
+            {
+                // its a .prefab file.
+                auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(entry, parentEntity, instantiateLocation);
+
+                if (!instantiatePrefabOutcome.IsSuccess())
+                {
+                    WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
+                }
+
+                // is it in the "to detach also" list?
+                if (AZStd::find(prefabsToDetach.begin(), prefabsToDetach.end(), entry) != prefabsToDetach.end())
+                {
+                    AZ::EntityId instantiatedContainerEntity = instantiatePrefabOutcome.GetValue();
+                    auto detachOutcome = s_prefabPublicInterface->DetachPrefab(instantiatedContainerEntity);
+                    if (!detachOutcome.IsSuccess())
+                    {
+                        WarningDialog("Prefab was instantiated but could not detach:", detachOutcome.GetError());
+                    }
+                }
+            }
+        }
+
         void PrefabSaveHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context)
         {
             using namespace AzToolsFramework;
@@ -199,43 +229,24 @@ namespace AzToolsFramework
 
             if (ViewportDragContext* viewportContext = azrtti_cast<ViewportDragContext*>(&context))
             {
-                AZ::Vector3 spawnLocation = viewportContext->m_hitLocation;
-                AZStd::vector<AZStd::string> thingsToSpawn;
+                AZ::Vector3 instantiateLocation = viewportContext->m_hitLocation;
+                AZStd::vector<AZStd::string> thingsToInstantiate;
                 AZStd::vector<AZStd::string> thingsToDetach;
-                if (CanDragAndDropData(event->mimeData(), &thingsToSpawn, &thingsToDetach))
+                if (CanDragAndDropData(event->mimeData(), &thingsToInstantiate, &thingsToDetach))
                 {
                     event->accept();
                     event->setDropAction(Qt::DropAction::CopyAction);
                     ScopedUndoBatch undo("Instantiate Prefab");
 
-                    for (const AZStd::string& entry : thingsToSpawn)
-                    {
-                        // its a .prefab file.
-                        auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(
-                            entry, AZ::EntityId(), spawnLocation);
+                    DoDragAndDropData(instantiateLocation, AZ::EntityId(), thingsToInstantiate, thingsToDetach);
 
-                        if (!instantiatePrefabOutcome.IsSuccess())
-                        {
-                            WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
-                        }
-
-                        // is it in the "to detach also" list?
-                        if (AZStd::find(thingsToDetach.begin(), thingsToDetach.end(), entry) != thingsToDetach.end())
-                        {
-                            AZ::EntityId spawnedContainerEntity = instantiatePrefabOutcome.GetValue();
-                            auto detachOutcome = s_prefabPublicInterface->DetachPrefab(spawnedContainerEntity);
-                            if (!detachOutcome.IsSuccess())
-                            {
-                                WarningDialog("Prefab was spawned but could not detach:", detachOutcome.GetError());
-                            }
-                        }
-                    }
+                    
                 }
             }
         }
 
         bool PrefabSaveHandler::CanDragAndDropData(
-            const QMimeData* data, AZStd::vector<AZStd::string>* prefabsToSpawn, AZStd::vector<AZStd::string>* prefabsToDetach) const
+            const QMimeData* data, AZStd::vector<AZStd::string>* prefabsToInstantiate, AZStd::vector<AZStd::string>* prefabsToDetach) const
         {
             using namespace AzToolsFramework;
             using namespace AzToolsFramework::AssetBrowser;
@@ -244,6 +255,11 @@ namespace AzToolsFramework
             // (indirectly, meaning, a FBX containing the procprefab was dragged into the viewport as
             // opposed to the actual procprefab). indirectly-dragged procprefabs will auto-detach.
             bool foundSomething = false;
+
+            if (!data)
+            {
+                return false;
+            }
                         
             // helper lambda: given a product, evaluate whether it is a proc prefab.
             // if it is, add it to the list of things that should be instantiated.
@@ -255,19 +271,14 @@ namespace AzToolsFramework
                 if (AZ::StringFunc::Equal(PrefabSaveHandler::s_procPrefabFileExtension, extension.c_str()))
                 {
                     // its a proc prefab file.
-                    if (prefabsToSpawn)
+                    if (prefabsToInstantiate)
                     {
                         AZStd::string actualPath = entry->GetFullPath();
-                        char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-                        if (AZ::IO::FileIOBase::GetInstance()->ResolvePath(actualPath.c_str(), resolvedPath, AZ_MAX_PATH_LEN))
-                        {
-                            prefabsToSpawn->emplace_back(resolvedPath);
-                        }
-
-                        if ((prefabsToDetach)&&(!isSelected))
+                        prefabsToInstantiate->emplace_back(actualPath);
+                        if ((prefabsToDetach) && (!isSelected))
                         {
                             // this procprefab should auto detach if it is not directly selected:
-                            prefabsToDetach->push_back(resolvedPath);
+                            prefabsToDetach->push_back(actualPath);
                         }
                     }
                     foundSomething = true;
@@ -284,16 +295,16 @@ namespace AzToolsFramework
             {
                 if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                 {
-                    // if you directly selected a .prefab source file, add it to the spawn list:
+                    // if you directly selected a .prefab source file, add it to the instantiate list:
                     const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
                     AZStd::string extension;
                     AZ::StringFunc::Path::GetExtension(sourceEntry->GetFullPath().c_str(), extension);
                     if (AZ::StringFunc::Equal(PrefabSaveHandler::s_prefabFileExtension, extension.c_str()))
                     {
                         // its a prefab file.
-                        if (prefabsToSpawn)
+                        if (prefabsToInstantiate)
                         {
-                            prefabsToSpawn->emplace_back(sourceEntry->GetFullPath());
+                            prefabsToInstantiate->emplace_back(sourceEntry->GetFullPath());
                         }
                         foundSomething = true;
                     }
@@ -325,7 +336,7 @@ namespace AzToolsFramework
          // Drag and drop overrides:
         int PrefabSaveHandler::GetDragAndDropItemViewEventsPriority() const
         {
-            return 10; // higher than 0 so this class gets ahead of other built in
+            return CommonDragAndDropBusTraits::s_HighPriority; // This class gets ahead of other built in ones.
         }
         // listview/outliner dragging:
 
@@ -355,29 +366,19 @@ namespace AzToolsFramework
 
             if (EntityOutlinerDragAndDropContext* outlinerContext = azrtti_cast<EntityOutlinerDragAndDropContext*>(&context))
             {
-                AZStd::vector<AZStd::string> thingsToSpawn;
+                AZStd::vector<AZStd::string> thingsToInstantiate;
+                AZStd::vector<AZStd::string> thingsToDetach;
 
-                AZ::Vector3 spawnLocation = AZ::Vector3::CreateZero();
+                AZ::Vector3 instantiateLocation = AZ::Vector3::CreateZero();
                 if (!outlinerContext->m_parentEntity.IsValid())
                 {
-                    EditorRequestBus::BroadcastResult(spawnLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                    EditorRequestBus::BroadcastResult(instantiateLocation, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
-
-                if (CanDragAndDropData(outlinerContext->m_dataBeingDropped, &thingsToSpawn))
+               
+                if (CanDragAndDropData(outlinerContext->m_dataBeingDropped, &thingsToInstantiate, &thingsToDetach))
                 {
                     accepted = true;
-
-                    for (const AZStd::string& thingToSpawn : thingsToSpawn)
-                    {
-                        // its a .prefab file.
-                        auto instantiatePrefabOutcome =
-                            s_prefabPublicInterface->InstantiatePrefab(thingToSpawn, outlinerContext->m_parentEntity, spawnLocation);
-
-                        if (!instantiatePrefabOutcome.IsSuccess())
-                        {
-                            WarningDialog("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
-                        }
-                    }
+                    DoDragAndDropData(instantiateLocation, outlinerContext->m_parentEntity, thingsToInstantiate, thingsToDetach);
                 }
             }
         }

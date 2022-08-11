@@ -55,6 +55,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -2450,23 +2451,23 @@ namespace EMStudio
         const QMimeData* mimeData = event->mimeData();
 
         AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
-
-        AZStd::vector<AZStd::string> fileNames;
-        for (const auto& entry : entries)
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
-            entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
-            for (const auto& productEntry : productEntries)
+            AZStd::vector<AZStd::string> fileNames;
+            for (const auto& entry : entries)
             {
-                fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
+                entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
+                for (const auto& productEntry : productEntries)
+                {
+                    fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                }
             }
+            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            event->acceptProposedAction();
+
         }
-        LoadFiles(fileNames, event->pos().x(), event->pos().y());
-
-        event->acceptProposedAction();
     }
-
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {

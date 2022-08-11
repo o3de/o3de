@@ -55,6 +55,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
@@ -428,7 +429,7 @@ namespace AzToolsFramework
         if (pData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
             AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
-            if (AssetBrowser::AssetBrowserEntry::FromMimeData(pData, entries))
+            if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
                 // Searching all source data entries for a compatible asset
                 for (const auto entry : entries)

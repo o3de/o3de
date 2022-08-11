@@ -64,8 +64,7 @@ namespace AzQtComponents
      * In that case, the CanDrop and DoDrop handlers are exercised instead of the above.
      */
 
-    class  DragAndDropEvents
-        : public AZ::EBusTraits
+    class CommonDragAndDropBusTraits : public AZ::EBusTraits
     {
     public:
         ///////////////////////////////////////////////////////////////////////
@@ -74,12 +73,20 @@ namespace AzQtComponents
         static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         ///////////////////////////////////////////////////////////////////////
 
+        // When connecting to a Drag and Drop bus you can set a priority for your connection:
+        static constexpr const int s_LowPriority = -10; //! Run this handler after the default handler.
+        static constexpr const int s_NormalPriority = 0; //! The default handler.
+        static constexpr const int s_HighPriority = 10; //! Run this handler before the default handler.
+    };
+
+    class  DragAndDropEvents : public CommonDragAndDropBusTraits
+    {
+    public:
+        //! Override this with one of the above priority values (or a number between them)
+        //! to control what order your handler gets invoked relative to the other handlers.
         virtual int GetDragAndDropEventsPriority() const
         {
-            // default fall back 'last ditch effort' handlers will return priority 0.
-            // In general, if you provide specific override behavior and want to suppress the default fallback
-            // behavior, connect a listener with priority > 0.
-            return 0;
+            return CommonDragAndDropBusTraits::s_NormalPriority;
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,21 +121,14 @@ namespace AzQtComponents
     // highlight the hover item and do other processing.  In this case, after doing so, it emits
     // these below events instead.  If you want to handle drop events that are happening in item views, you
     // should listen to this bus.
-    class DragAndDropItemViewEvents : public AZ::EBusTraits
+    class DragAndDropItemViewEvents : public CommonDragAndDropBusTraits
     {
     public:
-        ///////////////////////////////////////////////////////////////////////
-        using BusIdType = AZ::u32;
-        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::MultipleAndOrdered;
-        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        ///////////////////////////////////////////////////////////////////////
-
+        //! Override this with one of the above priority values (or a number between them)
+        //! to control what order your handler gets invoked relative to the other handlers.
         virtual int GetDragAndDropItemViewEventsPriority() const
         {
-            // default fall back 'last ditch effort' handlers will return priority 0.
-            // In general, if you provide specific override behavior and want to suppress the default fallback
-            // behavior, connect a listener with priority > 0.
-            return 0;
+            return CommonDragAndDropBusTraits::s_NormalPriority;
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////

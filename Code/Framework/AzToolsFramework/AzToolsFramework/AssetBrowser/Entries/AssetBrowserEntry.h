@@ -103,8 +103,9 @@ namespace AzToolsFramework
             const QString& GetDisplayPath() const;
             //! Return path relative to scan folder
             const AZStd::string& GetRelativePath() const;
-            //! Return absolute path. If called on product, return source absolute path
-            const AZStd::string& GetFullPath() const;
+            //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
+            //! any aliases.
+            const AZStd::string GetFullPath() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
