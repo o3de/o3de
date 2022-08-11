@@ -3348,7 +3348,10 @@ namespace AzToolsFramework
         m_mode = mode;
 
         // Update Transform Mode Actions.
-        m_actionManagerInterface->TriggerActionUpdater(TransformModeChangedUpdaterIdentifier);
+        if (m_actionManagerInterface)
+        {
+            m_actionManagerInterface->TriggerActionUpdater(TransformModeChangedUpdaterIdentifier);
+        }
 
         // Set the corresponding Viewport UI button to active.
         switch (mode)
