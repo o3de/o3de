@@ -175,7 +175,7 @@ namespace ScriptCanvas
         if (auto it = m_registries.find(registryName);
             it != m_registries.end())
         {
-            for (AZ::ComponentDescriptor* descriptor : it->second->GetComponentDescriptors())
+            for (AZ::ComponentDescriptor* descriptor : it->second->GetCachedComponentDescriptors())
             {
                 descriptor->ReleaseDescriptor();
             }

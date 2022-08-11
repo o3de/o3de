@@ -44,6 +44,10 @@ namespace ScriptCanvas
         virtual void Init(NodeRegistry* nodeRegistry) = 0;
         virtual void Reflect(AZ::ReflectContext* context) = 0;
         virtual AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() = 0;
+        AZStd::vector<AZ::ComponentDescriptor*> GetCachedComponentDescriptors()
+        {
+            return m_cachedDescriptors;
+        }
     protected:
         AZStd::vector<AZ::ComponentDescriptor*> m_cachedDescriptors;
     };
