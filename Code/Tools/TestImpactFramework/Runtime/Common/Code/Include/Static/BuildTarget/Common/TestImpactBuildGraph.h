@@ -27,8 +27,8 @@ namespace TestImpact
     template<typename ProductionTarget, typename TestTarget>
     struct BuildTargetDependencies
     {
-        BuildTargetDependencyList<ProductionTarget, TestTarget> m_build; //!<
-        BuildTargetDependencyList<ProductionTarget, TestTarget> m_runtime; //!<
+        BuildTargetDependencyList<ProductionTarget, TestTarget> m_build; //!< Build dependencies/dependers.
+        BuildTargetDependencyList<ProductionTarget, TestTarget> m_runtime; //!< Runtime dependencies/dependers.
     };
     
     //! Vertex in the build graph
@@ -40,9 +40,9 @@ namespace TestImpact
         {
         }
 
-        BuildTarget<ProductionTarget, TestTarget> m_buildTarget; //!<
-        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependencies; //!<
-        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependers; //!<
+        BuildTarget<ProductionTarget, TestTarget> m_buildTarget; //!< The build target for this vertex.
+        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependencies; //!< The dependencies of this build target.
+        BuildTargetDependencies<ProductionTarget, TestTarget> m_dependers; //!< The dependers of this build target.
     };
     
     //! Build graph of all build targets in the repository, including their depenency and depender graphs.
@@ -151,7 +151,11 @@ namespace TestImpact
         const BuildTarget<ProductionTarget, TestTarget>& buildTarget) const
     {
         const auto vertex = GetVertex(buildTarget);
-        TestImpact_Eval(vertex, BuildTargetException, AZStd::string::format().c_str("Couldn't find build target '%s'", buildTarget.GetTarget()->GetName().c_str()));
+        TestImpact_Eval(
+            vertex, 
+            BuildTargetException, 
+            AZStd::string::format().c_str("Couldn't find build target '%s'", 
+            buildTarget.GetTarget()->GetName().c_str()));
         return vertex;
     }
 } // namespace TestImpact
