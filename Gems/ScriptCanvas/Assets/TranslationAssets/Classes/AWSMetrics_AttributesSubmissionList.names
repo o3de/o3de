@@ -11,6 +11,7 @@
             "methods": [
                 {
                     "base": "Getattributes",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Attributes"
                     },
@@ -33,6 +34,7 @@
                 },
                 {
                     "base": "Setattributes",
+                    "context": "Setter",
                     "details": {
                         "name": "Set Attributes"
                     },
