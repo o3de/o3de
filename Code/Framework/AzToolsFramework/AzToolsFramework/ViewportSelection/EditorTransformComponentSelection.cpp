@@ -50,6 +50,7 @@
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
+static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3de.updater.onTransformModeChanged";
 
 namespace AzToolsFramework
 {
@@ -2511,6 +2512,8 @@ namespace AzToolsFramework
             return;
         }
 
+        m_actionManagerInterface->RegisterActionUpdater(TransformModeChangedUpdaterIdentifier);
+
         m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
 
         // Duplicate
@@ -2943,6 +2946,7 @@ namespace AzToolsFramework
 
         // Transform Mode - Move
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.move";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Move";
             actionProperties.m_description = "Select and move selected object(s)";
@@ -2951,25 +2955,27 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.move",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Translation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Translation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 100);
         }
 
         // Transform Mode - Rotate
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.rotate";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Rotate";
             actionProperties.m_description = "Select and rotate selected object(s)";
@@ -2978,25 +2984,27 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.rotate",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Rotation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 200);
         }
 
         // Transform Mode - Scale
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
             actionProperties.m_description = "Select and rotate selected object(s)";
@@ -3005,21 +3013,22 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.scale",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
-                    return GetTransformMode() == Mode::Rotation;
+                    return GetTransformMode() == Mode::Scale;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 300);
         }
     }
 
@@ -3328,7 +3337,13 @@ namespace AzToolsFramework
 
         m_mode = mode;
 
-        // set the corresponding Viewport UI button to active
+        // Update Transform Mode Actions.
+        if (m_actionManagerInterface)
+        {
+            m_actionManagerInterface->TriggerActionUpdater(TransformModeChangedUpdaterIdentifier);
+        }
+
+        // Set the corresponding Viewport UI button to active.
         switch (mode)
         {
         case Mode::Translation:
