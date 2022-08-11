@@ -83,7 +83,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_instancesUpdateQueue.emplace_back(&instance->get());
+            m_instancesUpdateQueue.emplace_back(&(instance->get()));
         }
 
         void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
