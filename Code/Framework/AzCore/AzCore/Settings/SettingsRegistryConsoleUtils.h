@@ -68,7 +68,7 @@ namespace AZ::SettingsRegistryConsoleUtils
     //! "sr_dump_origin" accepts 0 or more arguments <settings-key path>*
     //!  Outputs the file origin starting at the supplied settings key path to stdout.
     //!  The settings keys are recursed to find children settings. Each of those have their file origins output as well
-    //!  If no arguments settings key aarguments are supplied, all settigns file origins are output
+    //!  If no arguments settings key arguments are supplied, all settings file origins are output
     //!  NOTE: this might result in a large amount of output to the console
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(AZ::SettingsRegistryOriginTracker& settingsRegistryOriginTracker, AZ::IConsole& azConsole);
     
