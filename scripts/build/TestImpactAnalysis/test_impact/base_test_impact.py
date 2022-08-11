@@ -7,6 +7,7 @@
 #
 
 from abc import ABC, abstractmethod
+from doctest import REPORT_CDIFF
 import uuid
 from pathlib import PurePath, Path
 import json
@@ -381,25 +382,42 @@ class BaseTestImpact(ABC):
 
         @param The generated result object.
         """
+        SOURCE_COMMIT = "src_commit"
+        DESTINATION_COMMIT = "dst_commit"
+        COMMIT_DISTANCE ="commit_distance"
+        SOURCE_BRANCH = "src_branch"
+        DESTINATION_BRANCH = "dst_branch"
+        SUITE = "suite"
+        USE_TIAF = "use_test_impact_analysis"
+        SOURCE_OF_TRUTH_BRANCH = "source_of_truth_branch"
+        IS_SOURCE_OF_TRUTH = "is_source_of_truth_branch"
+        HAS_CHANGE_LIST = "has_change_list"
+        HAS_HISTORIC_DATA = "has_historic_data"
+        S3_BUCKET = "s3_bucket"
+        RUNTIME_ARGS = "runtime_args"
+        RETURN_CODE = "return_code"
+        REPORT = "report"
+        CHANGE_LIST = "change_list"
+        RUNTIME_TYPE = "runtime_type"
 
         result = {}
-        result["src_commit"] = self._src_commit
-        result["dst_commit"] = self._dst_commit
-        result["commit_distance"] = self._commit_distance
-        result["src_branch"] = self._src_branch
-        result["dst_branch"] = self._dst_branch
-        result["suite"] = suite
-        result["use_test_impact_analysis"] = self._use_test_impact_analysis
-        result["source_of_truth_branch"] = self._source_of_truth_branch
-        result["is_source_of_truth_branch"] = self._is_source_of_truth_branch
-        result["has_change_list"] = self._has_change_list
-        result["has_historic_data"] = self._has_historic_data
-        result["s3_bucket"] = s3_bucket
-        result["runtime_args"] = runtime_args
-        result["return_code"] = return_code
-        result["report"] = report
-        result["change_list"] = self._change_list
-        result["runtime_type"] = self.runtime_type
+        result[SOURCE_COMMIT] = self._src_commit
+        result[DESTINATION_COMMIT] = self._dst_commit
+        result[COMMIT_DISTANCE] = self._commit_distance
+        result[SOURCE_BRANCH] = self._src_branch
+        result[DESTINATION_BRANCH] = self._dst_branch
+        result[SUITE] = suite
+        result[USE_TIAF] = self._use_test_impact_analysis
+        result[SOURCE_OF_TRUTH_BRANCH] = self._source_of_truth_branch
+        result[IS_SOURCE_OF_TRUTH] = self._is_source_of_truth_branch
+        result[HAS_CHANGE_LIST] = self._has_change_list
+        result[HAS_HISTORIC_DATA] = self._has_historic_data
+        result[S3_BUCKET] = s3_bucket
+        result[RUNTIME_ARGS] = runtime_args
+        result[RETURN_CODE] = return_code
+        result[REPORT] = report
+        result[CHANGE_LIST] = self._change_list
+        result[RUNTIME_TYPE] = self.runtime_type
         return result
 
     def _compile_s3_top_level_dir_name(self, dir_name: str):
