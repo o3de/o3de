@@ -94,6 +94,9 @@ class TestTiafInitialiseStorage():
 
     @pytest.fixture
     def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native tests run in this example, as we have hardcoded ConcreteBaseTestImpact to act as a NativeTestImpact object in many cases.
+        """
         return "native"
 
     def to_list(self, input):
