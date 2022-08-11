@@ -24,9 +24,4 @@ namespace TestImpact
     {
         return m_msg.c_str();
     }
-
-    const AZStd::string& Exception::whatString() const noexcept
-    {
-        return m_msg;
-    }
 } // namespace TestImpact
