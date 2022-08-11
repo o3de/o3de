@@ -40,6 +40,9 @@ namespace AzToolsFramework::Prefab
 
         //! Returns a reference to the instance the prefab system is focusing on.
         virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
+
+        //! Appends the path from the focused prefab instance to entityId to the providedPatch.
+        virtual LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) const = 0;
     };
 
 } // namespace AzToolsFramework::Prefab

@@ -2618,7 +2618,8 @@ namespace LandscapeCanvasEditor
         }
     }
 
-    void MainWindow::OnPrefabFocusChanged()
+    void MainWindow::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
     {
         // Make sure to close any open graphs that aren't currently in prefab focus
         // to prevent the user from making modifications outside of the allowed focus scope
@@ -2630,6 +2631,7 @@ namespace LandscapeCanvasEditor
                 dockWidgetsToClose.push_back(dockWidgetId);
             }
         }
+
         for (auto dockWidgetId : dockWidgetsToClose)
         {
             CloseEditor(dockWidgetId);

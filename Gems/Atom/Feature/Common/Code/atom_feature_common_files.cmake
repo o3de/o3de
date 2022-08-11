@@ -307,6 +307,12 @@ set(FILES
     Source/SkyBox/SkyBoxFeatureProcessor.h
     Source/SkyBox/SkyBoxFogSettings.h
     Source/SkyBox/SkyBoxFogSettings.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.h
+    Source/SkyAtmosphere/SkyAtmospherePass.cpp
+    Source/SkyAtmosphere/SkyAtmospherePass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )
