@@ -33,8 +33,6 @@ namespace ONNX
             AZ::IO::FixedMaxPath m_modelFile;
             AZStd::string m_modelName = ""; //!< Used to create groupings for ImGui dashboard graphs in editor, idea is that the inference runtimes from the same model instance get displayed on the same graph.
             AZ::Color m_modelColor = AZ::Color::CreateFromRgba(229, 56, 59, 255); //!< Sets the color of the dashboard graph for runtime statistics of this model instance.
-            AZStd::vector<int64_t> m_inputShape; //!< Specifies dimensions of input, eg a vector specifying dimension and magnitude of dimension such as { 1, 1, 28, 28 }.
-            AZStd::vector<int64_t> m_outputShape; //!< Specifies dimensions of output, eg a vector specifying dimension and magnitude of dimension such as { 1, 10 }.
             bool m_cudaEnable = false; //!< Toggle to create a CUDA session on gpu, if disabled normal cpu session created.
         };
         //! Initialises necessary params in order to run inference.

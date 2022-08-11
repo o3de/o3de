@@ -83,8 +83,6 @@ namespace Mnist
         mnist.m_output = output;
 
         Mnist::InitSettings modelInitSettings;
-        modelInitSettings.m_inputShape = { 1, 1, 28, 28 };
-        modelInitSettings.m_outputShape = { 1, 10 };
 
         if (cudaEnable)
         {

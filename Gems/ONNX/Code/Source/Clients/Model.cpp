@@ -63,7 +63,13 @@ namespace ONNX
         Ort::AllocatorWithDefaultOptions* m_allocator;
         ONNXRequestBus::BroadcastResult(m_allocator, &ONNXRequestBus::Events::GetAllocator);
 
-        m_inputShape = initSettings.m_inputShape;
+        // Retrieve input shape from model file
+        std::vector inputShape = m_session.GetInputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+        m_inputShape.assign(inputShape.begin(), inputShape.end());
+
+        // Retrieve output shape from model file
+        std::vector outputShape = m_session.GetOutputTypeInfo(0).GetTensorTypeAndShapeInfo().GetShape();
+        m_outputShape.assign(outputShape.begin(), outputShape.end());
 
         // Extract input and output names from model file and put into const char* vectors.
         m_inputCount = m_session.GetInputCount();
@@ -72,7 +78,6 @@ namespace ONNX
             const char* in_name = m_session.GetInputName(i, *m_allocator);
             m_inputNames.push_back(in_name);
         }
-        m_outputShape = initSettings.m_outputShape;
         m_outputCount = m_session.GetOutputCount();
         for (size_t i = 0; i < m_outputCount; i++)
         {
