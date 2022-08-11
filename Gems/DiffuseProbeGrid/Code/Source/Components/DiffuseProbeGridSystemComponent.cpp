@@ -57,8 +57,9 @@ namespace AZ
             incompatible.push_back(AZ_CRC_CE("DiffuseGlobalIllumination"));
         }
 
-        void DiffuseProbeGridSystemComponent::GetRequiredServices([[maybe_unused]] ComponentDescriptor::DependencyArrayType& required)
+        void DiffuseProbeGridSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
         {
+            required.push_back(AZ_CRC_CE("RPISystem"));
         }
 
         void DiffuseProbeGridSystemComponent::LoadPassTemplateMappings()
