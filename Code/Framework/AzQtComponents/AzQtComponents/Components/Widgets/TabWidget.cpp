@@ -117,8 +117,8 @@ namespace AzQtComponents
     TabWidget::Config TabWidget::defaultConfig()
     {
         return {
-            QPixmap(), // TearIcon
-            3, // TearIconLeftPadding
+            QPixmap(),  // TearIcon
+            3,          // TearIconLeftPadding
             30,         // TabHeight 28 + 1 (top margin) + 1 (bottom margin)
             16,         // MinimumTabWidth
             16,         // CloseButtonSize
@@ -718,9 +718,9 @@ namespace AzQtComponents
             return false;
         }
 
-        // Tear icon drawing can't be done properly using QSS only because text and image can't be positioned differently
-        if (!style->hasClass(widget, Style::SecondaryStyleClass))
+        if (!Style::hasClass(widget, Style::SecondaryStyleClass))
         {
+            // Tear icon drawing can't be done properly using QSS only because text and image can't be positioned differently
             if (tabBar->isMovable() && (option->state & (QStyle::State_MouseOver | QStyle::State_Sunken)))
             {
                 painter->save();
