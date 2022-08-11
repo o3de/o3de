@@ -23,6 +23,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/ILogger.h>
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -984,7 +985,7 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded.  Asset may be missing, not processed or moved.  AssetId: %s",
+                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s",
                     assetId.ToString<AZStd::string>().c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
@@ -1369,21 +1370,28 @@ namespace AZ::Data
         {
             AZ_Assert(itr->second->GetContainerAssetId() == assetId,
                 "Asset container is incorrectly associated with the asset being destroyed.");
-            itr->second->ClearRootAsset();
 
-            // Only remove owned asset containers if they aren't currently loading.
-            // If they *are* currently loading, removing them could cause dependent asset loads that were triggered to
-            // remain in a perpetual loading state.  Instead, leave the containers for now, they will get removed during
-            // the OnAssetContainerReady callback.
-            if (!itr->second->IsLoading())
+            // Make sure the asset instance we're releasing is the same as the one for the container
+            // Sometimes old references (from before a reload) are released which should not cancel newer loads
+            const Asset<AssetData>& rootAsset = itr->second->GetRootAsset();
+
+            if (!rootAsset || (rootAsset && rootAsset->GetCreationToken() == asset->GetCreationToken()))
             {
-                m_ownedAssetContainers.erase(itr->second);
-                itr = m_ownedAssetContainerLookup.erase(itr);
+                itr->second->ClearRootAsset();
+
+                // Only remove owned asset containers if they aren't currently loading.
+                // If they *are* currently loading, removing them could cause dependent asset loads that were triggered to
+                // remain in a perpetual loading state.  Instead, leave the containers for now, they will get removed during
+                // the OnAssetContainerReady callback.
+                if (!itr->second->IsLoading())
+                {
+                    m_ownedAssetContainers.erase(itr->second);
+                    itr = m_ownedAssetContainerLookup.erase(itr);
+                    continue;
+                }
             }
-            else
-            {
-                ++itr;
-            }
+
+            ++itr;
         }
     }
 
@@ -1536,7 +1544,7 @@ namespace AZ::Data
 #endif
 
         container = GetAssetContainer(newAsset, {}, true);
-        
+
         if (container)
         {
             [[maybe_unused]] auto result = m_ownedAssetContainers.insert({ container.get(), container });
@@ -1677,6 +1685,7 @@ namespace AZ::Data
                 }
             }
             // Call reloaded before we can call ReloadAsset below to preserve order
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
             // Release the lock before we call reload
             if (requeue)
@@ -1686,6 +1695,7 @@ namespace AZ::Data
         }
         else
         {
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
         }
     }
@@ -1821,6 +1831,7 @@ namespace AZ::Data
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;
 
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReady, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReady, asset);
     }
 
@@ -1850,6 +1861,7 @@ namespace AZ::Data
             AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
             m_reloads.erase(asset.GetId());
         }
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloadError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReloadError, asset);
     }
 
@@ -1859,6 +1871,7 @@ namespace AZ::Data
     void AssetManager::NotifyAssetError(Asset<AssetData> asset)
     {
         asset.Get()->m_status = AssetData::AssetStatus::Error;
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetError, asset);
     }
 
@@ -2310,7 +2323,7 @@ namespace AZ::Data
 
         AZStd::scoped_lock<AZStd::recursive_mutex> containerLock(m_assetContainerMutex);
         AssetContainerKey containerKey{ asset.GetId(), loadParams };
-        
+
         auto curIter = m_assetContainers.find(containerKey);
         if (curIter != m_assetContainers.end())
         {

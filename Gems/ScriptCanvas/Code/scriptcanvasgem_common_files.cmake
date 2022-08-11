@@ -85,6 +85,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.cpp
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.cpp
     Include/ScriptCanvas/Grammar/AbstractCodeModel.cpp
+    Include/ScriptCanvas/Grammar/ASTModifications.cpp
     Include/ScriptCanvas/Grammar/DebugMap.cpp
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.cpp
     Include/ScriptCanvas/Grammar/ParsingMetaData.cpp

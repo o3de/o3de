@@ -29,12 +29,6 @@ namespace AzToolsFramework
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            AZ_Assert(m_prefabFocusInterface != nullptr,
-                "Prefab - InstanceDomGenerator::Initialize - "
-                "Prefab Focus Interface could not be found. "
-                "Check that it is being correctly initialized.");
-
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceDomGenerator::Initialize - "
@@ -45,16 +39,19 @@ namespace AzToolsFramework
         void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()
         {
             m_prefabSystemComponentInterface = nullptr;
-            m_prefabFocusInterface = nullptr;
 
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
         bool InstanceDomGenerator::GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom)
         {
-            // Retrieve focused instance
-            auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
-            Instance* targetInstance = nullptr;
+            // Retrieve focused instance.
+            auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            AZ_Assert(prefabFocusInterface, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                "Prefab Focus Interface couldn not be found.");
+
+            InstanceOptionalConstReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            const Instance* targetInstance = nullptr;
             if (focusedInstance.has_value())
             {
                 targetInstance = &(focusedInstance->get());
@@ -156,5 +153,5 @@ namespace AzToolsFramework
                 containerPath.Set(focusedInstanceDom, containerDom, focusedInstanceDom.GetAllocator());
             }
         }
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

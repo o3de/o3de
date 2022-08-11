@@ -115,7 +115,7 @@ public Q_SLOTS:
     void ShowWindow();
 
     void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
-    void FirstTimeAddedToRejctedList(QString ipAddress);
+    void FirstTimeAddedToRejectedList(QString ipAddress);
     void SaveLogPanelState();
     void OnAssetProcessorStatusChanged(const AssetProcessor::AssetProcessorStatusEntry entry);
 

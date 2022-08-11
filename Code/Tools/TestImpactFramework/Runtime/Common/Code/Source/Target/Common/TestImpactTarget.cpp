@@ -10,23 +10,28 @@
 
 namespace TestImpact
 {
-    Target::Target(TargetDescriptor* descriptor)
-        : m_descriptor(descriptor)
+    Target::Target(TargetDescriptor&& descriptor)
+        : m_descriptor(AZStd::move(descriptor))
     {
     }
 
     const AZStd::string& Target::GetName() const
     {
-        return m_descriptor->m_name;
+        return m_descriptor.m_name;
     }
 
     const RepoPath& Target::GetPath() const
     {
-        return m_descriptor->m_path;
+        return m_descriptor.m_path;
     }
 
     const TargetSources& Target::GetSources() const
     {
-        return m_descriptor->m_sources;
+        return m_descriptor.m_sources;
+    }
+
+    const AZStd::string& Target::GetOutputName() const
+    {
+        return m_descriptor.m_outputName;
     }
 } // namespace TestImpact

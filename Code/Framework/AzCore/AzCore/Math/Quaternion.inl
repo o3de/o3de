@@ -536,17 +536,46 @@ namespace AZ
 
     AZ_MATH_INLINE Vector3 Quaternion::GetEulerRadians() const
     {
-        // roll (x-axis rotation)
-        const float roll = Atan2(2.0f * (m_w * m_x - m_z * m_y), 1.0f - 2.0f * (m_x * m_x + m_y * m_y));
-
-        // pitch (y-axis rotation)
         const float sinp = 2.0f * (m_w * m_y + m_z * m_x);
-        const float pitch = (sinp >= 1.0f) ? Constants::HalfPi : ((sinp <= -1.0f) ? -Constants::HalfPi : asinf(sinp));
 
-        // yaw (z-axis rotation)
-        const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+        if (sinp * sinp < 0.5f)
+        {
+            // roll (x-axis rotation)
+            const float roll = Atan2(2.0f * (m_w * m_x - m_z * m_y), 1.0f - 2.0f * (m_x * m_x + m_y * m_y));
 
-        return Vector3(roll, pitch, yaw);
+            // pitch (y-axis rotation)
+            const float pitch = asinf(sinp);
+
+            // yaw (z-axis rotation)
+            const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+
+            return Vector3(roll, pitch, yaw);
+        }
+
+        // find the pitch from its cosine instead, to avoid issues with sensitivity of asin when the sine value is close to 1
+        else
+        {
+            const float sign = sinp > 0.0f ? 1.0f : -1.0f;
+            const float m12 = 2.0f * (m_z * m_y - m_w * m_x);
+            const float m22 = 1.0f - 2.0f * (m_x * m_x + m_y * m_y);
+            const float cospSq = m12 * m12 + m22 * m22;
+            const float cosp = Sqrt(cospSq);
+            const float pitch = sign * acosf(cosp);
+            if (cospSq > Constants::FloatEpsilon)
+            {
+                const float roll = Atan2(-m12, m22);
+                const float yaw = Atan2(2.0f * (m_w * m_z - m_x * m_y), 1.0f - 2.0f * (m_y * m_y + m_z * m_z));
+                return Vector3(roll, pitch, yaw);
+            }
+            // if the pitch is close enough to +-pi/2, use a different approach because the terms used above lose roll and yaw information
+            else
+            {
+                const float m21 = 2.0f * (m_y * m_z + m_x * m_w);
+                const float m11 = 1.0f - 2.0f * (m_x * m_x + m_z * m_z);
+                const float roll = Atan2(m21, m11);
+                return Vector3(roll, pitch, 0.0f);
+            }
+        }
     }
 
 
