@@ -21,13 +21,13 @@ ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_ORGANIZATION_NAME = 'aws-lumberyard-dev'
 ENGINE_ORG_REPO = ENGINE_ORGANIZATION_NAME + '/' + ENGINE_REPOSITORY_NAME
 echo 'ENGINE_ORG_REPO: ${ENGINE_ORG_REPO}'
-ENGINE_URL = 'https://github.com/' + ENGINE_ORG_REPO +'/.git'
+ENGINE_URL = 'https://github.com/' + ENGINE_ORG_REPO +'.git'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_ORGANIZATION_NAME = 'aws-lumberyard-dev'
 EXTRAS_ORG_REPO = EXTRAS_ORGANIZATION_NAME + '/' + EXTRAS_REPOSITORY_NAME
 echo 'EXTRAS_ORG_REPO: ${EXTRAS_ORG_REPO}'
-EXTRAS_URL = 'https://github.com/' + EXTRAS_ORG_REPO +'/.git'
+EXTRAS_URL = 'https://github.com/' + EXTRAS_ORG_REPO +'.git'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
 // Branches with build snapshots
