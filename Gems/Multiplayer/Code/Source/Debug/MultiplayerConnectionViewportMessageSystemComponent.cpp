@@ -191,7 +191,7 @@ namespace Multiplayer
             }
         default:
             AZLOG_ERROR(
-                "MultiplayerConnectionViewportMessageSystemComponent doesn't supported multiplayer agent type %s. Please update code to support the new agent type.",
+                "MultiplayerConnectionViewportMessageSystemComponent doesn't support drawing status for multiplayer agent type %s. Please update code to support the new agent type.",
                 GetEnumString(agentType));
             break;
         }
