@@ -150,13 +150,17 @@ namespace TestImpact
                 ParentScript,
                 CallingScript,
                 Fixture,
-                TestCase
+                TestCase,
+                ModuleCoverage
             };
 
             AZStd::vector<AZStd::string> lines;
             AZ::StringFunc::Tokenize(coverageData, lines, '\n');
 
-            for (auto i = 0u; i < lines.size(); i++)
+            coverage.m_testSuite = lines[Fixture];
+            coverage.m_testCase = lines[TestCase];
+
+            for (auto i = static_cast<size_t>(ModuleCoverage); i < lines.size(); i++)
             {
                 const auto& line = lines[i];
                 if (line[0] == '\0')
@@ -164,26 +168,7 @@ namespace TestImpact
                     continue;
                 }
 
-                switch (i)
-                {
-                case ParentScript:
-                    // Ignore for now, might possibly be tagged as test source coverage.
-                    break;
-                case CallingScript:
-                    // Ignore for now, might possibly be tagged as test source coverage.
-                    break;
-
-                case Fixture:
-                    coverage.m_testSuite = line;
-                    break;
-
-                case TestCase:
-                    coverage.m_testCase = line;
-                    break;
-
-                default:
-                    coverage.m_components.push_back(line);
-                }
+                coverage.m_components.push_back(line);
             }
 
             return coverage;

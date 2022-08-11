@@ -299,7 +299,7 @@ namespace TestImpact
     template<typename TestEngineJob>
     auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
     {
-        const auto [result, engineRuns] = engineJobs;
+        const auto& [result, engineRuns] = engineJobs;
 
         // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
         // where a test target ran and completed its tests without incident yet failed to produce coverage data

@@ -6,9 +6,15 @@
  *
  */
 
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#pragma once
 
-namespace UnitTest
+#include "Primitives.h"
+#include "PrimitivesExecution.h"
+
+namespace ScriptCanvas
 {
+    namespace Grammar
+    {
+        void MarkUserFunctionCallLocallyDefined(ExecutionTreePtr execution);
+    }
 }

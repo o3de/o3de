@@ -37,9 +37,6 @@
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
 
-// Vegetation
-#include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
-
 // Qt
 #include <QApplication>
 #include <QMessageBox>
@@ -334,13 +331,17 @@ namespace LandscapeCanvasEditor
         const GraphCanvas::EditorId& editorId = LANDSCAPE_CANVAS_EDITOR_ID;
         GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", editorId);
 
-        // Vegetation Areas
-        GraphCanvas::IconDecoratedNodePaletteTreeItem* areaCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Vegetation Areas", editorId);
-        areaCategory->SetTitlePalette("VegetationAreaNodeTitlePalette");
-        REGISTER_NODE_PALETTE_ITEM(areaCategory, AreaBlenderNode, editorId);
-        REGISTER_NODE_PALETTE_ITEM(areaCategory, BlockerAreaNode, editorId);
-        REGISTER_NODE_PALETTE_ITEM(areaCategory, MeshBlockerAreaNode, editorId);
-        REGISTER_NODE_PALETTE_ITEM(areaCategory, SpawnerAreaNode, editorId);
+        // Don't give the Vegetation options if the gem isn't present.
+        bool vegetationGemIsPresent = AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("VegetationSystemService"));
+        if (vegetationGemIsPresent)
+        {
+            GraphCanvas::IconDecoratedNodePaletteTreeItem* areaCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Vegetation Areas", editorId);
+            areaCategory->SetTitlePalette("VegetationAreaNodeTitlePalette");
+            REGISTER_NODE_PALETTE_ITEM(areaCategory, AreaBlenderNode, editorId);
+            REGISTER_NODE_PALETTE_ITEM(areaCategory, BlockerAreaNode, editorId);
+            REGISTER_NODE_PALETTE_ITEM(areaCategory, MeshBlockerAreaNode, editorId);
+            REGISTER_NODE_PALETTE_ITEM(areaCategory, SpawnerAreaNode, editorId);
+        }
 
         // Gradients
         GraphCanvas::IconDecoratedNodePaletteTreeItem* gradientCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Gradients", editorId);
@@ -356,7 +357,7 @@ namespace LandscapeCanvasEditor
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, SurfaceMaskGradientNode, editorId);
 
         // Don't give the option for the Fast Noise Gradient if the gem isn't present.
-        bool fastNoiseGemIsPresent = AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC("FastNoiseService", 0x93845780));
+        bool fastNoiseGemIsPresent = AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("FastNoiseService"));
         if (fastNoiseGemIsPresent)
         {
             REGISTER_NODE_PALETTE_ITEM(gradientCategory, FastNoiseGradientNode, editorId);
@@ -464,22 +465,6 @@ namespace LandscapeCanvasEditor
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
-        // Map the desired layout order for our wrapped nodes so they always
-        // show up in the same order, regardless of when the corresponding component was
-        // added to the Entity
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorPositionModifierComponentTypeId] = 0;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorRotationModifierComponentTypeId] = 1;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorScaleModifierComponentTypeId] = 2;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorSlopeAlignmentModifierComponentTypeId] = 3;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorSurfaceAltitudeFilterComponentTypeId] = 4;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorDistanceBetweenFilterComponentTypeId] = 5;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorDistributionFilterComponentTypeId] = 6;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorShapeIntersectionFilterComponentTypeId] = 7;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorSurfaceSlopeFilterComponentTypeId] = 8;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorSurfaceMaskDepthFilterComponentTypeId] = 9;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorSurfaceMaskFilterComponentTypeId] = 10;
-        m_wrappedNodeLayoutOrderMap[Vegetation::EditorDescriptorWeightSelectorComponentTypeId] = 11;
-
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
@@ -2756,14 +2741,12 @@ namespace LandscapeCanvasEditor
             return layoutOrder;
         }
 
-        // Find the layout order for the component type in our mapping
-        AZ::TypeId componentTypeId;
-        LandscapeCanvas::LandscapeCanvasNodeFactoryRequestBus::BroadcastResult(componentTypeId, &LandscapeCanvas::LandscapeCanvasNodeFactoryRequests::GetComponentTypeId, baseNodePtr->RTTI_GetType());
-
-        auto it = m_wrappedNodeLayoutOrderMap.find(componentTypeId);
-        if (it != m_wrappedNodeLayoutOrderMap.end())
+        // Find the layout order for the wrapped node
+        int index = -1;
+        LandscapeCanvas::LandscapeCanvasNodeFactoryRequestBus::BroadcastResult(index, &LandscapeCanvas::LandscapeCanvasNodeFactoryRequests::GetNodeRegisteredIndex, baseNodePtr->RTTI_GetType());
+        if (index != -1)
         {
-            layoutOrder = it->second;
+            return index;
         }
 
         return layoutOrder;
