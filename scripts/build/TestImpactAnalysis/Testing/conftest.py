@@ -39,7 +39,7 @@ def test_data_file(build_directory):
         return json.load(file)
 
 
-@pytest.fixture(params=['profile', pytest.param('debug', marks=pytest.mark.skipif("True"))])
+@pytest.fixture(params=[pytest.param('profile', marks=pytest.mark.skipif("False")), pytest.param('debug', marks=pytest.mark.skipif("True"))])
 def build_type(request):
     """
     # debug build type disabled as we can't support testing this in AR as debug is not built
