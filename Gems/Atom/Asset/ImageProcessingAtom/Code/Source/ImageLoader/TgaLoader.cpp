@@ -33,7 +33,7 @@ namespace ImageProcessingAtom
         // https://forum.qt.io/topic/74712/qimage-from-tga-with-alpha/11
         // https://forum.qt.io/topic/101971/qimage-and-tga-support-in-c/5
 
-        enum ImageTypeCode
+        enum class ImageTypeCode : uint32_t
         {
             // No image data included.
             NoImageData = 0,
@@ -51,7 +51,7 @@ namespace ImageProcessingAtom
             BlackAndWhiteRLE = 11
         };
 
-        enum ImagePixelSize
+        enum class ImagePixelSize : uint32_t
         {
             Targa8   = 8,
             Targa16 = 16,
@@ -59,7 +59,7 @@ namespace ImageProcessingAtom
             Targa32 = 32,
         };
 
-        enum ImageOrigin
+        enum class ImageOrigin : uint32_t
         {
             BottomLeft = 0,
             BottomRight = 1,
@@ -117,7 +117,7 @@ namespace ImageProcessingAtom
 
             uint32_t GetBitsPerPixel() const
             {
-                if (m_dataTypeCode == ImageTypeCode::ColorMapped || m_dataTypeCode == ImageTypeCode::ColorMappedRLE)
+                if (m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMapped) || m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMappedRLE))
                 {
                     return m_colorMapEntrySize;
                 }
@@ -139,7 +139,7 @@ namespace ImageProcessingAtom
         {
             uint32_t bytesPerImagePixel = tgaHeader.GetBytesPerImageData();
             uint32_t imageBytesSize = tgaHeader.GetImageBytesSize();
-            bool isRLE = tgaHeader.m_dataTypeCode == ImageTypeCode::RGBRLE || tgaHeader.m_dataTypeCode == ImageTypeCode::ColorMappedRLE;
+            bool isRLE = tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::RGBRLE) || tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMappedRLE);
 
             imageData.resize_no_construct(imageBytesSize);
 
@@ -227,30 +227,30 @@ namespace ImageProcessingAtom
             }
 
             // only support rgb or colormapped formats
-            if (tgaHeader.m_dataTypeCode != ImageTypeCode::ColorMapped
-                && tgaHeader.m_dataTypeCode != ImageTypeCode::RGB
-                && tgaHeader.m_dataTypeCode != ImageTypeCode::ColorMappedRLE
-                && tgaHeader.m_dataTypeCode != ImageTypeCode::RGBRLE)
+            if (tgaHeader.m_dataTypeCode != static_cast<uint64_t>(ImageTypeCode::ColorMapped)
+                && tgaHeader.m_dataTypeCode != static_cast<uint64_t>(ImageTypeCode::RGB)
+                && tgaHeader.m_dataTypeCode != static_cast<uint64_t>(ImageTypeCode::ColorMappedRLE)
+                && tgaHeader.m_dataTypeCode != static_cast<uint64_t>(ImageTypeCode::RGBRLE))
             {
-                AZ_Warning("Image Processing", false, "TgaLoader: unsupported type code [%d] of TGA file %s. Only support RGB(RLE) or color mapped (RLE) tga images",
+                AZ_Warning("Image Processing", false, "TgaLoader: unsupported type code [%u] of TGA file %s. Only support RGB(RLE) or color mapped (RLE) tga images",
                     tgaHeader.m_dataTypeCode, filename.c_str());
                 return nullptr;
             }
 
             // only support 24bits or 32 bits pixel format
             uint32_t pixelBits = tgaHeader.GetBitsPerPixel();
-            if (pixelBits != ImagePixelSize::Targa24 && pixelBits != ImagePixelSize::Targa32)
+            if (pixelBits != static_cast<uint32_t>(ImagePixelSize::Targa24) && pixelBits != static_cast<uint32_t>(ImagePixelSize::Targa32))
             {
-                AZ_Warning("Image Processing", false, "TgaLoader: unsupported pixel size [%d] of TGA file %s. Only support 24bits or 32bits color",
+                AZ_Warning("Image Processing", false, "TgaLoader: unsupported pixel size [%u] of TGA file %s. Only support 24bits or 32bits color",
                     pixelBits, filename.c_str());
                 return nullptr;
             }
 
             // validate image data pixel size for color mapped
-            if ( (tgaHeader.m_dataTypeCode == ImageTypeCode::ColorMapped || tgaHeader.m_dataTypeCode == ImageTypeCode::ColorMappedRLE)
+            if ( (tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMapped) || tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMappedRLE))
                  && tgaHeader.GetBytesPerImageData() > 2)
             {
-                AZ_Warning("Image Processing", false, "TgaLoader: invalid image pixel size [%d] for color mapped image of TGA file %s. It should be 1 or 2",
+                AZ_Warning("Image Processing", false, "TgaLoader: invalid image pixel size [%u] for color mapped image of TGA file %s. It should be 1 or 2",
                     tgaHeader.GetBytesPerImageData(), filename.c_str());
                 return nullptr;
             }
@@ -297,7 +297,7 @@ namespace ImageProcessingAtom
             pImage->GetImagePointer(0, pDst, dwPitch);
 
             const uint32 pixelCount = pImage->GetPixelCount(0);
-            bool useColorMap = tgaHeader.m_dataTypeCode == ImageTypeCode::ColorMapped || tgaHeader.m_dataTypeCode == ImageTypeCode::ColorMappedRLE;
+            bool useColorMap = tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMapped) || tgaHeader.m_dataTypeCode == static_cast<uint64_t>(ImageTypeCode::ColorMappedRLE);
             ImageOrigin imageOrigin = tgaHeader.GetImageOrigin();
 
             // lambda function to find the index of image data based the origin
