@@ -381,16 +381,16 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         //pull the engine first get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
         dir(ENGINE_REPOSITORY_NAME) {
             def setEnvCommit = false
-            def branches = branchName
+            def the_branch = branchName
             if(repositoryName == "${ENGINE_ORG_REPO}") {
                 setEnvCommit = true
-                echo 'Build request is for the engine: \"${repositoryName}\" set env.CHANGE_ID and env.CHANGE_DATE and pull branch \"${branches}\"'
+            } else if (repositoryName == "${EXTRAS_ORG_REPO}") {
+                the_branch = ENGINE_DEVELOPMENT_BRANCH
             } else {
-                branches = ENGINE_DEVELOPMENT_BRANCH
-                echo 'Build request is for the extras: \"${repositoryName}\" pull development branch: \"${branches}\"'
+                assert false : "repositoryName: ${repositoryName} Unknown"
             }
 
-            CheckoutRepo(branches, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
             // Get python
             dir('python') {
@@ -413,15 +413,16 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         //pull the extras repo next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the extras repo
         dir(EXTRAS_REPOSITORY_NAME) {
             def setEnvCommit = false
-            def branches = branchName
+            def the_branch = branchName
             if(repositoryName == "${EXTRAS_ORG_REPO}") {
                 setEnvCommit = true
-                echo 'Build request is for the extras: \"${repositoryName}\" set env.CHANGE_ID and env.CHANGE_DATE and pull branch \"${branches}\"'
+            } else if (repositoryName == "${ENGINE_ORG_REPO}") {
+                the_branch = EXTRAS_DEVELOPMENT_BRANCH
             } else {
-                branches = EXTRAS_DEVELOPMENT_BRANCH
-                echo 'Build request is for the engine: \"${repositoryName}\" pull development branch: \"${branches}\"'
+                assert false : "repositoryName: ${repositoryName} Unknown"
             }
-            CheckoutRepo(branches, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
+
+            CheckoutRepo(the_branch, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
             if(fileExists('.lfsconfig')) {
                 PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
