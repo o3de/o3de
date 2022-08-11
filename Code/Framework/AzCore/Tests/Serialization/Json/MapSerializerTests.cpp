@@ -36,6 +36,11 @@ namespace JsonSerializationTests
             return R"({ "{}": {} })";
         }
 
+        AZStd::string_view GetJsonForEmptyArrayDefaultInstance() override
+        {
+            return R"({})";
+        }
+
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
         {
             features.EnableJsonType(rapidjson::kArrayType);
@@ -687,6 +692,23 @@ namespace JsonSerializationTests
         EXPECT_STREQ("World", values.begin()->first.m_value.c_str());
         EXPECT_STREQ("Hello", values.begin()->second.m_value.c_str());
         EXPECT_STREQ(TestString().m_value.c_str(), values.begin()->second.m_value.c_str());
+    }
+
+    TEST_F(JsonMapSerializerTests, Store_EmptyMapWithDefaults_StoredAsObject)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        StringMap values;
+
+        m_serializationSettings->m_keepDefaults = true;
+        ResultCode result = AZ::JsonSerialization::Store(
+            *m_jsonDocument, m_jsonDocument->GetAllocator(), &values, nullptr, azrtti_typeid(&values), *m_serializationSettings);
+
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
+        Expect_DocStrEq(R"(
+            {
+            })");
     }
 
     TEST_F(JsonMapSerializerTests, Store_DefaultsWithStringKey_InitializedAsDefault)
