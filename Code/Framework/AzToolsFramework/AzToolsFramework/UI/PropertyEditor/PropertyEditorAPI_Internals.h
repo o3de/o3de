@@ -85,7 +85,7 @@ namespace AzToolsFramework
         using BusIdType = QWidget*;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) = 0;
+        virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::ValueChangeType changeType) = 0;
         virtual void OnRequestPropertyNotify() = 0;
     };
 
@@ -302,7 +302,7 @@ namespace AzToolsFramework
             return propertyEditorSystem->LookupNameFromId(rpeHandler.GetHandlerName()).GetStringView();
         }
 
-        void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) override
+        void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::ValueChangeType changeType) override
         {
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 

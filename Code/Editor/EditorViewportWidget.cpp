@@ -936,6 +936,7 @@ void EditorViewportWidget::SetViewportId(int id)
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
         }
     );
+    m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
 
     m_angleSnappingHandler = SandboxEditor::AngleSnappingChangedEvent::Handler(
         [id](const bool snapping)
@@ -944,8 +945,7 @@ void EditorViewportWidget::SetViewportId(int id)
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnAngleSnappingChanged, snapping);
         }
     );
-
-    m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
+    m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()

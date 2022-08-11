@@ -7,28 +7,23 @@
  */
 
 #include "CompressionFactoryImpl.h"
+#include <AzCore/std/functional.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace Compression
 {
-    // Implements the Relational Operators for the CompressionAlgorithmId class
-    // only for use in  the CompressionFactoryImply class to allow it to be used in
-    // less than(<) operations
-    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(CompressionAlgorithmId);
+    CompressionFactoryImpl::~CompressionFactoryImpl() = default;
 
-    CompressionFactoryImpl::~CompressionFactoryImpl()
+    void CompressionFactoryImpl::VisitCompressionInterfaces(const VisitCompressionInterfaceCallback& callback) const
     {
-        for (ICompressionInterface* compressionInterface : m_compressionInterfaces)
+        auto VisitInterface = [&callback](const AZStd::unique_ptr<ICompressionInterface>& compressionInterface)
         {
-            delete compressionInterface;
-        }
-    }
-    AZStd::span<ICompressionInterface* const> CompressionFactoryImpl::GetCompressionInterfaces() const
-    {
-        return m_compressionInterfaces;
+            return compressionInterface != nullptr ? callback(*compressionInterface) : true;
+        };
+
+        AZStd::ranges::all_of(m_compressionInterfaces, VisitInterface);
     }
 
-    // registration into interfaces vector
     bool CompressionFactoryImpl::RegisterCompressionInterface(AZStd::unique_ptr<ICompressionInterface>&& compressionInterface)
     {
         if (compressionInterface == nullptr)
@@ -44,7 +39,7 @@ namespace Compression
         }
 
         // Insert new compression interface since it is not registered
-        m_compressionInterfaces.emplace_back(compressionInterface.release());
+        m_compressionInterfaces.emplace_back(AZStd::move(compressionInterface));
         const size_t emplaceIndex = m_compressionInterfaces.size() - 1;
 
         // Use UpperBound to find the insertion slot for the new entry within the compression index set
@@ -65,8 +60,6 @@ namespace Compression
         if (compressionIndex < m_compressionInterfaces.size())
         {
             auto oldInterfaceIter = m_compressionInterfaces.begin() + compressionIndex;
-            // Delete the allocated member for he compression inteface
-            delete *oldInterfaceIter;
             m_compressionInterfaces.erase(oldInterfaceIter);
             return true;
         }
@@ -78,7 +71,7 @@ namespace Compression
     {
         const size_t compressionIndex = FindCompressionIndex(compressionAlgorithmId);
         return compressionIndex < m_compressionInterfaces.size()
-            ? m_compressionInterfaces[compressionIndex] : nullptr;
+            ? m_compressionInterfaces[compressionIndex].get() : nullptr;
     }
 
     // find compression index entry in vector

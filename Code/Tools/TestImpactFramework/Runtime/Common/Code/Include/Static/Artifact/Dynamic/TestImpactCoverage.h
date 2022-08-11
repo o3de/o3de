@@ -32,6 +32,14 @@ namespace TestImpact
     //! Coverage information about a particular module (executable, shared library).
     struct ModuleCoverage
     {
+        ModuleCoverage() = default;
+
+        ModuleCoverage(RepoPath path, AZStd::vector<SourceCoverage>&& sources)
+            : m_path(path)
+            , m_sources(AZStd::move(sources))
+        {
+        }
+
         RepoPath m_path; //!< Module path.
         AZStd::vector<SourceCoverage> m_sources; //!< Sources of this module that are covered.
     };
