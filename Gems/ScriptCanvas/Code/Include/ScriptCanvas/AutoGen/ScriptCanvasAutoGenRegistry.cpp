@@ -24,6 +24,15 @@ namespace ScriptCanvas
 
     static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
 
+    void ScriptCanvasRegistry::ReleaseDescriptors()
+    {
+        for (AZ::ComponentDescriptor* descriptor : m_cachedDescriptors)
+        {
+            descriptor->ReleaseDescriptor();
+        }
+        m_cachedDescriptors = {};
+    }
+
     AutoGenRegistryManager::~AutoGenRegistryManager()
     {
         m_registries.clear();
@@ -175,10 +184,7 @@ namespace ScriptCanvas
         if (auto it = m_registries.find(registryName);
             it != m_registries.end())
         {
-            for (AZ::ComponentDescriptor* descriptor : it->second->GetCachedComponentDescriptors())
-            {
-                descriptor->ReleaseDescriptor();
-            }
+            it->second->ReleaseDescriptors();
             m_registries.erase(it);
         }
     }
