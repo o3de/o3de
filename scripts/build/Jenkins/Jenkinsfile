@@ -401,7 +401,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
             // the NODE_LABEL has changed
-            def command = "${pipelineConfig.PYTHON_DIR}/python$"
+            def command = "${pipelineConfig.PYTHON_DIR}/python"
             if(env.IS_UNIX) command += '.sh'
             else command += '.cmd'
             command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
