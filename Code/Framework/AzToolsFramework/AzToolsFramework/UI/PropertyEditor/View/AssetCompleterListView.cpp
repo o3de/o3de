@@ -42,7 +42,7 @@ namespace AzToolsFramework
         painter->save();
         painter->translate(textRect.topLeft());
 
-        if (option.state & QStyle::State_MouseOver)
+        if ((option.state & QStyle::State_MouseOver) != 0)
         {
             painter->fillRect(option.rect.translated(-option.rect.topLeft()), m_hoverColor);
         }
