@@ -20,14 +20,12 @@ EMPTY_JSON = readJSON text: '{}'
 ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_ORGANIZATION_NAME = 'aws-lumberyard-dev'
 ENGINE_ORG_REPO = ENGINE_ORGANIZATION_NAME + '/' + ENGINE_REPOSITORY_NAME
-echo 'ENGINE_ORG_REPO: ${ENGINE_ORG_REPO}'
-ENGINE_URL = 'https://github.com/' + ENGINE_ORG_REPO +'.git'
+ENGINE_URL = 'https://github.com/' + ENGINE_ORG_REPO + '.git'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_ORGANIZATION_NAME = 'aws-lumberyard-dev'
 EXTRAS_ORG_REPO = EXTRAS_ORGANIZATION_NAME + '/' + EXTRAS_REPOSITORY_NAME
-echo 'EXTRAS_ORG_REPO: ${EXTRAS_ORG_REPO}'
-EXTRAS_URL = 'https://github.com/' + EXTRAS_ORG_REPO +'.git'
+EXTRAS_URL = 'https://github.com/' + EXTRAS_ORG_REPO + '.git'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
 // Branches with build snapshots
@@ -43,6 +41,11 @@ DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
 VALIDATION_PIPELINE = /validation_pipe/
+
+def ext = ''
+if(env.IS_UNIX) {
+    ext += '.sh'
+}
 
 def pipelineProperties = []
 
@@ -369,27 +372,26 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
     dir(workspace) {
 
-        def ext = ''
-        if(env.IS_UNIX) {
-            ext += '.sh'
-        }
-
         // Add folder where we will store the 3rdParty downloads and packages
         dir('3rdParty') {
         }
 
-        //pull the engine first get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
+        //pull the engine first and get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
         dir(ENGINE_REPOSITORY_NAME) {
             def setEnvCommit = false
             def the_branch = branchName
             if(repositoryName == "${ENGINE_ORG_REPO}") {
+                //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else if (repositoryName == "${EXTRAS_ORG_REPO}") {
+                //this pr is for the extras repo so we want to use the development branch for the engine and do not set the commit id or change date
                 the_branch = ENGINE_DEVELOPMENT_BRANCH
             } else {
+                //wtf
                 assert false : "repositoryName: ${repositoryName} Unknown"
             }
 
+            //checkout the engine branch
             CheckoutRepo(the_branch, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
             // Get python
@@ -399,12 +401,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
             // Always run the clean step, the scripts detect what variables were set, but it also cleans if
             // the NODE_LABEL has changed
-            def command = "${pipelineConfig.PYTHON_DIR}/python"
+            def command = "${pipelineConfig.PYTHON_DIR}/python$"
             if(env.IS_UNIX) command += '.sh'
             else command += '.cmd'
             command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             PlatformSh(command, "Running ${platform} clean")
 
+            //lfs
             if(fileExists('.lfsconfig')) {
                 PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
                 PlatformSh("git lfs pull", "Pulling new LFS objects")
@@ -415,15 +418,20 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             def setEnvCommit = false
             def the_branch = branchName
             if(repositoryName == "${EXTRAS_ORG_REPO}") {
+                //the pr is for the extras repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else if (repositoryName == "${ENGINE_ORG_REPO}") {
+                //this pr is for the engine repo so we want to use the development branch for the extras and do not set the commit id or change date
                 the_branch = EXTRAS_DEVELOPMENT_BRANCH
             } else {
+                //wtf
                 assert false : "repositoryName: ${repositoryName} Unknown"
             }
 
+            //checkout the extras branch
             CheckoutRepo(the_branch, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
+            //lfs
             if(fileExists('.lfsconfig')) {
                 PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
                 PlatformSh("git lfs pull", "Pulling new LFS objects")
@@ -825,7 +833,7 @@ def CreateBuildJobs(Map pipelineConfig, def platform, def build_job, Map envVars
     // if this is a pipeline, split jobs based on the NODE_LABEL 
     if(build_job.value.steps) {
         def defaultLabel = envVars['NODE_LABEL']
-        def lastNodeLable = ""
+        def lastNodeLabel = ""
         def jobList = []
         def currentIdx = -1;
 
@@ -844,17 +852,17 @@ def CreateBuildJobs(Map pipelineConfig, def platform, def build_job, Map envVars
             if(platform.value.build_types[build_step] && platform.value.build_types[build_step].PIPELINE_ENV &&
                platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']) {
                
-               //if the last node label doen't match the new one, append it.
-               if(platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL'] != lastNodeLable) {
-                    lastNodeLable = platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']
-                    jobList.add(new PipeStepJobData(lastNodeLable))
+               //if the last node label doesn't match the new one, append it.
+               if(platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL'] != lastNodeLabel) {
+                    lastNodeLabel = platform.value.build_types[build_step].PIPELINE_ENV['NODE_LABEL']
+                    jobList.add(new PipeStepJobData(lastNodeLabel))
                     currentIdx++
                 } 
             }
             //no label define, so it needs to run on the default node label
-            else if(lastNodeLable != defaultLabel) { //if the last node is not the default, append default
-                lastNodeLable = defaultLabel
-                jobList.add(new PipeStepJobData(lastNodeLable))
+            else if(lastNodeLabel != defaultLabel) { //if the last node is not the default, append default
+                lastNodeLabel = defaultLabel
+                jobList.add(new PipeStepJobData(lastNodeLabel))
                 currentIdx++
             }
             //add the build_step to the current node
