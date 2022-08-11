@@ -79,7 +79,7 @@ namespace ScriptCanvas
     {
         if (m_cachedDescriptors.empty())
         {
-            AZStd::vector<AZ::ComponentDescriptor*> descriptors({
+            m_cachedDescriptors = {
 {% for ScriptCanvas in dataFiles %}
 {%     for Class in ScriptCanvas %}
 {%         set nodeName = Class.attrib['Name'] %}
@@ -92,8 +92,7 @@ namespace ScriptCanvas
 {%         endif %}
 {%     endfor %}
 {% endfor %}
-            });
-            m_cachedDescriptors = AZStd::move(descriptors);
+            };
         }
         return m_cachedDescriptors;
     }
