@@ -691,7 +691,7 @@ namespace AZ::AtomBridge
             AZ::RPI::AuxGeomDraw::PolylineEnd polylineEnd = cycled ? AZ::RPI::AuxGeomDraw::PolylineEnd::Closed : AZ::RPI::AuxGeomDraw::PolylineEnd::Open;
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = wsPoints.data();
-            drawArgs.m_vertCount = wsPoints.size();
+            drawArgs.m_vertCount = aznumeric_cast <uint32_t>(wsPoints.size());
             drawArgs.m_colors = &m_rendState.m_color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
