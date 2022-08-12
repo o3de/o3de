@@ -671,6 +671,10 @@ namespace AzToolsFramework
 
             PrefabDom parentEntityDomAfterAddingEntity;
             AZ::Entity* parentEntity = GetEntityById(parentId);
+            if (!parentEntity)
+            {
+                return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
+            }
             m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
 
             // Select the new entity (and deselect others).
