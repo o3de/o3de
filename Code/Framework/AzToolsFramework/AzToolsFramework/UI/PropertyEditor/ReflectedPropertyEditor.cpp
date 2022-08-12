@@ -515,7 +515,7 @@ namespace AzToolsFramework
 
                     // Initialized normally if the group does not have a member variable attached to it,
                     // otherwise initialize it as a group that will have a toggle switch.
-                    if (groupElementData->IsClassElement())
+                    if (groupElementData->IsClassElement() || !groupSourceNode)
                     {
                         widgetEntry->Initialize(groupName, parent, depth, m_propertyLabelWidth);
                     }
