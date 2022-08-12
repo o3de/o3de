@@ -19,7 +19,7 @@
 
 namespace AZ
 {
-    static AZStd::thread::id InvalidThreadId;
+    static const AZStd::thread::id InvalidThreadId;
 
     AZStd::thread::id Name::s_staticNameListThread;
 
@@ -227,7 +227,7 @@ namespace AZ
             return;
         }
 
-        AZStd::thread::id thisThreadId = AZStd::this_thread::get_id();
+        const AZStd::thread::id thisThreadId = AZStd::this_thread::get_id();
 
         if (s_staticNameListThread == InvalidThreadId)
         {
