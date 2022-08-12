@@ -258,6 +258,5 @@ namespace AzToolsFramework
 
             return inComponentMode;
         }
-
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

@@ -63,6 +63,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
+        void SetSwitcherButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);

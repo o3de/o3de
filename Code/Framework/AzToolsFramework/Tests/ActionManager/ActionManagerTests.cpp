@@ -25,6 +25,12 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, VerifyActionContextIsRegistered)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        EXPECT_TRUE(m_actionManagerInterface->IsActionContextRegistered("o3de.context.test"));
+    }
+
     TEST_F(ActionManagerFixture, RegisterActionToUnregisteredContext)
     {
         auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
@@ -47,6 +53,14 @@ namespace UnitTest
         auto outcome = m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
         EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyActionIsRegistered)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        EXPECT_TRUE(m_actionManagerInterface->IsActionRegistered("o3de.action.test"));
     }
 
     TEST_F(ActionManagerFixture, RegisterCheckableActionToUnregisteredContext)
@@ -368,6 +382,130 @@ namespace UnitTest
         
         EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_TRUE(action->isChecked());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterWidgetAction)
+    {
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterWidgetActionTwice)
+    {
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        auto outcome = m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test", {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyWidgetActionIsRegistered)
+    {
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            {},
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+        EXPECT_TRUE(m_actionManagerInterface->IsWidgetActionRegistered("o3de.widgetAction.test"));
+    }
+
+    TEST_F(ActionManagerFixture, GetWidgetActionName)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Test Widget";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto outcome = m_actionManagerInterface->GetWidgetActionName("o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Widget"));
+    }
+
+    TEST_F(ActionManagerFixture, SetWidgetActionName)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_name = "Wrong Widget Name";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto setOutcome = m_actionManagerInterface->SetWidgetActionName("o3de.widgetAction.test", "Correct Widget Name");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetWidgetActionName("o3de.widgetAction.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Widget Name"));
+    }
+
+    TEST_F(ActionManagerFixture, GetWidgetActionCategory)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_category = "Test Widget Category";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto outcome = m_actionManagerInterface->GetWidgetActionCategory("o3de.widgetAction.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+        EXPECT_THAT(outcome.GetValue().c_str(), ::testing::StrEq("Test Widget Category"));
+    }
+
+    TEST_F(ActionManagerFixture, SetWidgetActionCategory)
+    {
+        AzToolsFramework::WidgetActionProperties widgetActionProperties;
+        widgetActionProperties.m_category = "Wrong Widget Category";
+
+        m_actionManagerInterface->RegisterWidgetAction(
+            "o3de.widgetAction.test",
+            widgetActionProperties,
+            []() -> QWidget*
+            {
+                return nullptr;
+            }
+        );
+
+        auto setOutcome = m_actionManagerInterface->SetWidgetActionCategory("o3de.widgetAction.test", "Correct Widget Category");
+        EXPECT_TRUE(setOutcome.IsSuccess());
+
+        auto getOutcome = m_actionManagerInterface->GetWidgetActionCategory("o3de.widgetAction.test");
+        EXPECT_THAT(getOutcome.GetValue().c_str(), ::testing::StrEq("Correct Widget Category"));
     }
 
     TEST_F(ActionManagerFixture, RegisterActionUpdater)

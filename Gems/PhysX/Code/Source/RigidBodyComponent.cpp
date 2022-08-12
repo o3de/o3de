@@ -6,26 +6,26 @@
  *
  */
 
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
-#include <AzFramework/Physics/Utils.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Utils.h>
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/MathConversion.h>
+#include <PxPhysicsAPI.h>
+#include <Source/RigidBody.h>
 #include <Source/RigidBodyComponent.h>
 #include <Source/Shape.h>
-#include <Source/RigidBody.h>
 
 namespace PhysX
 {
-
-
     void RigidBodyComponent::Reflect(AZ::ReflectContext* context)
     {
+        RigidBodyConfiguration::Reflect(context);
         RigidBody::Reflect(context);
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -34,7 +34,8 @@ namespace PhysX
             serializeContext->Class<RigidBodyComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("RigidBodyConfiguration", &RigidBodyComponent::m_configuration)
-            ;
+                ->Field("PhysXSpecificConfiguration", &RigidBodyComponent::m_physxSpecificConfiguration)
+                ;
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -101,6 +102,17 @@ namespace PhysX
         InitPhysicsTickHandler();
     }
 
+    RigidBodyComponent::RigidBodyComponent(
+        const AzPhysics::RigidBodyConfiguration& baseConfig,
+        const RigidBodyConfiguration& physxSpecificConfig,
+        AzPhysics::SceneHandle sceneHandle)
+        : m_configuration(baseConfig)
+        , m_physxSpecificConfiguration(physxSpecificConfig)
+        , m_attachedSceneHandle(sceneHandle)
+    {
+        InitPhysicsTickHandler();
+    }
+
     void RigidBodyComponent::Init()
     {
     }
@@ -138,7 +150,6 @@ namespace PhysX
             // we want if the transform component static checkbox is ticked.
             return;
         }
-
 
         AzFramework::EntityContextId gameContextId = AzFramework::EntityContextId::CreateNull();
         AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
@@ -296,6 +307,7 @@ namespace PhysX
         {
             m_configuration.m_startSimulationEnabled = false; //enable physics will enable this when called.
             m_rigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &m_configuration);
+            ApplyPhysxSpecificConfiguration();
         }
 
         // Listen to the PhysX system for events concerning this entity.
@@ -307,6 +319,21 @@ namespace PhysX
         AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void RigidBodyComponent::ApplyPhysxSpecificConfiguration()
+    {
+        if (auto* body = GetRigidBody())
+        {
+            if (auto* pxRigidDynamic = static_cast<physx::PxRigidDynamic*>(body->GetNativePointer()))
+            {
+                const AZ::u8 solverPositionIterations =
+                    AZ::GetClamp<AZ::u8>(m_physxSpecificConfiguration.m_solverPositionIterations, 1, 255);
+                const AZ::u8 solverVelocityIterations =
+                    AZ::GetClamp<AZ::u8>(m_physxSpecificConfiguration.m_solverVelocityIterations, 1, 255);
+                pxRigidDynamic->setSolverIterationCounts(solverPositionIterations, solverVelocityIterations);
+            }
+        }
     }
 
     void RigidBodyComponent::EnablePhysics()
@@ -713,7 +740,6 @@ namespace PhysX
         EnablePhysics();
         AzFramework::SliceGameEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     }
-
 
     void TransformForwardTimeInterpolator::Reset(const AZ::Vector3& position, const AZ::Quaternion& rotation)
     {

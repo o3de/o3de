@@ -113,10 +113,9 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
     ON_CALL(mockShapeRequests, GetEncompassingAabb).WillByDefault(Return(aabb));
 
     const float worldMax = 10000.0f;
-    const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
     ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
-    ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
+    ON_CALL(mockterrainDataRequests, GetTerrainHeightBounds).WillByDefault(Return(AzFramework::Terrain::FloatRange({0.0f, worldMax})));
 
     ActivateEntity(entity.get());
 
@@ -161,11 +160,8 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
     NiceMock<UnitTest::MockShapeComponentRequests> mockShapeRequests(entity->GetId());
     ON_CALL(mockShapeRequests, GetEncompassingAabb).WillByDefault(Return(aabb));
 
-    const float worldMax = 10000.0f;
-    const AZ::Aabb worldAabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3(min), AZ::Vector3(worldMax));
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
     ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
-    ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
 
     ActivateEntity(entity.get());
 

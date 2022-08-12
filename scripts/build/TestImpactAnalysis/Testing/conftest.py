@@ -14,6 +14,7 @@ import uuid
 BUILD_INFO_KEY = 'build_info'
 CONFIG_PATH_KEY = 'config'
 BINARY_PATH_KEY = 'tiaf_bin'
+COMMON_CONFIG_KEY = "common"
 WORKSPACE_KEY = "workspace"
 ROOT_KEY = "root"
 TEMP_KEY = "temp"
@@ -42,12 +43,12 @@ def config_path(build_type, test_data_file):
 
 @pytest.fixture
 def binary_path(config_data):
-    return config_data[REPO_KEY][BINARY_PATH_KEY]
+    return config_data[COMMON_CONFIG_KEY][REPO_KEY][BINARY_PATH_KEY]
 
 
 @pytest.fixture()
 def report_path(build_type, config_data, mock_uuid):
-    return config_data[WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
+    return config_data[COMMON_CONFIG_KEY][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
 
 
 @pytest.fixture
@@ -85,9 +86,13 @@ def mock_uuid(mocker):
 def default_runtime_args(mock_uuid, report_path):
     runtime_args = {}
     runtime_args['sequence'] = "--sequence=seed"
-    runtime_args['safemode'] = "--safemode=off"
     runtime_args['test_failure_policy'] = "--fpolicy=continue"
     runtime_args['report'] = "--report=" + \
         str(report_path).replace("/", "\\")
     runtime_args['suite'] = "--suite=main"
     return runtime_args
+
+
+@pytest.fixture
+def cpp_default_runtime_args(default_runtime_args):
+    return default_runtime_args

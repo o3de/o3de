@@ -152,18 +152,14 @@ ly_add_target(
         atom_rhi_vulkan_glad_files.cmake
         ${pal_source_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-            ${pal_source_dir}
         PUBLIC
+            Include
             Include/Atom/RHI.Loader/Glad
             ${pal_include_dir}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Atom_RHI_Vulkan.Reflect
         PUBLIC
-            Gem::Atom_RHI.Reflect
             3rdParty::glad_vulkan
 )
 

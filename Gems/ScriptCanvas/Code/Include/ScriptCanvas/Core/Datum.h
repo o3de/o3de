@@ -69,6 +69,7 @@ namespace ScriptCanvas
         void ReconfigureDatumTo(Datum&& object);
         void ReconfigureDatumTo(const Datum& object);
 
+        void CopyDatumTypeAndValue(const Datum& object);
         void DeepCopyDatum(const Datum& object);
 
         const AZStd::any& ToAny() const;
@@ -187,6 +188,7 @@ namespace ScriptCanvas
 
     private:
 
+        void CopyDatumStorage(const Datum& object);
         AZ::Crc32 GetDatumVisibility() const;
 
         template<typename t_Value, bool isReference>

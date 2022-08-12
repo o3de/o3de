@@ -111,7 +111,7 @@ class AssetProcessor(object):
 
         self.send_message("waitforidle")
         result = self.read_message(read_timeout=timeout)
-        assert self.process_exists(), "Asset Processor appears unexpectedly shut down, or has crashed"
+        assert self.process_exists(), "Asset Processor has crashed or unexpectedly shut down during idle wait."
         assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
         return True
 
@@ -129,7 +129,7 @@ class AssetProcessor(object):
 
         self.send_message("signalidle")
         result = self.read_message()
-        assert self.process_exists(), "Asset Processor appears unexpectedly shut down, or has crashed"
+        assert self.process_exists(), "Asset Processor has crashed or unexpectedly shut down during idle request."
         assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
 
     def send_quit(self):
@@ -209,7 +209,7 @@ class AssetProcessor(object):
                     logger.debug(f"Read port type {port_type} : {port}")
                     return True
                 except Exception as ex:  # intentionally broad
-                    logger.debug("Failed to read port from file", exc_info=ex)
+                    logger.debug(f"Failed to read port type {port_type} : {port} from file", exc_info=ex)
             return False
 
         # the timeout needs to be large enough to load all the dynamic libraries the AP-GUI loads since the control port
@@ -274,7 +274,8 @@ class AssetProcessor(object):
                             logger.debug(f"Found new connect port for {port_name}: {host}:{new_connect_port}")
                             connect_port = new_connect_port
                     except Exception as read_exception:  # Purposefully broad
-                        logger.debug(f"Failed to read port data", exc_info=read_exception)
+                        logger.debug(f"Failed to read port data for {port_name}: {host}:{new_connect_port}",
+                                       exc_info=read_exception)
             return False
 
         err = AssetProcessorError(f"Could not connect to AP {port_name} on {host}:{connect_port}. Waited for {timeout}.")
@@ -503,7 +504,7 @@ class AssetProcessor(object):
             return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
                                                expect_failure=expect_failure)
 
-        logger.debug(f"Launching AP at path: {self._workspace.paths.asset_processor()}")
+        logger.debug(f"Launching AP at path: {ap_path}")
 
         if capture_output:
             logger.warning(f"Cannot capture output when leaving AP connection open.")
@@ -654,7 +655,8 @@ class AssetProcessor(object):
     def check_copy_logs(self):
         if self._temp_asset_root and self._failed_log_root:
             source_path = os.path.join(self._temp_asset_root, "logs")
-            dest_path = os.path.join(self._failed_log_root, f"{self._function_name + '.' if self._function_name else ''}{int(round(time.time() * 1000))}")
+            failed_log_folder = f"{self._function_name}." if self._function_name else ''
+            dest_path = os.path.join(self._failed_log_root, f"{failed_log_folder}{int(round(time.time() * 1000))}")
             logger.debug(f"Copying {source_path} to {dest_path}")
             shutil.copytree(source_path, dest_path)
 
@@ -718,7 +720,7 @@ class AssetProcessor(object):
         try:
             os.remove(name)
         except OSError as e:
-            logger.error('Failed to clean up {} : {}'.format(name, e))
+            logger.error(f'Failed to clean up {name} : {e}')
 
     def delete_temp_asset_root_folder(self):
         """
@@ -933,7 +935,7 @@ class AssetProcessor(object):
         """
         source_root = source_root or self._workspace.paths.engine_root()
         if not self._temp_asset_root:
-            logger.warning(f"Can't add relative source asset, no temporary asset root created")
+            logger.warning("Can't add relative source asset, no temporary asset root created.")
             return
         dest_root = dest_root or self._temp_asset_root
         make_dir = os.path.dirname(os.path.join(dest_root, relative_asset))
@@ -951,8 +953,7 @@ class AssetProcessor(object):
         :return: path to project cache
         """
         asset_platform = asset_platform or ASSET_PROCESSOR_PLATFORM_MAP[self._workspace.asset_processor_platform]
-        return os.path.join(self._temp_asset_root, 'Cache',
-                            asset_platform.lower())
+        return os.path.join(self._temp_asset_root, 'Cache', asset_platform.lower())
 
     def temp_project_cache_path(self, project_name=None):
         """
@@ -1041,7 +1042,7 @@ def assetprocessorbatch_check_output(workspace, project=None, platforms=None, ex
         if not no_split:
             output_list = output_list.split("\r\n")
         if log_info:
-            logger.info('AssetProcessorBatch output:\n{}'.format(output_list))
+            logger.info(f'AssetProcessorBatch output:\n{output_list}')
         return output_list
     except subprocess.CalledProcessError as e:
         if not expect_failure:

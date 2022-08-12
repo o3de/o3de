@@ -34,7 +34,6 @@
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
@@ -491,7 +490,6 @@ namespace LegacyFramework
     {
         ComponentApplication::RegisterCoreComponents();
 
-        RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Framework::CreateDescriptor());
     }
 }

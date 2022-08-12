@@ -60,6 +60,9 @@ namespace Multiplayer
         //! Notification when the Editor multiplayer play mode is over; therefore ending the multiplayer simulation.
         virtual void OnPlayModeEnd() {}
 
+        //! Notification when the server process launched by the editor has unexpectedly stopped running.
+        //! This likely means the server crashed, or the user stopped the process by hand.
+        virtual void OnEditorServerProcessStoppedUnexpectedly(){}
     };
     using MultiplayerEditorServerNotificationBus = AZ::EBus<MultiplayerEditorServerNotifications>;
 } // namespace Multiplayer

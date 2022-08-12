@@ -200,7 +200,7 @@ namespace Terrain
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
-        outPosition.Set(inPosition.GetX(), inPosition.GetY(), AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+        outPosition.Set(inPosition.GetX(), inPosition.GetY(), AZ::GetClamp(height, m_cachedHeightBounds.m_min, m_cachedHeightBounds.m_max));
     }
 
     void TerrainHeightGradientListComponent::GetHeights(
@@ -259,7 +259,7 @@ namespace Terrain
                 {
                     const float height =
                         AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxValueSamples[index]);
-                    inOutPositionList[index].SetZ(AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight));
+                    inOutPositionList[index].SetZ(AZ::GetClamp(height, m_cachedHeightBounds.m_min, m_cachedHeightBounds.m_max));
                 }
             }
         }
@@ -281,9 +281,9 @@ namespace Terrain
             shapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         // Get the height range of the entire world
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
+        AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
+            heightBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightBounds);
 
         // Ensure that we only change our cached data and terrain registration status when no queries are actively running.
         {
@@ -292,8 +292,7 @@ namespace Terrain
             m_cachedShapeBounds = shapeBounds;
 
             // Save off the min/max heights so that we don't have to re-query them on every single height query.
-            m_cachedMinWorldHeight = worldBounds.GetMin().GetZ();
-            m_cachedMaxWorldHeight = worldBounds.GetMax().GetZ();
+            m_cachedHeightBounds = heightBounds;
         }
 
         // We specifically refresh this outside of the queryMutex lock to avoid lock inversion deadlocks. These can occur if one thread

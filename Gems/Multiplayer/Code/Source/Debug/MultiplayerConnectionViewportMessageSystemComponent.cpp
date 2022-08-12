@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/ILogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
@@ -21,14 +22,16 @@ namespace Multiplayer
     constexpr float defaultConnectionMessageFontSize = 0.7f;
     const AZ::Vector2 viewportConnectionBottomRightBorderPadding(-40.0f, -40.0f);
 
-    AZ_CVAR_SCOPED(bool, cl_viewportConnectionStatus, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR_SCOPED(bool, bg_viewportConnectionStatus, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "This will enable displaying connection status in the client's viewport while running multiplayer.");
 
-    AZ_CVAR_SCOPED(float, cl_viewportConnectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
+    AZ_CVAR_SCOPED(float, bg_viewportConnectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
 
     AZ_CVAR_SCOPED(int, cl_viewportConnectionStatusMaxDrawCount, 4, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "Limits the number of connect statuses seen in the viewport. Generally, clients are connected to 1 server, but defining a max draw count in case other connections are established.");
+
+    AZ_CVAR_EXTERNED(bool, sv_isDedicated);
 
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -59,7 +62,7 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnRenderTick()
     {
-        if (!cl_viewportConnectionStatus)
+        if (!bg_viewportConnectionStatus)
         {
             return;
         }
@@ -83,7 +86,7 @@ namespace Multiplayer
         }
 
         m_drawParams.m_drawViewportId = viewport->GetId();
-        m_drawParams.m_scale = AZ::Vector2(cl_viewportConnectionMessageFontSize);
+        m_drawParams.m_scale = AZ::Vector2(bg_viewportConnectionMessageFontSize);
         m_lineSpacing = 0.5f*m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
 
         AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
@@ -99,7 +102,7 @@ namespace Multiplayer
             const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
             m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
-            m_drawParams.m_color = AZ::Colors::Yellow;
+            m_drawParams.m_color = m_centerViewportDebugTextColor;
             m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportDebugTitle);
             
             // Draw center debug text under the title
@@ -111,24 +114,39 @@ namespace Multiplayer
 
         // Build the connection status string (just show client connected or disconnected status for now)
         const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
-        MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();        
-        if (agentType == MultiplayerAgentType::Client)
-        {        
-            // Display the connection status in the bottom-right viewport
-            m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
-            m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
+        MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
 
-            if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
+        // Display the connection status in the bottom-right viewport
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+        m_drawParams.m_position = AZ::Vector3(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
+
+        AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
+        switch (agentType)
+        {
+        case MultiplayerAgentType::Uninitialized:
+            if (sv_isDedicated)
             {
+                DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
+                DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+            }
+            break;
+        case MultiplayerAgentType::Client:
+            {
+                if (!networkInterface)
+                {
+                    break;
+                }
+
                 AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
                 m_currentConnectionsDrawCount = 0;
                 if (connectionSet.GetConnectionCount() > 0)
                 {
-                    connectionSet.VisitConnections([this](AzNetworking::IConnection& connection)
-                    {
-                        m_hostIpAddress = connection.GetRemoteAddress();
-                        this->DrawConnectionStatus(connection.GetConnectionState(), m_hostIpAddress);
-                    });
+                    connectionSet.VisitConnections(
+                        [this](AzNetworking::IConnection& connection)
+                        {
+                            m_hostIpAddress = connection.GetRemoteAddress();
+                            this->DrawConnectionStatus(connection.GetConnectionState(), m_hostIpAddress);
+                        });
                 }
                 else
                 {
@@ -137,6 +155,45 @@ namespace Multiplayer
                     DrawConnectionStatus(AzNetworking::ConnectionState::Disconnected, m_hostIpAddress);
                 }
             }
+            break;
+        case MultiplayerAgentType::ClientServer:
+            {
+                if (!networkInterface)
+                {
+                    break;
+                }
+                const auto clientServerHostingPort =
+                    AZStd::fixed_string<MaxMessageLength>::format(ServerHostingPort, networkInterface->GetPort());
+                const auto clientServerClientCount = AZStd::fixed_string<MaxMessageLength>::format(
+                    ClientServerHostingClientCount, 1+networkInterface->GetConnectionSet().GetConnectionCount());
+
+                DrawConnectionStatusLine(clientServerClientCount.c_str(), AZ::Colors::Green);
+                DrawConnectionStatusLine(clientServerHostingPort.c_str(), AZ::Colors::Green);
+                DrawConnectionStatusLine(ClientServerStatusTitle, AZ::Colors::White);
+                break;
+            }
+        case MultiplayerAgentType::DedicatedServer:
+            {
+                if (!networkInterface)
+                {
+                    break;
+                }
+                const auto dedicatedServerHostingPort = AZStd::fixed_string<MaxMessageLength>::format(
+                    ServerHostingPort, networkInterface->GetPort());
+                const auto dedicatedServerClientCount = AZStd::fixed_string<MaxMessageLength>::format(
+                    DedicatedServerHostingClientCount, networkInterface->GetConnectionSet().GetConnectionCount());
+
+                const AZ::Color serverHostStatusColor = networkInterface->GetConnectionSet().GetConnectionCount() > 0 ? AZ::Colors::Green : AZ::Colors::Yellow;
+                DrawConnectionStatusLine(dedicatedServerClientCount.c_str(), serverHostStatusColor);
+                DrawConnectionStatusLine(dedicatedServerHostingPort.c_str(), serverHostStatusColor);
+                DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                break;
+            }
+        default:
+            AZLOG_ERROR(
+                "MultiplayerConnectionViewportMessageSystemComponent doesn't support drawing status for multiplayer agent type %s. Please update code to support the new agent type.",
+                GetEnumString(agentType));
+            break;
         }
     }
 
@@ -197,31 +254,37 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = OnServerLaunchedMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
     }   
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptMessage, connectionAttempts, maxAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttemptsFailed(uint16_t failedAttempts)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptsFailedMessage, failedAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
     {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
         m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnConnectToSimulationFailMessage, serverPort);
     }
 
@@ -234,4 +297,11 @@ namespace Multiplayer
     {
         m_centerViewportDebugText.clear();
     }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorServerProcessStoppedUnexpectedly()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
+        m_centerViewportDebugText = OnEditorServerStoppedUnexpectedly;
+    }
+
 }

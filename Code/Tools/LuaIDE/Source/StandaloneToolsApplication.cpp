@@ -14,8 +14,9 @@
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
+#include <AzFramework/Network/IRemoteTools.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
@@ -43,7 +44,6 @@ namespace StandaloneTools
         RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
 
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 
         RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
         RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
@@ -62,7 +62,6 @@ namespace StandaloneTools
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
         EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
         // Check for user settings components already added (added by the app descriptor
@@ -75,31 +74,6 @@ namespace StandaloneTools
                 userSettingsAdded[userSettings->GetProviderId()] = true;
             }
         }
-
-        // Check Application Entity
-        for (const auto& component : m_applicationEntity->GetComponents())
-        {
-            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
-            {
-                targetManagement->SetTargetAsHost(true);
-            }
-        }
-
-        // Check Module Entities
-        AZ::ModuleManagerRequestBus::Broadcast(
-            &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [](const AZ::ModuleData& moduleData)
-            {
-                AZ::Entity* moduleEntity = moduleData.GetEntity();
-                for (const auto& component : moduleEntity->GetComponents())
-                {
-                    if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
-                    {
-                        targetManagement->SetTargetAsHost(true);
-                    }
-                }
-                return true;
-            });
 
         // For each provider not already added, add it.
         for (AZ::u32 providerId = 0; providerId < userSettingsAdded.size(); ++providerId)
@@ -114,21 +88,15 @@ namespace StandaloneTools
 
     bool BaseApplication::StartDebugService()
     {
-        AzNetworking::INetworkInterface* networkInterface =
-            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("TargetManagement"));
-        if (networkInterface)
+#if defined(ENABLE_REMOTE_TOOLS)
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
         {
-            const auto console = AZ::Interface<AZ::IConsole>::Get();
-            uint16_t target_port = AzFramework::DefaultTargetPort;
-
-            if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
-            {
-                AZ_Assert(false, "TargetManagement port could not be found");
-            }
-
-            networkInterface->Listen(target_port);
+            remoteToolsInterface->RegisterToolingServiceHost(
+                AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
             return true;
         }
+#endif
         return false;
     }
 
@@ -140,8 +108,8 @@ namespace StandaloneTools
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
     {
-        LegacyFramework::Application::SetSettingsRegistrySpecializations(specializations);
-        specializations.Append("standalone_tools");
+        ComponentApplication::SetSettingsRegistrySpecializations(specializations);
+        specializations.Append("luaide");
     }
 
     AZStd::string BaseApplication::GetStoragePath() const
