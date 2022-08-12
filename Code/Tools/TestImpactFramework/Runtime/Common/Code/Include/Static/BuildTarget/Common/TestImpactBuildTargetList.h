@@ -49,7 +49,7 @@ namespace TestImpact
         //! @param outputName The output name of the target to get.
         AZStd::string GetTargetNameFromOutputNameOrThrow(const AZStd::string& outputName) const;
 
-        //! Get the vector of build targets in the repository.
+        //! Get the build targets in the repository.
         const AZStd::vector<BuildTarget<ProductionTarget, TestTarget>>& GetBuildTargets() const;
 
         //! Get the list of test targets in the repository.
@@ -74,7 +74,7 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, AZStd::string> m_outputNameToTargetNameMapping;
 
         //! Dependency and depender graph for each build target in the repository.
-        BuildGraph<ProductionTarget, TestTarget> m_buildGraph;
+        AZStd::unique_ptr<BuildGraph<ProductionTarget, TestTarget>> m_buildGraph;
     };
 
     template<typename ProductionTarget, typename TestTarget>
@@ -82,7 +82,6 @@ namespace TestImpact
         TargetList<TestTarget>&& testTargetList, TargetList<ProductionTarget>&& productionTargetList)
         : m_testTargets(AZStd::move(testTargetList))
         , m_productionTargets(AZStd::move(productionTargetList))
-        , m_buildGraph(*this)
     {
         const auto compileTargetMetaData = [this](const auto& targets)
         {
@@ -95,6 +94,7 @@ namespace TestImpact
 
         compileTargetMetaData(m_productionTargets);
         compileTargetMetaData(m_testTargets);
+        m_buildGraph = AZStd::make_unique<BuildGraph<ProductionTarget, TestTarget>>(*this);
     }
 
     template<typename ProductionTarget, typename TestTarget>
@@ -173,6 +173,6 @@ namespace TestImpact
     template<typename ProductionTarget, typename TestTarget>
     const BuildGraph<ProductionTarget, TestTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetBuildGraph() const
     {
-        return m_buildGraph;
+        return *m_buildGraph;
     }
 } // namespace TestImpact

@@ -31,7 +31,7 @@ namespace TestImpact
         TargetBuildGraphSet<ProductionTarget, TestTarget> m_runtime; //!< Runtime dependencies/dependers.
     };
     
-    //! Vertex in the build graph
+    //! Vertex in the build graph containing the build target and its dependencies/dependers.
     template<typename ProductionTarget, typename TestTarget>
     struct BuildGraphVertex
     {
@@ -75,8 +75,8 @@ namespace TestImpact
         {
             const auto addOrRetrieveVertex = [this](const BuildTarget<ProductionTarget, TestTarget>& buildTarget)
             {
-                auto it = m_buildGraphVertices.find(buildTarget);
-                if (it == m_buildGraphVertices.end())
+                if (auto it = m_buildGraphVertices.find(buildTarget);
+                    it == m_buildGraphVertices.end())
                 {
                     return &m_buildGraphVertices
                                 .emplace(
@@ -137,7 +137,8 @@ namespace TestImpact
     const BuildGraphVertex<ProductionTarget, TestTarget>* BuildGraph<ProductionTarget, TestTarget>::GetVertex(
         const BuildTarget<ProductionTarget, TestTarget>& buildTarget) const
     {
-        if (const auto it = m_buildGraphVertices.find(buildTarget) != m_buildGraphVertices.end())
+        if (const auto it = m_buildGraphVertices.find(buildTarget);
+            it != m_buildGraphVertices.end())
         {
             return &it->second;
         }
@@ -151,12 +152,13 @@ namespace TestImpact
         const BuildTarget<ProductionTarget, TestTarget>& buildTarget) const
     {
         const auto vertex = GetVertex(buildTarget);
-        TestImpact_Eval(
+        AZ_TestImpact_Eval(
             vertex, 
             BuildTargetException, 
-            AZStd::string::format().c_str("Couldn't find build target '%s'", 
-            buildTarget.GetTarget()->GetName().c_str()));
-        return vertex;
+            AZStd::string::format("Couldn't find build target '%s'",
+            buildTarget.GetTarget()->GetName().c_str()).c_str());
+
+        return *vertex;
     }
 } // namespace TestImpact
 
