@@ -714,9 +714,11 @@ namespace AZ
             if (auxGeomPass && visualizationPass && visualizationPass->GetInputOutputCount())
             {
                 RPI::PassAttachmentBinding& visualizationBinding = visualizationPass->GetInputOutputBinding(0);
-
                 RPI::PassAttachmentBinding* auxGeomBinding = auxGeomPass->FindAttachmentBinding(AZ::Name("ColorInputOutput"));
-                auxGeomBinding->SetAttachment(visualizationBinding.GetAttachment());
+                if (auxGeomBinding)
+                {
+                    auxGeomBinding->SetAttachment(visualizationBinding.GetAttachment());
+                }
             }
 
             UpdatePasses();
