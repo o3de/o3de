@@ -1065,6 +1065,9 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
             });
 
     // Audio actions

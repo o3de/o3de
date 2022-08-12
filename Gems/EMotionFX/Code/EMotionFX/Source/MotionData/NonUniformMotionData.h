@@ -25,6 +25,7 @@ namespace EMotionFX
 {
     class Pose;
     class MotionInstance;
+    class RootMotionExtractData;
 
     class EMFX_API NonUniformMotionData
         : public MotionData
@@ -129,7 +130,8 @@ namespace EMotionFX
         void SetJointScaleSamples(size_t jointDataIndex, const Vector3Track& track);
         AZ::Vector3 SampleJointScale(float sampleTime, size_t jointDataIndex) const override;
 #endif
-        void ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation) override;
+        void ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data) override;
+        void SmoothData(const RootMotionExtractionData& data);
 
         NonUniformMotionData& operator=(const NonUniformMotionData& sourceMotionData);
 

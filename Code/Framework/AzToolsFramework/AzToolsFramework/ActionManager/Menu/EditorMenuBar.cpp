@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/ActionManager/Menu/EditorMenuBar.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 
 #include <QMenuBar>
 

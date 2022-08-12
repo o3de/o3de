@@ -85,7 +85,7 @@ namespace AZ
                 {
                     serializeContext
                         ->Class<HairFeatureProcessor, RPI::FeatureProcessor>()
-                        ->Version(0);
+                        ->Version(1);
                 }
             }
 

@@ -113,6 +113,7 @@ set(FILES
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedSingleton.h
     Include/ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h
     Include/ScriptCanvas/Grammar/AbstractCodeModel.h
+    Include/ScriptCanvas/Grammar/ASTModifications.h
     Include/ScriptCanvas/Grammar/DebugMap.h
     Include/ScriptCanvas/Grammar/ExecutionTraversalListeners.h
     Include/ScriptCanvas/Grammar/ParsingMetaData.h
@@ -372,6 +373,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.h
+    Include/ScriptCanvas/Results/ErrorText.h
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
@@ -389,6 +391,7 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
     Include/ScriptCanvas/Utils/ReplacementUtils.h
+    Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

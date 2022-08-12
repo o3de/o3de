@@ -44,7 +44,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -1323,6 +1323,8 @@ namespace AZ
             localAabb.MultiplyByScale(nonUniformScale);
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);
+
+            m_cullable.m_lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
 
             m_cullable.m_cullData.m_boundingSphere = Sphere(center, radius);
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);

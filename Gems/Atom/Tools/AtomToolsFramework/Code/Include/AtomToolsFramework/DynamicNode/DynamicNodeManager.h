@@ -30,7 +30,7 @@ namespace AtomToolsFramework
         //! DynamicNodeManagerRequestBus::Handler overrides...
         void RegisterDataTypes(const GraphModel::DataTypeList& dataTypes) override;
         GraphModel::DataTypeList GetRegisteredDataTypes() override;
-        void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) override;
+        void LoadConfigFiles(const AZStd::string& extension) override;
         bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) override;
         DynamicNodeConfig GetConfig(const AZStd::string& configId) const override;
         void Clear() override;

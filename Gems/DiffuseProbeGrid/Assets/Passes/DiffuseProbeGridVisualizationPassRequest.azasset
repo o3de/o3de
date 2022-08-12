@@ -1,0 +1,26 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "DiffuseProbeGridVisualizationPass",
+        "TemplateName": "DiffuseProbeGridVisualizationPassTemplate",
+        "Enabled": true,
+        "Connections": [
+            {
+                "LocalSlot": "ColorInputOutput",
+                "AttachmentRef": {
+                    "Pass": "PostProcessPass",
+                    "Attachment": "Output"
+                }
+            },
+            {
+                "LocalSlot": "DepthInput",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            }
+       ]
+    }
+}

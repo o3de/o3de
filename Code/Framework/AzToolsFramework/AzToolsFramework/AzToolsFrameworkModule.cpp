@@ -9,8 +9,6 @@
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
 
  // Component includes
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
-
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>

@@ -17,14 +17,11 @@
 #include <AzCore/std/containers/intrusive_set.h>
 
 #ifdef _DEBUG
-//#define DEBUG_ALLOCATOR
 //#define DEBUG_PTR_IN_BUCKET_CHECK // enabled this when NOT sure if PTR in bucket marker check is successfully
 #endif
 
-#ifdef DEBUG_ALLOCATOR
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/std/containers/set.h>
-#endif
 
 // Enable if AZ_Assert is making things worse (since AZ_Assert may end up doing allocations)
 //#include <assert.h>
@@ -39,7 +36,7 @@
 #define _HPPA_ASSERT_PRINT_STACK2(_cond, _it) { if (!_cond) _it->print_stack(); _HPHA_ASSERT1(_cond); }
 #define _HPPA_ASSERT_PRINT_STACK3(_cond, _it, _reason) { if (!_cond) _it->print_stack(); _HPHA_ASSERT2(_cond, _reason); }
 #define _GET_MACRO23(_1, _2, _3, NAME, ...) NAME
-#define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))  
+#define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))
 
 
 namespace AZ
@@ -66,8 +63,8 @@ namespace AZ
         //! 8388609 - 1 = 8388608
         //! Propagate the highest one bit in the value to all the lower bits
         //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
-        //! 
-        //!  0b100'0000'0000'0000'0000'0000 
+        //!
+        //!  0b100'0000'0000'0000'0000'0000
         //! |0b010'0000'0000'0000'0000'0000 (>> 1)
         //! -------------------------------
         //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
@@ -131,16 +128,14 @@ namespace AZ
     }
 
     //////////////////////////////////////////////////////////////////////////
-    class HpAllocator
+
+    template<bool DebugAllocatorEnable>
+    class HphaSchemaBase<DebugAllocatorEnable>::HpAllocator
     {
     public:
         // the guard size controls how many extra bytes are stored after
         // every allocation payload to detect memory stomps
-#ifdef DEBUG_ALLOCATOR
-        static const size_t MEMORY_GUARD_SIZE  = 16UL;
-#else
-        static const size_t MEMORY_GUARD_SIZE  = 0UL;
-#endif
+        static constexpr size_t MEMORY_GUARD_SIZE = DebugAllocatorEnable ? 16UL : 0;
 
         // minimum allocation size, must be a power of two
         // and it needs to be able to fit a pointer
@@ -434,13 +429,12 @@ namespace AZ
         bucket mBuckets[NUM_BUCKETS];
         free_node_tree mFreeTree;
 #ifdef MULTITHREADED
-        // TODO rbbaklov: switched to recursive_mutex from mutex for Linux support.
         mutable AZStd::recursive_mutex mTreeMutex;
 #endif
 
         enum debug_source
         {
-            DEBUG_SOURCE_BUCKETS = 0, 
+            DEBUG_SOURCE_BUCKETS = 0,
             DEBUG_SOURCE_TREE = 1,
             DEBUG_SOURCE_SIZE = 2,
             DEBUG_SOURCE_INVALID = DEBUG_SOURCE_SIZE
@@ -455,20 +449,19 @@ namespace AZ
         };
         static constexpr size_t DEBUG_UNKNOWN_SIZE = (size_t)-1;
 
-#ifdef DEBUG_ALLOCATOR
         // debug record stores all debugging information for every allocation
         class debug_record
         {
         public:
             static const unsigned MAX_CALLSTACK_DEPTH = 16;
-            debug_record() 
+            debug_record()
                 : mPtr(nullptr)
                 , mSize(0)
                 , mSource(DEBUG_SOURCE_INVALID)
                 , mGuardByte(0)
                 , mCallStack()
             {}
-            
+
             debug_record(void* ptr) // used for searching based on the pointer
                 : mPtr(ptr)
                 , mSize(0)
@@ -492,7 +485,7 @@ namespace AZ
 
             debug_source source() const { return mSource; }
 
-            const void print_stack() const;
+            void print_stack() const;
             void record_stack();
 
             void write_guard();
@@ -550,41 +543,41 @@ namespace AZ
             static void memory_fill(void* ptr, size_t size);
 
         public:
-            
-            debug_record_map()
-            {
-            }
-            ~debug_record_map()
-            {
-            }
 
-            typedef base::const_iterator const_iterator;
-            typedef base::iterator iterator;
+            debug_record_map() = default;
+            ~debug_record_map() = default;
+
+            using const_iterator = typename base::const_iterator;
+            using iterator = typename base::iterator;
             void add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags);
             debug_info remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags);
-  
+
             void check(void* ptr) const;
         };
-        debug_record_map mDebugMap;
-#ifdef MULTITHREADED
-        mutable AZStd::mutex mDebugMutex;
-#endif
 
-        size_t mTotalDebugRequestedSize[DEBUG_SOURCE_SIZE];
+        // Packs all the debug data members into a struct
+        // that is added as a member of the HpAllocator<true> specialization
+        // but not the HpAllocator<false> specialization
+        struct DebugAllocatorData
+        {
+            debug_record_map m_debugMap;
+        #ifdef MULTITHREADED
+            mutable AZStd::mutex m_debugMutex;
+        #endif
+            size_t m_totalDebugRequestedSize[DEBUG_SOURCE_SIZE];
+        };
+
+        struct EmptyClass {};
+
+        using DebugAllocatorData_t = AZStd::conditional_t<DebugAllocatorEnable, DebugAllocatorData, EmptyClass>;
+        AZ_NO_UNIQUE_ADDRESS DebugAllocatorData_t m_debugData;
+
 
         void debug_add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags = DEBUG_FLAGS_ALL);
         void debug_remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags = DEBUG_FLAGS_ALL);
 
         void debug_check(void*) const;
 
-#else // !DEBUG_ALLOCATOR
-
-        void debug_add(void*, size_t, debug_source, memory_debugging_flags = DEBUG_FLAGS_ALL) {}
-        void debug_remove(void*, size_t, debug_source, memory_debugging_flags = DEBUG_FLAGS_ALL) {}
-
-        void debug_check(void*) const {}
-
-#endif // DEBUG_ALLOCATOR
 
         // Bucket-dependent counters need to atomic since the locks that protect bucket allocations are per bucket
         // So multiple threads could be updating these counters
@@ -595,7 +588,7 @@ namespace AZ
         size_t mTotalAllocatedSizeTree = 0;
         size_t mTotalCapacitySizeTree = 0;
     public:
-        HpAllocator(AZ::HphaSchema::Descriptor desc);
+        HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc);
         ~HpAllocator();
 
         // allocate memory using DEFAULT_ALIGNMENT
@@ -843,23 +836,28 @@ namespace AZ
             return blockSize;
         }
 
-#ifdef DEBUG_ALLOCATOR
         // Similar method as above, except this one receives an iterator to the debug record. It avoids a lookup and will not lock
-        inline size_t size(debug_record_map::const_iterator it) const
+        inline size_t size(typename debug_record_map::const_iterator it) const
         {
-            if (it == mDebugMap.end())
+            if constexpr (DebugAllocatorEnable)
             {
-                return 0;
+                if (it == m_debugData.m_debugMap.end())
+                {
+                    return 0;
+                }
+                if (ptr_in_bucket(it->ptr()))
+                {
+                    return ptr_get_page(it->ptr())->elem_size() - MEMORY_GUARD_SIZE;
+                }
+                block_header* bl = ptr_get_block_header(it->ptr());
+                size_t blockSize = bl->size() - MEMORY_GUARD_SIZE;
+                return blockSize;
             }
-            if (ptr_in_bucket(it->ptr()))
+            else
             {
-                return ptr_get_page(it->ptr())->elem_size() - MEMORY_GUARD_SIZE;
+                return {};
             }
-            block_header* bl = ptr_get_block_header(it->ptr());
-            size_t blockSize = bl->size() - MEMORY_GUARD_SIZE;
-            return blockSize;
         }
-#endif
 
         // free the memory block
         inline void free(void* ptr)
@@ -923,13 +921,11 @@ namespace AZ
             tree_purge();
         }
 
-#ifdef DEBUG_ALLOCATOR
         // print HpAllocator statistics
         void report();
-        
+
         // check memory integrity
         void check();
-#endif
 
         // return the total number of allocated memory
         inline  size_t allocated() const
@@ -1001,10 +997,11 @@ namespace AZ
 #endif
 
     //////////////////////////////////////////////////////////////////////////
-    HpAllocator::HpAllocator(AZ::HphaSchema::Descriptor desc)
+    template<bool DebugAllocatorEnable>
+    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc)
         // We will use the os for direct allocations if memoryBlock == NULL
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
-        // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work 
+        // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
         // with virtual memory addresses when the tree grows and we cannot specify an alignment in all cases
         : m_treePageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_pageSize :
             desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
@@ -1012,10 +1009,11 @@ namespace AZ
         , m_poolPageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_poolPageSize : OS_VIRTUAL_PAGE_SIZE)
         , m_subAllocator(desc.m_subAllocator)
     {
-#ifdef DEBUG_ALLOCATOR
-        mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] = 0;
-        mTotalDebugRequestedSize[DEBUG_SOURCE_TREE] = 0;
-#endif
+        if constexpr (DebugAllocatorEnable)
+        {
+            m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] = 0;
+            m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE] = 0;
+        }
         mTotalAllocatedSizeBuckets = 0;
         mTotalAllocatedSizeTree = 0;
 
@@ -1045,51 +1043,55 @@ namespace AZ
 #endif
     }
 
-    HpAllocator::~HpAllocator()
+    template<bool DebugAllocatorEnable>
+    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::~HpAllocator()
     {
-#ifdef DEBUG_ALLOCATOR
-        // Check if there are not-freed allocations
-        report();
-        check();
-#endif
-        
+        if constexpr (DebugAllocatorEnable)
+        {
+            // Check if there are not-freed allocations
+            report();
+            check();
+        }
+
         purge();
 
-#ifdef DEBUG_ALLOCATOR 
-        // Check if all the memory was returned to the OS
-        for (unsigned i = 0; i < NUM_BUCKETS; i++)
+        if constexpr (DebugAllocatorEnable)
         {
-            HPPA_ASSERT(mBuckets[i].page_list_empty(), "small object leak");
-        }
-
-        if (!m_fixedBlock)
-        {
-#ifdef AZ_ENABLE_TRACING
-            if (!mFreeTree.empty())
+            // Check if all the memory was returned to the OS
+            for (unsigned i = 0; i < NUM_BUCKETS; i++)
             {
-                free_node_tree::iterator node = mFreeTree.begin();
-                free_node_tree::iterator end = mFreeTree.end();
-                while (node != end)
-                {
-                    block_header* cur = node->get_block();
-                    AZ_TracePrintf("HPHA", "Block in free tree: %p, size=%zi bytes", cur, cur->size());
-                    ++node;
-                }
+                HPPA_ASSERT(mBuckets[i].page_list_empty(), "small object leak");
             }
+
+            if (!m_fixedBlock)
+            {
+#ifdef AZ_ENABLE_TRACING
+                if (!mFreeTree.empty())
+                {
+                    auto node = mFreeTree.begin();
+                    auto end = mFreeTree.end();
+                    while (node != end)
+                    {
+                        block_header* cur = node->get_block();
+                        AZ_TracePrintf("HPHA", "Block in free tree: %p, size=%zi bytes", cur, cur->size());
+                        ++node;
+                    }
+                }
 #endif
-            HPPA_ASSERT(mFreeTree.empty());
+                HPPA_ASSERT(mFreeTree.empty());
+            }
+            else
+            {
+                // Verify that the last block in the free tree is the m_fixedBlock
+                HPPA_ASSERT(mFreeTree.size() == 1);
+                HPPA_ASSERT(mFreeTree.begin()->get_block()->prev() == m_fixedBlock);
+                HPPA_ASSERT((mFreeTree.begin()->get_block()->size() + sizeof(block_header) * 3) == m_fixedBlockSize);
+            }
         }
-        else
-        {
-            // Verify that the last block in the free tree is the m_fixedBlock
-            HPPA_ASSERT(mFreeTree.size() == 1);
-            HPPA_ASSERT(mFreeTree.begin()->get_block()->prev() == m_fixedBlock);
-            HPPA_ASSERT((mFreeTree.begin()->get_block()->size() + sizeof(block_header) * 3) == m_fixedBlockSize);
-        }
-#endif
     }
 
-    HpAllocator::bucket::bucket()
+    template<bool DebugAllocatorEnable>
+    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::bucket()
     {
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
 #   if  defined(MULTITHREADED)
@@ -1106,7 +1108,8 @@ namespace AZ
         mMarker = size_t(randGenerator.Getu64Random());
     }
 
-    HpAllocator::page* HpAllocator::bucket::get_free_page()
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::get_free_page() -> page*
     {
         if (!mPageList.empty())
         {
@@ -1119,7 +1122,8 @@ namespace AZ
         return nullptr;
     }
 
-    const HpAllocator::page* HpAllocator::bucket::get_free_page() const
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::get_free_page() const -> const page*
     {
         if (!mPageList.empty())
         {
@@ -1132,7 +1136,8 @@ namespace AZ
         return nullptr;
     }
 
-    void* HpAllocator::bucket::alloc(page* p)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::alloc(page* p)
     {
         // get an element from the free list
         HPPA_ASSERT(p && p->mFreeList);
@@ -1149,7 +1154,8 @@ namespace AZ
         return (void*)free;
     }
 
-    void HpAllocator::bucket::free(page* p, void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::free(page* p, void* ptr)
     {
         // add the element back to the free list
         free_link* free = p->mFreeList;
@@ -1165,12 +1171,14 @@ namespace AZ
         }
     }
 
-    void HpAllocator::bucket::unlink(page* p)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket::unlink(page* p)
     {
         mPageList.erase(*p);
     }
 
-    void* HpAllocator::bucket_system_alloc()
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_system_alloc()
     {
         void* ptr;
         if (m_fixedBlock)
@@ -1187,7 +1195,8 @@ namespace AZ
         return ptr;
     }
 
-    void HpAllocator::bucket_system_free(void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_system_free(void* ptr)
     {
         HPPA_ASSERT(ptr);
         if (m_fixedBlock)
@@ -1202,7 +1211,8 @@ namespace AZ
         }
     }
 
-    HpAllocator::page* HpAllocator::bucket_grow(size_t elemSize, size_t marker)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_grow(size_t elemSize, size_t marker) -> page*
     {
         // make sure mUseCount won't overflow
         HPPA_ASSERT((m_poolPageSize - sizeof(page)) / elemSize <= USHRT_MAX);
@@ -1213,7 +1223,8 @@ namespace AZ
         return nullptr;
     }
 
-    void* HpAllocator::bucket_alloc(size_t size)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc(size_t size)
     {
         HPPA_ASSERT(size <= MAX_SMALL_ALLOCATION);
         unsigned bi = bucket_spacing_function(size);
@@ -1243,7 +1254,8 @@ namespace AZ
         return mBuckets[bi].alloc(p);
     }
 
-    void* HpAllocator::bucket_alloc_direct(unsigned bi)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_alloc_direct(unsigned bi)
     {
         HPPA_ASSERT(bi < NUM_BUCKETS);
 #ifdef MULTITHREADED
@@ -1268,7 +1280,8 @@ namespace AZ
         return mBuckets[bi].alloc(p);
     }
 
-    void* HpAllocator::bucket_realloc(void* ptr, size_t size)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc(void* ptr, size_t size)
     {
         page* p = ptr_get_page(ptr);
         size_t elemSize = p->elem_size();
@@ -1288,7 +1301,8 @@ namespace AZ
         return newPtr;
     }
 
-    void* HpAllocator::bucket_realloc_aligned(void* ptr, size_t size, size_t alignment)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_realloc_aligned(void* ptr, size_t size, size_t alignment)
     {
         page* p = ptr_get_page(ptr);
         size_t elemSize = p->elem_size();
@@ -1308,7 +1322,8 @@ namespace AZ
         return newPtr;
     }
 
-    void HpAllocator::bucket_free(void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free(void* ptr)
     {
         page* p = ptr_get_page(ptr);
         unsigned bi = p->bucket_index();
@@ -1324,7 +1339,8 @@ namespace AZ
         mBuckets[bi].free(p, ptr);
     }
 
-    void HpAllocator::bucket_free_direct(void* ptr, unsigned bi)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_free_direct(void* ptr, unsigned bi)
     {
         HPPA_ASSERT(bi < NUM_BUCKETS);
         page* p = ptr_get_page(ptr);
@@ -1342,7 +1358,8 @@ namespace AZ
         mBuckets[bi].free(p, ptr);
     }
 
-    size_t HpAllocator::bucket_ptr_size(void* ptr) const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_ptr_size(void* ptr) const
     {
         page* p = ptr_get_page(ptr);
         HPPA_ASSERT(p->bucket_index() < NUM_BUCKETS);
@@ -1358,7 +1375,8 @@ namespace AZ
         return p->elem_size() - MEMORY_GUARD_SIZE;
     }
 
-    size_t HpAllocator::bucket_get_max_allocation() const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_get_max_allocation() const
     {
         for (int i = (int)NUM_BUCKETS - 1; i > 0; i--)
         {
@@ -1379,7 +1397,8 @@ namespace AZ
         return 0;
     }
 
-    size_t HpAllocator::bucket_get_unused_memory(bool isPrint) const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_get_unused_memory(bool isPrint) const
     {
         size_t unusedMemory = 0;
         size_t availablePageMemory = m_poolPageSize - sizeof(page);
@@ -1413,7 +1432,8 @@ namespace AZ
         return unusedMemory;
     }
 
-    void HpAllocator::bucket_purge()
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_purge()
     {
         for (unsigned i = 0; i < NUM_BUCKETS; i++)
         {
@@ -1445,7 +1465,8 @@ namespace AZ
         }
     }
 
-    void HpAllocator::split_block(block_header* bl, size_t size)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::split_block(block_header* bl, size_t size)
     {
         HPPA_ASSERT(size + sizeof(block_header) + sizeof(free_node) <= bl->size());
         block_header* newBl = (block_header*)((char*)bl + size + sizeof(block_header));
@@ -1453,7 +1474,8 @@ namespace AZ
         newBl->set_unused();
     }
 
-    HpAllocator::block_header* HpAllocator::shift_block(block_header* bl, size_t offs)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::shift_block(block_header* bl, size_t offs) -> block_header*
     {
         HPPA_ASSERT(offs > 0);
         block_header* prev = bl->prev();
@@ -1464,7 +1486,8 @@ namespace AZ
         return bl;
     }
 
-    HpAllocator::block_header* HpAllocator::coalesce_block(block_header* bl)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::coalesce_block(block_header* bl) -> block_header*
     {
         HPPA_ASSERT(!bl->used());
         block_header* next = bl->next();
@@ -1483,7 +1506,8 @@ namespace AZ
         return bl;
     }
 
-    void* HpAllocator::tree_system_alloc(size_t size)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_system_alloc(size_t size)
     {
         if (m_fixedBlock)
         {
@@ -1494,7 +1518,8 @@ namespace AZ
         return SystemAlloc(size, m_treePageAlignment);
     }
 
-    void HpAllocator::tree_system_free(void* ptr, size_t size)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_system_free(void* ptr, size_t size)
     {
         HPPA_ASSERT(ptr);
         (void)size;
@@ -1508,7 +1533,8 @@ namespace AZ
         SystemFree(ptr);
     }
 
-    HpAllocator::block_header* HpAllocator::tree_add_block(void* mem, size_t size)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_add_block(void* mem, size_t size) -> block_header*
     {
         // create a dummy block to avoid prev() NULL checks and allow easy block shifts
         // potentially this dummy block might grow (due to shift_block) but not more than sizeof(free_node)
@@ -1530,7 +1556,8 @@ namespace AZ
         return front;
     }
 
-    HpAllocator::block_header* HpAllocator::tree_grow(size_t size)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_grow(size_t size) -> block_header*
     {
         const size_t sizeWithBlockHeaders = size + 3 * sizeof(block_header); // two fences plus one fake
         const size_t newSize = (sizeWithBlockHeaders < m_treePageSize) ? AZ::SizeAlignUp(sizeWithBlockHeaders, m_treePageSize) : sizeWithBlockHeaders;
@@ -1543,10 +1570,11 @@ namespace AZ
         return nullptr;
     }
 
-    HpAllocator::block_header* HpAllocator::tree_extract(size_t size)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract(size_t size) -> block_header*
     {
         // search the tree and get the smallest fitting block
-        free_node_tree::iterator it = mFreeTree.lower_bound(size);
+        auto it = mFreeTree.lower_bound(size);
         if (it == mFreeTree.end())
         {
             return nullptr;
@@ -1557,12 +1585,13 @@ namespace AZ
         return bestBlock;
     }
 
-    HpAllocator::block_header* HpAllocator::tree_extract_aligned(size_t size, size_t alignment)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract_aligned(size_t size, size_t alignment) -> block_header*
     {
         // get the sequence of nodes from size to (size + alignment - 1) including
         size_t sizeUpper = size + alignment;
-        free_node_tree::iterator bestNode = mFreeTree.lower_bound(size);
-        free_node_tree::iterator lastNode = mFreeTree.upper_bound(sizeUpper);
+        auto bestNode = mFreeTree.lower_bound(size);
+        auto lastNode = mFreeTree.upper_bound(sizeUpper);
         while (bestNode != lastNode)
         {
             free_node* node = &*bestNode;
@@ -1588,7 +1617,8 @@ namespace AZ
         return bestBlock;
     }
 
-    HpAllocator::block_header* HpAllocator::tree_extract_bucket_page()
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_extract_bucket_page() -> block_header*
     {
         block_header* bestBlock = nullptr;
         size_t alignment = m_poolPageSize;
@@ -1596,8 +1626,8 @@ namespace AZ
 
         // get the sequence of nodes from size to (size + alignment - 1) including
         size_t sizeUpper = size + alignment;
-        free_node_tree::iterator bestNode = mFreeTree.lower_bound(size);
-        free_node_tree::iterator lastNode = mFreeTree.upper_bound(sizeUpper);
+        auto bestNode = mFreeTree.lower_bound(size);
+        auto lastNode = mFreeTree.upper_bound(sizeUpper);
         while (bestNode != lastNode)
         {
             bestBlock = bestNode->get_block();
@@ -1623,17 +1653,20 @@ namespace AZ
         return bestBlock;
     }
 
-    void HpAllocator::tree_attach(block_header* bl)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_attach(block_header* bl)
     {
         mFreeTree.insert((free_node*)bl->mem());
     }
 
-    void HpAllocator::tree_detach(block_header* bl)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_detach(block_header* bl)
     {
         mFreeTree.erase((free_node*)bl->mem());
     }
 
-    void* HpAllocator::tree_alloc(size_t size)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc(size_t size)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1668,7 +1701,8 @@ namespace AZ
         return newBl->mem();
     }
 
-    void* HpAllocator::tree_alloc_aligned(size_t size, size_t alignment)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc_aligned(size_t size, size_t alignment)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1711,7 +1745,8 @@ namespace AZ
         return newBl->mem();
     }
 
-    void* HpAllocator::tree_alloc_bucket_page()
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_alloc_bucket_page()
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1753,7 +1788,8 @@ namespace AZ
         return newBl;
     }
 
-    void* HpAllocator::tree_realloc(void* ptr, size_t size)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc(void* ptr, size_t size)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1834,7 +1870,8 @@ namespace AZ
         return nullptr;
     }
 
-    void* HpAllocator::tree_realloc_aligned(void* ptr, size_t size, size_t alignment)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_realloc_aligned(void* ptr, size_t size, size_t alignment)
     {
         HPPA_ASSERT(((size_t)ptr & (alignment - 1)) == 0);
 #ifdef MULTITHREADED
@@ -1922,7 +1959,8 @@ namespace AZ
         return nullptr;
     }
 
-    size_t HpAllocator::tree_resize(void* ptr, size_t size)
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_resize(void* ptr, size_t size)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1964,7 +2002,8 @@ namespace AZ
         return bl->size();
     }
 
-    void HpAllocator::tree_free(void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_free(void* ptr)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1978,7 +2017,8 @@ namespace AZ
         tree_attach(bl);
     }
 
-    void HpAllocator::tree_free_bucket_page(void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_free_bucket_page(void* ptr)
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -1991,7 +2031,8 @@ namespace AZ
         tree_attach(bl);
     }
 
-    void HpAllocator::tree_purge_block(block_header* bl)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_purge_block(block_header* bl)
     {
         HPPA_ASSERT(!bl->used());
         HPPA_ASSERT(bl->prev() && bl->prev()->used());
@@ -2091,7 +2132,8 @@ namespace AZ
         //}
     }
 
-    size_t HpAllocator::tree_ptr_size(void* ptr) const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_ptr_size(void* ptr) const
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -2107,7 +2149,8 @@ namespace AZ
         }
     }
 
-    size_t HpAllocator::tree_get_max_allocation() const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_get_max_allocation() const
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
@@ -2115,13 +2158,14 @@ namespace AZ
         return mFreeTree.maximum()->get_block()->size();
     }
 
-    size_t HpAllocator::tree_get_unused_memory(bool isPrint) const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_get_unused_memory(bool isPrint) const
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
 #endif
         size_t unusedMemory = 0;
-        for (free_node_tree::const_iterator it = mFreeTree.begin(); it != mFreeTree.end(); ++it)
+        for (auto it = mFreeTree.begin(); it != mFreeTree.end(); ++it)
         {
             unusedMemory += it->get_block()->size();
             if (isPrint)
@@ -2132,13 +2176,14 @@ namespace AZ
         return unusedMemory;
     }
 
-    void HpAllocator::tree_purge()
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_purge()
     {
 #ifdef MULTITHREADED
         AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
 #endif
-        free_node_tree::iterator node = mFreeTree.begin();
-        free_node_tree::iterator end = mFreeTree.end();
+        auto node = mFreeTree.begin();
+        auto end = mFreeTree.end();
         while (node != end)
         {
             block_header* cur = node->get_block();
@@ -2154,8 +2199,8 @@ namespace AZ
     // allocationSize
     // [2/22/2011]
     //=========================================================================
-    size_t
-    HpAllocator::AllocationSize(void* ptr)
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::AllocationSize(void* ptr)
     {
         if (m_fixedBlock)
         {
@@ -2171,8 +2216,8 @@ namespace AZ
     // GetMaxAllocationSize
     // [2/22/2011]
     //=========================================================================
-    size_t
-    HpAllocator::GetMaxAllocationSize() const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::GetMaxAllocationSize() const
     {
         const_cast<HpAllocator*>(this)->purge(); // slow
 
@@ -2182,7 +2227,8 @@ namespace AZ
         return maxSize;
     }
 
-    size_t HpAllocator::GetMaxContiguousAllocationSize() const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::GetMaxContiguousAllocationSize() const
     {
         return AZ_CORE_MAX_ALLOCATOR_SIZE;
     }
@@ -2191,8 +2237,8 @@ namespace AZ
     // GetUnAllocatedMemory
     // [9/30/2013]
     //=========================================================================
-    size_t
-    HpAllocator::GetUnAllocatedMemory(bool isPrint) const
+    template<bool DebugAllocatorEnable>
+    size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::GetUnAllocatedMemory(bool isPrint) const
     {
         return bucket_get_unused_memory(isPrint) + tree_get_unused_memory(isPrint);
     }
@@ -2201,8 +2247,8 @@ namespace AZ
     // SystemAlloc
     // [2/22/2011]
     //=========================================================================
-    void*
-    HpAllocator::SystemAlloc(size_t size, size_t align)
+    template<bool DebugAllocatorEnable>
+    void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::SystemAlloc(size_t size, size_t align)
     {
         if (m_subAllocator)
         {
@@ -2216,8 +2262,8 @@ namespace AZ
     // SystemFree
     // [2/22/2011]
     //=========================================================================
-    void
-    HpAllocator::SystemFree(void* ptr)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::SystemFree(void* ptr)
     {
         if (m_subAllocator)
         {
@@ -2227,196 +2273,251 @@ namespace AZ
         AZ_OS_FREE(ptr);
     }
 
-#ifdef DEBUG_ALLOCATOR
-
-    const void HpAllocator::debug_record::print_stack() const
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record::print_stack() const
     {
-        AZ::Debug::SymbolStorage::StackLine stackLines[MAX_CALLSTACK_DEPTH] = { { 0 } };
-        AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, MAX_CALLSTACK_DEPTH, stackLines);
-        
-        for (int i = 0; i < MAX_CALLSTACK_DEPTH; ++i)
+        if constexpr (DebugAllocatorEnable)
         {
-            if (stackLines[i][0] != 0)
+            AZ::Debug::SymbolStorage::StackLine stackLines[MAX_CALLSTACK_DEPTH] = { { 0 } };
+            AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, MAX_CALLSTACK_DEPTH, stackLines);
+
+            for (int i = 0; i < MAX_CALLSTACK_DEPTH; ++i)
             {
-                const size_t lineLength = strlen(stackLines[i]);
-                // Append a line return to the stack line if we have enough room
-                if ((lineLength + 1) < AZ_ARRAY_SIZE(stackLines[i]))
+                if (stackLines[i][0] != 0)
                 {
-                    stackLines[i][lineLength] = '\n';
-                    stackLines[i][lineLength + 1] = 0;
+                    const size_t lineLength = strlen(stackLines[i]);
+                    // Append a line return to the stack line if we have enough room
+                    if ((lineLength + 1) < AZ_ARRAY_SIZE(stackLines[i]))
+                    {
+                        stackLines[i][lineLength] = '\n';
+                        stackLines[i][lineLength + 1] = 0;
+                    }
+                    AZ::Debug::Trace::Output("HpAllocator", stackLines[i]);
                 }
-                AZ::Debug::Trace::Output("HpAllocator", stackLines[i]);
             }
         }
     }
 
-    void HpAllocator::debug_record::record_stack()
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record::record_stack()
     {
-        AZ::Debug::StackRecorder::Record(mCallStack, MAX_CALLSTACK_DEPTH, 6);
-    }
-
-    void HpAllocator::debug_record::write_guard()
-    {
-        unsigned char guardByte = (unsigned char)rand();
-        unsigned char* guard = (unsigned char*)mPtr + mSize;
-        mGuardByte = guardByte;
-        for (unsigned i = 0; i < MEMORY_GUARD_SIZE; i++)
+        if constexpr (DebugAllocatorEnable)
         {
-            guard[i] = guardByte++;
+            AZ::Debug::StackRecorder::Record(mCallStack, MAX_CALLSTACK_DEPTH, 6);
         }
     }
 
-    bool HpAllocator::debug_record::check_guard() const
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record::write_guard()
     {
-        unsigned char guardByte = mGuardByte;
-        unsigned char* guard = (unsigned char*)mPtr + mSize;
-        for (unsigned i = 0; i < MEMORY_GUARD_SIZE; i++)
+        if constexpr (DebugAllocatorEnable)
         {
-            if (guardByte++ != guard[i])
+            unsigned char guardByte = (unsigned char)rand();
+            unsigned char* guard = (unsigned char*)mPtr + mSize;
+            mGuardByte = guardByte;
+            for (unsigned i = 0; i < MEMORY_GUARD_SIZE; i++)
             {
-                return false;
+                guard[i] = guardByte++;
+            }
+        }
+    }
+
+    template<bool DebugAllocatorEnable>
+    bool HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record::check_guard() const
+    {
+        if constexpr (DebugAllocatorEnable)
+        {
+            unsigned char guardByte = mGuardByte;
+            unsigned char* guard = (unsigned char*)mPtr + mSize;
+            for (unsigned i = 0; i < MEMORY_GUARD_SIZE; i++)
+            {
+                if (guardByte++ != guard[i])
+                {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    void HpAllocator::debug_record_map::memory_fill(void* ptr, size_t size)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record_map::memory_fill(void* ptr, size_t size)
     {
-        unsigned char sFiller[] = {0xFF, 0xC0, 0xC0, 0xFF}; // QNAN (little OR big endian)
-        unsigned char* p = (unsigned char*)ptr;
-        for (size_t s = 0; s < size; s++)
+        if constexpr (DebugAllocatorEnable)
         {
-            p[s] = sFiller[s % sizeof(sFiller) / sizeof(sFiller[0])];
+            unsigned char sFiller[] = { 0xFF, 0xC0, 0xC0, 0xFF }; // QNAN (little OR big endian)
+            unsigned char* p = (unsigned char*)ptr;
+            for (size_t s = 0; s < size; s++)
+            {
+                p[s] = sFiller[s % sizeof(sFiller) / sizeof(sFiller[0])];
+            }
         }
     }
 
-    void HpAllocator::debug_record_map::add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record_map::add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
     {
-        HPPA_ASSERT(size != DEBUG_UNKNOWN_SIZE);
-        const auto it = this->emplace(ptr, size, source);
-        
-        // Make sure this record is unique
-        HPPA_ASSERT_PRINT_STACK(it.second, it.first);
-
-        it.first->write_guard();
-        it.first->record_stack();
-
-        if (flags & DEBUG_FLAGS_FILLING)
+        if constexpr (DebugAllocatorEnable)
         {
-            memory_fill(ptr, size);
+            HPPA_ASSERT(size != DEBUG_UNKNOWN_SIZE);
+            const auto it = this->emplace(ptr, size, source);
+
+            // Make sure this record is unique
+            HPPA_ASSERT_PRINT_STACK(it.second, it.first);
+
+            it.first->write_guard();
+            it.first->record_stack();
+
+            if (flags & DEBUG_FLAGS_FILLING)
+            {
+                memory_fill(ptr, size);
+            }
         }
     }
 
-    HpAllocator::debug_info HpAllocator::debug_record_map::remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
+    template<bool DebugAllocatorEnable>
+    auto HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record_map::remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
+        -> debug_info
     {
-        const_iterator it = this->find(debug_record(ptr));
-        // if this asserts most likely the pointer was already deleted or that the allocation happens in another allocator
-        if (it == this->end())
+        if constexpr (DebugAllocatorEnable)
         {
-            HPPA_ASSERT(false, "double delete or pointer not in this allocator");
+            const_iterator it = this->find(debug_record(ptr));
+            // if this asserts most likely the pointer was already deleted or that the allocation happens in another allocator
+            if (it == this->end())
+            {
+                HPPA_ASSERT(false, "double delete or pointer not in this allocator");
+                return debug_info(0, DEBUG_SOURCE_INVALID);
+            }
+
+            HPPA_ASSERT_PRINT_STACK(it->source() == source, it);
+
+            const debug_info debugInfo(it->size(), it->source());
+            if (size != DEBUG_UNKNOWN_SIZE)
+            {
+                HPPA_ASSERT_PRINT_STACK((debugInfo.size <= size), it);
+            }
+            if (flags & DEBUG_FLAGS_GUARD_CHECK)
+            {
+                // if this asserts then the memory was corrupted past the end of the block
+                HPPA_ASSERT_PRINT_STACK(it->check_guard(), it, "overflow");
+            }
+            if (flags & DEBUG_FLAGS_FILLING)
+            {
+                memory_fill(ptr, debugInfo.size);
+            }
+            this->erase(it);
+
+            return debugInfo;
+        }
+        else
+        {
             return debug_info(0, DEBUG_SOURCE_INVALID);
         }
-        
-        HPPA_ASSERT_PRINT_STACK(it->source() == source, it);
+    }
 
-        const debug_info debugInfo(it->size(), it->source());
-        if (size != DEBUG_UNKNOWN_SIZE)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_record_map::check(void* ptr) const
+    {
+        if constexpr (DebugAllocatorEnable)
         {
-            HPPA_ASSERT_PRINT_STACK((debugInfo.size <= size), it);
-        }
-        if (flags & DEBUG_FLAGS_GUARD_CHECK)
-        {
+            const_iterator it = this->find(debug_record(ptr));
+            // if this asserts most likely the pointer was already deleted
+            HPPA_ASSERT(it != this->end());
             // if this asserts then the memory was corrupted past the end of the block
             HPPA_ASSERT_PRINT_STACK(it->check_guard(), it, "overflow");
         }
-        if (flags & DEBUG_FLAGS_FILLING)
-        {
-            memory_fill(ptr, debugInfo.size);
-        }
-        this->erase(it);
-
-        return debugInfo;
     }
 
-    void HpAllocator::debug_record_map::check(void* ptr) const
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
     {
-        const_iterator it = this->find(debug_record(ptr));
-        // if this asserts most likely the pointer was already deleted
-        HPPA_ASSERT(it != this->end());
-        // if this asserts then the memory was corrupted past the end of the block
-        HPPA_ASSERT_PRINT_STACK(it->check_guard(), it, "overflow");
-    }
-
-    void HpAllocator::debug_add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
-    {
-        if (ptr)
+        if constexpr (DebugAllocatorEnable)
         {
+            if (ptr)
             {
+                {
 #ifdef MULTITHREADED
-                AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+                    AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
 #endif
-                mDebugMap.add(ptr, size, source, flags);
-                mTotalDebugRequestedSize[source] += size + MEMORY_GUARD_SIZE;
+                    m_debugData.m_debugMap.add(ptr, size, source, flags);
+                    m_debugData.m_totalDebugRequestedSize[source] += size + MEMORY_GUARD_SIZE;
+                }
+                HPPA_ASSERT(size <= this->size(ptr));
             }
-            HPPA_ASSERT(size <= this->size(ptr));
         }
     }
 
-    void HpAllocator::debug_remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags)
     {
-    #ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
-    #endif
-        const debug_info info = mDebugMap.remove(ptr, size, source, flags);
-        mTotalDebugRequestedSize[source] -= info.size + MEMORY_GUARD_SIZE;
-    }
-
-    void HpAllocator::debug_check(void* ptr) const
-    {
-#ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
-#endif
-        mDebugMap.check(ptr);
-    }
-
-    void HpAllocator::check()
-    {
-#ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
-#endif
-        for (debug_record_map::const_iterator it = mDebugMap.begin(); it != mDebugMap.end(); ++it)
+        if constexpr (DebugAllocatorEnable)
         {
-            HPPA_ASSERT(it->size() <= size(it));
-            HPPA_ASSERT(it->check_guard(), "leaky overflow");
+#ifdef MULTITHREADED
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
+#endif
+            const debug_info info = m_debugData.m_debugMap.remove(ptr, size, source, flags);
+            m_debugData.m_totalDebugRequestedSize[source] -= info.size + MEMORY_GUARD_SIZE;
         }
     }
 
-    void HpAllocator::report()
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::debug_check(void* ptr) const
     {
+        if constexpr (DebugAllocatorEnable)
+        {
+#ifdef MULTITHREADED
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
+#endif
+            m_debugData.m_debugMap.check(ptr);
+        }
+    }
+
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::check()
+    {
+        if constexpr (DebugAllocatorEnable)
+        {
+#ifdef MULTITHREADED
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
+#endif
+            for (auto it = m_debugData.m_debugMap.begin(); it != m_debugData.m_debugMap.end(); ++it)
+            {
+                HPPA_ASSERT(it->size() <= size(it));
+                HPPA_ASSERT(it->check_guard(), "leaky overflow");
+            }
+        }
+    }
+
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::report()
+    {
+        if constexpr (DebugAllocatorEnable)
+        {
     #ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+        AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
     #endif
         AZ_TracePrintf("HPHA", "REPORT =================================================\n");
-        AZ_TracePrintf("HPHA", "Total requested size=%zi bytes\n", mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + mTotalDebugRequestedSize[DEBUG_SOURCE_TREE]);
-        AZ_TracePrintf("HPHA", "Total allocated size=%zi bytes\n", mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + mTotalDebugRequestedSize[DEBUG_SOURCE_TREE]);
+        AZ_TracePrintf("HPHA", "Total requested size=%zi bytes\n", m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE]);
+        AZ_TracePrintf("HPHA", "Total allocated size=%zi bytes\n", m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE]);
         AZ_TracePrintf("HPHA", "Currently allocated blocks:\n");
-        for (debug_record_map::const_iterator it = mDebugMap.begin(); it != mDebugMap.end(); ++it)
+        for (auto it = m_debugData.m_debugMap.begin(); it != m_debugData.m_debugMap.end(); ++it)
         {
             AZ_TracePrintf("HPHA", "ptr=%zX, size=%zi\n", (size_t)it->ptr(), it->size());
             it->print_stack();
         }
         AZ_TracePrintf("HPHA", "===========================================================\n");
+        }
     }
-#endif // DEBUG_ALLOCATOR
 
 
     //=========================================================================
     // HphaScema
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::HphaSchema(const Descriptor& desc)
+    template<bool DebugAllocator>
+    HphaSchemaBase<DebugAllocator>::HphaSchemaBase(const Descriptor& desc)
     {
-        (void)m_pad; 
+        (void)m_pad;
         m_capacity = 0;
 
         m_desc = desc;
@@ -2448,7 +2549,8 @@ namespace AZ
     // ~HphaSchema
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::~HphaSchema()
+    template<bool DebugAllocator>
+    HphaSchemaBase<DebugAllocator>::~HphaSchemaBase()
     {
         m_capacity = 0;
         m_allocator->~HpAllocator();
@@ -2464,8 +2566,9 @@ namespace AZ
     // Allocate
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::pointer_type
-    HphaSchema::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+        -> pointer_type
     {
         (void)flags;
         (void)name;
@@ -2485,8 +2588,9 @@ namespace AZ
     // pointer_type
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::pointer_type
-    HphaSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+        -> pointer_type
     {
         pointer_type address = m_allocator->realloc(ptr, newSize, newAlignment);
         if (address == nullptr && newSize > 0)
@@ -2501,8 +2605,8 @@ namespace AZ
     // DeAllocate(pointer_type ptr,size_type size,size_type alignment)
     // [2/22/2011]
     //=========================================================================
-    void
-    HphaSchema::DeAllocate(pointer_type ptr, size_type size, size_type alignment)
+    template<bool DebugAllocator>
+    void HphaSchemaBase<DebugAllocator>::DeAllocate(pointer_type ptr, size_type size, size_type alignment)
     {
         if (ptr == nullptr)
         {
@@ -2526,8 +2630,8 @@ namespace AZ
     // Resize
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::size_type
-    HphaSchema::Resize(pointer_type ptr, size_type newSize)
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::Resize(pointer_type ptr, size_type newSize) -> size_type
     {
         return m_allocator->resize(ptr, newSize);
     }
@@ -2536,8 +2640,8 @@ namespace AZ
     // AllocationSize
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::size_type
-    HphaSchema::AllocationSize(pointer_type ptr)
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::AllocationSize(pointer_type ptr) -> size_type
     {
         return m_allocator->AllocationSize(ptr);
     }
@@ -2546,8 +2650,8 @@ namespace AZ
     // NumAllocatedBytes
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::size_type
-    HphaSchema::NumAllocatedBytes() const
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::NumAllocatedBytes() const -> size_type
     {
         return m_allocator->allocated();
     }
@@ -2557,13 +2661,14 @@ namespace AZ
     // GetMaxAllocationSize
     // [2/22/2011]
     //=========================================================================
-    HphaSchema::size_type
-    HphaSchema::GetMaxAllocationSize() const
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::GetMaxAllocationSize() const -> size_type
     {
         return m_allocator->GetMaxAllocationSize();
     }
 
-    auto HphaSchema::GetMaxContiguousAllocationSize() const -> size_type
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::HphaSchemaBase::GetMaxContiguousAllocationSize() const -> size_type
     {
         return m_allocator->GetMaxContiguousAllocationSize();
     }
@@ -2572,8 +2677,8 @@ namespace AZ
     // GetUnAllocatedMemory
     // [9/30/2013]
     //=========================================================================
-    HphaSchema::size_type
-    HphaSchema::GetUnAllocatedMemory(bool isPrint) const
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::GetUnAllocatedMemory(bool isPrint) const -> size_type
     {
         return m_allocator->GetUnAllocatedMemory(isPrint);
     }
@@ -2582,15 +2687,15 @@ namespace AZ
     // GarbageCollect
     // [2/22/2011]
     //=========================================================================
-    void
-    HphaSchema::GarbageCollect()
+    template<bool DebugAllocator>
+    void HphaSchemaBase<DebugAllocator>::GarbageCollect()
     {
         m_allocator->purge();
     }
-        
-    size_t
-    HphaSchema::Capacity() const
-    { 
+
+    template<bool DebugAllocator>
+    auto HphaSchemaBase<DebugAllocator>::Capacity() const -> size_type
+    {
         // Do not return m_capacity if it was never initialized.  Instead return raw tracked numbers of how much the tree and buckets have grown
         if (m_capacity == AZ_CORE_MAX_ALLOCATOR_SIZE)
         {
@@ -2599,4 +2704,19 @@ namespace AZ
         return m_capacity;
     }
 
+    template<bool DebugAllocator>
+    size_t HphaSchemaBase<DebugAllocator>::GetMemoryGuardSize()
+    {
+        return HphaSchemaBase<DebugAllocator>::HpAllocator::MEMORY_GUARD_SIZE;
+    }
+
+    template<bool DebugAllocator>
+    size_t HphaSchemaBase<DebugAllocator>::GetFreeLinkSize()
+    {
+        return sizeof(typename HphaSchemaBase<DebugAllocator>::HpAllocator::free_link);
+    }
+
+    // explicitly instantiate both the non-debug and debug schema classes
+    template class HphaSchemaBase<false>;
+    template class HphaSchemaBase<true>;
 } // namspace AZ
