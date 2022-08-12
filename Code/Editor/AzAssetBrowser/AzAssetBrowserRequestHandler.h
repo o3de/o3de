@@ -34,6 +34,12 @@ namespace AzToolsFramework
     }
 }
 
+// on windows, this is a DLL Exported class that derives from non-dll-exported
+// baseclasses, which issues a warning (which is then treated as an error).
+// However, all of the derived classes are ebus handlers that are all available in static
+// libraries or by direct header inclusions, so they ARE available:
+AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
+
 class SANDBOX_API AzAssetBrowserRequestHandler
     : protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     , protected AzQtComponents::DragAndDropEventsBus::Handler
@@ -72,4 +78,6 @@ protected:
     bool DecodeDragMimeData(const QMimeData* mimeData,
                             AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outVector = nullptr) const;
 };
+
+AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
