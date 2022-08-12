@@ -13,12 +13,11 @@
 
 namespace AZ
 {
-    class HpAllocator;
-
     /**
     * Heap allocator schema, based on Dimitar Lazarov "High Performance Heap Allocator".
     */
-    class HphaSchema
+    template<bool DebugAllocator = false>
+    class HphaSchemaBase
         : public IAllocatorSchema
     {
     public:
@@ -53,8 +52,8 @@ namespace AZ
         };
 
 
-        HphaSchema(const Descriptor& desc);
-        virtual ~HphaSchema();
+        HphaSchemaBase(const Descriptor& desc);
+        virtual ~HphaSchemaBase();
 
         pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
         void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
@@ -72,7 +71,14 @@ namespace AZ
         /// Return unused memory to the OS (if we don't use fixed block). Don't call this unless you really need free memory, it is slow.
         void            GarbageCollect() override;
 
+        static size_t GetMemoryGuardSize();
+        static size_t GetFreeLinkSize();
+
     private:
+        // Forward declare HpAllocator class
+        // It is a private class implemented in the cpp
+        class HpAllocator;
+
         // this must be at least the max size of HpAllocator (defined in the cpp) + any platform compiler padding
         // A static assert inside of HphaSchema.cpp validates that this is the case
         // as of commit https://github.com/o3de/o3de/commit/92cd457c256e1ec91eeabe04b56d1d4c61f8b1af
@@ -81,13 +87,30 @@ namespace AZ
         // On Windows the sizeof HpAllocator is 8384
         // Up this value to 18 KiB to be safe
         static constexpr size_t hpAllocatorStructureSize = 18 * 1024;
-        
+
         Descriptor          m_desc;
         int                 m_pad;      // pad the Descriptor to avoid C4355
         size_type           m_capacity;                 ///< Capacity in bytes.
         HpAllocator*        m_allocator;
         AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
         bool                m_ownMemoryBlock;
+    };
+
+    // Template is externed here and explicitly instantiated in the cpp file
+    extern template class HphaSchemaBase<false>;
+    extern template class HphaSchemaBase<true>;
+
+    namespace Internal
+    {
+        // HphaSchema class defaults to disabling the allocator debug functionality
+        constexpr bool HphaDebugAllocator = false;
+    }
+
+    class HphaSchema
+        : public HphaSchemaBase<Internal::HphaDebugAllocator>
+    {
+    public:
+        using HphaSchemaBase<Internal::HphaDebugAllocator>::HphaSchemaBase;
     };
 } // namespace AZ
 
