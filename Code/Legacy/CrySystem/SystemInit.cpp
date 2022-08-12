@@ -1288,6 +1288,8 @@ void CSystem::CreateSystemVars()
         " 0 = on PC if vsync is off auto throttles fps while in menu or game is paused (default)\n"
         "-1 = off");
 
+    REGISTER_CVAR2("sys_maxTimeStepForMovieSystem", &g_cvars.sys_maxTimeStepForMovieSystem, 0.1f, VF_NULL, "Caps the time step for the movie system so that a cut-scene won't be jumped in the case of an extreme stall.");
+
 
     REGISTER_COMMAND("sys_crashtest", CmdCrashTest, VF_CHEAT, "Make the game crash\n"
         "0=off\n"
