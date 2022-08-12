@@ -30,8 +30,6 @@ namespace AtomToolsFramework
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
 
-        using Node::PostLoadSetup;
-
         // Get the ID of the dynamic node config used to create this node
         const AZStd::string& GetConfigId() const;
 
