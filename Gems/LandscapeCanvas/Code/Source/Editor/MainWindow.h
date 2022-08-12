@@ -194,7 +194,7 @@ namespace LandscapeCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
         //! PrefabFocusNotificationBus overrides
-        void OnPrefabFocusChanged() override;
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
 
         //! PrefabPublicNotificationBus overrides
         void OnPrefabInstancePropagationBegin() override;
@@ -278,8 +278,6 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
 
         AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
-
-        AZStd::unordered_map<AZ::Uuid, AZ::u32> m_wrappedNodeLayoutOrderMap;
 
         /// Keep track of the dock widget for the graph that represents the Vegetation Entity
         AZStd::unordered_map<AZ::EntityId, GraphCanvas::DockWidgetId> m_dockWidgetsByEntity;

@@ -306,6 +306,7 @@ class AtomComponentProperties:
         Decal component properties.
           - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
           - 'Opacity' where one is opaque and zero is transparent
+          - 'Normal Map Opacity' normal map set to one is opaque and zero is transparent
           - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
@@ -315,6 +316,7 @@ class AtomComponentProperties:
             'name': 'Decal',
             'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
             'Opacity': 'Controller|Configuration|Opacity',
+            'Normal Map Opacity': 'Controller|Configuration|Normal Map Opacity',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
@@ -1121,13 +1123,15 @@ class AtomComponentProperties:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Radius' Radius of the PostFX modification (float deafult 0.0 to infinity)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Radius Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Radius': 'Controller|Configuration|Radius',
         }
         return properties[property]
 

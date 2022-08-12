@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
@@ -22,6 +23,15 @@ namespace ScriptCanvas
     static constexpr const char ScriptCanvasAutoGenRegistrationWarningMessage[] = "[Warning] Registry name %s is occupied already, ignore AutoGen registry registration.\n";
 
     static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
+
+    void ScriptCanvasRegistry::ReleaseDescriptors()
+    {
+        for (AZ::ComponentDescriptor* descriptor : m_cachedDescriptors)
+        {
+            descriptor->ReleaseDescriptor();
+        }
+        m_cachedDescriptors = {};
+    }
 
     AutoGenRegistryManager::~AutoGenRegistryManager()
     {
@@ -171,6 +181,12 @@ namespace ScriptCanvas
 
     void AutoGenRegistryManager::UnregisterRegistry(const char* registryName)
     {
-        m_registries.erase(registryName);
+        if (auto it = m_registries.find(registryName);
+            it != m_registries.end())
+        {
+            it->second->ReleaseDescriptors();
+            m_registries.erase(it);
+        }
     }
+
 } // namespace ScriptCanvas

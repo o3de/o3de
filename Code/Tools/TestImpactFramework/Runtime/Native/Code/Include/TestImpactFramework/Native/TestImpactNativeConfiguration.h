@@ -31,6 +31,12 @@ namespace TestImpact
         Instrumentation m_instrumentation;
     };
 
+    struct NativeExcludedTargets
+    {
+        ExcludedTargets m_excludedRegularTestTargets; //!< Test targets to always exclude from regular test run sequences.
+        ExcludedTargets m_excludedInstrumentedTestTargets; //!< Test targets to always exclude from instrumented test run sequences.
+    };
+
     //! Build target configuration.
     struct NativeTargetConfig
     {
@@ -42,8 +48,7 @@ namespace TestImpact
         };
 
         RepoPath m_outputDirectory; //!< Path to the test target binary directory.
-        AZStd::vector<ExcludedTarget> m_excludedRegularTestTargets; //!< Test targets to always exclude from regular test run sequences.
-        AZStd::vector<ExcludedTarget> m_excludedInstrumentedTestTargets; //!< Test targets to always exclude from instrumented test run sequences.
+        NativeExcludedTargets m_excludedTargets;
         AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
     };
 
@@ -51,6 +56,7 @@ namespace TestImpact
     struct NativeRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
+        WorkspaceConfig m_workspace;    
         NativeTestEngineConfig m_testEngine;
         NativeTargetConfig m_target;
     };

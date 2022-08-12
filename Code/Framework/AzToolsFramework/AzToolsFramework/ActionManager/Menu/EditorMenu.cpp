@@ -51,14 +51,47 @@ namespace AzToolsFramework
         }
 
         int sortKey = sortKeyIterator->second;
+        bool removed = false;
 
         AZStd::erase_if(
             m_menuItems[sortKey],
-            [actionIdentifier](const MenuItem& item)
+            [&](const MenuItem& item)
             {
+                removed = true;
                 return item.m_identifier == actionIdentifier;
             }
         );
+
+        if (removed)
+        {
+            m_actionToSortKeyMap.erase(actionIdentifier);
+        }
+    }
+
+    void EditorMenu::RemoveSubMenu(AZStd::string menuIdentifier)
+    {
+        auto sortKeyIterator = m_subMenuToSortKeyMap.find(menuIdentifier);
+        if (sortKeyIterator == m_subMenuToSortKeyMap.end())
+        {
+            return;
+        }
+
+        int sortKey = sortKeyIterator->second;
+        bool removed = false;
+
+        AZStd::erase_if(
+            m_menuItems[sortKey],
+            [&](const MenuItem& item)
+            {
+                removed = true;
+                return item.m_identifier == menuIdentifier;
+            }
+        );
+
+        if (removed)
+        {
+            m_subMenuToSortKeyMap.erase(menuIdentifier);
+        }
     }
 
     void EditorMenu::AddSubMenu(int sortKey, AZStd::string menuIdentifier)

@@ -1429,6 +1429,13 @@ namespace AzToolsFramework
         QueueEntityToExpand(containerEntityId, true);
     }
 
+    void EntityOutlinerListModel::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
+    {
+        QueueEntityToExpand(previousContainerEntityId, false);
+        QueueEntityToExpand(newContainerEntityId, true);
+    }
+
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
     {
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
