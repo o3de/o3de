@@ -8,7 +8,7 @@
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {%     if Property.attrib['Container'] == 'Array' %}
 {%          if Property.attrib['IsRewindable']|booleanTrue %}
-const RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
+const Multiplayer::RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
 {%          else %}
 const AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>& Get{{ PropertyName }}Array() const;
 {%          endif %}
@@ -168,7 +168,7 @@ AZ::Event<{{ Property.attrib['Type'] }}> m_{{ LowerFirst(Property.attrib['Name']
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {%     if Property.attrib['Container'] == 'Array' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
-RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
+Multiplayer::RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {% else %}
 AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
 {% endif %}
@@ -307,28 +307,28 @@ namespace {{ Component.attrib['Namespace'] }}
 
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Client') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
+{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%}
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
         AzNetworking::FixedSizeBitsetView m_authorityToClient;
 {% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Server') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
+{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%}
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
         AzNetworking::FixedSizeBitsetView m_authorityToServer;
 {% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Authority', 'Autonomous') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
+{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%}
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
         AzNetworking::FixedSizeBitsetView m_authorityToAutonomous;
 {% endif %}
 {% set networkPropertyCount = {'value' : 0} %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, 'Autonomous', 'Authority') %}
-{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%} 
+{%-      if networkPropertyCount.update({'value': networkPropertyCount.value + 1}) %}{% endif -%}
 {% endcall %}
 {% if networkPropertyCount.value > 0 %}
         AzNetworking::FixedSizeBitsetView m_autonomousToAuthority;
@@ -351,11 +351,11 @@ namespace {{ Component.attrib['Namespace'] }}
     {
     public:
 {%      if NetworkInputsExposedToScriptCount > 0 %}
-        AZ_TYPE_INFO({{ ComponentName }}NetworkInput, "{{ (ComponentName ~ "NetworkInput") | createHashGuid }}") 
+        AZ_TYPE_INFO({{ ComponentName }}NetworkInput, "{{ (ComponentName ~ "NetworkInput") | createHashGuid }}")
         {{ ComponentName }}NetworkInput() = default;
         {{ ComponentName }}NetworkInput({{ AutoComponentMacros.GetCommaSeparatedParamListOfScriptableNetworkInputs(Component) }});
         static void Reflect(AZ::ReflectContext* context);
-        
+
 {%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;

@@ -49,6 +49,21 @@ SHADOW_FILTER_METHOD = {
     'None': 0,
 }
 
+# CubeMap capture type options for the Cubemap Capture Component
+CUBEMAP_CAPTURE_TYPE = {
+    'Specular IBL': 0,
+    'Diffuse ILB': 1,
+}
+
+# Specular IBL property options for the Cubemap Capture Component
+SPECULAR_IBL_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4,
+}
+
 # Qualiity Level settings for Diffuse Global Illumination level component
 GLOBAL_ILLUMINATION_QUALITY = {
     'Low': 0,
@@ -108,9 +123,9 @@ NUM_RAYS_PER_PROBE = {
 
 # LUT Resolution options for the HDR Color Grading component.
 LUT_RESOLUTION = {
-    '16x16x16': 0,
-    '32x32x32': 1,
-    '64x64x64': 2,
+    '16x16x16': 16,
+    '32x32x32': 32,
+    '64x64x64': 64,
 }
 
 # Shaper Type options for the HDR Color Grading & Look Modification components.
@@ -271,11 +286,17 @@ class AtomComponentProperties:
     def cube_map_capture(property: str = 'name') -> str:
         """
         CubeMap capture component properties.
+          - 'Specular ILB' controls the quality of Specular IBL created
+          - 'Capture Type': controls if CubeMap Capture component uses 'Diffuse ILB' or 'Specular ILB'
+          - 'Exposure': Controls the exposure light in the image taken
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
-            'name': 'CubeMap Capture'
+            'name': 'CubeMap Capture',
+            'Specular IBL CubeMap Quality': 'Controller|Configuration|Specular IBL CubeMap Quality',
+            'Capture Type': 'Controller|Configuration|Capture Type',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -285,6 +306,7 @@ class AtomComponentProperties:
         Decal component properties.
           - 'Attenuation Angle' controls how much the angle between geometry and decal impacts opacity. 0-1 Radians
           - 'Opacity' where one is opaque and zero is transparent
+          - 'Normal Map Opacity' normal map set to one is opaque and zero is transparent
           - 'Sort Key' 0-255 stacking z-sort like key to define which decal is on top of another
           - 'Material' the material Asset.id of the decal.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
@@ -294,6 +316,7 @@ class AtomComponentProperties:
             'name': 'Decal',
             'Attenuation Angle': 'Controller|Configuration|Attenuation Angle',
             'Opacity': 'Controller|Configuration|Opacity',
+            'Normal Map Opacity': 'Controller|Configuration|Normal Map Opacity',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Material': 'Controller|Configuration|Material',
         }
@@ -788,6 +811,7 @@ class AtomComponentProperties:
           - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
           - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
           - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
+          - 'Generated LUT Path' absolute path to the generated look up table file (read-only)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -826,6 +850,7 @@ class AtomComponentProperties:
             'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
             'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
             'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
+            'Generated LUT Path': 'LUT Generation|Generated LUT Path',
         }
         return properties[property]
 
@@ -833,13 +858,15 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
+          - 'Cubemap Texture': Asset.id for the texture used in cubemap rendering (File Type *.exr.streamingimage).
+          - 'Exposure': Light exposure value for HDRi Skybox projection ('float', range -5.0 - 5.0, default 0.0).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
             'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
+            'Exposure': 'Controller|Configuration|Exposure',
         }
         return properties[property]
 
@@ -1096,13 +1123,15 @@ class AtomComponentProperties:
         """
         PostFX Radius Weight Modifier component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
-            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Radius' Radius of the PostFX modification (float deafult 0.0 to infinity)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'PostFX Radius Weight Modifier',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Radius': 'Controller|Configuration|Radius',
         }
         return properties[property]
 

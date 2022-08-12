@@ -287,11 +287,6 @@ namespace AzToolsFramework
         bool PerformingAction();
         bool Registered();
 
-        //! Refresh the Manipulator and/or View based on the current view position.
-        virtual void RefreshView(const AZ::Vector3& /*worldViewPosition*/)
-        {
-        }
-
         const AZ::Transform& GetLocalTransform() const;
         const AZ::Transform& GetSpace() const;
         const AZ::Vector3& GetNonUniformScale() const;
@@ -300,6 +295,17 @@ namespace AzToolsFramework
         void SetLocalPosition(const AZ::Vector3& localPosition);
         void SetLocalOrientation(const AZ::Quaternion& localOrientation);
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
+
+        //! Refresh the Manipulator and/or View based on the current view position.
+        virtual void RefreshView([[maybe_unused]] const AZ::Vector3& worldViewPosition)
+        {
+        }
+
+        //! Provide additional display feedback for an aggregate manipulator.
+        virtual void DisplayFeedback(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay, [[maybe_unused]] const AzFramework::CameraState& cameraState)
+        {
+        }
 
     protected:
         //! Common processing for base manipulator type - Implement for all

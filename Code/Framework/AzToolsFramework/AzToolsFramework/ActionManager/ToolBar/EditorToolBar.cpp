@@ -8,7 +8,9 @@
 
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 
 #include <QMenu>
@@ -58,14 +60,21 @@ namespace AzToolsFramework
         }
 
         int sortKey = sortKeyIterator->second;
+        bool removed = false;
 
         AZStd::erase_if(
             m_toolBarItems[sortKey],
-            [actionIdentifier](const ToolBarItem& item)
+            [&](const ToolBarItem& item)
             {
+                removed = true;
                 return item.m_identifier == actionIdentifier;
             }
         );
+
+        if (removed)
+        {
+            m_actionToSortKeyMap.erase(actionIdentifier);
+        }
     }
 
     void EditorToolBar::AddWidget(int sortKey, AZStd::string widgetActionIdentifier)

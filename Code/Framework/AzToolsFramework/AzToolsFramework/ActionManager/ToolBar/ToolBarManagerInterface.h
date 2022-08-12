@@ -12,7 +12,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 class QToolBar;
-class QWidget;
 
 namespace AzToolsFramework
 {
@@ -114,30 +113,6 @@ namespace AzToolsFramework
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier) const = 0;
-    };
-
-    //! ToolBarManagerInternalInterface
-    //! Internal Interface to query implementation details for toolBars.
-    class ToolBarManagerInternalInterface
-    {
-    public:
-        AZ_RTTI(ToolBarManagerInternalInterface, "{55B9CA70-5277-4B8A-8F76-8C1F2A75D558}");
-
-        //! Queues up a toolBar for a refresh at the end of this tick.
-        //! @param toolBarIdentifier The identifier for the toolbar to refresh.
-        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
-
-        //! Queues up all toolbars containing the action provided for a refresh at the end of this tick.
-        //! @param actionIdentifier The identifier for the action triggering the refresh for toolbars containing it.
-        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
-
-        //! Refreshes all toolbars that were queued up for refresh.
-        virtual void RefreshToolBars() = 0;
-
-        //! Serialize a toolbar by its identifier.
-        virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
     };
 
 } // namespace AzToolsFramework

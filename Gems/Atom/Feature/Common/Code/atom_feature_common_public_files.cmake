@@ -24,8 +24,6 @@ set(FILES
     Include/Atom/Feature/Debug/RenderDebugParams.inl
     Include/Atom/Feature/Debug/RenderDebugSettingsInterface.h
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
-    Include/Atom/Feature/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessorInterface.h
-    Include/Atom/Feature/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
@@ -86,6 +84,7 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
+    Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
     Source/CoreLights/PhotometricValue.cpp
     Source/MorphTargets/MorphTargetInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp

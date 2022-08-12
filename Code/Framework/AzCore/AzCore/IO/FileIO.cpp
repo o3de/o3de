@@ -286,7 +286,7 @@ namespace AZ::IO
         return "";
     }
 
-    bool NameMatchesFilter(const char* name, const char* filter)
+    bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter)
     {
         return AZStd::wildcard_match(filter, name);
     }

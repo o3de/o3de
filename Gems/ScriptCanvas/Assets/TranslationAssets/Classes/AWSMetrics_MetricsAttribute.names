@@ -11,14 +11,13 @@
             "methods": [
                 {
                     "base": "SetName",
-                    "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetName"
+                        "tooltip": "When signaled, this will invoke Set Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetName is invoked"
+                        "tooltip": "Signaled after Set Name is invoked"
                     },
                     "details": {
                         "name": "Set Name"
@@ -33,21 +32,21 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Name"
+                                "name": "Name",
+                                "tooltip": "Name of the metrics attribute."
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetStrValue",
-                    "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetStrValue"
+                        "tooltip": "When signaled, this will invoke Set Str Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetStrValue is invoked"
+                        "tooltip": "Signaled after Set Str Value is invoked"
                     },
                     "details": {
                         "name": "Set String Value"
@@ -62,21 +61,21 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Name"
+                                "name": "Value",
+                                "tooltip": "String value of the metrics attribute."
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetIntValue",
-                    "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetIntValue"
+                        "tooltip": "When signaled, this will invoke Set Int Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetIntValue is invoked"
+                        "tooltip": "Signaled after Set Int Value is invoked"
                     },
                     "details": {
                         "name": "Set Int Value"
@@ -91,21 +90,21 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "Value"
+                                "name": "Value",
+                                "tooltip": "Integer value of the metrics attribute."
                             }
                         }
                     ]
                 },
                 {
                     "base": "SetDoubleValue",
-                    "context": "AWSMetrics_MetricsAttribute",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetDoubleValue"
+                        "tooltip": "When signaled, this will invoke Set Double Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetDoubleValue is invoked"
+                        "tooltip": "Signaled after Set Double Value is invoked"
                     },
                     "details": {
                         "name": "Set Double Value"
@@ -120,7 +119,8 @@
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Value"
+                                "name": "Value",
+                                "tooltip": "Double value of the metrics attribute."
                             }
                         }
                     ]
