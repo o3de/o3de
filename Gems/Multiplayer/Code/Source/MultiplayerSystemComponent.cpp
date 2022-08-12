@@ -98,6 +98,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        NetworkSpawnable::Reflect(context);
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()
