@@ -777,7 +777,7 @@ namespace MaterialCanvas
                         [&]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
-                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
+                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n\r\\/", false, false);
                             return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames);
                         },
                         templateLines);
