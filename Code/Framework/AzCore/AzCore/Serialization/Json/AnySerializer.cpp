@@ -63,12 +63,17 @@ namespace AZ
                     "The C++ declaration may have been deleted or changed.");
             }
 
-            result.Combine(ContinueLoadingFromJsonObjectField
-                ( AZStd::any_cast<void>(outputAnyPtr)
-                , anyTypeId
-                , inputValue
-                , "value"
-                , context));
+            // Allowing the serializer to read from objects contained in members "Value" and "value" for backward compatibility
+            if (inputValue.HasMember("value"))
+            {
+                result.Combine(
+                    ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), anyTypeId, inputValue, "value", context));
+            }
+            else if (inputValue.HasMember("Value"))
+            {
+                result.Combine(
+                    ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), anyTypeId, inputValue, "Value", context));
+            }
         }
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
@@ -107,9 +112,10 @@ namespace AZ
                 const void* defaultValueSource = defaultAnyPtr && defaultAnyPtr->type() == anyTypeId
                     ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
 
+                // The serializer will save the object in “Value” with an uppercase “V” which is standard in other serializers
                 result.Combine(ContinueStoringToJsonObjectField
                     ( outputValue
-                    , "value"
+                    , "Value"
                     , AZStd::any_cast<void>(inputAnyPtr)
                     , defaultValueSource
                     , anyTypeId
