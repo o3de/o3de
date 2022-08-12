@@ -85,7 +85,6 @@ namespace AzToolsFramework::ViewportUi::Internal
             });
 
         m_buttonActionMap.insert({ button->m_buttonId, action });
-        m_buttonGroup->AddButton(button->m_icon, button->m_name);
     }
 
     void ViewportUiSwitcher::RemoveButton(ButtonId buttonId)

@@ -57,15 +57,16 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ButtonId ButtonGroup::AddButton(const AZStd::string& icon, const AZStd::string& name)
     {
-        auto max = ButtonId(0);
-        for (const auto& button : m_buttons)
-        {
-            if (button.first > max)
+        const auto lastButtonIdIt = AZStd::max_element(
+            m_buttons.begin(),
+            m_buttons.end(),
+            [](const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairA,
+               const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairB)
             {
-                max = button.first;
-            }
-        }
-        auto buttonId = ButtonId(max + 1);
+                return buttonPairA.first < buttonPairB.first;
+            });
+
+        auto buttonId = ButtonId(lastButtonIdIt->first + 1);
 
         if (name.empty())
         {
@@ -78,9 +79,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         return buttonId;
     }
 
-    void ButtonGroup::RemoveButton(ButtonId buttonId)
+    bool ButtonGroup::RemoveButton(ButtonId buttonId)
     {
-        m_buttons.erase(buttonId);
+        if (m_buttons.find(buttonId) != m_buttons.end())
+        {
+            m_buttons.erase(buttonId);
+            return true;
+        }
+        return false;
     }
 
     Button* ButtonGroup::GetButton(ButtonId buttonId)

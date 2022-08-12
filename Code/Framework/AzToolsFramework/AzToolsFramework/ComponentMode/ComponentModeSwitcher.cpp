@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+
 #include <QTimer>
 
 namespace AzToolsFramework::ComponentModeFramework
@@ -145,7 +146,7 @@ namespace AzToolsFramework::ComponentModeFramework
         }
         else if (!newlyDeselectedEntityIds.empty())
         {
-            // Clear the switcher then add the components back if entities are still selected
+            // clear the switcher then add the components back if entities are still selected
             ClearSwitcher();
 
             if (selectedEntityIds.size() >= 1)
@@ -174,15 +175,15 @@ namespace AzToolsFramework::ComponentModeFramework
 
         ComponentData newComponentData = ComponentData(pairId);
 
-        auto componentDataIt = AZStd::find_if(
-            m_addedComponents.begin(),
-            m_addedComponents.end(),
-            [newComponentData](const ComponentData& componentInfo)
-            {
-                return componentInfo.m_componentName == newComponentData.m_componentName;
-            });
         // if the component has not already been added as a button, add the button
-        if (componentDataIt == m_addedComponents.end())
+        if (auto componentDataIt = AZStd::find_if(
+                m_addedComponents.begin(),
+                m_addedComponents.end(),
+                [newComponentData](const ComponentData& componentInfo)
+                {
+                    return componentInfo.m_component->RTTI_GetType() == newComponentData.m_component->RTTI_GetType();
+                });
+            componentDataIt == m_addedComponents.end())
         {
             AddSwitcherButton(newComponentData);
         }
@@ -213,15 +214,14 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::RemoveComponentButton(const AZ::EntityComponentIdPair pairId)
     {
         // find pairId in m_addedComponents, call ViewportUiRequestBus to remove
-        auto componentDataIt = AZStd::find_if(
-            m_addedComponents.begin(),
-            m_addedComponents.end(),
-            [pairId](const ComponentData& predComponentData)
-            {
-                return pairId == predComponentData.m_pairId;
-            });
-
-        if (componentDataIt != m_addedComponents.end())
+        if (auto componentDataIt = AZStd::find_if(
+                m_addedComponents.begin(),
+                m_addedComponents.end(),
+                [pairId](const ComponentData& predComponentData)
+                {
+                    return pairId == predComponentData.m_pairId;
+                });
+            componentDataIt != m_addedComponents.end())
         {
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId,
@@ -388,13 +388,13 @@ namespace AzToolsFramework::ComponentModeFramework
             m_switcherId,
             m_transformButtonId);
 
-        // Send a list of selected and deselected entities to the switcher to deal with updating the switcher view
+        // send a list of selected and deselected entities to the switcher to deal with updating the switcher view
         UpdateSwitcherOnEntitySelectionChange(newlySelectedEntities, newlyDeselectedEntities);
     }
 
     void ComponentModeSwitcher::AfterUndoRedo()
     {
-        // Wait one frame for the undo stack to actually be updated.
+        // wait one frame for the undo stack to actually be updated
         QTimer::singleShot(
             0,
             nullptr,

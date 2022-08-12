@@ -31,7 +31,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiElementId GetViewportUiElementId() const;
 
         ButtonId AddButton(const AZStd::string& icon, const AZStd::string& name = AZStd::string());
-        void RemoveButton(ButtonId buttonId);
+        bool RemoveButton(ButtonId buttonId);
         Button* GetButton(ButtonId buttonId);
         AZStd::vector<Button*> GetButtons();
 

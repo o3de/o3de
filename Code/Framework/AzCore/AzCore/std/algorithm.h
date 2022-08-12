@@ -46,13 +46,18 @@ namespace AZStd
     template<class T>
     constexpr pair<T, T> minmax AZ_PREVENT_MACRO_SUBSTITUTION (const T& left, const T& right) { return AZStd::minmax(left, right, AZStd::less<T>()); }
 
+    // Returns an iterator to the largest element in the range [first, last]
+    using std::max_element;
+    // Returns an iterator to the smallest element in the range [first, last]
+    using std::min_element;
+
     using ::floorf;
     using ::ceilf;
     using ::roundf;
     using ::rintf;
 
     /*
-    Finds the smallest and greatest element in the range of [first, last)
+    Finds the smallest and greatest element in the range of [first, last])
     returns a pair consisting of an iterator to the smallest element in .first and an iterator to the largest element in .second.
     If several elements are equivalent to the smallest element it returns the first such element
     If several elements are equivalent to the greatest element it returns the last such element
@@ -557,7 +562,7 @@ namespace AZStd
 
 
     // Reverse
-    // The std::reverse functionwill be constexpr as of C++20, for now the std:: versions will be aliased
+    // The std::reverse function will be constexpr as of C++20, for now the std:: versions will be aliased
     // into the AZStd namespace
     using std::reverse;
 
