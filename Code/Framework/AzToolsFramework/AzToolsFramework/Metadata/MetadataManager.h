@@ -72,12 +72,20 @@ namespace AzToolsFramework
 
             metadata->Set(key, value);
 
-            Metadata defaultClass;
+            //Metadata defaultClass;
+            //AZ::JsonSerializerSettings settings;
+            //settings.m_reporting = [](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view /*path*/)
+            //{
+            //    AZ_TracePrintf("MetadataManager", AZ_STRING_FORMAT, AZ_STRING_ARG(message));
 
-            auto outcome = AZ::JsonSerializationUtils::SaveObjectToFile(metadata.operator->(), path.Native(), &defaultClass);
+            //    return result;
+            //};
+
+            auto outcome = AZ::Utils::SaveObjectToFile(path.Native(), AZ::DataStream::ST_JSON, metadata.operator->());
 
             if(!outcome)
             {
+                //AZ_Error("MetadataManager", false, "%s", outcome.GetError().c_str());
                 return false;
             }
 
@@ -91,7 +99,7 @@ namespace AzToolsFramework
 
             if(path.Extension() != MetadataFileExtension)
             {
-                path.Append(MetadataFileExtension);
+                path.ReplaceExtension(AZ::IO::PathView(AZStd::string(path.Extension().Native()) + AZStd::string(MetadataFileExtension)));
             }
 
             return path;
@@ -99,8 +107,6 @@ namespace AzToolsFramework
 
         AZStd::optional<Metadata> LoadFile(AZ::IO::PathView file) const
         {
-            Metadata metadata;
-
             AZ::IO::FileIOStream stream;
 
             if(!stream.Open(file.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeRead))
@@ -108,9 +114,10 @@ namespace AzToolsFramework
                 return {};
             }
 
-            auto outcome = AZ::JsonSerializationUtils::LoadObjectFromStream(metadata, stream);
+            Metadata metadata;
+            bool result = AZ::Utils::LoadObjectFromStreamInPlace(stream, metadata);
 
-            if(!outcome.IsSuccess())
+            if(!result)
             {
                 return {};
             }
