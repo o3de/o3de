@@ -150,7 +150,7 @@ namespace Multiplayer
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-        static void EnableAutonomousControl(const INetworkEntityManager::EntityList& entityList, AzNetworking::ConnectionId connectionId);
+        static void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId);
         static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
@@ -192,9 +192,14 @@ namespace Multiplayer
         // Store player information if they connect before there is a level and IPlayerSpawner available
         struct PlayerWaitingToBeSpawned
         {
+            PlayerWaitingToBeSpawned(uint64_t userId, MultiplayerAgentDatum agent, AzNetworking::IConnection* connection)
+                : userId(userId), agent(agent), connection(connection)
+            {
+            }
+
             uint64_t userId;
             MultiplayerAgentDatum agent;
-            AzNetworking::IConnection* connection;
+            AzNetworking::IConnection* connection = nullptr;
         };
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;

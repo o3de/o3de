@@ -67,6 +67,7 @@ namespace AzToolsFramework
 
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
+            deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 deleteAction, &QAction::triggered, this, [this]()
                 {
@@ -76,6 +77,7 @@ namespace AzToolsFramework
 
             QAction* renameAction = new QAction("Rename Action", this);
             renameAction->setShortcut(Qt::Key_F2);
+            renameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 renameAction, &QAction::triggered, this, [this]()
                 {
@@ -85,6 +87,7 @@ namespace AzToolsFramework
 
             QAction* duplicateAction = new QAction("Duplicate Action", this);
             duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
             connect(
                 duplicateAction, &QAction::triggered, this, [this]()
                 {
@@ -305,6 +308,21 @@ namespace AzToolsFramework
             return GetEntryFromIndex<SourceAssetBrowserEntry>(index) == nullptr;
         }
 
+        void AssetBrowserTreeView::OpenItemForEditing(const QModelIndex& index)
+        {
+            QModelIndex proxyIndex = m_assetBrowserSortFilterProxyModel->mapFromSource(index);
+
+            if (proxyIndex.isValid())
+            {
+                selectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
+                setCurrentIndex(proxyIndex);
+
+                scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
+
+                RenameEntry();
+            }
+        }
+
         bool AssetBrowserTreeView::SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID)
         {
             int elements = model()->rowCount(idxParent);
@@ -319,6 +337,7 @@ namespace AzToolsFramework
                     setCurrentIndex(rowIdx);
                     return true;
                 }
+
                 if (SelectProduct(rowIdx, assetID))
                 {
                     expand(rowIdx);
@@ -466,6 +485,11 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::DeleteEntries()
         {
             auto entries = GetSelectedAssets();
+
+            if (entries.empty())
+            {
+                return;
+            }
 
             // Create the callback to pass to the SourceControlAPI
             AzToolsFramework::SourceControlResponseCallback callback =

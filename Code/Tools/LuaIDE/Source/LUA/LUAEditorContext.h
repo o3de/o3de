@@ -18,7 +18,6 @@
 #include "LUATargetContextTrackerMessages.h"
 #include "LUAWatchesDebuggerMessages.h"
 #include "LUAEditorContextMessages.h"
-#include "AzFramework/TargetManagement/TargetManagementAPI.h"
 #include "ClassReferencePanel.hxx"
 #include "LUAEditorMainWindow.hxx"
 #include "LUAEditorStyleMessages.h"
@@ -26,6 +25,7 @@
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <QStandardItem>
 
@@ -63,7 +63,6 @@ namespace LUAEditor
         , private ContextInterface::Handler
         , private Context_DocumentManagement::Handler
         , private Context_DebuggerManagement::Handler
-        , private AzFramework::TargetManagerClient::Bus::Handler
         , private LUABreakpointRequestMessages::Handler
         , private LUAWatchesRequestMessages::Handler
         , private LUATargetContextRequestMessages::Handler
@@ -133,10 +132,10 @@ namespace LUAEditor
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // Target Manager
+        // Remote Tools Events
         //////////////////////////////////////////////////////////////////////////
-        void DesiredTargetConnected(bool connected) override;
-        void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID) override;
+        void DesiredTargetConnected(bool connected);
+        void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID);
 
         //////////////////////////////////////////////////////////////////////////
         //Context_DebuggerManagement Messages
@@ -318,6 +317,9 @@ namespace LUAEditor
         AZ::IO::FileIOBase* m_fileIO;
 
         LegacyFramework::IPCHandleType m_ipcOpenFilesHandle;
+
+        AzFramework::RemoteToolsEndpointConnectedEvent::Handler m_connectedEventHandler;
+        AzFramework::RemoteToolsEndpointChangedEvent::Handler m_changedEventHandler;
     };
 
     class ReferenceItem

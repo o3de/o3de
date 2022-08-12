@@ -112,7 +112,7 @@ namespace AZ
              console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
              console->ExecuteDeferredConsoleCommands();                                          \
         }                                                                                        \
-        if (AZ::NameDictionary::IsReady(false))                                                  \
+        if (AZ::NameDictionary::IsReady())                                                       \
         {                                                                                        \
             AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());       \
         }                                                                                        \

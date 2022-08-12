@@ -49,16 +49,6 @@ set(FILES
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
     Source/Decals/DecalComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.cpp
     Source/Grid/GridComponent.h
     Source/Grid/GridComponent.cpp
     Source/Grid/GridComponentConfig.cpp
@@ -151,6 +141,11 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeComponent.cpp
     Source/ReflectionProbe/ReflectionProbeComponentController.h
     Source/ReflectionProbe/ReflectionProbeComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentConfig.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.h
+    Source/SkyAtmosphere/SkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponent.h
     Source/SkyBox/HDRiSkyboxComponentConfig.cpp
     Source/SkyBox/HDRiSkyboxComponentController.cpp
     Source/SkyBox/HDRiSkyboxComponentController.h

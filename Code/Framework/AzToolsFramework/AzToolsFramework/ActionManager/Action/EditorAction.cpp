@@ -31,7 +31,7 @@ namespace AzToolsFramework
         , m_hideFromToolBarsWhenDisabled(hideFromToolBarsWhenDisabled)
     {
         UpdateIconFromPath();
-        m_action = new QAction(m_icon, m_name.c_str(), nullptr);
+        m_action = new QAction(m_icon, m_name.c_str(), parentWidget);
 
         QObject::connect(
             m_action, &QAction::triggered, parentWidget,
@@ -81,7 +81,7 @@ namespace AzToolsFramework
     void EditorAction::SetDescription(AZStd::string description)
     {
         m_description = AZStd::move(description);
-        m_action->setToolTip(m_description.c_str());
+        UpdateTooltipText();
     }
 
     const AZStd::string& EditorAction::GetCategory() const
@@ -108,6 +108,17 @@ namespace AzToolsFramework
         {
             m_action->setIcon(m_icon);
         }
+    }
+
+    AZStd::string EditorAction::GetHotKey() const
+    {
+        return m_action->shortcut().toString().toStdString().c_str();
+    }
+
+    void EditorAction::SetHotKey(const AZStd::string& hotKey)
+    {
+        m_action->setShortcut(QKeySequence(hotKey.c_str()));
+        UpdateTooltipText();
     }
 
     bool EditorAction::GetHideFromMenusWhenDisabled() const
@@ -180,6 +191,18 @@ namespace AzToolsFramework
         {
             m_iconPath.clear();
         }
+    }
+
+    void EditorAction::UpdateTooltipText()
+    {
+        AZStd::string toolTipText = m_description;
+
+        if (!m_action->shortcut().isEmpty())
+        {
+            toolTipText += AZStd::string::format(" (%s)", GetHotKey().c_str());
+        }
+
+        m_action->setToolTip(toolTipText.c_str());
     }
 
 } // namespace AzToolsFramework

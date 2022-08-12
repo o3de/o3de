@@ -25,6 +25,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/sort.h>
 
 #include <QDir>
 
@@ -387,6 +388,13 @@ namespace O3DE::ProjectManager
                 engineInfo.m_version = Py_To_String_Optional(engineData, "O3DEVersion", "0.0.0.0");
                 engineInfo.m_name = Py_To_String_Optional(engineData, "engine_name", "O3DE");
                 engineInfo.m_path = Py_To_String(enginePath);
+
+                auto thisEnginePath = m_manifest.attr("get_this_engine_path")();
+                if (pybind11::isinstance(thisEnginePath, m_pathlib.attr("Path")().get_type()) &&
+                    thisEnginePath.attr("samefile")(enginePath).cast<bool>())
+                {
+                    engineInfo.m_thisEngine = true;
+                }
             }
 
             auto o3deData = m_manifest.attr("load_o3de_manifest")();
@@ -407,6 +415,7 @@ namespace O3DE::ProjectManager
                 auto defaultThirdPartyFolder = m_manifest.attr("get_o3de_third_party_folder")();
                 engineInfo.m_thirdPartyPath = Py_To_String_Optional(o3deData, "default_third_party_folder", Py_To_String(defaultThirdPartyFolder));
             }
+
 
             // check if engine path is registered
             auto allEngines = m_manifest.attr("get_manifest_engines")();
@@ -429,6 +438,27 @@ namespace O3DE::ProjectManager
             AZ_Warning("PythonBindings", false, "Failed to get EngineInfo from %s", Py_To_String(enginePath));
         }
         return engineInfo;
+    }
+
+    AZ::Outcome<QVector<EngineInfo>> PythonBindings::GetAllEngineInfos()
+    {
+        QVector<EngineInfo> engines;
+
+        auto result = ExecuteWithLockErrorHandling([&]
+        {
+            for (auto path : m_manifest.attr("get_manifest_engines")())
+            {
+                engines.push_back(EngineInfoFromPath(path));
+            }
+        });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure();
+        }
+
+        AZStd::sort(engines.begin(), engines.end());
+        return AZ::Success(AZStd::move(engines));
     }
 
     AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()
@@ -463,6 +493,30 @@ namespace O3DE::ProjectManager
 
                 // it is possible an engine is registered in o3de_manifest.json but the engine.json is
                 // missing or corrupt in which case we do not consider it a registered engine
+            }
+        });
+
+        if (!result || !engineInfo.IsValid())
+        {
+            return AZ::Failure();
+        }
+        else
+        {
+            return AZ::Success(AZStd::move(engineInfo));
+        }
+    }
+
+    AZ::Outcome<EngineInfo> PythonBindings::GetProjectEngine(const QString& projectPath)
+    {
+        EngineInfo engineInfo;
+        bool result = ExecuteWithLock([&] {
+            auto enginePathResult = m_manifest.attr("get_project_engine_path")(QString_To_Py_Path(projectPath));
+
+            // if a valid registered object is not found None is returned
+            if (!pybind11::isinstance<pybind11::none>(enginePathResult))
+            {
+                // request a posix path so it looks like what is in o3de_manifest.json
+                engineInfo = EngineInfoFromPath(enginePathResult.attr("as_posix")());
             }
         });
 
@@ -561,7 +615,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gems.begin(), gems.end());
+        AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }
 
@@ -586,7 +640,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gems.begin(), gems.end());
+        AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }
 
@@ -799,10 +853,6 @@ namespace O3DE::ProjectManager
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
                 }
-                else if (gemInfo.m_creator.contains("Amazon Web Services"))
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
-                }
                 else if (data.contains("origin"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
@@ -875,12 +925,20 @@ namespace O3DE::ProjectManager
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
                 projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
+                projectInfo.m_engineName = Py_To_String_Optional(projectData, "engine", projectInfo.m_engineName);
                 if (projectData.contains("user_tags"))
                 {
                     for (auto tag : projectData["user_tags"])
                     {
                         projectInfo.m_userTags.append(Py_To_String(tag));
                     }
+                }
+
+                auto enginePathResult = m_manifest.attr("get_project_engine_path")(path);
+                if (!pybind11::isinstance<pybind11::none>(enginePathResult))
+                {
+                    // request a posix path so it looks like what is in o3de_manifest.json
+                    projectInfo.m_enginePath = Py_To_String(enginePathResult.attr("as_posix")());
                 }
             }
             catch ([[maybe_unused]] const std::exception& e)
@@ -966,6 +1024,8 @@ namespace O3DE::ProjectManager
         bool updateProjectSucceeded = false;
         auto result = ExecuteWithLockErrorHandling([&]
             {
+                using namespace pybind11::literals;
+
                 std::list<std::string> newTags;
                 for (const auto& i : projectInfo.m_userTags)
                 {
@@ -973,17 +1033,16 @@ namespace O3DE::ProjectManager
                 }
 
                 auto editResult = m_editProjectProperties.attr("edit_project_props")(
-                    QString_To_Py_Path(projectInfo.m_path),
-                    pybind11::none(), // proj_name not used
-                    QString_To_Py_String(projectInfo.m_projectName),
-                    QString_To_Py_String(projectInfo.m_id),
-                    QString_To_Py_String(projectInfo.m_origin),
-                    QString_To_Py_String(projectInfo.m_displayName),
-                    QString_To_Py_String(projectInfo.m_summary),
-                    QString_To_Py_String(projectInfo.m_iconPath), // new_icon
-                    pybind11::none(), // add_tags not used
-                    pybind11::none(), // remove_tags not used
-                    pybind11::list(pybind11::cast(newTags)));
+                    "proj_path"_a = QString_To_Py_Path(projectInfo.m_path),
+                    "new_name"_a = QString_To_Py_String(projectInfo.m_projectName),
+                    "new_id"_a = QString_To_Py_String(projectInfo.m_id),
+                    "new_origin"_a = QString_To_Py_String(projectInfo.m_origin),
+                    "new_display"_a = QString_To_Py_String(projectInfo.m_displayName),
+                    "new_summary"_a = QString_To_Py_String(projectInfo.m_summary),
+                    "new_icon"_a = QString_To_Py_String(projectInfo.m_iconPath),
+                    "replace_tags"_a = pybind11::list(pybind11::cast(newTags)),
+                    "new_engine_name"_a = QString_To_Py_String(projectInfo.m_engineName)
+                    );
                 updateProjectSucceeded = (editResult.cast<int>() == 0);
             });
 
@@ -1238,7 +1297,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gemRepos.begin(), gemRepos.end());
+        AZStd::sort(gemRepos.begin(), gemRepos.end());
         return AZ::Success(AZStd::move(gemRepos));
     }
 

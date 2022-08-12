@@ -56,6 +56,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.jack_root.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.jack_root.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>

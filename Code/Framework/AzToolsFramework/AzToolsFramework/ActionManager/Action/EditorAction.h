@@ -42,6 +42,8 @@ namespace AzToolsFramework
         void SetCategory(AZStd::string category);
         const AZStd::string& GetIconPath() const;
         void SetIconPath(AZStd::string iconPath);
+        AZStd::string GetHotKey() const;
+        void SetHotKey(const AZStd::string& hotKey);
         bool GetHideFromMenusWhenDisabled() const;
         bool GetHideFromToolBarsWhenDisabled() const;
 
@@ -66,6 +68,7 @@ namespace AzToolsFramework
 
     private:
         void UpdateIconFromPath();
+        void UpdateTooltipText();
 
         QAction* m_action = nullptr;
         QIcon m_icon;

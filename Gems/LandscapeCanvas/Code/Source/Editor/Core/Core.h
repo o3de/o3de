@@ -36,6 +36,8 @@ namespace LandscapeCanvas
     static constexpr const char* INPUT_BOUNDS_SLOT_ID = "InputBounds";
     static constexpr const char* PIN_TO_SHAPE_SLOT_ID = "PinToShape";
     static constexpr const char* ENTITY_NAME_SLOT_ID = "EntityName";
+    static constexpr const char* IMAGE_ASSET_SLOT_ID = "ImageAsset";
+    static constexpr const char* OUTPUT_IMAGE_SLOT_ID = "OutputImage";
 
     // Category title labels
     static const QString GRADIENT_TITLE = QObject::tr("Gradient");
@@ -54,6 +56,8 @@ namespace LandscapeCanvas
     static const QString INPUT_BOUNDS_SLOT_LABEL = QObject::tr("Input Bounds");
     static const QString PIN_TO_SHAPE_SLOT_LABEL = QObject::tr("Pin To Shape");
     static const QString ENTITY_NAME_SLOT_LABEL = QObject::tr("Entity Name");
+    static const QString IMAGE_ASSET_SLOT_LABEL = QObject::tr("Image Asset");
+    static const QString OUTPUT_IMAGE_SLOT_LABEL = QObject::tr("Output Image");
 
     // Connection slot descriptions
     static const QString PREVIEW_BOUNDS_INPUT_SLOT_DESCRIPTION = QObject::tr("Preview Bounds input slot");
@@ -66,4 +70,6 @@ namespace LandscapeCanvas
     static const QString INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION = QObject::tr("Input Bounds input slot");
     static const QString PIN_TO_SHAPE_INPUT_SLOT_DESCRIPTION = QObject::tr("Pin To Shape input slot");
     static const QString ENTITY_NAME_SLOT_DESCRIPTION = QObject::tr("Vegetation entity name");
+    static const QString IMAGE_ASSET_SLOT_DESCRIPTION = QObject::tr("Path to input Image Asset");
+    static const QString OUTPUT_IMAGE_SLOT_DESCRIPTION = QObject::tr("Output path to Image Asset");
 }

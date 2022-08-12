@@ -60,20 +60,26 @@ TEST_F(TerrainWorldComponentTest, ComponentCreatesAndActivatesTerrainSystem)
 TEST_F(TerrainWorldComponentTest, WorldMinAndMaxAffectTerrainSystem)
 {
     // Verify that the Z component of the Terrain World Component's World Min and World Max set the Terrain System's min/max.
-    // (We aren't testing the XY components because those will eventually get removed)
+    // The z min/max should be returned with GetTerrainHeightBounds, and since there are no terrain areas, the aabb returned
+    // from worldBounds should be invalid.
 
     Terrain::TerrainWorldConfig config;
-    config.m_worldMin = AZ::Vector3(0.0f, 0.0f, -345.0f);
-    config.m_worldMax = AZ::Vector3(1024.0f, 1024.0f, 678.0f);
+    config.m_minHeight = -345.0f;
+    config.m_maxHeight = 678.0f;
 
     auto entity = CreateAndActivateTerrainWorldComponent(config);
+
+    AzFramework::Terrain::FloatRange heightBounds;
+    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+        heightBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightBounds);
 
     AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
         worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
 
-    EXPECT_NEAR(config.m_worldMin.GetZ(), worldBounds.GetMin().GetZ(), 0.001f);
-    EXPECT_NEAR(config.m_worldMax.GetZ(), worldBounds.GetMax().GetZ(), 0.001f);
+    EXPECT_NEAR(config.m_minHeight, heightBounds.m_min, 0.001f);
+    EXPECT_NEAR(config.m_maxHeight, heightBounds.m_max, 0.001f);
+    EXPECT_FALSE(worldBounds.IsValid());
 
     entity.reset();
 }

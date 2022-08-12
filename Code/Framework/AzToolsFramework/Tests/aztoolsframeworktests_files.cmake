@@ -11,6 +11,7 @@ set(FILES
     ActionManager/ActionManagerFixture.cpp
     ActionManager/ActionManagerFixture.h
     ActionManager/ActionManagerTests.cpp
+    ActionManager/HotKeyManagerTests.cpp
     ActionManager/MenuManagerTests.cpp
     ActionManager/ToolBarManagerTests.cpp
     ArchiveTests.cpp
@@ -132,6 +133,7 @@ set(FILES
     PropertyTreeEditorTests.cpp
     PythonBindingTests.cpp
     QtWidgetLimitsTests.cpp
+    Script/LuaEditorSystemComponentTests.cpp
     Script/ScriptComponentTests.cpp
     Script/ScriptEntityTests.cpp
     Slice.cpp
