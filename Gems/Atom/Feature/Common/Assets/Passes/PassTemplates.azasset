@@ -77,6 +77,26 @@
                 "Path": "Passes/AuxGeom.pass"
             },
             {
+                "Name": "SkyAtmosphereParentTemplate",
+                "Path": "Passes/SkyAtmosphereParent.pass"
+            },
+            {
+                "Name": "SkyAtmosphereTemplate",
+                "Path": "Passes/SkyAtmosphere.pass"
+            },
+            {
+                "Name": "SkyTransmittanceLUTTemplate",
+                "Path": "Passes/SkyTransmittanceLUT.pass"
+            },
+            {
+                "Name": "SkyViewLUTTemplate",
+                "Path": "Passes/SkyViewLUT.pass"
+            },
+            {
+                "Name": "SkyRayMarchingTemplate",
+                "Path": "Passes/SkyRayMarching.pass"
+            },
+            {
                 "Name": "SkyBoxTemplate",
                 "Path": "Passes/SkyBox.pass"
             },
@@ -403,74 +423,6 @@
             {
                 "Name": "BloomPassTemplate",
                 "Path": "Passes/Bloom.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridRayTracingPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRayTracing.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridUpdatePassTemplate",
-                "Path": "Passes/DiffuseProbeGridUpdate.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBlendIrradiancePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBlendIrradiance.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBlendDistancePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBlendDistance.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBorderUpdatePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBorderUpdate.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridRelocationPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRelocation.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridClassificationPassTemplate",
-                "Path": "Passes/DiffuseProbeGridClassification.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridPreparePassTemplate",
-                "Path": "Passes/DiffuseProbeGridPrepare.pass"
-            },
-            {
-                "Name": "DiffuseGlobalIlluminationPassTemplate",
-                "Path": "Passes/DiffuseGlobalIllumination.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridDownsamplePassTemplate",
-                "Path": "Passes/DiffuseProbeGridDownsample.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridRenderPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRender.pass"
-            },
-            {
-                "Name": "DiffuseCompositePassTemplate",
-                "Path": "Passes/DiffuseComposite.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridVisualizationPreparePassTemplate",
-                "Path": "Passes/DiffuseProbeGridVisualizationPrepare.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate",
-                "Path": "Passes/DiffuseProbeGridVisualizationAccelerationStructure.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridVisualizationRayTracingPassTemplate",
-                "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridQueryPassTemplate",
-                "Path": "Passes/DiffuseProbeGridQuery.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
-                "Path": "Passes/DiffuseProbeGridVisualizationComposite.pass"
             },
             {
                 "Name": "DiffuseGlobalFullscreenPassTemplate",

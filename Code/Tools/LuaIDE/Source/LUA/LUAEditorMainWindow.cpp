@@ -18,6 +18,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -143,7 +144,7 @@ namespace LUAEditor
 
         this->setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 
-        m_pTargetButton = aznew AzToolsFramework::TargetSelectorButtonAction(this);
+        m_pTargetButton = aznew AzToolsFramework::TargetSelectorButtonAction(AzFramework::LuaToolsKey, this);
         m_gui->debugToolbar->addAction(m_pTargetButton);
         m_gui->menuDebug->addAction(m_pTargetButton);
 

@@ -9,7 +9,7 @@
 
     "Source" : "EditorModeMask.azsl",
 
-    "DrawList" : "editormodemask",
+    "DrawList" : "editormodeinterestmask",
 
     "DepthStencilState" : 
     { 

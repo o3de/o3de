@@ -51,5 +51,5 @@ namespace JsonSerializationTests
     };
 
     using ByteStreamConformityTestTypes = ::testing::Types<ByteStreamSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonByteStreamSerialzier, JsonSerializerConformityTests, ByteStreamConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonByteStreamSerialzier, JsonSerializerConformityTests, ByteStreamConformityTestTypes));
 } // namespace JsonSerializationTests

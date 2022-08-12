@@ -21,7 +21,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::ImageBasedLightFeatureProcessorInterface, "{EE7441A3-B406-4717-8F35-E3DAC60E3BDB}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::ImageBasedLightFeatureProcessorInterface, "{EE7441A3-B406-4717-8F35-E3DAC60E3BDB}", AZ::RPI::FeatureProcessor);
 
             //! Sets the global specular IBL image for this scene
             virtual void SetSpecularImage(const Data::Asset<RPI::StreamingImageAsset>& imageAsset) = 0;

@@ -25,7 +25,6 @@
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 
 AZ_DEFINE_BUDGET(AzFramework);
@@ -43,9 +42,6 @@ namespace AzFramework
             AzFramework::NonUniformScaleComponent::CreateDescriptor(),
             AzFramework::GameEntityContextComponent::CreateDescriptor(),
             AzFramework::RenderGeometry::GameIntersectorComponent::CreateDescriptor(),
-    #if !defined(_RELEASE)
-            AzFramework::TargetManagementComponent::CreateDescriptor(),
-    #endif
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
