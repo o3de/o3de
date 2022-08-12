@@ -19,7 +19,6 @@ if(PAL_TRAIT_TEST_IMPACT_FRAMEWORK_SUPPORTED AND LY_TEST_IMPACT_ACTIVE)
         TEST_SERIAL
         COMPONENT 
             TestImpactFramework
-        
     )
     
     ly_add_pytest(
