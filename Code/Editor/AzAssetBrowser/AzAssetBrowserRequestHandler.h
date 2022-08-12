@@ -40,6 +40,10 @@ namespace AzToolsFramework
 // libraries or by direct header inclusions, so they ARE available:
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
+// this also triggers a MEMBER warning on the actual EBus Handler we derive from
+// because it has members like m_node.
+AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
 class SANDBOX_API AzAssetBrowserRequestHandler
     : protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     , protected AzQtComponents::DragAndDropEventsBus::Handler
@@ -79,5 +83,6 @@ protected:
                             AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>* outVector = nullptr) const;
 };
 
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
