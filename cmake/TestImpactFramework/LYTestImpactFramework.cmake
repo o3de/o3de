@@ -63,6 +63,9 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
+# If we are not provided a path to the Instrumentation bin,
+# set LY_TEST_IMPACT to false so that our tests don't get added
+# and TIAF doesn't get built.
 if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN STREQUAL "")
     set(LY_TEST_IMPACT_ACTIVE true)
 else()
