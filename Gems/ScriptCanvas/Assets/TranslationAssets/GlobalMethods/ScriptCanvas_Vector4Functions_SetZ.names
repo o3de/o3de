@@ -13,7 +13,7 @@
                     "base": "ScriptCanvas_Vector4Functions_SetZ",
                     "details": {
                         "name": "SetZ",
-                        "tooltip": "Returns a the vector(Source.X, Source.Y, Z, Source.W)."
+                        "tooltip": "Returns a vector (Source.X, Source.Y, Z, Source.W)."
                     },
                     "params": [
                         {

@@ -9,6 +9,7 @@
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 #include <AzCore/Math/MatrixUtils.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <Math/GaussianMathFilter.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>

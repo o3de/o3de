@@ -21,6 +21,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
 #include <xxhash/xxhash.h>
@@ -606,6 +607,11 @@ namespace AssetBuilderSDK
                 ->Property("flags", BehaviorValueProperty(&ProductDependency::m_flags));
         }
 
+    }
+
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag)
+    {
+        return (static_cast<AssetBuilderSDK::ProductOutputFlags>(product.m_flags.to_ullong()) & flag) == flag;
     }
 
     ProductPathDependency::ProductPathDependency(AZStd::string_view dependencyPath, ProductPathDependencyType dependencyType)

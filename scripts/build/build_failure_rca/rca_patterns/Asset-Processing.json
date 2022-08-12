@@ -1,0 +1,19 @@
+{
+    "indications": [
+      {
+        "name": "Asset Processing",
+        "description": "Asset Processing error",
+        "comment": "Asset Processing error, see log for more details",
+        "single_line": true,
+        "find_all": true,
+        "log_patterns": [
+          "^.*AssetProcessor: Failed.*$"
+        ],
+        "log_testcases": [
+          "AssetProcessor: Failed Shaders/Terrain/TerrainDetailClipmapGenerationPass.shader"
+        ],
+        "owners": []
+      }
+    ]
+  }
+  

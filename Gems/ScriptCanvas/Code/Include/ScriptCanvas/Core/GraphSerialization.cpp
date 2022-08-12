@@ -87,21 +87,6 @@ namespace GraphSerializationCpp
 
 namespace ScriptCanvas
 {
-    SourceTree* SourceTree::ModRoot()
-    {
-        if (!m_parent)
-        {
-            return this;
-        }
-
-        return m_parent->ModRoot();
-    }
-
-    void SourceTree::SetParent(SourceTree& parent)
-    {
-        m_parent = &parent;
-    }
-
     AZStd::string SourceTree::ToString(size_t depth) const
     {
         AZStd::string result;
@@ -121,7 +106,8 @@ namespace ScriptCanvas
 
     DeserializeResult Deserialize
         ( AZStd::string_view source
-        , MakeInternalGraphEntitiesUnique makeUniqueEntities)
+        , MakeInternalGraphEntitiesUnique makeUniqueEntities
+        , LoadReferencedAssets loadReferencedAssets)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace GraphSerializationCpp;
@@ -202,8 +188,12 @@ namespace ScriptCanvas
         }
 
         graph->MarkOwnership(*result.m_graphDataPtr);
-        entity->Init();
-        entity->Activate();
+
+        if (loadReferencedAssets == LoadReferencedAssets::Yes)
+        {
+            entity->Init();
+            entity->Activate();
+        }
         // ...can be deprecated ECS management
 
         result.m_isSuccessful = true;

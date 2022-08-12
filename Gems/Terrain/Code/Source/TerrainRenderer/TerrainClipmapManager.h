@@ -46,6 +46,9 @@ namespace Terrain
             ClipmapSize2048 = 2048u
         };
 
+        //! Enable clipmap feature for rendering
+        bool m_clipmapEnabled = false;
+
         //! The size of the clipmap image in each layer.
         ClipmapSize m_clipmapSize = ClipmapSize1024;
 
@@ -136,6 +139,7 @@ namespace Terrain
         };
 
         void SetConfiguration(const ClipmapConfiguration& config);
+        bool IsClipmapEnabled() const;
 
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
