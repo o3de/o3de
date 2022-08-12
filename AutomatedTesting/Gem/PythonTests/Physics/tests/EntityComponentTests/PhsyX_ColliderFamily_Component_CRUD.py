@@ -6,8 +6,53 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 class Tests():
-    create_collider_entity = ("PhysX Collider Entity Created", "PhysX Collider Entity failed to respond after creation")
-    create_shape_collider_entity = ("PhysX Shape Collider Entity Created", "PhysX Shape Collider Entity failed to respond after creation")
+    create_collider_entity = (
+        "PhysX Collider Entity Created",
+        "PhysX Collider Entity failed to respond after creation.")
+    create_shape_collider_entity = (
+        "PhysX Shape Collider Entity Created.",
+        "PhysX Shape Collider Entity failed to respond after creation.")
+    create_physx_collider_component = (
+        "PhysX Collider Component Added.",
+        "PhysX Collider Component failed to respond after creation.")
+    create_shape_collider_component = (
+        "PhysX Shape Collider Component Added.",
+        "PhysX Shape Collider Component failed to respond after creation.")
+    set_physx_box_shape = (
+        "PhysX Collider Box Shape set.",
+        "PhysX Collider Box Shape failed to set."
+    )
+    set_physx_sphere_shape = (
+        "PhysX Collider Sphere Shape set.",
+        "PhysX Collider Sphere Shape failed to set."
+    )
+    set_physx_capsule_shape = (
+        "PhysX Collider Capsule Shape set.",
+        "PhysX Collider Capsule Shape failed to set."
+    )
+    add_box_shape_component = (
+        "Box Shape component added to PhysX Shape Collider entity successfully.",
+        "Box Shape component failed to add to PhysX Shape Collider entity")
+    add_capsule_shape_component = (
+        "Capsule Shape component added to PhysX Shape Collider entity successfully.",
+        "Capsule Shape component failed to add to PhysX Shape Collider entity"
+    )
+    add_cylinder_shape_component = (
+        "Cylinder Shape component added to PhysX Shape Collider entity successfully.",
+        "Cylinder Shape component failed to add to PhysX Shape Collider entity"
+    )
+    add_polygon_prism_shape_component = (
+        "Polygon Prism Shape component added to PhysX Shape Collider entity successfully.",
+        "Polygon Prism Shape component failed to add to PhysX Shape Collider entity"
+    )
+    add_quad_shape_component = (
+        "Quad Shape component added to PhysX Shape Collider entity successfully.",
+        "Quad Shape component failed to add to PhysX Shape Collider entity"
+    )
+    add_sphere_shape_component = (
+        "Sphere Shape component added to PhysX Shape Collider entity successfully.",
+        "Sphere Shape component failed to add to PhysX Shape Collider entity"
+    )
 
 
 def PhysX_ColliderFamily_Component_CRUD():
@@ -39,42 +84,79 @@ def PhysX_ColliderFamily_Component_CRUD():
     import azlmbr.entity as EntityId
     import azlmbr.editor as editor
     import azlmbr.bus as bus
+    import azlmbr.physics as physics
 
-    import editor_python_test_tools.hydra_editor_utils as hydra
-
+    from editor_python_test_tools import hydra_editor_utils as hydra
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
     from editor_python_test_tools.asset_utils import Asset
-    from ...utils.physics_constants import (WAIT_TIME_3)
 
+    from Physics.utils.physics_tools import (create_validated_entity, add_validated_component)
+    from Physics.utils.physics_constants import (PHYSX_COLLIDER, PHYSX_SHAPE_COLLIDER,
+                                                 BOX_SHAPE_COMPONENT, CAPSULE_SHAPE_COMPONENT,
+                                                 PHSX_SHAPE_COLLIDER_SHAPE,
+                                                 CYLINDER_SHAPE_COMPONENT, POLYGON_PRISM_SHAPE_COMPONENT,
+                                                 QUAD_SHAPE_COMPONENT, SPHERE_SHAPE_COMPONENT)
 
-    def create_entity(entity_name, components_to_add):
-        entity_position = math.Vector3(125.0, 136.0, 32.0)
-        entity_id = editor.ToolsApplicationRequestBus(
-            bus.Broadcast, "CreateNewEntityAtPosition", entity_position, EntityId.EntityId()
-        )
-        entity = hydra.Entity(entity_name, entity_id)
-        if entity_id.IsValid():
-            print(f"{entity_name} entity Created")
-        entity.components = []
-        for component in components_to_add:
-            entity.components.append(hydra.add_component(component, entity_id))
-        return entity
 
     # 1) Load the level
     hydra.open_base_level()
 
-    # 2) Adding Entities & Verifying they were created
-    physx_collider = EditorEntity.create_editor_entity("PhsyX_Collider")
-    shape_collider = EditorEntity.create_editor_entity("Shape_Collider")
+    # 2) Create entities to hold PhysX Collider Components
+    physx_collider_box_entity = create_validated_entity("physx_collider_box_entity", Tests.create_collider_entity)
+    physx_collider_capsule_entity = create_validated_entity("physx_collider_capsule_entity", Tests.create_collider_entity)
+    physx_collider_sphere_entity = create_validated_entity("physx_collider_sphere_entity", Tests.create_collider_entity)
+    physx_collider_physicsasset_entity = create_validated_entity("physx_collider_physicsasset_entity", Tests.create_collider_entity)
 
-    collider_entity_found = helper.wait_for_condition(physx_collider.id.IsValid(), WAIT_TIME_3)
-    shape_collider_entity_found = helper.wait_for_condition(shape_collider.id.IsValid(), WAIT_TIME_3)
+    physx_shape_collider_box_entity = create_validated_entity("physx_shape_collider_box_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_capsule_entity = create_validated_entity("physx_shape_collider_capsule_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_cylinder_entity = create_validated_entity("physx_shape_collider_cylinder_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_polygon_prism_entity = create_validated_entity("physx_shape_collider_polygon_prism_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_quad_entity = create_validated_entity("physx_shape_collider_quad_entity", Tests.create_shape_collider_entity)
+    physx_shape_collider_sphere_entity = create_validated_entity("physx_shape_collider_sphere_entity", Tests.create_shape_collider_entity)
 
-    Report.result(Tests.create_collider_entity, collider_entity_found)
-    Report.result(Tests.create_shape_collider_entity, shape_collider_entity_found)
+    with Tracer() as section_tracer:
 
-    # 3) Add Components to Entities
+        # 3) Adding Collider Components to their entities
+        physx_collider_box_shape_component = add_validated_component(physx_collider_box_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+        physx_collider_capsule_shape_component = add_validated_component(physx_collider_capsule_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+        physx_collider_sphere_shape_component = add_validated_component(physx_collider_sphere_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+        physx_collider_box_shape_component = add_validated_component(physx_collider_physicsasset_entity, PHYSX_COLLIDER, Tests.create_physx_collider_component)
+
+        physx_shape_collider_box_component = add_validated_component(physx_shape_collider_box_entity, PHYSX_SHAPE_COLLIDER, Tests.add_box_shape_component)
+        physx_shape_collider_capsule_component = add_validated_component(physx_shape_collider_capsule_entity, PHYSX_SHAPE_COLLIDER, Tests.add_capsule_shape_component)
+        physx_shape_collider_cylinder_component = add_validated_component(physx_shape_collider_cylinder_entity, PHYSX_SHAPE_COLLIDER, Tests.add_cylinder_shape_component)
+        physx_shape_collider_polygon_prism_component = add_validated_component(physx_shape_collider_polygon_prism_entity, PHYSX_SHAPE_COLLIDER, Tests.add_polygon_prism_shape_component)
+        physx_shape_collider_quad_component = add_validated_component(physx_shape_collider_quad_entity, PHYSX_SHAPE_COLLIDER, Tests.add_quad_shape_component)
+        physx_shape_collider_sphere_component = add_validated_component(physx_shape_collider_sphere_entity, PHYSX_SHAPE_COLLIDER, Tests.add_sphere_shape_component)
+
+        # 4) Setting Physx Collider Shapes
+        physx_collider_box_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Box)
+        physx_collider_capsule_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Capsule)
+        physx_collider_sphere_shape_component.set_component_property_value(PHSX_SHAPE_COLLIDER_SHAPE, physics.ShapeType_Sphere)
+
+        # 5) Adding Physx Shape Collider Components to corresponding Shape Collider Entities
+        box_shape_component = add_validated_component(physx_shape_collider_box_entity, BOX_SHAPE_COMPONENT, Tests.add_box_shape_component)
+        capsule_shape_component = add_validated_component(physx_shape_collider_capsule_entity, CAPSULE_SHAPE_COMPONENT, Tests.add_capsule_shape_component)
+        cylinder_shape_component = add_validated_component(physx_shape_collider_cylinder_entity, CYLINDER_SHAPE_COMPONENT, Tests.add_cylinder_shape_component)
+        polygon_prism_shape_component = add_validated_component(physx_shape_collider_polygon_prism_entity, POLYGON_PRISM_SHAPE_COMPONENT, Tests.add_polygon_prism_shape_component)
+        quad_shape_component = add_validated_component(physx_shape_collider_quad_entity, QUAD_SHAPE_COMPONENT, Tests.add_quad_shape_component)
+        sphere_shape_component = add_validated_component(physx_shape_collider_sphere_entity, SPHERE_SHAPE_COMPONENT, Tests.add_sphere_shape_component)
+
+        # 6) PhysX Collider PhysicsAsset Mesh Support
+        proptree = physx_shape_collider_box_component.get_property_tree()
+
+        # Apparently proptrees aren't iterable with a for loop. Need to figure out how to iterate over the proptery tree to get the componenet proptery paths,
+        # or find another way to iterate through property paths to successfully write this test.
+        # output = []
+        #
+        # for prop in proptree:
+        #     output.append(prop)
+        #Report.critical_result(output, False)
+
+if __name__ == "__main__":
+    from editor_python_test_tools.utils import Report
+    Report.start_test(PhysX_ColliderFamily_Component_CRUD)
 
