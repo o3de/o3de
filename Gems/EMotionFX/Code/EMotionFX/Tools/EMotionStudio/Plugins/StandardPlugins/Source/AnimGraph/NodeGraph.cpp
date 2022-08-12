@@ -503,7 +503,7 @@ namespace EMStudio
         {
             // find the min and max points
             int32 minX, maxX, startY, endY;
-            if (x1 <= x2)
+            if (x1 < x2)
             {
                 minX    = x1;
                 maxX    = x2;
