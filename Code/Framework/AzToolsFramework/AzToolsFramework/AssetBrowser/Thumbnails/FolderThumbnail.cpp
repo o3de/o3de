@@ -44,8 +44,7 @@ namespace AzToolsFramework
 
         void FolderThumbnail::LoadThread()
         {
-            auto folderKey = azrtti_cast<const FolderThumbnailKey*>(m_key.data());
-            AZ_Assert(folderKey, "Incorrect key type, excpected FolderThumbnailKey");
+            AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.data()), "Incorrect key type, excpected FolderThumbnailKey");
 
             const char* folderIcon = FolderIconPath;
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
