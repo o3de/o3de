@@ -25,6 +25,15 @@ Node Type: AnimationData
 	KeyFrames: Count 195. Hash: 8622607111849624366
 	TimeStepBetweenFrames: 0.033333
 
+Node Name: transform
+Node Path: RootNode.jack_root.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 1.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000,  1.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  1.000000>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
 Node Name: custom_properties
 Node Path: RootNode.jack_root.custom_properties
 Node Type: CustomPropertyData
