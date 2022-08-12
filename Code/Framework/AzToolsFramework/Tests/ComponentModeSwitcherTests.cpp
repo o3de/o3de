@@ -26,12 +26,9 @@ namespace UnitTest
     using AzToolsFramework::ComponentModeFramework::AnotherPlaceholderEditorComponent;
     using AzToolsFramework::ComponentModeFramework::PlaceholderEditorComponent;
     using ComponentModeSwitcher = AzToolsFramework::ComponentModeFramework::ComponentModeSwitcher;
+    using ComponentModeSwitcherTestFixture = ComponentModeTestFixture;
 
-    class ComponentModeSwitcherTestFixture : public ComponentModeTestFixture
-    {
-    };
-
-    TEST_F(ComponentModeSwitcherTestFixture, AddComponentToEntityAddsComponentToSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, AddingComponentsToEntityAddsComponentsToSwitcher)
     {
         // Given the setup of one entity with one component
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -64,7 +61,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 2);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, RemoveComponentFromEntityRemovesComponentFromSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, RemovingComponentsFromEntityRemovesComponentsFromSwitcher)
     {
         // Given the set up of one entity selected with two components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -97,7 +94,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 1);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, AddDuplicateComponentDoesNotAddToSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, AddingDuplicateComponentsDoesNotAddComponentsToSwitcher)
     {
         // Given an entity with one component
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -167,7 +164,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 2);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, AddMultipleEntitiesToSelectionWithSameComponentsKeepComponentsInSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, AddIngMultipleEntitiesToSelectionWithSameComponentsKeepComponentsInSwitcher)
     {
         // Given two entities with different components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -204,7 +201,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 1);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, AddMultipleEntityToSelectionWithUniqueComponentsRemovesUniqueFromSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, AddingMultipleEntityToSelectionWithUniqueComponentsRemovesUniqueFromSwitcher)
     {
         // Given two entities with multiple components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -240,7 +237,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 0);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, DeselectOneEntityWithMultipleEntitiesSelectedAddsRemovedComponents)
+    TEST_F(ComponentModeSwitcherTestFixture, DeselectingOneEntityWithMultipleEntitiesSelectedAddsRemovedComponents)
     {
         // Given two entities with different components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -351,7 +348,7 @@ namespace UnitTest
         EXPECT_TRUE(nullComponent == nullptr);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, DisableComponentRemovesComponentFromSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, DisablingComponentRemovesComponentFromSwitcher)
     {
         // Given an entity with two components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -381,7 +378,7 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 1);
     }
 
-    TEST_F(ComponentModeSwitcherTestFixture, EnableComponentAddsComponentToSwitcher)
+    TEST_F(ComponentModeSwitcherTestFixture, EnablingComponentAddsComponentToSwitcher)
     {
         // Given an entity with two components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
