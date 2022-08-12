@@ -32,17 +32,24 @@ namespace AzToolsFramework::Prefab
         virtual void InitializeEditorInterfaces() = 0;
 
         //! Set the focused prefab instance to the owning instance of the entityId provided.
-        //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
+        //! If the entity id is invalid, then focus on the root prefab instance.
+        //! @param entityId The entity id of the entity whose owning instance we want the prefab system to focus on.
+        //! @return PrefabFocusOperationResult that shows if the operation succeeds.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
 
-        //! Returns the template id of the instance the prefab system is focusing on.
+        //! Returns the template id of the currently focused prefab instance.
+        //! @param entityContextId The entity context id.
+        //! @return Template id of the focused instance.
         virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
 
-        //! Returns a reference to the instance the prefab system is focusing on.
+        //! Returns a reference to the currently focused prefab instance.
+        //! @param entityContextId The entity context id.
+        //! @return The focused prefab instance.
         virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
 
-        //! Appends the path from the focused prefab instance to entityId to the providedPatch.
-        virtual LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) const = 0;
+        //! Appends the path from the focused prefab instance to entityId into the provided patch array.
+        //! @param providedPatch The provided path array to be appended to.
+        //! @return Link id 
+        virtual LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const = 0;
     };
-
 } // namespace AzToolsFramework::Prefab

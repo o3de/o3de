@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         namespace PrefabDomUtils
         {
             inline static constexpr const char* InstancesName = "Instances";
