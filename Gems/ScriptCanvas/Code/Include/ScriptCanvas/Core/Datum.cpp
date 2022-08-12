@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Transform.h>
 
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #include "DatumBus.h"
 
@@ -2074,7 +2075,7 @@ namespace ScriptCanvas
             {
                 m_class = classIter->second;
             }
-            else
+            else if (m_type.GetAZType() != AZ::Uuid::CreateString(k_ExecutionStateAzTypeIdString))
             {
                 AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }

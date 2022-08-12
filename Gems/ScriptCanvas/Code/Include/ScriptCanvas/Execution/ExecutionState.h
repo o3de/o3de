@@ -49,7 +49,7 @@ namespace ScriptCanvas
     class ExecutionState
     {
     public:
-        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}");
+        AZ_RTTI(ExecutionState, k_ExecutionStateAzTypeIdString);
         AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
 
         const AZ::u32 m_lightUserDataMark = UserDataMark;
