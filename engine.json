@@ -1,11 +1,22 @@
 {
     "engine_name": "o3de",
-    "restricted": "o3de",
+    "restricted": [
+        "Restricted/Gems/popcorneffects",
+        "Restricted/Gems/popcornAffects",
+        "Restricted/Gems/popcornfx",
+        "Restricted/Gems/ger",
+        "o",
+        "3",
+        "d",
+        "e"
+    ],
     "FileVersion": 1,
     "O3DEVersion": "0.1.0.0",
     "O3DECopyrightYear": 2021,
     "O3DEBuildNumber": 0,
     "external_subdirectories": [
+        "Gems/Test",
+        "build/windows_vs2019/Code/Tools/ProjectManager",
         "Gems/RecastNavigation",
         "Gems/Achievements",
         "Gems/AssetValidation",

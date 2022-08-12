@@ -11,6 +11,11 @@ import uuid
 import pytest
 import string
 
+import logging
+LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
+logger = logging.getLogger('o3de.download')
+logging.basicConfig(format=LOG_FORMAT)
+
 from o3de import engine_template
 from unittest.mock import patch
 
@@ -120,7 +125,6 @@ TEST_TEMPLATE_JSON_CONTENTS = """\
     ]
 }
 """
-
 
 TEST_CONCRETE_TEMPLATE_JSON_CONTENTS = string.Template(
     TEST_TEMPLATE_JSON_CONTENTS).safe_substitute({'Name': 'TestTemplate'})
@@ -386,4 +390,62 @@ class TestCreateTemplate:
         template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, 'TestGem', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, template_file_map, gem_name='TestGem', no_register=True)
+                                          template_json_contents, template_file_map, gem_name='TestGem', display_name = 'TestGem',
+                                          no_register=True)
+
+
+class TestGemParameters:
+    @pytest.mark.parametrize(
+        "expected_result, create_path, gem_name, display_name, summary, requirements, license,"
+            "license_url, origin, origin_url, user_tags, gem_location, icon_path, documentation_url, creator_name, repo_uri", [
+            pytest.param(0, False, "popcorneffects", "Popcorn Effects", "Extends animations for O3DE", "Visual Studio 2019 or greater",
+            "MIT License", "www.opensource.org/mylicense", "Popcorn Studios", "www.github.com/myrepo", 
+            "AWS, Achievements, Animation, gem1, gem2", "C:\\Users\\johnsmith\\o3de\\Gems\\Test", "C:\\Users\\johnsmith", 
+            "www.o3de.org/docs", "John Smith", "www.github.com/johnsmith"),
+            pytest.param(1, True, "popcorneffects", "Popcorn Effects", "Extends animations for O3DE", "Visual Studio 2019 or greater",
+            "MIT License", "www.opensource.org/mylicense", "Popcorn Studios", "www.github.com/myrepo", 
+            "AWS, Achievements, Animation, gem1, gem2", "C:\\Users\\johnsmith\\o3de\\Gems\\Test", "C:\\Users\\johnsmith", 
+            "www.o3de.org/docs", "John Smith", "www.github.com/johnsmith"),
+            pytest.param(0, False, "popcorneffects", "", "", "", "", "", "", "", "", 
+            "C:\\Users\\johnsmith\\o3de\\Gems\\Test", "", "", "", "")
+        ]
+    )
+
+    def test_create_gem_parameters(self, tmpdir, expected_result, create_path, gem_name, display_name, summary, requirements, license,
+            license_url, origin, origin_url, user_tags, gem_location, icon_path, documentation_url, creator_name, repo_uri):
+            
+            try:
+                gem_root = (pathlib.Path(tmpdir) / 'TestGem').resolve()
+                if create_path:
+                    gem_root.mkdir(parents=True, exist_ok=True)
+                with patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+                    patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
+                    returnval = engine_template.create_gem(gem_path=gem_root, gem_name=gem_name, display_name=display_name, summary=summary, requirements=requirements,
+                license=license, license_url=license_url, origin=origin, origin_url=origin_url, user_tags=user_tags, gem_location=gem_location, 
+                icon_path=icon_path, documentation_url=documentation_url, creator_name=creator_name, repo_uri=repo_uri)
+                assert(returnval == expected_result)
+
+                json_file = open(gem_root / 'gem.json', "r")
+                written_json = json.load(json_file)
+                logger.error(written_json)
+                user_tags_list = user_tags.split(',')
+
+                assert(gem_name == written_json['gem_name'])
+                assert(display_name == written_json['display_name'])
+                assert(summary == written_json['summary'])
+                assert(requirements == written_json['requirements'])
+                assert(license == written_json['license'])
+                assert(license_url == written_json['license_url'])
+                assert(origin == written_json['origin'])
+                assert(origin_url == written_json['origin_url'])
+                assert(user_tags_list == written_json['user_tags'])
+                assert(pathlib.PurePath(gem_location).as_posix() == written_json['gem_path'])
+                assert(pathlib.PurePath(icon_path).as_posix() == written_json['icon_path'])
+                assert(documentation_url == written_json['documentation_url'])
+                assert(creator_name == written_json['creator_name'])
+                assert(repo_uri == written_json['repo_uri'])
+
+            except:
+                assert(expected_result == 1)
+
+            

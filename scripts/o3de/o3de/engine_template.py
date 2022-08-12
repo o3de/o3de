@@ -1815,6 +1815,19 @@ def create_gem(gem_path: pathlib.Path,
                template_path: pathlib.Path = None,
                template_name: str = None,
                gem_name: str = None,
+               display_name: str = None,
+               summary: str = None,
+               requirements: str = None,
+               license: str = None,
+               license_url: str = None,
+               origin: str = None,
+               origin_url: str = None,
+               user_tags: str = None,
+               gem_location: str = None,
+               icon_path: str = None,
+               documentation_url: str = None,
+               creator_name: str = None,
+               repo_uri: str = None,
                gem_restricted_path: pathlib.Path = None,
                gem_restricted_name: str = None,
                template_restricted_path: pathlib.Path = None,
@@ -1839,6 +1852,19 @@ def create_gem(gem_path: pathlib.Path,
        The placeholders of ${Name} and ${SanitizedCppName} will be replaced with gem name and a sanitized
        version of the gem name that is suitable as a C++ identifier. If not specified, defaults to the
        last path component of the gem_path
+    :param display_name: The colloquial name displayed throughout project manager, can contain spaces and special characters
+    :param summary: A short description of your Gem
+    :param requirements: Notice of any requirements your Gem. i.e. This requires X other gem
+    :param license: License uses goes here: i.e. Apache-2.0 or MIT
+    :param license_url: Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0
+    :param origin: The name of the originator goes. i.e. XYZ Inc.
+    :param origin_url: The primary repo for your Gem. i.e. http://www.mydomain.com
+    :param user_tags: A comma separated string of user tags
+    :param gem_location: The path to the gem as a string, this is used by the Create a Gem wizard
+    :param icon_path: The path to the icon as a string
+    :param documentation_url: Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...
+    :param creator_name: The name of the creator e.g. John Smith
+    :param repo_uri: A link to the repository
     :param gem_restricted_path: path to the gems restricted folder, can be absolute or relative to the restricted='gems'
     :param gem_restricted_name: str = name of the registered gems restricted path, resolves gem_restricted_path
     :param template_restricted_path: the templates restricted path, can be absolute or relative to the restricted='templates'
@@ -2071,7 +2097,51 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${NameUpper}", gem_name.upper()))
     replacements.append(("${NameLower}", gem_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${Displayname}", display_name))
+    if summary != None:
+        replacements.append(("${Summary}", summary))
+    if license != None:
+        replacements.append(("${License}", license))
+    if license_url != None:
+        replacements.append(("${LicenseURL}", license_url))
+    if origin != None:
+        replacements.append(("${Origin}", origin))
+    if origin_url != None:
+        replacements.append(("${OriginURL}", origin_url))
+    if user_tags != None:
+        tag_list = user_tags.split(',')
+        while "" in tag_list:
+            tag_list.remove("")
 
+        json_ready_str = ""
+        
+        for i in range(len(tag_list)):
+            if i == 0:
+                json_ready_str += tag_list[i] + "\"" + ","
+            elif i == len(tag_list) - 1:
+                json_ready_str += "\"" + tag_list[i]
+            else:
+                json_ready_str += "\"" + tag_list[i] + "\","
+
+        if len(tag_list) == 1:
+            json_ready_str = "\"" + tag_list[0] + "\""
+
+        replacements.append(("${Usertags}", json_ready_str))
+    
+    if gem_location != None:
+        gem_location = pathlib.PurePath(gem_location).as_posix()
+        replacements.append(("${Gempath}", gem_location))
+    if icon_path != None:
+        icon_path = pathlib.PurePath(icon_path).as_posix()
+        replacements.append(("${Iconpath}", icon_path))
+    if requirements != None:
+        replacements.append(("${Requirements}", requirements))
+    if documentation_url != None:
+        replacements.append(("${DocumentationURL}", documentation_url))
+    if creator_name != None:
+        replacements.append(("${Creatorname}", creator_name))
+    if repo_uri != None:
+        replacements.append(("${RepoURI}", repo_uri))
     # module id is a uuid with { and -
     if module_id:
         replacements.append(("${ModuleClassId}", module_id))
@@ -2100,6 +2170,7 @@ def create_gem(gem_path: pathlib.Path,
     else:
         replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
+    logger.error(replacements)
     if _instantiate_template(template_json_data,
                              gem_name,
                              template_name,
@@ -2245,12 +2316,56 @@ def _run_create_project(args: argparse) -> int:
                           args.module_id,
                           args.project_id)
 
+"""
+gem_path: pathlib.Path,
+               template_path: pathlib.Path = None,
+               template_name: str = None,
+               gem_name: str = None,
+               display_name: str = None,
+               summary: str = None,
+               requirements: str = None,
+               license: str = None,
+               license_url: str = None,
+               origin: str = None,
+               origin_url: str = None,
+               user_tags: str = None,
+               icon_path: str = None,
+               documentation_url: str = None,
+               creator_name: str = None,
+               repo_uri: str = None,
+               gem_restricted_path: pathlib.Path = None,
+               gem_restricted_name: str = None,
+               template_restricted_path: pathlib.Path = None,
+               template_restricted_name: str = None,
+               gem_restricted_platform_relative_path: pathlib.Path = None,
+               template_restricted_platform_relative_path: pathlib.Path = None,
+               keep_restricted_in_gem: bool = False,
+               keep_license_text: bool = False,
+               replace: list = None,
+               force: bool = False,
+               no_register: bool = False,
+               system_component_class_id: str = None,
+               editor_system_component_class_id: str = None,
+               module_id: str = None)
+"""
 
 def _run_create_gem(args: argparse) -> int:
     return create_gem(args.gem_path,
                       args.template_path,
                       args.template_name,
                       args.gem_name,
+                      args.display_name,
+                      args.summary,
+                      args.requirements,
+                      args.license,
+                      args.license_url,
+                      args.origin,
+                      args.origin_url,
+                      args.user_tags,
+                      args.icon_path,
+                      args.documentation_url,
+                      args.creator_name,
+                      args.repo_uri,
                       args.gem_restricted_path,
                       args.gem_restricted_name,
                       args.template_restricted_path,
@@ -2552,6 +2667,7 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
                                           help='If the project template is instantiated successfully, it will not register the'
                                                ' project with the global or engine manifest file.')
+   
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
@@ -2651,6 +2767,42 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the gem template is instantiated successfully, it will not register the'
                                            ' gem with the global, project or engine manifest file.')
+    create_gem_subparser.add_argument('-dn', '--display-name', type=str, required=False,
+                       default=None,
+                       help='The name displayed on the Gem Catalog')
+    create_gem_subparser.add_argument('-s', '--summary', type=str, required=False,
+                       default=None,
+                       help='A short description of your Gem ')
+    create_gem_subparser.add_argument('-req', '--requirements', type=str, required=False,
+                       default=None,
+                       help='Notice of any requirements your Gem. i.e. This requires X other gem')
+    create_gem_subparser.add_argument('-license', '--license', type=str, required=False,
+                       default=None,
+                       help='License uses goes here: i.e. Apache-2.0 or MIT')
+    create_gem_subparser.add_argument('-license-url', '--license-url', type=str, required=False,
+                       default=None,
+                       help='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0')
+    create_gem_subparser.add_argument('-origin', '--origin', type=str, required=False,
+                       default=None,
+                       help='The name of the originator goes. i.e. XYZ Inc.')
+    create_gem_subparser.add_argument('-origin-url', '--origin-url', type=str, required=False,
+                       default=None,
+                       help='The primary repo for your Gem. i.e. http://www.mydomain.com')
+    create_gem_subparser.add_argument('-ut', '--user-tags', type=str, required=False,
+                       default=None,
+                       help='Place gem tags here as a comma separated list')
+    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False,
+                       default=None,
+                       help='Select Gem icon path')
+    create_gem_subparser.add_argument('-du', '--documentation-url', type=str, required=False,
+                       default=None,
+                       help='Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...')
+    create_gem_subparser.add_argument('-cn', '--creator-name', type=str, required=False,
+                       default=None,
+                       help="The creator's name e.g. John Smith")
+    create_gem_subparser.add_argument('-ru', '--repo-uri', type=str, required=False,
+                       default=None,
+                       help='https://github.com/Jane')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
 
