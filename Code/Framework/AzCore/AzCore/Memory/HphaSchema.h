@@ -87,7 +87,7 @@ namespace AZ
         // On Windows the sizeof HpAllocator is 8384
         // Up this value to 18 KiB to be safe
         static constexpr size_t hpAllocatorStructureSize = 18 * 1024;
-        
+
         Descriptor          m_desc;
         int                 m_pad;      // pad the Descriptor to avoid C4355
         size_type           m_capacity;                 ///< Capacity in bytes.

@@ -36,7 +36,7 @@
 #define _HPPA_ASSERT_PRINT_STACK2(_cond, _it) { if (!_cond) _it->print_stack(); _HPHA_ASSERT1(_cond); }
 #define _HPPA_ASSERT_PRINT_STACK3(_cond, _it, _reason) { if (!_cond) _it->print_stack(); _HPHA_ASSERT2(_cond, _reason); }
 #define _GET_MACRO23(_1, _2, _3, NAME, ...) NAME
-#define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))  
+#define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))
 
 
 namespace AZ
@@ -63,8 +63,8 @@ namespace AZ
         //! 8388609 - 1 = 8388608
         //! Propagate the highest one bit in the value to all the lower bits
         //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
-        //! 
-        //!  0b100'0000'0000'0000'0000'0000 
+        //!
+        //!  0b100'0000'0000'0000'0000'0000
         //! |0b010'0000'0000'0000'0000'0000 (>> 1)
         //! -------------------------------
         //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
@@ -429,13 +429,12 @@ namespace AZ
         bucket mBuckets[NUM_BUCKETS];
         free_node_tree mFreeTree;
 #ifdef MULTITHREADED
-        // TODO rbbaklov: switched to recursive_mutex from mutex for Linux support.
         mutable AZStd::recursive_mutex mTreeMutex;
 #endif
 
         enum debug_source
         {
-            DEBUG_SOURCE_BUCKETS = 0, 
+            DEBUG_SOURCE_BUCKETS = 0,
             DEBUG_SOURCE_TREE = 1,
             DEBUG_SOURCE_SIZE = 2,
             DEBUG_SOURCE_INVALID = DEBUG_SOURCE_SIZE
@@ -455,14 +454,14 @@ namespace AZ
         {
         public:
             static const unsigned MAX_CALLSTACK_DEPTH = 16;
-            debug_record() 
+            debug_record()
                 : mPtr(nullptr)
                 , mSize(0)
                 , mSource(DEBUG_SOURCE_INVALID)
                 , mGuardByte(0)
                 , mCallStack()
             {}
-            
+
             debug_record(void* ptr) // used for searching based on the pointer
                 : mPtr(ptr)
                 , mSize(0)
@@ -544,27 +543,35 @@ namespace AZ
             static void memory_fill(void* ptr, size_t size);
 
         public:
-            
-            debug_record_map()
-            {
-            }
-            ~debug_record_map()
-            {
-            }
+
+            debug_record_map() = default;
+            ~debug_record_map() = default;
 
             using const_iterator = typename base::const_iterator;
             using iterator = typename base::iterator;
             void add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags);
             debug_info remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags);
-  
+
             void check(void* ptr) const;
         };
-        debug_record_map mDebugMap;
-#ifdef MULTITHREADED
-        mutable AZStd::mutex mDebugMutex;
-#endif
 
-        size_t mTotalDebugRequestedSize[DEBUG_SOURCE_SIZE];
+        // Packs all the debug data members into a struct
+        // that is added as a member of the HpAllocator<true> specialization
+        // but not the HpAllocator<false> specialization
+        struct DebugAllocatorData
+        {
+            debug_record_map m_debugMap;
+        #ifdef MULTITHREADED
+            mutable AZStd::mutex m_debugMutex;
+        #endif
+            size_t m_totalDebugRequestedSize[DEBUG_SOURCE_SIZE];
+        };
+
+        struct EmptyClass {};
+
+        using DebugAllocatorData_t = AZStd::conditional_t<DebugAllocatorEnable, DebugAllocatorData, EmptyClass>;
+        AZ_NO_UNIQUE_ADDRESS DebugAllocatorData_t m_debugData;
+
 
         void debug_add(void* ptr, size_t size, debug_source source, memory_debugging_flags flags = DEBUG_FLAGS_ALL);
         void debug_remove(void* ptr, size_t size, debug_source source, memory_debugging_flags flags = DEBUG_FLAGS_ALL);
@@ -834,7 +841,7 @@ namespace AZ
         {
             if constexpr (DebugAllocatorEnable)
             {
-                if (it == mDebugMap.end())
+                if (it == m_debugData.m_debugMap.end())
                 {
                     return 0;
                 }
@@ -916,7 +923,7 @@ namespace AZ
 
         // print HpAllocator statistics
         void report();
-        
+
         // check memory integrity
         void check();
 
@@ -994,7 +1001,7 @@ namespace AZ
     HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc)
         // We will use the os for direct allocations if memoryBlock == NULL
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
-        // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work 
+        // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
         // with virtual memory addresses when the tree grows and we cannot specify an alignment in all cases
         : m_treePageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_pageSize :
             desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
@@ -1004,8 +1011,8 @@ namespace AZ
     {
         if constexpr (DebugAllocatorEnable)
         {
-            mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] = 0;
-            mTotalDebugRequestedSize[DEBUG_SOURCE_TREE] = 0;
+            m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] = 0;
+            m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE] = 0;
         }
         mTotalAllocatedSizeBuckets = 0;
         mTotalAllocatedSizeTree = 0;
@@ -1045,7 +1052,7 @@ namespace AZ
             report();
             check();
         }
-        
+
         purge();
 
         if constexpr (DebugAllocatorEnable)
@@ -2430,10 +2437,10 @@ namespace AZ
             {
                 {
 #ifdef MULTITHREADED
-                    AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+                    AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
 #endif
-                    mDebugMap.add(ptr, size, source, flags);
-                    mTotalDebugRequestedSize[source] += size + MEMORY_GUARD_SIZE;
+                    m_debugData.m_debugMap.add(ptr, size, source, flags);
+                    m_debugData.m_totalDebugRequestedSize[source] += size + MEMORY_GUARD_SIZE;
                 }
                 HPPA_ASSERT(size <= this->size(ptr));
             }
@@ -2446,10 +2453,10 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
 #ifdef MULTITHREADED
-            AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
 #endif
-            const debug_info info = mDebugMap.remove(ptr, size, source, flags);
-            mTotalDebugRequestedSize[source] -= info.size + MEMORY_GUARD_SIZE;
+            const debug_info info = m_debugData.m_debugMap.remove(ptr, size, source, flags);
+            m_debugData.m_totalDebugRequestedSize[source] -= info.size + MEMORY_GUARD_SIZE;
         }
     }
 
@@ -2459,9 +2466,9 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
 #ifdef MULTITHREADED
-            AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
 #endif
-            mDebugMap.check(ptr);
+            m_debugData.m_debugMap.check(ptr);
         }
     }
 
@@ -2471,9 +2478,9 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
 #ifdef MULTITHREADED
-            AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+            AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
 #endif
-            for (auto it = mDebugMap.begin(); it != mDebugMap.end(); ++it)
+            for (auto it = m_debugData.m_debugMap.begin(); it != m_debugData.m_debugMap.end(); ++it)
             {
                 HPPA_ASSERT(it->size() <= size(it));
                 HPPA_ASSERT(it->check_guard(), "leaky overflow");
@@ -2487,13 +2494,13 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
     #ifdef MULTITHREADED
-        AZStd::lock_guard<AZStd::mutex> lock(mDebugMutex);
+        AZStd::lock_guard<AZStd::mutex> lock(m_debugData.m_debugMutex);
     #endif
         AZ_TracePrintf("HPHA", "REPORT =================================================\n");
-        AZ_TracePrintf("HPHA", "Total requested size=%zi bytes\n", mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + mTotalDebugRequestedSize[DEBUG_SOURCE_TREE]);
-        AZ_TracePrintf("HPHA", "Total allocated size=%zi bytes\n", mTotalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + mTotalDebugRequestedSize[DEBUG_SOURCE_TREE]);
+        AZ_TracePrintf("HPHA", "Total requested size=%zi bytes\n", m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE]);
+        AZ_TracePrintf("HPHA", "Total allocated size=%zi bytes\n", m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_BUCKETS] + m_debugData.m_totalDebugRequestedSize[DEBUG_SOURCE_TREE]);
         AZ_TracePrintf("HPHA", "Currently allocated blocks:\n");
-        for (auto it = mDebugMap.begin(); it != mDebugMap.end(); ++it)
+        for (auto it = m_debugData.m_debugMap.begin(); it != m_debugData.m_debugMap.end(); ++it)
         {
             AZ_TracePrintf("HPHA", "ptr=%zX, size=%zi\n", (size_t)it->ptr(), it->size());
             it->print_stack();
@@ -2510,7 +2517,7 @@ namespace AZ
     template<bool DebugAllocator>
     HphaSchemaBase<DebugAllocator>::HphaSchemaBase(const Descriptor& desc)
     {
-        (void)m_pad; 
+        (void)m_pad;
         m_capacity = 0;
 
         m_desc = desc;
@@ -2688,7 +2695,7 @@ namespace AZ
 
     template<bool DebugAllocator>
     auto HphaSchemaBase<DebugAllocator>::Capacity() const -> size_type
-    { 
+    {
         // Do not return m_capacity if it was never initialized.  Instead return raw tracked numbers of how much the tree and buckets have grown
         if (m_capacity == AZ_CORE_MAX_ALLOCATOR_SIZE)
         {
@@ -2709,7 +2716,7 @@ namespace AZ
         return sizeof(typename HphaSchemaBase<DebugAllocator>::HpAllocator::free_link);
     }
 
-    // explicitly instantiate both MallocSchemaBase classes
+    // explicitly instantiate both the non-debug and debug schema classes
     template class HphaSchemaBase<false>;
     template class HphaSchemaBase<true>;
 } // namspace AZ
