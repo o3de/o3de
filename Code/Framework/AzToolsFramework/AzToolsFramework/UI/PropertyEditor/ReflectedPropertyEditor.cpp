@@ -513,7 +513,8 @@ namespace AzToolsFramework
                     widgetEntry = CreateOrPullFromPool();
                     widgetEntry->SetFilterString(m_editor->GetFilterString());
 
-                    // Initialized normally if the group does not have a member variable attached to it,
+                    // Initialized normally if the group does not have a member variable attached to it
+                    // or if the source node for the toggle group is null,
                     // otherwise initialize it as a group that will have a toggle switch.
                     if (groupElementData->IsClassElement() || !groupSourceNode)
                     {
