@@ -69,7 +69,7 @@ set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN STREQUAL "")
     set(LY_TEST_IMPACT_ACTIVE true)
 else()
-    set(LY_TEST_IMPACT_ACTIVE 0)
+    set(LY_TEST_IMPACT_ACTIVE false)
 endif()
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
