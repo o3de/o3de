@@ -92,6 +92,7 @@ namespace O3DE::ProjectManager
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
+        ProjectTemplateInfo GemTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();

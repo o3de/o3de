@@ -1098,6 +1098,29 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
+    ProjectTemplateInfo PythonBindings::GemTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
+    {
+        ProjectTemplateInfo templateInfo;
+        templateInfo.m_path = Py_To_String(path);
+
+        auto data = m_manifest.attr("get_template_json_data")(pybind11::none(), path, pyProjectPath);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                templateInfo.m_displayName = Py_To_String(data["display_name"]);
+                templateInfo.m_name = Py_To_String(data["template_name"]);
+                templateInfo.m_summary = Py_To_String(data["summary"]);
+
+            } catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get ProjectTemplateInfo for %s", Py_To_String(path));
+            }
+        }
+
+        return templateInfo;
+    }
+
     AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates(const QString& projectPath)
     {
         QVector<ProjectTemplateInfo> templates;
@@ -1129,7 +1152,7 @@ namespace O3DE::ProjectManager
             {
                 for (auto path : m_manifest.attr("get_templates_for_gem_creation")())
                 {
-                    templates.push_back(ProjectTemplateInfoFromPath(path, pybind11::none()));
+                    templates.push_back(GemTemplateInfoFromPath(path, pybind11::none()));
                 }
             });
 

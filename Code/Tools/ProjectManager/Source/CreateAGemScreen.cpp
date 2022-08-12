@@ -128,6 +128,7 @@ namespace O3DE::ProjectManager
         LoadButtonsFromGemTemplatePaths(firstScreen);
         m_formFolderRadioButton = new QRadioButton("Choose existing template");
         m_formFolderRadioButton->setObjectName("createAGem");
+        m_radioButtonGroup->addButton(m_formFolderRadioButton);
 
         m_gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "");
         QLabel* gemTemplateLocationLabel = m_gemTemplateLocation->getErrorLabel();
@@ -287,99 +288,81 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateGemTemplateLocation()
     {
         bool gemTemplateLocationFilled = true;
-        if (m_tabWidget->currentIndex() == 0)
+        if (m_formFolderRadioButton->isChecked())
         {
-            if (m_formFolderRadioButton->isChecked())
+            if (m_gemTemplateLocation->lineEdit()->text().isEmpty())
             {
-                if (m_gemTemplateLocation->lineEdit()->text().isEmpty())
-                {
-                    gemTemplateLocationFilled = false;
-                    m_gemTemplateLocation->setErrorLabelText(tr("A path must be provided."));
-                }
-
+                gemTemplateLocationFilled = false;
+                m_gemTemplateLocation->setErrorLabelText(tr("A path must be provided."));
             }
-            m_gemTemplateLocation->setErrorLabelVisible(!gemTemplateLocationFilled);
 
         }
+        m_gemTemplateLocation->setErrorLabelVisible(!gemTemplateLocationFilled);
         return gemTemplateLocationFilled;
     }
 
     bool CreateAGemScreen::ValidateGemDisplayName()
     {
         bool gemScreenNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_gemDisplayName->lineEdit()->text().isEmpty())
         {
-            if (m_gemDisplayName->lineEdit()->text().isEmpty())
-            {
-                gemScreenNameIsValid = false;
-                m_gemDisplayName->setErrorLabelText(tr("A gem display name is required."));
-            }
-
-            m_gemDisplayName->setErrorLabelVisible(!gemScreenNameIsValid);
+            gemScreenNameIsValid = false;
+            m_gemDisplayName->setErrorLabelText(tr("A gem display name is required."));
         }
+        m_gemDisplayName->setErrorLabelVisible(!gemScreenNameIsValid);
         return gemScreenNameIsValid;
     }
 
     bool CreateAGemScreen::ValidateGemSystemName()
     {
         bool gemSystemNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_gemSystemName->lineEdit()->text().isEmpty())
         {
-            if (m_gemSystemName->lineEdit()->text().isEmpty())
+            gemSystemNameIsValid = false;
+            m_gemSystemName->setErrorLabelText(tr("A gem system name is required."));
+        }
+        else
+        {
+            std::string gemSystemName = m_gemSystemName->lineEdit()->text().toStdString();
+            _int64 count = std::count_if(
+                gemSystemName.begin(),
+                gemSystemName.end(),
+                [](char c)
+                {
+                    return !(std::isalnum(c));
+                });
+            if (count > 0)
             {
                 gemSystemNameIsValid = false;
-                m_gemSystemName->setErrorLabelText(tr("A gem system name is required."));
+                m_gemSystemName->setErrorLabelText(tr("A gem system name can only contain alphanumeric characters."));
             }
-            else
-            {
-                std::string gemSystemName = m_gemSystemName->lineEdit()->text().toStdString();
-                _int64 count = std::count_if(
-                    gemSystemName.begin(),
-                    gemSystemName.end(),
-                    [](char c)
-                    {
-                        return !(std::isalnum(c));
-                    });
-                if (count > 0)
-                {
-                    gemSystemNameIsValid = false;
-                    m_gemSystemName->setErrorLabelText(tr("A gem system name can only contain alphanumeric characters."));
-                }
-            }
-            m_gemSystemName->setErrorLabelVisible(!gemSystemNameIsValid);
         }
+        m_gemSystemName->setErrorLabelVisible(!gemSystemNameIsValid);
         return gemSystemNameIsValid;
     }
 
     bool CreateAGemScreen::ValidateLicenseName()
     {
         bool licenseNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_license->lineEdit()->text().isEmpty())
         {
-            if (m_license->lineEdit()->text().isEmpty())
-            {
-                licenseNameIsValid = false;
-                m_license->setErrorLabelText(tr("License details are required."));
-            }
-
-            m_license->setErrorLabelVisible(!licenseNameIsValid);
+            licenseNameIsValid = false;
+            m_license->setErrorLabelText(tr("License details are required."));
         }
+
+        m_license->setErrorLabelVisible(!licenseNameIsValid);
         return licenseNameIsValid;
     }
 
     bool CreateAGemScreen::ValidateGlobalGemTag()
     {
         bool globalGemTagIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_firstDropdown->comboBox()->currentIndex() == 0)
         {
-            if (m_firstDropdown->comboBox()->currentIndex() == 0)
-            {
-                globalGemTagIsValid = false;
-                m_firstDropdown->setErrorLabelText(tr("At least one global gem tag is required."));
-            }
-
-            m_firstDropdown->setErrorLabelVisible(!globalGemTagIsValid);
+            globalGemTagIsValid = false;
+            m_firstDropdown->setErrorLabelText(tr("At least one global gem tag is required."));
         }
+        m_firstDropdown->setErrorLabelVisible(!globalGemTagIsValid);
         return globalGemTagIsValid;
     }
 
@@ -387,25 +370,22 @@ namespace O3DE::ProjectManager
     {
         bool firstOptionalGemTagIsValid = true;
         bool secondOptionalGemTagIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_secondDropdown->comboBox()->currentIndex() != 0 && m_secondDropdown->comboBox()->currentIndex() ==
+            m_firstDropdown->comboBox()->currentIndex())
         {
-            if (m_secondDropdown->comboBox()->currentIndex() != 0 && m_secondDropdown->comboBox()->currentIndex() ==
-                m_firstDropdown->comboBox()->currentIndex())
-            {
-                firstOptionalGemTagIsValid = false;
-                m_secondDropdown->setErrorLabelText(tr("This gem has already been selected"));
-            }
-
-            if (m_thirdDropdown->comboBox()->currentIndex() != 0 && (m_thirdDropdown->comboBox()->currentIndex() == m_secondDropdown->comboBox()->currentIndex() ||
-                m_thirdDropdown->comboBox()->currentIndex() == m_firstDropdown->comboBox()->currentIndex()))
-            {
-                secondOptionalGemTagIsValid = false;
-                m_thirdDropdown->setErrorLabelText(tr("This gem has already been selected"));
-            }
-
-            m_secondDropdown->setErrorLabelVisible(!firstOptionalGemTagIsValid);
-            m_thirdDropdown->setErrorLabelVisible(!secondOptionalGemTagIsValid);
+            firstOptionalGemTagIsValid = false;
+            m_secondDropdown->setErrorLabelText(tr("This gem has already been selected"));
         }
+
+        if (m_thirdDropdown->comboBox()->currentIndex() != 0 && (m_thirdDropdown->comboBox()->currentIndex() == m_secondDropdown->comboBox()->currentIndex() ||
+            m_thirdDropdown->comboBox()->currentIndex() == m_firstDropdown->comboBox()->currentIndex()))
+        {
+            secondOptionalGemTagIsValid = false;
+            m_thirdDropdown->setErrorLabelText(tr("This gem has already been selected"));
+        }
+
+        m_secondDropdown->setErrorLabelVisible(!firstOptionalGemTagIsValid);
+        m_thirdDropdown->setErrorLabelVisible(!secondOptionalGemTagIsValid);
         return firstOptionalGemTagIsValid && secondOptionalGemTagIsValid;
     }
 
@@ -413,32 +393,24 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateCreatorName()
     {
         bool creatorNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 2)
+        if (m_creatorName->lineEdit()->text().isEmpty())
         {
-            if (m_creatorName->lineEdit()->text().isEmpty())
-            {
-                creatorNameIsValid = false;
-                m_creatorName->setErrorLabelText(tr("A creator's name is required."));
-            }
-
-            m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
+            creatorNameIsValid = false;
+            m_creatorName->setErrorLabelText(tr("A creator's name is required."));
         }
+        m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
         return creatorNameIsValid;
     }
 
     bool CreateAGemScreen::ValidateRepositoryURL()
     {
         bool repositoryURLIsValid = true;
-        if (m_tabWidget->currentIndex() == 2)
+        if (m_repositoryURL->lineEdit()->text().isEmpty())
         {
-            if (m_repositoryURL->lineEdit()->text().isEmpty())
-            {
-                repositoryURLIsValid = false;
-                m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
-            }
-
-            m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
+            repositoryURLIsValid = false;
+            m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
         }
+        m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
         return repositoryURLIsValid;
     }
 
