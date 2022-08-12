@@ -78,7 +78,7 @@ namespace AZ
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "JsonAnySerializer::Load finished loading AZStd::any"
-            : "JsonAnySerializer::Load failed to load AZStd::any");;
+            : "JsonAnySerializer::Load failed to load AZStd::any");
     }
 
     JsonSerializationResult::Result JsonAnySerializer::Store
@@ -112,7 +112,7 @@ namespace AZ
                 const void* defaultValueSource = defaultAnyPtr && defaultAnyPtr->type() == anyTypeId
                     ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
 
-                // The serializer will save the object in “Value” with an uppercase “V” which is standard in other serializers
+                // The serializer will save the object in "Value" with an uppercase "V" which is standard in other serializers
                 result.Combine(ContinueStoringToJsonObjectField
                     ( outputValue
                     , "Value"
