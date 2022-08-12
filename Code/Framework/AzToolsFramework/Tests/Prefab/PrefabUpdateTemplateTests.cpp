@@ -146,7 +146,7 @@ namespace UnitTest
         EntityAlias entityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
+        ASSERT_TRUE(wheelEntityComponents->IsObject() && wheelEntityComponents->ObjectEmpty());
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -342,7 +342,7 @@ namespace UnitTest
 
         // Validate that the wheel entity does not have a component under it.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
+        ASSERT_TRUE(wheelEntityComponents->IsObject() && wheelEntityComponents->ObjectEmpty());
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);
