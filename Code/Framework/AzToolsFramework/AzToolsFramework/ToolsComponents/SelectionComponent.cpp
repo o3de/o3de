@@ -34,13 +34,6 @@ namespace AzToolsFramework
                 const AZ::Uuid& outputValueTypeId,
                 const rapidjson::Value& inputValue,
                 AZ::JsonDeserializerContext& context) override;
-
-            AZ::JsonSerializationResult::Result Store(
-                rapidjson::Value& outputValue,
-                const void* inputValue,
-                const void* defaultValue,
-                const AZ::Uuid& valueTypeId,
-                AZ::JsonSerializerContext& context) override;
         };
 
         AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator, 0);
@@ -53,17 +46,6 @@ namespace AzToolsFramework
         {
             namespace JSR = AZ::JsonSerializationResult;
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unavailable, SelectionComponentRemovalNotice);
-        }
-
-        AZ::JsonSerializationResult::Result SelectionComponentSerializer::Store(
-            [[maybe_unused]] rapidjson::Value& outputValue,
-            [[maybe_unused]] const void* inputValue,
-            [[maybe_unused]] const void* defaultValue,
-            [[maybe_unused]] const AZ::Uuid& valueTypeId,
-            [[maybe_unused]] AZ::JsonSerializerContext& context)
-        {
-            namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Unavailable, SelectionComponentRemovalNotice);
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)
