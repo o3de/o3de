@@ -100,6 +100,11 @@ namespace AssetProcessor
     {
         AZStd::string uuidString;
 
+        // Note that below the connectionId will be set to 0.
+        // The builder might not be destroyed immediately if another thread is currently holding a reference.
+        // If the builder is currently in use, this will signal to the waiting thread to not expect a reply
+        // and fail the current job request.
+
         if (m_createJobsBuilder && m_createJobsBuilder->GetConnectionId() == connId)
         {
             uuidString = m_createJobsBuilder->UuidString();
