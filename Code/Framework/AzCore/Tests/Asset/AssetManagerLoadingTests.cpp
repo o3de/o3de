@@ -3581,12 +3581,41 @@ namespace UnitTest
             threadBFinishedSignal.release();
         });
 
+        struct UnloadListener : AZ::Data::AssetBus::Handler
+        {
+            UnloadListener(AssetId assetId)
+            {
+                BusConnect(assetId);
+            }
+
+            ~UnloadListener()
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetContainerReady(Asset<AssetData> asset) override
+            {
+                ColoredPrintf(COLOR_YELLOW, AZ_STRING_FORMAT " container ready\n", AZ_STRING_ARG(asset.GetId().ToFixedString()));
+            }
+
+            void OnAssetUnloaded(const AssetId assetId, const AssetType) override
+            {
+                ColoredPrintf(COLOR_YELLOW, AZ_STRING_FORMAT " unloaded\n", AZ_STRING_ARG(assetId.ToFixedString()));
+            }
+        };
+
+        UnloadListener listenerA(AssetA);
+        UnloadListener listenerB(AssetB);
+        UnloadListener listenerC(AssetC);
+
         {
             // Intentional scope to allow asset references to be released before shutdown
             AssetBusHandler assetBusHandler(onAssetReadySignal, clearToStartLoadingSignal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
 
             ASSERT_TRUE(threadBFinishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
         }
+
+        ColoredPrintf(COLOR_YELLOW, "Exit scope\n");
 
         running = false;
 
@@ -3595,13 +3624,19 @@ namespace UnitTest
             threadA.join();
         }
 
-        if(threadB.joinable())
+        ColoredPrintf(COLOR_YELLOW, "ThreadA joined\n");
+
+        if (threadB.joinable())
         {
             threadB.join();
         }
 
+        ColoredPrintf(COLOR_YELLOW, "ThreadB joined\n");
+
         // Make sure any pending events are flushed out (to clear any remaining references)
         AssetManager::Instance().DispatchEvents();
+
+        ColoredPrintf(COLOR_YELLOW, "Shutting down\n");
     }
 
     using AssetManagerErrorTests = AssetManagerTests;
