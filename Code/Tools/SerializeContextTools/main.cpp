@@ -102,6 +102,7 @@ int main(int argc, char** argv)
 {
     using namespace AZ::SerializeContextTools;
 
+    const AZ::Debug::Trace tracer;
     bool result = false;
     Application application(argc, argv);
     // Direct Raw Debug Trace Messages to stderr

@@ -15,6 +15,7 @@
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/has_virtual_destructor.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {

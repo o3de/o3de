@@ -943,7 +943,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
-        AZ::Debug::Trace::Break();
+        AZ::Debug::Trace::Instance().Break();
     }
 }
 

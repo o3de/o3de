@@ -191,6 +191,7 @@ namespace DPEDebugView
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     DPEDebugView::DPEDebugApplication app(&argc, &argv);
     AZ::IO::FixedMaxPath engineRootPath;
     {

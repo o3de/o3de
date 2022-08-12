@@ -54,7 +54,7 @@ bool AssetProcessorManagerTest::BlockUntilIdle(int millisecondsMax)
     QElapsedTimer limit;
     limit.start();
 
-    if(AZ::Debug::Trace::IsDebuggerPresent())
+    if(AZ::Debug::Trace::Instance().IsDebuggerPresent())
     {
         millisecondsMax = std::numeric_limits<int>::max();
     }

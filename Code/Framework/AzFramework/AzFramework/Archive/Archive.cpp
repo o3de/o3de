@@ -412,7 +412,7 @@ namespace AZ::IO
     {
         // Print call stack for each find.
         AZ_TracePrintf("Archive", "LogFileAccessCallStack() - name=%.*s; nameFull=%.*s; mode=%s\n", AZ_STRING_ARG(name), AZ_STRING_ARG(nameFull), mode);
-        AZ::Debug::Trace::PrintCallstack("Archive", 32);
+        AZ::Debug::Trace::Instance().PrintCallstack("Archive", 32);
     }
 
     //////////////////////////////////////////////////////////////////////////
