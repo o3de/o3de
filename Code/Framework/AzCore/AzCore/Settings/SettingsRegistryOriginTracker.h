@@ -88,11 +88,6 @@ namespace AZ
 
         using SettingsRegistryOriginPrefixTree = AZ::Dom::DomPrefixTree<SettingsRegistryOriginStack>;
 
-        //! Origin Visitor is callback is invoked for each setting key found during the VisitOrigins method
-        //! @param settingsRegistryOrigin entry being visited
-        //! @returns True should be returned if the visitation should continue.
-        using OriginVisitorCallback = AZStd::function<bool(const SettingsRegistryOrigin&)>;
-
         //! Afterwards push a new entry into the Origin Stack PrefixTree for the origin path
         void AddOrigin(AZStd::string_view key, AZ::IO::PathView originPath);
         //! Looks up the settings key in the Origin Stack Prefix Tree dict and removes an entry with the origin path

@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>

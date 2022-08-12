@@ -59,7 +59,6 @@ namespace AZ::ComponentApplicationLifecycle
         AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName, bool autoRegisterEvent)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        using Type = AZ::SettingsRegistryInterface::Type;
         using NotifyEventHandler = AZ::SettingsRegistryInterface::NotifyEventHandler;
 
         // Some systems may attempt to register a handler before the settings registry has been loaded
