@@ -85,9 +85,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_Menus_EditMenuOptions_Work(EditorSingleTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
 
-    class test_Menus_FileMenuOptions_Work(EditorSingleTest):
-        from .EditorScripts import Menus_FileMenuOptions as test_module
-
     class test_Menus_ViewMenuOptions_Work(EditorSingleTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module
 
