@@ -37,7 +37,15 @@ ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
     '4.2.2': {'min_gradle_version': '6.7.1',
               'sdk_build': '30.0.2',
               'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.20'}
+              'min_cmake_version': '3.20'},
+    '7.1.2': {'min_gradle_version': '7.2.0',
+              'sdk_build': '30.0.3',
+              'default_ndk': '22.1.7171670',
+              'min_cmake_version': '3.22'},
+    '7.2.1': {'min_gradle_version': '7.2.4',
+              'sdk_build': '32.0.0',
+              'default_ndk': '24.0.8215888',
+              'min_cmake_version': '3.23'}
 }
 
 APP_NAME = 'app'
@@ -415,7 +423,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
     
-    compile{config}Sources.dependsOn syncLYLayoutMode{config}
+    compile{config}Aidl.dependsOn syncLYLayoutMode{config}
 
     syncLYLayoutMode{config}.mustRunAfter {{
         tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
