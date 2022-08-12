@@ -10,8 +10,8 @@
 #include "DialogStack.h"
 #include "AzCore/std/iterator.h"
 #include "AzCore/std/limits.h"
+#include "AzQtComponents/Components/Widgets/CardHeader.h"
 #include "MysticQtManager.h"
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QScrollArea>
@@ -67,6 +67,10 @@ namespace MysticQt
         // set the widget resizable to have the scrollarea resizing it
         setWidgetResizable(true);
 
+        // We don't want the default 1px frame, headers should fully span the
+        // widget
+        setFrameStyle(QFrame::Shape::NoFrame);
+
         // set the scrollarea widget
         setWidget(m_rootSplitter);
     }
@@ -74,7 +78,6 @@ namespace MysticQt
     DialogStack::~DialogStack()
     {
     }
-
 
     // get rid of all dialogs and their allocated memory
     void DialogStack::Clear()
@@ -210,21 +213,15 @@ namespace MysticQt
             }
         }
 
-        // create the header button that we can click to open/close this dialog
-        QPushButton* headerButton = new QPushButton(headerTitle);
-        headerButton->setObjectName("HeaderButton");
-        if (closed)
-        {
-            headerButton->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowRightGray.png"));
-        }
-        else
-        {
-            headerButton->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowDownGray.png"));
-        }
+        // create the container card header that we can click to open/close this dialog
+        auto* header = new AzQtComponents::CardHeader();
+        AzQtComponents::CardHeader::applyContainerStyle(header);
+        header->setTitle(headerTitle);
+        header->setObjectName("CardHeader");
 
-        // add the header button in the layout
-        dialogLayout->addWidget(headerButton);
-        connect(headerButton, &QPushButton::clicked, this, &MysticQt::DialogStack::OnHeaderButton);
+        // add the separator card header in the layout
+        dialogLayout->addWidget(header);
+        connect(header, &AzQtComponents::CardHeader::expanderChanged, this, &MysticQt::DialogStack::OnExpandedChanged);
 
         // create the frame where the dialog/widget will be inside
         QWidget* frame = new QWidget();
@@ -241,8 +238,8 @@ namespace MysticQt
         // set the frame layout
         frame->setLayout(layout);
 
-        // adjust size of the button
-        headerButton->adjustSize();
+        // adjust size of the header
+        header->adjustSize();
 
         // adjust size of the widget
         widget->adjustSize();
@@ -268,9 +265,9 @@ namespace MysticQt
         // adjust size of the dialog widget
         dialogWidget->adjustSize();
 
-        // register it, so that we know which frame is linked to which header button
+        // register it, so that we know which frame is linked to which header
         m_dialogs.emplace_back(Dialog{
-            /*.m_button              =*/ headerButton,
+            /*.m_header              =*/header,
             /*.m_frame               =*/ frame,
             /*.m_widget              =*/ widget,
             /*.m_dialogWidget        =*/ dialogWidget,
@@ -287,7 +284,7 @@ namespace MysticQt
         // check if the dialog is closed
         if (closed)
         {
-            Close(headerButton);
+            Close(header);
         }
 
         // update the scroll bars
@@ -334,40 +331,38 @@ namespace MysticQt
         return true;
     }
 
-
-    // on header button press
-    void DialogStack::OnHeaderButton()
+    // on header card expansions
+    void DialogStack::OnExpandedChanged(bool expanded)
     {
-        QPushButton* button = (QPushButton*)sender();
-        const size_t dialogIndex = FindDialog(button);
-        if (m_dialogs[dialogIndex].m_frame->isHidden())
+        auto* header = qobject_cast<AzQtComponents::CardHeader*>(sender());
+        if (expanded)
         {
-            Open(button);
+            Open(header);
         }
         else
         {
-            Close(button);
+            Close(header);
         }
     }
 
 
-    // find the dialog that goes with the given button
-    size_t DialogStack::FindDialog(QPushButton* pushButton)
+    // find the dialog that goes with the given header
+    size_t DialogStack::FindDialog(AzQtComponents::CardHeader* header)
     {
-        const auto foundDialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [pushButton](const Dialog& dialog)
+        const auto foundDialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [header](const Dialog& dialog)
         {
-            return dialog.m_button == pushButton;
+            return dialog.m_header == header;
         });
         return foundDialog != end(m_dialogs) ? AZStd::distance(begin(m_dialogs), foundDialog) : MCore::InvalidIndex;
     }
 
 
     // open the dialog
-    void DialogStack::Open(QPushButton* button)
+    void DialogStack::Open(AzQtComponents::CardHeader* header)
     {
-        const auto dialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [button](const Dialog& dialog)
+        const auto dialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [header](const Dialog& dialog)
         {
-            return dialog.m_button == button;
+            return dialog.m_header == header;
         });
         if (dialog == end(m_dialogs))
         {
@@ -380,10 +375,6 @@ namespace MysticQt
         // set the previous minimum and maximum height before closed
         dialog->m_dialogWidget->setMinimumHeight(dialog->m_minimumHeightBeforeClose);
         dialog->m_dialogWidget->setMaximumHeight(dialog->m_maximumHeightBeforeClose);
-
-        // change the stylesheet and the icon
-        button->setStyleSheet("");
-        button->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowDownGray.png"));
 
         // more space used by the splitter when the dialog is open
         if (dialog != m_dialogs.end() - 1)
@@ -406,7 +397,7 @@ namespace MysticQt
                 // special case if it's the first dialog
                 if (dialog == m_dialogs.begin())
                 {
-                    // if it's the first dialog and stretching is enabled, it expand to the max, all others expand to the min
+                    // if it's the first dialog and stretching is enabled, it expands to the max, all others expand to the min
                     if (dialog->m_stretchWhenMaximize == false && (dialog + 1)->m_maximizeSize && (dialog + 1)->m_frame->isHidden() == false)
                     {
                         static_cast<DialogStackSplitter*>(dialog->m_splitter)->MoveFirstSplitterToMin();
@@ -443,11 +434,11 @@ namespace MysticQt
 
 
     // close the dialog
-    void DialogStack::Close(QPushButton* button)
+    void DialogStack::Close(AzQtComponents::CardHeader* header)
     {
-        const auto dialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [button](const Dialog& dialog)
+        const auto dialog = AZStd::find_if(begin(m_dialogs), end(m_dialogs), [header](const Dialog& dialog)
         {
-            return dialog.m_button == button;
+            return dialog.m_header == header;
         });
         if (dialog == end(m_dialogs))
         {
@@ -468,12 +459,8 @@ namespace MysticQt
         dialog->m_frame->hide();
 
         // set the widget to fixed size to not have it possible to resize
-        dialog->m_dialogWidget->setMinimumHeight(dialog->m_button->height());
-        dialog->m_dialogWidget->setMaximumHeight(dialog->m_button->height());
-
-        // change the stylesheet and the icon
-        button->setStyleSheet("border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; border: 1px solid rgb(40,40,40);"); // TODO: link to the real style sheets
-        button->setIcon(GetMysticQt()->FindIcon("Images/Icons/ArrowRightGray.png"));
+        dialog->m_dialogWidget->setMinimumHeight(dialog->m_header->height());
+        dialog->m_dialogWidget->setMaximumHeight(dialog->m_header->height());
 
         // less space used by the splitter when the dialog is closed
         if (dialog < m_dialogs.end() - 1)
@@ -659,7 +646,7 @@ namespace MysticQt
                 dialog->m_frame->setFixedHeight(newWidget->height() + frameMarginTopBottom);
 
                 // compute the dialog height
-                const int dialogHeight = newWidget->height() + allMarginsTopBottom + dialog->m_button->height();
+                const int dialogHeight = newWidget->height() + allMarginsTopBottom + dialog->m_header->height();
 
                 // set the maximum height in case the dialog is not closed, if it's closed update the stored height
                 if (dialog->m_frame->isHidden() == false)

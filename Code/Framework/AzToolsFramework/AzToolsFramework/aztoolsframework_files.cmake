@@ -202,6 +202,8 @@ set(FILES
     Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
+    Manipulators/AngularManipulatorCircleViewFeedback.cpp
+    Manipulators/AngularManipulatorCircleViewFeedback.h
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h

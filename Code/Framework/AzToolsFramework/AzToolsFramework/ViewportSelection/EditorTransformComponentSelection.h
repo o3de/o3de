@@ -17,8 +17,10 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
@@ -32,8 +34,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
-#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 
 namespace AzToolsFramework
 {
@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         class ComponentModeSwitcher;
     }
-    
+
     class ActionManagerInterface;
     class MenuManagerInterface;
 
@@ -360,7 +360,8 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
-        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; //! < Viewport UI switcher for showing component mode components.
+        //! Viewport UI Switcher for showing component mode components.
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; 
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;

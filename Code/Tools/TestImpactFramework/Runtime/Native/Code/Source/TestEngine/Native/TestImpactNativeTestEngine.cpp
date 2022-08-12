@@ -12,10 +12,10 @@
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
 #include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
-#include <TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
+#include <TestRunner/Native/Job/TestImpactNativeTestJobInfoGenerator.h>
 
 namespace TestImpact
 {
@@ -118,7 +118,7 @@ namespace TestImpact
         const RepoPath& sourceDir,
         const RepoPath& targetBinaryDir,
         [[maybe_unused]]const RepoPath& cacheDir,
-        const RepoPath& artifactDir,
+        const ArtifactDir& artifactDir,
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
@@ -145,10 +145,11 @@ namespace TestImpact
 
     void NativeTestEngine::DeleteArtifactXmls() const
     {
-        DeleteFiles(m_artifactDir, "*.xml");
+        DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
+        DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.xml");
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<NativeTestTarget>>> NativeTestEngine::RegularRun(
+    TestEngineRegularRunResult<NativeTestTarget> NativeTestEngine::RegularRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::TestFailure testFailurePolicy,
@@ -174,7 +175,7 @@ namespace TestImpact
             );
     }
 
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>> NativeTestEngine::InstrumentedRun(
+    TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage> NativeTestEngine::InstrumentedRun(
         const AZStd::vector<const NativeTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::IntegrityFailure integrityFailurePolicy,
@@ -186,35 +187,19 @@ namespace TestImpact
     {
         DeleteArtifactXmls();
 
-        auto [result, engineRuns] = GenerateJobInfosAndRunTests(
-            m_instrumentedTestRunner.get(),
-            m_instrumentedTestJobInfoGenerator.get(),
-            testTargets,
-            NativeInstrumentedTestRunnerErrorCodeChecker,
-            executionFailurePolicy,
-            testFailurePolicy,
-            targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            callback,
-            AZStd::nullopt
-            );
-
-        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
-        // where a test target ran and completed its tests without incident yet failed to produce coverage data
-        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-        {
-            for (const auto& engineRun : engineRuns)
-            {
-                if (const auto testResult = engineRun.GetTestResult();
-                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
-                {
-                    AZ_TestImpact_Eval(engineRun.GetCoverge().has_value(), TestEngineException, AZStd::string::format(
-                        "Test target %s completed its test run but failed to produce coverage data", engineRun.GetTestTarget()->GetName().c_str()));
-                }
-            }
-        }
-
-        return { result, engineRuns };
+        return GenerateInstrumentedRunResult(
+            GenerateJobInfosAndRunTests(
+                m_instrumentedTestRunner.get(),
+                m_instrumentedTestJobInfoGenerator.get(),
+                testTargets,
+                NativeInstrumentedTestRunnerErrorCodeChecker,
+                executionFailurePolicy,
+                testFailurePolicy,
+                targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                callback,
+                AZStd::nullopt),
+            integrityFailurePolicy);
     }
 } // namespace TestImpact

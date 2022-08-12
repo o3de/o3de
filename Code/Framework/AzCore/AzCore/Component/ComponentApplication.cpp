@@ -779,7 +779,7 @@ namespace AZ
         Sfmt::Destroy();
 
         // delete all descriptors left for application clean up
-        EBUS_EVENT(ComponentDescriptorBus, ReleaseDescriptor);
+        ComponentDescriptorBus::Broadcast(&ComponentDescriptorBus::Events::ReleaseDescriptor);
 
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();

@@ -7,7 +7,7 @@
         "title": "clip",
         "settings": {
             "instructions": [
-                "clip(O3DE_NODEID_inValue);"
+                "clip(NODEID_inValue);"
             ]
         },
         "inputSlots": [
@@ -33,7 +33,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }

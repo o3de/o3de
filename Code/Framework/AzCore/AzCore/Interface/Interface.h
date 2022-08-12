@@ -102,24 +102,26 @@ namespace AZ
     private:
         static uint32_t GetVariableName();
 
-        /**
-         * Module-specific static environment variable. This will require a FindVariable<>() operation
-         * when invoked for the first time in a new module. There is one of these per module, but they
-         * all point to the same internal pointer.
-         */
-        static EnvironmentVariable<T*> s_instance;
+        inline static EnvironmentVariable<T*>& GetInstance()
+        {
+            /**
+             * Module-specific static environment variable. This will require a FindVariable<>() operation
+             * when invoked for the first time in a new module. There is one of these per module, but they
+             * all point to the same internal pointer.
+             */
+            static EnvironmentVariable<T*> s_instance;
+            return s_instance;
+        }
+
         static AZStd::shared_mutex s_mutex;
         static bool s_instanceAssigned;
     };
 
     template <typename T>
-    EnvironmentVariable<T*> Interface<T>::s_instance;
-
-    template <typename T>
     AZStd::shared_mutex Interface<T>::s_mutex;
 
     template <typename T>
-    bool Interface<T>::s_instanceAssigned;
+    bool Interface<T>::s_instanceAssigned = false;
 
     template <typename T>
     void Interface<T>::Register(T* type)
@@ -137,8 +139,8 @@ namespace AZ
         }
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        s_instance = Environment::CreateVariable<T*>(GetVariableName());
-        s_instance.Get() = type;
+        GetInstance() = Environment::CreateVariable<T*>(GetVariableName());
+        GetInstance().Get() = type;
         s_instanceAssigned = true;
     }
 
@@ -151,16 +153,17 @@ namespace AZ
             return;
         }
 
-        if (s_instance && s_instance.Get() != type)
+        if (GetInstance() && GetInstance().Get() != type)
         {
-            AZ_Assert(false, "Interface '%s' is not the same instance that was registered! [Expected '%p', Found '%p']", AzTypeInfo<T>::Name(), type, s_instance.Get());
+            AZ_Assert(false, "Interface '%s' is not the same instance that was registered! [Expected '%p', Found '%p']",
+                AzTypeInfo<T>::Name(), type, GetInstance().Get());
             return;
         }
 
         // Assign the internal pointer to null and release the EnvironmentVariable reference.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        *s_instance = nullptr;
-        s_instance.Reset();
+        *GetInstance() = nullptr;
+        GetInstance().Reset();
         s_instanceAssigned = false;
     }
 
@@ -173,16 +176,16 @@ namespace AZ
             AZStd::shared_lock<AZStd::shared_mutex> lock(s_mutex);
             if (s_instanceAssigned)
             {
-                return s_instance ? s_instance.Get() : nullptr;
+                return GetInstance() ? GetInstance().Get() : nullptr;
             }
         }
 
         // If the instance doesn't exist (which means we could be in a different module),
         // take the full lock and request it.
         AZStd::unique_lock<AZStd::shared_mutex> lock(s_mutex);
-        s_instance = Environment::FindVariable<T*>(GetVariableName());
-        s_instanceAssigned = static_cast<bool>(s_instance);
-        return s_instance ? s_instance.Get() : nullptr;
+        GetInstance() = Environment::FindVariable<T*>(GetVariableName());
+        s_instanceAssigned = static_cast<bool>(GetInstance());
+        return GetInstance() ? GetInstance().Get() : nullptr;
     }
 
     template <typename T>
