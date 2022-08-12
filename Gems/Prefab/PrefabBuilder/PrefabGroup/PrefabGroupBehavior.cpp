@@ -9,7 +9,7 @@
 #include <PrefabGroup/PrefabGroupBehavior.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <PrefabGroup/ProceduralAssetHandler.h>
-#include <PrefabGroup/PrefabGroupBus.h>
+#include <PrefabGroup/DefaultProceduralPrefab.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/IO/FileIO.h>
@@ -48,22 +48,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
-#ifndef AZ_HASH_NODEINDEX
-#define AZ_HASH_NODEINDEX
-namespace AZStd
-{
-    template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
-    {
-        inline size_t operator()(const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const
-        {
-            size_t hashValue{ 0 };
-            hash_combine(hashValue, nodeIndex.AsNumber());
-            return hashValue;
-        }
-    };
-}
-#endif // #ifndef AZ_HASH_NODEINDEX
-
 namespace AZ::SceneAPI::Behaviors
 {
     //
@@ -79,14 +63,14 @@ namespace AZ::SceneAPI::Behaviors
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
-        AZStd::unique_ptr<PrefabGroupEventHandler> m_prefabGroupEventHandler;
+        AZStd::unique_ptr<DefaultProceduralPrefab> m_defaultProceduralPrefab;
 
         ExportEventHandler() = delete;
 
         ExportEventHandler(PreExportEventContextFunction function)
             : m_preExportEventContextFunction(AZStd::move(function))
         {
-            m_prefabGroupEventHandler = AZStd::make_unique<PrefabGroupEventHandler>();
+            m_defaultProceduralPrefab = AZStd::make_unique<DefaultProceduralPrefab>();
             BindToCall(&ExportEventHandler::PrepareForExport);
             AZ::SceneAPI::SceneCore::ExportingComponent::Activate();
             Events::AssetImportRequestBus::Handler::BusConnect();
@@ -94,7 +78,7 @@ namespace AZ::SceneAPI::Behaviors
 
         ~ExportEventHandler()
         {
-            m_prefabGroupEventHandler.reset();
+            m_defaultProceduralPrefab.reset();
             Events::AssetImportRequestBus::Handler::BusDisconnect();
             AZ::SceneAPI::SceneCore::ExportingComponent::Deactivate();
         }

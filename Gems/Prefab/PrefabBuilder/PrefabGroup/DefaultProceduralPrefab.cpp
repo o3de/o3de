@@ -6,7 +6,7 @@
  *
  */
 
-#include <PrefabGroup/PrefabGroupBus.h>
+#include <PrefabGroup/DefaultProceduralPrefab.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
@@ -25,27 +25,11 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 
-// TODO: rename this file to DefaultProceduralPrefab?
-
-#ifndef AZ_HASH_NODEINDEX
-#define AZ_HASH_NODEINDEX
-namespace AZStd
-{
-    template<> struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
-    {
-        inline size_t operator()(const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const
-        {
-            size_t hashValue{ 0 };
-            hash_combine(hashValue, nodeIndex.AsNumber());
-            return hashValue;
-        }
-    };
-}
-#endif // #ifndef AZ_HASH_NODEINDEX
-
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates, "{B84CBFB5-4630-4484-AE69-A4155A8B0D9B}");
+    //AZ_TYPE_INFO_SPECIALIZE(AZStd::shared_ptr<DataTypes::IManifestObject>, "{460C1DD0-E29E-43F6-A7F0-F929EC520325}");
+    //using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
 }
 
 namespace AZ::SceneAPI
@@ -55,12 +39,16 @@ namespace AZ::SceneAPI
     //    , public AZ::BehaviorEBusHandler
     //{
     //    AZ_EBUS_BEHAVIOR_BINDER(
-    //        PrefabGroupNotificationHandler, "{F1962BD1-D722-4C5F-A883-76F1004C3247}", AZ::SystemAllocator, OnUpdatePrefabEntity);
+    //        PrefabGroupNotificationHandler,
+    //        "{F1962BD1-D722-4C5F-A883-76F1004C3247}",
+    //        AZ::SystemAllocator,
+    //        OnUpdatePrefabEntity);
 
     //    virtual ~PrefabGroupNotificationHandler() = default;
 
     //    void OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity) const override
     //    {
+    //        AZ_UNUSED(prefabEntity);
     //        Call(FN_OnUpdatePrefabEntity, prefabEntity);
     //    }
 
@@ -71,12 +59,13 @@ namespace AZ::SceneAPI
     //            behaviorContext->Class<PrefabGroupNotificationHandler>()
     //                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
     //                ->Attribute(AZ::Script::Attributes::Module, "prefab")
-    //                ->Method("OnUpdatePrefabEntity", &PrefabGroupNotificationHandler::OnUpdatePrefabEntity);
+    //                ->Method("OnUpdatePrefabEntity", &PrefabGroupNotificationHandler::OnUpdatePrefabEntity)
+    //                ;
     //        }
     //    }
     //};
 
-    void PrefabGroupEventHandler::Reflect(ReflectContext* context)
+    void DefaultProceduralPrefab::Reflect(ReflectContext* context)
     {
 //        PrefabGroupNotificationHandler::Reflect(context);
 
@@ -87,13 +76,11 @@ namespace AZ::SceneAPI
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)
                 ->Attribute(Script::Attributes::Module, "prefab")
-                ;
-                //->Event("GeneratePrefabGroupManifestUpdates", &PrefabGroupEvents::GeneratePrefabGroupManifestUpdates)
-                //    ;
+                ->Event("GeneratePrefabGroupManifestUpdates", &PrefabGroupEvents::GeneratePrefabGroupManifestUpdates);
         }
     }
 
-    AZStd::optional<PrefabGroupEvents::ManifestUpdates> PrefabGroupEventHandler::GeneratePrefabGroupManifestUpdates(
+    AZStd::optional<PrefabGroupEvents::ManifestUpdates> DefaultProceduralPrefab::GeneratePrefabGroupManifestUpdates(
         const Scene& scene) const
     {
         auto meshTransformMap = CalculateMeshTransformMap(scene);
@@ -133,7 +120,7 @@ namespace AZ::SceneAPI
         return AZStd::make_optional(AZStd::move(manifestUpdates));
     }
 
-    PrefabGroupEventHandler::MeshDataMap PrefabGroupEventHandler::CalculateMeshTransformMap(
+    DefaultProceduralPrefab::MeshDataMap DefaultProceduralPrefab::CalculateMeshTransformMap(
         const Containers::Scene& scene) const
     {
         auto graph = scene.GetGraph();
@@ -189,7 +176,7 @@ namespace AZ::SceneAPI
         return meshDataMap;
     }
 
-    bool PrefabGroupEventHandler::AddEditorMaterialComponent(
+    bool DefaultProceduralPrefab::AddEditorMaterialComponent(
         const AZ::EntityId& entityId,
         const DataTypes::ICustomPropertyData& propertyData) const
     {
@@ -248,7 +235,7 @@ namespace AZ::SceneAPI
         return result;
     }
 
-    bool PrefabGroupEventHandler::AddEditorMeshComponent(
+    bool DefaultProceduralPrefab::AddEditorMeshComponent(
         const AZ::EntityId& entityId,
         const AZStd::string& relativeSourcePath,
         const AZStd::string& meshGroupName) const
@@ -290,7 +277,7 @@ namespace AZ::SceneAPI
         return result;
     }
 
-    PrefabGroupEventHandler::NodeEntityMap PrefabGroupEventHandler::CreateMeshGroups(
+    DefaultProceduralPrefab::NodeEntityMap DefaultProceduralPrefab::CreateMeshGroups(
         ManifestUpdates& manifestUpdates,
         const MeshDataMap& meshDataMap,
         const Containers::Scene& scene,
@@ -388,7 +375,7 @@ namespace AZ::SceneAPI
         return nodeEntityMap;
     }
 
-    PrefabGroupEventHandler::EntityIdList PrefabGroupEventHandler::FixUpEntityParenting(
+    DefaultProceduralPrefab::EntityIdList DefaultProceduralPrefab::FixUpEntityParenting(
         const NodeEntityMap& nodeEntityMap,
         const Containers::SceneGraph& graph,
         const MeshDataMap& meshDataMap) const
@@ -460,7 +447,7 @@ namespace AZ::SceneAPI
         return entities;
     }
 
-    bool PrefabGroupEventHandler::CreatePrefabGroupManifestUpdates(
+    bool DefaultProceduralPrefab::CreatePrefabGroupManifestUpdates(
         ManifestUpdates& manifestUpdates,
         const Containers::Scene& scene,
         const EntityIdList& entities,

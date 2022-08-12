@@ -1,0 +1,102 @@
+
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+#pragma once
+
+#include <AzCore/EBus/EBus.h>
+#include <PrefabGroup/PrefabGroup.h>
+#include <PrefabGroup/PrefabGroupBus.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <AzCore/Component/EntityId.h>
+
+namespace AZ::SceneAPI
+{
+    using PrefabGroup = AZ::SceneAPI::SceneData::PrefabGroup;
+    using Scene = AZ::SceneAPI::Containers::Scene;
+
+    //! Handler for the Prefab Group event logic
+    class DefaultProceduralPrefab
+        : protected PrefabGroupEventBus::Handler
+    {
+    public:
+        AZ_RTTI(DefaultProceduralPrefab, "{6BAAB306-01EE-42E8-AAFE-C9EE0BF4CFDF}");
+
+        static void Reflect(ReflectContext* context);
+
+        AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
+
+    protected:
+        // this stores the data related with MeshData nodes
+        struct MeshNodeData
+        {
+            Containers::SceneGraph::NodeIndex m_meshIndex = {};
+            Containers::SceneGraph::NodeIndex m_transformIndex = {};
+            Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
+        };
+
+        using MeshDataMapEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
+        using MeshDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>; // MeshData Index -> MeshNodeData
+        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // MeshData Index -> EntityId
+        using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        MeshDataMap CalculateMeshTransformMap(const Containers::Scene& scene) const;
+
+        bool AddEditorMaterialComponent(
+            const AZ::EntityId& entityId,
+            const DataTypes::ICustomPropertyData& propertyData) const;
+
+        bool AddEditorMeshComponent(
+            const AZ::EntityId& entityId,
+            const AZStd::string& relativeSourcePath,
+            const AZStd::string& meshGroupName) const;
+
+        NodeEntityMap CreateMeshGroups(
+            ManifestUpdates& manifestUpdates,
+            const MeshDataMap& meshDataMap,
+            const Containers::Scene& scene,
+            const AZStd::string& relativeSourcePath) const;
+
+        EntityIdList FixUpEntityParenting(
+            const NodeEntityMap& nodeEntityMap,
+            const Containers::SceneGraph& graph,
+            const MeshDataMap& meshDataMap) const;
+
+        bool CreatePrefabGroupManifestUpdates(
+            ManifestUpdates& manifestUpdates,
+            const Containers::Scene& scene,
+            const EntityIdList& entities,
+            const AZStd::string& filenameOnly,
+            const AZStd::string& relativeSourcePath) const;
+    };
+}
+
+namespace AZStd
+{
+    template<>
+    struct hash<AZ::SceneAPI::Containers::SceneGraph::NodeIndex>
+    {
+        inline size_t operator()(const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const
+        {
+            size_t hashValue{ 0 };
+            hash_combine(hashValue, nodeIndex.AsNumber());
+            return hashValue;
+        }
+    };
+
+    template<>
+    struct hash<AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates>
+    {
+        inline size_t operator()(const AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates& updates) const
+        {
+            size_t hashValue{ 0 };
+            hash_combine(hashValue, updates.size());
+            return hashValue;
+        }
+    };
+}
+
