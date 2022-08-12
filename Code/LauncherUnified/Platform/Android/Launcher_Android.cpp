@@ -36,7 +36,7 @@
 #endif // defined(AZ_ENABLE_TRACING) || defined(RELEASE_LOGGING)
 
 #if defined(ENABLE_LOGGING)
-    #define LOG_TAG "LMBR"
+    #define LOG_TAG "O3DE"
     #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
     #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__))
     #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
