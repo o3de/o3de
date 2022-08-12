@@ -44,7 +44,7 @@ namespace AZ::SceneAPI::Behaviors
 
         SCENE_DATA_API void Activate() override;
         SCENE_DATA_API void Deactivate() override;
-        static void Reflect(ReflectContext* context);
+        SCENE_DATA_API static void Reflect(ReflectContext* context);
         
         // AssetImportRequestBus::Handler
         SCENE_DATA_API Events::ProcessingResult UpdateManifest(
