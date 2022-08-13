@@ -30,7 +30,7 @@ namespace Multiplayer
     using namespace AzNetworking;
 
     AZ_CVAR(int, editorsv_servertype, 1, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "0: opens dedicated server. 1: starts client server.");
+        "0: editor will launch and connect to a dedicated server. 1: Editor starts its own client server mode.");
 
 
     AZ_CVAR(bool, editorsv_enabled, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
@@ -194,7 +194,7 @@ namespace Multiplayer
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
                 console->PerformCommand("disconnect");
             }
@@ -485,7 +485,9 @@ namespace Multiplayer
 
         if (editorsv_servertype == 1)
         {
-            AZ::Interface<IMultiplayer>::Get()->StartHosting(33450, false);
+            // Start hosting as a client-server
+            const bool isDedicated = false;
+            AZ::Interface<IMultiplayer>::Get()->StartHosting(33450, isDedicated);
             return;
         }
 
@@ -536,4 +538,17 @@ namespace Multiplayer
         constexpr bool autoRequeue = true;
         m_connectionEvent.Enqueue(AZ::SecondsToTimeMs(retrySeconds), autoRequeue);
     }
+
+    void MultiplayerEditorSystemComponent::OnStopPlayInEditorBegin()
+    {
+        if (editorsv_servertype != 1)
+        {
+            return;
+        }
+
+        // Make sure the client-server stops before the editor leaves play mode.
+        // Otherwise network entities will be left hanging around.
+        AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
+    }
+
 } // namespace Multiplayer
