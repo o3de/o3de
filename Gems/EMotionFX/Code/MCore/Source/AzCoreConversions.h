@@ -73,7 +73,7 @@ namespace MCore
     }
 
     //! O3DE_DEPRECATION_NOTICE(GHI-10508)
-    //! @deprecated use AZ::Quaternion::CreateFromEulerAnglesRadians
+    //! @deprecated use AZ::Quaternion::CreateFromEulerRadiansZYX
     AZ_FORCE_INLINE AZ::Quaternion AzEulerAnglesToAzQuat(float pitch, float yaw, float roll)
     {
         // In the LY coordinate system, pitch: X, yaw: Z, roll: Y.

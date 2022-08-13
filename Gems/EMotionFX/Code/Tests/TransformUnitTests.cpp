@@ -104,7 +104,7 @@ namespace EMotionFX
         }
         AZ::Quaternion ExpectedRotation() const
         {
-            return AZ::Quaternion::CreateFromEulerAnglesRadians(AZ::Vector3(
+            return AZ::Quaternion::CreateFromEulerRadiansZYX(AZ::Vector3(
                 ::testing::get<0>(::testing::get<1>(GetParam())),
                 ::testing::get<1>(::testing::get<1>(GetParam())),
                 ::testing::get<2>(::testing::get<1>(GetParam()))

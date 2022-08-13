@@ -157,7 +157,7 @@ namespace EMotionFX
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ROTATE_AMOUNT));
             const float rotateFactor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_ROTATE_AMOUNT), 0.0f, 1.0f);
             const AZ::Vector3 newAngles = m_minRotation.Lerp(m_maxRotation, rotateFactor);
-            outputTransform.m_rotation = inputTransform.m_rotation * AZ::Quaternion::CreateFromEulerAnglesDegrees(newAngles);
+            outputTransform.m_rotation = inputTransform.m_rotation * AZ::Quaternion::CreateFromEulerDegreesZYX(newAngles);
         }
 
         // process the translation
