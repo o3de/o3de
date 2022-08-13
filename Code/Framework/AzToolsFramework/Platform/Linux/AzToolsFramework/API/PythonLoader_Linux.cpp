@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/API/PythonLoader.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/IO/Path/Path.h>
 #include <dlfcn.h>
 
 namespace AzToolsFramework::EmbeddedPython
@@ -21,10 +21,7 @@ namespace AzToolsFramework::EmbeddedPython
         #if !defined(PYTHON_SHARED_LIBRARY_PATH)
         #error "PYTHON_SHARED_LIBRARY_PATH is not defined"
         #endif
-
-        AZStd::string libPythonName;
-        // Extract only the full filename and base the library load on the python shared library that is in the library load path
-        AzFramework::StringFunc::Path::GetFullFileName(PYTHON_SHARED_LIBRARY_PATH, libPythonName);
+        AZ::IO::FixedMaxPath libPythonName = AZ::IO::PathView(PYTHON_SHARED_LIBRARY_PATH).Filename();
         m_embeddedLibPythonHandle = dlopen(libPythonName.c_str(), RTLD_NOW | RTLD_GLOBAL);
         if (m_embeddedLibPythonHandle == nullptr)
         {
