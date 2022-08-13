@@ -501,17 +501,34 @@ namespace EMStudio
     {
         if (x2 >= x1)
         {
-            if (x1 != x2)
+            // find the min and max points
+            int32 minX, maxX, startY, endY;
+            if (x1 <= x2)
             {
-                 // draw the lines
-                int32 lastX = x2;
-                int32 lastY = y2;
-                
-                int32 x = x2;
-                while (x < x1)
+                minX    = x1;
+                maxX    = x2;
+                startY  = y1;
+                endY    = y2;
+            }
+            else
+            {
+                minX    = x2;
+                maxX    = x1;
+                startY  = y2;
+                endY    = y1;
+            }
+
+            // draw the lines
+            int32 lastX = minX;
+            int32 lastY = startY;
+
+            if (minX != maxX)
+            {
+                int32 x = minX;
+                while (x < maxX)
                 {
-                    const float t = MCore::CalcCosineInterpolationWeight((x - x2) / (float)(x1 - x2)); // calculate the smooth interpolated value
-                    const int32 y = aznumeric_cast<int32>(y2 + (y1 - y2) * t); // calculate the y coordinate
+                    const float t = MCore::CalcCosineInterpolationWeight((x - minX) / (float)(maxX - minX)); // calculate the smooth interpolated value
+                    const int32 y = aznumeric_cast<int32>(startY + (endY - startY) * t); // calculate the y coordinate
                     painter.drawLine(lastX, lastY, x, y);       // draw the line
                     lastX = x;
                     lastY = y;
@@ -519,8 +536,8 @@ namespace EMStudio
                 }
 
                 const float t = MCore::CalcCosineInterpolationWeight(1.0f); // calculate the smooth interpolated value
-                const int32 y = aznumeric_cast<int32>(y2 + (y1 - y2) * t); // calculate the y coordinate
-                painter.drawLine(lastX, lastY, x1, y);        // draw the line
+                const int32 y = aznumeric_cast<int32>(startY + (endY - startY) * t); // calculate the y coordinate
+                painter.drawLine(lastX, lastY, maxX, y);        // draw the line
             }
             else // special case where there is just one line up
             {
