@@ -947,6 +947,21 @@ void EditorViewportWidget::SetViewportId(int id)
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
+    m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
+        [this]()
+        {
+            if (m_viewSourceType == ViewSourceType::None)
+            {
+                const float fov = SandboxEditor::CameraDefaultFov();
+                if (m_viewPane)
+                {
+                    m_viewPane->OnFOVChanged(fov);
+                }
+                SetFOV(fov);
+            }
+        });
+    m_editorViewportSettingsCallbacks->SetPerspectiveChangedEvent(m_perspectiveChangeHandler);
+
     m_nearPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
         [this]([[maybe_unused]] float nearPlaneDistance)
         {
@@ -1938,7 +1953,7 @@ void EditorViewportWidget::SetDefaultCamera()
     // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = gSettings.viewports.fDefaultFov;
+        const float fov = SandboxEditor::CameraDefaultFov();
         m_viewPane->OnFOVChanged(fov);
         SetFOV(fov);
     }

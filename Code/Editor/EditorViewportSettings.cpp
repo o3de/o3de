@@ -61,6 +61,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
+    constexpr AZStd::string_view CameraFovSetting = "/Amazon/Preferences/Editor/Camera/DefaultFOV";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -109,6 +110,15 @@ namespace SandboxEditor
                         }
                     }
                 );
+
+                m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraFovSetting, path))
+                        {
+                            m_perspectiveChanged.Signal();
+                        }
+                    });
             }
         }
 
@@ -132,14 +142,21 @@ namespace SandboxEditor
             handler.Connect(m_nearPlaneChanged);
         }
 
+        void SetPerspectiveChangedEvent(PerspectiveChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_perspectiveChanged);
+        }
+
         AngleSnappingChangedEvent m_angleSnappingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
+        PerspectiveChangedEvent m_perspectiveChanged;
         NearFarPlaneChangedEvent m_farPlaneChanged;
         NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_perspectiveNotifyEventHandler;
     };
 
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
@@ -588,4 +605,15 @@ namespace SandboxEditor
     {
         AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
+
+    float CameraDefaultFov()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, 90.0));
+    }
+
+    void SetCameraDefaultFov(float fov)
+    {
+        AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fov));
+    }
+
 } // namespace SandboxEditor
