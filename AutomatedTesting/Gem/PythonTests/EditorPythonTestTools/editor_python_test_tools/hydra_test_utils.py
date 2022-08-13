@@ -26,6 +26,20 @@ def teardown_editor(editor):
     logger.debug('Ensuring Editor is stopped')
     editor.ensure_stopped()
 
+def compile_test_case_name(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
                                 halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
@@ -49,8 +63,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
-    test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-    compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
+    compiled_test_case_name = compile_test_case_name(request)
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         run_python, test_case,
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=true",

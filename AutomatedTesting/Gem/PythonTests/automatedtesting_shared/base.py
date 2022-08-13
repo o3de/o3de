@@ -22,6 +22,21 @@ from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.log.log_monitor import LogMonitor, LogMonitorException
 
+def compile_test_case_name(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
+
 class TestRunError():
     def __init__(self, title, content):
         self.title = title
@@ -96,8 +111,7 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        compiled_test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        compiled_test_case_name = compile_test_case_name(request)
         pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={compiled_test_case_name}",
                  "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
                  f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
