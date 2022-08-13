@@ -216,6 +216,8 @@ namespace WhiteBox
                     whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
                 EditorWhiteBoxComponentRequestBus::Event(m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::DeserializeWhiteBox);
                 
+                m_pressTime = 0.0f;
+                m_actionIndex = InvalidAxisIndex;
                 this->AZ::TickBus::Handler::BusDisconnect();
             });
 

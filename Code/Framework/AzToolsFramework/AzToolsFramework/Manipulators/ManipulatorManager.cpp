@@ -69,7 +69,7 @@ namespace AzToolsFramework
 
         if (m_activeManipulator && m_activeManipulator->GetManipulatorId() == manipulator->GetManipulatorId())
         {
-            m_activeManipulator = nullptr;
+            m_activeManipulator.reset();
         }
 
         m_manipulatorIdToPtrMap.erase(manipulator->GetManipulatorId());
@@ -223,14 +223,14 @@ namespace AzToolsFramework
             if (interaction.m_mouseButtons.Left())
             {
                 m_activeManipulator->OnLeftMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
                 return true;
             }
 
             if (interaction.m_mouseButtons.Right())
             {
                 m_activeManipulator->OnRightMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
                 return true;
             }
         }
