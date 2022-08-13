@@ -428,14 +428,7 @@ namespace AzToolsFramework
                         {
                             patchesMetadata.m_shouldReloadContainerEntity = true;
                         }
-                        else
-                        {
-                            AZ_Warning(
-                                "Prefab", false,
-                                "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, or "
-                                "ContainerEntity.",
-                                AZ_STRING_ARG(patchPath));
-                        }
+                        // Skips other path prefix types (e.g. /LinkId/{someString}/).
                     }
                 }
                 return AZStd::move(patchesMetadata);
