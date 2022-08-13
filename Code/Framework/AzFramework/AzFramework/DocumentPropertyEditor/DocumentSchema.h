@@ -11,10 +11,12 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/DOM/DomValue.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h>
 
 namespace AZ::DocumentPropertyEditor
@@ -288,6 +290,21 @@ namespace AZ::DocumentPropertyEditor
                     return result;
                 };
             }
+
+            static ResultType InvokeOnBoundMessage(BoundAdapterMessage& boundMessage, const Dom::Value& args)
+            {
+                return AZ::Success(AZ::Dom::Utils::ValueToTypeUnsafe<Result>(boundMessage(args)));
+            }
+
+            static ResultType ValueToResult(const Dom::Value& value)
+            {
+                auto result = AZ::Dom::Utils::ValueToType<Result>(value);
+                if (!result.has_value())
+                {
+                    return AZ::Failure<ErrorType>("Failed to convert return value type");
+                }
+                return AZ::Success(AZStd::move(result.value()));
+            }
         };
 
         template<typename... Args>
@@ -315,45 +332,74 @@ namespace AZ::DocumentPropertyEditor
                     reader.Invoke<void>(args...);
                 };
             }
+
+            static ResultType InvokeOnBoundMessage(BoundAdapterMessage& boundMessage, const Dom::Value& args)
+            {
+                boundMessage(args);
+                return AZ::Success();
+            }
+
+            static ResultType ValueToResult(const Dom::Value&)
+            {
+                return AZ::Success();
+            }
         };
 
         using CallbackTraits = Traits<CallbackSignature>;
+        using MessageCallbackType = AZStd::function<CallbackSignature>;
 
         //! Attempts to call a function with this attribute's callback signature stored in a DOM value as an opaque type.
         //! Invokes the method with the specified args if our callback signature is found in the value, otherwise returns an error message.
         template<typename... Args>
         typename CallbackTraits::ResultType InvokeOnDomValue(const AZ::Dom::Value& value, Args... args) const
         {
-            // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
             if (value.IsObject())
             {
                 auto typeField = value.FindMember(AZ::Attribute::s_typeField);
-                if (typeField != value.MemberEnd() && typeField->second.IsString() &&
-                    typeField->second.GetString() == Attribute::s_typeName)
+                if (typeField != value.MemberEnd() && typeField->second.IsString())
                 {
-                    void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
-                    AZ::Attribute* attribute = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
-
-                    if (!attribute->IsInvokable())
+                    // For RPE callbacks, we may store an AZ::Attribute and its instance in a DOM value
+                    if (typeField->second.GetString() == Attribute::s_typeName)
                     {
-                        return AZ::Failure<ErrorType>("Attempted to invoke a non-invokable attribute");
+                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(value[AZ::Attribute::s_instanceField]);
+                        AZ::Attribute* attribute =
+                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(value[AZ::Attribute::s_attributeField]);
+
+                        if (!attribute->IsInvokable())
+                        {
+                            return AZ::Failure<ErrorType>("Attempted to invoke a non-invokable attribute");
+                        }
+
+                        AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
+                        (marshalledArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(args)), ...);
+
+                        if (!attribute->CanDomInvoke(marshalledArguments))
+                        {
+                            return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
+                        }
+
+                        return CallbackTraits::InvokeOnAttribute(attribute, instance, marshalledArguments);
                     }
-
-                    AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
-                    (marshalledArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(args)), ...);
-
-                    if (!attribute->CanDomInvoke(marshalledArguments))
+                    // For messages handled by the adapter, we store a marshalled BoundAdapterMessage
+                    else if (typeField->second.GetString() == BoundAdapterMessage::s_typeName)
                     {
-                        return AZ::Failure<ErrorType>("Attempted to invoke an AZ::Attribute with invalid parameters");
-                    }
+                        auto boundMessage = BoundAdapterMessage::TryMarshalFromDom(value);
+                        if (boundMessage.has_value())
+                        {
+                            AZ::Dom::Value marshalledArguments(AZ::Dom::Type::Array);
+                            (marshalledArguments.ArrayPushBack(AZ::Dom::Utils::ValueFromType(args)), ...);
 
-                    return CallbackTraits::InvokeOnAttribute(attribute, instance, marshalledArguments);
+                            return CallbackTraits::InvokeOnBoundMessage(boundMessage.value(), marshalledArguments);
+                        }
+                    }
                 }
             }
 
             if (!value.IsOpaqueValue())
             {
-                return AZ::Failure<ErrorType>("This property is holding a value and not a callback");
+                // CallbackAttributes that return a value may be bound to a simple value of that type
+                // In that case, ignore our parameters and simply return the value
+                return CallbackTraits::ValueToResult(value);
             }
 
             const AZStd::any& wrapper = value.GetOpaqueValue();
@@ -370,12 +416,31 @@ namespace AZ::DocumentPropertyEditor
         template<typename... Args>
         typename CallbackTraits::ResultType InvokeOnDomNode(const AZ::Dom::Value& value, Args... args) const
         {
+            if (!value.IsNode())
+            {
+                return AZ::Failure<ErrorType>("Value is not a Node");
+            }
             auto attributeIt = value.FindMember(this->GetName());
             if (attributeIt == value.MemberEnd())
             {
                 return AZ::Failure<ErrorType>(ErrorType::format("No \"%s\" attribute found", this->m_name.data()));
             }
             return this->InvokeOnDomValue(attributeIt->second, args...);
+        }
+
+        //! Checks if a given AdapterMessage matches this attribute and invokes a provided callback if so.
+        //! Returns true if the callback was invoked.
+        bool MatchMessage(const AdapterMessage& message, Dom::Value& result, const MessageCallbackType& callback) const
+        {
+            if (message.m_messageName == this->GetName())
+            {
+                if (AZ::DomInvokeHelper<MessageCallbackType>::CanInvoke(message.m_messageParameters))
+                {
+                    result = AZ::DomInvokeHelper<MessageCallbackType>::Invoke(callback, message.m_messageParameters);
+                    return true;
+                }
+            }
+            return false;
         }
 
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value) const override

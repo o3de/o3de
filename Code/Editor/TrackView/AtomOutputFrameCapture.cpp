@@ -91,22 +91,33 @@ namespace TrackView
     bool AtomOutputFrameCapture::BeginCapture(
         const AZ::RPI::AttachmentReadback::CallbackFunction& attachmentReadbackCallback, CaptureFinishedCallback captureFinishedCallback)
     {
+        AZ_Assert(m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId, "Attempting to start a 2nd frame capture while one is in progress");
         AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
 
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        bool startedCapture = false;
+        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
+        if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+        {
+            m_frameCaptureId = frameCaptureId;
+            return true;
+        }
 
-        return startedCapture;
+        return false;
     }
 
     void AtomOutputFrameCapture::OnCaptureFinished(
-        [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+        uint32_t frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
+        // ignore captures from other systems.
+        if (m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_frameCaptureId)
+        {
+            return;
+        }
         m_captureFinishedCallback();
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
     }

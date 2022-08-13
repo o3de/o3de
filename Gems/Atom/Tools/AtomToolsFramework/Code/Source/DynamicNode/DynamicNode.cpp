@@ -33,21 +33,8 @@ namespace AtomToolsFramework
         , m_toolId(toolId)
         , m_configId(configId)
     {
-        m_config = {};
-        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
-            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
-
         RegisterSlots();
         CreateSlotData();
-    }
-
-    void DynamicNode::PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id)
-    {
-        m_config = {};
-        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
-            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
-
-        Node::PostLoadSetup(ownerGraph, id);
     }
 
     const char* DynamicNode::GetTitle() const
@@ -60,54 +47,143 @@ namespace AtomToolsFramework
         return m_config.m_subTitle.c_str();
     }
 
+    const AZStd::string& DynamicNode::GetConfigId() const
+    {
+        return m_configId;
+    }
+
+    const DynamicNodeConfig& DynamicNode::GetConfig() const
+    {
+        return m_config;
+    }
+
     void DynamicNode::RegisterSlots()
     {
+        m_config = {};
+        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
+
+        // Register all of the input data slots with the dynamic node
         for (const auto& slotConfig : m_config.m_inputSlots)
         {
+            // Input slots support incoming connections from multiple data types. We must build a container of all of the data type objects
+            // for all of the supported types to create the input slot.
             GraphModel::DataTypeList dataTypes;
-            for (const auto& supportedDataType : slotConfig.m_supportedDataTypes)
+            dataTypes.reserve(slotConfig.m_supportedDataTypes.size());
+            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
             {
-                if (auto dataType = GetGraphContext()->GetDataType(supportedDataType))
+                GraphModel::DataTypePtr dataType = GetGraphContext()->GetDataType(dataTypeName);
+                if (!dataType)
                 {
-                    dataTypes.push_back(dataType);
+                    AZ_Error(
+                        "DynamicNode",
+                        false,
+                        "Unable to register input slot \"%s\" with unsupported data type \"%s\", from DynamicNodeConfig \"%s\"",
+                        slotConfig.m_displayName.c_str(),
+                        dataTypeName.c_str(),
+                        m_configId.c_str());
+                    continue;
                 }
+
+                dataTypes.push_back(dataType);
             }
 
-            if (!dataTypes.empty())
+            if (dataTypes.empty())
             {
-                const AZStd::any& defaultValue =
-                    !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataTypes.front()->GetDefaultValue();
-                RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
-                    slotConfig.m_name, slotConfig.m_displayName, dataTypes, defaultValue, slotConfig.m_description));
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register input slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.c_str());
+                continue;
             }
+
+            // Assigning the default value from the slot configuration or the first data type
+            const AZStd::any& defaultValue =
+                !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataTypes.front()->GetDefaultValue();
+            if (defaultValue.empty())
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register input slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.c_str());
+                continue;
+            }
+
+            RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+                slotConfig.m_name, slotConfig.m_displayName, dataTypes, defaultValue, slotConfig.m_description));
         }
 
         for (const auto& slotConfig : m_config.m_outputSlots)
         {
-            for (const auto& supportedDataType : slotConfig.m_supportedDataTypes)
+            // Output slots only support one data type. Search for the first valid supported data type.
+            GraphModel::DataTypePtr dataType;
+            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
             {
-                if (auto dataType = GetGraphContext()->GetDataType(supportedDataType))
+                dataType = GetGraphContext()->GetDataType(dataTypeName);
+                if (dataType)
                 {
-                    RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
-                        slotConfig.m_name, slotConfig.m_displayName, dataType, slotConfig.m_description));
                     break;
                 }
             }
+
+            if (!dataType)
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register output slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.c_str());
+                continue;
+            }
+
+            RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+                slotConfig.m_name, slotConfig.m_displayName, dataType, slotConfig.m_description));
         }
 
         for (const auto& slotConfig : m_config.m_propertySlots)
         {
-            for (const auto& supportedDataType : slotConfig.m_supportedDataTypes)
+            // Property slots only support one data type. Search for the first valid supported data type.
+            GraphModel::DataTypePtr dataType;
+            for (const AZStd::string& dataTypeName : slotConfig.m_supportedDataTypes)
             {
-                if (auto dataType = GetGraphContext()->GetDataType(supportedDataType))
+                dataType = GetGraphContext()->GetDataType(dataTypeName);
+                if (dataType)
                 {
-                    const AZStd::any& defaultValue =
-                        !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataType->GetDefaultValue();
-                    RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
-                        slotConfig.m_name, slotConfig.m_displayName, dataType, defaultValue, slotConfig.m_description));
                     break;
                 }
             }
+
+            if (!dataType)
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register property slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.c_str());
+                continue;
+            }
+
+            // Assigning the default value from the slot configuration or the first data type
+            const AZStd::any& defaultValue = !slotConfig.m_defaultValue.empty() ? slotConfig.m_defaultValue : dataType->GetDefaultValue();
+            if (defaultValue.empty())
+            {
+                AZ_Error(
+                    "DynamicNode",
+                    false,
+                    "Unable to register property slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
+                    slotConfig.m_displayName.c_str(),
+                    m_configId.c_str());
+                continue;
+            }
+
+            RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+                slotConfig.m_name, slotConfig.m_displayName, dataType, defaultValue, slotConfig.m_description));
         }
     }
 } // namespace AtomToolsFramework

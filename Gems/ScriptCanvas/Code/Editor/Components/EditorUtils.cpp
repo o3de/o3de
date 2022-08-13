@@ -31,10 +31,16 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path)
+    {
+        return CompleteDescription(SourceHandle::FromRelativePath(source, path));
+    }
+
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
     {
-        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
-        if (assetSystem)
+        using namespace AzToolsFramework;
+
+        if (AssetSystemRequestBus::Events* assetSystem = AssetSystemRequestBus::FindFirstHandler())
         {
             if (!source.Id().IsNull())
             {
@@ -42,32 +48,25 @@ namespace ScriptCanvasEditor
                 AZ::Data::AssetInfo assetInfoID;
                 if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfoID, watchFolderID))
                 {
-                    AZStd::string watchFolderPath;
-                    AZ::Data::AssetInfo assetInfoPath;
-                    if (assetSystem->GetSourceInfoBySourcePath(assetInfoID.m_relativePath.c_str(), assetInfoPath, watchFolderPath)
-                    && assetInfoPath.m_assetId.IsValid())
-                    {
-                        AZ_Warning("ScriptCanvas", assetInfoID.m_assetId.m_guid == source.Id()
-                            , "SourceHandle completion produced conflicting AssetIds.");
-                        AZ::IO::Path watchPath(watchFolderPath);
-                        AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                        return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
-                    }
+                    return SourceHandle::MarkAbsolutePath
+                        ( SourceHandle::FromRelativePath(source, assetInfoID.m_assetId.m_guid, assetInfoID.m_relativePath.c_str())
+                        , (AZ::IO::Path(watchFolderID) / AZ::IO::Path(assetInfoID.m_relativePath)));
                 }
             }
-            else if (!source.Path().empty())
+
+            if (!source.RelativePath().empty())
             {
                 AZStd::string watchFolderPath;
                 AZ::Data::AssetInfo assetInfoPath;
-                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfoPath, watchFolderPath) && assetInfoPath.m_assetId.IsValid())
+                if (assetSystem->GetSourceInfoBySourcePath(source.RelativePath().c_str(), assetInfoPath, watchFolderPath)
+                    && assetInfoPath.m_assetId.IsValid())
                 {
-                    AZ::IO::Path watchPath(watchFolderPath);
-                    AZ::IO::Path relativePath(assetInfoPath.m_relativePath);
-                    return SourceHandle(source, assetInfoPath.m_assetId.m_guid, watchPath / relativePath);
+                    return SourceHandle::MarkAbsolutePath
+                        ( SourceHandle::FromRelativePath(source, assetInfoPath.m_assetId.m_guid, assetInfoPath.m_relativePath.c_str())
+                        , (AZ::IO::Path(watchFolderPath) / AZ::IO::Path(assetInfoPath.m_relativePath)));
                 }
             }
         }
-
 
         return AZStd::nullopt;
     }

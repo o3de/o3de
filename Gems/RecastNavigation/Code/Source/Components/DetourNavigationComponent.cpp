@@ -10,7 +10,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Components/DetourNavigationComponent.h>
-#include <Misc/RecastHelpers.h>
+#include <RecastNavigation/RecastHelpers.h>
 #include <RecastNavigation/RecastNavigationMeshBus.h>
 
 AZ_DECLARE_BUDGET(Navigation);
@@ -38,8 +38,10 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "navigation")
                 ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
-                ->Event("Find Path Between Entities", &DetourNavigationRequests::FindPathBetweenEntities)
-                ->Event("Find Path Between Positions", &DetourNavigationRequests::FindPathBetweenPositions)
+                ->Event("FindPathBetweenEntities", &DetourNavigationRequests::FindPathBetweenEntities)
+                ->Event("FindPathBetweenPositions", &DetourNavigationRequests::FindPathBetweenPositions)
+                ->Event("SetNavigationMeshEntity", &DetourNavigationRequests::SetNavigationMeshEntity)
+                ->Event("GetNavigationMeshEntity", &DetourNavigationRequests::GetNavigationMeshEntity)
                 ;
 
             behaviorContext->Class<DetourNavigationComponent>()->RequestBus("DetourNavigationRequestBus");
@@ -138,6 +140,16 @@ namespace RecastNavigation
         }
 
         return pathPoints;
+    }
+
+    void DetourNavigationComponent::SetNavigationMeshEntity(AZ::EntityId navMeshEntity)
+    {
+        m_navQueryEntityId = navMeshEntity;
+    }
+
+    AZ::EntityId DetourNavigationComponent::GetNavigationMeshEntity() const
+    {
+        return m_navQueryEntityId;
     }
 
     void DetourNavigationComponent::Activate()

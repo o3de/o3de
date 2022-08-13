@@ -48,7 +48,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
-const char* AssetImporterWindow::s_documentationWebAddress = "https://www.o3de.org/docs/user-guide/assets/";
+const char* AssetImporterWindow::s_documentationWebAddress = "https://www.o3de.org/docs/user-guide/assets/scene-settings/";
 const AZ::Uuid AssetImporterWindow::s_browseTag = AZ::Uuid::CreateString("{C240D2E1-BFD2-4FFA-BB5B-CC0FA389A5D3}");
 
 AssetImporterWindow::AssetImporterWindow()
@@ -276,12 +276,51 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
         return true;
     }
 
-    QMessageBox messageBox(QMessageBox::Icon::NoIcon, "Unsaved changes",
-        "You have unsaved changes. Do you want to discard those changes?",
-        QMessageBox::StandardButton::Discard | QMessageBox::StandardButton::Cancel, this);
-    messageBox.exec();
-    QMessageBox::StandardButton choice = static_cast<QMessageBox::StandardButton>(messageBox.result());
-    return choice == QMessageBox::StandardButton::Discard;
+    const int result = QMessageBox::question(
+        this,
+        tr("Save Changes?"),
+        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        QMessageBox::Yes,
+        QMessageBox::No,
+        QMessageBox::Cancel);
+
+    if (result == QMessageBox::Cancel)
+    {
+        return false;
+    }
+    else if (result == QMessageBox::No)
+    {
+        return true;
+    }
+
+    AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
+    m_assetImporterDocument->SaveScene(
+        output,
+        [this](bool wasSuccessful)
+        {
+            if(wasSuccessful)
+            {
+                m_isClosed = true;
+
+                // Delete the parent, because this window is nested inside another, dockable window.
+                // Just deleting this will leave the dockable window open.
+                // Requesting the panel that this is docked in to close, will result in issues on some re-open states,
+                // if only the panel is closed, then the next time it's opened, the scene settings won't be correctly loaded.
+                this->parent()->deleteLater();
+            }
+            else
+            {
+                QMessageBox messageBox(
+                    QMessageBox::Icon::Warning,
+                    tr("Failed to save"),
+                    tr("An error has been encountered saving this file. See the logs for details."));
+                messageBox.exec();
+            }
+        });
+
+    // Don't close yet, in case the save fails.
+    // Scene saving is asynchronous, and will close the panel if it's successful.
+    return false;
 }
 
 void AssetImporterWindow::UpdateClicked()

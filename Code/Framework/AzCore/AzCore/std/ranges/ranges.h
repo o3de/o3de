@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/is_signed.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/std/typetraits/remove_cv.h>
+#include <AzCore/std/typetraits/remove_all_extents.h>
 
 namespace AZStd
 {
@@ -938,7 +939,7 @@ namespace AZStd::ranges
                 }
                 else
                 {
-                    operator()(ranges::begin(r), ranges::end(r));
+                    return operator()(ranges::begin(r), ranges::end(r));
                 }
             }
         };

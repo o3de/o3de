@@ -57,7 +57,7 @@ namespace EMotionFX
 
     MCore::Attribute* ColorParameter::ConstructDefaultValueAsAttribute() const
     {
-        return MCore::AttributeColor::Create(MCore::RGBAColor(m_defaultValue.GetR(), m_defaultValue.GetG(), m_defaultValue.GetB(), m_defaultValue.GetA()));
+        return MCore::AttributeColor::Create(m_defaultValue);
     }
 
     uint32 ColorParameter::GetType() const

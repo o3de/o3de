@@ -396,6 +396,10 @@ namespace AzToolsFramework
             // A container for mapping Templates' file paths to their Template ids.
             AZStd::unordered_map<AZ::IO::Path, TemplateId> m_templateFilePathToIdMap;
 
+            // A map of entity id to hashed path used for generation of entity id during deserialization.
+            // This map is needed when there is a many-to-one relationship between entity ids and hashed paths.
+            AZStd::unordered_map<AZ::EntityId, AZ::IO::Path> m_entityIdToHashedPathMap;
+
             // A container of Prefab Links mapped by their Link ids.
             AZStd::unordered_map<LinkId, Link> m_linkIdMap;
 
@@ -414,14 +418,14 @@ namespace AzToolsFramework
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
 
-            // Handles the public Prefab API used by UI and scripting.
-            PrefabPublicHandler m_prefabPublicHandler;
-
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;
 
             // Used for updating Templates when Instances are modified.
             InstanceToTemplatePropagator m_instanceToTemplatePropagator;
+
+            // Handles the public Prefab API used by UI and scripting.
+            PrefabPublicHandler m_prefabPublicHandler;
 
             // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;

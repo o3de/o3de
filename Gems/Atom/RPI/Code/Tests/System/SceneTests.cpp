@@ -189,9 +189,9 @@ namespace UnitTest
         Ptr<RasterPass> newPass = RasterPass::Create(passDesc);
 
         // Add new pass to render pipeline which should trigger render pipeline pass modify notification
-        pipeline2->GetRootPass()->AddChild(newPass);
+        pipeline2->GetRootPass()->AddChild(newPass, true);
         // This function is called in every RPISystem render tick. We call it manually here to trigger the pass change notification
-        pipeline2->OnPassModified();
+        pipeline2->UpdatePasses();
         EXPECT_TRUE(feature->m_pipelineChangedCount == 1);
         EXPECT_TRUE(pipeline2.get() == feature->m_lastPipeline);
 
@@ -238,9 +238,9 @@ namespace UnitTest
         Ptr<RasterPass> newPass = RasterPass::Create(passDesc);
 
         // Add new pass to render pipeline which should trigger render pipeline pass modify notification
-        pipeline1->GetRootPass()->AddChild(newPass);
+        pipeline1->GetRootPass()->AddChild(newPass, true);
         // This function is called in every RPISystem render tick. We call it manually here to trigger the pass change notification
-        pipeline1->OnPassModified();
+        pipeline1->UpdatePasses();
         // Set view to pipeline
         ViewPtr view = View::CreateView(AZ::Name("TestView"), RPI::View::UsageCamera);
         pipeline1->SetPersistentView(viewTag, view);
@@ -389,11 +389,6 @@ namespace UnitTest
         ScenePtr testScene = Scene::CreateScene(sceneDesc);
         testScene->Activate();
 
-        AZ_TEST_START_ASSERTTEST;
-        FeatureProcessor* featureProcessor = testScene->EnableFeatureProcessor(FeatureProcessorId{ TestFeatureProcessorInterface::RTTI_TypeName() });
-        AZ_TEST_STOP_ASSERTTEST(1);
-
-        EXPECT_TRUE(featureProcessor == nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorImplementation>() == nullptr);
         EXPECT_TRUE(testScene->GetFeatureProcessor<TestFeatureProcessorInterface>() == nullptr);
 

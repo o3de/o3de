@@ -11,6 +11,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 
@@ -21,19 +22,6 @@
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAnglePair, AZ::SystemAllocator, 0);
-
-    namespace Internal
-    {
-        const float Alpha = 0.6f;
-        const AZ::Color ColorDefault = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
-        const AZ::Color ColorFirst = AZ::Color(1.0f, 0.0f, 0.0f, Alpha);
-        const AZ::Color ColorSecond = AZ::Color(0.0f, 1.0f, 0.0f, Alpha);
-        const AZ::Color ColorSweepArc = AZ::Color(1.0f, 1.0f, 1.0f, Alpha);
-
-        const float SweepLineDisplaceFactor = 0.5f;
-        const float SweepLineThickness = 1.0f;
-        const float SweepLineGranularity = 1.0f;
-    } // namespace Internal
 
     JointsSubComponentModeAnglePair::JointsSubComponentModeAnglePair(
         const AZStd::string& propertyName, const AZ::Vector3& axis, float max, float min)
@@ -80,10 +68,12 @@ namespace PhysX
         const float manipulatorRadius = 2.0f;
         const float manipulatorWidth = 0.05f;
         m_firstManipulator->SetView(AzToolsFramework::CreateManipulatorViewCircle(
-            *m_firstManipulator, Internal::ColorFirst, manipulatorRadius, manipulatorWidth, AzToolsFramework::DrawHalfDottedCircle));
+            *m_firstManipulator, AzPhysics::JointVisualizationDefaults::ColorFirst, manipulatorRadius, manipulatorWidth,
+            AzToolsFramework::DrawHalfDottedCircle));
 
         m_secondManipulator->SetView(AzToolsFramework::CreateManipulatorViewCircle(
-            *m_secondManipulator, Internal::ColorSecond, manipulatorRadius, manipulatorWidth, AzToolsFramework::DrawHalfDottedCircle));
+            *m_secondManipulator, AzPhysics::JointVisualizationDefaults::ColorSecond, manipulatorRadius, manipulatorWidth,
+            AzToolsFramework::DrawHalfDottedCircle));
 
         Refresh(idPair);
 
@@ -248,7 +238,7 @@ namespace PhysX
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();
-        debugDisplay.SetAlpha(Internal::Alpha);
+        debugDisplay.SetAlpha(AzPhysics::JointVisualizationDefaults::Alpha);
 
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(m_entityComponentIdPair.GetEntityId());
 
@@ -259,39 +249,45 @@ namespace PhysX
         debugDisplay.PushMatrix(worldTransform);
         debugDisplay.PushMatrix(localTransform);
 
-        debugDisplay.SetColor(Internal::ColorSweepArc);
+        debugDisplay.SetColor(AzPhysics::JointVisualizationDefaults::ColorSweepArc);
 
         const AZ::Vector3 zeroVector = AZ::Vector3::CreateZero();
-        const AZ::Vector3 posPosition = m_axis * Internal::SweepLineDisplaceFactor;
+        const AZ::Vector3 posPosition = m_axis * AzPhysics::JointVisualizationDefaults::SweepLineDisplaceFactor;
         const AZ::Vector3 negPosition = -posPosition;
         debugDisplay.DrawArc(
-            posPosition, Internal::SweepLineThickness, -currentValue.first, currentValue.first, Internal::SweepLineGranularity, -m_axis);
+            posPosition, AzPhysics::JointVisualizationDefaults::SweepLineThickness, -currentValue.first, currentValue.first,
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
         debugDisplay.DrawArc(
-            zeroVector, Internal::SweepLineThickness, -currentValue.first, currentValue.first, Internal::SweepLineGranularity, -m_axis);
+            zeroVector, AzPhysics::JointVisualizationDefaults::SweepLineThickness, -currentValue.first, currentValue.first,
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
         debugDisplay.DrawArc(
-            negPosition, Internal::SweepLineThickness, -currentValue.first, currentValue.first, Internal::SweepLineGranularity, -m_axis);
+            negPosition, AzPhysics::JointVisualizationDefaults::SweepLineThickness, -currentValue.first, currentValue.first,
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
         debugDisplay.DrawArc(
-            posPosition, Internal::SweepLineThickness, 0.0f, abs(currentValue.second), Internal::SweepLineGranularity, -m_axis);
+            posPosition, AzPhysics::JointVisualizationDefaults::SweepLineThickness, 0.0f, abs(currentValue.second),
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
         debugDisplay.DrawArc(
-            zeroVector, Internal::SweepLineThickness, 0.0f, abs(currentValue.second), Internal::SweepLineGranularity, -m_axis);
+            zeroVector, AzPhysics::JointVisualizationDefaults::SweepLineThickness, 0.0f, abs(currentValue.second),
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
         debugDisplay.DrawArc(
-            negPosition, Internal::SweepLineThickness, 0.0f, abs(currentValue.second), Internal::SweepLineGranularity, -m_axis);
+            negPosition, AzPhysics::JointVisualizationDefaults::SweepLineThickness, 0.0f, abs(currentValue.second),
+            AzPhysics::JointVisualizationDefaults::SweepLineGranularity, -m_axis);
 
         AZ::Quaternion firstRotate = AZ::Quaternion::CreateFromAxisAngle(m_axis, AZ::DegToRad(currentValue.first));
         AZ::Transform firstTM = AZ::Transform::CreateFromQuaternion(firstRotate);
         debugDisplay.PushMatrix(firstTM);
-        debugDisplay.SetColor(Internal::ColorFirst);
+        debugDisplay.SetColor(AzPhysics::JointVisualizationDefaults::ColorFirst);
         debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
         debugDisplay.PopMatrix();
 
         AZ::Quaternion secondRotate = AZ::Quaternion::CreateFromAxisAngle(m_axis, AZ::DegToRad(currentValue.second));
         AZ::Transform secondTM = AZ::Transform::CreateFromQuaternion(secondRotate);
         debugDisplay.PushMatrix(secondTM);
-        debugDisplay.SetColor(Internal::ColorSecond);
+        debugDisplay.SetColor(AzPhysics::JointVisualizationDefaults::ColorSecond);
         debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
         debugDisplay.PopMatrix();
 
-        debugDisplay.SetColor(Internal::ColorDefault);
+        debugDisplay.SetColor(AzPhysics::JointVisualizationDefaults::ColorDefault);
         debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
 
         debugDisplay.PopMatrix(); // pop local transform

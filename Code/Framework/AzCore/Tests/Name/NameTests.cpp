@@ -33,7 +33,7 @@
 
 namespace UnitTest
 {
-    static AZ::Name globalName = AZ::Name::FromStringLiteral("global");
+    static AZ::Name globalName = AZ::Name::FromStringLiteral("global", AZ::Interface<AZ::NameDictionary>::Get());
 
     class NameDictionaryTester
     {
@@ -50,7 +50,7 @@ namespace UnitTest
             AZ::NameDictionary::Destroy();
         }
 
-        static const AZStd::unordered_map<AZ::Name::Hash, AZ::Internal::NameData*>& GetDictionary()
+        static const auto& GetDictionary()
         {
             return AZ::NameDictionary::Instance().m_dictionary;
         }
@@ -61,10 +61,13 @@ namespace UnitTest
             AZ::Name* head = &AZ::NameDictionary::Instance().m_deferredHead;
             size_t staticNameCount = 0;
             AZ::Name* current = head;
+            AZStd::set<AZ::Name::Hash> recordedNames;
             while (current != nullptr)
             {
-                if (current->m_data != nullptr)
+                // Add one entry to the count for every unique literal in the dictionary, compare by hash (which the name dictionary has guaranteed deduplicated for us)
+                if (current->m_data != nullptr && !recordedNames.contains(current->m_data->GetHash()))
                 {
+                    recordedNames.insert(current->m_data->GetHash());
                     ++staticNameCount;
                 }
                 current = current->m_nextName;
@@ -81,14 +84,14 @@ namespace UnitTest
         {
             uint32_t hash = AZ::NameDictionary::Instance().CalcHash(name);
 
-            if (maxUniqueHashes < UINT32_MAX)
+            if (maxUniqueHashes < std::numeric_limits<uint32_t>::max())
             {
                 hash %= maxUniqueHashes;
                 // Rather than use this modded value as the hash, we run a string hash again to
                 // get spread-out hash values that are similar to the real ones, and avoid clustering.
-                char buffer[16];
-                azsnprintf(buffer, 16, "%u", hash);
-                hash = AZStd::hash<AZStd::string_view>()(buffer) & 0xFFFFFFFF;
+                AZStd::fixed_string<16> buffer;
+                AZStd::to_string(buffer, hash);
+                hash = AZStd::hash<AZStd::string_view>{}(buffer) & 0xFFFFFFFF;
             }
 
             return hash;
@@ -247,10 +250,10 @@ namespace UnitTest
         run();
     }
 
-    template<class ConcurrentcyTestThreadT>
+    template<class ConcurrencyTestThreadT>
     void RunConcurrencyTest(uint32_t nameCount, uint32_t threadsPerName)
     {        
-        AZStd::vector<ConcurrentcyTestThreadT> threads;
+        AZStd::vector<ConcurrencyTestThreadT> threads;
         AZStd::set<AZStd::string> localDictionary;
 
         EXPECT_EQ(NameDictionaryTester::GetEntryCount(), 0);
@@ -279,16 +282,16 @@ namespace UnitTest
         {
             for (uint32_t i = 0; i < threadsPerName; ++i)
             {
-                threads.push_back(ConcurrentcyTestThreadT(nameString));
+                threads.push_back(ConcurrencyTestThreadT(nameString));
             }
         }
 
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             th.Start();
         }
 
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             th.Join();
         }
@@ -299,14 +302,16 @@ namespace UnitTest
         for (const AZStd::string& nameString : localDictionary)
         {
             auto& globalDictionary = NameDictionaryTester::GetDictionary();
-            auto it = AZStd::find_if(globalDictionary.begin(), globalDictionary.end(), [&nameString](AZStd::pair<AZ::Name::Hash, AZ::Internal::NameData*> entry) {
-                return entry.second->GetName() == nameString;
+            // Workaround VS2022 17.3 issue with incorrect detection of unused lambda captures assigning the nameString reference to a same type
+            auto it = AZStd::find_if(globalDictionary.begin(), globalDictionary.end(), [&nameString = nameString](const AZStd::pair<AZ::Name::Hash, AZ::NameDictionary::ScopedNameDataWrapper>& entry)
+            {
+                return entry.second.m_nameData->GetName() == nameString;
             });
             EXPECT_TRUE(it != globalDictionary.end()) << "Can't find '" << nameString.data() << "' in local dictionary.";
         }
 
         // Make sure all the threads got an accurate Name object
-        for (ConcurrentcyTestThreadT& th : threads)
+        for (ConcurrencyTestThreadT& th : threads)
         {
             AZ::Name lookupName = AZ::NameDictionary::Instance().FindName(th.GetAzName().GetHash());
             EXPECT_EQ(th.GetAzName().GetStringView(), lookupName.GetStringView());
@@ -596,7 +601,7 @@ namespace UnitTest
         delete serializeContext;
     }
     
-    TEST_F(NameTest, NameContanerTest)
+    TEST_F(NameTest, NameContainerTest)
     {
         AZStd::unordered_set<AZ::Name> nameSet;
         nameSet.insert(AZ::Name{ "c" });
@@ -647,11 +652,29 @@ namespace UnitTest
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_HighCollisions)
     {
         AZ::NameDictionary::Destroy();
-        AZ::NameDictionary::Create();
+
+        // Create an instance of the NameDictionary with the max hash slots set to 1
+        // to produce collisions on every name.
+        ASSERT_EQ(nullptr, AZ::Interface<AZ::NameDictionary>::Get());
+        constexpr AZ::u64 maxHashSlots = 1;
+        AZStd::unique_ptr<AZ::NameDictionary> nameDictionary = AZStd::make_unique<AZ::NameDictionary>(maxHashSlots);
+        AZ::Interface<AZ::NameDictionary>::Register(nameDictionary.get());
 
         // We use only 2 threads for each name to try and maximize how much names are added and removed,
         // instead of letting shared references cause the name to stay in the dictionary.
         RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(100, 2);
+
+        AZ::Interface<AZ::NameDictionary>::Unregister(nameDictionary.get());
+    }
+
+    TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_AndAccessItOnManyThread)
+    {
+        AZ::NameDictionary::Destroy();
+        AZ::NameDictionary::Create();
+
+        // We use only 1 name, but 200 threads to catch any race condtions in the NameData::release function
+        // Once that function decrements the m_useCount to 0, it should never be incremented again.
+        RunConcurrencyTest<ThreadRepeatedlyCreatesAndReleasesOneName<100>>(1, 2);
     }
 
     TEST_F(NameTest, NameRef)
@@ -678,7 +701,7 @@ namespace UnitTest
 
     TEST_F(NameTest, NameLiteral)
     {
-        static AZ::Name staticName = AZ::Name::FromStringLiteral("static");
+        static AZ::Name staticName = AZ::Name::FromStringLiteral("static", AZ::Interface<AZ::NameDictionary>::Get());
         EXPECT_EQ("literal", AZ_NAME_LITERAL("literal").GetStringView());
         EXPECT_EQ("static", staticName.GetStringView());
         EXPECT_EQ("global", globalName.GetStringView());
@@ -892,6 +915,90 @@ namespace UnitTest
         AZ_TracePrintf("NameTest", "Search for %d names:      %d us\n", SearchCount, nameTime);
 
         EXPECT_LT(nameTime, stringTime);
+    }
+
+    // Fixture for validating that multiple NameDictionarys can exist at once.
+    class MultiNameDictionaryFixture
+        : public ScopedAllocatorSetupFixture
+    {
+    public:
+        MultiNameDictionaryFixture()
+        {
+            m_nameDictionary1 = AZStd::make_unique<AZ::NameDictionary>();
+            m_nameDictionary2 = AZStd::make_unique<AZ::NameDictionary>();
+        }
+
+        ~MultiNameDictionaryFixture()
+        {
+            m_nameDictionary2.reset();
+            m_nameDictionary1.reset();
+        }
+
+    protected:
+        AZStd::unique_ptr<AZ::NameDictionary> m_nameDictionary1;
+        AZStd::unique_ptr<AZ::NameDictionary> m_nameDictionary2;
+    };
+
+    TEST_F(MultiNameDictionaryFixture, MultipleDictionaries_Contains_DifferentNameInstances)
+    {
+        // Dictionary 1 will contain the names of "Name1" and "Dictionary1NameOnly"
+        AZ::Name name1FromDict1 = m_nameDictionary1->MakeName("Name1");
+        AZ::Name dict1OnlyName = m_nameDictionary1->MakeName("Dictionary1NameOnly");
+
+        // Dictionary 2 will contain the names of "Name1" and "Dictionary2NameOnly"
+        AZ::Name name1FromDict2 = m_nameDictionary2->MakeName("Name1");
+        AZ::Name dict2OnlyName = m_nameDictionary2->MakeName("Dictionary2NameOnly");
+
+        // First dictionary EXPECTS
+        EXPECT_FALSE(m_nameDictionary1->FindName(name1FromDict1.GetHash()).IsEmpty());
+        EXPECT_FALSE(m_nameDictionary1->FindName(dict1OnlyName.GetHash()).IsEmpty());
+        // The first dictionary should NOT contain Dictionary2NameOnly
+        EXPECT_TRUE(m_nameDictionary1->FindName(dict2OnlyName.GetHash()).IsEmpty());
+
+        // Second dictionary EXPECTS
+        EXPECT_FALSE(m_nameDictionary2->FindName(name1FromDict1.GetHash()).IsEmpty());
+        EXPECT_FALSE(m_nameDictionary2->FindName(dict2OnlyName.GetHash()).IsEmpty());
+        // The second dictionary should NOT contain Dictionary1NameOnly
+        EXPECT_TRUE(m_nameDictionary2->FindName(dict1OnlyName.GetHash()).IsEmpty());
+
+        // reset the name1FromDict1 variable
+        // Only the reference to "Name1" entry in first dictionary should be removed
+        const AZ::Name::Hash name1Hash = name1FromDict1.GetHash();
+        name1FromDict1 = AZ::Name{};
+
+        EXPECT_TRUE(m_nameDictionary1->FindName(name1Hash).IsEmpty());
+        EXPECT_FALSE(m_nameDictionary2->FindName(name1FromDict2.GetHash()).IsEmpty());
+    }
+
+    TEST_F(MultiNameDictionaryFixture, NameLiteral_IsOnlyLinkedToSingleNameDictionary)
+    {
+        // When run with --gtest_repeat=2 the literal is not relinked to the NameDictionary
+        // if a static variable is used due to not running the constructor
+        const AZ::Name staticName = AZ::Name::FromStringLiteral("firstStatic", m_nameDictionary1.get());
+        const AZ::Name literalRef = AZ::Name::FromStringLiteral("secondLiteral", m_nameDictionary2.get());
+
+        // "firstStatic" should be in dictionary1, but not dictionary2
+        EXPECT_FALSE(m_nameDictionary1->FindName(staticName.GetHash()).IsEmpty());
+        EXPECT_TRUE(m_nameDictionary2->FindName(staticName.GetHash()).IsEmpty());
+
+        // "secondLiteral" should be in dictionary2, but not dictionary1
+        EXPECT_FALSE(m_nameDictionary2->FindName(literalRef.GetHash()).IsEmpty());
+        EXPECT_TRUE(m_nameDictionary1->FindName(literalRef.GetHash()).IsEmpty());
+
+        // Add a "firstStatic" to second dictionary
+        const AZ::Name staticNameDict2{ AZ::Name::FromStringLiteral("firstStatic", m_nameDictionary2.get()) };
+        EXPECT_FALSE(m_nameDictionary1->FindName(staticName.GetHash()).IsEmpty());
+        EXPECT_FALSE(m_nameDictionary2->FindName(staticNameDict2.GetHash()).IsEmpty());
+
+        // Now create a second name literal for the string literal of "secondLiteral"
+        // There should be two different "secondLiteral" instance each associated with a different name dictionary
+        const AZ::Name literalRefForDict1 = AZ::Name::FromStringLiteral("secondLiteral", m_nameDictionary1.get());
+
+        EXPECT_EQ(literalRef, literalRefForDict1) << "The values of the names should be equal";
+        EXPECT_NE(&literalRef, &literalRefForDict1) << "The memory address of the names should not be equal";
+
+        EXPECT_FALSE(m_nameDictionary1->FindName(literalRef.GetHash()).IsEmpty());
+        EXPECT_FALSE(m_nameDictionary2->FindName(literalRefForDict1.GetHash()).IsEmpty());
     }
 }
 

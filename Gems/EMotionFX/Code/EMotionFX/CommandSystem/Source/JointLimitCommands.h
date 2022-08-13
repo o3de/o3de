@@ -71,9 +71,9 @@ namespace EMotionFX
         const char* GetDescription() const override { return "Adjust properties of the given joint limit"; }
         MCore::Command* Create() override { return aznew CommandAdjustJointLimit(this); }
 
-        void SetJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
-        void SetOldJointConfiguration(AzPhysics::JointConfiguration* jointConfiguration);
-
+        void SetJointConfiguration(const AzPhysics::JointConfiguration* jointConfiguration);
+        void SetOldJointConfiguration(const AzPhysics::JointConfiguration* jointConfiguration);
+        
         static constexpr const char* const CommandName = "AdjustJointLimit";
 
     private:

@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor
         void OnContentsChanged(const Dom::Path& path, const Dom::Value& value);
 
     protected:
-        Dom::Value GenerateContents() const override;
+        Dom::Value GenerateContents() override;
 
     private:
         struct Impl;

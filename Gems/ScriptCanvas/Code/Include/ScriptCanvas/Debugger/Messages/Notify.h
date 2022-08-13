@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Debugger/APIArguments.h>
 #include <ScriptCanvas/Debugger/API.h>
@@ -22,17 +22,13 @@ namespace ScriptCanvas
             class NotificationVisitor;
 
             class Notification
-                : public AzFramework::TmMsg
+                : public AzFramework::RemoteToolsMessage
             {
             public:
                 AZ_CLASS_ALLOCATOR(Notification, AZ::SystemAllocator, 0);
-                AZ_RTTI(Notification, "{2FBEC565-7F5F-435E-8BC6-DD17CC1FABE7}", AzFramework::TmMsg);
+                AZ_RTTI(Notification, "{2FBEC565-7F5F-435E-8BC6-DD17CC1FABE7}", AzFramework::RemoteToolsMessage);
 
-                Notification()
-                    : AzFramework::TmMsg(k_serviceNotificationsMsgSlotId)
-                {
-                    SetImmediateSelfDispatchEnabled(true);
-                }
+                Notification() : AzFramework::RemoteToolsMessage(k_serviceNotificationsMsgSlotId) {}
 
                 virtual void Visit(NotificationVisitor& visitor) = 0;
             };
@@ -43,7 +39,7 @@ namespace ScriptCanvas
             {
             public:
                 AZ_CLASS_ALLOCATOR(NotificationPayload<t_Payload>, AZ::SystemAllocator, 0);
-                AZ_RTTI(((NotificationPayload<t_Payload>), "{AC9FC9F9-C660-43DC-BCB8-0CD390432ED1}", t_Payload), Notification);
+                AZ_RTTI((NotificationPayload, "{AC9FC9F9-C660-43DC-BCB8-0CD390432ED1}", t_Payload), Notification);
 
                 t_Payload m_payload;
 

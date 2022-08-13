@@ -44,7 +44,6 @@ namespace AssetProcessor
     };
 
     extern const BuilderIdAndName  BUILDER_ID_COPY;
-    extern const BuilderIdAndName  BUILDER_ID_RC;
     extern const BuilderIdAndName  BUILDER_ID_SKIP;
     extern const QHash<QString, BuilderIdAndName>  INTERNAL_BUILDER_BY_ID;
 
@@ -52,20 +51,20 @@ namespace AssetProcessor
     struct InternalAssetRecognizer
         : public AssetRecognizer
     {
-        InternalAssetRecognizer(const AssetRecognizer& src, const QString& builderId, const QHash<QString, AssetPlatformSpec>& assetPlatformSpecByPlatform);
+        InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetInternalSpec>& assetPlatformSpecByPlatform);
         InternalAssetRecognizer(const InternalAssetRecognizer& src) = default;
 
         AZ::u32 CalculateCRC() const;
 
         //! Map of platform specs based on the identifier of the platform
-        QHash<QString, AssetPlatformSpec>           m_platformSpecsByPlatform;
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecsByPlatform;
 
         //! unique id that is generated for each unique internal asset recognizer
         //! which can be used as the key for the job parameter map (see AssetBuilderSDK::JobParameterMap)
-        AZ::u32                                 m_paramID;
+        AZ::u32 m_paramID;
 
         //! Keep track which internal builder type this recognizer is for
-        const QString                          m_builderId;
+        const AZStd::string m_builderId;
     };
     typedef QHash<AZ::u32, InternalAssetRecognizer*> InternalRecognizerContainer;
     typedef QList<const InternalAssetRecognizer*> InternalRecognizerPointerContainer;
@@ -97,45 +96,11 @@ namespace AssetProcessor
 
         static bool MatchTempFileToSkip(const QString& outputFilename);
 
-        static void RegisterInternalAssetRecognizerToMap(
-            const AssetRecognizer& assetRecognizer,
-            const QString& builderId,
-            QHash<QString, AssetPlatformSpec>& sourceAssetPlatformSpecs,
-            QHash<QString, InternalAssetRecognizerList>& internalRecognizerListByType);
-
-        //! Split all of the asset recognizers from a container into buckets based on their specific builder action type
-        static void BuildInternalAssetRecognizersByType(
-            const RecognizerContainer& assetRecognizers,
-            QHash<QString, InternalAssetRecognizerList>& internalRecognizerListByType);
-
     protected:
         //! Constructor to initialize the internal builders and a general internal builder uuid that is used for bus
         //! registration.  This constructor is helpful for deriving other classes from this builder for purposes like
         //! unit testing.
         InternalRecognizerBasedBuilder(QHash<QString, BuilderIdAndName> inputBuilderByIdMap, AZ::Uuid internalBuilderUuid);
-
-        // overridden in unit tests.  Searches for RC.EXE
-        virtual bool FindRC(QString& rcAbsolutePathOut);
-
-        void CreateLegacyRCJob(
-            const AssetBuilderSDK::CreateJobsRequest& request,
-            QString rcParam,
-            AssetBuilderSDK::CreateJobsResponse& response);
-
-        void ProcessLegacyRCJob(
-            const AssetBuilderSDK::ProcessJobRequest& request,
-            QString rcParam,
-            AZ::Uuid productAssetType,
-            const AssetBuilderSDK::JobCancelListener& jobCancelListener,
-            AssetBuilderSDK::ProcessJobResponse& response);
-
-        //! Given a folder (dest) containing the aftermath of a RC process, generate a response structure.
-        //! if responseFromRCCompiler is true it means that the response is an already-populated response struct
-        //! that was loaded from a response file and we should just append legacy SubIDs to it (responses are used INSTEAD of
-        //! heuristics).
-        //! otherwise it means that we know nothing about the files that were produced and should perform heuristics to determine.
-        //! productAssetType is what uuid type (or nulls) to apply to the generated products for when responseFromRCCompiler is false.
-        void ProcessRCResultFolder(const QString &dest, const AZ::Uuid& productAssetType, bool responseFromRCCompiler, AssetBuilderSDK::ProcessJobResponse &response);
 
         void ProcessCopyJob(
             const AssetBuilderSDK::ProcessJobRequest& request,
@@ -146,12 +111,6 @@ namespace AssetProcessor
 
         // overridable so we can unit-test override it.
         virtual QFileInfoList GetFilesInDirectory(const QString& directoryPath);
-
-        // overridable so we can unit-test override it.
-        virtual bool SaveProcessJobRequestFile(const char* requestFileDir, const char* requestFileName, const AssetBuilderSDK::ProcessJobRequest& request);
-
-        // returns false only if there is a critical failure.
-        virtual bool LoadProcessJobResponseFile(const char* responseFileDir, const char* responseFileName, AssetBuilderSDK::ProcessJobResponse& response, bool& responseLoaded);
 
         volatile bool                           m_isShuttingDown;
         InternalRecognizerContainer             m_assetRecognizerDictionary;

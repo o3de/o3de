@@ -31,7 +31,7 @@ class Tests:
 
 def ComponentCRUD_Add_Delete_Components():
 
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
 
     @pyside_utils.wrap_async
     async def run_test():
@@ -74,6 +74,7 @@ def ComponentCRUD_Add_Delete_Components():
 
         import editor_python_test_tools.hydra_editor_utils as hydra
         from editor_python_test_tools.utils import Report
+        from editor_python_test_tools.wait_utils import PrefabWaiter
 
         async def add_component(component_name):
             pyside_utils.click_button_async(add_comp_btn)
@@ -100,7 +101,7 @@ def ComponentCRUD_Add_Delete_Components():
         general.select_object("Entity1")
 
         # Give the Entity Inspector time to fully create its contents
-        general.idle_wait(0.5)
+        general.idle_wait_frames(3)
 
         # 4) Add/verify Box Shape Component
         editor_window = pyside_utils.get_editor_main_window()
@@ -114,7 +115,7 @@ def ComponentCRUD_Add_Delete_Components():
         Report.result(Tests.mesh_component_added, hydra.has_components(entity_id, ['Mesh']))
 
         # 6) Delete Mesh Component
-        general.idle_wait(0.5)
+        general.idle_wait_frames(3)     # Wait for Inspector to refresh
         comp_list_contents = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
         await pyside_utils.wait_for_condition(lambda: len(comp_list_contents.children()) > 3)
         # Mesh Component is the 3rd component added to the entity including the default Transform component
@@ -122,10 +123,12 @@ def ComponentCRUD_Add_Delete_Components():
         mesh_frame = comp_list_contents.children()[3]
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
+        general.idle_wait_frames(3)  # Wait for Inspector to refresh
         success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_deleted, success)
 
-        # 7) Undo deletion of component
+        # 7) Undo deletion of component after waiting for the deletion to register
+        PrefabWaiter.wait_for_propagation()
         QtTest.QTest.keyPress(entity_inspector, Qt.Key_Z, Qt.ControlModifier)
         success = await pyside_utils.wait_for_condition(lambda: hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_delete_undo, success)

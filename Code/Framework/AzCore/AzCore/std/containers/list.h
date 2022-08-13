@@ -220,8 +220,7 @@ namespace AZStd
 
         //////////////////////////////////////////////////////////////////////////
         // 23.2.2 construct/copy/destroy
-        AZ_FORCE_INLINE explicit list()
-            : m_numElements(0)
+        list()
         {
             m_head.m_next = m_head.m_prev = &m_head;
         }
@@ -238,28 +237,14 @@ namespace AZStd
             m_head.m_next = m_head.m_prev = &m_head;
             insert(begin(), numElements, value);
         }
-        AZ_FORCE_INLINE explicit list(size_type numElements, const_reference value, const allocator_type& allocator)
+        AZ_FORCE_INLINE list(size_type numElements, const_reference value, const allocator_type& allocator)
             : m_numElements(0)
             , m_allocator(allocator)
         {
             m_head.m_next = m_head.m_prev = static_cast<node_ptr_type>(&m_head);
             insert(begin(), numElements, value);
         }
-        template<class InputIterator>
-        AZ_FORCE_INLINE list(const InputIterator& first, const InputIterator& last)
-            : m_numElements(0)
-        {
-            m_head.m_next = m_head.m_prev = &m_head;
-            insert_iter(begin(), first, last, is_integral<InputIterator>());
-        }
-        template<class InputIterator>
-        AZ_FORCE_INLINE list(const InputIterator& first, const InputIterator& last, const allocator_type& allocator)
-            : m_numElements(0)
-            , m_allocator(allocator)
-        {
-            m_head.m_next = m_head.m_prev = &m_head;
-            insert_iter(begin(), first, last, is_integral<InputIterator>());
-        }
+
         AZ_FORCE_INLINE list(const this_type& rhs)
             : m_numElements(0)
             , m_allocator(rhs.m_allocator)
@@ -269,11 +254,18 @@ namespace AZStd
             insert(begin(), rhs.begin(), rhs.end());
         }
 
-        AZ_FORCE_INLINE list(std::initializer_list<T> list)
-            : m_numElements(0)
+        template<class InputIterator>
+        AZ_FORCE_INLINE list(InputIterator first, InputIterator last, const allocator_type& allocator = allocator_type())
+            : m_allocator(allocator)
         {
             m_head.m_next = m_head.m_prev = &m_head;
-            insert(begin(), list.begin(), list.end());
+            insert_iter(begin(), first, last, is_integral<InputIterator>());
+        }
+
+
+        AZ_FORCE_INLINE list(initializer_list<T> ilist, const allocator_type& alloc = allocator_type())
+            : list(ilist.begin(), ilist.end(), alloc)
+        {
         }
 
         AZ_FORCE_INLINE ~list()
@@ -313,6 +305,11 @@ namespace AZStd
         AZ_FORCE_INLINE void assign(const InputIterator& first, const InputIterator& last)
         {
             assign_iter(first, last, is_integral<InputIterator>());
+        }
+
+        void assign(initializer_list<T> iList)
+        {
+            assign(iList.begin(), iList.end());
         }
 
         AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
@@ -383,39 +380,39 @@ namespace AZStd
 
         void push_front(T&& value)
         {
-            insert_element(begin(), AZStd::forward<T>(value));
+            insert_element(begin(), AZStd::move(value));
         }
 
         void push_back(T&& value)
         {
-            insert_element(end(), AZStd::forward<T>(value));
+            insert_element(end(), AZStd::move(value));
         }
 
         iterator insert(const_iterator inserPos, T&& value)
         {
-            return emplace(inserPos, AZStd::forward<T>(value));
+            return emplace(inserPos, AZStd::move(value));
         }
 
         template<class ... ArgumentsInputs>
-        void emplace_front(ArgumentsInputs&& ... agruments)
+        reference emplace_front(ArgumentsInputs&& ... arguments)
         {
-            insert_element(begin(), AZStd::forward<ArgumentsInputs>(agruments) ...);
+            return insert_element(begin(), AZStd::forward<ArgumentsInputs>(arguments) ...);
         }
 
         template<class ... ArgumentsInputs>
-        void emplace_back(ArgumentsInputs&& ... agruments)
+        reference emplace_back(ArgumentsInputs&& ... arguments)
         {
-            insert_element(end(), AZStd::forward<ArgumentsInputs>(agruments) ...);
+            return insert_element(end(), AZStd::forward<ArgumentsInputs>(arguments) ...);
         }
 
         template<class ... ArgumentsInputs>
-        iterator emplace(const_iterator insertPos, ArgumentsInputs&& ... agruments)
+        iterator emplace(const_iterator insertPos, ArgumentsInputs&& ... arguments)
         {
-            insert_element(insertPos, AZStd::forward<ArgumentsInputs>(agruments) ...);
+            insert_element(insertPos, AZStd::forward<ArgumentsInputs>(arguments) ...);
             return iterator((--insertPos).m_node);
         }
 
-        iterator insert(const_iterator insertPos, std::initializer_list<T> ilist)
+        iterator insert(const_iterator insertPos, initializer_list<T> ilist)
         {
             return insert(insertPos, ilist.begin(), ilist.end());
         }
@@ -1043,40 +1040,6 @@ namespace AZStd
 
         //////////////////////////////////////////////////////////////////////////
         // Insert methods without provided src value.
-        /**
-        *  Pushes an element at the back of the list, without a provided instance. This can be used for value types
-        *  with expensive constructors so we don't want to create temporary one.
-        */
-        inline void                     push_back()
-        {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-
-            Internal::construct<node_ptr_type>::single(newNode);
-            ++m_numElements;
-
-            base_node_ptr_type insertNode = &m_head;
-            newNode->m_next = insertNode;
-            newNode->m_prev = insertNode->m_prev;
-            insertNode->m_prev = newNode;
-            newNode->m_prev->m_next = newNode;
-        }
-        /**
-        *  Pushes an element at the front of the list, without a provided instance. This can be used for value types
-        *  with expensive constructors so we don't want to create temporary one.
-        */
-        inline void                     push_front()
-        {
-            node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
-
-            Internal::construct<node_ptr_type>::single(newNode);
-            ++m_numElements;
-
-            base_node_ptr_type insertNode = m_head.m_next;
-            newNode->m_next = insertNode;
-            newNode->m_prev = insertNode->m_prev;
-            insertNode->m_prev = newNode;
-            newNode->m_prev->m_next = newNode;
-        }
 
         /**
         *  Inserts an element at the user position in the list without a provided instance. This can be used for value types
@@ -1263,13 +1226,13 @@ namespace AZStd
         }
 
         template<class ... ArgumentsInputs>
-        void insert_element(const_iterator insertPos, ArgumentsInputs&& ... agruments)
+        reference insert_element(const_iterator insertPos, ArgumentsInputs&& ... arguments)
         {
             node_ptr_type newNode = reinterpret_cast<node_ptr_type>(m_allocator.allocate(sizeof(node_type), alignment_of<node_type>::value));
 
             // construct
             pointer ptr = &newNode->m_value;
-            Internal::construct<pointer>::single(ptr, AZStd::forward<ArgumentsInputs>(agruments) ...);
+            Internal::construct<pointer>::single(ptr, AZStd::forward<ArgumentsInputs>(arguments) ...);
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
             base_node_ptr_type insNode = insertPos.get_iterator().m_node;
@@ -1282,10 +1245,12 @@ namespace AZStd
             newNode->m_prev = insNode->m_prev;
             insNode->m_prev = newNode;
             newNode->m_prev->m_next = newNode;
+
+            return *ptr;
         }
 
         base_node_type      m_head;
-        size_type           m_numElements;
+        size_type           m_numElements{};
         allocator_type      m_allocator;        ///< Instance of the allocator.
 
         // Debug
@@ -1326,6 +1291,10 @@ namespace AZStd
         }
 #endif
     };
+
+    // AZStd::list deduction guides
+    template <class InputIt, class Alloc = allocator>
+    list(InputIt, InputIt, Alloc = Alloc()) -> list<typename iterator_traits<InputIt>::value_type, Alloc>;
 
     template< class T, class Allocator >
     AZ_FORCE_INLINE bool operator==(const list<T, Allocator>& left, const list<T, Allocator>& right)

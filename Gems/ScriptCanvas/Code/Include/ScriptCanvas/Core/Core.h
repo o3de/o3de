@@ -60,7 +60,6 @@ namespace ScriptCanvas
     static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
-
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
@@ -350,15 +349,31 @@ namespace ScriptCanvas
 
         static void Reflect(AZ::ReflectContext* context);
 
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePathAndScenFolder
+            ( AZStd::string_view relativePath
+            , AZStd::string_view scanFolder
+            , const AZ::Uuid& sourceId);
+
+        static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
+
         SourceHandle();
 
-        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+        SourceHandle(const SourceHandle& source);
 
-        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id);
 
-        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
 
-        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+        // this can be empty, even if the relative path is not
+        const AZ::IO::Path& AbsolutePath() const;
 
         bool AnyEquals(const SourceHandle& other) const;
 
@@ -385,21 +400,27 @@ namespace ScriptCanvas
 
         bool operator!=(const SourceHandle& other) const;
 
-        const AZ::IO::Path& Path() const;
+        const AZ::IO::Path& RelativePath() const;
 
         bool PathEquals(const SourceHandle& other) const;
-
-        const AZ::IO::Path& RelativePath() const;
 
         AZStd::string ToString() const;
 
     private:
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
+
+        SourceHandle(const SourceHandle& data, const AZ::IO::Path& path);
+
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
         DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
-        AZ::IO::Path m_absolutePath;
         AZ::IO::Path m_relativePath;
+        AZ::IO::Path m_absolutePath;
 
-        void SanitizePaths();
+        void SanitizePath();
     };
 
     class ScriptCanvasData
@@ -463,7 +484,7 @@ namespace AZStd
         {
             size_t h = 0;
             hash_combine(h, handle.Id());
-            hash_combine(h, handle.Path());
+            hash_combine(h, handle.RelativePath());
             hash_combine(h, handle.Get());
             return h;
         }

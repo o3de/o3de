@@ -49,6 +49,10 @@ namespace AZ
         
         bool Instance::Init(const Descriptor& descriptor)
         {
+#if defined(USE_NSIGHT_AFTERMATH)
+            m_gpuCrashHandler.EnableGPUCrashDumps();
+#endif
+
             m_descriptor = descriptor;
             if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
@@ -68,7 +72,8 @@ namespace AZ
 #endif
             
             m_functionLoader = FunctionLoader::Create();
-            if (!m_functionLoader->Init())
+            if (!m_functionLoader->Init() ||
+                !m_functionLoader->LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE))
             {
                 AZ_Warning("Vulkan", false, "Could not initialized function loader.");
                 return false;
@@ -77,7 +82,7 @@ namespace AZ
             uint32_t apiVersion = VK_API_VERSION_1_0;
             // vkEnumerateInstanceVersion is a Vulkan 1.1 function 
             // so if it's not available we assume Vulkan 1.0
-            if (vkEnumerateInstanceVersion && vkEnumerateInstanceVersion(&apiVersion) != VK_SUCCESS)
+            if (m_context.EnumerateInstanceVersion && m_context.EnumerateInstanceVersion(&apiVersion) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to get instance version.");
                 return false;
@@ -118,14 +123,14 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-            if (vkCreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
+            if (m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
                 return false;
             }
 
             // Now that we have created the instance, load the function pointers for it.
-            m_functionLoader->LoadProcAddresses(m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
+            m_functionLoader->LoadProcAddresses(&m_context, m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
 
             CreateDebugMessenger();
 
@@ -157,11 +162,11 @@ namespace AZ
             {
                 if (GetValidationMode() != RHI::ValidationMode::Disabled)
                 {
-                    Debug::ShutdownDebugMessages(m_instance);
+                    Debug::ShutdownDebugMessages(m_context, m_instance);
                 }
                 m_supportedDevices.clear();
 
-                vkDestroyInstance(m_instance, nullptr);
+                m_context.DestroyInstance(m_instance, nullptr);
                 m_instance = VK_NULL_HANDLE;
             }
         }
@@ -175,14 +180,14 @@ namespace AZ
         {
             StringList layerNames;
             uint32_t layerPropertyCount = 0;
-            VkResult result = vkEnumerateInstanceLayerProperties(&layerPropertyCount, nullptr);
+            VkResult result = m_context.EnumerateInstanceLayerProperties(&layerPropertyCount, nullptr);
             if (IsError(result) || layerPropertyCount == 0)
             {
                 return layerNames;
             }
 
             AZStd::vector<VkLayerProperties> layerProperties(layerPropertyCount);
-            result = vkEnumerateInstanceLayerProperties(&layerPropertyCount, layerProperties.data());
+            result = m_context.EnumerateInstanceLayerProperties(&layerPropertyCount, layerProperties.data());
             if (IsError(result))
             {
                 return layerNames;
@@ -201,7 +206,7 @@ namespace AZ
         {
             StringList extensionNames;
             uint32_t extPropertyCount = 0;
-            VkResult result = vkEnumerateInstanceExtensionProperties(layerName, &extPropertyCount, nullptr);
+            VkResult result = m_context.EnumerateInstanceExtensionProperties(layerName, &extPropertyCount, nullptr);
             if (IsError(result) || extPropertyCount == 0)
             {
                 return extensionNames;
@@ -210,7 +215,7 @@ namespace AZ
             AZStd::vector<VkExtensionProperties> extProperties;
             extProperties.resize(extPropertyCount);
 
-            result = vkEnumerateInstanceExtensionProperties(layerName, &extPropertyCount, extProperties.data());
+            result = m_context.EnumerateInstanceExtensionProperties(layerName, &extPropertyCount, extProperties.data());
             if (IsError(result))
             {
                 return extensionNames;
@@ -300,7 +305,7 @@ namespace AZ
                     messagesTypeMask |= Debug::DebugMessageTypeFlag::Debug | Debug::DebugMessageTypeFlag::Info;
                 }
 
-                Debug::InitDebugMessages(m_instance, messagesTypeMask);
+                Debug::InitDebugMessages(m_context, m_instance, messagesTypeMask);
             }
         }
 

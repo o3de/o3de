@@ -26,7 +26,7 @@ namespace ScriptCanvas
         using ThisType = NamedId<t_Id>;
 
         AZ_CLASS_ALLOCATOR(NamedId<t_Id>, AZ::SystemAllocator, 0);
-        AZ_RTTI(((NamedId<t_Id>) , "{7DFA6B31-B283-48BE-9D6F-260D8994C593}", t_Id), t_Id);
+        AZ_RTTI((NamedId , "{7DFA6B31-B283-48BE-9D6F-260D8994C593}", t_Id), t_Id);
 
         static void Reflect(AZ::ReflectContext* context)
         {

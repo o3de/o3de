@@ -19,16 +19,9 @@ namespace EMotionFX
         : m_translationManipulators(
               AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne())
     {
-        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
-    ColliderTranslationManipulators::~ColliderTranslationManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
-    }
-
-    void ColliderTranslationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void ColliderTranslationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -101,6 +94,8 @@ namespace EMotionFX
             });
 
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
     void ColliderTranslationManipulators::Refresh()
@@ -114,6 +109,13 @@ namespace EMotionFX
 
     void ColliderTranslationManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasColliders())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
+        m_adjustColliderCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         m_translationManipulators.Unregister();
     }

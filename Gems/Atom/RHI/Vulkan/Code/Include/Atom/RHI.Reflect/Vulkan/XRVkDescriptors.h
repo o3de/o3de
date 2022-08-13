@@ -86,4 +86,55 @@ namespace AZ::Vulkan
             VkDevice m_xrVkDevice = VK_NULL_HANDLE;
         } m_outputData;
     };
+
+
+    class XRSessionDescriptor final : public RHI::XRSessionDescriptor
+    {
+        using Base = RHI::XRSessionDescriptor;
+
+    public:
+        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
+        AZ_RTTI(XRSessionDescriptor, "{2859EB21-D013-496B-B922-7C903BC377CF}", Base);
+
+        XRSessionDescriptor() = default;
+        ~XRSessionDescriptor() = default;
+
+        struct GraphicsBinding
+        {
+            uint32_t m_queueFamilyIndex = 0;
+            uint32_t m_queueIndex = 0;
+        };
+
+        // Provided by the RHI::Vulkan backend
+        struct
+        {
+            GraphicsBinding m_graphicsBinding; 
+        } m_inputData;
+    };
+
+
+    class XRSwapChainDescriptor final
+        : public RHI::XRSwapChainDescriptor
+    {
+        using Base = RHI::XRSwapChainDescriptor;
+
+    public:
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_RTTI(XRSwapChainDescriptor, "{358AA524-8EAF-40A9-A2B3-5D6916B72DA1}", Base);
+
+        XRSwapChainDescriptor() = default;
+        ~XRSwapChainDescriptor() = default;
+
+        // Provided by the XR::Vulkan backend
+        struct
+        {
+            uint32_t m_swapChainIndex = 0;
+            uint32_t m_swapChainImageIndex = 0;
+        } m_inputData;
+
+        struct
+        {
+            VkImage m_nativeImage = VK_NULL_HANDLE;
+        } m_outputData;
+    };
 } // namespace AZ::RHI

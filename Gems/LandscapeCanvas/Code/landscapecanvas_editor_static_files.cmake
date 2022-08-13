@@ -13,7 +13,6 @@ set(FILES
     Source/Editor/MainWindow.cpp
     Source/Editor/MainWindow.h
     Source/Editor/Core/Core.h
-    Source/Editor/Core/DataTypes.cpp
     Source/Editor/Core/DataTypes.h
     Source/Editor/Core/GraphContext.cpp
     Source/Editor/Core/GraphContext.h
@@ -71,6 +70,8 @@ set(FILES
     Source/Editor/Nodes/Gradients/ConstantGradientNode.h
     Source/Editor/Nodes/Gradients/FastNoiseGradientNode.cpp
     Source/Editor/Nodes/Gradients/FastNoiseGradientNode.h
+    Source/Editor/Nodes/Gradients/GradientBakerNode.cpp
+    Source/Editor/Nodes/Gradients/GradientBakerNode.h
     Source/Editor/Nodes/Gradients/ImageGradientNode.cpp
     Source/Editor/Nodes/Gradients/ImageGradientNode.h
     Source/Editor/Nodes/Gradients/PerlinNoiseGradientNode.cpp
@@ -99,6 +100,8 @@ set(FILES
     Source/Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.cpp
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.cpp
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h
     Source/Editor/Nodes/Shapes/BaseShapeNode.cpp
     Source/Editor/Nodes/Shapes/BaseShapeNode.h
     Source/Editor/Nodes/Shapes/BoxShapeNode.cpp

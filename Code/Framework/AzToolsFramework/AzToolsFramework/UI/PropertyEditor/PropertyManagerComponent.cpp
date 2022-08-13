@@ -34,6 +34,7 @@ namespace AzToolsFramework
     void RegisterMultiLineEditHandler();
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
+    void RegisterExeSelectPropertyHandler();
 
     namespace Components
     {
@@ -177,14 +178,14 @@ namespace AzToolsFramework
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::InProgressEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
         }
 
         void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
@@ -214,6 +215,7 @@ namespace AzToolsFramework
             RegisterVectorHandlers();
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
+            RegisterExeSelectPropertyHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();

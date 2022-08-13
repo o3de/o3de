@@ -18,6 +18,7 @@
 /Code/Framework/AzGameFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/LauncherUnified/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/Compression/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/CrashReporting/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/ImGui/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/LmbrCentral/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
@@ -49,6 +50,9 @@
 /AutomatedTesting/Gem/PythonTests/PythonAssetBuilder/ @o3de/sig-content-maintainers
 /Gems/SceneProcessing/ @o3de/sig-content-maintainers
 /Code/Framework/AzCore/AzCore/Asset/ @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/Asset/ @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/AssetManager.cpp @o3de/sig-content-maintainers
+/Code/Framework/AzCore/Tests/TestCatalog.h @o3de/sig-content-maintainers
 
 # SIG-Content Viewport ownership area
 /Code/Framework/AzFramework/AzFramework/Viewport/ @o3de/sig-content-maintainers

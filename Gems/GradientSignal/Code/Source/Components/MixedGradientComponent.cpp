@@ -212,6 +212,32 @@ namespace GradientSignal
     void MixedGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+
+        m_dependencyMonitor.SetEntityNotificationFunction(
+            [this](const AZ::EntityId& ownerId, const AZ::EntityId& dependentId, const AZ::Aabb& dirtyRegion)
+            {
+                for (const auto& layer : m_configuration.m_layers)
+                {
+                    if (layer.m_enabled &&
+                        (layer.m_gradientSampler.m_gradientId == dependentId) &&
+                        layer.m_gradientSampler.m_opacity != 0.0f)
+                    {
+                        if (dirtyRegion.IsValid())
+                        {
+                            AZ::Aabb transformedRegion = layer.m_gradientSampler.TransformDirtyRegion(dirtyRegion);
+
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, transformedRegion);
+                        }
+                        else
+                        {
+                            LmbrCentral::DependencyNotificationBus::Event(
+                                ownerId, &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+                        }
+                    }
+                }
+            });
+
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         for (const auto& layer : m_configuration.m_layers)
         {

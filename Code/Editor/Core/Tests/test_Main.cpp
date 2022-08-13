@@ -33,7 +33,6 @@ public:
 protected:
     void SetupEnvironment() override
     {
-        AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
         m_allocatorScope.ActivateAllocators();
         m_cryPak = new NiceMock<CryPakMock>();
 
@@ -50,7 +49,6 @@ protected:
     {
         delete m_cryPak;
         m_allocatorScope.DeactivateAllocators();
-        DetachEditorCoreAZEnvironment();
     }
 
 private:

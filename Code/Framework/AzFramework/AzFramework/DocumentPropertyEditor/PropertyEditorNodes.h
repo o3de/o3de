@@ -52,6 +52,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "Row";
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
+
+        static constexpr auto AutoExpand = AttributeDefinition<bool>("AutoExpand");
+        static constexpr auto ForceAutoExpand = AttributeDefinition<bool>("ForceAutoExpand");
+
+        static constexpr AZStd::initializer_list<const AttributeDefinitionInterface*> RowAttributes = { &AutoExpand, &ForceAutoExpand };
     };
 
     //! PropertyRefreshLevel: Determines the amount of a property tree that needs to be rebuilt
@@ -72,32 +77,43 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
     };
 
+    //! Specifies types describing a value change's state.
+    //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack or to
+    //! otherwise notify interested parties that a property's value has been changed, or is being changed, by a property editor.
+    enum class ValueChangeType
+    {
+        //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
+        InProgressEdit,
+        //! This is a "final" edit provided by the user doing something to signal a decision
+        //! e.g. releasing the mouse or pressing enter.
+        FinishedEdit,
+    };
+
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
     //! that can edit an associated value.
     struct PropertyEditor : NodeWithVisiblityControl
     {
-        //! Specifies the type of value change specifeid in OnChanged.
-        //! Used to determine whether a value update is suitable for expensive operations like updating the undo stack.
-        enum class ValueChangeType
-        {
-            //! This is a "live", in-progress edit, and additional updates may follow at an arbitrarily fast rate.
-            InProgressEdit,
-            //! This is a "final" edit provided by the user doing something to signal a decision
-            //! e.g. releasing the mouse or pressing enter.
-            FinishedEdit,
-        };
-
         static constexpr AZStd::string_view Name = "PropertyEditor";
+        static constexpr auto Description = AttributeDefinition<AZStd::string_view>("Description");
         static constexpr auto Type = AttributeDefinition<AZStd::string_view>("Type");
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
+
+        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead append
+        //! to the last column in the layout. Useful for things like the "add container entry" button.
+        static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
+
+        // Container attributes
+        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t)>("RemoveNotify");
+        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 
     struct UIElement : PropertyEditor
@@ -137,6 +153,20 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
     };
 
+    enum class ContainerAction
+    {
+        AddElement,
+        RemoveElement,
+        Clear,
+    };
+
+    struct ContainerActionButton : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "ContainerActionButton";
+        static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
+        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
+    };
+
     struct CheckBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "CheckBox";
@@ -150,6 +180,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct ComboBox : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "ComboBox";
+        static constexpr auto StringList = AttributeDefinition<AZStd::vector<AZStd::string>>("StringList");
     };
 
     struct RadioButton : PropertyEditorDefinition

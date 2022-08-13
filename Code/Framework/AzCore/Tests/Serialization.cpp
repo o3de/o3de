@@ -637,7 +637,7 @@ namespace SerializeTestClasses {
             m_textData = "Random Text";
             m_vectorInt.push_back(1);
             m_vectorInt.push_back(2);
-            m_vectorIntVector.push_back();
+            m_vectorIntVector.emplace_back();
             m_vectorIntVector.back().push_back(5);
             m_vectorEnum.push_back(GenericEnum::Value3);
             m_vectorEnum.push_back(GenericEnum::Value1);
@@ -649,7 +649,7 @@ namespace SerializeTestClasses {
             m_fixedVectorInt.push_back(4000);
             m_fixedVectorInt.push_back(5000);
             m_listInt.push_back(10);
-            m_forwardListInt.push_back(15);
+            m_forwardListInt.push_front(15);
             m_setInt.insert(20);
             m_usetInt.insert(20);
             m_umultisetInt.insert(20);
@@ -922,7 +922,7 @@ namespace SerializeTestClasses
             m_string = "Random Text";
             m_vectorInt2.push_back(1 * 2);
             m_vectorInt2.push_back(2 * 2);
-            m_listIntList.push_back();
+            m_listIntList.emplace_back();
             m_listIntList.back().push_back(5);
             m_umapPolymorphic.insert(AZStd::make_pair(1, aznew MyClassMixNew)).first->second->Set(100.f);
             m_umapPolymorphic.insert(AZStd::make_pair(2, aznew MyClassMix2)).first->second->Set(200.f);
@@ -1084,7 +1084,7 @@ namespace ContainerElementDeprecationTestData
             {
                 delete base;
             }
-            m_vectorOfBaseClasses.swap(AZStd::vector<BaseClass*>());
+            m_vectorOfBaseClasses = {};
         }
 
         static void Reflect(ReflectContext* context)
@@ -2009,8 +2009,8 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 testData.m_array[1] = 6;
                 testData.m_list.push_back(7);
                 testData.m_list.push_back(8);
-                testData.m_forwardList.push_back(9);
-                testData.m_forwardList.push_back(10);
+                auto forwardListIt = testData.m_forwardList.emplace_after(testData.m_forwardList.before_begin(), 9);
+                testData.m_forwardList.emplace_after(forwardListIt, 10);
                 testData.m_unorderedSet.insert(11);
                 testData.m_unorderedSet.insert(12);
                 testData.m_unorderedMap.insert(AZStd::make_pair(13, 13.f));
@@ -3841,8 +3841,8 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 , m_childOfUnregisteredBase(&m_childOfUnregisteredRttiBase)
                 , m_basePtrToGenericChild(&m_unserializableGeneric)
             {
-                m_vectorUnregisteredClass.push_back();
-                m_vectorUnregisteredRttiClass.push_back();
+                m_vectorUnregisteredClass.emplace_back();
+                m_vectorUnregisteredRttiClass.emplace_back();
                 m_vectorUnregisteredRttiBase.push_back(&m_unregisteredRttiMember);
                 m_vectorGenericChildPtr.push_back(&m_unserializableGeneric);
                 sc.Class<UnserializableMembers>()->
@@ -7794,7 +7794,7 @@ namespace UnitTest
     class GenericsLoadInPlaceHolder final
     {
     public:
-        AZ_RTTI(((GenericsLoadInPlaceHolder<T>), "{98328203-83F0-4644-B1F6-34DDF50F3416}", T));
+        AZ_RTTI((GenericsLoadInPlaceHolder, "{98328203-83F0-4644-B1F6-34DDF50F3416}", T));
 
         static void Reflect(AZ::SerializeContext& sc)
         {
@@ -7820,9 +7820,21 @@ namespace UnitTest
         DataType::Reflect(*this->GetSerializeContext());
 
         // Add 3 items to the container
+        typename TypeParam::iterator insertIter{};
+        if constexpr (AZStd::same_as<TypeParam, AZStd::forward_list<int>>)
+        {
+            insertIter = this->m_holder.m_data.before_begin();
+        }
         for (int i = 0; i < 3; ++i)
         {
-            this->m_holder.m_data.insert(this->m_holder.m_data.end(), i);
+            if constexpr (AZStd::same_as<TypeParam, AZStd::forward_list<int>>)
+            {
+                insertIter = this->m_holder.m_data.insert_after(insertIter, i);
+            }
+            else
+            {
+                this->m_holder.m_data.insert(this->m_holder.m_data.end(), i);
+            }
         }
 
         // Serialize the container
@@ -7837,9 +7849,20 @@ namespace UnitTest
 
         // Put different data in a different instance
         DataType got;
+        if constexpr (AZStd::same_as<TypeParam, AZStd::forward_list<int>>)
+        {
+            insertIter = got.m_data.before_begin();
+        }
         for (int i = 3; i < 6; ++i)
         {
-            got.m_data.insert(got.m_data.end(), i);
+            if constexpr (AZStd::same_as<TypeParam, AZStd::forward_list<int>>)
+            {
+                insertIter = got.m_data.insert_after(insertIter, i);
+            }
+            else
+            {
+                got.m_data.insert(got.m_data.end(), i);
+            }
         }
 
         // Verify that the two containers are different

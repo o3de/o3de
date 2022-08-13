@@ -33,6 +33,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 #include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
@@ -437,8 +438,13 @@ namespace EMotionFX
             if (!IsValidAttachment(GetEntityId(), m_attachmentTarget))
             {
                 AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies! Attachment cannot be performed.");
+                m_attachmentTarget.SetInvalid();
+                m_attachmentJointName.clear();
             }
-            CheckAttachToEntity();
+            else
+            {
+                CheckAttachToEntity();
+            }
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
@@ -545,12 +551,7 @@ namespace EMotionFX
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;
-
-            Actor* actor = m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -887,20 +888,20 @@ namespace EMotionFX
             // Enable/disable debug drawing.
             OnRenderFlagChanged();
 
+            if (m_actorInstance)
+            {
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_renderActorInstance.reset(nullptr);
+                m_actorInstance.reset();
+            }
+
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
             if (!actorAsset)
             {
                 return;
-            }
-
-            if (m_actorInstance)
-            {
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
             }
 
             m_actorInstance = actorAsset->CreateInstance(GetEntity());

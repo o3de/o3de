@@ -8,10 +8,15 @@
 
 #pragma once
 
-#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Internal/MathTypes.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {
+    class Vector3;
+    class Vector2;
+    class ReflectContext;
+
     //! A vector class with 4 components.
     //! To convert back to a Vector3, call the GetHomogenized function.
     class Vector4
@@ -33,11 +38,21 @@ namespace AZ
 
         explicit Vector4(float x, float y, float z, float w);
 
-        ///Copies x,y, components from a Vector2, z = 0, w = 1.0
+        //! Copies x,y components from a Vector2, set z = 0.0, w = 1.0.
         explicit Vector4(const Vector2& source);
 
-        ///Copies x,y,z components from a Vector3, w = 1.0
+        //! Copies x,y components from a Vector2, sets w = 1.0, specify z separately.
+        Vector4(const Vector2& source, float z);
+
+        //! Copies x,y components from a Vector2, specify z and w separately.
+        Vector4(const Vector2& source, float z, float w);
+
+        //! Copies x,y,z components from a Vector3, sets w = 1.0.
         explicit Vector4(const Vector3& source);
+
+        //! Copies x,y,z components from a Vector3, specify w separately.
+        Vector4(const Vector3& source, float w);
+
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.
         explicit Vector4(Simd::Vec4::FloatArgType value);
 

@@ -16,7 +16,6 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
 #include <QScrollArea>
@@ -35,14 +34,8 @@ namespace O3DE::ProjectManager
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
 
-        QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
-        vLayout->setAlignment(Qt::AlignTop);
-        projectSettingsFrame->setLayout(vLayout);
-
         QScrollArea* scrollArea = new QScrollArea(this);
         scrollArea->setWidgetResizable(true);
-        vLayout->addWidget(scrollArea);
 
         QWidget* scrollWidget = new QWidget(this);
         scrollArea->setWidget(scrollWidget);

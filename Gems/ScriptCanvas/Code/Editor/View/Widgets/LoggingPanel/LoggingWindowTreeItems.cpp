@@ -622,13 +622,13 @@ namespace ScriptCanvasEditor
         if (!m_graphCanvasGraphId.IsValid())
         {
             GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId
-                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid, ""));
+                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid));
 
             if (!EditorGraphNotificationBus::Handler::BusIsConnected())
             {
                 ScriptCanvas::ScriptCanvasId scriptCanvasId;
                 GeneralRequestBus::BroadcastResult(scriptCanvasId
-                    , &GeneralRequests::FindScriptCanvasIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid, ""));
+                    , &GeneralRequests::FindScriptCanvasIdByAssetId, SourceHandle(nullptr, GetAssetId().m_guid));
 
                 EditorGraphNotificationBus::Handler::BusConnect(scriptCanvasId);
             }
@@ -640,7 +640,7 @@ namespace ScriptCanvasEditor
             {
                 AssetGraphSceneBus::BroadcastResult(m_scriptCanvasNodeId
                     , &AssetGraphScene::FindEditorNodeIdByAssetNodeId
-                    , SourceHandle(nullptr, GetAssetId().m_guid, ""), m_scriptCanvasAssetNodeId);
+                    , SourceHandle(nullptr, GetAssetId().m_guid), m_scriptCanvasAssetNodeId);
                 SceneMemberMappingRequestBus::EventResult(m_graphCanvasNodeId, m_scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
             }
 
@@ -809,7 +809,7 @@ namespace ScriptCanvasEditor
         if (!m_graphCanvasGraphId.IsValid())
         {
             GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId
-                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_graphIdentifier.m_assetId.m_guid, ""));
+                , &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, m_graphIdentifier.m_assetId.m_guid));
         }
 
         ScrapeInputName();
@@ -831,7 +831,7 @@ namespace ScriptCanvasEditor
         if (m_graphCanvasGraphId.IsValid() && m_assetInputEndpoint.IsValid())
         {
             AZ::EntityId scriptCanvasNodeId;
-            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, GetAssetId().m_guid, ""), m_assetInputEndpoint.GetNodeId());
+            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, SourceHandle(nullptr, GetAssetId().m_guid), m_assetInputEndpoint.GetNodeId());
 
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -855,7 +855,7 @@ namespace ScriptCanvasEditor
         {
             AZ::EntityId scriptCanvasNodeId;
             AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId
-                , SourceHandle(nullptr, GetAssetId().m_guid, ""), m_assetOutputEndpoint.GetNodeId());
+                , SourceHandle(nullptr, GetAssetId().m_guid), m_assetOutputEndpoint.GetNodeId());
             
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);

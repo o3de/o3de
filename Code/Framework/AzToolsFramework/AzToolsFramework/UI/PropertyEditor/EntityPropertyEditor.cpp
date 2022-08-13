@@ -49,6 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Slice/SliceDataFlagsCommand.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -499,6 +500,9 @@ namespace AzToolsFramework
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
 
+        m_instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get();
+        AZ_Assert(m_instanceUpdateExecutorInterface, "EntityPropertyEditor - Could not retrieve instance of InstanceUpdateExecutorInterface");
+
         m_readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
         AZ_Assert(m_readOnlyEntityPublicInterface != nullptr, "EntityPropertyEditor requires a ReadOnlyEntityPublicInterface instance on Initialize.");
 
@@ -737,6 +741,19 @@ namespace AzToolsFramework
         {
             ClearComponentEditorSelection();
             ClearComponentEditorState();
+        }
+
+        // Clear the focus of the current widget in order to trigger editing
+        // completion before the selected entity list is modified. Otherwise,
+        // the entity will not automatically be marked as dirty since it will
+        // no longer be selected when receiving the BeforePropertyModified event
+        if (DoesOwnFocus())
+        {
+            QWidget* widget = QApplication::focusWidget();
+            if (this != widget)
+            {
+                widget->clearFocus();
+            }
         }
     }
 
@@ -1268,6 +1285,11 @@ namespace AzToolsFramework
         {
             action->setEnabled(true);
         }
+
+        // Make sure that prefab instance propagation is resumed after a property tree refresh.
+        // Note: this is a sanity check in case IPropertyEditorNotify::BeforePropertyModified
+        // is called, but a IPropertyEditorNotify::SetPropertyEditingComplete isn't called
+        m_instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
     }
 
     void EntityPropertyEditor::GetAllComponentsForEntityInOrder(
@@ -1868,6 +1890,14 @@ namespace AzToolsFramework
         {
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, entityShownId);
         }
+
+        // Notify prefab system to pause instance propagation during editing.
+        // This is done here in the BeforePropertyModified handler and not in SetPropertyEditingActive
+        // because SetPropertyEditingActive is not hooked up to be called from anywhere and never gets hit.
+        // BeforePropertyModified/AfterPropertyModified are called multiple times while a property is being
+        // modified (ex. while moving a slider handle), and SetPropertyEditingComplete is called once when
+        // editing is complete (ex. doing a mouse up on the slider handle)
+        m_instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
     }
 
     void EntityPropertyEditor::AfterPropertyModified(InstanceDataNode* pNode)
@@ -1927,12 +1957,16 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::SetPropertyEditingActive(InstanceDataNode* /*pNode*/)
     {
+        // Note: This signal doesn't actually get called. It doesn't seem to be hooked up to anything
         MarkPropertyEditorBusyStart();
     }
 
     void EntityPropertyEditor::SetPropertyEditingComplete(InstanceDataNode* /*pNode*/)
     {
         MarkPropertyEditorBusyEnd();
+
+        // Notify prefab system to resume instance propagation now that editing is complete
+        m_instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
     }
 
     void EntityPropertyEditor::OnPropertyRefreshRequired()
@@ -2701,6 +2735,7 @@ namespace AzToolsFramework
         }
 
         AfterPropertyModified(fieldNode);
+        SetPropertyEditingComplete(fieldNode);
 
         // We must refresh the entire tree, because restoring previous entity state may've had major structural effects.
         InvalidatePropertyDisplay(Refresh_EntireTree);
@@ -2718,6 +2753,8 @@ namespace AzToolsFramework
             command->SetParent(m_currentUndoOperation);
 
             AfterPropertyModified(node);
+            SetPropertyEditingComplete(node);
+
             InvalidatePropertyDisplay(Refresh_AttributesAndValues);
         }
     }
@@ -3410,6 +3447,13 @@ namespace AzToolsFramework
             return false;
         }
 
+        SelectionEntityTypeInfo selectionTypeInfo = GetSelectionEntityTypeInfo(m_selectedEntityIds);
+        if (!CanAddComponentsToSelection(selectionTypeInfo))
+        {
+            // Can't paste components if there is a mixed selection or read only entities
+            return false;
+        }
+
         // Grab component data from clipboard, if exists
         const QMimeData* mimeData = ComponentMimeData::GetComponentMimeDataFromClipboard();
 
@@ -3456,9 +3500,9 @@ namespace AzToolsFramework
         {
             if (componentClassData)
             {
-                // A component can be pasted onto an entity if it appears in the game component menu or if it already exists on the entity
+                // A component can be pasted onto an entity if it appears in the add component menu or if it already exists on the entity
                 auto existingComponent = entity->FindComponent(componentClassData->m_typeId);
-                if (!existingComponent && !AppearsInGameComponentMenu(*componentClassData))
+                if (!existingComponent && (!m_componentFilter || !m_componentFilter(*componentClassData)))
                 {
                     canPaste = false;
                     break;

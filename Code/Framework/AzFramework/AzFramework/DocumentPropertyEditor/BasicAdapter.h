@@ -23,7 +23,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::PatchOutcome RequestContentChange(const Dom::Patch& patch);
 
     private:
-        Dom::Value GenerateContents() const override;
+        Dom::Value GenerateContents() override;
         Dom::Value m_value;
     };
 } // namespace AZ::DocumentPropertyEditor

@@ -340,6 +340,32 @@ namespace UnitTest
         EXPECT_NEAR(distance, 1.0f, 1e-2f);
     }
 
+    // distance scaled - along length
+    TEST_F(TubeShapeTest, DistanceFromPointInsideTubeIsZero)
+    {
+        AZ::Entity entity;
+        CreateTube(
+            AZ::Transform::CreateTranslation(AZ::Vector3(37.0f, 36.0f, 39.0f)) *
+            AZ::Transform::CreateUniformScale(2.0f), 1.5f, entity);
+
+        LmbrCentral::TubeShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 0, 1.0f);
+        LmbrCentral::TubeShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 1, 0.2f);
+        LmbrCentral::TubeShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 2, 0.5f);
+        LmbrCentral::TubeShapeComponentRequestsBus::Event(
+            entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 3, 2.0f);
+
+        // The 3rd vertex located at (43, 36, 39) has a radius of 2 * (1.5 + 2), so a point that's 5 up on the y axis should
+        // still be located inside the tube and have a distance of 0.
+        float distance;
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            distance, entity.GetId(), &LmbrCentral::ShapeComponentRequests::DistanceFromPoint, AZ::Vector3(43.0f, 41.0f, 39.0f));
+
+        EXPECT_NEAR(distance, 0.0f, 1e-2f);
+    }
+
     TEST_F(TubeShapeTest, RadiiCannotBeNegativeFromVariableChange)
     {
         AZ::Entity entity;

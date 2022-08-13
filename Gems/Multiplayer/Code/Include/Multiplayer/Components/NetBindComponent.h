@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Aabb.h>
@@ -75,16 +76,33 @@ namespace Multiplayer
         //! IsNetEntityRoleClient
         //! @return true if this network entity is a simulated proxy on a client; otherwise false.
         bool IsNetEntityRoleClient() const;
-        
+
+        //! Sets whether or not a netbound entity is allowed to migrate between hosts.
+        //! Use this feature carefully, as replication is spatially based. If migration is disabled chances are you want to mark the entity as always persistent as well.
+        //! See INetworkEntityManager::MarkAlwaysRelevantToClients and INetworkEntityManager::MarkAlwaysRelevantToServers
+        //! @param value whether to enable or disable host migrations for this entity
+        void SetAllowEntityMigration(EntityMigration value);
+
+        //! Retrieves whether or not the netbound entity is allowed to migrate between hosts.
+        //! @return EntityMigration::Enabled if the entity is allowed to migrate, EntityMigration::Disabled otherwise
+        EntityMigration GetAllowEntityMigration() const;
+
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;
+        void SetPrefabEntityId(const PrefabEntityId& prefabEntityId);
+        const AZ::Data::AssetId& GetPrefabAssetId() const;
+        void SetPrefabAssetId(const AZ::Data::AssetId& val);
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
 
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
         AzNetworking::ConnectionId GetOwningConnectionId() const;
-        void SetAllowAutonomy(bool value);
+
+        //! Allows a player host to autonomously control their player entity, even though the entity is in an authority role.
+        //! Note: If this entity is already activated this will reactivate all of the multiplayer component controllers in order for them to reactivate under autonomous control.
+        void EnablePlayerHostAutonomy(bool enabled);
+
         MultiplayerComponentInputVector AllocateComponentInputs();
 
         //! Return true if we're currently processing inputs.
@@ -156,7 +174,9 @@ namespace Multiplayer
         ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
         ReplicationRecord m_localNotificationRecord = NetEntityRole::InvalidRole;
         PrefabEntityId    m_prefabEntityId;
-        AZStd::unordered_map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
+        AZ::Data::AssetId m_prefabAssetId;
+        // It is important that this component map be ordered, as we walk it to generate serialization ordering
+        AZStd::map<NetComponentId, MultiplayerComponent*> m_multiplayerComponentMap;
         AZStd::vector<MultiplayerComponent*> m_multiplayerSerializationComponentVector;
         AZStd::vector<MultiplayerComponent*> m_multiplayerInputComponentVector;
 
@@ -180,6 +200,7 @@ namespace Multiplayer
         NetworkEntityHandle   m_netEntityHandle;
         NetEntityRole         m_netEntityRole   = NetEntityRole::InvalidRole;
         NetEntityId           m_netEntityId     = InvalidNetEntityId;
+        EntityMigration       m_netEntityMigration = EntityMigration::Enabled;
 
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
@@ -187,13 +208,14 @@ namespace Multiplayer
         bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
         bool m_isMigrationDataValid = false;
         bool m_needsToBeStopped     = false;
-        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_playerHostAutonomyEnabled = false; // Set to true for the host's controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;
 
         friend class HierarchyTests;
         friend class HierarchyBenchmarkBase;
+        friend class MultiplayerSystemTests;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

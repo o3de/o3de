@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportContent.h>
+#include <Document/MaterialCanvasDocumentNotificationBus.h>
 #endif
 
 namespace MaterialCanvas
@@ -18,6 +19,7 @@ namespace MaterialCanvas
     class MaterialCanvasViewportContent final
         : public AtomToolsFramework::EntityPreviewViewportContent
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
+        , public MaterialCanvasDocumentNotificationBus::Handler
     {
     public:
         MaterialCanvasViewportContent(
@@ -34,15 +36,22 @@ namespace MaterialCanvas
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
+        void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
+
+        // MaterialCanvasDocumentNotificationBus::Handler overrides...
+        void OnCompileGraphCompleted(const AZ::Uuid& documentId) override;
 
         // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
+
+        void ApplyMaterial(const AZ::Uuid& documentId);
 
         AZ::Entity* m_environmentEntity = {};
         AZ::Entity* m_gridEntity = {};
         AZ::Entity* m_objectEntity = {};
         AZ::Entity* m_postFxEntity = {};
         AZ::Entity* m_shadowCatcherEntity = {};
+        AZ::Uuid m_lastOpenedDocumentId;
     };
 } // namespace MaterialCanvas

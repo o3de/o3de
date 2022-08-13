@@ -195,7 +195,10 @@ namespace ScriptCanvas
                     config.m_displayGroup = displayGroup;
                     config.m_addUniqueSlotByNameAndType = false;
                     config.SetConnectionType(ScriptCanvas::ConnectionType::Input);
-                    config.DeepCopyFrom(input.datum);
+                    // For current use case, we don't need to deep copy datum from subgraphinterface
+                    // Later if we need to make deep copy, we must verify the subgraphinterface is accurate.
+                    // For example, when subgraphinterface shows datum as dynamic, we should create slot by using DynamicDataSlotConfiguration
+                    config.CopyTypeAndValueFrom(input.datum);
                     auto previousSlotId = previousMap.FindInputSlotIdBySource(input.sourceID, inSourceId);
                     if (previousSlotId.IsValid())
                     {
@@ -435,6 +438,11 @@ namespace ScriptCanvas
                 return m_prettyName;
             }
 
+            Grammar::FunctionSourceId FunctionCallNode::GetSourceId() const
+            {
+                return m_sourceId;
+            }
+
             void FunctionCallNode::Initialize(AZ::Data::AssetId assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)
             {
                 PopulateNodeType();
@@ -461,16 +469,21 @@ namespace ScriptCanvas
                 }
 
                 FunctionCallNodeCompareConfig config;
-                return IsOutOfDate(config);
+                return IsOutOfDate(config, {}) != IsFunctionCallNodeOutOfDataResult::No;
             }
 
-            bool FunctionCallNode::IsOutOfDate(const FunctionCallNodeCompareConfig& config) const
+            IsFunctionCallNodeOutOfDataResult FunctionCallNode::IsOutOfDate(const FunctionCallNodeCompareConfig& config, const AZ::Uuid& graphId) const
             {
                 bool isUnitTestingInProgress = false;
                 ScriptCanvas::SystemRequestBus::BroadcastResult(isUnitTestingInProgress, &ScriptCanvas::SystemRequests::IsScriptUnitTestingInProgress);
                 if (isUnitTestingInProgress)
                 {
-                    return false;
+                    return IsFunctionCallNodeOutOfDataResult::No;
+                }
+
+                if ((!graphId.IsNull()) && graphId == m_asset.GetId().m_guid)
+                {
+                    return IsFunctionCallNodeOutOfDataResult::EvaluateAfterLocalDefinition;
                 }
 
                 AZ::Data::AssetId interfaceAssetId(m_asset.GetId().m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72));
@@ -485,18 +498,18 @@ namespace ScriptCanvas
                 if (!asset || !asset->IsReady())
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load source asset.", m_prettyName.data());
-                    return true;
+                    return IsFunctionCallNodeOutOfDataResult::Yes;
                 }
 
                 const Grammar::SubgraphInterface* latestAssetInterface = asset ? &asset.Get()->m_interfaceData.m_interface : nullptr;
                 if (!latestAssetInterface)
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s failed to load latest interface from the source asset.", m_prettyName.data());
-                    return true;
+                    return IsFunctionCallNodeOutOfDataResult::Yes;
                 }
 
                 IsFunctionCallOutOfDateConfig isOutOfDataConfig{ config, *this, m_slotExecutionMap, m_sourceId, m_slotExecutionMapSourceInterface, *latestAssetInterface };
-                return IsFunctionCallNodeOutOfDate(isOutOfDataConfig);
+                return IsFunctionCallNodeOutOfDate(isOutOfDataConfig) ? IsFunctionCallNodeOutOfDataResult::Yes : IsFunctionCallNodeOutOfDataResult::No;
             }
 
             UpdateResult FunctionCallNode::OnUpdateNode()
@@ -513,7 +526,7 @@ namespace ScriptCanvas
                 }
 
                 FunctionCallNodeCompareConfig config;
-                if (IsOutOfDate(config))
+                if (IsOutOfDate(config, m_asset.GetId().m_guid) != Nodes::Core::IsFunctionCallNodeOutOfDataResult::No)
                 {
                     AZ_Warning("ScriptCanvas", false, "FunctionCallNode %s's source public interface has changed", m_prettyName.data());
                     this->AddNodeDisabledFlag(NodeDisabledFlag::ErrorInUpdate);
@@ -785,6 +798,11 @@ namespace ScriptCanvas
             const SlotExecution::Map* FunctionCallNode::GetSlotExecutionMap() const
             {
                 return &m_slotExecutionMap;
+            }
+
+            const Grammar::SubgraphInterface& FunctionCallNode::GetSlotExecutionMapSource() const
+            {
+                return m_slotExecutionMapSourceInterface;
             }
 
             const Grammar::SubgraphInterface* FunctionCallNode::GetSubgraphInterface() const

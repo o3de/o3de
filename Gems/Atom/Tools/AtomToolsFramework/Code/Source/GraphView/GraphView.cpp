@@ -62,14 +62,15 @@ namespace AtomToolsFramework
         m_takeScreenshot->setToolTip("Captures a full resolution screenshot of the entire graph or selected nodes into the clipboard");
         m_takeScreenshot->setIcon(QIcon(":/Icons/screenshot.png"));
         m_takeScreenshot->setEnabled(false);
-        connect(m_takeScreenshot, &QToolButton::clicked, this, [this] {
+        connect(m_takeScreenshot, &QToolButton::clicked, this, [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ScreenshotSelection);
         });
         m_editorToolbar->AddCustomAction(m_takeScreenshot);
 
-        m_graphicsView = new GraphCanvas::GraphCanvasGraphicsView(this);
+        m_graphicsView = new GraphCanvas::GraphCanvasGraphicsView(this, false);
+        m_graphicsView->SetEditorId(m_toolId);
         layout()->addWidget(m_graphicsView);
 
         m_presetEditor = aznew GraphCanvas::ConstructPresetDialog(nullptr);
@@ -95,55 +96,52 @@ namespace AtomToolsFramework
         nodePaletteConfig.m_rootTreeItem = m_graphViewConfig.m_createNodeTreeItemsFn(m_toolId);
         m_createNodeProposalContextMenu = aznew GraphCanvas::EditorContextMenu(m_toolId, this);
         m_createNodeProposalContextMenu->AddNodePaletteMenuAction(nodePaletteConfig);
-        SetActiveGraphId(activeGraphId);
+        SetActiveGraphId(activeGraphId, true);
     }
 
     GraphView::~GraphView()
     {
-        SetActiveGraphId(GraphCanvas::GraphId());
+        SetActiveGraphId(GraphCanvas::GraphId(), false);
         delete m_presetEditor;
     }
 
-    void GraphView::SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId)
+    void GraphView::SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId, bool notify)
     {
-        if (m_activeGraphId != activeGraphId)
-        {
-            return;
-        }
-
         // Disconnect from any previously connecting buses.
         // We are enforcing that only one graph is active and connected at any given time.
-        AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
-        GraphCanvas::AssetEditorNotificationBus::Handler::BusDisconnect();
+        AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorRequestBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusDisconnect();
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         // Update the value of the active graph ID and only reconnect the buses if it's valid.
         m_activeGraphId = activeGraphId;
+
+        // Valid or not, update the graphics view to reference the new ID
+        m_graphicsView->SetScene(m_activeGraphId);
+
         if (m_activeGraphId.IsValid())
         {
-            AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler::BusConnect(m_toolId);
-            GraphCanvas::AssetEditorNotificationBus::Handler::BusConnect(m_toolId);
+            AtomToolsMainMenuRequestBus::Handler::BusConnect(m_toolId);
             GraphCanvas::AssetEditorRequestBus::Handler::BusConnect(m_toolId);
             GraphCanvas::AssetEditorSettingsRequestBus::Handler::BusConnect(m_toolId);
             GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraphId);
+
+            GraphCanvas::SceneRequestBus::Event(
+                m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, m_graphViewConfig.m_nodeMimeType.c_str());
         }
 
-        // Valid or not, update the graphics view to reference the new ID
-        m_graphicsView->SetEditorId(m_toolId);
-        m_graphicsView->SetScene(m_activeGraphId);
-
-        // Notify any observers connected to the asset editor buses that the active graph has changed.
-        // Even though we are only managing one graph at a time, and not using the asset editor buses, this will update any other system
-        // that is.
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, m_activeGraphId);
-        GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
+        if (notify)
+        {
+            // Notify any observers connected to the asset editor buses that the active graph has changed.
+            // We are only managing one graph at a time, not using the asset editor buses, but this will update any other system that is.
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PreOnActiveGraphChanged);
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::OnActiveGraphChanged, m_activeGraphId);
+            GraphCanvas::AssetEditorNotificationBus::Event(m_toolId, &GraphCanvas::AssetEditorNotifications::PostOnActiveGraphChanged);
+        }
 
         // Update all of the main window menus with commands from this view what are you doing.
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
+        AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
     }
 
     AZ::s32 GraphView::GetMainMenuPriority() const
@@ -157,137 +155,153 @@ namespace AtomToolsFramework
         auto menuEdit = menuBar->findChild<QMenu*>("menuEdit");
         auto menuView = menuBar->findChild<QMenu*>("menuView");
 
+        auto makeAction = [&](QMenu* menu, const QString& name, const AZStd::function<void()>& fn, const QKeySequence& key) -> QAction*
+        {
+            QAction* action = new QAction(name, this);
+            action->setShortcut(key);
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            action->setEnabled(true);
+            QObject::connect(action, &QAction::triggered, this, fn);
+            menu->addAction(action);
+            addAction(action);
+            return action;
+        };
+
         menuEdit->addSeparator();
-        m_actionCut = menuEdit->addAction(tr("Cut"), [this] {
+        m_actionCut = makeAction(menuEdit, tr("Cut"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CutSelection);
         }, QKeySequence::Cut);
-        m_actionCopy = menuEdit->addAction(tr("Copy"), [this] {
+        m_actionCopy = makeAction(menuEdit, tr("Copy"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::CopySelection);
         }, QKeySequence::Copy);
-        m_actionPaste = menuEdit->addAction(tr("Paste"), [this] {
+        m_actionPaste = makeAction(menuEdit, tr("Paste"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::Paste);
         }, QKeySequence::Paste);
-        m_actionDuplicate = menuEdit->addAction(tr("Duplicate"), [this] {
+        m_actionDuplicate = makeAction(menuEdit, tr("Duplicate"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DuplicateSelection);
-        });
-        m_actionDelete = menuEdit->addAction(tr("Delete"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::Key_D));
+        m_actionDelete = makeAction(menuEdit, tr("Delete"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DeleteSelection);
         }, QKeySequence::Delete);
 
         menuEdit->addSeparator();
-        m_actionRemoveUnusedNodes = menuEdit->addAction(tr("Remove Unused Nodes"), [this] {
+        m_actionRemoveUnusedNodes = makeAction(menuEdit, tr("Remove Unused Nodes"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedNodes);
-        });
-        m_actionRemoveUnusedElements = menuEdit->addAction(tr("Remove Unused Elements"), [this] {
+        }, {});
+        m_actionRemoveUnusedElements = makeAction(menuEdit, tr("Remove Unused Elements"), [this](){
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::RemoveUnusedElements);
-        });
+        }, {});
 
         menuEdit->addSeparator();
-        m_actionSelectAll = menuEdit->addAction(tr("Select All"), [this] {
+        m_actionSelectAll = makeAction(menuEdit, tr("Select All"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectAll);
         }, QKeySequence::SelectAll);
-        m_actionSelectInputs = menuEdit->addAction(tr("Select Inputs"), [this] {
+        m_actionSelectInputs = makeAction(menuEdit, tr("Select Inputs"), [this](){
             GraphCanvas::SceneRequestBus::Event(
                 m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Input);
-        }, QKeySequence::Deselect);
-        m_actionSelectOutputs = menuEdit->addAction(tr("Select Outputs"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::Key_Left));
+        m_actionSelectOutputs = makeAction(menuEdit, tr("Select Outputs"), [this](){
             GraphCanvas::SceneRequestBus::Event(
                 m_activeGraphId, &GraphCanvas::SceneRequests::SelectAllRelative, GraphCanvas::ConnectionType::CT_Output);
-        });
-        m_actionSelectConnected = menuEdit->addAction(tr("Select Connected"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::Key_Right));
+        m_actionSelectConnected = makeAction(menuEdit, tr("Select Connected"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SelectConnectedNodes);
-        });
-        m_actionSelectNone = menuEdit->addAction(tr("Clear Selection"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::Key_Up));
+        m_actionSelectNone = makeAction(menuEdit, tr("Clear Selection"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
-        });
-        m_actionSelectEnable = menuEdit->addAction(tr("Enable Selection"), [this] {
+        }, QKeySequence::Deselect);
+        m_actionSelectEnable = makeAction(menuEdit, tr("Enable Selection"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::EnableSelection);
-        });
-        m_actionSelectDisable = menuEdit->addAction(tr("Disable Selection"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_U));
+        m_actionSelectDisable = makeAction(menuEdit, tr("Disable Selection"), [this](){
             GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::DisableSelection);
-        });
+        }, QKeySequence(Qt::CTRL + Qt::Key_K, Qt::CTRL + Qt::Key_C));
 
         menuEdit->addSeparator();
-        m_actionScreenShot = menuEdit->addAction(tr("Screenshot"), [this] {
+        m_actionScreenShot = makeAction(menuEdit, tr("Screenshot"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ScreenshotSelection);
-        });
+        }, QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_P));
 
         menuEdit->addSeparator();
-        m_actionAlignTop = menuEdit->addAction(tr("Align Top"), [this] {
+        m_actionAlignTop = makeAction(menuEdit, tr("Align Top"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Top;
             alignConfig.m_alignTime = GetAlignmentTime();
             AlignSelected(alignConfig);
-        });
-        m_actionAlignBottom = menuEdit->addAction(tr("Align Bottom"), [this] {
+        }, {});
+        m_actionAlignBottom = makeAction(menuEdit, tr("Align Bottom"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::None;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::Bottom;
             alignConfig.m_alignTime = GetAlignmentTime();
             AlignSelected(alignConfig);
-        });
-        m_actionAlignLeft = menuEdit->addAction(tr("Align Left"), [this] {
+        }, {});
+        m_actionAlignLeft = makeAction(menuEdit, tr("Align Left"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Left;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
             alignConfig.m_alignTime = GetAlignmentTime();
             AlignSelected(alignConfig);
-        });
-        m_actionAlignRight = menuEdit->addAction(tr("Align Right"), [this] {
+        }, {});
+        m_actionAlignRight = makeAction(menuEdit, tr("Align Right"), [this](){
             GraphCanvas::AlignConfig alignConfig;
             alignConfig.m_horAlign = GraphCanvas::GraphUtils::HorizontalAlignment::Right;
             alignConfig.m_verAlign = GraphCanvas::GraphUtils::VerticalAlignment::None;
             alignConfig.m_alignTime = GetAlignmentTime();
             AlignSelected(alignConfig);
-        });
+        }, {});
 
         menuView->addSeparator();
-        m_actionPresetEditor = menuView->addAction(tr("Preset Editor"), [this] { OpenPresetsEditor(); });
+        m_actionPresetEditor = makeAction(menuView, tr("Preset Editor"), [this](){ OpenPresetsEditor(); }, {});
 
         menuView->addSeparator();
-        m_actionShowEntireGraph = menuView->addAction(tr("Show Entire Graph"), [this] {
+        m_actionShowEntireGraph = makeAction(menuView, tr("Show Entire Graph"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ShowEntireGraph);
-        });
-        m_actionZoomIn = menuView->addAction(tr("Zoom In"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::DownArrow));
+        m_actionZoomIn = makeAction(menuView, tr("Zoom In"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomIn);
         }, QKeySequence::ZoomIn);
-        m_actionZoomOut = menuView->addAction(tr("Zoom Out"), [this] {
+        m_actionZoomOut = makeAction(menuView, tr("Zoom Out"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::ZoomOut);
         }, QKeySequence::ZoomOut);
-        m_actionZoomSelection = menuView->addAction(tr("Zoom Selection"), [this] {
+        m_actionZoomSelection = makeAction(menuView, tr("Zoom Selection"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnSelection);
-        });
+        }, QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Up));
 
         menuView->addSeparator();
-        m_actionGotoStartOfChain = menuView->addAction(tr("Goto Start Of Chain"), [this] {
+        m_actionGotoStartOfChain = makeAction(menuView, tr("Goto Start Of Chain"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnStartOfChain);
-        }, QKeySequence::MoveToStartOfDocument);
-        m_actionGotoEndOfChain = menuView->addAction(tr("Goto End Of Chain"), [this] {
+        }, QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Left));
+        m_actionGotoEndOfChain = makeAction(menuView, tr("Goto End Of Chain"), [this](){
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, m_activeGraphId, &GraphCanvas::SceneRequests::GetViewId);
             GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnEndOfChain);
-        }, QKeySequence::MoveToEndOfDocument);
+        }, QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Right));
 
         connect(menuEdit, &QMenu::aboutToShow, this, [this](){
-            AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+            AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
         connect(QApplication::clipboard(), &QClipboard::dataChanged, this, [this](){
-            AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+            AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
         });
     }
 
@@ -432,6 +446,8 @@ namespace AtomToolsFramework
         GraphCanvas::GraphCanvasMimeEvent* mimeEvent = m_createNodeProposalContextMenu->GetNodePalette()->GetContextMenuEvent();
         if (mimeEvent)
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
+
             AZ::Vector2 dropPos(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y()));
             if (mimeEvent->ExecuteEvent(dropPos, dropPos, m_activeGraphId))
             {
@@ -503,20 +519,9 @@ namespace AtomToolsFramework
         return GraphCanvas::Styling::ConnectionCurveType::Curved;
     }
 
-    void GraphView::OnActiveGraphChanged(const GraphCanvas::GraphId& graphId)
-    {
-        m_activeGraphId = graphId;
-        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
-        GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_activeGraphId);
-        GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::SetMimeType, m_graphViewConfig.m_nodeMimeType.c_str());
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, true);
-    }
-
     void GraphView::OnSelectionChanged()
     {
-        AtomToolsFramework::AtomToolsMainWindowRequestBus::Event(
-            m_toolId, &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        AtomToolsMainWindowRequestBus::Event(m_toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
     }
 
     GraphCanvas::Endpoint GraphView::HandleProposedConnection(
@@ -642,6 +647,7 @@ namespace AtomToolsFramework
 
         if (auto contextMenuAction = qobject_cast<GraphCanvas::ContextMenuAction*>(result))
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             return contextMenuAction->TriggerAction(m_activeGraphId, sceneVector);
         }
 
@@ -651,6 +657,8 @@ namespace AtomToolsFramework
             GraphCanvas::GraphCanvasMimeEvent* mimeEvent = editorContextMenu.GetNodePalette()->GetContextMenuEvent();
             if (mimeEvent)
             {
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
+
                 AZ::Vector2 dropPos(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y()));
                 if (mimeEvent->ExecuteEvent(dropPos, dropPos, m_activeGraphId))
                 {
@@ -671,6 +679,8 @@ namespace AtomToolsFramework
 
     void GraphView::AlignSelected(const GraphCanvas::AlignConfig& alignConfig)
     {
+        GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
+
         AZStd::vector<GraphCanvas::NodeId> selectedNodes;
         GraphCanvas::SceneRequestBus::EventResult(selectedNodes, m_activeGraphId, &GraphCanvas::SceneRequests::GetSelectedNodes);
         GraphCanvas::GraphUtils::AlignNodes(selectedNodes, alignConfig);

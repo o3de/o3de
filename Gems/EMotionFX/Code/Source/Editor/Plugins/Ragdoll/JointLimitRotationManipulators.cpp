@@ -18,17 +18,10 @@ namespace EMotionFX
     JointLimitRotationManipulators::JointLimitRotationManipulators(JointLimitFrame jointLimitFrame)
         : m_jointLimitFrame(jointLimitFrame)
     {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustJointLimitCallback.get());
         m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
     }
 
-    JointLimitRotationManipulators::~JointLimitRotationManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
-    }
-
-    void JointLimitRotationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void JointLimitRotationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -37,7 +30,6 @@ namespace EMotionFX
             return;
         }
 
-        m_rotationManipulators.SetSpace(physicsSetupManipulatorData.m_nodeWorldTransform);
         Refresh();
         m_rotationManipulators.Register(EMStudio::g_animManipulatorManagerId);
         m_rotationManipulators.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
@@ -65,12 +57,25 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointLimitRotationManipulators::Refresh()
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
+            if (m_jointLimitFrame == JointLimitFrame::Parent)
+            {
+                m_rotationManipulators.SetSpace(AZ::Transform::CreateFromQuaternionAndTranslation(
+                    m_physicsSetupManipulatorData.m_parentWorldTransform.GetRotation(),
+                    m_physicsSetupManipulatorData.m_nodeWorldTransform.GetTranslation()));
+            }
+            else
+            {
+                m_rotationManipulators.SetSpace(m_physicsSetupManipulatorData.m_nodeWorldTransform);
+            }
+
             m_rotationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
             m_rotationManipulators.SetLocalOrientation(GetLocalOrientation());
         }
@@ -78,6 +83,13 @@ namespace EMotionFX
 
     void JointLimitRotationManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasJointLimit())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         m_rotationManipulators.Unregister();
@@ -101,37 +113,17 @@ namespace EMotionFX
         {
             GetLocalOrientation() = rotation;
         }
-        m_physicsSetupManipulatorData.m_jointLimitWidget->InvalidateValues();
+        InvalidateEditorValues();
     }
 
     void JointLimitRotationManipulators::BeginEditing()
     {
-        if (!m_commandGroup.IsEmpty())
-        {
-            return;
-        }
-        m_commandGroup.SetGroupName("Adjust joint limit");
-        const AZ::u32 actorId = m_physicsSetupManipulatorData.m_actor->GetID();
-        const AZStd::string& nodeName = m_physicsSetupManipulatorData.m_node->GetNameString();
-        CommandAdjustJointLimit* command = aznew CommandAdjustJointLimit(actorId, nodeName);
-        m_commandGroup.AddCommand(command);
-        command->SetOldJointConfiguration(m_physicsSetupManipulatorData.m_jointConfiguration);
+        CreateCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }
 
     void JointLimitRotationManipulators::FinishEditing()
     {
-        if (m_commandGroup.IsEmpty())
-        {
-            return;
-        }
-
-        if (CommandAdjustJointLimit* command = azdynamic_cast<CommandAdjustJointLimit*>(m_commandGroup.GetCommand(0)))
-        {
-            command->SetJointConfiguration(m_physicsSetupManipulatorData.m_jointConfiguration);
-        }
-        AZStd::string result;
-        CommandSystem::GetCommandManager()->ExecuteCommandGroup(m_commandGroup, result);
-        m_commandGroup.Clear();
+        ExecuteCommandAdjustJointLimit(m_commandGroup, m_physicsSetupManipulatorData);
     }
 
     void JointLimitRotationManipulators::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
@@ -155,5 +147,43 @@ namespace EMotionFX
         return m_jointLimitFrame == JointLimitFrame::Parent
             ? m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation
             : m_physicsSetupManipulatorData.m_jointConfiguration->m_childLocalRotation;
+    }
+
+    void JointLimitRotationManipulators::InvalidateEditorValues()
+    {
+        if (m_physicsSetupManipulatorData.m_jointLimitWidget)
+        {
+            m_physicsSetupManipulatorData.m_jointLimitWidget->InvalidateValues();
+        }
+    }
+
+    void CreateCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    {
+        if (!commandGroup.IsEmpty())
+        {
+            return;
+        }
+        commandGroup.SetGroupName("Adjust joint limit");
+        const AZ::u32 actorId = physicsSetupManipulatorData.m_actor->GetID();
+        const AZStd::string& nodeName = physicsSetupManipulatorData.m_node->GetNameString();
+        CommandAdjustJointLimit* command = aznew CommandAdjustJointLimit(actorId, nodeName);
+        commandGroup.AddCommand(command);
+        command->SetOldJointConfiguration(physicsSetupManipulatorData.m_jointConfiguration);
+    }
+
+    void ExecuteCommandAdjustJointLimit(MCore::CommandGroup& commandGroup, const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    {
+        if (commandGroup.IsEmpty())
+        {
+            return;
+        }
+
+        if (auto* command = azdynamic_cast<CommandAdjustJointLimit*>(commandGroup.GetCommand(0)))
+        {
+            command->SetJointConfiguration(physicsSetupManipulatorData.m_jointConfiguration);
+        }
+        AZStd::string result;
+        CommandSystem::GetCommandManager()->ExecuteCommandGroup(commandGroup, result);
+        commandGroup.Clear();
     }
 } // namespace EMotionFX

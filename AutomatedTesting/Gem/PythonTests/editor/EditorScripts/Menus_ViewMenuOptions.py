@@ -27,7 +27,7 @@ def Menus_ViewMenuOptions_Work():
     """
 
     import editor_python_test_tools.hydra_editor_utils as hydra
-    import editor_python_test_tools.pyside_utils as pyside_utils
+    import pyside_utils
     from editor_python_test_tools.utils import Report
 
     view_menu_options = [
@@ -35,7 +35,6 @@ def Menus_ViewMenuOptions_Work():
         ("Show Quick Access Bar",),
         ("Layouts", "Component Entity Layout",),
         ("Layouts", "Save Layout",),
-        ("Viewport", "Configure Layout"),
         ("Viewport", "Go to Position"),
         ("Viewport", "Center on Selection"),
         ("Viewport", "Go to Location"),

@@ -98,6 +98,7 @@ set(FILES
     Streamer/StreamStackEntryMock.h
     Streamer/StreamStackEntryTests.cpp
     Serialization/Json/ArraySerializerTests.cpp
+    Serialization/Json/AnySerializerTests.cpp
     Serialization/Json/BaseJsonSerializerFixture.h
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
@@ -139,6 +140,7 @@ set(FILES
     Serialization/Json/UuidSerializerTests.cpp
     Time/TimeTests.cpp
     Math/AabbTests.cpp
+    Math/CapsuleTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h
