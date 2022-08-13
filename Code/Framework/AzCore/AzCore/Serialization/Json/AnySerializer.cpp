@@ -64,15 +64,15 @@ namespace AZ
             }
 
             // Allowing the serializer to read from objects contained in members "Value" and "value" for backward compatibility
-            if (inputValue.HasMember("value"))
-            {
-                result.Combine(
-                    ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), anyTypeId, inputValue, "value", context));
-            }
-            else if (inputValue.HasMember("Value"))
+            if (inputValue.HasMember("Value"))
             {
                 result.Combine(
                     ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), anyTypeId, inputValue, "Value", context));
+            }
+            else
+            {
+                result.Combine(
+                    ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), anyTypeId, inputValue, "value", context));
             }
         }
 
