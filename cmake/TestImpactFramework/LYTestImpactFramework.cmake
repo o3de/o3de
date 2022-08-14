@@ -327,25 +327,31 @@ endfunction()
 #! ly_extract_aliased_target_dependencies: recursively extracts the aliases of a target to retrieve the true de-aliased target.
 #
 # \arg:TARGET target to de-alias
-function(ly_extract_aliased_target_dependencies TARGET)
-    if(ARGN STREQUAL "")
+function(ly_extract_aliased_target_dependencies TARGET DE_ALIASED_TARGETS)
+    if(NOT ARGN)
         # Entry point of recursive call, set the parent target and clear any existing aliases
         set(PARENT_TARGET ${TARGET})
-        set_property(GLOBAL PROPERTY LY_DE_ALIASED_TARGETS_${PARENT_TARGET} "")
+        set_property(GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} "")
     endif()
 
     # Check for aliases of this target
-    get_property(aliased_targets GLOBAL PROPERTY LY_ALIASED_TARGETS_${TARGET} SET)
+    get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET} SET)
     if(${aliased_targets})
         # One or more aliases for this target has been found
-        get_property(aliased_targets GLOBAL PROPERTY LY_ALIASED_TARGETS_${TARGET})
+        get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET})
         foreach(aliased_target ${aliased_targets})
             # Recursively extract any aliases of the alias of this target
-            ly_extract_aliased_target_dependencies(${aliased_target} ${PARENT_TARGET})
+            ly_extract_aliased_target_dependencies(${aliased_target} empty ${PARENT_TARGET})
         endforeach()
     else()
         # No more aliases found for this target, add this target as an alias for the parent target
-        set_property(GLOBAL APPEND PROPERTY LY_DE_ALIASED_TARGETS_${PARENT_TARGET} ${TARGET})
+        set_property(GLOBAL APPEND PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} ${TARGET})
+    endif()
+
+    if(NOT ARGN)
+        # Exit point of recursive call
+        get_property(de_aliased_targets GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${TARGET})
+        set(${DE_ALIASED_TARGETS} ${de_aliased_targets} PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -372,8 +378,7 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
 
             if(NOT ${target_to_add} STREQUAL "")
                 # Extract the targets this target may alias
-                ly_extract_aliased_target_dependencies(${target_to_add})
-                get_property(de_aliased_targets GLOBAL PROPERTY LY_DE_ALIASED_TARGETS_${target_to_add})
+                ly_extract_aliased_target_dependencies(${target_to_add} de_aliased_targets)
                 foreach(de_aliased_target ${de_aliased_targets})
                     list(APPEND dependencies "\"${de_aliased_target}\"")
                 endforeach()
