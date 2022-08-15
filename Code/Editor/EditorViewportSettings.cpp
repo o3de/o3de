@@ -72,9 +72,9 @@ namespace SandboxEditor
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
                 m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
@@ -82,9 +82,9 @@ namespace SandboxEditor
                 );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
@@ -92,9 +92,9 @@ namespace SandboxEditor
                 );
 
                 m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
                         }
@@ -102,9 +102,9 @@ namespace SandboxEditor
                 );
 
                 m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
                         }
