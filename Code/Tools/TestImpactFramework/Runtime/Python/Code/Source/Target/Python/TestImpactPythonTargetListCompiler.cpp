@@ -26,7 +26,7 @@ namespace TestImpact
         {
             if(descriptor.m_type != TargetType::TestTarget)
             {
-                // Python test targets are compiled programmatically so ignore any other test targets
+                // Python test targets are compiled and added programmatically in the steps that follow so ignore any discovered test targets
                 productionTargets.emplace_back(AZStd::move(descriptor));
             }
         }
