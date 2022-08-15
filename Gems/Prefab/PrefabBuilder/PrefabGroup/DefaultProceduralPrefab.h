@@ -24,7 +24,7 @@ namespace AZ::SceneAPI
         : protected PrefabGroupEventBus::Handler
     {
     public:
-        AZ_RTTI(DefaultProceduralPrefab, "{6BAAB306-01EE-42E8-AAFE-C9EE0BF4CFDF}");
+        AZ_RTTI(DefaultProceduralPrefabGroup, "{6BAAB306-01EE-42E8-AAFE-C9EE0BF4CFDF}");
 
         DefaultProceduralPrefabGroup();
         virtual ~DefaultProceduralPrefabGroup();
@@ -78,62 +78,6 @@ namespace AZ::SceneAPI
             const NodeEntityMap& nodeEntityMap,
             const Containers::SceneGraph& graph,
             const NodeDataMap& nodeDataMap)  const;
-
-        bool CreatePrefabGroupManifestUpdates(
-            ManifestUpdates& manifestUpdates,
-            const Containers::Scene& scene,
-            const EntityIdList& entities,
-            const AZStd::string& filenameOnly,
-            const AZStd::string& relativeSourcePath) const;
-    };
-
-    //! Handler for the Prefab Group event logic
-    class DefaultProceduralPrefab
-        : protected PrefabGroupEventBus::Handler
-    {
-    public:
-        AZ_RTTI(DefaultProceduralPrefab, "{6BAAB306-01EE-42E8-AAFE-C9EE0BF4CFDF}");
-
-        static void Reflect(ReflectContext* context);
-
-        // PrefabGroupEventBus::Handler
-        AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
-
-    protected:
-        // this stores the data related with MeshData nodes
-        struct MeshNodeData
-        {
-            Containers::SceneGraph::NodeIndex m_meshIndex = {};
-            Containers::SceneGraph::NodeIndex m_transformIndex = {};
-            Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
-        };
-
-        using MeshDataMapEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, MeshNodeData>;
-        using MeshDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, MeshNodeData>; // MeshData Index -> MeshNodeData
-        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // MeshData Index -> EntityId
-        using EntityIdList = AZStd::vector<AZ::EntityId>;
-
-        MeshDataMap CalculateMeshTransformMap(const Containers::Scene& scene) const;
-
-        bool AddEditorMaterialComponent(
-            const AZ::EntityId& entityId,
-            const DataTypes::ICustomPropertyData& propertyData) const;
-
-        bool AddEditorMeshComponent(
-            const AZ::EntityId& entityId,
-            const AZStd::string& relativeSourcePath,
-            const AZStd::string& meshGroupName) const;
-
-        NodeEntityMap CreateMeshGroups(
-            ManifestUpdates& manifestUpdates,
-            const MeshDataMap& meshDataMap,
-            const Containers::Scene& scene,
-            const AZStd::string& relativeSourcePath) const;
-
-        EntityIdList FixUpEntityParenting(
-            const NodeEntityMap& nodeEntityMap,
-            const Containers::SceneGraph& graph,
-            const MeshDataMap& meshDataMap) const;
 
         bool CreatePrefabGroupManifestUpdates(
             ManifestUpdates& manifestUpdates,
