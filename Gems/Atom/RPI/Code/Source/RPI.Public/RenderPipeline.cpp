@@ -235,7 +235,7 @@ namespace AZ
             }
             else
             {
-                AZ_Warning("RenderPipeline", false, "View [%s] doesn't exist in render pipeline [%s]", viewTag.GetCStr(), m_nameId.GetCStr());
+                AZ_Assert(false, "View [%s] doesn't exist in render pipeline [%s]", viewTag.GetCStr(), m_nameId.GetCStr());
             }
         }
 
