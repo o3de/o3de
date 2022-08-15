@@ -72,9 +72,6 @@ else()
     set(LY_TEST_IMPACT_ACTIVE false)
 endif()
 
-message("LY_TEST_IMPACT_ACTIVE: ${LY_TEST_IMPACT_ACTIVE}")
-message(FATAL_ERROR "bin: '${LY_TEST_IMPACT_INSTRUMENTATION_BIN}'")
-
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
