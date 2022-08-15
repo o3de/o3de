@@ -43,6 +43,7 @@ from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
+from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +61,6 @@ class AbstractTestBase(object):
     attach_debugger = False
     # Wait until a debugger is attached at the startup of the test, this is another way of debugging.
     wait_for_debugger = False
-    # The name of the python attribute to search for to get the current executable's log file.
-    _log_attribute = ''
 
 
 class SingleTest(AbstractTestBase):
@@ -778,9 +777,10 @@ class AbstractTestSuite(object):
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_cmdline_args += [
-            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+        if type(executable) is WinEditor:  # Handle Editor CLI args since we need workspace context to populate them.
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
 
         test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
         if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
@@ -793,15 +793,26 @@ class AbstractTestSuite(object):
         # Cycle any old crash report in case it wasn't cycled properly.
         editor_utils.cycle_crash_report(run_id, workspace)
 
+        # Here we handle populating variables based on the type of executable under test.
         test_result = None
         results = {}
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         test_case_name = editor_utils.compile_test_case_name(request, test_spec)
-        cmdline = [
-                      "--runpythontest", test_filename,
-                      f"-pythontestcase={test_case_name}",
-                      "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+        cmdline = []
+        log_path_function = None
+        log_content_function = None
+        if type(executable) is WinEditor:
+            log_path_function = editor_utils.retrieve_log_path
+            log_content_function = editor_utils.retrieve_editor_log_content
+            cmdline = ["--runpythontest", test_filename,
+                       f"-pythontestcase={test_case_name}",
+                       "-logfile", f"@log@/{log_name}",
+                       "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+        elif type(executable) is WinMaterialEditor:
+            log_path_function = editor_utils.retrieve_material_editor_log_path
+            log_content_function = editor_utils.retrieve_material_editor_log_content
+            cmdline = ["--runpythontest", test_filename,
+                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -809,10 +820,10 @@ class AbstractTestSuite(object):
             executable.wait(test_spec.timeout)
             output = executable.get_output()
             return_code = executable.get_returncode()
-            executable_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log.
             workspace.artifact_manager.save_artifact(
-                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
+                os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
             if return_code == 0:
                 test_result = Result.Pass(self._log_attribute, test_spec, output, executable_log_content)
             else:
@@ -821,12 +832,12 @@ class AbstractTestSuite(object):
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
                     test_result = Result.Crash(self._log_attribute, test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
-                    dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace), 'error.dmp')
+                    dmp_file_name = os.path.join(log_path_function(run_id, workspace), 'error.dmp')
                     if os.path.exists(dmp_file_name):
                         workspace.artifact_manager.save_artifact(dmp_file_name)
                     # Save the crash log
                     crash_file_name = os.path.join(
-                        editor_utils.retrieve_log_path(run_id, workspace), os.path.basename(workspace.paths.crash_log()))
+                        log_path_function(run_id, workspace), os.path.basename(workspace.paths.crash_log()))
                     if os.path.exists(crash_file_name):
                         workspace.artifact_manager.save_artifact(crash_file_name)
                         editor_utils.cycle_crash_report(run_id, workspace)
@@ -837,10 +848,11 @@ class AbstractTestSuite(object):
         except WaitTimeoutError:
             output = executable.get_output()
             executable.stop()
-            executable_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-            test_result = Result.Timeout(self._log_attribute, test_spec, output, test_spec.timeout, executable_log_content)
+            executable_log_content = log_content_function(run_id, log_name, workspace)
+            test_result = Result.Timeout(
+                self._log_attribute, test_spec, output, test_spec.timeout, executable_log_content)
 
-        executable_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+        executable_log_content = log_content_function(run_id, log_name, workspace)
         results = self._get_results_using_output(self._log_attribute, [test_spec], output, executable_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -1125,11 +1137,23 @@ class AbstractTestSuite(object):
         temp_batched_case_file.flush()
         temp_batched_case_file.close()
 
-        cmdline = [
-            "-runpythontest", temp_batched_script_file.name,
-            "-pythontestcase", temp_batched_case_file.name,
-            "-logfile", f"@log@/{log_name}",
-            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+        # Here we handle populating variables based on the type of executable under test.
+        cmdline = []
+        log_path_function = None
+        log_content_function = None
+        if type(executable) is WinEditor:
+            log_path_function = editor_utils.retrieve_log_path
+            log_content_function = editor_utils.retrieve_editor_log_content
+            cmdline = [
+                "-runpythontest", temp_batched_script_file.name,
+                "-pythontestcase", temp_batched_case_file.name,
+                "-logfile", f"@log@/{log_name}",
+                "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+        elif type(executable) is WinMaterialEditor:
+            log_path_function = editor_utils.retrieve_material_editor_log_path
+            log_content_function = editor_utils.retrieve_material_editor_log_content
+            cmdline = ["--runpythontest", temp_batched_script_file.name,
+                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name) ] + test_cmdline_args
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -1139,10 +1163,10 @@ class AbstractTestSuite(object):
             executable.wait(self.timeout_shared_test)
             output = executable.get_output()
             return_code = executable.get_returncode()
-            executable_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log
             try:
-                path_to_artifact = os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name)
+                path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
                 full_log_name = f'({run_id}){log_name}'
                 destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
                 editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
@@ -1159,7 +1183,7 @@ class AbstractTestSuite(object):
                 # This function should always populate the result list.
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(
-                    self._log_attribute,test_spec_list, output, executable_log_content)
+                    self._log_attribute, test_spec_list, output, executable_log_content)
                 assert len(results) == len(test_spec_list), (
                     "bug in get_results_using_output(), the number of results don't match the tests ran")
 
@@ -1175,11 +1199,11 @@ class AbstractTestSuite(object):
                                     run_id, workspace, self._timeout_crash_log)
                                 # Save the .dmp file which is generated on Windows only
                                 dmp_file_name = os.path.join(
-                                    editor_utils.retrieve_log_path(run_id, workspace), 'error.dmp')
+                                    log_path_function(run_id, workspace), 'error.dmp')
                                 if os.path.exists(dmp_file_name):
                                     workspace.artifact_manager.save_artifact(dmp_file_name)
                                 # Save the crash log
-                                crash_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
+                                crash_file_name = os.path.join(log_path_function(run_id, workspace),
                                                                os.path.basename(workspace.paths.crash_log()))
                                 if os.path.exists(crash_file_name):
                                     workspace.artifact_manager.save_artifact(crash_file_name)
@@ -1206,7 +1230,7 @@ class AbstractTestSuite(object):
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
-            executable_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            executable_log_content = log_content_function(run_id, log_name, workspace)
 
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(self._log_attribute, test_spec_list, output, executable_log_content)

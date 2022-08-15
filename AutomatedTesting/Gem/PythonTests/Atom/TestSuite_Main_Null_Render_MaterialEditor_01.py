@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pytest
 
-from ly_test_tools.o3de.material_editor_test import (
-    MaterialEditorBatchedTest, MaterialEditorTestSuite, MaterialEditorSingleTest)
+from ly_test_tools.o3de.material_editor_test import MaterialEditorBatchedTest, MaterialEditorTestSuite
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +21,5 @@ class TestMaterialEditor(MaterialEditorTestSuite):
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
 
     class MaterialEditor_Atom_LaunchMaterialEditor_2(MaterialEditorBatchedTest):
-
-        from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
-
-    class MaterialEditor_Atom_LaunchMaterialEditor_3(MaterialEditorSingleTest):
 
         from Atom.tests import MaterialEditor_Atom_LaunchMaterialEditor as test_module
