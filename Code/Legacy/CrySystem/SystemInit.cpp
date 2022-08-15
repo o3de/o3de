@@ -1290,7 +1290,6 @@ void CSystem::CreateSystemVars()
 
     REGISTER_CVAR2("sys_maxTimeStepForMovieSystem", &g_cvars.sys_maxTimeStepForMovieSystem, 0.1f, VF_NULL, "Caps the time step for the movie system so that a cut-scene won't be jumped in the case of an extreme stall.");
 
-    REGISTER_CVAR2("sys_report_files_not_found_in_paks", &g_cvars.sys_report_files_not_found_in_paks, 0, VF_NULL, "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
 
     REGISTER_COMMAND("sys_crashtest", CmdCrashTest, VF_CHEAT, "Make the game crash\n"
         "0=off\n"
