@@ -231,26 +231,36 @@ namespace AzToolsFramework
         void PrefabLoader::RemoveStaleLinksOnReload(
             PrefabDomValueReference instancesFileReference, PrefabDomValueReference instancesTemplateReference)
         {
-            PrefabDomValue& templateInstances = instancesTemplateReference->get();
-            for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
-                 instanceIterator != templateInstances.MemberEnd(); ++instanceIterator)
+            if (instancesTemplateReference.has_value())
             {
-                if (!instancesFileReference.has_value() || !instancesFileReference->get().HasMember(instanceIterator->name))
+                PrefabDomValue& templateInstances = instancesTemplateReference->get();
+                for (PrefabDomValue::MemberIterator instanceIterator = templateInstances.MemberBegin();
+                     instanceIterator != templateInstances.MemberEnd();
+                     instanceIterator++)
                 {
-                    PrefabDomValue& nestedTemplateDom = instanceIterator->value;
-                    PrefabDomValueReference instanceLinkIdReference =
-                        PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::LinkIdName);
-                    if (!instanceLinkIdReference.has_value() || !instanceLinkIdReference->get().IsUint64())
+                    if (!instancesFileReference.has_value() || !instancesFileReference->get().HasMember(instanceIterator->name))
                     {
-                        AZ_Error(
-                            "Prefab", false,
-                            "PrefabLoader::RemoveLinkOnReload - "
-                            "Can't get '%s' Uint64 value in Instance value '%s' of Template's Prefab DOM from file.",
-                            PrefabDomUtils::LinkIdName, instanceIterator->name.GetString());
-                        return;
+                        PrefabDomValue& nestedTemplateDom = instanceIterator->value;
+                        PrefabDomValueReference instanceLinkIdReference =
+                            PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::LinkIdName);
+                        if (!instanceLinkIdReference.has_value() || !instanceLinkIdReference->get().IsUint64())
+                        {
+                            AZ_Error(
+                                "Prefab",
+                                false,
+                                "PrefabLoader::RemoveLinkOnReload - "
+                                "Can't get '%s' Uint64 value in Instance value '%s' of Template's Prefab DOM from file.",
+                                PrefabDomUtils::LinkIdName,
+                                instanceIterator->name.GetString());
+                            return;
+                        }
+                        LinkId instanceLinkId = instanceLinkIdReference->get().GetUint64();
+                        if (m_prefabSystemComponentInterface->RemoveLink(instanceLinkId))
+                        {
+                            //If the link is removed from the DOM of target template, the iterator needs to be adjusted accordingly.
+                            instanceIterator--;
+                        }
                     }
-                    LinkId instanceLinkId = instanceLinkIdReference->get().GetUint64();
-                    m_prefabSystemComponentInterface->RemoveLink(instanceLinkId);
                 }
             }
         }

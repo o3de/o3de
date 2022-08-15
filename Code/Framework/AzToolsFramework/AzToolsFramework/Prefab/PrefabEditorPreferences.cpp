@@ -17,7 +17,6 @@ namespace AzToolsFramework::Prefab
     {
         bool isHotReloadingEnabled = false;
 
-        
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(isHotReloadingEnabled, HotReloadToggleKey);

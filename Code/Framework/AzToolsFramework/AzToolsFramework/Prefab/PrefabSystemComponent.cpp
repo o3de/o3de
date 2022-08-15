@@ -813,7 +813,7 @@ namespace AzToolsFramework
             return newLinkId;
         }
 
-        void PrefabSystemComponent::RemoveLink(const LinkId& linkId)
+        bool PrefabSystemComponent::RemoveLink(const LinkId& linkId)
         {
             auto findLinkResult = FindLink(linkId);
             if (!findLinkResult.has_value())
@@ -823,28 +823,27 @@ namespace AzToolsFramework
                     "Link associated by given Id '%llu' doesn't exist in PrefabSystemComponent.",
                     linkId);
 
-                return;
+                return false;
             }
 
             Link& link = findLinkResult->get();
-            [[maybe_unused]] bool result;
-            result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId, link);
-            AZ_Assert(result,
-                "Prefab - PrefabSystemComponent::RemoveLink - "
-                "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
-                "from TemplateToLinkIdsMap.",
-                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId());
 
-            result = RemoveLinkFromTargetTemplate(linkId, link);
-            AZ_Assert(result,
-                "Prefab - PrefabSystemComponent::RemoveLink - "
-                "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
-                "from target Template with Id '%llu'.",
-                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId(), link.GetTargetTemplateId());
+            bool result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId, link);
+
+            result &= RemoveLinkFromTargetTemplate(linkId, link);
+
+            if (!result)
+            {
+                AZ_Assert(
+                    result,
+                    "PrefabSystemComponent::RemoveLink - Failed to remove Link for Instance '%s' from TemplateToLinkIdsMap.",
+                    link.GetInstanceName().c_str());
+                return false;
+            }
 
             m_linkIdMap.erase(linkId);
 
-            return;
+            return true;
         }
 
         TemplateId PrefabSystemComponent::GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const

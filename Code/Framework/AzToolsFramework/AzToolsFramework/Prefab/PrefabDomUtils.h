@@ -186,7 +186,7 @@ namespace AzToolsFramework
              /**
              * Gets the instances DOM value from the given prefab DOM.
              *
-             * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
+             * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
              */
             PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
 

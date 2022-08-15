@@ -178,8 +178,9 @@ namespace AzToolsFramework
             /**
             * Remove the Link associated with the given id from Prefab System Component.
             * @param linkId A unique id of a Link.
+            * @return whether link was successfully removed or not.
             */
-            void RemoveLink(const LinkId& linkId) override;
+            bool RemoveLink(const LinkId& linkId) override;
 
             /**
              * Get id of Template on given file path if it has already been loaded into Prefab System Component.
