@@ -10,14 +10,20 @@
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 
 namespace GradientSignal
 {
+    // This class inherits from EditorWrappedComponentBase instead of EditorGradientComponentBase so that we can have control
+    // over where the Editor-specific parameters for image creation and editing appear in the component relative to the other
+    // runtime-only settings.
     class EditorImageGradientComponent
-        : public EditorGradientComponentBase<ImageGradientComponent, ImageGradientConfig>
+        : public LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>
+        , protected LmbrCentral::DependencyNotificationBus::Handler
+        , private GradientImageCreatorRequestBus::Handler
     {
     public:
-        using BaseClassType = EditorGradientComponentBase<ImageGradientComponent, ImageGradientConfig>;
+        using BaseClassType = LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>;
         AZ_EDITOR_COMPONENT(EditorImageGradientComponent, EditorImageGradientComponentTypeId, BaseClassType);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -28,7 +34,50 @@ namespace GradientSignal
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.svg";
         static constexpr const char* const s_helpUrl = "";
 
+        //! Component overrides ...
+        void Activate() override;
+        void Deactivate() override;
+
         // DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
+
+        //! GradientImageCreatorRequestBus overrides ...
+        AZ::Vector2 GetOutputResolution() const override;
+        void SetOutputResolution(const AZ::Vector2& resolution) override;
+        OutputFormat GetOutputFormat() const override;
+        void SetOutputFormat(OutputFormat outputFormat) override;
+        AZ::IO::Path GetOutputImagePath() const override;
+        void SetOutputImagePath(const AZ::IO::Path& outputImagePath) override;
+
+    protected:
+        enum class ImageCreationOrSelection : uint8_t
+        {
+            UseExistingImage,
+            CreateNewImage
+        };
+
+        AZ::u32 ChangeCreationSelectionChoice();
+        bool GetImageCreationVisibility() const;
+        void CreateImage();
+        bool WriteImage(const AZStd::string& absoluteFileName);
+        bool RefreshImageAssetStatus();
+
+        ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
+
+        // Parameters used for creating new source image assets
+        AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
+        OutputFormat m_outputFormat = OutputFormat::R32;
+        AZ::IO::Path m_outputImagePath;
+
+        // Keep track of the image asset status so that we can know when it has changed.
+        AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
+
+        using BaseClassType::m_component;
+        using BaseClassType::m_configuration;
+
+        AZ::u32 ConfigurationChanged() override;
+
+    private:
+        GradientPreviewer m_previewer;
     };
 }
