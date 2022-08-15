@@ -418,7 +418,7 @@ function(ly_add_googletest)
         PARENT_NAME ${target_name}
         TEST_SUITE ${ly_add_googletest_TEST_SUITE}
         LABELS FRAMEWORK_googletest
-        TEST_COMMAND ${full_test_command} --gtest_output=xml:${report_directory} ${LY_GOOGLETEST_EXTRA_PARAMS}
+        TEST_COMMAND ${full_test_command} --gtest_output=xml:${report_directory} ${LY_GOOGLETEST_EXTRA_PARAMS} --gtest_filter=AssetManagerEbusSafety.OnAssetReady_GetAsset_DoesNotDeadlock
         TEST_LIBRARY googletest
         ${ly_add_googletest_UNPARSED_ARGUMENTS}
         NON_IDE_PARAMS ${non_ide_params}
