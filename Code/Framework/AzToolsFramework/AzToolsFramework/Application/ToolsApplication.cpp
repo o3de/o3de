@@ -377,12 +377,6 @@ namespace AzToolsFramework
         EditorAssetMimeDataContainer::Reflect(context);
         ComponentAssetMimeDataContainer::Reflect(context);
 
-        AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AssetEditor::AssetEditorWindowSettings::Reflect(context);
         AssetEditor::AssetEditorWidgetUserSettings::Reflect(context);
 
