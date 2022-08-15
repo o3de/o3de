@@ -10,8 +10,8 @@
  *
  */
 
-#include <Editor/EditorGradientPainterComponentMode.h>
-#include <GradientSignal/Editor/EditorGradientPainterRequestBus.h>
+#include <Editor/EditorImageGradientComponentMode.h>
+#include <Editor/EditorImageGradientRequestBus.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -21,29 +21,28 @@
 
 namespace GradientSignal
 {
-    EditorGradientPainterComponentMode::EditorGradientPainterComponentMode(
+    EditorImageGradientComponentMode::EditorImageGradientComponentMode(
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
     }
 
-    EditorGradientPainterComponentMode::~EditorGradientPainterComponentMode()
+    EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
-        GradientPainterRequestBus::Event(GetEntityId(), &GradientPainterRequests::SaveImage);
+        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
     }
 
-    AZStd::vector<AzToolsFramework::ActionOverride> EditorGradientPainterComponentMode::PopulateActionsImpl()
+    AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()
     {
-        // MAB TODO: FIXME - what should this return?
         return {};
     }
 
-    AZStd::string EditorGradientPainterComponentMode::GetComponentModeName() const
+    AZStd::string EditorImageGradientComponentMode::GetComponentModeName() const
     {
-        return "Gradient Painter Paint Mode";
+        return "Image Gradient Paint Mode";
     }
 
-    bool EditorGradientPainterComponentMode::HandleMouseInteraction(
+    bool EditorImageGradientComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         bool result = false;
@@ -51,15 +50,18 @@ namespace GradientSignal
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Down)
         {
             AZStd::vector<float>* pixelBuffer;
-            GradientPainterRequestBus::EventResult(pixelBuffer, GetEntityId(), &GradientPainterRequests::GetPixelBuffer);
+            EditorImageGradientRequestBus::EventResult(pixelBuffer, GetEntityId(), &EditorImageGradientRequests::GetPixelBuffer);
 
-            for (auto& pixel : *pixelBuffer)
+            if (pixelBuffer)
             {
-                pixel = (1.0f - pixel);
+                for (auto& pixel : *pixelBuffer)
+                {
+                    pixel = (1.0f - pixel);
+                }
             }
         }
 
-        GradientPainterRequestBus::Event(GetEntityId(), &GradientPainterRequests::RefreshPreview);
+        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::RefreshPreview);
 
         return result;
     }

@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
+#include <Editor/EditorImageGradientComponentMode.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
@@ -40,6 +41,7 @@ namespace GradientSignal
                 ->Field("OutputResolution", &EditorImageGradientComponent::m_outputResolution)
                 ->Field("OutputFormat", &EditorImageGradientComponent::m_outputFormat)
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
+                ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -150,6 +152,14 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::CreateImage)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Create")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_componentModeDelegate,
+                        "Paint Image", "Paint into an image asset")
+                        // This needs to be a larger number than the one in EditorWrappedComponentBase so that the element
+                        // is drawn below the ImageGradientComponent configuration.
+                        ->Attribute(AZ::Edit::Attributes::DisplayOrder, 10)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
                     ;
 
             }
@@ -159,6 +169,7 @@ namespace GradientSignal
     void EditorImageGradientComponent::Activate()
     {
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
+        EditorImageGradientRequestBus::Handler::BusConnect(GetEntityId());
 
         BaseClassType::Activate();
 
@@ -166,15 +177,20 @@ namespace GradientSignal
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
             
         m_currentImageAssetStatus = m_configuration.m_imageAsset.GetStatus();
+
+        m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
+        m_componentModeDelegate.Disconnect();
 
         GradientImageCreatorRequestBus::Handler::BusDisconnect();
         m_previewer.Deactivate();
 
+        EditorImageGradientRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         BaseClassType::Deactivate();
@@ -198,38 +214,52 @@ namespace GradientSignal
         }
     }
 
+    bool EditorImageGradientComponent::ImageHasPendingJobs(const AZ::Data::AssetId& assetId)
+    {
+        // If it's not a valid asset, it doesn't have any pending jobs.
+        if (!assetId.IsValid())
+        {
+            return false;
+        }
+
+        AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
+        AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
+            jobOutcome,
+            &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID,
+            assetId,
+            false,
+            false);
+
+        if (jobOutcome.IsSuccess())
+        {
+            // If there are any jobs that are pending, we'll set our current status based on that instead of
+            // on the asset loading status.
+            auto jobInfo = jobOutcome.GetValue();
+            for (auto& job : jobInfo)
+            {
+                switch (job.m_status)
+                {
+                case AzToolsFramework::AssetSystem::JobStatus::Queued:
+                case AzToolsFramework::AssetSystem::JobStatus::InProgress:
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
     bool EditorImageGradientComponent::RefreshImageAssetStatus()
     {
         bool statusChanged = (m_currentImageAssetStatus != m_configuration.m_imageAsset.GetStatus());
         m_currentImageAssetStatus = m_configuration.m_imageAsset.GetStatus();
 
         // If there's a valid image selected, check to see if it has any current AP jobs running.
-        if (m_configuration.m_imageAsset.GetId().IsValid())
+        if (ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
         {
-            AZ::Outcome<AzToolsFramework::AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-            AzToolsFramework::AssetSystemJobRequestBus::BroadcastResult(
-                jobOutcome,
-                &AzToolsFramework::AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID,
-                m_configuration.m_imageAsset.GetId(),
-                false,
-                false);
-
-            if (jobOutcome.IsSuccess())
-            {
-                // If there are any jobs that are pending, we'll set our current status based on that instead of
-                // on the asset loading status.
-                auto jobInfo = jobOutcome.GetValue();
-                for (auto& job : jobInfo)
-                {
-                    switch (job.m_status)
-                    {
-                    case AzToolsFramework::AssetSystem::JobStatus::Queued:
-                    case AzToolsFramework::AssetSystem::JobStatus::InProgress:
-                        m_configuration.SetImageAssetPropertyName("Image Asset (processing)");
-                        return statusChanged;
-                    }
-                }
-            }
+            m_configuration.SetImageAssetPropertyName("Image Asset (processing)");
+            return statusChanged;
         }
 
         // No pending asset processing jobs, so just use the current load status of the asset.
@@ -285,6 +315,17 @@ namespace GradientSignal
         return !m_configuration.GetImageOptionsVisibility();
     }
 
+    AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
+    {
+        // Only show the image painting button while we're using an image, not while we're creating one.
+        return (m_configuration.GetImageOptionsVisibility()
+                && m_configuration.m_imageAsset.IsReady()
+                && !ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
+            ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
+            : AZ::Edit::PropertyVisibility::Hide;
+
+    }
+
     AZ::Vector2 EditorImageGradientComponent::GetOutputResolution() const
     {
         return m_outputResolution;
@@ -314,6 +355,27 @@ namespace GradientSignal
     {
         m_outputImagePath = outputImagePath;
     }
+
+    bool EditorImageGradientComponent::InComponentMode()
+    {
+        return m_componentModeDelegate.AddedToComponentMode();
+    }
+
+    void EditorImageGradientComponent::RefreshPreview()
+    {
+        m_previewer.RefreshPreview();
+    }
+
+    void EditorImageGradientComponent::SaveImage()
+    {
+        CreateImage();
+    }
+
+    AZStd::vector<float>* EditorImageGradientComponent::GetPixelBuffer()
+    {
+        return nullptr;
+    }
+
 
     void EditorImageGradientComponent::CreateImage()
     {

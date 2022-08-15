@@ -14,7 +14,7 @@
 
 namespace GradientSignal
 {
-    class GradientPainterRequests
+    class EditorImageGradientRequests
         : public AZ::ComponentBus
     {
     public:
@@ -25,5 +25,5 @@ namespace GradientSignal
         virtual AZStd::vector<float>* GetPixelBuffer() = 0;
     };
 
-    using GradientPainterRequestBus = AZ::EBus<GradientPainterRequests>;
+    using EditorImageGradientRequestBus = AZ::EBus<EditorImageGradientRequests>;
 }

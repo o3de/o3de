@@ -11,6 +11,11 @@
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <GradientSignal/Components/ImageGradientComponent.h>
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
+
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+
+#include <Editor/EditorImageGradientRequestBus.h>
 
 namespace GradientSignal
 {
@@ -21,6 +26,7 @@ namespace GradientSignal
         : public LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
+        , private EditorImageGradientRequestBus::Handler
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>;
@@ -56,11 +62,22 @@ namespace GradientSignal
             CreateNewImage
         };
 
+
+        void RefreshPreview() override;
+        void SaveImage() override;
+        AZStd::vector<float>* GetPixelBuffer() override;
+
         AZ::u32 ChangeCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
+        AZ::Crc32 GetPaintModeVisibility() const;
+
         void CreateImage();
         bool WriteImage(const AZStd::string& absoluteFileName);
+
         bool RefreshImageAssetStatus();
+        static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
+
+        bool InComponentMode();
 
         ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
 
@@ -78,6 +95,11 @@ namespace GradientSignal
         AZ::u32 ConfigurationChanged() override;
 
     private:
+        //! Delegates the handling of component editing mode to a paint controller.
+        using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
+        ComponentModeDelegate m_componentModeDelegate;
+
+        //! Preview of the gradient image
         GradientPreviewer m_previewer;
     };
 }

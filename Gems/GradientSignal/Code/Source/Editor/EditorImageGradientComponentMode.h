@@ -16,12 +16,12 @@
 
 namespace GradientSignal
 {
-    class EditorGradientPainterComponentMode
+    class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
     {
     public:
-        EditorGradientPainterComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
-        ~EditorGradientPainterComponentMode() override;
+        EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
+        ~EditorImageGradientComponentMode() override;
 
         // EditorBaseComponentMode
         void Refresh() override
