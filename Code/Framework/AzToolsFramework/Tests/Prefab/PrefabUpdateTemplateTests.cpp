@@ -146,7 +146,7 @@ namespace UnitTest
         EntityAlias entityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0));
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
