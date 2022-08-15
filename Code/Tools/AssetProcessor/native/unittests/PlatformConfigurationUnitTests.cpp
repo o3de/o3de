@@ -86,9 +86,9 @@ void PlatformConfigurationTests::StartTest()
 
         rec.m_name = "txt files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
-        rec.m_platformSpecs.insert("fandago", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"fandago", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
 
         // test dual-recognisers - two recognisers for the same pattern.

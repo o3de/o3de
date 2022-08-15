@@ -16,7 +16,6 @@
 #include <QMenu>
 #include <QObject>
 #include <QString>
-#include <QtWidgets/QMessageBox>
 
 // AzCore
 #include <AzCore/std/string/wildcard.h>
@@ -32,6 +31,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -42,6 +42,7 @@
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/Slice/SliceRelationshipBus.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
@@ -261,15 +262,51 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
 }
 
+void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
+{
+    using namespace AzToolsFramework::AssetBrowser;
+
+    AZStd::string folderPath;
+
+    AzFramework::StringFunc::Path::GetFolderPath(fullFilePath.c_str(), folderPath);
+
+    AZ::Uuid sourceID = AZ::Uuid::CreateNull();
+    SourceFileCreatorList creators;
+    AssetBrowserInteractionNotificationBus::Broadcast(
+        &AssetBrowserInteractionNotificationBus::Events::AddSourceFileCreators, folderPath.c_str(), sourceID, creators);
+    if (!creators.empty())
+    {
+        QMenu* createMenu = menu->addMenu(QObject::tr("Create"));
+        for (const SourceFileCreatorDetails& creatorDetails : creators)
+        {
+            if (creatorDetails.m_creator)
+            {
+                createMenu->addAction(creatorDetails.m_iconToUse, QObject::tr(creatorDetails.m_displayText.c_str()), [sourceID, fullFilePath, creatorDetails]()
+                {
+                    creatorDetails.m_creator(fullFilePath.c_str(), sourceID);
+                });
+            }
+        }
+    }
+}
+
 void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
 {
     using namespace AzToolsFramework::AssetBrowser;
+
+    AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*> (caller);
+    if (!treeView)
+    {
+        return;
+    }
 
     AssetBrowserEntry* entry = entries.empty() ? nullptr : entries.front();
     if (!entry)
     {
         return;
     }
+    bool calledFromAssetBrowser = treeView->GetName() == "AssetBrowserTreeView_main" ? true : false;
+    size_t numOfEntries = entries.size();
 
     AZStd::string fullFilePath;
     AZStd::string extension;
@@ -292,96 +329,139 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
-        // Add the "Open" menu item.
-        // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't openable!
-        // for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the operating system to view them.
-        // If the only opener that can open that file has no m_opener, then it is not openable.
-        SourceFileOpenerList openers;
-        AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowserInteractionNotificationBus::Events::AddSourceFileOpeners, fullFilePath.c_str(), sourceID, openers);
-        bool validOpenersFound = false;
-        bool vetoOpenerFound = false;
-        for (const SourceFileOpenerDetails& openerDetails : openers)
+        // Context menu entries that only make sense when there is only one selection should go in here
+        // For example, open and rename
+        if (numOfEntries == 1)
         {
-            if (openerDetails.m_opener) 
-            {
-                // we found a valid opener (non-null).  This means that the system is saying that it knows how to internally
-                // edit this source file and has a custom editor for it.
-                validOpenersFound = true;
-            }
-            else
-            {
-                // if we get here it means someone intentionally registered a callback with a null function pointer
-                // the API treats this as a 'veto' opener - meaning that the system wants us NOT to allow the operating system
-                // to open this source file as a default fallback.
-                vetoOpenerFound = true;
-            }
-        }
-
-        if (validOpenersFound)
-        {
-            // if we get here then there is an opener installed for this kind of asset
-            // and it is not null, meaning that it is not vetoing our ability to open the file.
+            // Add the "Open" menu item.
+            // Note that source file openers are allowed to "veto" the showing of the "Open" menu if it is 100% known that they aren't
+            // openable! for example, custom data formats that are made by Open 3D Engine that can not have a program associated in the
+            // operating system to view them. If the only opener that can open that file has no m_opener, then it is not openable.
+            SourceFileOpenerList openers;
+            AssetBrowserInteractionNotificationBus::Broadcast(
+                &AssetBrowserInteractionNotificationBus::Events::AddSourceFileOpeners, fullFilePath.c_str(), sourceID, openers);
+            bool validOpenersFound = false;
+            bool vetoOpenerFound = false;
             for (const SourceFileOpenerDetails& openerDetails : openers)
             {
-                // bind that function to the current loop element.
-                if (openerDetails.m_opener) // only VALID openers with an actual callback.
+                if (openerDetails.m_opener)
                 {
-                    menu->addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), [sourceID, fullFilePath, openerDetails]()
-                    {
-                        openerDetails.m_opener(fullFilePath.c_str(), sourceID);
-                    });
+                    // we found a valid opener (non-null).  This means that the system is saying that it knows how to internally
+                    // edit this source file and has a custom editor for it.
+                    validOpenersFound = true;
+                }
+                else
+                {
+                    // if we get here it means someone intentionally registered a callback with a null function pointer
+                    // the API treats this as a 'veto' opener - meaning that the system wants us NOT to allow the operating system
+                    // to open this source file as a default fallback.
+                    vetoOpenerFound = true;
                 }
             }
-        }
-        
-        // we always add the default "open with your operating system" unless a veto opener is found
-        if (!vetoOpenerFound)
-        {
-            // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
-            menu->addAction(QObject::tr("Open with associated application..."), [fullFilePath]()
+
+            if (validOpenersFound)
             {
-                OpenWithOS(fullFilePath);
-            });
-        }
-
-        AZStd::vector<const ProductAssetBrowserEntry*> products;
-        entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
-
-        // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
-        if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
-        {
-            AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
-
-            // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
-            if (!products.empty())
-            {
-                const ProductAssetBrowserEntry* productEntry = products[0];
-                menu->addAction("Open in Slice Relationship View", [productEntry]()
+                // if we get here then there is an opener installed for this kind of asset
+                // and it is not null, meaning that it is not vetoing our ability to open the file.
+                for (const SourceFileOpenerDetails& openerDetails : openers)
                 {
-                    QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
-
-                    const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
-
-                    AzToolsFramework::SliceRelationshipRequestBus::Broadcast(&AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
-                });
+                    // bind that function to the current loop element.
+                    if (openerDetails.m_opener) // only VALID openers with an actual callback.
+                    {
+                        menu->addAction(
+                            openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()),
+                            [sourceID, fullFilePath, openerDetails]()
+                            {
+                                openerDetails.m_opener(fullFilePath.c_str(), sourceID);
+                            });
+                    }
+                }
             }
-        }
-        else if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
-        {
-            QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
-            AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
-        }
 
-        if (products.empty())
-        {
-            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+            // we always add the default "open with your operating system" unless a veto opener is found
+            if (!vetoOpenerFound)
+            {
+                // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
+                menu->addAction(
+                    QObject::tr("Open with associated application..."),
+                    [fullFilePath]()
+                    {
+                        OpenWithOS(fullFilePath);
+                    });
+            }
+
+            AZStd::vector<const ProductAssetBrowserEntry*> products;
+            entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
+
+            // slice source files need to react by adding additional menu items, regardless of status of compile or presence of products.
+            if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str(), false))
+            {
+                AzToolsFramework::SliceUtilities::CreateSliceAssetContextMenu(menu, fullFilePath);
+
+                // SliceUtilities is in AZToolsFramework and can't open viewports, so add the relationship view open command here.
+                if (!products.empty())
+                {
+                    const ProductAssetBrowserEntry* productEntry = products[0];
+                    menu->addAction(
+                        "Open in Slice Relationship View",
+                        [productEntry]()
+                        {
+                            QtViewPaneManager::instance()->OpenPane(LyViewPane::SliceRelationships);
+
+                            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(productEntry);
+
+                            AzToolsFramework::SliceRelationshipRequestBus::Broadcast(
+                                &AzToolsFramework::SliceRelationshipRequests::OnSliceRelationshipViewRequested, product->GetAssetId());
+                        });
+                }
+            }
+            else if (AzFramework::StringFunc::Equal(
+                         extension.c_str(), AzToolsFramework::Layers::EditorLayerComponent::GetLayerExtensionWithDot().c_str(), false))
+            {
+                QString levelPath = Path::GetPath(GetIEditor()->GetDocument()->GetActivePathName());
+                AzToolsFramework::Layers::EditorLayerComponent::CreateLayerAssetContextMenu(menu, fullFilePath, levelPath);
+            }
+
+            if (!products.empty() || (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
-            return;
+            if (calledFromAssetBrowser)
+            {
+                // Add Rename option
+                QAction* action = menu->addAction(
+                    QObject::tr("Rename asset"),
+                    [treeView]()
+                    {
+                        treeView->RenameEntry();
+                    });
+                action->setShortcut(Qt::Key_F2);
+                action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+            }
         }
-      
-        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+
+        if (calledFromAssetBrowser)
+        {
+            // Add Delete option
+            QAction* action = menu->addAction(
+                QObject::tr("Delete asset%1").arg(numOfEntries > 1 ? "s" : ""),
+                [treeView]()
+                {
+                    treeView->DeleteEntries();
+                });
+            action->setShortcut(QKeySequence::Delete);
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+            // Add Duplicate option
+            action = menu->addAction(
+                QObject::tr("Duplicate asset"),
+                [treeView]()
+                {
+                    treeView->DuplicateEntries();
+                });
+            action->setShortcut(QKeySequence("Ctrl+D"));
+            action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        }
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
@@ -389,6 +469,8 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         fullFilePath = entry->GetFullPath();
 
         CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
+
+        AddCreateMenu(menu, fullFilePath);
     }
     break;
     default:
@@ -534,7 +616,10 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     }
 }
 
-void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+void AzAssetBrowserRequestHandler::AddSourceFileOpeners(
+    [[maybe_unused]] const char* fullSourceFileName,
+    const AZ::Uuid& sourceUUID,
+    AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
 {
     using namespace AzToolsFramework;
 
@@ -545,32 +630,8 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
     {
         return;
     }
-    QString assetGroup;
-    AZ::AssetTypeInfoBus::EventResult(assetGroup, fullDetails->GetPrimaryAssetType(), &AZ::AssetTypeInfo::GetGroup);
 
-    if (AZStd::wildcard_match("*.lua", fullSourceFileName))
-    {
-        AZStd::string fullName(fullSourceFileName);
-        // LUA files can be opened with the O3DE LUA editor.
-        openers.push_back(
-            {
-                "O3DE_LUA_Editor",
-                "Open in Open 3D Engine LUA Editor...",
-                QIcon(),
-                [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
-                {
-                    // we know how to handle LUA files (open with the lua Editor.
-                    EditorRequestBus::Broadcast(&EditorRequests::LaunchLuaEditor, fullSourceFileNameInCallback);
-                }
-            });
-    }
-
-    if (!openers.empty())
-    {
-        return; // we found one
-    }
-    
-    // if we still havent found one, check to see if it is a default "generic" serializable asset
+    // check to see if it is a default "generic" serializable asset
     // and open the asset editor if so. Check whether the Generic Asset handler handles this kind of asset.
     // to do so we need the actual type of that asset, which requires an asset type, not a source type.
     AZ::Data::AssetManager& manager = AZ::Data::AssetManager::Instance();
@@ -616,6 +677,10 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
             break; // no need to proceed further
         }
     }
+}
+
+void AzAssetBrowserRequestHandler::AddSourceFileCreators([[maybe_unused]] const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+{
 }
 
 void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled)

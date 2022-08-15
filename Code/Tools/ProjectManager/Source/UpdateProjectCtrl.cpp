@@ -112,12 +112,6 @@ namespace O3DE::ProjectManager
     {
         m_stack->setCurrentIndex(ScreenOrder::Settings);
         Update();
-
-        // Gather the available gems that will be shown in the gem catalog.
-        m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
-
-        // make sure the gem repo has the latest repo details
-        m_gemRepoScreen->Reinit();
     }
 
     void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
@@ -125,10 +119,12 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
+            m_gemRepoScreen->Reinit();
             Update();
         }
         else if (screen == ProjectManagerScreen::ProjectGemCatalog)
         {
+            m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
@@ -147,6 +143,7 @@ namespace O3DE::ProjectManager
     {
         if (UpdateProjectSettings(true))
         {
+            m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
@@ -263,7 +260,7 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::StandardButton warningResult = QMessageBox::warning(
                     this,
-                    QObject::tr("Unsaved Changes!"),
+                    QObject::tr("Unsaved Changes"),
                     QObject::tr("Would you like to save your changes to project settings?"),
                     QMessageBox::No | QMessageBox::Yes
                 );
@@ -280,36 +277,33 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            // Check if project path has changed and move it
             // Move project first to avoid trying to update settings at the new location before it has been moved there
-            if (newProjectSettings.m_path != m_projectInfo.m_path)
+            if (QDir(newProjectSettings.m_path) != QDir(m_projectInfo.m_path))
             {
                 if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path, this))
                 {
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
                 }
-
-                emit NotifyBuildProject(newProjectSettings);
             }
 
-            // Update project if settings changed
+            if (auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings); !result.IsSuccess())
             {
-                auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                if (!result.IsSuccess())
-                {
-                    QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
-                    return false;
-                }
+                QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
+                return false;
             }
 
-            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
+            if (QDir(newProjectSettings.m_path) != QDir(m_projectInfo.m_path) ||
+                newProjectSettings.m_projectName != m_projectInfo.m_projectName ||
+                QDir(newProjectSettings.m_enginePath) != QDir(m_projectInfo.m_enginePath))
             {
-                // Remove project build successfully paths for both old and new project names
+                // Remove project build successfully paths for both old and new projects
                 // because a full rebuild is required when moving projects
                 auto settings = SettingsInterface::Get();
                 settings->SetProjectBuiltSuccessfully(m_projectInfo, false);
                 settings->SetProjectBuiltSuccessfully(newProjectSettings, false);
+
+                emit NotifyBuildProject(newProjectSettings);
             }
 
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())

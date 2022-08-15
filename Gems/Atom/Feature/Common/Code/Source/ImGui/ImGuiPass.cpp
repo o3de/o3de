@@ -685,11 +685,7 @@ namespace AZ
             context.GetCommandList()->SetViewport(m_viewportState);
             context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
 
-            uint32_t numDraws = aznumeric_cast<uint32_t>(m_draws.size());
-            uint32_t firstIndex = (context.GetCommandListIndex() * numDraws) / context.GetCommandListCount();
-            uint32_t lastIndex = ((context.GetCommandListIndex() + 1) * numDraws) / context.GetCommandListCount();
-
-            for (uint32_t i = firstIndex; i < lastIndex; ++i)
+            for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 RHI::DrawItem drawItem;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
@@ -700,7 +696,7 @@ namespace AZ
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
 
-                context.GetCommandList()->Submit(drawItem);
+                context.GetCommandList()->Submit(drawItem, i);
             }
         }
 
@@ -760,7 +756,7 @@ namespace AZ
                     memcpy(vertexBufferData + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
                     vertexBufferOffset += drawList->VtxBuffer.size();
 
-                    ++drawCount;
+                    drawCount += drawList->CmdBuffer.size();
                 }
             }
 

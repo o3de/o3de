@@ -149,8 +149,10 @@ namespace AZ
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem)
+        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             switch (copyItem.m_type)
             {
 
@@ -294,8 +296,10 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem)
+        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             if (!CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
@@ -320,9 +324,11 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
+        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
+            ValidateSubmitIndex(submitIndex);
+
             ID3D12GraphicsCommandList4* commandList = static_cast<ID3D12GraphicsCommandList4*>(GetCommandList());
 
             // manually clear the Dispatch bindings and pipeline state since it is shared with the ray tracing pipeline
@@ -402,8 +408,10 @@ namespace AZ
 #endif
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem)
+        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             if (!CommitShaderResources<RHI::PipelineStateType::Draw>(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");

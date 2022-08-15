@@ -23,7 +23,7 @@ namespace UnitTests
         }
 
     protected:
-        bool Start(AssetProcessor::BuilderPurpose purpose) override;
+        AZ::Outcome<void, AZStd::string> Start(AssetProcessor::BuilderPurpose purpose) override;
     };
 
     class TestBuilderManager : public AssetProcessor::BuilderManager
@@ -34,8 +34,8 @@ namespace UnitTests
         int GetBuilderCreationCount() const;
 
     protected:
-        AZStd::shared_ptr<AssetProcessor::Builder> AddNewBuilder() override;
-        
+        AZStd::shared_ptr<AssetProcessor::Builder> AddNewBuilder(AssetProcessor::BuilderPurpose purpose) override;
+
         int m_connectionCounter = 0;
     };
 }

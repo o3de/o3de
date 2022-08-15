@@ -231,6 +231,8 @@ private Q_SLOTS:
     void OnOpenAssetImporterManager(const QStringList& list);
 
 private:
+    friend class EditorActionsHandler;
+
     bool IsGemEnabled(const QString& uuid, const QString& version) const;
 
     // Broadcast the SystemTick event

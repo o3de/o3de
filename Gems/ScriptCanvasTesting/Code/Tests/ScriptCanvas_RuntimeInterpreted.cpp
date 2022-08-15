@@ -88,6 +88,7 @@ TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
     ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
+// disabled due to lack of confirming known null on nodes that are not BC method nodes
 TEST_F(ScriptCanvasTestFixture, DISABLED_ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
@@ -883,6 +884,12 @@ TEST_F(ScriptCanvasTestFixture, InterpretedDivideByNumber)
 {
     RunUnitTestGraph("LY_SC_UnitTest_DivideByNumber");
 }
+
+// move to in-editor test, where (required) assetids are available
+// TEST_F(ScriptCanvasTestFixture, InterpretedUseLocallyDefinedFunction)
+// {
+//     RunUnitTestGraph("LY_SC_UnitTest_UseLocallyDefinedFunction", ExecutionMode::Interpreted);
+//}
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPathologicalFlowOfControl)
 {

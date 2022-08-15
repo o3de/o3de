@@ -60,7 +60,6 @@ namespace ScriptCanvas
     static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
-
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
@@ -358,6 +357,11 @@ namespace ScriptCanvas
 
         static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
+        static SourceHandle FromRelativePathAndScenFolder
+            ( AZStd::string_view relativePath
+            , AZStd::string_view scanFolder
+            , const AZ::Uuid& sourceId);
+
         static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
 
         SourceHandle();
@@ -368,6 +372,7 @@ namespace ScriptCanvas
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
 
+        // this can be empty, even if the relative path is not
         const AZ::IO::Path& AbsolutePath() const;
 
         bool AnyEquals(const SourceHandle& other) const;
@@ -395,7 +400,7 @@ namespace ScriptCanvas
 
         bool operator!=(const SourceHandle& other) const;
 
-        const AZ::IO::Path& Path() const;
+        const AZ::IO::Path& RelativePath() const;
 
         bool PathEquals(const SourceHandle& other) const;
 
@@ -479,7 +484,7 @@ namespace AZStd
         {
             size_t h = 0;
             hash_combine(h, handle.Id());
-            hash_combine(h, handle.Path());
+            hash_combine(h, handle.RelativePath());
             hash_combine(h, handle.Get());
             return h;
         }

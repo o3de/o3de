@@ -11,6 +11,14 @@ o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLAT
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED / PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED
 
+if(PAL_TRAIT_AFTERMATH_AVAILABLE)
+    set(USE_NSIGHT_AFTERMATH_DEFINE $<IF:$<CONFIG:release>,"","USE_NSIGHT_AFTERMATH">)
+    set(AFTERMATH_BUILD_DEPENDENCY "3rdParty::Aftermath")
+else()
+    set(USE_NSIGHT_AFTERMATH_DEFINE "")
+    set(AFTERMATH_BUILD_DEPENDENCY "")
+endif()
+
 if(PAL_TRAIT_ATOM_RHI_VULKAN_TARGETS_ALREADY_DEFINED)
     return() # Vulkan targets already defined in PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
 endif()
@@ -113,6 +121,10 @@ ly_add_target(
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
             3rdParty::glad_vulkan
+            ${AFTERMATH_BUILD_DEPENDENCY}
+    COMPILE_DEFINITIONS 
+        PRIVATE
+            ${USE_NSIGHT_AFTERMATH_DEFINE}
 )
 
 ly_add_target(
@@ -140,18 +152,14 @@ ly_add_target(
         atom_rhi_vulkan_glad_files.cmake
         ${pal_source_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-            ${pal_source_dir}
         PUBLIC
+            Include
             Include/Atom/RHI.Loader/Glad
             ${pal_include_dir}
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Atom_RHI_Vulkan.Reflect
         PUBLIC
-            Gem::Atom_RHI.Reflect
             3rdParty::glad_vulkan
 )
 

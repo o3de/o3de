@@ -112,6 +112,25 @@ AzQtComponents--Card[selected="true"][expanded="false"] > AzQtComponents--CardHe
     border-radius: 2px
 }
 
+AzQtComponents--Card[class~="ContainerCard"]
+{
+    border: none;
+    border-image: none;
+}
+
+AzQtComponents--Card[class~="ContainerCard"] > #contentContainer
+{
+    background-color: transparent;
+    border: none;
+}
+
+AzQtComponents--CardHeader[class~="ContainerCardHeader"]
+{
+    background-color: #333333;
+    border-radius: 0px;
+    border: none;
+}
+
 .primaryCardHeader
 {
     background-color: #333333;

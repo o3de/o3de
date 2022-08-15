@@ -19,7 +19,6 @@
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
@@ -352,7 +351,7 @@ namespace Terrain
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
 
-        const uint8_t lodCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
         
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckLodGridsForUpdate().
@@ -542,9 +541,9 @@ namespace Terrain
     {
         if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
         {
-            AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
+            AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                worldBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
+                heightBounds, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightBounds);
 
             float queryResolution = 1.0f;
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -552,20 +551,19 @@ namespace Terrain
 
             bool gridSizeChanged = UpdateGridSize(m_config.m_firstLodDistance);
 
-            // Sectors need to be rebuilt if the sample spacing changes.
-            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution) || gridSizeChanged;
+            // Sectors need to be rebuilt when certain settings change.
+            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution) || (heightBounds != m_worldHeightBounds) || gridSizeChanged;
 
-            m_worldBounds = worldBounds;
+            m_worldHeightBounds = heightBounds;
             m_sampleSpacing = queryResolution;
 
             if (dirtyRegion.IsValid())
             {
-                AZ::Aabb clampedDirtyRegion = dirtyRegion.GetClamped(m_worldBounds);
                 if (!m_rebuildSectors)
                 {
                     // Rebuild any sectors in the dirty region if they aren't all being rebuilt
                     AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate(m_sectorLods.size());
-                    ForOverlappingSectors(clampedDirtyRegion,
+                    ForOverlappingSectors(dirtyRegion,
                         [&sectorsToUpdate](Sector& sectorData, uint32_t lodLevel)
                         {
                             sectorsToUpdate.at(lodLevel).push_back(&sectorData);
@@ -577,7 +575,7 @@ namespace Terrain
                     }
                 }
 
-                UpdateRaytracingData(clampedDirtyRegion);
+                UpdateRaytracingData(dirtyRegion);
             }
         }
     }
@@ -771,7 +769,6 @@ namespace Terrain
         }
 
         m_raytracingIndexBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32_UINT, rayTracingIndicesCount, raytracingIndices.data(), "TerrainRaytracingIndices");
-        m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightNormalVertex>& meshHeightsNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere)
@@ -792,7 +789,7 @@ namespace Terrain
         (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             static constexpr float HeightDoesNotExistValue = -1.0f;
-            const float height = surfacePoint.m_position.GetZ() - m_worldBounds.GetMin().GetZ();
+            const float height = surfacePoint.m_position.GetZ() - m_worldHeightBounds.m_min;
             heights.at(yIndex * querySamplesX + xIndex) = terrainExists ? height : HeightDoesNotExistValue;
             terrainExistsAnywhere = terrainExistsAnywhere || terrainExists;
         };
@@ -813,11 +810,12 @@ namespace Terrain
             return;
         }
 
-        const float rcpWorldZ = 1.0f / m_worldBounds.GetExtents().GetZ();
+        float zExtents = (m_worldHeightBounds.m_max - m_worldHeightBounds.m_min);
+        const float rcpWorldZ = 1.0f / zExtents;
         const float vertexSpacing2 = request.m_vertexSpacing * 2.0f;
 
         // initialize min/max heights to the max/min possible values so they're immediately updated when a valid point is found.
-        float minHeight = m_worldBounds.GetExtents().GetZ();
+        float minHeight = zExtents;
         float maxHeight = 0.0f;
 
         // float versions of int max to make sure a int->float conversion doesn't happen at each loop iteration.
@@ -916,8 +914,8 @@ namespace Terrain
         {
             float width = (request.m_samplesX - 1) * request.m_vertexSpacing;
             float height = (request.m_samplesY - 1) * request.m_vertexSpacing;
-            AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldBounds.GetMin().GetZ() + minHeight);
-            AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldBounds.GetMin().GetZ() + maxHeight);
+            AZ::Vector3 aabbMin = AZ::Vector3(request.m_worldStartPosition.GetX(), request.m_worldStartPosition.GetY(), m_worldHeightBounds.m_min + minHeight);
+            AZ::Vector3 aabbMax = AZ::Vector3(aabbMin.GetX() + width, aabbMin.GetY() + height, m_worldHeightBounds.m_min + maxHeight);
             meshAabb.Set(aabbMin, aabbMax);
         }
     }
@@ -998,8 +996,9 @@ namespace Terrain
 
                 // Check against the area of terrain that could appear in this sector for any terrain areas. If none exist then skip updating the mesh.
                 bool hasTerrain = false;
-                AZ::Vector3 minAabb = AZ::Vector3(sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters, m_worldBounds.GetMin().GetZ());
-                AZ::Aabb sectorBounds = AZ::Aabb::CreateFromMinMax(minAabb, minAabb + AZ::Vector3(gridMeters, gridMeters, m_worldBounds.GetZExtent()));
+                AZ::Vector3 minAabb = AZ::Vector3(sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters, m_worldHeightBounds.m_min);
+                AZ::Aabb sectorBounds = AZ::Aabb::CreateFromMinMax(minAabb,
+                    minAabb + AZ::Vector3(gridMeters, gridMeters, m_worldHeightBounds.m_max - m_worldHeightBounds.m_min));
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     hasTerrain, &AzFramework::Terrain::TerrainDataRequests::TerrainAreaExistsInBounds, sectorBounds);
 
@@ -1024,15 +1023,33 @@ namespace Terrain
         }
 
         // remove existing mesh from the raytracing scene
-        rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
+        if (!m_rayTracingMeshUuid.IsNull())
+        {
+            rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
+            m_rayTracingMeshUuid = AZ::Uuid::CreateNull();
+        }
+
+        float queryResolution = 1.0f;
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+
+        // For now only create a small patch of terrain data for ray tracing around the origin as a test case.
+        const AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
+        const AZ::Aabb updateBounds = bounds.GetClamped(raytracingBounds);
+        if (updateBounds.GetXExtent() <= 0.0f || updateBounds.GetYExtent() <= 0.0f)
+        {
+            // No raytracing data to update.
+            return;
+        }
 
         // build the new position and normal buffers
         SectorDataRequest request;
-        request.m_worldStartPosition = AZ::Vector2(bounds.GetMin());
-        request.m_vertexSpacing = AZStd::GetMax(m_worldBounds.GetXExtent(), m_worldBounds.GetYExtent()) / RayTracingQuads1D;
-        request.m_samplesX = aznumeric_cast<uint16_t>(bounds.GetXExtent() / request.m_vertexSpacing) + 1;
-        request.m_samplesY = aznumeric_cast<uint16_t>(bounds.GetYExtent() / request.m_vertexSpacing) + 1;
-        request.m_samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT;
+
+        request.m_worldStartPosition = AZ::Vector2(updateBounds.GetMin());
+        request.m_vertexSpacing = queryResolution;
+        request.m_samplesX = aznumeric_cast<uint16_t>(updateBounds.GetXExtent() / queryResolution) + 1;
+        request.m_samplesY = aznumeric_cast<uint16_t>(updateBounds.GetYExtent() / queryResolution) + 1;
+        request.m_samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
 
         AZStd::vector<HeightNormalVertex> meshHeightsNormals;
         AZ::Aabb outAabb;
@@ -1062,12 +1079,13 @@ namespace Terrain
             return;
         }
 
-        uint32_t xMin = aznumeric_cast<uint32_t>((bounds.GetMin().GetX() - m_worldBounds.GetMin().GetX()) / request.m_vertexSpacing);
+        uint32_t xMin = aznumeric_cast<uint32_t>((updateBounds.GetMin().GetX() - raytracingBounds.GetMin().GetX()) / request.m_vertexSpacing);
         uint32_t xMax = xMin + request.m_samplesX;
-        uint32_t yMin = aznumeric_cast<uint32_t>((bounds.GetMin().GetY() - m_worldBounds.GetMin().GetY()) / request.m_vertexSpacing);
+        uint32_t yMin = aznumeric_cast<uint32_t>((updateBounds.GetMin().GetY() - raytracingBounds.GetMin().GetY()) / request.m_vertexSpacing);
         uint32_t yMax = yMin + request.m_samplesY;
 
         constexpr uint32_t RayTracingVertices1D = RayTracingQuads1D + 1;
+        float zExtent = m_worldHeightBounds.m_max - m_worldHeightBounds.m_min;
 
         for (uint32_t y = yMin; y < yMax; ++y)
         {
@@ -1075,12 +1093,12 @@ namespace Terrain
             {
                 uint32_t index = y * RayTracingVertices1D + x;
                 uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
-                AZ::Vector2 xyPosition = AZ::Vector2(m_worldBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
+                AZ::Vector2 xyPosition = AZ::Vector2(raytracingBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
 
                 float floatHeight = 0.0f;
                 if (meshHeightsNormals.at(localIndex).m_height != NoTerrainVertexHeight)
                 {
-                    floatHeight = meshHeightsNormals.at(localIndex).m_height / float(AZStd::numeric_limits<uint16_t>::max()) * m_worldBounds.GetZExtent();
+                    floatHeight = meshHeightsNormals.at(localIndex).m_height / float(AZStd::numeric_limits<uint16_t>::max()) * zExtent;
                 }
 
                 positions[index] = { xyPosition.GetX(), xyPosition.GetY(), floatHeight };
@@ -1137,6 +1155,7 @@ namespace Terrain
 
         // add the submesh to the raytracing scene
         // Note: we use the terrain mesh UUID as the AssetId since it is dynamically created and will not have multiple instances
+        m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
         rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, AZ::Data::AssetId(m_rayTracingMeshUuid), subMeshVector, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
     }
 

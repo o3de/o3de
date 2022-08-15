@@ -52,10 +52,9 @@ namespace EMotionFX
          * @param numVerts Number of vertices which submesh holds.
          * @param numIndices Number of indices which submesh holds.
          * @param numPolygons The number of polygons inside this submesh.
-         * @param materialIndex The material.
          * @param numBones The number of bones inside the submesh.
          */
-        static SubMesh* Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones);
+        static SubMesh* Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, size_t numBones);
 
         /**
          * Get the start index. This is the offset in the index array of the parent mesh where the index data for this
@@ -125,22 +124,10 @@ namespace EMotionFX
         Mesh* GetParentMesh() const;
 
         /**
-         * Return the material index, which points in the array of materials in the Actor class.
-         * @result The material index.
-         */
-        uint32 GetMaterial() const;
-
-        /**
          * Set parent mesh.
          * @param mesh A pointer to the parent mesh to which this submesh belongs to.
          */
         void SetParentMesh(Mesh* mesh);
-
-        /**
-         * Set the material index, which points into the array of materials in the Actor class.
-         * @param materialIndex The material index.
-         */
-        void SetMaterial(uint32 materialIndex);
 
         /**
          * Set the offset in the index array of the mesh where this submesh is part of.
@@ -275,7 +262,6 @@ namespace EMotionFX
         uint32                  m_numVertices;   /**< The number of vertices in this submesh. */
         uint32                  m_numIndices;    /**< The number of indices in this submesh. */
         uint32                  m_numPolygons;   /**< The number of polygons in this submesh. */
-        uint32                  m_material;      /**< The material index, which points into the materials array in the Node class. */
         Mesh*                   m_parentMesh;    /**< The parent mesh. */
 
         /**
@@ -287,10 +273,9 @@ namespace EMotionFX
          * @param numVerts Number of vertices which submesh holds.
          * @param numIndices Number of indices which submesh holds.
          * @param numPolygons The number of polygons inside this submesh.
-         * @param materialIndex The material.
          * @param numBones The number of bones inside the submesh.
          */
-        SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones);
+        SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, size_t numBones);
 
         /**
          * Destructor.

@@ -140,6 +140,7 @@ namespace GraphModelIntegration
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;
         void OnEntitiesDeserializationComplete(const GraphCanvas::GraphSerialization& serializationSource) override;
+        void OnNodeIsBeingEdited(bool isBeingEditeed) override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, connections

@@ -22,9 +22,7 @@ namespace UnitTest
         : AzToolsFramework::ToolsApplication(&argc, &argv)
         , m_applicationName(AZStd::move(applicationName))
     {
-        // Connection polling can be slow, disable for Tools Tests
-        const auto console = AZ::Interface<AZ::IConsole>::Get();
-        console->PerformCommand("target_autoconnect false");
+        ;
     }
 
     void ToolsTestApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)

@@ -31,6 +31,8 @@ DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS_WITH_EMPTY.get(0)
 // Branches with build snapshots as comma separated value string
 env.BUILD_SNAPSHOTS = BUILD_SNAPSHOTS.join(",")
 
+VALIDATION_PIPELINE = /validation_pipe/
+
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -468,7 +470,7 @@ def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean rec
     palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
     // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
     archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
-    def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
+    def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} --only-show-errors "
     excludes.each{ exclude ->
         command += "--exclude \"${exclude}\" "
     }
@@ -693,7 +695,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
-                        if (fileExists(GetCrashArtifactDir())) {
+                        if (!(build_job.key ==~ "${VALIDATION_PIPELINE}") && fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
@@ -917,6 +919,7 @@ try {
 
         // Build and Post-Build Testing Stage
         def buildConfigs = [:]
+        def validateConfig = [:] 
 
         // Platform Builds run on EC2
         pipelineConfig.platforms.each { platform ->
@@ -926,16 +929,28 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
-
-                    buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    if ("${build_job.key}" ==~ "${VALIDATION_PIPELINE}") {
+                        validateConfig["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
+                    else {
+                        buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
                 }
             }
         }
 
         timestamps {
+            stage('Validate') {
+                try {
+                    parallel validateConfig
+                }
+                catch (Exception e) {
+                    echo "Exception block: ${e}"
+                }
+            }
 
             stage('Build') {
-                if (env.FAIL_FAST) {
+                if (params.FAIL_FAST) {
                     echo "Fail fast option enabled"
                     buildConfigs.failFast = true
                 }
@@ -973,11 +988,13 @@ finally {
                     "repository_name": env.REPOSITORY_NAME,
                     "branch_name": env.BRANCH_NAME,
                     "pipeline_name": GetRunningPipelineName(env.JOB_NAME)[1],
+                    "full_pipeline_name": env.JOB_NAME,
                     "build_result": "${currentBuild.currentResult}",
                     "build_failure": buildFailure,
                     "recreate_volume": env.RECREATE_VOLUME,
                     "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
-                    "clean_assets": env.CLEAN_ASSETS
+                    "clean_assets": env.CLEAN_ASSETS,
+                    "fail_fast": env.FAIL_FAST
                 ]
                 snsPublish(
                     topicArn: env.POST_AR_BUILD_SNS_TOPIC,

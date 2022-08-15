@@ -7,15 +7,6 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting"
     }
   },
-  "validation_pipe": {
-    "TAGS": [
-      "default",
-      "snapshot"
-    ],
-    "steps": [
-      "validation"
-    ]
-  },
   "debug_pipe": {
     "TAGS": [
       "periodic-incremental-daily",
@@ -42,13 +33,6 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/scrubbing_job.py"
-    }
-  },
-  "validation": {
-    "TAGS": [],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
     }
   },
   "metrics": {
@@ -114,6 +98,24 @@
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows",
       "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "profile_vs2022": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-vs2022"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 17 2022\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -338,6 +340,25 @@
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build\\windows",
       "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "release_vs2022": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "weekly-build-metrics",
+      "snapshot"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-vs2022"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 17 2022\" -DCMAKE_SYSTEM_VERSION=10.0",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

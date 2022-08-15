@@ -28,13 +28,10 @@ namespace AZ
 #define REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(LIBRARY)\
     static ScriptCanvas::LIBRARY##GrammarRegistry s_AutoGenGrammarRegistry;
 
-//! AutoGen registry util macros
-#define INIT_SCRIPTCANVAS_AUTOGEN(LIBRARY)\
-    ScriptCanvas::AutoGenRegistryManager::Init(#LIBRARY);
-#define REFLECT_SCRIPTCANVAS_AUTOGEN(LIBRARY, CONTEXT)\
-    ScriptCanvas::AutoGenRegistryManager::Reflect(CONTEXT, #LIBRARY);
-#define GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(LIBRARY)\
-    ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors(#LIBRARY)
+//! Not used anymore, keep it for backward compatibility
+#define INIT_SCRIPTCANVAS_AUTOGEN(LIBRARY)
+#define REFLECT_SCRIPTCANVAS_AUTOGEN(LIBRARY, CONTEXT)
+#define GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(LIBRARY)
 
 namespace ScriptCanvas
 {
@@ -43,9 +40,13 @@ namespace ScriptCanvas
     class ScriptCanvasRegistry
     {
     public:
+        virtual ~ScriptCanvasRegistry() = default;
         virtual void Init(NodeRegistry* nodeRegistry) = 0;
         virtual void Reflect(AZ::ReflectContext* context) = 0;
         virtual AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() = 0;
+        void ReleaseDescriptors();
+    protected:
+        AZStd::vector<AZ::ComponentDescriptor*> m_cachedDescriptors;
     };
 
     //! AutoGenRegistryManager

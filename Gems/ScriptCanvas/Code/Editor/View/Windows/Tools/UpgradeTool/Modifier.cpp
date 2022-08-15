@@ -104,7 +104,7 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG
                     ( "dependencies found for %s, update will wait for the AP to finish processing them"
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
 
                 m_waitTimeStamp = AZStd::chrono::system_clock::now();
                 m_waitLogTimeStamp = AZStd::chrono::system_clock::time_point{};
@@ -163,14 +163,14 @@ namespace ScriptCanvasEditor
                 {
                     anyFailures = true;
                     VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
-                        , m_result.asset.Path().c_str())
+                        , m_result.asset.RelativePath().c_str())
                 }
             }
             else
             {
                 anyFailures = true;
                 VE_LOG("Modifier: ERROR - Failed to load asset %s for modification, even though it scanned properly"
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
             }
 
             ModelNotificationsBus::Broadcast
@@ -285,7 +285,7 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG
                     ( "Temporary file not removed for %s: %s"
-                    , m_result.asset.Path().c_str()
+                    , m_result.asset.RelativePath().c_str()
                     , result.tempFileRemovalError.c_str());
             }
 
@@ -520,7 +520,7 @@ namespace ScriptCanvasEditor
                     ( ScriptCanvas::k_VersionExplorerWindow.data()
                     , "Waiting for dependencies for %d more seconds: %s"
                     , AZStd::chrono::seconds(CalculateRemainingWaitTime(*dependencies)).count()
-                    , m_result.asset.Path().c_str());
+                    , m_result.asset.RelativePath().c_str());
 
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeDependencyWaitInterval, m_result.asset);
             }
@@ -552,7 +552,7 @@ namespace ScriptCanvasEditor
                     ( ScriptCanvas::k_VersionExplorerWindow.data()
                     , false
                     , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
-                    , modifier->m_result.asset.Path().c_str());
+                    , modifier->m_result.asset.RelativePath().c_str());
                 return;
             }
 

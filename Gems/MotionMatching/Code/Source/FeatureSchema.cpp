@@ -96,6 +96,22 @@ namespace EMotionFX::MotionMatching
         return featureObject;
     }
 
+    AZStd::vector<AZStd::string> FeatureSchema::CollectColumnNames() const
+    {
+        AZStd::vector<AZStd::string> columnNames;
+
+        for (Feature* feature : m_features)
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
+            {
+                columnNames.push_back(feature->GetDimensionName(dimension));
+            }
+        }
+
+        return columnNames;
+    }
+
     void FeatureSchema::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

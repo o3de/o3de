@@ -219,41 +219,6 @@ class TestFixtures(object):
         _finalizer()
         retval.stop.assert_called_once()
 
-    @mock.patch("ly_test_tools.launchers.launcher_helper.create_server_launcher")
-    def test_DedicatedLauncher_MockHelper_Passthrough(self, mock_create):
-        retval = mock.MagicMock()
-        mock_create.return_value = retval
-
-        under_test = test_tools_fixtures._dedicated_launcher(mock.MagicMock(), mock.MagicMock(), 'windows')
-
-        mock_create.assert_called_once()
-        assert retval is under_test
-
-    @mock.patch("ly_test_tools.launchers.launcher_helper.create_server_launcher")
-    def test_DedicatedLauncher_MockHelper_TeardownCalled(self, mock_create):
-        retval = mock.MagicMock()
-        retval.stop = mock.MagicMock()
-        mock_request = mock.MagicMock()
-        mock_create.return_value = retval
-
-        def _fail_finalizer():
-            assert False, "teardown should have been added to finalizer"
-
-        def _capture_finalizer(func):
-            nonlocal _finalizer
-            _finalizer = func
-
-        _finalizer = _fail_finalizer
-        mock_request.addfinalizer = _capture_finalizer
-
-        under_test = test_tools_fixtures._dedicated_launcher(mock_request, mock.MagicMock(), 'windows')
-
-        mock_create.assert_called_once()
-        assert retval is under_test
-        assert _finalizer is not None
-        _finalizer()
-        retval.stop.assert_called_once()
-
     @mock.patch("ly_test_tools.launchers.launcher_helper.create_editor")
     def test_Editor_MockHelper_Passthrough(self, mock_create):
         retval = mock.MagicMock()

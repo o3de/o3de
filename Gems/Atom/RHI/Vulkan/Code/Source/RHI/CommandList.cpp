@@ -94,8 +94,12 @@ namespace AZ
             SetShaderResourceGroup(shaderResourceGroup, RHI::PipelineStateType::Dispatch);
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem) 
+        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             switch (copyItem.m_type)
             {
             case RHI::CopyItemType::Buffer:
@@ -109,7 +113,12 @@ namespace AZ
                 copy.dstOffset = destinationBufferMemoryView->GetOffset() + descriptor.m_destinationOffset;
                 copy.size = descriptor.m_size;
 
-                vkCmdCopyBuffer(m_nativeCommandBuffer, sourceBufferMemoryView->GetNativeBuffer(), destinationBufferMemoryView->GetNativeBuffer(), 1, &copy);
+                context.CmdCopyBuffer(
+                    m_nativeCommandBuffer,
+                    sourceBufferMemoryView->GetNativeBuffer(),
+                    destinationBufferMemoryView->GetNativeBuffer(),
+                    1,
+                    &copy);
                 break;
             }
             case RHI::CopyItemType::BufferToImage:
@@ -141,12 +150,12 @@ namespace AZ
                 copy.imageExtent.height = descriptor.m_sourceSize.m_height;
                 copy.imageExtent.depth = descriptor.m_sourceSize.m_depth;
 
-                vkCmdCopyBufferToImage(
-                    m_nativeCommandBuffer, 
+                context.CmdCopyBufferToImage(
+                    m_nativeCommandBuffer,
                     sourceBufferMemoryView->GetNativeBuffer(),
-                    destinationImage->GetNativeImage(), 
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-                    1, 
+                    destinationImage->GetNativeImage(),
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1,
                     &copy);
                 break;
             }
@@ -175,13 +184,13 @@ namespace AZ
                 copy.extent.height = descriptor.m_sourceSize.m_height;
                 copy.extent.depth = descriptor.m_sourceSize.m_depth;
 
-                vkCmdCopyImage(
-                    m_nativeCommandBuffer, 
-                    sourceImage->GetNativeImage(), 
+                context.CmdCopyImage(
+                    m_nativeCommandBuffer,
+                    sourceImage->GetNativeImage(),
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    destinationImage->GetNativeImage(), 
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-                    1, 
+                    destinationImage->GetNativeImage(),
+                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1,
                     &copy);
                 break;
             }
@@ -214,12 +223,12 @@ namespace AZ
                 copy.imageExtent.height = descriptor.m_sourceSize.m_height;
                 copy.imageExtent.depth = descriptor.m_sourceSize.m_depth;
 
-                vkCmdCopyImageToBuffer(
-                    m_nativeCommandBuffer, 
-                    sourceImage->GetNativeImage(), 
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+                context.CmdCopyImageToBuffer(
+                    m_nativeCommandBuffer,
+                    sourceImage->GetNativeImage(),
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     destinationBufferMemoryView->GetNativeBuffer(),
-                    1, 
+                    1,
                     &copy);
                 break;
             }
@@ -229,7 +238,7 @@ namespace AZ
                 const auto* sourceQueryPool = static_cast<const QueryPool*>(descriptor.m_sourceQueryPool);
                 const auto* destinationBufferMemoryView = static_cast<const Buffer*>(descriptor.m_destinationBuffer)->GetBufferMemoryView();
 
-                vkCmdCopyQueryPoolResults(
+                context.CmdCopyQueryPoolResults(
                     m_nativeCommandBuffer,
                     sourceQueryPool->GetNativeQueryPool(),
                     descriptor.m_firstQuery.GetIndex(),
@@ -237,8 +246,7 @@ namespace AZ
                     destinationBufferMemoryView->GetNativeBuffer(),
                     destinationBufferMemoryView->GetOffset() + descriptor.m_destinationOffset,
                     descriptor.m_destinationStride,
-                    VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT
-                );
+                    VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
                 break;
             }
             default:
@@ -246,8 +254,10 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem) 
+        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             if (!CommitShaderResource(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
@@ -274,6 +284,8 @@ namespace AZ
             CommitScissorState();
             CommitViewportState();
 
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             switch (drawItem.m_arguments.m_type)
             {
             case RHI::DrawType::Indexed:
@@ -283,32 +295,39 @@ namespace AZ
                 const RHI::DrawIndexed& indexed = drawItem.m_arguments.m_indexed;
                 SetIndexBuffer(*drawItem.m_indexBufferView);
 
-                vkCmdDrawIndexed(m_nativeCommandBuffer, indexed.m_indexCount, indexed.m_instanceCount, indexed.m_indexOffset, indexed.m_vertexOffset, indexed.m_instanceOffset);
+                context.CmdDrawIndexed(
+                    m_nativeCommandBuffer,
+                    indexed.m_indexCount,
+                    indexed.m_instanceCount,
+                    indexed.m_indexOffset,
+                    indexed.m_vertexOffset,
+                    indexed.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Linear:
             {
                 const RHI::DrawLinear& linear = drawItem.m_arguments.m_linear;
 
-                vkCmdDraw(m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
+                context.CmdDraw(
+                    m_nativeCommandBuffer, linear.m_vertexCount, linear.m_instanceCount, linear.m_vertexOffset, linear.m_instanceOffset);
                 break;
             }
             case RHI::DrawType::Indirect:
             {
                 const RHI::DrawIndirect& indirect = drawItem.m_arguments.m_indirect;
                 const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
-                decltype(vkCmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
-                decltype(vkCmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
+                decltype(context.CmdDrawIndexedIndirectCountKHR) drawIndirectCountFunctionPtr = nullptr;
+                decltype(context.CmdDrawIndexedIndirect) drawIndirectfunctionPtr = nullptr;
                 switch (layout.GetType())
                 {
                 case RHI::IndirectBufferLayoutType::LinearDraw:
-                    drawIndirectCountFunctionPtr = vkCmdDrawIndirectCountKHR;
-                    drawIndirectfunctionPtr = vkCmdDrawIndirect;
+                    drawIndirectCountFunctionPtr = context.CmdDrawIndirectCountKHR;
+                    drawIndirectfunctionPtr = context.CmdDrawIndirect;
                     break;
                 case RHI::IndirectBufferLayoutType::IndexedDraw:
                     SetIndexBuffer(*drawItem.m_indexBufferView);
-                    drawIndirectCountFunctionPtr = vkCmdDrawIndexedIndirectCountKHR;
-                    drawIndirectfunctionPtr = vkCmdDrawIndexedIndirect;
+                    drawIndirectCountFunctionPtr = context.CmdDrawIndexedIndirectCountKHR;
+                    drawIndirectfunctionPtr = context.CmdDrawIndexedIndirect;
                     break;
                 default:
                     AZ_Assert(false, "Invalid indirect layout type %d", layout.GetType());
@@ -361,20 +380,25 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem) 
+        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             if (!CommitShaderResource(dispatchItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
                 return;
             }
 
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             switch (dispatchItem.m_arguments.m_type)
             {
             case RHI::DispatchType::Direct:
             {
                 const auto& arguments = dispatchItem.m_arguments.m_direct;
-                vkCmdDispatch(m_nativeCommandBuffer, arguments.GetNumberOfGroupsX(), arguments.GetNumberOfGroupsY(), arguments.GetNumberOfGroupsZ());
+                context.CmdDispatch(
+                    m_nativeCommandBuffer, arguments.GetNumberOfGroupsX(), arguments.GetNumberOfGroupsY(), arguments.GetNumberOfGroupsZ());
                 break;
             }
             case RHI::DispatchType::Indirect:
@@ -382,10 +406,10 @@ namespace AZ
                 const auto& arguments = dispatchItem.m_arguments.m_indirect;
                 AZ_Assert(arguments.m_countBuffer == nullptr, "Count buffer is not supported for indirect dispatch on this platform.");
                 const auto* indirectBufferMemoryView = static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer())->GetBufferMemoryView();
-                vkCmdDispatchIndirect(
-                    m_nativeCommandBuffer,
-                    indirectBufferMemoryView->GetNativeBuffer(),
-                    indirectBufferMemoryView->GetOffset() + arguments.m_indirectBufferView->GetByteOffset() + arguments.m_indirectBufferByteOffset);
+                context.CmdDispatchIndirect(
+                    m_nativeCommandBuffer, indirectBufferMemoryView->GetNativeBuffer(),
+                    indirectBufferMemoryView->GetOffset() + arguments.m_indirectBufferView->GetByteOffset() +
+                        arguments.m_indirectBufferByteOffset);
                 break;
             }
             default:
@@ -394,8 +418,10 @@ namespace AZ
             }            
         }       
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
+        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
+            ValidateSubmitIndex(submitIndex);
+
             // manually clear the Dispatch bindings
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType::Dispatch);
             for (size_t i = 0; i < bindings.m_descriptorSets.size(); ++i)
@@ -403,8 +429,12 @@ namespace AZ
                 bindings.m_descriptorSets[i] = nullptr;
             }
 
-            const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
-            vkCmdBindPipeline(m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
+            const RayTracingPipelineState* rayTracingPipelineState =
+                static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
+            context.CmdBindPipeline(
+                m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipeline());
 
             // bind Srgs
             AZStd::vector<VkDescriptorSet> descriptorSets;
@@ -416,15 +446,9 @@ namespace AZ
                 descriptorSets.emplace_back(srg->GetCompiledData().GetNativeDescriptorSet());
             }
 
-            vkCmdBindDescriptorSets(
-                m_nativeCommandBuffer,
-                VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
-                rayTracingPipelineState->GetNativePipelineLayout(),
-                0,
-                aznumeric_cast<uint32_t>(descriptorSets.size()),
-                descriptorSets.data(),
-                0,
-                nullptr);
+            context.CmdBindDescriptorSets(
+                m_nativeCommandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, rayTracingPipelineState->GetNativePipelineLayout(), 0,
+                aznumeric_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
 
             const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
             const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
@@ -434,7 +458,8 @@ namespace AZ
             addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
             addressInfo.pNext = nullptr;
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_rayGenerationTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress rayGenerationTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress rayGenerationTableAddress =
+                context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
 
             VkStridedDeviceAddressRegionKHR rayGenerationTable = {};
             rayGenerationTable.deviceAddress = rayGenerationTableAddress;
@@ -443,7 +468,7 @@ namespace AZ
 
             // miss table
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress missTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
 
             VkStridedDeviceAddressRegionKHR missTable = {};
             missTable.deviceAddress = missTableAddress;
@@ -452,7 +477,7 @@ namespace AZ
 
             // hit group table
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_hitGroupTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress hitGroupTableAddress = vkGetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress hitGroupTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
 
             VkStridedDeviceAddressRegionKHR hitGroupTable = {};
             hitGroupTable.deviceAddress = hitGroupTableAddress;
@@ -461,7 +486,7 @@ namespace AZ
 
             VkStridedDeviceAddressRegionKHR callableTable = {};
 
-            vkCmdTraceRaysKHR(
+            context.CmdTraceRaysKHR(
                 m_nativeCommandBuffer,
                 &rayGenerationTable,
                 &missTable,
@@ -488,7 +513,7 @@ namespace AZ
             beginInfo.offset = bufferMemoryView->GetOffset() + offset;
             beginInfo.flags = operation == RHI::PredicationOp::NotEqualZero ? VK_CONDITIONAL_RENDERING_INVERTED_BIT_EXT : 0;
 
-            vkCmdBeginConditionalRenderingEXT(m_nativeCommandBuffer, &beginInfo);
+            static_cast<Device&>(GetDevice()).GetContext().CmdBeginConditionalRenderingEXT(m_nativeCommandBuffer, &beginInfo);
         }
 
         void CommandList::EndPredication()
@@ -499,7 +524,7 @@ namespace AZ
                 return;
             }
 
-            vkCmdEndConditionalRenderingEXT(m_nativeCommandBuffer);
+            static_cast<Device&>(GetDevice()).GetContext().CmdEndConditionalRenderingEXT(m_nativeCommandBuffer);
         }
 
         void CommandList::Shutdown()
@@ -539,7 +564,7 @@ namespace AZ
                 beginInfo.pInheritanceInfo = nullptr;
             }
 
-            VkResult vkResult = vkBeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
+            VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().BeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
             AssertSuccess(vkResult);
             if (vkResult == VK_SUCCESS && !GetName().IsEmpty())
             {
@@ -558,7 +583,7 @@ namespace AZ
 
             m_state.m_framebuffer = nullptr;
             m_state.m_subpassIndex = 0;
-            AssertSuccess(vkEndCommandBuffer(m_nativeCommandBuffer));
+            AssertSuccess(static_cast<Device&>(GetDevice()).GetContext().EndCommandBuffer(m_nativeCommandBuffer));
             m_isUpdating = false;
         }
 
@@ -584,7 +609,7 @@ namespace AZ
             info.clearValueCount = static_cast<uint32_t>(vClearValues.size());
             info.pClearValues = vClearValues.empty() ? nullptr : vClearValues.data();
 
-            vkCmdBeginRenderPass(m_nativeCommandBuffer, &info, beginInfo.m_subpassContentType);
+            static_cast<Device&>(GetDevice()).GetContext().CmdBeginRenderPass(m_nativeCommandBuffer, &info, beginInfo.m_subpassContentType);
 
             m_state.m_subpassIndex = 0;
             m_state.m_framebuffer = beginInfo.m_frameBuffer;
@@ -594,14 +619,14 @@ namespace AZ
         {
             if (m_state.m_subpassIndex + 1 < m_state.m_framebuffer->GetRenderPass()->GetDescriptor().m_subpassCount)
             {
-                vkCmdNextSubpass(m_nativeCommandBuffer, contents);
+                static_cast<Device&>(GetDevice()).GetContext().CmdNextSubpass(m_nativeCommandBuffer, contents);
                 m_state.m_subpassIndex++;
             }
         }
 
         void CommandList::EndRenderPass()
         {
-            vkCmdEndRenderPass(m_nativeCommandBuffer);
+            static_cast<Device&>(GetDevice()).GetContext().CmdEndRenderPass(m_nativeCommandBuffer);
             m_state.m_framebuffer = nullptr;
             m_state.m_subpassIndex = 0;
         }
@@ -620,7 +645,9 @@ namespace AZ
             allocInfo.level = m_descriptor.m_level;;
             allocInfo.commandBufferCount = 1;
 
-            VkResult vkResult = vkAllocateCommandBuffers(m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeCommandBuffer);
+            VkResult vkResult = static_cast<Device&>(GetDevice())
+                                    .GetContext()
+                                    .AllocateCommandBuffers(m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeCommandBuffer);
             AssertSuccess(vkResult);
             return ConvertResult(vkResult);
         }
@@ -638,7 +665,9 @@ namespace AZ
                 commandBuffers.push_back(cmdList->GetNativeCommandBuffer());
             });
 
-            vkCmdExecuteCommands(m_nativeCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdExecuteCommands(m_nativeCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
         }
 
         uint32_t CommandList::GetQueueFamilyIndex() const
@@ -648,12 +677,12 @@ namespace AZ
 
         void CommandList::BeginDebugLabel(const char* label, const AZ::Color color)
         {
-            Debug::BeginCmdDebugLabel(m_nativeCommandBuffer, label, color);
+            Debug::BeginCmdDebugLabel(m_descriptor.m_device->GetContext(), m_nativeCommandBuffer, label, color);
         }
 
         void CommandList::EndDebugLabel()
         {
-            Debug::EndCmdDebugLabel(m_nativeCommandBuffer);
+            Debug::EndCmdDebugLabel(m_descriptor.m_device->GetContext(), m_nativeCommandBuffer);
         }
 
         RHI::CommandListValidator& CommandList::GetValidator()
@@ -707,7 +736,9 @@ namespace AZ
                     }
                 }
 
-                vkCmdBindVertexBuffers(m_nativeCommandBuffer, interval.m_min, numBuffers, nativeBuffers.data(), offsets.data());
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CmdBindVertexBuffers(m_nativeCommandBuffer, interval.m_min, numBuffers, nativeBuffers.data(), offsets.data());
             }
         }
 
@@ -719,18 +750,21 @@ namespace AZ
                 m_state.m_indexBufferHash = indexBufferHash;
                 const BufferMemoryView* indexBufferMemoryView = static_cast<const Buffer*>(indexBufferView.GetBuffer())->GetBufferMemoryView();
                 AZ_Assert(indexBufferMemoryView, "IndexBufferMemoryView is null.");
-               
-                vkCmdBindIndexBuffer(
-                    m_nativeCommandBuffer,
-                    indexBufferMemoryView->GetNativeBuffer(),
-                    indexBufferMemoryView->GetOffset() + indexBufferView.GetByteOffset(),
-                    ConvertIndexBufferFormat(indexBufferView.GetIndexFormat()));
+
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CmdBindIndexBuffer(
+                        m_nativeCommandBuffer, indexBufferMemoryView->GetNativeBuffer(),
+                        indexBufferMemoryView->GetOffset() + indexBufferView.GetByteOffset(),
+                        ConvertIndexBufferFormat(indexBufferView.GetIndexFormat()));
             }
         }
 
         void CommandList::SetStencilRef(uint8_t stencilRef)
         {
-            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, aznumeric_cast<uint32_t>(stencilRef));
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, aznumeric_cast<uint32_t>(stencilRef));
         }
 
         void CommandList::BindPipeline(const PipelineState* pipelineState)
@@ -753,10 +787,9 @@ namespace AZ
                 bindings.m_pipelineState = pipelineState;
 
                 Pipeline* pipeline = pipelineState->GetPipeline();
-                vkCmdBindPipeline(
-                    m_nativeCommandBuffer, 
-                    GetPipelineBindPoint(*pipelineState),
-                    pipeline->GetNativePipeline());
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CmdBindPipeline(m_nativeCommandBuffer, GetPipelineBindPoint(*pipelineState), pipeline->GetNativePipeline());
 
                 // Dirty all shader resource groups so they can be validate with the new pipeline.
                 bindings.m_dirtyShaderResourceGroupFlags.set();
@@ -784,7 +817,9 @@ namespace AZ
                 vvp.maxDepth = rvp.m_maxZ;
             }
 
-            vkCmdSetViewport(m_nativeCommandBuffer, 0, aznumeric_caster(vulkanViewports.size()), &vulkanViewports[0]);
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdSetViewport(m_nativeCommandBuffer, 0, aznumeric_caster(vulkanViewports.size()), &vulkanViewports[0]);
             m_state.m_viewportState.m_isDirty = false;
         }
 
@@ -808,8 +843,18 @@ namespace AZ
                 vsc.extent.height = rsc.m_maxY - rsc.m_minY;
             }
 
-            vkCmdSetScissor(m_nativeCommandBuffer, 0, aznumeric_caster(vulkanScissors.size()), &vulkanScissors[0]);
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdSetScissor(m_nativeCommandBuffer, 0, aznumeric_caster(vulkanScissors.size()), &vulkanScissors[0]);
             m_state.m_scissorState.m_isDirty = false;
+        }
+
+        void CommandList::CommitShaderResourcePushConstants(VkPipelineLayout pipelineLayout, uint8_t rootConstantSize, const uint8_t *rootConstants)
+        {
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdPushConstants(
+                    m_nativeCommandBuffer, pipelineLayout, VK_SHADER_STAGE_ALL, 0, rootConstantSize, rootConstants);
         }
 
         void CommandList::CommitDescriptorSets(RHI::PipelineStateType type)
@@ -873,15 +918,11 @@ namespace AZ
             if (interval != InvalidInterval)
             {
                 AZ_Assert(!bindings.m_descriptorSets.empty(), "No DescriptorSet.");
-                vkCmdBindDescriptorSets(
-                    m_nativeCommandBuffer,
-                    GetPipelineBindPoint(pipelineState),
-                    pipelineLayout.GetNativePipelineLayout(),
-                    interval.m_min,
-                    interval.m_max - interval.m_min + 1,
-                    bindings.m_descriptorSets.data() + interval.m_min,
-                    0,
-                    nullptr);
+                static_cast<Device&>(GetDevice())
+                    .GetContext()
+                    .CmdBindDescriptorSets(
+                        m_nativeCommandBuffer, GetPipelineBindPoint(pipelineState), pipelineLayout.GetNativePipelineLayout(),
+                        interval.m_min, interval.m_max - interval.m_min + 1, bindings.m_descriptorSets.data() + interval.m_min, 0, nullptr);
             }
         }
 
@@ -946,9 +987,11 @@ namespace AZ
             const RayTracingBlas& vulkanRayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
             const RayTracingBlas::BlasBuffers& blasBuffers = vulkanRayTracingBlas.GetBuffers();
 
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             // submit the command to build the BLAS
             const VkAccelerationStructureBuildRangeInfoKHR* rangeInfos = blasBuffers.m_rangeInfos.data();
-            vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
+            context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &blasBuffers.m_buildInfo, &rangeInfos);
 
             // we need to have a barrier on VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR to ensure that the BLAS objects
             // are built prior to building the TLAS in BuildTopLevelAccelerationStructure()
@@ -958,7 +1001,7 @@ namespace AZ
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            vkCmdPipelineBarrier(
+            context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
@@ -976,10 +1019,12 @@ namespace AZ
             const RayTracingTlas& vulkanRayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
             const RayTracingTlas::TlasBuffers& tlasBuffers = vulkanRayTracingTlas.GetBuffers();
 
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             // submit the command to build the TLAS
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
             const VkAccelerationStructureBuildRangeInfoKHR* pOffsetInfo = &offsetInfo;
-            vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
+            context.CmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
 
             // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
             // multiple TLAS objects in a command list
@@ -989,7 +1034,7 @@ namespace AZ
             memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
-            vkCmdPipelineBarrier(
+            context.CmdPipelineBarrier(
                 GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
                 VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
@@ -1008,6 +1053,8 @@ namespace AZ
             const Image& image = static_cast<const Image&>(imageView.GetImage());
             const VkImageSubresourceRange& range = imageView.GetVkImageSubresourceRange();
 
+            const auto& context = static_cast<Device&>(GetDevice()).GetContext();
+
             VkClearValue vkClearValue;
             FillClearValue(request.m_clearValue, vkClearValue);
 
@@ -1015,16 +1062,11 @@ namespace AZ
             {
             case RHI::ClearValueType::Vector4Float:
             case RHI::ClearValueType::Vector4Uint:
-                vkCmdClearColorImage(
-                    m_nativeCommandBuffer,
-                    image.GetNativeImage(),
-                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    &vkClearValue.color,
-                    1,
-                    &range);
+                context.CmdClearColorImage(
+                    m_nativeCommandBuffer, image.GetNativeImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &vkClearValue.color, 1, &range);
                 break;
             case RHI::ClearValueType::DepthStencil:
-                vkCmdClearDepthStencilImage(
+                context.CmdClearDepthStencilImage(
                     m_nativeCommandBuffer,
                     image.GetNativeImage(),
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -1074,13 +1116,15 @@ namespace AZ
             }
 
             // Maybe use a compute shader to support all clear value types.
-            vkCmdFillBuffer(
-                m_nativeCommandBuffer,
-                buffer.GetBufferMemoryView()->GetNativeBuffer(),
-                buffer.GetBufferMemoryView()->GetOffset() + static_cast<size_t>(bufferViewDesc.m_elementOffset) * bufferViewDesc.m_elementSize,
-                buffer.GetBufferMemoryView()->GetSize(),
-                vkClearValue.i
-            );
+            static_cast<Device&>(GetDevice())
+                .GetContext()
+                .CmdFillBuffer(
+                    m_nativeCommandBuffer,
+                    buffer.GetBufferMemoryView()->GetNativeBuffer(),
+                    buffer.GetBufferMemoryView()->GetOffset() +
+                        static_cast<size_t>(bufferViewDesc.m_elementOffset) * bufferViewDesc.m_elementSize,
+                    buffer.GetBufferMemoryView()->GetSize(),
+                    vkClearValue.i);
         }
 
     }

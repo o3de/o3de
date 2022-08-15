@@ -13,6 +13,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
 
 namespace LmbrCentral
 {
@@ -27,7 +29,7 @@ namespace LmbrCentral
         AzToolsFramework::MidpointCalculator midpointCalculator;
         for (const AZ::Vector2& vertex : vertexContainer.GetVertices())
         {
-            midpointCalculator.AddPosition(AZ::Vector2ToVector3(vertex, height));
+            midpointCalculator.AddPosition(AZ::Vector3(vertex, height));
         }
 
         return midpointCalculator.CalculateMidpoint();
@@ -79,6 +81,11 @@ namespace LmbrCentral
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         return m_vertexSelection.HandleMouse(mouseInteraction);
+    }
+
+     AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
+    {
+        return "Polygon Prism Shape Edit Mode";
     }
 
     void EditorPolygonPrismShapeComponentMode::CreateManipulators()
@@ -133,15 +140,17 @@ namespace LmbrCentral
         m_heightManipulator->SetViews(AZStd::move(views));
 
         // height manipulator callbacks
-        m_heightManipulator->InstallMouseMoveCallback([this, polygonPrism](
-            const LinearManipulator::Action& action)
-        {
-            polygonPrism->SetHeight(AZ::GetMax<float>(action.LocalPosition().GetZ(), 0.0f));
-            m_heightManipulator->SetLocalTransform(
-                AZ::Transform::CreateTranslation(Vector2ToVector3(Vector3ToVector2(
-                    action.LocalPosition()), AZ::GetMax<float>(0.0f, action.LocalPosition().GetZ()))));
-            m_heightManipulator->SetBoundsDirty();
-        });
+        m_heightManipulator->InstallMouseMoveCallback(
+            [this, polygonPrism](const LinearManipulator::Action& action)
+            {
+                polygonPrism->SetHeight(AZ::GetMax<float>(action.LocalPosition().GetZ(), 0.0f));
+
+                m_heightManipulator->SetLocalTransform(AZ::Transform::CreateTranslation(AZ::Vector3(
+                    action.LocalPosition().GetX(), 
+                    action.LocalPosition().GetY(), 
+                    AZ::GetMax<float>(0.0f, action.LocalPosition().GetZ()))));
+                m_heightManipulator->SetBoundsDirty();
+            });
 
         m_heightManipulator->Register(g_mainManipulatorManagerId);
     }

@@ -25,9 +25,9 @@ namespace AtomToolsFramework
                 ->Field("title", &DynamicNodeConfig::m_title)
                 ->Field("subTitle", &DynamicNodeConfig::m_subTitle)
                 ->Field("settings", &DynamicNodeConfig::m_settings)
+                ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
                 ->Field("inputSlots", &DynamicNodeConfig::m_inputSlots)
                 ->Field("outputSlots", &DynamicNodeConfig::m_outputSlots)
-                ->Field("propertySlots", &DynamicNodeConfig::m_propertySlots)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -85,12 +85,12 @@ namespace AtomToolsFramework
 
     bool DynamicNodeConfig::Save(const AZStd::string& path) const
     {
-        return AZ::JsonSerializationUtils::SaveObjectToFile(this, ConvertAliasToPath(path)).IsSuccess();
+        return AZ::JsonSerializationUtils::SaveObjectToFile(this, GetPathWithoutAlias(path)).IsSuccess();
     }
 
     bool DynamicNodeConfig::Load(const AZStd::string& path)
     {
-        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(ConvertAliasToPath(path));
+        auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(GetPathWithoutAlias(path));
         if (loadResult && loadResult.GetValue().is<DynamicNodeConfig>())
         {
             *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());

@@ -232,12 +232,10 @@ namespace AssetUtilities
     AZ::SettingsRegistryInterface::FixedValueString s_projectPath;
     AZ::SettingsRegistryInterface::FixedValueString s_projectName;
     AZ::SettingsRegistryInterface::FixedValueString s_assetRoot;
-    AZ::SettingsRegistryInterface::FixedValueString s_assetServerAddress;
     AZ::SettingsRegistryInterface::FixedValueString s_cachedEngineRoot;
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
-    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
@@ -548,120 +546,6 @@ namespace AssetUtilities
         }
 
         return QString::fromUtf8(s_projectPath.c_str(), aznumeric_cast<int>(s_projectPath.size()));
-    }
-
-    bool InServerMode()
-    {
-        if (s_serverMode.has_value())
-        {
-            return s_serverMode.value();
-        }
-        s_serverMode = AZStd::make_optional<bool>(CheckServerMode());
-        return s_serverMode.value();
-    }
-
-    void ResetServerMode()
-    {
-        if (s_serverMode.has_value())
-        {
-            s_serverMode.reset();
-        }
-    }
-
-    bool CheckServerMode()
-    {
-        bool inServerMode = false;
-        if (QCoreApplication::instance())
-        {
-            QStringList args = QCoreApplication::arguments();
-            for (const QString& arg : args)
-            {
-                if (arg.contains("/server", Qt::CaseInsensitive) || arg.contains("--server", Qt::CaseInsensitive))
-                {
-                    inServerMode = true;
-                    break;
-                }
-            }
-        }
-
-        if (!inServerMode)
-        {
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            if (settingsRegistry)
-            {
-                bool enableAssetCacheServerMode = false;
-                AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
-                if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
-                {
-                    inServerMode = enableAssetCacheServerMode;
-                }
-            }
-        }
-
-        if (inServerMode)
-        {
-            bool isServerAddressValid = false;
-            AssetProcessor::AssetServerBus::BroadcastResult(isServerAddressValid, &AssetProcessor::AssetServerBusTraits::IsServerAddressValid);
-            if (isServerAddressValid)
-            {
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset Processor is running in server mode.\n");
-                return true;
-            }
-            else
-            {
-                AZ_Warning(AssetProcessor::ConsoleChannel, false,
-                    "Invalid server address, please check the AssetProcessorPlatformConfig.setreg file"
-                    " to ensure that the address is correct. Asset Processor won't be running in server mode.");
-            }
-        }
-        return false;
-    }
-
-    void ResetServerAddress()
-    {
-        s_assetServerAddress.clear();
-    }
-
-    QString ServerAddress()
-    {
-        if (!s_assetServerAddress.empty())
-        {
-            return QString::fromUtf8(s_assetServerAddress.data(), aznumeric_cast<int>(s_assetServerAddress.size()));
-        }
-        // QCoreApplication is not created during unit test mode and that can cause QtWarning to get emitted
-        // since we need to retrieve arguments from Qt
-        if (QCoreApplication::instance())
-        {
-            // if its been specified on the command line, then ignore AssetProcessorPlatformConfig:
-            QStringList args = QCoreApplication::arguments();
-            for (QString arg : args)
-            {
-                if (arg.contains("/serverAddress=", Qt::CaseInsensitive) || arg.contains("--serverAddress=", Qt::CaseInsensitive))
-                {
-                    QString serverAddress = arg.split("=")[1].trimmed();
-                    if (!serverAddress.isEmpty())
-                    {
-                        s_assetServerAddress = serverAddress.toUtf8().constData();
-                        return QString::fromUtf8(s_assetServerAddress.data(), aznumeric_cast<int>(s_assetServerAddress.size()));
-                    }
-                }
-            }
-        }
-
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        if (settingsRegistry)
-        {
-            AZStd::string address;
-            if (settingsRegistry->Get(address, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
-                + "/Server/cacheServerAddress"))
-            {
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
-                s_assetServerAddress = address;
-                return QString::fromUtf8(address.data(), aznumeric_cast<int>(address.size()));
-            }
-        }
-
-        return QString();
     }
 
     bool ShouldUseFileHashing()
@@ -1057,7 +941,8 @@ namespace AssetUtilities
 
     QString ComputeJobDescription(const AssetProcessor::AssetRecognizer* recognizer)
     {
-        return recognizer->m_name.toLower();
+        QString jobDescription{ recognizer->m_name.c_str() };
+        return jobDescription.toLower();
     }
 
     AZStd::string ComputeJobLogFolder()
@@ -1841,6 +1726,14 @@ namespace AssetUtilities
     void JobLogTraceListener::AddWarning()
     {
         ++m_warningCount;
+    }
+
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath)
+    {
+        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / relativeSourcePath).StringAsPosix());
+        // Product paths are always lowercase
+        AZStd::to_lower(productPath.begin(), productPath.end());
+        return productPath;
     }
 
     ProductPath::ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier)

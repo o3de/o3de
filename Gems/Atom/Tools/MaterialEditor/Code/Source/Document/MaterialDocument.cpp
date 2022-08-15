@@ -54,7 +54,7 @@ namespace MaterialEditor
     MaterialDocument::~MaterialDocument()
     {
         MaterialDocumentRequestBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     AZ::Data::Asset<AZ::RPI::MaterialAsset> MaterialDocument::GetAsset() const
@@ -198,8 +198,8 @@ namespace MaterialEditor
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
-        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_materialType);
-        sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_parentMaterial);
+        sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_materialType);
+        sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
             return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
         };
@@ -234,8 +234,8 @@ namespace MaterialEditor
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
-        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_materialType);
-        sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
+        sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
+        sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
             return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
         };
@@ -266,12 +266,12 @@ namespace MaterialEditor
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
-        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_materialSourceData.m_materialType);
+        sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
 
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
         {
-            sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_savePathNormalized, m_absolutePath);
+            sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_absolutePath);
         }
 
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -357,14 +357,14 @@ namespace MaterialEditor
         return true;
     }
 
-    void MaterialDocument::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void MaterialDocument::OnSystemTick()
     {
         if (m_compilePending)
         {
             if (m_materialInstance->Compile())
             {
                 m_compilePending = false;
-                AZ::TickBus::Handler::BusDisconnect();
+                AZ::SystemTickBus::Handler::BusDisconnect();
             }
         }
     }
@@ -687,7 +687,7 @@ namespace MaterialEditor
     {
         AtomToolsFramework::AtomToolsDocument::Clear();
 
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_materialAsset = {};
         m_materialInstance = {};
@@ -726,7 +726,7 @@ namespace MaterialEditor
     {
         if (!m_compilePending)
         {
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
             m_compilePending = true;
         }
     }

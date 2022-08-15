@@ -23,7 +23,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Console/IConsole.h>
+
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
@@ -217,15 +217,7 @@ SEditorSettings::SEditorSettings()
     //////////////////////////////////////////////////////////////////////////
     // Initialize GUI settings.
     //////////////////////////////////////////////////////////////////////////
-    gui.bWindowsVista = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows7);
-
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
-
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
-    gui.nDefaultFontHieght = lfHeight;
-    gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
-    gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
-    gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
@@ -832,7 +824,8 @@ void SEditorSettings::Load()
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
-
+AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
+    
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)

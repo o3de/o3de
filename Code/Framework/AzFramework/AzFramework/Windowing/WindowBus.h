@@ -55,6 +55,10 @@ namespace AzFramework
         //! Set the client area size. This is the size that can be rendered to.
         virtual void ResizeClientArea(WindowSize clientAreaSize) = 0;
 
+        //! Does this platform support window resizing.
+        //! Generally desktop platforms support resizing, mobile platforms don't.
+        virtual bool SupportsClientAreaResize() const = 0;
+
         //! Get the full screen state of the window.
         //! \return True if the window is currently in full screen, false otherwise.
         virtual bool GetFullScreenState() const = 0;

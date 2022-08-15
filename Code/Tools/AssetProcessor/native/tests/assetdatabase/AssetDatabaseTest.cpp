@@ -8,7 +8,7 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-
+#include <AzCore/std/sort.h>
 
 #include <native/tests/AssetProcessorTest.h>
 #include <native/AssetDatabase/AssetDatabase.h>
@@ -30,6 +30,8 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer;
     using AzToolsFramework::AssetDatabase::AssetDatabaseConnection;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntry;
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer;
 
     class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     {
@@ -99,6 +101,34 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product2));
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product3));
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product4));
+        }
+
+        /******************************************** Create and insert Stat entry ********************************************/
+        //! Returns the first stat entry to be inserted into Stats table. Users can specify the prefix of the StatName
+        StatDatabaseEntry GetFirstStatEntry(const AZStd::string& namePrefix = "")
+        {
+            return StatDatabaseEntry{ namePrefix + "a", 10, 100 };
+        }
+
+        //! Step statEntry to the next inserted entry, which increments the name's last character by 1 in ASCII order, increment 20 in StatValue, and increment
+        //! 300 in LastLogTime. For example, if statEntry was passed in as (StatName=b, StatValue=30, LastLogTime=400), it will become
+        //! (StatName=c, StatValue=50, LastLogTime=700) after the invocation.
+        void StepStatEntry(StatDatabaseEntry& statEntry)
+        {
+            statEntry.m_statName.back()++;
+            statEntry.m_statValue = statEntry.m_statValue + 20;
+            statEntry.m_lastLogTime = statEntry.m_lastLogTime + 300;
+        }
+
+        //! Insert _StatCount_ stat entries into Stats table, starting with first entry given by GetFirstStatEntry().
+        void InsertStatsTestData(const unsigned int StatCount, const AZStd::string& namePrefix = "")
+        {
+            StatDatabaseEntry statEntry = GetFirstStatEntry(namePrefix);
+            for (unsigned int i = 0; i < StatCount; ++i)
+            {
+                ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+                StepStatEntry(statEntry);
+            }
         }
 
     protected:
@@ -2391,6 +2421,206 @@ namespace UnitTests
         ASSERT_NE(fileEntry.m_fileID, InvalidEntryId);
         ASSERT_TRUE(m_data->m_connection.InsertFile(fileEntry, entryAlreadyExists));
         ASSERT_TRUE(entryAlreadyExists);
+    }
+
+    TEST_F(AssetDatabaseTest, StatDatabaseEntryEquality)
+    {
+        // two entries are the same if m_statName, m_statValue, and m_lastLogTime are same.
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry entry1, entry2;
+        entry1.m_statName = "EqTest";
+        entry1.m_statValue = 17632;
+        entry1.m_lastLogTime = 54689213;
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 54689213;
+        EXPECT_EQ(entry1, entry2);
+        entry2.m_statName = "Helloworld";
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 81245;
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 12345678;
+        EXPECT_NE(entry1, entry2);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_CreateIfNotExist)
+    {
+        // create entry if StatName is not seen
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_createIfNotExist";
+        statEntry.m_statValue = 1853;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat and read the stat. Stat read and stat written should be the same.
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        EXPECT_EQ(statContainer.size(), 1);
+        EXPECT_EQ(statContainer.at(0), statEntry);
+        statContainer.clear();
+
+        //! Ensure one element is added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_UpdateIfExist)
+    {
+        // replace the entry if the StatName is in the asset database
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_updateIfExist";
+        statEntry.m_statValue = 8432;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+
+        //! Insert a stat with the same StatName. The old one should be replaced.
+        StatDatabaseEntry secondStatEntry;
+        secondStatEntry.m_statName = statEntry.m_statName;
+        secondStatEntry.m_statValue = 16384;
+        secondStatEntry.m_lastLogTime = 23570;
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(secondStatEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        ASSERT_EQ(statContainer.size(), 1);
+        ASSERT_NE(statContainer.at(0), statEntry);
+        ASSERT_EQ(statContainer.at(0), secondStatEntry);
+
+        //! Ensure the element is replaced, not added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        ASSERT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, QueryStatsTable)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntryContainer statContainer;
+        auto getAllStats = [&statContainer](StatDatabaseEntry& stat)
+        {
+            statContainer.push_back(stat);
+            return true;
+        };
+        ASSERT_TRUE(m_data->m_connection.QueryStatsTable(getAllStats));
+        ASSERT_TRUE(statContainer.size() == StatCount);
+
+        // check the items are identical to what we inserted
+        AZStd::sort(
+            statContainer.begin(),
+            statContainer.end(),
+            [](const StatDatabaseEntry& lhs, const StatDatabaseEntry& rhs)
+            {
+                return lhs.m_statName != rhs.m_statName  ? lhs.m_statName < rhs.m_statName
+                    : lhs.m_statValue != rhs.m_statValue ? lhs.m_statValue < rhs.m_statValue
+                                                         : lhs.m_lastLogTime < rhs.m_lastLogTime;
+            });
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            EXPECT_EQ(statEntry, statContainer[i]);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatByStatName)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            StatDatabaseEntryContainer statContainer;
+            ASSERT_TRUE(m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer));
+            ASSERT_EQ(statContainer.size(), 1);
+            EXPECT_EQ(statContainer[0], statEntry);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatLikeStatName)
+    {
+        const unsigned int StatCountPerPrefix = 5;
+        AZStd::array<AZStd::string, 4> prefixes{ "Apple_", "Banana_", "Orange_", "Grape_" };
+        for (const auto& prefix : prefixes)
+        {
+            InsertStatsTestData(StatCountPerPrefix, prefix);
+        }
+
+        //! Make sure we insert right number of entries
+        {
+            unsigned int entryCount{ 0 };
+            auto countAllStats = [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            };
+            ASSERT_TRUE(m_data->m_connection.QueryStatsTable(countAllStats));
+            ASSERT_EQ(entryCount, StatCountPerPrefix * prefixes.size());
+        }
+        
+        //! Query StatName like prefixes
+        for (const auto& prefix : prefixes)
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container));
+            EXPECT_EQ(container.size(), StatCountPerPrefix);
+        }
+
+        //! Query StatName like suffixes
+        char query[] = "%a";
+        for (unsigned int i = 0; i < StatCountPerPrefix; ++i, ++query[1])
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName(query, container));
+            EXPECT_EQ(container.size(), prefixes.size());
+        }
     }
 
     class QueryLoggingTraceHandler : public AZ::Debug::TraceMessageBus::Handler

@@ -74,10 +74,12 @@ namespace AssetProcessor
         PopulateJobStateCache();
 
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Register(m_platformConfig);
     }
 
     AssetProcessorManager::~AssetProcessorManager()
     {
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Unregister(m_platformConfig);
         AssetProcessor::ProcessingJobInfoBus::Handler::BusDisconnect();
     }
 
@@ -224,7 +226,11 @@ namespace AssetProcessor
         }
         else
         {
-            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            QString statKey = QString("ProcessJob,%1,%2,%3,%4")
+                                  .arg(jobEntry.m_databaseSourceName)
+                                  .arg(jobEntry.m_jobKey)
+                                  .arg(jobEntry.m_platformInfo.m_identifier.c_str())
+                                  .arg(jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
 
             if (status == JobStatus::InProgress)
             {
@@ -240,7 +246,13 @@ namespace AssetProcessor
                 // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AZStd::optional<AZStd::sys_time_t> operationDuration =
+                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
+
+                if (operationDuration)
+                {
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<int>(operationDuration.value()));
+                }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
@@ -2284,7 +2296,10 @@ namespace AssetProcessor
 
     void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
     {
-        if (AssetUtilities::ServerAddress().isEmpty())
+        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
+        if (assetServerMode == AssetServerMode::Inactive)
         {
             // Asset Cache Server mode feature is turned off
             return;
@@ -2296,21 +2311,20 @@ namespace AssetProcessor
         }
 
         auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
-        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        for(const auto& cacheRecognizerPair : cacheRecognizerContainer)
         {
-            auto matchingPatternIt = AZStd::find_if(
-                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
-                jobDetails.m_assetBuilderDesc.m_patterns.end(),
-                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
-                {
-                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
-                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
-                }
-            );
+            auto& cacheRecognizer = cacheRecognizerPair.second;
 
-            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            bool matchFound =
+                cacheRecognizer.m_patternMatcher.MatchesPath(jobDetails.m_jobEntry.m_databaseSourceName.toUtf8().data());
+
+            bool builderNameMatches =
+                cacheRecognizer.m_name.compare(jobDetails.m_assetBuilderDesc.m_name.c_str()) == 0;
+
+            if (matchFound || builderNameMatches)
             {
                 jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+                return;
             }
         }
     }
@@ -3097,13 +3111,13 @@ namespace AssetProcessor
         {
             return;
         }
-        
+
         IFileStateRequests* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
         if (!fileStateCache)
         {
             return;
         }
-        
+
         // the strategy here is to only warm up the file cache if absolutely everything
         // is okay - the mod time must match last time, the file must exist, the hash must be present
         // and non zero from last time.  If anything at all is not correct, we will not warm the
@@ -3160,11 +3174,11 @@ namespace AssetProcessor
         AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
         WarmUpFileCache(filePaths);
         AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
-        
+
         int processedFileCount = 0;
-        
+
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
-        
+
         for (const AssetFileInfo& fileInfo : filePaths)
         {
             if (m_allowModtimeSkippingFeature)
@@ -3200,7 +3214,7 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
-        
+
         AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
     }
 
@@ -3741,7 +3755,7 @@ namespace AssetProcessor
                 QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
                 AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
             }
 
             AssetProcessor::SetThreadLocalJobId(0);
@@ -3869,18 +3883,11 @@ namespace AssetProcessor
                         {
                             if (auto result = jobDependenciesDuplicateCheck.insert(jobDependency); !result.second)
                             {
-                                auto warningMessage = AZStd::string::format(
-                                    "Builder `%s` declared duplicate Job Dependencies for file `%s`.  Dependency: (`%s` `%s` `%s`).  Duplicates will be skipped.  "
-                                    "Please update the builder or content to remove the duplicates.",
-                                    builderInfo.m_name.c_str(),
-                                    actualRelativePath.toUtf8().constData(),
-                                    jobDependency.m_sourceFile.ToString().c_str(),
-                                    jobDependency.m_jobKey.c_str(),
-                                    jobDependency.m_platformIdentifier.c_str());
-
-                                AZ_Warning(AssetProcessor::DebugChannel, false, "%s", warningMessage.c_str());
-
-                                newJob.m_warnings.push_back(AZStd::move(warningMessage));
+                                // It is not an error or warning to supply the same job dependency
+                                // repeatedly as a duplicate.  It is common for builders to be parsing
+                                // source files which may mention the same dependency repeatedly.
+                                // Rather than require all of them do filtering on their end, it is
+                                // cleaner to do the de-duplication here and drop the duplicates.
 
                                 continue;
                             }
@@ -3936,6 +3943,9 @@ namespace AssetProcessor
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
+
+        // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
+        Q_EMIT CreateJobsDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
@@ -4649,6 +4659,15 @@ namespace AssetProcessor
         }
     }
 
+    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderId() const
+    {
+        if (!m_platformConfig)
+        {
+            return AZStd::nullopt;
+        }
+        return m_platformConfig->GetIntermediateAssetsScanFolderId();
+    }
+
     void AssetProcessorManager::CheckAssetProcessorIdleState()
     {
         Q_EMIT AssetProcessorManagerIdleState(IsIdle());
@@ -5022,8 +5041,7 @@ namespace AssetProcessor
                         entry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                         {
-                            container.push_back();
-                            container.back() = AZStd::move(entry);
+                            container.emplace_back() = AZStd::move(entry);
                             return true; // return true to keep iterating over further rows.
                         });
 
@@ -5358,29 +5376,6 @@ namespace AssetProcessor
 
         if (dirCheck.isDir())
         {
-            QString scanFolderName;
-            QString relativePathToFile;
-            QString searchPath;
-
-            if (!m_platformConfig->ConvertToRelativePath(normalizedSourcePath, relativePathToFile, scanFolderName))
-            {
-                return 0;
-            }
-
-            // If we have a path beyond the scanFolder we need to keep that as part of our search string
-            if (sourcePathRequest.length() > scanFolderName.length())
-            {
-                searchPath = sourcePathRequest.mid(scanFolderName.length() + 1);
-            }
-            // Forward slash intended regardless of platform, see inside FindWildcardMatches
-            if (searchPath.length() && !searchPath.endsWith('/'))
-            {
-                searchPath += "/*";
-            }
-            else
-            {
-                searchPath += "*";
-            }
             auto result = AzFramework::FileFunc::FindFilesInPath(sourcePathRequest.toUtf8().constData(), "*", true);
 
             if (result)

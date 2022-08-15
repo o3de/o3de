@@ -309,6 +309,9 @@ namespace AZ
             // because they execute at a lower frequency
             m_skinningDispatches.clear();
             m_morphTargetDispatches.clear();
+
+            m_alreadyCreatedSkinningScopeThisFrame = false;
+            m_alreadyCreatedMorphTargetScopeThisFrame = false;
         }
 
         SkinnedMeshFeatureProcessor::SkinnedMeshHandle SkinnedMeshFeatureProcessor::AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc)
@@ -417,24 +420,56 @@ namespace AZ
             m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SetupSkinningScope(RHI::FrameGraphInterface frameGraph)
         {
-            AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_skinningDispatches)
+            if (m_alreadyCreatedSkinningScopeThisFrame)
             {
-                commandList->Submit(*dispatchItem);
+                frameGraph.SetEstimatedItemCount(0);
             }
-            m_skinningDispatches.clear();
+            else
+            {
+                frameGraph.SetEstimatedItemCount((u32)m_skinningDispatches.size());
+                m_alreadyCreatedSkinningScopeThisFrame = true;
+            }
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SetupMorphTargetScope(RHI::FrameGraphInterface frameGraph)
+        {
+            if (m_alreadyCreatedMorphTargetScopeThisFrame)
+            {
+                frameGraph.SetEstimatedItemCount(0);
+            }
+            else
+            {
+                frameGraph.SetEstimatedItemCount((u32)m_morphTargetDispatches.size());
+                m_alreadyCreatedMorphTargetScopeThisFrame = true;
+            }
+        }
+
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_morphTargetDispatches)
+
+            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_skinningDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
-                commandList->Submit(*dispatchItem);
+                const RHI::DispatchItem* dispatchItem = *it;
+                commandList->Submit(*dispatchItem, index);
             }
-            m_morphTargetDispatches.clear();
+        }
+
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
+        {
+            AZStd::lock_guard lock(m_dispatchItemMutex);
+
+            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_morphTargetDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
+            {
+                const RHI::DispatchItem* dispatchItem = *it;
+                commandList->Submit(*dispatchItem, index);
+            }
         }
 
         Data::Instance<RPI::Shader> SkinnedMeshFeatureProcessor::GetSkinningShader() const

@@ -8,6 +8,7 @@
 
 #include <AzCore/Utils/Utils.h>
 
+#include <cerrno>
 #include <cstdlib>
 #include <pwd.h>
 
@@ -20,11 +21,16 @@ namespace AZ::Utils
 
     void NativeErrorMessageBox(const char*, const char*) {}
 
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
         constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
         AZ::IO::FixedMaxPathString overrideHomeDir;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
         {
             if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
             {

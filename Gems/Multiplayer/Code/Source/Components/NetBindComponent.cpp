@@ -112,7 +112,7 @@ namespace Multiplayer
                     return netBindComponent->IsNetEntityRoleClient();
                 })
 
-            ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
+                ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
@@ -128,7 +128,24 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleServer();
                 })
-            ;
+
+                ->Method("MarkForRemoval", [](AZ::EntityId id) {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                        return;
+                    }
+
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent MarkForRemoval failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return;
+                    }
+
+                    AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(netBindComponent->GetEntityHandle());
+                });
         }
     }
 
@@ -220,7 +237,7 @@ namespace Multiplayer
     bool NetBindComponent::IsNetEntityRoleAutonomous() const
     {
         return (m_netEntityRole == NetEntityRole::Autonomous)
-            || (m_netEntityRole == NetEntityRole::Authority) && m_allowAutonomy;
+            || (m_netEntityRole == NetEntityRole::Authority) && m_playerHostAutonomyEnabled;
     }
 
     bool NetBindComponent::IsNetEntityRoleServer() const
@@ -288,10 +305,53 @@ namespace Multiplayer
         return m_owningConnectionId;
     }
 
-    void NetBindComponent::SetAllowAutonomy(bool value)
+    void NetBindComponent::EnablePlayerHostAutonomy(bool enabled)
     {
-        // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
-        m_allowAutonomy = value;
+        if (m_playerHostAutonomyEnabled == enabled)
+        {
+            return; // nothing to change
+        }
+
+        if (!IsNetEntityRoleAuthority())
+        {
+            AZ_Error("NetBindComponent", false,
+                "Failed to enable player host autonomy for network entity (%s). Entity has incorrect network role (%s). This method only allows a player host to autonomously control their player entity.",
+                GetEntity()->GetName().c_str(),
+                GetEnumString(GetNetEntityRole()));
+            return;
+        }
+
+        // If the entity is already activated then deactivate all of the entity's multiplayer controllers before changing autonomy.
+        // Multiplayer controllers will commonly perform different logic during their "OnActivate" depending on if the entity is autonomous.
+        if (GetEntity()->GetState() == AZ::Entity::State::Active)
+        {
+            // deactivate controllers in reverse dependency order
+            const AZ::Entity::ComponentArrayType& components = GetEntity()->GetComponents();
+            for (auto componentIter = components.rbegin(); componentIter != components.rend(); ++componentIter)
+            {
+                if (auto multiplayerComponent = azrtti_cast<MultiplayerComponent*>(*componentIter))
+                {
+                    multiplayerComponent->GetController()->Deactivate(EntityIsMigrating::False);
+                }
+            }
+
+            // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
+            m_playerHostAutonomyEnabled = enabled;
+
+            // reactivate the controllers now that allow autonomy is true
+            for (auto component : components)
+            {
+                if (auto multiplayerComponent = azrtti_cast<MultiplayerComponent*>(component))
+                {
+                    multiplayerComponent->GetController()->Activate(EntityIsMigrating::False);
+                }
+            }
+        }
+        else // This entity isn't activated yet, so there's no need to refresh its multiplayer component controllers
+        {
+            // This flag allows a player host to autonomously control their player entity, even though the entity is in an authority role
+            m_playerHostAutonomyEnabled = enabled;
+        }
     }
 
     MultiplayerComponentInputVector NetBindComponent::AllocateComponentInputs()

@@ -28,7 +28,6 @@
 
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
-#include <EMotionFX/Source/StandardMaterial.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <MCore/Source/AzCoreConversions.h>
 
@@ -114,15 +113,6 @@ namespace EMotionFX
             const AZ::u32 exfxNodeCount = aznumeric_cast<AZ::u32>(nodeIndices.size());
             actor->SetNumNodes(aznumeric_cast<AZ::u32>(exfxNodeCount));
             actor->ResizeTransformData();
-
-            // Add a standard material
-            // This material is used within the existing EMotionFX GL window. The engine will use a native engine material at runtime. The GL window will also be replaced by a native engine viewport
-            EMotionFX::StandardMaterial* defaultMat = EMotionFX::StandardMaterial::Create("Default");
-            defaultMat->SetAmbient(MCore::RGBAColor(0.0f, 0.0f, 0.0f));
-            defaultMat->SetDiffuse(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetSpecular(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetShine(100.0f);
-            actor->AddMaterial(0, defaultMat);
 
             EMotionFX::Pose* bindPose = actor->GetBindPose();
             AZ_Assert(bindPose, "BindPose not available for actor");

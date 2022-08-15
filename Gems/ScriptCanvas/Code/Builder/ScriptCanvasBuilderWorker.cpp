@@ -45,6 +45,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Creating Job: %s", fullPath.c_str());
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+        const_cast<Worker*>(this)->m_sourceUuid = request.m_sourceFileUUID;
 
         const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
@@ -53,7 +54,7 @@ namespace ScriptCanvasBuilder
         // By default, entity IDs are made unique, so that multiple instances of the script canvas file can be loaded at the same time.
         // However, in this case the file is not loaded multiple times at once, and the entity IDs need to be stable so that
         // the logic used to generate the fingerprint for this file remains stable.
-        auto result = LoadFromFile(fullPath, MakeInternalGraphEntitiesUnique::No);
+        auto result = LoadFromFile(fullPath, MakeInternalGraphEntitiesUnique::No, LoadReferencedAssets::No);
         if (result)
         {
             sourceHandle = result.m_handle;
@@ -120,7 +121,7 @@ namespace ScriptCanvasBuilder
             if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
             {
                 const auto* subgraphAsset = reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
-                if (subgraphAsset->GetId().IsValid())
+                if (subgraphAsset->GetId().IsValid() && subgraphAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = subgraphAsset->GetId().m_guid;
@@ -132,7 +133,7 @@ namespace ScriptCanvasBuilder
             else if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>>())
             {
                 const auto* eventAsset = reinterpret_cast<AZ::Data::Asset<const ScriptEvents::ScriptEventsAsset>*>(instancePointer);
-                if (eventAsset->GetId().IsValid())
+                if (eventAsset->GetId().IsValid() && eventAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = eventAsset->GetId().m_guid;

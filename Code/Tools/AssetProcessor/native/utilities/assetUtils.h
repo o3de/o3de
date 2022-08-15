@@ -84,21 +84,6 @@ namespace AssetUtilities
     //! Updates the branch token in the bootstrap file
     bool UpdateBranchToken();
 
-    //! Checks to see if the asset processor is running in server mode
-    bool InServerMode();
-
-    //! Clears the server flag
-    void ResetServerMode();
-
-    //! Checks the args for the server parameter, returns true if found otherwise false.
-    bool CheckServerMode();
-
-    //! Reads the server address from the config file.
-    QString ServerAddress();
-
-    //! Clears the string holding the server address for the Cache Server mode
-    void ResetServerAddress();
-
     bool ShouldUseFileHashing();
 
     //! Determine the name of the current project - for example, AutomatedTesting
@@ -288,6 +273,10 @@ namespace AssetUtilities
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AZStd::string> GetAllIntermediateSources(
         AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+    
+    //! Given a source path for an intermediate asset, constructs the product path.
+    //! This does not verify either exist, it just manipulates the string.
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
 
     //! Helper class that provides various paths related to a single output asset.
     //! Files are not guaranteed to exist at the given path.

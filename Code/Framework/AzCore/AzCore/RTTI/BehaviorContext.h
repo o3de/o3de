@@ -1771,7 +1771,7 @@ namespace AZ
             ClassBuilder* Property(const char* name, Getter getter, Setter setter);
 
             /// All enums are treated as the enum type
-            template<auto Value, typename T = decltype(Value)>
+            template<auto Value>
             ClassBuilder* Enum(const char* name);
 
             template<class Getter>
@@ -1871,7 +1871,7 @@ namespace AZ
         GlobalPropertyBuilder Property(const char* name, Getter getter, Setter setter);
 
         /// All enums are treated as the enum type
-        template<auto Value, typename T = decltype(Value)>
+        template<auto Value>
         BehaviorContext* Enum(const char* name);
 
         template<auto Value, typename T = decltype(Value)>
@@ -3503,7 +3503,7 @@ namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     template<class C>
-    template<auto Value, typename T>
+    template<auto Value>
     BehaviorContext::ClassBuilder<C>* BehaviorContext::ClassBuilder<C>::Enum(const char* name)
     {
         Property(name, []() { return Value; }, nullptr);
@@ -3600,7 +3600,7 @@ namespace AZ
     }
 
     //////////////////////////////////////////////////////////////////////////
-    template<auto Value, typename T>
+    template<auto Value>
     BehaviorContext* BehaviorContext::Enum(const char* name)
     {
         Property(name, []() { return Value; }, nullptr);
@@ -3957,17 +3957,22 @@ namespace AZ
             (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::function_type>::QueueReflect(onDemandReflection), ...);
         }
 
+        // First removes the const and reference qualifiers from the argument type, next remove any pointer decoration from that type
+        // and finally if that type is an enum type, convert it to the underlying integral type
+        template<class T>
+        using UnqualifiedRemovePointerUnderlyingType = AZStd::RemoveEnumT<AZStd::remove_pointer_t<AZStd::decay_t<T>>>;
+
         // Assumes parameters array is big enough to store all parameters
         template<class... Args>
         inline void SetParametersStripped(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
         {
             // +1 to avoid zero array size
-            Uuid argumentTypes[sizeof...(Args)+1] = { AzTypeInfo<AZStd::remove_pointer_t<AZStd::remove_cvref_t<Args>>>::Uuid()... };
+            Uuid argumentTypes[sizeof...(Args) + 1] = { AzTypeInfo<UnqualifiedRemovePointerUnderlyingType<Args>>::Uuid()... };
             const char* argumentNames[sizeof...(Args)+1] = { AzTypeInfo<Args>::Name()... };
-            bool argumentIsPointer[sizeof...(Args)+1] = { AZStd::is_pointer<typename AZStd::remove_reference<Args>::type>::value... };
-            bool argumentIsConst[sizeof...(Args)+1] = { AZStd::is_const<typename AZStd::remove_pointer<Args>::type>::value... };
-            bool argumentIsReference[sizeof...(Args)+1] = { AZStd::is_reference<Args>::value... };
-            IRttiHelper* rttiHelper[sizeof...(Args)+1] = { GetRttiHelper<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>()... };
+            bool argumentIsPointer[sizeof...(Args)+1] = { AZStd::is_pointer_v<AZStd::remove_reference_t<Args>>... };
+            bool argumentIsConst[sizeof...(Args)+1] = { AZStd::is_const_v<AZStd::remove_pointer_t<AZStd::remove_reference_t<Args>>>... };
+            bool argumentIsReference[sizeof...(Args)+1] = { AZStd::is_reference_v<Args>... };
+            IRttiHelper* rttiHelper[sizeof...(Args)+1] = { GetRttiHelper<UnqualifiedRemovePointerUnderlyingType<Args>>()... };
             (void)argumentIsPointer; (void)argumentIsConst; (void)argumentIsReference;
             // function / member function pointer ?
             for (size_t i = 0; i < sizeof...(Args); ++i)
@@ -3990,7 +3995,7 @@ namespace AZ
             if (onDemandReflection)
             {
                 // deal with OnDemand reflection
-                StaticReflectionFunctionPtr reflectHooks[sizeof...(Args)+1] = { OnDemandReflectHook<typename AZStd::remove_pointer<typename AZStd::decay<Args>::type>::type>::Get()... };
+                StaticReflectionFunctionPtr reflectHooks[sizeof...(Args)+1] = { OnDemandReflectHook<UnqualifiedRemovePointerUnderlyingType<Args>>::Get()... };
                 for (size_t i = 0; i < sizeof...(Args); ++i)
                 {
                     if (reflectHooks[i])
@@ -4003,7 +4008,7 @@ namespace AZ
         template<class... Args>
         inline void SetParameters(BehaviorParameter* parameters, OnDemandReflectionOwner* onDemandReflection)
         {
-            SetParametersStripped<AZStd::RemoveEnumT<Args>...>(parameters, onDemandReflection);
+            SetParametersStripped<Args...>(parameters, onDemandReflection);
         }
 
         //////////////////////////////////////////////////////////////////////////
