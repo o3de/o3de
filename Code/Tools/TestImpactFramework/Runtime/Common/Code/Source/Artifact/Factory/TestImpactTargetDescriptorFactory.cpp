@@ -127,7 +127,7 @@ namespace TestImpact
         }
         else
         {
-            throw(ArtifactException("Unexpected target type"));
+            throw(ArtifactException(AZStd::string::format("Unexpected target type '%s'", targetTypeString)));
         }
 
         AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
