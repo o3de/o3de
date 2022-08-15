@@ -29,15 +29,11 @@ namespace ScriptCanvas
     public:
         AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator, 0);
 
-        SourceTree* m_parent = nullptr;
         SourceHandle m_source;
         AZStd::vector<SourceTree> m_dependencies;
-
-        SourceTree* ModRoot();
-        void SetParent(SourceTree& parent);
         AZStd::string ToString(size_t depth = 0) const;
     };
-
+        
     enum class MakeInternalGraphEntitiesUnique
     {
         No,

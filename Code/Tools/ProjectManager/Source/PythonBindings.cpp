@@ -853,10 +853,6 @@ namespace O3DE::ProjectManager
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
                 }
-                else if (gemInfo.m_creator.contains("Amazon Web Services"))
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
-                }
                 else if (data.contains("origin"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;

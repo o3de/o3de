@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 class CCryEditApp;
+class MainWindow;
 class QMainWindow;
 class QtViewPaneManager;
 class QWidget;
@@ -37,7 +38,7 @@ class EditorActionsHandler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
 public:
-    void Initialize(QMainWindow* mainWindow);
+    void Initialize(MainWindow* mainWindow);
     ~EditorActionsHandler();
 
 private:
@@ -64,19 +65,31 @@ private:
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(
         const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList& newlyDeselectedEntities) override;
-    virtual void AfterUndoRedo() override;
+    void AfterUndoRedo() override;
     void OnEndUndo(const char* label, bool changed) override;
 
     // ViewportSettingsNotificationBus overrides ...
     void OnAngleSnappingChanged(bool enabled) override;
+    void OnDrawHelpersChanged(bool enabled) override;
     void OnGridSnappingChanged(bool enabled) override;
+    void OnIconsVisibilityChanged(bool enabled) override;
+
+    // Layouts
+    void RefreshLayoutActions();
 
     // Recent Files
     bool IsRecentFileActionActive(int index);
     void UpdateRecentFileActions();
 
+    // Toolbox Macros
+    void RefreshToolboxMacroActions();
+
     // Tools
     void RefreshToolActions();
+
+    // View Bookmarks
+    int m_defaultBookmarkCount = 12;
+    void InitializeViewBookmarkActions();
 
     bool m_initialized = false;
 
@@ -89,10 +102,12 @@ private:
     AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
 
     CCryEditApp* m_cryEditApp;
-    QMainWindow* m_mainWindow;
+    MainWindow* m_mainWindow;
     QtViewPaneManager* m_qtViewPaneManager;
 
+    AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
+    AZStd::vector<AZStd::string> m_toolboxMacroActionIdentifiers;
 
     bool m_isPrefabSystemEnabled = false;
 };

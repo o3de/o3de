@@ -71,6 +71,8 @@ function(ly_create_alias)
         ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
         # copy over all the dependent target interface properties to the alias
         o3de_copy_targets_usage_requirements(TARGET ${ly_create_alias_NAME} SOURCE_TARGETS ${final_targets})
+        # Register the targets this alias aliases
+        set_property(GLOBAL APPEND PROPERTY O3DE_ALIASED_TARGETS_${ly_create_alias_NAME} ${final_targets})
     endif()
 
     # now add the final alias:
