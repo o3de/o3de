@@ -146,8 +146,8 @@ namespace UnitTest
 
         // Create and activate the terrain system with world height min/max of 5 and 15.
         const float queryResolution = 1.0f;
-        const AZ::Aabb terrainWorldBounds = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 5.0f, 20.0f, 20.0f, 15.0f);
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, terrainWorldBounds);
+        AzFramework::Terrain::FloatRange heightBounds = { 5.0f, 15.0f };
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
 
         // Test a set of points from (0,0) - (20,20). If the world min/max clamp is working, we should always get 5 <= height <= 15.
         for (float x = 0.0f; x <= 20.0f; x += queryResolution)
@@ -158,8 +158,8 @@ namespace UnitTest
                 terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &heightQueryTerrainExists);
 
             // Verify all the heights are between 5 and 15.
-            EXPECT_GE(height, terrainWorldBounds.GetMin().GetZ());
-            EXPECT_LE(height, terrainWorldBounds.GetMax().GetZ());
+            EXPECT_GE(height, heightBounds.m_min);
+            EXPECT_LE(height, heightBounds.m_max);
         }
     }
 
@@ -181,7 +181,8 @@ namespace UnitTest
 
         // Create and activate the terrain system with a world bounds that matches the spawner box, and a query resolution of 10.
         const float queryResolution = 10.0f;
-        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, spawnerBox);
+        AzFramework::Terrain::FloatRange heightBounds = { spawnerBox.GetMin().GetZ(), spawnerBox.GetMax().GetZ() };
+        auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
 
         for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
                               AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
@@ -259,7 +260,8 @@ namespace UnitTest
         // Create and activate the terrain system with a world bounds that matches the spawner box, and a query resolution of 10.
         const float heightQueryResolution = 1.0f;
         const float surfaceQueryResolution = 10.0f;
-        auto terrainSystem = CreateAndActivateTerrainSystem(heightQueryResolution, surfaceQueryResolution, spawnerBox);
+        AzFramework::Terrain::FloatRange heightBounds = { spawnerBox.GetMin().GetZ(), spawnerBox.GetMax().GetZ() };
+        auto terrainSystem = CreateAndActivateTerrainSystem(heightQueryResolution, surfaceQueryResolution, heightBounds);
 
         for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
                               AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,

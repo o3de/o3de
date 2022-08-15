@@ -14,7 +14,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>
@@ -377,12 +376,6 @@ namespace AzToolsFramework
         Components::EditorComponentBase::Reflect(context);
         EditorAssetMimeDataContainer::Reflect(context);
         ComponentAssetMimeDataContainer::Reflect(context);
-
-        AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
 
         AssetEditor::AssetEditorWindowSettings::Reflect(context);
         AssetEditor::AssetEditorWidgetUserSettings::Reflect(context);

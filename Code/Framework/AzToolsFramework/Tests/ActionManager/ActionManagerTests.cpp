@@ -25,7 +25,6 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
     }
 
-    
     TEST_F(ActionManagerFixture, VerifyActionContextIsRegistered)
     {
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);

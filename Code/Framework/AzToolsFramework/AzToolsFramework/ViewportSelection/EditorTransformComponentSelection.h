@@ -17,8 +17,10 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
@@ -35,8 +37,14 @@
 
 namespace AzToolsFramework
 {
+    namespace ComponentModeFramework
+    {
+        class ComponentModeSwitcher;
+    }
+
     class ActionManagerInterface;
     class MenuManagerInterface;
+
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -185,6 +193,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateComponentModeSwitcher();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
@@ -245,6 +254,7 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
+        void OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher>) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus overrides ...
         void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
@@ -350,6 +360,8 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        //! Viewport UI Switcher for showing component mode components.
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher; 
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;

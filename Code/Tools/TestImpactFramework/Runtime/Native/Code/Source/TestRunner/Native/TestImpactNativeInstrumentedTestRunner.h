@@ -24,36 +24,33 @@ namespace TestImpact
         : public TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>
     {
     public:
-        using TestImpact::TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
-    };
+        using TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
 
-    template<>
-    inline NativeInstrumentedTestRunner::JobPayloadOutcome PayloadFactory(
-        const NativeInstrumentedTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
-    {
-        AZStd::optional<TestRun> run;
-        try
+    protected:
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override
         {
-            run = TestRun(
-                GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
-                jobMeta.m_duration.value());
-        }
-        catch (const Exception& e)
-        {
-            // No run result is not necessarily a failure (e.g. test targets not using gtest)
-            AZ_Printf("NativeInstrumentedTestRunJobData", AZStd::string::format("%s\n.", e.what()).c_str());
-        }
+            AZStd::optional<TestRun> run;
+            try
+            {
+                run = TestRun(
+                    GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
+                    jobMeta.m_duration.value());
+            } catch (const Exception& e)
+            {
+                // No run result is not necessarily a failure (e.g. test targets not using gtest)
+                AZ_Printf("NativeInstrumentedTestRunJobData", AZStd::string::format("%s\n.", e.what()).c_str());
+            }
 
-        try
-        {
-            AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(
-                ReadFileContents<TestRunnerException>(jobData.GetCoverageArtifactPath()));
-            return AZ::Success(NativeInstrumentedTestRunner::JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
-        }
-        catch (const Exception& e)
-        {
-            return AZ::Failure(AZStd::string(e.what()));
+            try
+            {
+                AZStd::vector<ModuleCoverage> moduleCoverages =
+                    Cobertura::ModuleCoveragesFactory(ReadFileContents<TestRunnerException>(jobData.GetCoverageArtifactPath()));
+                return AZ::Success(JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
+            }
+            catch (const Exception& e)
+            {
+                return AZ::Failure(AZStd::string(e.what()));
+            }
         }
     };
-
 } // namespace TestImpact

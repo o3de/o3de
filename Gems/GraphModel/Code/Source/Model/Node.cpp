@@ -239,6 +239,19 @@ namespace GraphModel
         return m_id;
     }
 
+    bool Node::HasConnections() const
+    {
+        for (const auto& slotPair : GetSlots())
+        {
+            const auto& slot = slotPair.second;
+            if (!slot->GetConnections().empty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool Node::HasInputConnections() const
     {
         for (const auto& slotPair : GetSlots())

@@ -24,6 +24,27 @@ namespace AZ
     {
         namespace Events
         {
+            // an internal scope object that is active during a scene import
+            struct ImportScope final
+                : public AZ::SceneAPI::Events::AssetPostImportRequestBus::Handler
+            {
+                ImportScope()
+                {
+                    AZ::SceneAPI::Events::AssetPostImportRequestBus::Handler::BusConnect();
+                }
+
+                ~ImportScope()
+                {
+                    AZ::SceneAPI::Events::AssetPostImportRequestBus::ExecuteQueuedEvents();
+                    AZ::SceneAPI::Events::AssetPostImportRequestBus::Handler::BusDisconnect();
+                }
+
+                void CallAfterSceneExport(AZStd::function<void()> callback) override
+                {
+                    callback();
+                }
+            };
+
             //
             // Loading Result Combiner
             //
@@ -114,6 +135,7 @@ namespace AZ
             AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
                                                                                                RequestingApplication requester, const Uuid& loadingComponentUuid)
             {
+                ImportScope importScope;
                 AZStd::string sceneName;
                 AzFramework::StringFunc::Path::GetFileName(assetFilePath.c_str(), sceneName);
                 AZStd::shared_ptr<Containers::Scene> scene = AZStd::make_shared<Containers::Scene>(AZStd::move(sceneName));

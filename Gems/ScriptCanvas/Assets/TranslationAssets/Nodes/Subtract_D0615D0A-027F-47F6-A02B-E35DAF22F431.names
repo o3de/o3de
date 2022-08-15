@@ -7,7 +7,7 @@
             "details": {
                 "name": "Subtract (-)",
                 "category": "Math",
-                "tooltip": "Subtracts two of more elements"
+                "tooltip": "Subtracts two or more elements"
             },
             "slots": [
                 {

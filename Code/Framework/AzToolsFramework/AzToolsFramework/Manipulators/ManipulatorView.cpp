@@ -11,7 +11,6 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
@@ -388,7 +387,7 @@ namespace AzToolsFramework
 
         if (manipulatorState.m_mouseOver)
         {
-            debugDisplay.SetColor(Vector3ToVector4(m_mouseOverColor.GetAsVector3(), 0.5f));
+            debugDisplay.SetColor(AZ::Vector4(m_mouseOverColor.GetAsVector3(), 0.5f));
 
             debugDisplay.CullOff();
             debugDisplay.DrawQuad(
@@ -678,7 +677,7 @@ namespace AzToolsFramework
 
         debugDisplay.CullOn();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
-        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
+        debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor));
         m_drawCircleFunc(
             debugDisplay, manipulatorState.m_localPosition, torusBound.m_majorRadius,
             worldFromLocalWithOrientation.GetInverse().TransformPoint(cameraState.m_position));
@@ -863,9 +862,7 @@ namespace AzToolsFramework
     AZ::Vector3 CalculateViewDirection(const Manipulators& manipulators, const AZ::Vector3& worldViewPosition)
     {
         const AZ::Transform worldFromLocalWithTransform = manipulators.GetSpace() * manipulators.GetLocalTransform();
-
-        AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
-
+        const AZ::Vector3 lookDirection = (worldFromLocalWithTransform.GetTranslation() - worldViewPosition).GetNormalized();
         return TransformDirectionNoScaling(worldFromLocalWithTransform.GetInverse(), lookDirection);
     }
 } // namespace AzToolsFramework

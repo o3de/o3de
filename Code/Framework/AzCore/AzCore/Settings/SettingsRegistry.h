@@ -119,39 +119,27 @@ namespace AZ
             JsonMergePatch  //!< Using the json merge patch format to merge JSON data into the Settings Registry.
         };
 
-        using NotifyCallback = AZStd::function<void(AZStd::string_view path, Type type)>;
-        using NotifyEvent = AZ::Event<AZStd::string_view, Type>;
+        struct NotifyEventArgs
+        {
+            AZStd::string_view m_jsonKeyPath;
+            Type m_type = Type::NoType;
+            AZStd::string_view m_mergeFilePath;
+        };
+        using NotifyCallback = AZStd::function<void(const NotifyEventArgs& notifierArgs)>;
+        using NotifyEvent = AZ::Event<const NotifyEventArgs&>;
         using NotifyEventHandler = typename NotifyEvent::Handler;
 
-        using PreMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
-        using PostMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
-        using PreMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
-        using PostMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
+        struct MergeEventArgs
+        {
+            AZStd::string_view m_mergeFilePath;
+            AZStd::string_view m_jsonKeyPath;
+        };
+        using PreMergeEventCallback = AZStd::function<void(const MergeEventArgs&)>;
+        using PostMergeEventCallback = AZStd::function<void(const MergeEventArgs&)>;
+        using PreMergeEvent = AZ::Event<const MergeEventArgs&>;
+        using PostMergeEvent = AZ::Event<const MergeEventArgs&>;
         using PreMergeEventHandler = typename PreMergeEvent::Handler;
         using PostMergeEventHandler = typename PostMergeEvent::Handler;
-
-        struct ScopedMergeEvent
-        {
-            ScopedMergeEvent(
-                PreMergeEvent& preMergeEvent, PostMergeEvent& postMergeEvent, AZStd::string_view filePath, AZStd::string_view rootKey)
-                : m_preMergeEvent{ preMergeEvent }
-                , m_postMergeEvent{ postMergeEvent }
-                , m_filePath{ filePath }
-                , m_rootKey{ rootKey }
-            {
-                preMergeEvent.Signal(m_filePath, m_rootKey);
-            }
-
-            ~ScopedMergeEvent()
-            {
-                m_postMergeEvent.Signal(m_filePath, m_rootKey);
-            }
-
-            PreMergeEvent& m_preMergeEvent;
-            PostMergeEvent& m_postMergeEvent;
-            AZStd::string_view m_filePath;
-            AZStd::string_view m_rootKey;
-        };
 
         using VisitorCallback =
             AZStd::function<VisitResponse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)>;
@@ -374,13 +362,12 @@ namespace AZ
         virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
-        //! Stores the settings structure which is used when merging settings to the Settings Registry
-        //! using JSON Merge Patch or JSON Merge Patch.
-        //! The settings contain an issue reporting callback which can be used to track patching process.
-        //! Potential application of the reporting callback could be to update a UI whenever a key receives an updated value
-        //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
-        virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
-        virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+        //! Indicates whether the Merge functions should send notification events for individual operations
+        //! using JSON Patch or JSON Merge Patch.
+        //! @param notify If true, the patching operations are forwarded through the NotifyEvent
+        virtual void SetNotifyForMergeOperations(bool notify) = 0;
+        //! @return returns true if merge operations signals the notification events
+        virtual bool GetNotifyForMergeOperations() const = 0;
 
         //! Stores option to indicate whether the FileIOBase instance should be used for file operations
         //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
