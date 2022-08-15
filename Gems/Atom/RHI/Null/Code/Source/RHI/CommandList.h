@@ -33,10 +33,10 @@ namespace AZ
             void SetScissors([[maybe_unused]] const RHI::Scissor* scissors, [[maybe_unused]] uint32_t count) override {}
             void SetShaderResourceGroupForDraw([[maybe_unused]] const RHI::ShaderResourceGroup& shaderResourceGroup) override {}
             void SetShaderResourceGroupForDispatch([[maybe_unused]] const RHI::ShaderResourceGroup& shaderResourceGroup) override {}
-            void Submit([[maybe_unused]] const RHI::DrawItem& drawItem) override {}
-            void Submit([[maybe_unused]] const RHI::CopyItem& copyItem) override {}
-            void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem) override {}
-            void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem) override {}
+            void Submit([[maybe_unused]] const RHI::DrawItem& drawItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::CopyItem& copyItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void BeginPredication([[maybe_unused]] const RHI::Buffer& buffer, [[maybe_unused]] uint64_t offset, [[maybe_unused]] RHI::PredicationOp operation) override {}
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas) override {}

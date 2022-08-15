@@ -9,6 +9,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/DomComparison.h>
 #include <AzCore/DOM/DomUtils.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 
@@ -18,16 +19,16 @@ AZ_CVAR(
     false,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "If set, enables debugging change change notifications on DocumentPropertyEditor adapters by validating their contents match their "
+    "If set, enables debugging change notifications on DocumentPropertyEditor adapters by validating their contents match their "
     "emitted patches");
 
 namespace AZ::DocumentPropertyEditor
 {
-    const AZ::Name BoundAdapterMessage::s_typeField = AZ::Name::FromStringLiteral("$type");
-    const AZ::Name BoundAdapterMessage::s_adapterField = AZ::Name::FromStringLiteral("adapter");
-    const AZ::Name BoundAdapterMessage::s_messageNameField = AZ::Name::FromStringLiteral("messageName");
-    const AZ::Name BoundAdapterMessage::s_messageOriginField = AZ::Name::FromStringLiteral("messageOrigin");
-    const AZ::Name BoundAdapterMessage::s_contextDataField = AZ::Name::FromStringLiteral("contextData");
+    const AZ::Name BoundAdapterMessage::s_typeField = AZ::Name::FromStringLiteral("$type", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name BoundAdapterMessage::s_adapterField = AZ::Name::FromStringLiteral("adapter", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name BoundAdapterMessage::s_messageNameField = AZ::Name::FromStringLiteral("messageName", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name BoundAdapterMessage::s_messageOriginField = AZ::Name::FromStringLiteral("messageOrigin", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name BoundAdapterMessage::s_contextDataField = AZ::Name::FromStringLiteral("contextData", AZ::Interface<AZ::NameDictionary>::Get());
 
     Dom::Value DocumentAdapter::GetContents() const
     {

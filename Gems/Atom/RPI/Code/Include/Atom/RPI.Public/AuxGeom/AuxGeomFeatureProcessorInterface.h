@@ -26,7 +26,7 @@ namespace AZ
             : public FeatureProcessor
         {
         public:
-            AZ_RTTI(AuxGeomFeatureProcessorInterface, "{2750EE44-5AE6-4379-BA3B-EDCD1507C997}", FeatureProcessor);
+            AZ_RTTI(AZ::RPI::AuxGeomFeatureProcessorInterface, "{2750EE44-5AE6-4379-BA3B-EDCD1507C997}", AZ::RPI::FeatureProcessor);
 
             AuxGeomFeatureProcessorInterface() = default;
             virtual ~AuxGeomFeatureProcessorInterface() = default;

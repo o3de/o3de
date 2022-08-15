@@ -232,10 +232,16 @@ namespace AzToolsFramework
         class ViewportSettingNotifications
         {
         public:
+            virtual void OnAngleSnappingChanged([[maybe_unused]] bool enabled)
+            {
+            }
             virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled)
             {
             }
             virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+            {
+            }
+            virtual void OnIconsVisibilityChanged([[maybe_unused]] bool enabled)
             {
             }
 

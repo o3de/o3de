@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+
 #include <Clients/${Name}SystemComponent.h>
 
 namespace ${SanitizedCppName}
@@ -17,6 +19,7 @@ namespace ${SanitizedCppName}
     /// System component for ${SanitizedCppName} editor
     class ${SanitizedCppName}EditorSystemComponent
         : public ${SanitizedCppName}SystemComponent
+        , protected AzToolsFramework::EditorEvents::Bus::Handler
     {
         using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:

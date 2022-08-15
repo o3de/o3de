@@ -18,7 +18,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-        class PrefabFocusInterface;
         class PrefabSystemComponentInterface;
 
         class InstanceDomGenerator
@@ -43,8 +42,7 @@ namespace AzToolsFramework
 
             static AzFramework::EntityContextId s_editorEntityContextId;
 
-            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

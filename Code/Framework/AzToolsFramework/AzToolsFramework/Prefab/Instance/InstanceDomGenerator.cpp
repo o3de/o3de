@@ -29,12 +29,6 @@ namespace AzToolsFramework
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
-            m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-            AZ_Assert(m_prefabFocusInterface != nullptr,
-                "Prefab - InstanceDomGenerator::Initialize - "
-                "Prefab Focus Interface could not be found. "
-                "Check that it is being correctly initialized.");
-
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceDomGenerator::Initialize - "
@@ -45,24 +39,27 @@ namespace AzToolsFramework
         void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()
         {
             m_prefabSystemComponentInterface = nullptr;
-            m_prefabFocusInterface = nullptr;
 
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
         bool InstanceDomGenerator::GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom)
         {
-            // Retrieve focused instance
-            auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
-            Instance* targetInstance = nullptr;
+            // Retrieve focused instance.
+            auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            AZ_Assert(prefabFocusInterface, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                "Prefab Focus Interface couldn not be found.");
+
+            InstanceOptionalConstReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            const Instance* targetInstance = nullptr;
             if (focusedInstance.has_value())
             {
                 targetInstance = &(focusedInstance->get());
             }
 
-            auto climbUpToDomSourceInstanceeResult = PrefabInstanceUtils::ClimbUpToTargetInstance(instance, targetInstance);
-            auto domSourceInstance = climbUpToDomSourceInstanceeResult.first;
-            AZStd::string& relativePathToDomSourceInstance = climbUpToDomSourceInstanceeResult.second;
+            auto climbUpToDomSourceInstanceResult = PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, targetInstance);
+            auto domSourceInstance = climbUpToDomSourceInstanceResult.first;
+            AZStd::string& relativePathToDomSourceInstance = climbUpToDomSourceInstanceResult.second;
 
             PrefabDomPath domSourcePath(relativePathToDomSourceInstance.c_str());
             PrefabDom partialInstanceDom;
@@ -81,7 +78,7 @@ namespace AzToolsFramework
             if (domSourceInstance != targetInstance)
             {
                 auto climbUpToFocusedInstanceAncestorResult =
-                    PrefabInstanceUtils::ClimbUpToTargetInstance(targetInstance, instance);
+                    PrefabInstanceUtils::GetRelativePathBetweenInstances(targetInstance, instance);
                 auto focusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.first;
                 AZStd::string& relativePathToFocusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.second;
 
@@ -130,7 +127,7 @@ namespace AzToolsFramework
             const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const
         {
             // Climb from the focused instance to the root and store the path.
-            auto climbUpToFocusedInstanceResult = PrefabInstanceUtils::ClimbUpToTargetInstance(focusedInstance, nullptr);
+            auto climbUpToFocusedInstanceResult = PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance, nullptr);
             auto rootInstance = climbUpToFocusedInstanceResult.first;
             AZStd::string& rootToFocusedInstance = climbUpToFocusedInstanceResult.second;
 
@@ -156,5 +153,5 @@ namespace AzToolsFramework
                 containerPath.Set(focusedInstanceDom, containerDom, focusedInstanceDom.GetAllocator());
             }
         }
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

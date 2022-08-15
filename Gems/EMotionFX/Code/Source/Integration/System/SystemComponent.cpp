@@ -71,12 +71,14 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <QApplication>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
 #include <SceneAPIExt/Utilities/LegacyPhysicsMaterialFbxManifestConversion.h>
+#include <EMotionFX/Source/AnimGraphStateMachine.h>
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
@@ -914,6 +916,63 @@ namespace EMotionFX
                 openers.push_back({ "Animation Editor", "Open In Animation Editor...",
                                     QIcon(), animationEditorCallback });
             }
+        }
+
+        void SystemComponent::AddSourceFileCreators(
+            [[maybe_unused]] const char* fullSourceFolderName,
+            [[maybe_unused]] const AZ::Uuid& sourceUUID,
+            AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
+        {
+            using namespace AzToolsFramework;
+
+            creators.push_back(
+                { "AnimGraph_Creator",
+                  "AnimGraph",
+                  QIcon(),
+                  [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                      AZStd::string outFilePath;
+                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          fullSourceFolderNameInCallback, "NewAnimGraph.animgraph", outFilePath);
+
+                      EMotionFX::AnimGraph* animGraph = aznew EMotionFX::AnimGraph();
+                      // create the root state machine object
+                      EMotionFX::AnimGraphObject* rootSMObject =
+                          EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::AnimGraphStateMachine>(), animGraph);
+                      if (rootSMObject)
+                      {
+                         // type-cast the object to a state machine and set it as root state machine
+                          EMotionFX::AnimGraphStateMachine* rootSM = reinterpret_cast<EMotionFX::AnimGraphStateMachine*>(rootSMObject);
+                          animGraph->SetRootStateMachine(rootSM);
+                          animGraph->RecursiveReinit();
+                          animGraph->RecursiveInvalidateUniqueDatas();
+                          AZ::SerializeContext* serializeContext = nullptr;
+                          AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                          animGraph->SaveToFile(outFilePath, serializeContext);
+                          delete animGraph;
+                      }
+                  } });
+
+            creators.push_back(
+                { "MotionSet_Creator",
+                  "MotionSet",
+                  QIcon(),
+                  [&]( const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  {
+                      AZStd::string outFilePath;
+                      AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                          fullSourceFolderNameInCallback, "NewMotionSet.motionset", outFilePath);
+
+                      AZ::IO::PathView filePath = outFilePath.c_str();
+                      AZStd::string motionSetName = filePath.Stem().Native();
+                      EMotionFX::MotionSet* motionSet = aznew EMotionFX::MotionSet(motionSetName.c_str(), /*parentSet=*/nullptr);
+                      motionSet->SetFilename(outFilePath.c_str());
+                      AZ::SerializeContext* serializeContext = nullptr;
+                      AZ::ComponentApplicationBus::BroadcastResult(
+                          serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                      motionSet->SaveToFile(outFilePath, serializeContext);
+                      delete motionSet;
+                  } });
         }
 
         bool SystemComponent::HandlesSource(AZStd::string_view fileName) const

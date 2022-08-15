@@ -46,6 +46,11 @@ namespace AZ
             ShaderReloadNotificationBus::Handler::BusDisconnect();
         }
 
+        Data::Instance<Shader> FullscreenTrianglePass::GetShader() const
+        {
+            return m_shader;
+        }
+
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderReinitialized", this);

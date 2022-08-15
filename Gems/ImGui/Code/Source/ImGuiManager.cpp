@@ -634,19 +634,24 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Hidden:
             m_clientMenuBarState = DisplayState::Visible;
             
-            // Draw the ImGui Mouse cursor if either the hardware mouse is connected, or the controller mouse is enabled.
-            ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
-
-            // Disable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // Constrain and hide the system cursor
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::ConstrainedAndHidden);
+                // The system cursor is visible so we don't need ImGui's cursor
+                ImGui::GetIO().MouseDrawCursor = false; 
 
-                // Disable discrete input mode
+                // Disable discrete input in edit mode because the user has to click in the viewport to navigate,
+                // so there's no concern about ImGui mouse movements also navigating the camera.
                 m_enableDiscreteInputMode = false;
+            }
+            else
+            {
+                // We're either in game launcher or in Editor game mode and the system cursor is hidden so we'll
+                // show ImGui's cursor instead, but only if a mouse is available.
+                ImGui::GetIO().MouseDrawCursor = m_hardwardeMouseConnected || IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse);
+
+                // During gameplay, the mouse usually affects the camera, so we want the discrete mode to be available by default,
+                // so the user can easily turn off gameplay input while interacting with ImGui.
+                m_enableDiscreteInputMode = true;
             }
 
             // get window size if it wasn't initialized
@@ -670,7 +675,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
             // Enable system cursor if it's in editor and it's not editor game mode
             if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
             {
-                // unconstrain and show the system cursor
+                // unconstrain and show the system cursor, because there's an ImGui menu item that allows the user to change the cursor state
                 AzFramework::InputSystemCursorRequestBus::Event(
                     AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                     AzFramework::SystemCursorState::UnconstrainedAndVisible);

@@ -185,4 +185,7 @@ namespace AtomToolsFramework
 
     //! Collect a set of file paths contained within asset browser entry or URL mine data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
+
+    //! Collect a set of file paths from all project safe folders matching a wild card
+    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
 } // namespace AtomToolsFramework

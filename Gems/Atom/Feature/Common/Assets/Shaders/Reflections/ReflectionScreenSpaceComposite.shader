@@ -14,7 +14,7 @@
         }
     },
 
-    "BlendState":
+    "GlobalTargetBlendState":
     {
         "Enable": true,
         "BlendSource": "AlphaSource",

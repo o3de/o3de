@@ -99,6 +99,9 @@ namespace LandscapeCanvas
 
         //! Get the corresponding component TypeId for a given node type
         virtual const AZ::TypeId GetComponentTypeId(const AZ::TypeId& nodeTypeId) = 0;
+
+        //! Get the index for which the given node type was registered in
+        virtual int GetNodeRegisteredIndex(const AZ::TypeId& nodeTypeId) const = 0;
     };
     using LandscapeCanvasNodeFactoryRequestBus = AZ::EBus<LandscapeCanvasNodeFactoryRequests>;
 } // namespace LandscapeCanvas

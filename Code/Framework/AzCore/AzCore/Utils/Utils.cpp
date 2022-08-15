@@ -78,9 +78,32 @@ namespace AZ::Utils
         return false;
     }
 
-    AZ::IO::FixedMaxPathString GetO3deManifestPath()
+    AZ::IO::FixedMaxPathString GetO3deManifestDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
-        AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory();
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
+            if (settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder))
+            {
+                return AZ::IO::FixedMaxPathString{ settingsValue };
+            }
+        }
+
+        // If the O3DEManifest key isn't set in teh settings registry
+        // fallback to use the user's home directory with the .o3de folder appended to it
+        AZ::IO::FixedMaxPath path = GetHomeDirectory(settingsRegistry);
+        path /= ".o3de";
+        return path.Native();
+    }
+
+    AZ::IO::FixedMaxPathString GetO3deManifestPath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory(settingsRegistry);
         if (!o3deManifestPath.empty())
         {
             o3deManifestPath /= "o3de_manifest.json";
@@ -89,40 +112,86 @@ namespace AZ::Utils
         return o3deManifestPath.Native();
     }
 
-    AZ::IO::FixedMaxPathString GetEnginePath()
+    AZ::IO::FixedMaxPathString GetO3deLogsDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
     {
-        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        AZ::IO::FixedMaxPath path = GetO3deManifestDirectory(settingsRegistry);
+        path /= "Logs";
+        return path.Native();
+    }
+
+    AZ::IO::FixedMaxPathString GetEnginePath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
         {
-            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
-            if (registry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
             {
-                return AZ::IO::FixedMaxPathString{settingsValue};
+                return settingsValue;
             }
         }
         return {};
     }
 
-    AZ::IO::FixedMaxPathString GetProjectPath()
+    AZ::IO::FixedMaxPathString GetProjectPath(AZ::SettingsRegistryInterface* settingsRegistry)
     {
-        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        if (settingsRegistry == nullptr)
         {
-            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
-            if (registry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
             {
-                return AZ::IO::FixedMaxPathString{settingsValue};
+                return settingsValue;
             }
         }
         return {};
     }
 
-    AZ::SettingsRegistryInterface::FixedValueString GetProjectName()
+    AZ::SettingsRegistryInterface::FixedValueString GetProjectName(AZ::SettingsRegistryInterface* settingsRegistry)
     {
-        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        if (settingsRegistry == nullptr)
         {
-            AZ::SettingsRegistryInterface::FixedValueString projectNameKey{ AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey };
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            FixedValueString projectNameKey{ AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey };
             projectNameKey += "/project_name";
-            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
-            if (registry->Get(settingsValue, projectNameKey))
+
+            if (FixedValueString settingsValue;
+                settingsRegistry->Get(settingsValue, projectNameKey))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetGemPath(AZStd::string_view gemName, AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path",
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, manifestGemJsonPath))
             {
                 return settingsValue;
             }
@@ -131,6 +200,11 @@ namespace AZ::Utils
     }
 
     AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath)
+    {
+        return WriteFile(AZStd::span(reinterpret_cast<const AZStd::byte*>(content.data()), content.size()), filePath);
+    }
+
+    AZ::Outcome<void, AZStd::string> WriteFile(AZStd::span<AZStd::byte const> content, AZStd::string_view filePath)
     {
         AZ::IO::FixedMaxPath filePathFixed = filePath; // Because FileIOStream requires a null-terminated string
         AZ::IO::FileIOStream stream(filePathFixed.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
@@ -190,29 +264,5 @@ namespace AZ::Utils
     template AZ::Outcome<AZStd::string, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
-
-    AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
-    {
-        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
-        {
-            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
-            if (registry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder))
-            {
-                return AZ::IO::FixedMaxPathString{ settingsValue };
-            }
-        }
-
-        // If the O3DEManifest key isn't set in teh settings registry
-        // fallback to use the user's home directory with the .o3de folder appended to it
-        AZ::IO::FixedMaxPath path = GetHomeDirectory();
-        path /= ".o3de";
-        return path.Native();
-    }
-
-    AZ::IO::FixedMaxPathString GetO3deLogsDirectory()
-    {
-        AZ::IO::FixedMaxPath path = GetO3deManifestDirectory();
-        path /= "Logs";
-        return path.Native();
-    }
+    template AZ::Outcome<AZStd::vector<AZStd::byte>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
 }
