@@ -374,14 +374,14 @@ function(ly_add_googletest)
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
-        set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}* AssetManagerEbusSafety.OnAssetReady_GetAsset_DoesNotDeadlock")
+        set(non_ide_params "--gtest_filter=AssetManagerEbusSafety.OnAssetReady_GetAsset_DoesNotDeadlock:*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
         # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
         # will actually run everything in main OR everything tagged as requiring a GPU
         # instead of only tests tagged with BOTH main and gpu...
         # so we have to do it this way (negating all others)
-        set(non_ide_params "--gtest_filter=-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*:*SUITE_awsi* AssetManagerEbusSafety.OnAssetReady_GetAsset_DoesNotDeadlock")
+        set(non_ide_params "--gtest_filter=AssetManagerEbusSafety.OnAssetReady_GetAsset_DoesNotDeadlock-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*:*SUITE_awsi*")
     endif()
 
     if(NOT ly_add_googletest_TEST_COMMAND)
