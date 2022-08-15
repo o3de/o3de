@@ -18,6 +18,7 @@
 /Code/Framework/AzGameFramework/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Code/LauncherUnified/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /engine.json @o3de/sig-core-reviewers @o3de/sig-core-maintainers
+/Gems/Compression/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/CrashReporting/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/ImGui/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers
 /Gems/LmbrCentral/ @o3de/sig-core-reviewers @o3de/sig-core-maintainers

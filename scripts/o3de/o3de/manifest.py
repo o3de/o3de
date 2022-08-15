@@ -13,7 +13,6 @@ import json
 import logging
 import os
 import pathlib
-import shutil
 import hashlib
 
 from o3de import validation, utils
@@ -265,8 +264,8 @@ def get_manifest_repos() -> list:
 
 
 # engine.json queries
-def get_engine_projects() -> list:
-    engine_path = get_this_engine_path()
+def get_engine_projects(engine_path:pathlib.Path = None) -> list:
+    engine_path = engine_path or get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
     if engine_object:
         return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
@@ -308,6 +307,28 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
                         project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
     return []
 
+def get_project_engine_path(project_path: pathlib.Path) -> pathlib.Path or None:
+    # first check if the project has an engine field in project.json that
+    # refers to a registered engine
+    project_object = get_project_json_data(project_path=project_path)
+    if project_object:
+        engine_name = project_object.get('engine', '')
+        if engine_name:
+            engine_path = get_registered(engine_name=engine_name)
+            if engine_path:
+                return engine_path
+
+    # check if the project is registered in an engine.json
+    # in a parent folder
+    resolved_project_path = pathlib.Path(project_path).resolve()
+    engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), resolved_project_path)
+    if engine_path:
+        projects = get_engine_projects(engine_path)
+        for engine_project_path in projects:
+            if resolved_project_path.samefile(pathlib.Path(engine_project_path).resolve()):
+                return engine_path
+
+    return None
 
 def get_project_templates(project_path: pathlib.Path) -> list:
     project_object = get_project_json_data(project_path=project_path)
@@ -319,28 +340,41 @@ def get_project_templates(project_path: pathlib.Path) -> list:
 
 # gem.json queries
 def get_gem_gems(gem_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, set()))
+    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, list()))
 
 
-def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: set) -> list:
+def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: list) -> list:
+    '''
+    recursively visit each gems "external_subdirectories" entries and return them in a list
+    :param: gem_path path to the gem whose gem.json will be queried for the "external_subdirectories" field
+    :param: visited_gem_paths stores the list of gem paths visited so far up until this get_path
+    The visited_gem_paths is a list instead of a set to maintain insertion order
+    '''
+
+    # Resolve the path before to make sure it is absolute before adding to the visited_gem_paths set
+    gem_path = pathlib.Path(gem_path).resolve()
     if gem_path in visited_gem_paths:
-        logger.error(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
+        logger.warning(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
         return []
-    visited_gem_paths.add(gem_path)
+    visited_gem_paths.append(gem_path)
 
     gem_object = get_gem_json_data(gem_path=gem_path)
+    external_subdirectories = []
     if gem_object:
-        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
+        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).resolve().as_posix(),
             gem_object['external_subdirectories'])) if 'external_subdirectories' in gem_object else []
 
-        # recurse into gem subdirectories 
+        # recurse into gem subdirectories
         for external_subdirectory in external_subdirectories:
-            gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
+            external_subdirectory = pathlib.Path(external_subdirectory)
+            gem_json_path = external_subdirectory / 'gem.json'
             if gem_json_path.is_file():
                 external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory, visited_gem_paths))
 
-        return external_subdirectories
-    return []
+    # The gem_path has completely visited, remove it from the visit set
+    visited_gem_paths.remove(gem_path)
+
+    return list(dict.fromkeys(external_subdirectories))
 
 
 def get_gem_templates(gem_path: pathlib.Path) -> list:
@@ -369,9 +403,12 @@ def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
     if project_path:
         external_subdirectories_data.extend(get_project_external_subdirectories(project_path))
 
+    # Filter out duplicate external_subdirectories before querying if they contain gem.json files
+    external_subdirectories_data = list(dict.fromkeys(external_subdirectories_data))
+
     gem_paths = get_gems_from_external_subdirectories(external_subdirectories_data)
     for gem_path in gem_paths:
-        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path, set()))
+        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path, list()))
 
     # Remove duplicates from the list
     return list(dict.fromkeys(external_subdirectories_data))

@@ -48,7 +48,7 @@ namespace Terrain
         static constexpr uint16_t MacroMaterialsPerTile = 4;
 
         using MaterialHandle = AZ::RHI::Handle<uint16_t, class Material>;
-        using TileHandle = AZ::RHI::Handle<uint16_t, class Tile>;
+        using TileHandle = AZ::RHI::Handle<uint32_t, class Tile>;
         using TileMaterials = AZStd::array<MaterialHandle, MacroMaterialsPerTile>;
 
         static constexpr TileMaterials DefaultTileMaterials
@@ -78,9 +78,15 @@ namespace Terrain
         };
         static_assert(sizeof(MacroMaterialShaderData) % 16 == 0, "MacroMaterialShaderData must be 16 byte aligned.");
 
-        struct MacroMaterialMetaData
+        struct MacroMaterialPriority
         {
             int32_t m_priority{ 0 };
+            uint32_t m_hash{ 0 };
+
+            bool operator>(MacroMaterialPriority& other) const
+            {
+                return m_priority > other.m_priority || (m_priority == other.m_priority && m_hash > other.m_hash);
+            }
         };
 
         struct MacroMaterialGridShaderData
@@ -114,7 +120,7 @@ namespace Terrain
 
         // Macro materials stored in a grid of (MacroMaterialGridCount * MacroMaterialGridCount) where each tile in the grid covers
         // an area of (MacroMaterialGridSize * MacroMaterialGridSize) and each tile can hold MacroMaterialsPerTile macro materials
-        AZ::Render::MultiSparseVector<MacroMaterialShaderData, MacroMaterialMetaData> m_materialData; // Info about the macro material itself.
+        AZ::Render::MultiSparseVector<MacroMaterialShaderData, MacroMaterialPriority> m_materialData; // Info about the macro material itself.
         AZStd::vector<TileMaterials> m_materialRefGridShaderData; // A grid of macro material references that covers the world.
 
         AZStd::map<AZ::EntityId, MaterialHandle> m_entityToMaterialHandle; // Used for looking up macro materials by entity id when the data isn't provided by a bus.

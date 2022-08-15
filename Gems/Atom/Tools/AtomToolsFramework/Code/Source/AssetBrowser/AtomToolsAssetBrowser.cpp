@@ -65,16 +65,14 @@ namespace AtomToolsFramework
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
         connect(m_ui->m_viewOptionButton, &QPushButton::clicked, this, &AtomToolsAssetBrowser::OpenOptionsMenu);
-        connect(
-            m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel,
-            &AssetBrowserFilterModel::filterUpdatedSlot);
+        connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
     }
 
     AtomToolsAssetBrowser::~AtomToolsAssetBrowser()
     {
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void AtomToolsAssetBrowser::SetFilterState(const AZStd::string& category, const AZStd::string& displayName, bool enabled)
@@ -89,7 +87,7 @@ namespace AtomToolsFramework
 
     void AtomToolsAssetBrowser::SelectEntries(const AZStd::string& absolutePath)
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_pathToSelect = absolutePath;
         if (ValidateDocumentPath(m_pathToSelect))
@@ -97,7 +95,7 @@ namespace AtomToolsFramework
             // Selecting a new asset in the browser is not guaranteed to happen immediately.
             // The asset browser model notifications are sent before the model is updated.
             // Instead of relying on the notifications, queue the selection and process it on tick until this change occurs.
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
         }
     }
 
@@ -197,14 +195,11 @@ namespace AtomToolsFramework
         }
     }
 
-    void AtomToolsAssetBrowser::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    void AtomToolsAssetBrowser::OnSystemTick()
     {
-        AZ_UNUSED(time);
-        AZ_UNUSED(deltaTime);
-
         if (!ValidateDocumentPath(m_pathToSelect))
         {
-            AZ::TickBus::Handler::BusDisconnect();
+            AZ::SystemTickBus::Handler::BusDisconnect();
             m_pathToSelect.clear();
             return;
         }
@@ -221,7 +216,7 @@ namespace AtomToolsFramework
                 if (ValidateDocumentPath(sourcePath) && AZ::StringFunc::Equal(m_pathToSelect, sourcePath))
                 {
                     // Once the selection is confirmed, cancel the operation and disconnect
-                    AZ::TickBus::Handler::BusDisconnect();
+                    AZ::SystemTickBus::Handler::BusDisconnect();
                     m_pathToSelect.clear();
                 }
             }

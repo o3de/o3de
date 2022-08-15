@@ -67,6 +67,17 @@ namespace EMotionFX::MotionMatching
         m_futureControlPoints[0].m_position = actorInstanceWorldPosition;
         m_futureControlPoints[0].m_facingDirection = actorInstanceWorldRotation.TransformVector(trajectoryFeature->GetFacingAxisDir());
 
+        if (useTargetFacingDir)
+        {
+            for (size_t i = 0; i < numFutureSamples; ++i)
+            {
+                const float sampleTime = static_cast<float>(i) / (numFutureSamples - 1);
+                m_futureControlPoints[i].m_position = actorInstanceWorldPosition.Lerp(targetPos, sampleTime);
+                m_futureControlPoints[i].m_facingDirection = targetFacingDir;
+            }
+            return;
+        }
+
         for (size_t i = 1; i < numFutureSamples; ++i)
         {
             const float t = aznumeric_cast<float>(i) / numSections;

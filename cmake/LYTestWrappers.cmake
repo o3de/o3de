@@ -315,18 +315,22 @@ function(ly_add_pytest)
     # Add the script path to the test target params
     set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
 
+    # Command to run the test
+    set(test_command ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --output-path ${pytest_output_directory} --junitxml=${pytest_report_directory} ${custom_marks_args})
+
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
         PARENT_NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
         LABELS FRAMEWORK_pytest
-        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --output-path ${pytest_output_directory} --junitxml=${pytest_report_directory} ${custom_marks_args}
+        TEST_COMMAND ${test_command}
         TEST_LIBRARY pytest
         COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_TEST_COMMAND ${test_command})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 

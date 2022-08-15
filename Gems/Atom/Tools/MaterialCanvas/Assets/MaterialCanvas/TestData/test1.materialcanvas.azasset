@@ -78,7 +78,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/example_pbr.materialcanvasnode.azasset"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/example_pbr.materialcanvasnode"
                 }
             },
             {
@@ -106,7 +106,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode.azasset"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode"
                 }
             }
         ],

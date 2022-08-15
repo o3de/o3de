@@ -30,6 +30,13 @@ namespace AssetProcessor
 
         QModelIndex GetIndexForSource(const AZStd::string& source);
 
+        void SetOnlyShowIntermediateAssets() { m_intermediateAssets = true; }
+
+        void SetIntermediateAssetFolderId(AZStd::optional<AZ::s64> intermediateAssetFolderId)
+        {
+            m_intermediateAssetFolderId = intermediateAssetFolderId;
+        }
+
     public Q_SLOTS:
         void OnCreateJobsDurationChanged(QString sourceName);
 
@@ -48,5 +55,7 @@ namespace AssetProcessor
         AZStd::unordered_map<AZ::s64, AssetTreeItem*> m_sourceIdToTreeItem;
         QDir m_assetRoot;
         bool m_assetRootSet = false;
+        bool m_intermediateAssets = false;
+        AZStd::optional<AZ::s64> m_intermediateAssetFolderId;
     };
 }
