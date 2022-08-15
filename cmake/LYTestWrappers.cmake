@@ -269,8 +269,8 @@ function(ly_add_test)
         else()
             set(test_name ${test_components})
         endif()
+        # Store the test target name sans namespace so they can be looked up without the preceeding namespace
         set_property(GLOBAL APPEND PROPERTY O3DE_ALL_TESTS_DE_NAMSPACED ${test_name})
-
         # This is the first reference to this test target so add it to the global list
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
         set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
