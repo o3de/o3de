@@ -24,7 +24,7 @@ class PersistentStorageS3(PersistentStorage):
     META_KEY = "meta"
     BUILD_CONFIG_KEY = "build_config"
 
-    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str):
+    def __init__(self, config: dict, suite: str, commit: str, s3_bucket: str, root_dir: str, branch: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
@@ -36,7 +36,7 @@ class PersistentStorageS3(PersistentStorage):
         @branch branch:   The branch to retrieve the historic data for.
         """
 
-        super().__init__(config, suite, commit)
+        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path)
 
         self.s3_bucket = s3_bucket
         self.root_dir = root_dir

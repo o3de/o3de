@@ -5,12 +5,19 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/FileIO.h>
+
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Serialization/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 
@@ -137,70 +144,15 @@ namespace AzToolsFramework
             return m_row;
         }
 
-        bool AssetBrowserEntry::FromMimeData(const QMimeData* mimeData, AZStd::vector<AssetBrowserEntry*>& entries)
+        bool AssetBrowserEntry::FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries)
         {
-            if (!mimeData || !mimeData->hasFormat(GetMimeType()))
-            {
-                return false;
-            }
-
-            // Deserializing the vector of asset browser entries saved in the mime data
-            AZStd::vector<AssetBrowserEntry*> entriesStored;
-            QByteArray byteArray = mimeData->data(GetMimeType());
-            AZ::IO::MemoryStream stream(byteArray.constData(), byteArray.size());
-            AZ::Utils::LoadObjectFromStreamInPlace(stream, entriesStored);
-
-            // Adding all entries read from the mime data to the complete list of asset browser entries
-            entries.insert(entries.end(), entriesStored.begin(), entriesStored.end());
-            return entriesStored.size() > 0;
-        }
-
-        void AssetBrowserEntry::AddToMimeData(QMimeData* mimeData) const
-        {
-            if (!mimeData)
-            {
-                return;
-            }
-
-            // Reading previously stored asset browser entries from mime data
-            AZStd::vector<AssetBrowserEntry*> entriesStored;
-            FromMimeData(mimeData, entriesStored);
-
-            // Appending this entry to the list that was just deserialized
-            entriesStored.push_back(const_cast<AssetBrowserEntry*>(this));
-
-            // Serializing the updated list of asset browser entries to a byte buffer
-            AZStd::vector<char> buffer;
-            AZ::IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
-            AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_BINARY, &entriesStored);
-
-            // Saving the buffer of asset browser entries back to the mime data
-            QByteArray byteArray(buffer.data(), static_cast<int>(buffer.size()));
-            mimeData->setData(GetMimeType(), byteArray);
-
-            // Also writing out the source file path for compatibility with targets supporting URL mime data
-            QList<QUrl> urls = mimeData->urls();
-            urls.push_back(QUrl::fromLocalFile(GetFullPath().c_str()));
-            mimeData->setUrls(urls);
+            // deprecated.  You can use the AssetBrowserEntryUtils::FromMimeData directly now.
+            return Utils::FromMimeData(mimeData, entries);
         }
 
         QString AssetBrowserEntry::GetMimeType()
         {
             return "editor/assetinformation/entry";
-        }
-
-        void AssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<AssetBrowserEntry>()
-                    ->Field("m_name", &AssetBrowserEntry::m_name)
-                    ->Field("m_children", &AssetBrowserEntry::m_children)
-                    ->Field("m_row", &AssetBrowserEntry::m_row)
-                    ->Field("m_fullPath", &AssetBrowserEntry::m_fullPath)
-                    ->Version(2);
-            }
         }
 
         const AZStd::string& AssetBrowserEntry::GetName() const
@@ -213,13 +165,26 @@ namespace AzToolsFramework
             return m_displayName;
         }
 
+         const QString& AssetBrowserEntry::GetDisplayPath() const
+        {
+            return m_displayPath;
+        }
+
         const AZStd::string& AssetBrowserEntry::GetRelativePath() const
         {
             return m_relativePath.Native();
         }
 
-        const AZStd::string& AssetBrowserEntry::GetFullPath() const
+        const AZStd::string AssetBrowserEntry::GetFullPath() const
         {
+            // the full path could use a decoding:
+            if (AZ::IO::FileIOBase* instance = AZ::IO::FileIOBase::GetInstance())
+            {
+                char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
+                instance->ResolvePath(m_fullPath.Native().c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+                return AZStd::string(resolvedPath);
+            }
+
             return m_fullPath.Native();
         }
 
@@ -268,6 +233,8 @@ namespace AzToolsFramework
 
         void AssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
+            // by default, we just recurse here.
+            // sources will do this differently from folders and products...
             child->PathsUpdated();
         }
 
