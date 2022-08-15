@@ -223,7 +223,6 @@ namespace AZ
         //! Pointer to NameData in the NameDictionary. This holds both the hash and string pair.
         AZStd::intrusive_ptr<Internal::NameData> m_data;
 
-        static AZStd::thread::id s_staticNameListThread;
         //! Describes the begin of the static list of Names that were initialized before the NameDictionary was available.
         //! On module initialization, these names are linked into the NameDictionary's static pool and created.
         static Name* s_staticNameBegin;

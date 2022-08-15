@@ -340,7 +340,6 @@ set(FILES
     ToolsComponents/GenericComponentWrapper.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
-    ToolsComponents/SelectionComponentBus.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
@@ -622,7 +621,6 @@ set(FILES
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
-    AssetBrowser/AssetBrowserSourceDropBus.h
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntry.h
@@ -652,6 +650,8 @@ set(FILES
     AssetBrowser/Entries/AssetBrowserEntry.inl
     AssetBrowser/Entries/AssetBrowserEntryCache.cpp
     AssetBrowser/Entries/AssetBrowserEntryCache.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.h
     AssetBrowser/Entries/ProductAssetBrowserEntry.cpp
@@ -814,7 +814,8 @@ set(FILES
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
-    UI/Outliner/EntityOutlinerCacheBus.h
+    UI/Outliner/EntityOutlinerCacheBus.h 
+    UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
     UI/Outliner/EntityOutlinerSearchWidget.h

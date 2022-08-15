@@ -225,14 +225,12 @@ namespace AZStd::ranges
     // which requires that the iterator type has the aliases
     // of difference_type, value_type, pointer, reference, iterator_category,
     // With C++20, the iterator concept support is used to deduce the traits
-    // needed, therefore alleviating the need to special std::iterator_traits
+    // needed, therefore alleviating the need to specialize std::iterator_traits
     // The following code allows std::reverse_iterator(which is aliased into AZStd namespace)
     // to work with the AZStd range views
     #if !__cpp_lib_concepts
         using pointer = void;
-        using reference = conditional_t<is_reference_v<invoke_result_t<Func&, range_reference_t<Base>>>,
-            invoke_result_t<Func&, range_reference_t<Base>>,
-            dangling>;
+        using reference = invoke_result_t<Func&, range_reference_t<Base>>;
     #endif
 
         template<bool Enable = default_initializable<iterator_t<Base>>, class = enable_if_t<Enable>>

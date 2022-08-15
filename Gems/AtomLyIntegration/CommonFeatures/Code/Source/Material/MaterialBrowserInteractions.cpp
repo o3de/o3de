@@ -35,13 +35,23 @@ namespace AZ
 
         void MaterialBrowserInteractions::AddSourceFileOpeners(const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
         {
-            if (HandlesSource(fullSourceFileName))
+            if (AZStd::wildcard_match("*.material", fullSourceFileName))
             {
                 openers.push_back({ "Material_Editor", "Open in Material Editor...", QIcon(),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                     {
                         EditorMaterialSystemComponentRequestBus::Broadcast(
                             &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor,
+                            fullSourceFileNameInCallback);
+                    } });
+            }
+            if (AZStd::wildcard_match("*.materialcanvas.azasset", fullSourceFileName))
+            {
+                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Experimental)...", QIcon(),
+                    [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                    {
+                        EditorMaterialSystemComponentRequestBus::Broadcast(
+                            &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialCanvas,
                             fullSourceFileNameInCallback);
                     } });
             }
@@ -98,7 +108,8 @@ namespace AZ
 
         bool MaterialBrowserInteractions::HandlesSource(AZStd::string_view fileName) const
         {
-            return AZStd::wildcard_match("*.material", fileName.data());
+            return AZStd::wildcard_match("*.material", fileName.data()) ||
+                AZStd::wildcard_match("*.materialcanvas.azasset", fileName.data());
         }
     } // namespace Render
 } // namespace AZ

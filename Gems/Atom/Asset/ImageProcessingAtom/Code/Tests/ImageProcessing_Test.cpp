@@ -574,12 +574,17 @@ namespace UnitTest
         ASSERT_TRUE(img->GetWidth(0) == 512);
         ASSERT_TRUE(img->GetHeight(0) == 288);
         ASSERT_TRUE(img->GetMipCount() == 1);
+        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8);
+
+        // tga with transparency
+        img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_128x128_Transparent_Tga]));
+        ASSERT_TRUE(img != nullptr);
         ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8A8);
 
         //image with upper case extension
         img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_UpperCase_Tga]));
         ASSERT_TRUE(img != nullptr);
-        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8A8);
+        ASSERT_TRUE(img->GetPixelFormat() == ePixelFormat_R8G8B8);
 
         //16bits float tif
         img = IImageObjectPtr(LoadImageFromFile(m_imagFileNameMap[Image_32X32_16bit_F_Tif]));

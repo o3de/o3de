@@ -11,7 +11,6 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileReader.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/error/en.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -20,6 +19,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace AZ::SettingsRegistryImplInternal
 {
@@ -51,6 +51,30 @@ namespace AZ::SettingsRegistryImplInternal
 
 namespace AZ
 {
+    SettingsRegistryImpl::ScopedMergeEvent::ScopedMergeEvent(SettingsRegistryImpl& settingsRegistry,
+        MergeEventArgs mergeEventArgs)
+        : m_settingsRegistry{ settingsRegistry }
+        , m_mergeEventArgs{ AZStd::move(mergeEventArgs) }
+    {
+        {
+            // Push the file to be merged under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.m_settingMutex);
+            m_settingsRegistry.m_mergeFilePathStack.emplace(m_mergeEventArgs.m_mergeFilePath);
+        }
+        m_settingsRegistry.m_preMergeEvent.Signal(mergeEventArgs);
+    }
+
+    SettingsRegistryImpl::ScopedMergeEvent::~ScopedMergeEvent()
+    {
+        m_settingsRegistry.m_postMergeEvent.Signal(m_mergeEventArgs);
+
+        {
+            // Pop the file that finished merging under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.m_settingMutex);
+            m_settingsRegistry.m_mergeFilePathStack.pop();
+        }
+    }
+
     template<typename T>
     bool SettingsRegistryImpl::SetValueInternal(AZStd::string_view path, T value)
     {
@@ -168,6 +192,8 @@ namespace AZ
     {
         m_useFileIo = useFileIo;
     }
+
+    SettingsRegistryImpl::~SettingsRegistryImpl() = default;
 
     void SettingsRegistryImpl::SetContext(SerializeContext* context)
     {
@@ -317,7 +343,10 @@ namespace AZ
         decltype(m_signalNotifierQueue) localNotifierQueue;
         {
             AZStd::scoped_lock signalLock(m_signalMutex);
-            m_signalNotifierQueue.push_back({ FixedValueString{jsonPath}, type });
+            m_signalNotifierQueue.push_back({
+                FixedValueString{jsonPath},
+                type,
+                !m_mergeFilePathStack.empty() ? m_mergeFilePathStack.top() : "<in-memory>"});
             // If the signal count was 0, then a dispatch is in progress
             if (m_signalCount++ == 0)
             {
@@ -329,7 +358,7 @@ namespace AZ
         {
             for (const SignalNotifierArgs& notifierArgs : localNotifierQueue)
             {
-                localNotifierEvent.Signal(notifierArgs.m_jsonPath, notifierArgs.m_type);
+                localNotifierEvent.Signal({ notifierArgs.m_jsonPath, notifierArgs.m_type, notifierArgs.m_mergeFilePath.Native()});
             }
             // Clear the local notifier queue and check if more notifiers have been added
             localNotifierQueue = {};
@@ -677,6 +706,40 @@ namespace AZ
             }
         }
 
+        // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
+        // option is enabled
+        JsonApplyPatchSettings applyPatchSettings;
+        if (m_mergeOperationNotify)
+        {
+            applyPatchSettings.m_reporting = [this, scratchBuffer = AZStd::string{}]
+            (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) mutable
+                -> AZ::JsonSerializationResult::ResultCode
+            {
+                if (result.GetTask() == JsonSerializationResult::Tasks::Merge
+                    && result.GetProcessing() == JsonSerializationResult::Processing::Completed)
+                {
+                    if (auto type = GetType(path);
+                        type != SettingsRegistryInterface::Type::NoType)
+                    {
+                        SignalNotifier(path, type);
+                    }
+                }
+
+                // This is the default issue reporting, that logs using the warning category
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+                return result;
+            };
+        }
+
         auto anchorType = AZ::SettingsRegistryInterface::Type::NoType;
         {
             AZStd::scoped_lock lock(m_settingMutex);
@@ -684,7 +747,7 @@ namespace AZ
                 : m_settings;
 
             JsonSerializationResult::ResultCode mergeResult =
-                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatch, mergeApproach);
+                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
             if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
             {
                 AZ_Error("Settings Registry", false, "Failed to fully merge data into registry.");
@@ -1178,7 +1241,7 @@ namespace AZ
 
         Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
 
-        FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance(): nullptr, path);
+        FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr, path);
         if (!fileReader.IsOpen())
         {
             AZ_Error("Settings Registry", false, R"(Unable to open registry file "%s".)", path);
@@ -1234,7 +1297,7 @@ namespace AZ
                     nativeUI->DisplayOkDialog("Setreg(Patch) Merge Issue", AZStd::string_view(jsonError), false);
                 }
             }
-            
+
             AZStd::scoped_lock lock(m_settingMutex);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to parse registry file due to invalid json."), m_settings.GetAllocator())
@@ -1275,14 +1338,55 @@ namespace AZ
             return false;
         }
 
-        ScopedMergeEvent scopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
+        // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
+        // option is enabled
+        JsonApplyPatchSettings applyPatchSettings;
 
+        // Stores unique list of settings keys that are being merged in the JsonSerialization::ApplyPatch calls below
+        AZStd::vector<AZStd::string> mergedSettingsKeys;
+        if (m_mergeOperationNotify)
+        {
+            applyPatchSettings.m_reporting = [&mergedSettingsKeys, scratchBuffer = AZStd::string{}]
+            (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) mutable
+                -> AZ::JsonSerializationResult::ResultCode
+            {
+                if (result.GetTask() == JsonSerializationResult::Tasks::Merge
+                    && result.GetProcessing() == JsonSerializationResult::Processing::Completed)
+                {
+                    auto FindSettingsKey = [&path](AZStd::string_view settingKeyPath)
+                    {
+                        return path == settingKeyPath;
+                    };
+
+                    // If the settings key entry is not part of the merged Settings Key set append it to it
+                    if (AZStd::ranges::find_if(mergedSettingsKeys, FindSettingsKey) == AZStd::ranges::end(mergedSettingsKeys))
+                    {
+                        mergedSettingsKeys.push_back(path);
+                    }
+                }
+
+                // This is the default issue reporting, that logs using the warning category
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+                return result;
+            };
+        }
+
+        ScopedMergeEvent scopedMergeEvent(*this, { path, rootKey });
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         auto anchorType = Type::NoType;
         if (rootKey.empty())
         {
             AZStd::scoped_lock lock(m_settingMutex);
-            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
             anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(m_settings);
         }
         else
@@ -1292,7 +1396,7 @@ namespace AZ
             {
                 AZStd::scoped_lock lock(m_settingMutex);
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
-                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
                 anchorType = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(rootValue);
             }
             else
@@ -1321,18 +1425,24 @@ namespace AZ
             pointer.Create(m_settings, m_settings.GetAllocator()).SetString(path, m_settings.GetAllocator());
         }
 
+        // For each merged settings key, signal the notifier event
+        for (AZStd::string_view mergedSettingsKey : mergedSettingsKeys)
+        {
+            SignalNotifier(mergedSettingsKey, GetType(mergedSettingsKey));
+        }
+
         SignalNotifier(rootKey, anchorType);
 
         return true;
     }
 
-    void SettingsRegistryImpl::SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings)
+    void SettingsRegistryImpl::SetNotifyForMergeOperations(bool notify)
     {
-        m_applyPatchSettings = applyPatchSettings;
+        m_mergeOperationNotify = notify;
     }
-    void SettingsRegistryImpl::GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings)
+    bool SettingsRegistryImpl::GetNotifyForMergeOperations() const
     {
-        applyPatchSettings = m_applyPatchSettings;
+        return m_mergeOperationNotify;
     }
 
     void SettingsRegistryImpl::SetUseFileIO(bool useFileIo)
