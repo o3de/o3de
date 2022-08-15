@@ -57,7 +57,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
-#include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
@@ -1427,6 +1426,13 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::OnInstanceOpened(AZ::EntityId containerEntityId)
     {
         QueueEntityToExpand(containerEntityId, true);
+    }
+
+    void EntityOutlinerListModel::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
+    {
+        QueueEntityToExpand(previousContainerEntityId, false);
+        QueueEntityToExpand(newContainerEntityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)

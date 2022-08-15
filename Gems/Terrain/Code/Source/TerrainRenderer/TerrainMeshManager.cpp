@@ -19,7 +19,6 @@
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
-#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
