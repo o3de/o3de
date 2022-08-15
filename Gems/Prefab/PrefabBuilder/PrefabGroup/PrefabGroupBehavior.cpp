@@ -63,14 +63,14 @@ namespace AZ::SceneAPI::Behaviors
         using PreExportEventContextFunction = AZStd::function<Events::ProcessingResult(Events::PreExportEventContext&)>;
         PreExportEventContextFunction m_preExportEventContextFunction;
         AZ::Prefab::PrefabGroupAssetHandler m_prefabGroupAssetHandler;
-        AZStd::unique_ptr<DefaultProceduralPrefab> m_defaultProceduralPrefab;
+        AZStd::unique_ptr<DefaultProceduralPrefabGroup> m_defaultProceduralPrefab;
 
         ExportEventHandler() = delete;
 
         ExportEventHandler(PreExportEventContextFunction function)
             : m_preExportEventContextFunction(AZStd::move(function))
         {
-            m_defaultProceduralPrefab = AZStd::make_unique<DefaultProceduralPrefab>();
+            m_defaultProceduralPrefab = AZStd::make_unique<DefaultProceduralPrefabGroup>();
             BindToCall(&ExportEventHandler::PrepareForExport);
             AZ::SceneAPI::SceneCore::ExportingComponent::Activate();
             Events::AssetImportRequestBus::Handler::BusConnect();
@@ -807,6 +807,7 @@ namespace AZ::SceneAPI::Behaviors
     {
         AZ::SceneAPI::SceneData::PrefabGroup::Reflect(context);
         Prefab::ProceduralPrefabAsset::Reflect(context);
+        DefaultProceduralPrefabGroup::Reflect(context);
 
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
         if (serializeContext)

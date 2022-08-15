@@ -12,4 +12,5 @@ set(FILES
     PrefabGroup/PrefabGroupTests.cpp
     PrefabGroup/PrefabBehaviorTests.cpp
     PrefabGroup/PrefabBehaviorTests.inl
+    PrefabGroup/DefaultProceduralPrefabGroupTests.cpp
 )

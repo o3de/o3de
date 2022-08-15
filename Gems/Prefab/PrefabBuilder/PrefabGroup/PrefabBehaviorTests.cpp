@@ -34,6 +34,8 @@
 
 #include <PrefabGroup/PrefabBehaviorTests.inl>
 
+#ifndef MOCKEDITORMESHCOMPONENT
+#define MOCKEDITORMESHCOMPONENT
 // a mock AZ::Render::EditorMeshComponent
 namespace AZ::Render
 {
@@ -70,6 +72,7 @@ namespace AZ::Render
         }
     };
 }
+#endif MOCKEDITORMESHCOMPONENT
 
 namespace UnitTest
 {

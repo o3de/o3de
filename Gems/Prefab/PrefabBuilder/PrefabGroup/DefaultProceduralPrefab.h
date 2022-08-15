@@ -20,6 +20,74 @@ namespace AZ::SceneAPI
     using Scene = AZ::SceneAPI::Containers::Scene;
 
     //! Handler for the Prefab Group event logic
+    class DefaultProceduralPrefabGroup
+        : protected PrefabGroupEventBus::Handler
+    {
+    public:
+        AZ_RTTI(DefaultProceduralPrefab, "{6BAAB306-01EE-42E8-AAFE-C9EE0BF4CFDF}");
+
+        DefaultProceduralPrefabGroup();
+        virtual ~DefaultProceduralPrefabGroup();
+
+        static void Reflect(ReflectContext* context);
+
+        // PrefabGroupEventBus::Handler
+        AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
+
+    protected:
+        // this stores the data related with nodes that will translate to entities in the prefab group
+        struct NodeDataForEntity
+        {
+            Containers::SceneGraph::NodeIndex m_meshIndex = {};
+            Containers::SceneGraph::NodeIndex m_transformIndex = {};
+            Containers::SceneGraph::NodeIndex m_propertyMapIndex = {};
+        };
+
+        using NodeDataMapEntry = AZStd::pair<Containers::SceneGraph::NodeIndex, NodeDataForEntity>;
+        using NodeDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, NodeDataForEntity>; // NodeIndex -> NodeDataForEntity
+        using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
+        using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZ::EntityId>; // NodeIndex -> EntityId
+        using EntityIdList = AZStd::vector<AZ::EntityId>;
+
+        NodeDataMap CalculateNodeDataMap(const Containers::Scene& scene) const;
+
+        bool AddEditorMaterialComponent(
+            const AZ::EntityId& entityId,
+            const DataTypes::ICustomPropertyData& propertyData) const;
+
+        bool AddEditorMeshComponent(
+            const AZ::EntityId& entityId,
+            const AZStd::string& relativeSourcePath,
+            const AZStd::string& meshGroupName) const;
+
+        bool CreateMeshGroupAndComponents(
+            ManifestUpdates& manifestUpdates,
+            AZ::EntityId entityId,
+            const NodeDataForEntity& nodeData,
+            const NodeDataMap& nodeDataMap,
+            const Containers::Scene& scene,
+            const AZStd::string& relativeSourcePath) const;
+
+        NodeEntityMap CreateNodeEntityMap(
+            ManifestUpdates& manifestUpdates,
+            const NodeDataMap& nodeDataMap,
+            const Containers::Scene& scene,
+            const AZStd::string& relativeSourcePath) const;
+
+        EntityIdList FixUpEntityParenting(
+            const NodeEntityMap& nodeEntityMap,
+            const Containers::SceneGraph& graph,
+            const NodeDataMap& nodeDataMap)  const;
+
+        bool CreatePrefabGroupManifestUpdates(
+            ManifestUpdates& manifestUpdates,
+            const Containers::Scene& scene,
+            const EntityIdList& entities,
+            const AZStd::string& filenameOnly,
+            const AZStd::string& relativeSourcePath) const;
+    };
+
+    //! Handler for the Prefab Group event logic
     class DefaultProceduralPrefab
         : protected PrefabGroupEventBus::Handler
     {
@@ -28,6 +96,7 @@ namespace AZ::SceneAPI
 
         static void Reflect(ReflectContext* context);
 
+        // PrefabGroupEventBus::Handler
         AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const override;
 
     protected:

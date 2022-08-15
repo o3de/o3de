@@ -7,6 +7,7 @@
  */
 
 #include <PrefabGroup/DefaultProceduralPrefab.h>
+#include <PrefabGroup/PrefabGroupBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
@@ -24,74 +25,72 @@
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
+#include <AzCore/Component/EntityId.h>
 
 namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates, "{B84CBFB5-4630-4484-AE69-A4155A8B0D9B}");
-    //AZ_TYPE_INFO_SPECIALIZE(AZStd::shared_ptr<DataTypes::IManifestObject>, "{460C1DD0-E29E-43F6-A7F0-F929EC520325}");
-    //using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
 }
 
 namespace AZ::SceneAPI
 {
-    //struct PrefabGroupNotificationHandler final
-    //    : public AZ::SceneAPI::PrefabGroupNotificationBus::Handler
-    //    , public AZ::BehaviorEBusHandler
-    //{
-    //    AZ_EBUS_BEHAVIOR_BINDER(
-    //        PrefabGroupNotificationHandler,
-    //        "{F1962BD1-D722-4C5F-A883-76F1004C3247}",
-    //        AZ::SystemAllocator,
-    //        OnUpdatePrefabEntity);
-
-    //    virtual ~PrefabGroupNotificationHandler() = default;
-
-    //    void OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity) const override
-    //    {
-    //        AZ_UNUSED(prefabEntity);
-    //        Call(FN_OnUpdatePrefabEntity, prefabEntity);
-    //    }
-
-    //    static void Reflect(AZ::ReflectContext* context)
-    //    {
-    //        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-    //        {
-    //            behaviorContext->Class<PrefabGroupNotificationHandler>()
-    //                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-    //                ->Attribute(AZ::Script::Attributes::Module, "prefab")
-    //                ->Method("OnUpdatePrefabEntity", &PrefabGroupNotificationHandler::OnUpdatePrefabEntity)
-    //                ;
-    //        }
-    //    }
-    //};
-
-    void DefaultProceduralPrefab::Reflect(ReflectContext* context)
+    struct PrefabGroupNotificationHandler final
+        : public AZ::SceneAPI::PrefabGroupNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
     {
-//        PrefabGroupNotificationHandler::Reflect(context);
+        AZ_EBUS_BEHAVIOR_BINDER(
+            PrefabGroupNotificationHandler,
+            "{F1962BD1-D722-4C5F-A883-76F1004C3247}",
+            AZ::SystemAllocator,
+            OnUpdatePrefabEntity);
 
+        virtual ~PrefabGroupNotificationHandler() = default;
+
+        void OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity) override
+        {
+            Call(FN_OnUpdatePrefabEntity, prefabEntity);
+        }
+    };
+
+    DefaultProceduralPrefabGroup::DefaultProceduralPrefabGroup()
+    {
+        PrefabGroupEventBus::Handler::BusConnect();
+    }
+
+    DefaultProceduralPrefabGroup::~DefaultProceduralPrefabGroup()
+    {
+        PrefabGroupEventBus::Handler::BusDisconnect();
+    }
+
+    void DefaultProceduralPrefabGroup::Reflect(ReflectContext* context)
+    {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            const char* toolTip = "";
-            behaviorContext->EBus<PrefabGroupEventBus>("PrefabGroupEventBus", nullptr, toolTip)
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Attribute(Script::Attributes::Scope, Script::Attributes::ScopeFlags::Common)
+            behaviorContext->EBus<PrefabGroupNotificationBus>("PrefabGroupNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "prefab")
+                ->Handler<PrefabGroupNotificationHandler>()
+                ->Event("OnUpdatePrefabEntity", &PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity);
+
+            behaviorContext->EBus<PrefabGroupEventBus>("PrefabGroupEventBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(Script::Attributes::Module, "prefab")
                 ->Event("GeneratePrefabGroupManifestUpdates", &PrefabGroupEvents::GeneratePrefabGroupManifestUpdates);
         }
     }
 
-    AZStd::optional<PrefabGroupEvents::ManifestUpdates> DefaultProceduralPrefab::GeneratePrefabGroupManifestUpdates(
+    AZStd::optional<PrefabGroupEvents::ManifestUpdates> DefaultProceduralPrefabGroup::GeneratePrefabGroupManifestUpdates(
         const Scene& scene) const
     {
-        auto meshTransformMap = CalculateMeshTransformMap(scene);
-        if (meshTransformMap.empty())
+        auto nodeDataMap = CalculateNodeDataMap(scene);
+        if (nodeDataMap.empty())
         {
             return {};
         }
 
         // compute the filenames of the scene file
         AZStd::string relativeSourcePath = scene.GetSourceFilename();
-        // the watch folder and forward slash is used to in the asset hint path of the file
+        // the watch folder and forward slash is used in the asset hint path of the file
         AZStd::string watchFolder = scene.GetWatchFolder() + "/";
         AZ::StringFunc::Replace(relativeSourcePath, watchFolder.c_str(), "");
         AZ::StringFunc::Replace(relativeSourcePath, ".", "_");
@@ -100,27 +99,28 @@ namespace AZ::SceneAPI
         AZ::StringFunc::Path::ReplaceExtension(filenameOnly, "procprefab");
 
         ManifestUpdates manifestUpdates;
-        auto nodeEntityMap = CreateMeshGroups(manifestUpdates, meshTransformMap, scene, relativeSourcePath);
+
+        auto nodeEntityMap = CreateNodeEntityMap(manifestUpdates, nodeDataMap, scene, relativeSourcePath);
         if (nodeEntityMap.empty())
         {
             return {};
         }
 
-        auto entities = FixUpEntityParenting(nodeEntityMap, scene.GetGraph(), meshTransformMap);
+        auto entities = FixUpEntityParenting(nodeEntityMap, scene.GetGraph(), nodeDataMap);
         if (entities.empty())
         {
             return {};
         }
 
-        if (CreatePrefabGroupManifestUpdates(manifestUpdates, scene, entities, filenameOnly, relativeSourcePath) == false)
+        if (CreatePrefabGroupManifestUpdates(manifestUpdates, scene, entities, filenameOnly, relativeSourcePath) == false )
         {
             return {};
         }
-               
+
         return AZStd::make_optional(AZStd::move(manifestUpdates));
     }
 
-    DefaultProceduralPrefab::MeshDataMap DefaultProceduralPrefab::CalculateMeshTransformMap(
+    DefaultProceduralPrefabGroup::NodeDataMap DefaultProceduralPrefabGroup::CalculateNodeDataMap(
         const Containers::Scene& scene) const
     {
         auto graph = scene.GetGraph();
@@ -135,11 +135,10 @@ namespace AZ::SceneAPI
             return {};
         }
 
-        MeshDataMap meshDataMap;
+        NodeDataMap nodeDataMap;
         for (auto it = view.begin(); it != view.end(); ++it)
         {
             Containers::SceneGraph::NodeIndex currentIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
-            AZStd::string currentNodeName = graph.GetNodeName(currentIndex).GetPath();
             const auto currentContent = graph.GetNodeContent(currentIndex);
             if (currentContent)
             {
@@ -148,35 +147,47 @@ namespace AZ::SceneAPI
                     // get the MeshData child node index values for Transform and CustomPropertyData
                     auto childIndex = it.GetHierarchyIterator()->GetChildIndex();
 
-                    MeshNodeData meshNodeData;
-                    meshNodeData.m_meshIndex = currentIndex;
+                    NodeDataForEntity nodeDataForEntity;
+                    nodeDataForEntity.m_meshIndex = currentIndex;
 
                     while (childIndex.IsValid())
                     {
                         const auto childContent = graph.GetNodeContent(childIndex);
-                        if (currentContent.get())
+                        if (childContent)
                         {
                             if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(childContent.get()))
                             {
-                                meshNodeData.m_transformIndex = childIndex;
+                                nodeDataForEntity.m_transformIndex = childIndex;
                             }
                             else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ICustomPropertyData>(childContent.get()))
                             {
-                                meshNodeData.m_propertyMapIndex = childIndex;
+                                nodeDataForEntity.m_propertyMapIndex = childIndex;
                             }
                         }
                         childIndex = graph.GetNodeSibling(childIndex);
                     }
 
-                    meshDataMap.emplace(MeshDataMapEntry{ currentIndex, AZStd::move(meshNodeData) });
+                    nodeDataMap.emplace(NodeDataMapEntry{ currentIndex, AZStd::move(nodeDataForEntity) });
+                }
+                else if (azrtti_istypeof<AZ::SceneAPI::DataTypes::ITransform>(currentContent.get()))
+                {
+                    // Check if this transform node is not associated with any meshes
+                    auto parentNodeIndex = graph.GetNodeParent(currentIndex);
+                    const auto parentContent = graph.GetNodeContent(parentNodeIndex);
+                    if (!azrtti_istypeof<AZ::SceneAPI::DataTypes::IMeshData>(parentContent.get()))
+                    {
+                        NodeDataForEntity nodeDataForEntity;
+                        nodeDataForEntity.m_transformIndex = currentIndex;
+                        nodeDataMap.emplace(NodeDataMapEntry{ currentIndex, AZStd::move(nodeDataForEntity) });
+                    }
                 }
             }
         }
 
-        return meshDataMap;
+        return nodeDataMap;
     }
 
-    bool DefaultProceduralPrefab::AddEditorMaterialComponent(
+    bool DefaultProceduralPrefabGroup::AddEditorMaterialComponent(
         const AZ::EntityId& entityId,
         const DataTypes::ICustomPropertyData& propertyData) const
     {
@@ -221,7 +232,7 @@ namespace AZ::SceneAPI
         auto materialAssetJson = AZStd::string::format(
             R"JSON(
                     {"Controller":{"Configuration":{"materials":[{"Value":{"MaterialAsset":{"assetHint":"%s"}}}]}}}
-                    )JSON", materialAssetPath->c_str());
+             )JSON", materialAssetPath->c_str());
 
         bool result = false;
         AzToolsFramework::EntityUtilityBus::BroadcastResult(
@@ -235,7 +246,7 @@ namespace AZ::SceneAPI
         return result;
     }
 
-    bool DefaultProceduralPrefab::AddEditorMeshComponent(
+    bool DefaultProceduralPrefabGroup::AddEditorMeshComponent(
         const AZ::EntityId& entityId,
         const AZStd::string& relativeSourcePath,
         const AZStd::string& meshGroupName) const
@@ -262,7 +273,7 @@ namespace AZ::SceneAPI
 
         auto meshAssetJson = AZStd::string::format(
             R"JSON(
-                {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
+                   {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
              )JSON", modelAssetPath.c_str());
 
         bool result = false;
@@ -277,93 +288,124 @@ namespace AZ::SceneAPI
         return result;
     }
 
-    DefaultProceduralPrefab::NodeEntityMap DefaultProceduralPrefab::CreateMeshGroups(
+    bool DefaultProceduralPrefabGroup::CreateMeshGroupAndComponents(
         ManifestUpdates& manifestUpdates,
-        const MeshDataMap& meshDataMap,
+        AZ::EntityId entityId,
+        const NodeDataForEntity& nodeData,
+        const NodeDataMap& nodeDataMap,
+        const Containers::Scene& scene,
+        const AZStd::string& relativeSourcePath) const
+    {
+        const auto meshNodeIndex = nodeData.m_meshIndex;
+        const auto propertyDataIndex = nodeData.m_propertyMapIndex;
+
+        const auto& graph = scene.GetGraph();
+        const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
+        const auto meshSubId =
+            DataTypes::Utilities::CreateStableUuid(scene, azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(), meshNodeName.GetPath());
+
+        AZStd::string meshGroupName = "default_";
+        meshGroupName += scene.GetName();
+        meshGroupName += meshSubId.ToFixedString().c_str();
+
+        // clean up the mesh group name
+        AZStd::replace_if(
+            meshGroupName.begin(),
+            meshGroupName.end(),
+            [](char c)
+            {
+                return (!AZStd::is_alnum(c) && c != '_');
+            },
+            '_');
+
+        AZStd::string meshNodePath{ meshNodeName.GetPath() };
+        auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
+        meshGroup->SetName(meshGroupName);
+        meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
+        for (const auto& meshGoupNamePair : nodeDataMap)
+        {
+            if (meshGoupNamePair.second.m_meshIndex.IsValid()
+                && meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
+            {
+                const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
+                meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
+            }
+        }
+        meshGroup->OverrideId(meshSubId);
+
+        // this clears out the mesh coordinates each mesh group will be rotated and translated
+        // using the attached scene graph node
+        auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+        coordinateSystemRule->SetUseAdvancedData(true);
+        coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
+        coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
+        coordinateSystemRule->SetScale(1.0f);
+        meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
+
+        // create an empty LOD rule in order to skip the LOD buffer creation
+        meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
+
+        manifestUpdates.emplace_back(meshGroup);
+
+        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
+        {
+            return false;
+        }
+
+        if (propertyDataIndex.IsValid())
+        {
+            const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
+            if (!customPropertyData)
+            {
+                AZ_Error("prefab", false, "Missing custom property data content for node.");
+                return false;
+            }
+
+            if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    DefaultProceduralPrefabGroup::NodeEntityMap DefaultProceduralPrefabGroup::CreateNodeEntityMap(
+        ManifestUpdates& manifestUpdates,
+        const NodeDataMap& nodeDataMap,
         const Containers::Scene& scene,
         const AZStd::string& relativeSourcePath) const
     {
         NodeEntityMap nodeEntityMap;
         const auto& graph = scene.GetGraph();
 
-        for (const auto& entry : meshDataMap)
+        for (const auto& entry : nodeDataMap)
         {
             const auto thisNodeIndex = entry.first;
             const auto meshNodeIndex = entry.second.m_meshIndex;
-            const auto propertyDataIndex = entry.second.m_propertyMapIndex;
-            const auto meshNodeName = graph.GetNodeName(meshNodeIndex);
-            const auto meshSubId = DataTypes::Utilities::CreateStableUuid(
-                scene,
-                azrtti_typeid<AZ::SceneAPI::SceneData::MeshGroup>(),
-                meshNodeName.GetPath());
 
-            AZStd::string meshGroupName = "default_";
-            meshGroupName += scene.GetName();
-            meshGroupName += meshSubId.ToFixedString().c_str();
+            Containers::SceneGraph::NodeIndex nodeIndexForEntityName;
+            nodeIndexForEntityName = meshNodeIndex.IsValid() ? meshNodeIndex : thisNodeIndex;
+            const auto nodeNameForEntity = graph.GetNodeName(nodeIndexForEntityName);
 
-            // clean up the mesh group name
-            AZStd::replace_if(
-                meshGroupName.begin(),
-                meshGroupName.end(),
-                [](char c) { return (!AZStd::is_alnum(c) && c != '_'); },
-                '_');
-
-            AZStd::string meshNodePath{ meshNodeName.GetPath() };
-            auto meshGroup = AZStd::make_shared<AZ::SceneAPI::SceneData::MeshGroup>();
-            meshGroup->SetName(meshGroupName);
-            meshGroup->GetSceneNodeSelectionList().AddSelectedNode(AZStd::move(meshNodePath));
-            for (const auto& meshGoupNamePair : meshDataMap)
-            {
-                if (meshGoupNamePair.second.m_meshIndex != meshNodeIndex)
-                {
-                    const auto nodeName = graph.GetNodeName(meshGoupNamePair.second.m_meshIndex);
-                    meshGroup->GetSceneNodeSelectionList().RemoveSelectedNode(nodeName.GetPath());
-                }
-            }
-            meshGroup->OverrideId(meshSubId);
-
-            // this clears out the mesh coordinates each mesh group will be rotated and translated
-            // using the attached scene graph node
-            auto coordinateSystemRule = AZStd::make_shared<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
-            coordinateSystemRule->SetUseAdvancedData(true);
-            coordinateSystemRule->SetRotation(AZ::Quaternion::CreateIdentity());
-            coordinateSystemRule->SetTranslation(AZ::Vector3::CreateZero());
-            coordinateSystemRule->SetScale(1.0f);
-            meshGroup->GetRuleContainer().AddRule(coordinateSystemRule);
-
-            // create an empty LOD rule in order to skip the LOD buffer creation
-            meshGroup->GetRuleContainer().AddRule(AZStd::make_shared<AZ::SceneAPI::SceneData::LodRule>());
-
-            manifestUpdates.emplace_back(meshGroup);
-
-            // create an entity for each MeshGroup
+            // create an entity for each node data entry
             AZ::EntityId entityId;
             AzToolsFramework::EntityUtilityBus::BroadcastResult(
-                entityId,
-                &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity,
-                meshNodeName.GetName());
+                entityId, &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity, nodeNameForEntity.GetName());
 
             if (entityId.IsValid() == false)
             {
                 return {};
             }
 
-
-            if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroupName) == false)
+            if (meshNodeIndex.IsValid())
             {
-                return {};
-            }
-
-            if (propertyDataIndex.IsValid())
-            {
-                const auto customPropertyData = azrtti_cast<const DataTypes::ICustomPropertyData*>(graph.GetNodeContent(propertyDataIndex));
-                if (!customPropertyData)
-                {
-                    AZ_Error("prefab", false, "Missing custom property data content for node.");
-                    return {};
-                }
-
-                if (AddEditorMaterialComponent(entityId, *(customPropertyData.get())) == false)
+                if (!CreateMeshGroupAndComponents(manifestUpdates,
+                    entityId,
+                    entry.second,
+                    nodeDataMap,
+                    scene,
+                    relativeSourcePath))
                 {
                     return {};
                 }
@@ -375,10 +417,10 @@ namespace AZ::SceneAPI
         return nodeEntityMap;
     }
 
-    DefaultProceduralPrefab::EntityIdList DefaultProceduralPrefab::FixUpEntityParenting(
+    DefaultProceduralPrefabGroup::EntityIdList DefaultProceduralPrefabGroup::FixUpEntityParenting(
         const NodeEntityMap& nodeEntityMap,
         const Containers::SceneGraph& graph,
-        const MeshDataMap& meshDataMap) const
+        const NodeDataMap& nodeDataMap) const
     {
         EntityIdList entities;
         entities.reserve(nodeEntityMap.size());
@@ -393,8 +435,8 @@ namespace AZ::SceneAPI
             auto parentNodeIndex = graph.GetNodeParent(thisNodeIndex);
             while (parentNodeIndex.IsValid())
             {
-                auto parentNodeIterator = meshDataMap.find(parentNodeIndex);
-                if (meshDataMap.end() != parentNodeIterator)
+                auto parentNodeIterator = nodeDataMap.find(parentNodeIndex);
+                if (nodeDataMap.end() != parentNodeIterator)
                 {
                     auto parentEntiyIterator = nodeEntityMap.find(parentNodeIterator->first);
                     if (nodeEntityMap.end() != parentEntiyIterator)
@@ -426,8 +468,8 @@ namespace AZ::SceneAPI
                 entityTransform->SetParent(parentEntityId);
             }
 
-            auto thisNodeIterator = meshDataMap.find(thisNodeIndex);
-            AZ_Assert(thisNodeIterator != meshDataMap.end(), "This node index missing.");
+            auto thisNodeIterator = nodeDataMap.find(thisNodeIndex);
+            AZ_Assert(thisNodeIterator != nodeDataMap.end(), "This node index missing.");
             auto thisTransformIndex = thisNodeIterator->second.m_transformIndex;
 
             // get node matrix data to set the entity's local transform
@@ -440,29 +482,35 @@ namespace AZ::SceneAPI
             {
                 entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
             }
-        }
 
-        // TODO: use PrefabGroupNotificationBus::OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity); for each new entity
+            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, nodeEntity.second);
+        }
 
         return entities;
     }
 
-    bool DefaultProceduralPrefab::CreatePrefabGroupManifestUpdates(
+    bool DefaultProceduralPrefabGroup::CreatePrefabGroupManifestUpdates(
         ManifestUpdates& manifestUpdates,
         const Containers::Scene& scene,
         const EntityIdList& entities,
         const AZStd::string& filenameOnly,
         const AZStd::string& relativeSourcePath) const
     {
-        // TODO really needed? this is very destructive inside the Editor, so maybe figure out what to do here
-        AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
-
         AZStd::string prefabTemplateName{ relativeSourcePath };
         AZ::StringFunc::Path::ReplaceFullName(prefabTemplateName, filenameOnly.c_str());
         AZ::StringFunc::Replace(prefabTemplateName, "\\", "/"); // the source folder uses forward slash
 
+        // clear out any previously created prefab template for this path
+        auto* prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+        AzToolsFramework::Prefab::TemplateId prefabTemplateId =
+            prefabSystemComponentInterface->GetTemplateIdFromFilePath({ prefabTemplateName.c_str() });
+        if (prefabTemplateId != AzToolsFramework::Prefab::InvalidTemplateId)
+        {
+            prefabSystemComponentInterface->RemoveTemplate(prefabTemplateId);
+            prefabTemplateId = AzToolsFramework::Prefab::InvalidTemplateId;
+        }
+
         // create prefab group for entire stack
-        AzToolsFramework::Prefab::TemplateId prefabTemplateId;
         AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
             prefabTemplateId,
             &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplate,
@@ -500,7 +548,6 @@ namespace AZ::SceneAPI
             prefabTemplateName));
 
         manifestUpdates.emplace_back(prefabGroup);
-
         return true;
     }
 }

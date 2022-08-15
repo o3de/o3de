@@ -57,16 +57,16 @@ namespace AZ::SceneAPI
     class PrefabGroupNotifications
         : public AZ::EBusTraits
     {
+    public:
         AZ_RTTI(PrefabGroupNotifications, "{BD88ADC3-B72F-43DD-B279-A44E39CD612F}");
 
-    public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
         PrefabGroupNotifications() = default;
         virtual ~PrefabGroupNotifications() = default;
 
         //! This is sent when the Prefab Group logic is finished creating an entity but allows other scene builders to extend the entity
-        virtual void OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity) const = 0;
+        virtual void OnUpdatePrefabEntity(const AZ::EntityId& prefabEntity) = 0;
     };
     using PrefabGroupNotificationBus = AZ::EBus<PrefabGroupNotifications>;
 }
