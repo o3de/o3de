@@ -27,9 +27,6 @@ namespace AzToolsFramework
     static constexpr const char* LocalBookmarksKey = "LocalBookmarks";
     static constexpr const char* LastKnownLocationKey = "LastKnownLocation";
 
-    // temporary value until there is UI to expose the fields
-    static constexpr int DefaultViewBookmarkCount = 12;
-
     struct ViewBookmarkVisitor : AZ::SettingsRegistryInterface::Visitor
     {
         ViewBookmarkVisitor()
@@ -507,6 +504,11 @@ namespace AzToolsFramework
     LocalViewBookmarkComponent* LocalViewBookmarkLoader::FindOrCreateLocalViewBookmarkComponent()
     {
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+        if (!prefabEditorEntityOwnershipInterface)
+        {
+            return nullptr;
+        }
+
         const AZ::EntityId containerEntityId = prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetContainerEntityId();
         if (!containerEntityId.IsValid())
         {

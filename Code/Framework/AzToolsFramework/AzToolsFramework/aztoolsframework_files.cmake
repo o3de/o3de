@@ -12,11 +12,17 @@ set(FILES
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerInternalInterface.h
     ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
+    ActionManager/Action/EditorWidgetAction.cpp
+    ActionManager/Action/EditorWidgetAction.h
+    ActionManager/HotKey/HotKeyManager.cpp
+    ActionManager/HotKey/HotKeyManager.h
+    ActionManager/HotKey/HotKeyManagerInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -24,11 +30,13 @@ set(FILES
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
     ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/Menu/MenuManagerInternalInterface.h
     ActionManager/ToolBar/EditorToolBar.cpp
     ActionManager/ToolBar/EditorToolBar.h
     ActionManager/ToolBar/ToolBarManager.cpp
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
+    ActionManager/ToolBar/ToolBarManagerInternalInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
@@ -194,6 +202,8 @@ set(FILES
     Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
+    Manipulators/AngularManipulatorCircleViewFeedback.cpp
+    Manipulators/AngularManipulatorCircleViewFeedback.h
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
@@ -330,7 +340,6 @@ set(FILES
     ToolsComponents/GenericComponentWrapper.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
-    ToolsComponents/SelectionComponentBus.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
@@ -574,6 +583,8 @@ set(FILES
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeSwitcher.h
+    ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h
     ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
@@ -610,7 +621,6 @@ set(FILES
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
     AssetBrowser/AssetBrowserBus.h
-    AssetBrowser/AssetBrowserSourceDropBus.h
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntry.h
@@ -640,6 +650,8 @@ set(FILES
     AssetBrowser/Entries/AssetBrowserEntry.inl
     AssetBrowser/Entries/AssetBrowserEntryCache.cpp
     AssetBrowser/Entries/AssetBrowserEntryCache.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.h
+    AssetBrowser/Entries/AssetBrowserEntryUtils.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.cpp
     AssetBrowser/Entries/FolderAssetBrowserEntry.h
     AssetBrowser/Entries/ProductAssetBrowserEntry.cpp
@@ -802,7 +814,8 @@ set(FILES
     UI/Outliner/EntityOutlinerTreeView.cpp
     UI/Outliner/EntityOutlinerWidget.hxx
     UI/Outliner/EntityOutlinerWidget.cpp
-    UI/Outliner/EntityOutlinerCacheBus.h
+    UI/Outliner/EntityOutlinerCacheBus.h 
+    UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
     UI/Outliner/EntityOutlinerSearchWidget.h
@@ -846,6 +859,8 @@ set(FILES
     PythonTerminal/ScriptTermDialog.ui
     Input/QtEventToAzInputMapper.h
     Input/QtEventToAzInputMapper.cpp
+    Script/LuaEditorSystemComponent.h
+    Script/LuaEditorSystemComponent.cpp
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp

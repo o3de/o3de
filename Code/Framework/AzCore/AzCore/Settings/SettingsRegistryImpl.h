@@ -10,7 +10,7 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
-#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -40,7 +40,7 @@ namespace AZ
         //! otherwise always use SystemFile
         explicit SettingsRegistryImpl(bool useFileIo);
         AZ_DISABLE_COPY_MOVE(SettingsRegistryImpl);
-        ~SettingsRegistryImpl() override = default;
+        ~SettingsRegistryImpl() override;
 
         void SetContext(SerializeContext* context);
         void SetContext(JsonRegistrationContext* context);
@@ -84,8 +84,8 @@ namespace AZ
         bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
-        void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
-        void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
+        void SetNotifyForMergeOperations(bool notify) override;
+        bool GetNotifyForMergeOperations() const override;
 
         void SetUseFileIO(bool useFileIo) override;
 
@@ -114,6 +114,7 @@ namespace AZ
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
 
         void SignalNotifier(AZStd::string_view jsonPath, Type type);
+
         
         mutable AZStd::recursive_mutex m_settingMutex;
         mutable AZStd::recursive_mutex m_notifierMutex;
@@ -122,14 +123,15 @@ namespace AZ
         PostMergeEvent m_postMergeEvent;
 
         //! NOTE: During SignalNotifier, the registered notify event handlers are moved to a local NotifyEvent
-        //! Therefore setting a value within the registry during signaling will queue future SignalNotifer calls
-        //! These calls will then be invoked after the current signaling has completex
+        //! Therefore setting a value within the registry during signaling will queue future SignalNotifier calls
+        //! These calls will then be invoked after the current signaling has completed
         //! This is done to avoid deadlock if another thread attempts to access register a notifier or signal one
         mutable AZStd::mutex m_signalMutex;
         struct SignalNotifierArgs
         {
             FixedValueString m_jsonPath;
             Type m_type;
+            AZ::IO::FixedMaxPath m_mergeFilePath;
         };
         AZStd::deque<SignalNotifierArgs> m_signalNotifierQueue;
         AZStd::atomic_int m_signalCount{};
@@ -137,8 +139,23 @@ namespace AZ
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
-        JsonApplyPatchSettings m_applyPatchSettings;
-
+        //! If set to true, then the JSON Patch/JSON Merge Patch operations
+        //! also result in the signaling of a notification event
+        bool m_mergeOperationNotify{};
+        //! When true use the Registered FileIOBase for file open operations
         bool m_useFileIo{};
+
+
+        struct ScopedMergeEvent
+        {
+            ScopedMergeEvent(SettingsRegistryImpl& settingsRegistry, MergeEventArgs mergeEventArgs);
+            ~ScopedMergeEvent();
+
+            SettingsRegistryImpl& m_settingsRegistry;
+            MergeEventArgs m_mergeEventArgs;
+        };
+        //! Stack tracking the files currently being merged
+        //! This is protected by m_settingsMutex
+        AZStd::stack<AZ::IO::FixedMaxPath> m_mergeFilePathStack;
     };
 } // namespace AZ

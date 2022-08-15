@@ -73,7 +73,7 @@ namespace JsonSerializationTests
         IntegerSerializerTestDescription<unsigned long, AZ::JsonUnsignedLongSerializer>,
         IntegerSerializerTestDescription<unsigned long long, AZ::JsonUnsignedLongLongSerializer>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonIntSerializer, JsonSerializerConformityTests, IntegerSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonIntSerializer, JsonSerializerConformityTests, IntegerSerializerConformityTestTypes));
 
 
     template<typename> struct SerializerInfo {};

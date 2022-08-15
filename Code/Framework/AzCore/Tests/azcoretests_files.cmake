@@ -85,6 +85,7 @@ set(FILES
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
+    Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
@@ -98,6 +99,7 @@ set(FILES
     Streamer/StreamStackEntryMock.h
     Streamer/StreamStackEntryTests.cpp
     Serialization/Json/ArraySerializerTests.cpp
+    Serialization/Json/AnySerializerTests.cpp
     Serialization/Json/BaseJsonSerializerFixture.h
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
@@ -222,6 +224,7 @@ set(FILES
     AZStd/Parallel.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesUtilityTests.cpp
     AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp

@@ -19,11 +19,13 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
@@ -370,18 +372,15 @@ namespace AtomToolsFramework
             }
         }
 
-        if (mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType()))
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-            if (AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries))
+            for (const auto entry : entries)
             {
-                for (const auto entry : entries)
+                AZStd::string path = entry->GetFullPath();
+                if (ValidateDocumentPath(path))
                 {
-                    AZStd::string path = entry->GetFullPath();
-                    if (ValidateDocumentPath(path))
-                    {
-                        paths.insert(path);
-                    }
+                    paths.insert(path);
                 }
             }
         }
@@ -399,5 +398,28 @@ namespace AtomToolsFramework
         }
 
         return paths;
+    }
+
+    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    {
+        AZStd::set<AZStd::string> results;
+        AZStd::vector<AZStd::string> scanFolders;
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        for (const AZStd::string& scanFolder : scanFolders)
+        {
+            if (const auto& findFilesResult = AzFramework::FileFunc::FindFileList(scanFolder, wildcard.c_str(), true))
+            {
+                for (AZStd::string path : findFilesResult.GetValue())
+                {
+                    if (ValidateDocumentPath(path))
+                    {
+                        results.insert(path);
+                    }
+                }
+            }
+        }
+        return results;
     }
 } // namespace AtomToolsFramework

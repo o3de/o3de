@@ -21,11 +21,6 @@
 
 class QMimeData;
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace AzToolsFramework
 {
     using namespace Thumbnailer;
@@ -90,20 +85,27 @@ namespace AzToolsFramework
 
             virtual QVariant data(int column) const;
             int row() const;
-            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<AssetBrowserEntry*>& entries);
-            void AddToMimeData(QMimeData* mimeData) const;
+
+            //! @deprecated: Use "AssetBrowserEntryUtils::FromMimeData" instead
+            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries);
+           
             static QString GetMimeType();
-            static void Reflect(AZ::ReflectContext* context);
+
             virtual AssetEntryType GetEntryType() const = 0;
 
             //! Actual name of the asset or folder
             const AZStd::string& GetName() const;
             //! Display name represents how entry is shown in asset browser
             const QString& GetDisplayName() const;
+
+            //! Display name represents how the path to the file is shown in the asset browser.
+            //! It does not include the file name of the entry.
+            const QString& GetDisplayPath() const;
             //! Return path relative to scan folder
             const AZStd::string& GetRelativePath() const;
-            //! Return absolute path. If called on product, return source absolute path
-            const AZStd::string& GetFullPath() const;
+            //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
+            //! any aliases.
+            const AZStd::string GetFullPath() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>

@@ -50,6 +50,9 @@ QLabel#portLabel {
 QTreeView#SourceAssetsTreeView,
 QTreeView#SourceAssetsTreeView::item,
 QTreeView#SourceAssetsTreeView::branch,
+QTreeView#IntermediateAssetsTreeView,
+QTreeView#IntermediateAssetsTreeView::item,
+QTreeView#IntermediateAssetsTreeView::branch,
 QTreeView#ProductAssetsTreeView,
 QTreeView#ProductAssetsTreeView::item,
 QTreeView#ProductAssetsTreeView::branch,
@@ -64,6 +67,8 @@ QTreeView#IncomingProductDependenciesTreeView::branch {
 
 QTreeView#SourceAssetsTreeView::item:hover,
 QTreeView#SourceAssetsTreeView::branch:hover,
+QTreeView#IntermediateAssetsTreeView::item:hover,
+QTreeView#IntermediateAssetsTreeView::branch:hover,
 QTreeView#ProductAssetsTreeView::item:hover,
 QTreeView#ProductAssetsTreeView::branch:hover,
 QTreeView#OutgoingProductDependenciesTreeView::item:hover,
@@ -76,6 +81,9 @@ QTreeView#IncomingProductDependenciesTreeView::branch:hover {
 QTreeView#SourceAssetsTreeView::item:selected,
 QTreeView#SourceAssetsTreeView::branch:selected,
 QTreeView#SourceAssetsTreeView::item:selected:active,
+QTreeView#IntermediateAssetsTreeView::item:selected,
+QTreeView#IntermediateAssetsTreeView::branch:selected,
+QTreeView#IntermediateAssetsTreeView::item:selected:active,
 QTreeView#ProductAssetsTreeView::item:selected,
 QTreeView#ProductAssetsTreeView::branch:selected,
 QTreeView#ProductAssetsTreeView::item:selected:active,
@@ -89,6 +97,7 @@ QTreeView#IncomingProductDependenciesTreeView::item:selected:active {
 }
 
 QTreeView#SourceAssetsTreeView::item:selected:!active,
+QTreeView#IntermediateAssetsTreeView::item:selected:!active,
 QTreeView#ProductAssetsTreeView::item:selected:!active,
 QTreeView#OutgoingProductDependenciesTreeView::item:selected:!active,
 QTreeView#IncomingProductDependenciesTreeView::item:selected:!active,

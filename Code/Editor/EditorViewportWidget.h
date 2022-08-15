@@ -210,6 +210,9 @@ private:
     // IEditorEventListener overrides ...
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
+    // Callback for setting modification
+    void OnDefaultCameraNearFarChanged();
+
     // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
     // note: handler moved to cpp to resolve link issues in unity builds
     void OnStartPlayInEditor();
@@ -245,6 +248,7 @@ private:
     ////////////////////////////////////////////////////////////////////////
     // Private helpers...
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
+    void SetDefaultCameraNearFar();
     void RenderSnapMarker();
     void RenderAll();
 
@@ -397,8 +401,10 @@ private:
     // these are now forwarded to EntityVisibilityQuery
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
 
-    // Handlers for grid snapping/editor event callbacks
+    // Handlers for snapping/editor event callbacks
+    SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearFarPlaneDistanceHandler;
     AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     // Used for some legacy logic which lets the widget release a grabbed keyboard at the right times
