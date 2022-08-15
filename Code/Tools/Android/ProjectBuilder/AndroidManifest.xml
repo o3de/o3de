@@ -49,7 +49,7 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="com.oculus.intent.category.VR" />
+                ${OCULUS_INTENT_FILTER_CATEGORY}
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
