@@ -22,6 +22,9 @@ namespace TestImpact
         //! Returns the build target name.
         const AZStd::string& GetName() const;
 
+        //! Returns the target type at runtime.
+        TargetType GetType() const;
+
         //! Returns the path in the source tree to the build target location.
         const RepoPath& GetPath() const;
 
