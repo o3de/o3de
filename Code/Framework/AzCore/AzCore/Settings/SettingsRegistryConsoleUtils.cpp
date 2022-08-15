@@ -137,7 +137,7 @@ namespace AZ::SettingsRegistryConsoleUtils
                     return true;
             });
         }
-    
+
         AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
     }
 
