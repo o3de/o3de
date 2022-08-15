@@ -936,16 +936,9 @@ namespace O3DE::ProjectManager
                 {
                     for (auto path : projectPaths)
                     {
-                        //auto cpath = Py_To_String(path);
-                        //AZ::Outcome<ProjectInfo> projectOutcome = GetProject(QString(cpath));
-                        //if (projectOutcome.IsSuccess())
-                        {
-                            //ProjectInfo projectInfo = projectOutcome.GetValue();
-                            ProjectInfo projectInfo = ProjectInfoFromPath(path);
-                            projectInfo.m_remote = true;
-                            // projectInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
-                            projects.push_back(projectInfo);
-                        }
+                        ProjectInfo projectInfo = ProjectInfoFromPath(path);
+                        projectInfo.m_remote = true;
+                        projects.push_back(projectInfo);
                     }
                 }
             });
@@ -970,18 +963,9 @@ namespace O3DE::ProjectManager
                 {
                     for (auto path : projectPaths)
                     {
-                        //AZ::Outcome<ProjectInfo> projectOutcome = GetProject(QString(Py_To_String(path)));
-                        //if (projectOutcome.IsSuccess())
-                        {
-                           // ProjectInfo projectInfo = projectOutcome.GetValue();
-                            ProjectInfo projectInfo = ProjectInfoFromPath(path);
-                           projectInfo.m_remote = true;
-                            // projectInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
-                            projectInfos.push_back(projectInfo);
-                        }
-                        //GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
-                        //gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
-                        //projectInfos.push_back(gemInfo);
+                        ProjectInfo projectInfo = ProjectInfoFromPath(path);
+                        projectInfo.m_remote = true;
+                        projectInfos.push_back(projectInfo);
                     }
                 }
             });
