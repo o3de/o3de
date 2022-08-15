@@ -346,7 +346,7 @@ namespace O3DE::ProjectManager
             pybind11::finalize_interpreter();
         }
 
-        return true;
+        return Py_IsInitialized() == 0;
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
