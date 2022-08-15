@@ -130,6 +130,29 @@ namespace O3DE::ProjectManager
         {
             m_templates = templatesResult.GetValue();
 
+            // Add in remote templates
+            auto remoteTemplatesResult = PythonBindingsInterface::Get()->GetProjectTemplatesForAllRepos();
+            if (remoteTemplatesResult.IsSuccess() && !remoteTemplatesResult.GetValue().isEmpty())
+            {
+                QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
+                for (ProjectTemplateInfo& remoteTemplate : remoteTemplates)
+                {
+                    auto rem = AZStd::find_if(
+                        m_templates.begin(),
+                        m_templates.end(),
+                        [remoteTemplate](const ProjectTemplateInfo& value)
+                        {
+                            return remoteTemplate.m_name == value.m_name;
+                        });
+                    if (rem == m_templates.end())
+                    {
+                        m_templates.append(remoteTemplate);
+                    }
+                }
+
+
+            }
+
             // sort alphabetically by display name (but putting Standard first) because they could be in any order
             std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
             {
@@ -157,6 +180,7 @@ namespace O3DE::ProjectManager
                     projectPreviewPath = ":/DefaultTemplate.png";
                 }
                 TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
+                templateButton->SetIsRemote(projectTemplate.m_isRemote);
                 templateButton->setCheckable(true);
                 templateButton->setProperty(k_templateIndexProperty, index);
                 

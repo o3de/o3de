@@ -565,7 +565,10 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    return get_json_data('template', template_path, validation.valid_o3de_template_json)
+    if pathlib.Path(template_path).is_file():
+        return get_json_data_file(template_path, 'template', validation.valid_o3de_template_json)
+    else:
+        return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,

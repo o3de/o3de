@@ -61,6 +61,7 @@ namespace O3DE::ProjectManager
 
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos(const QString& projectPath = {}) override;
 
         // Gem Repos
         AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
