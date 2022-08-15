@@ -2238,8 +2238,8 @@ namespace AZ::Data
             const double rateKbps = kilobytes / seconds;
             AZ_Warning("AssetDatabase", (!cl_assetLoadWarningEnable) ||
                 loadMs <= AZStd::chrono::milliseconds(cl_assetLoadWarningMsThreshold),
-                "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms %8.4Lf KB/s rate %" PRId64 " size in bytes",
-                asset.GetHint().c_str(), loadMs.count(), rateKbps, stream->GetLoadedSize());
+                "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms to load %" PRId64 " bytes (%8.4Lf KB/s)",
+                asset.GetHint().c_str(), loadMs.count(), stream->GetLoadedSize(), rateKbps);
         }
 #endif
 
