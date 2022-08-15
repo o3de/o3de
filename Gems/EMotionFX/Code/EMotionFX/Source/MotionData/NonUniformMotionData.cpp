@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/numeric.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Algorithms.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -1204,9 +1205,9 @@ namespace EMotionFX
     }
 #endif
 
-    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation)
+    void NonUniformMotionData::ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data)
     {
-        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex, transitionZeroXAxis, transitionZeroYAxis, extractRotation);
+        MotionData::ExtractRootMotion(sampleJointDataIndex, rootJointDataIndex, data);
 
         if (sampleJointDataIndex == rootJointDataIndex)
         {
@@ -1216,7 +1217,7 @@ namespace EMotionFX
         if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
         {
             m_jointData[rootJointDataIndex].m_positionTrack = m_jointData[sampleJointDataIndex].m_positionTrack;
-            if (extractRotation)
+            if (data.m_extractRotation)
             {
                 m_jointData[rootJointDataIndex].m_rotationTrack = m_jointData[sampleJointDataIndex].m_rotationTrack;
             }
@@ -1224,23 +1225,23 @@ namespace EMotionFX
             for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
             {
                 // Zero out transition movement based on settings.
-                if (transitionZeroXAxis)
+                if (data.m_transitionZeroXAxis)
                 {
                     m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetX(0);
                 }
-                if (transitionZeroYAxis)
+                if (data.m_transitionZeroYAxis)
                 {
                     m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetY(0);
                 }
                 m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetZ(0);
 
                 // Compensation in samples.
-                const float x = transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
-                const float y = transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
+                const float x = data.m_transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
+                const float y = data.m_transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
                 const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
                 m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
 
-                if (extractRotation)
+                if (data.m_extractRotation)
                 {
                     const AZ::Quaternion sampleJointRotation = m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].ToQuaternion();
 
@@ -1265,6 +1266,30 @@ namespace EMotionFX
         if (m_floatData.size() > sampleJointDataIndex && m_floatData.size() > rootJointDataIndex)
         {
             m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
+        }
+
+        if (data.m_smoothingMethod == RootMotionExtractionData::SmoothingMethod::MovingAverage)
+        {
+            SmoothData(data);
+        }
+    }
+
+    void NonUniformMotionData::SmoothData(const RootMotionExtractionData& data)
+    {
+        if (data.m_smoothPosition)
+        {
+            for (size_t i = 0; i < m_jointData.size(); ++i)
+            {
+                MCore::MovingAverageSmooth(m_jointData[i].m_positionTrack.m_values, data.m_smoothFrameNum);
+            }
+        }
+
+        if (data.m_smoothRotation)
+        {
+            for (size_t i = 0; i < m_jointData.size(); ++i)
+            {
+                MCore::MovingAverageSmooth(m_jointData[i].m_rotationTrack.m_values, data.m_smoothFrameNum);
+            }
         }
     }
 
