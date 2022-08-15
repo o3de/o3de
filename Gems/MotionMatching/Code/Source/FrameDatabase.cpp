@@ -12,7 +12,7 @@
 #include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
-#include <MotionMatchingData.h>
+#include <CsvSerializers.h>
 #include <MotionMatchingInstance.h>
 #include <Frame.h>
 #include <Feature.h>
@@ -246,5 +246,21 @@ namespace EMotionFX::MotionMatching
         }
 
         return InvalidIndex;
+    }
+
+    void FrameDatabase::SaveAsCsv(const char* filename, ActorInstance* actorInstance) const
+    {
+        PoseWriterCsv poseWriter;
+        poseWriter.Begin(filename, actorInstance);
+
+        Pose pose;
+        pose.LinkToActorInstance(actorInstance);
+        pose.InitFromBindPose(actorInstance);
+
+        for (const Frame& currentFrame : m_frames)
+        {
+            currentFrame.SamplePose(&pose);
+            poseWriter.WritePose(pose);
+        }
     }
 } // namespace EMotionFX::MotionMatching
