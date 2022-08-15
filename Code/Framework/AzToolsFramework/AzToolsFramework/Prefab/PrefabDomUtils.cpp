@@ -378,6 +378,7 @@ namespace AzToolsFramework
                     {
                         AZStd::string_view patchPath = patchEntryIterator->value.GetString();
 
+                        // Entities
                         if (patchPath == PathMatchingEntities) // Path is /Entities
                         {
                             patchesMetadata.m_clearAndLoadAllEntities = true;
@@ -401,6 +402,7 @@ namespace AzToolsFramework
                                     patchEntry, patchesMetadata.m_entitiesToReload, patchesMetadata.m_entitiesToRemove, AZStd::move(patchPath));
                             }
                         }
+                        // Instances
                         else if (patchPath == PathMatchingInstances) // Path is /Instances
                         {
                             patchesMetadata.m_clearAndLoadAllInstances = true;
@@ -424,11 +426,25 @@ namespace AzToolsFramework
                                     patchEntry, patchesMetadata.m_instancesToAdd, patchesMetadata.m_instancesToRemove, AZStd::move(patchPath));
                             }
                         }
+                        // ContainerEntity
                         else if (patchPath.starts_with(PathMatchingContainerEntity)) // Path begins with /ContainerEntity
                         {
                             patchesMetadata.m_shouldReloadContainerEntity = true;
                         }
-                        // Skips other path prefix types (e.g. /LinkId/{someString}/).
+                        // LinkId
+                        else if (patchPath == PathMatchingLinkId) // Path is /LinkId
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            AZ_Warning(
+                                "Prefab",
+                                false,
+                                "A patch targeting '%.*s' is identified. Patches must be routed to Entities, Instances, "
+                                "ContainerEntity, or LinkId.",
+                                AZ_STRING_ARG(patchPath));
+                        }
                     }
                 }
                 return AZStd::move(patchesMetadata);
