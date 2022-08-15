@@ -3,9 +3,33 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Constants",
-        "title": "Color Constant",
+        "category": "Properties",
+        "title": "Color Property",
         "propertySlots": [
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Group",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
             {
                 "name": "inValue",
                 "displayName": "Value",
@@ -13,18 +37,9 @@
                 "supportedDataTypes": [
                     "color"
                 ],
-                "defaultValue": {
-                    "$type": "Color",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
-                },
                 "settings": {
-                    "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                    "materialInput": [
+                        "SLOTTYPE PROPERTYNAME;"
                     ]
                 }
             }
@@ -48,7 +63,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;"
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::PROPERTYNAME;"
                     ]
                 }
             }

@@ -4,7 +4,7 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "category": "Constants",
-        "title": "Constant Float4",
+        "title": "Float4 Constant",
         "propertySlots": [
             {
                 "name": "inValue",

@@ -1,0 +1,63 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Properties",
+        "title": "Float4 Property",
+        "propertySlots": [
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Group",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "defaultValue": {
+                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                    "Value": ""
+                }
+            },
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypes": [
+                    "float4"
+                ],
+                "settings": {
+                    "materialInput": [
+                        "SLOTTYPE PROPERTYNAME;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypes": [
+                    "float4"
+                ],
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::PROPERTYNAME;"
+                    ]
+                }
+            }
+        ]
+    }
+}
