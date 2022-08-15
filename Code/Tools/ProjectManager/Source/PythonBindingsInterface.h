@@ -211,7 +211,7 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
 
         /**
-         * Gathers all project templates for all gems registered from repos.
+         * Gathers all project templates for all templates registered from repos.
          * @return A list of all ProjectTemplateInfos on success
          */
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos(const QString& projectPath = {}) = 0;

@@ -19,6 +19,7 @@
 #include <ProjectUtils.h>
 
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
@@ -137,14 +138,12 @@ namespace O3DE::ProjectManager
                 QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
                 for (ProjectTemplateInfo& remoteTemplate : remoteTemplates)
                 {
-                    auto rem = AZStd::find_if(
-                        m_templates.begin(),
-                        m_templates.end(),
+                    const auto found = AZStd::ranges::find_if(m_templates,
                         [remoteTemplate](const ProjectTemplateInfo& value)
                         {
                             return remoteTemplate.m_name == value.m_name;
                         });
-                    if (rem == m_templates.end())
+                    if (found == m_templates.end())
                     {
                         m_templates.append(remoteTemplate);
                     }
