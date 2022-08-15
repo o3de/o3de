@@ -388,7 +388,6 @@ namespace MaterialCanvas
 
         // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZ::StringFunc::Replace(documentName, "-", "_");
-
         return AZ::RPI::AssetUtils::SanitizeFileName(documentName);
     }
 
@@ -487,6 +486,7 @@ namespace MaterialCanvas
             ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
             ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
             ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
+            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(node), instructionsForSlot);
         }
 
         return instructionsForSlot;
@@ -591,10 +591,90 @@ namespace MaterialCanvas
             AZStd::vector<AZStd::string> instructionsForNode;
             AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
             ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
+            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), instructionsForNode);
             instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
 
         return instructions;
+    }
+
+    AZStd::string MaterialCanvasDocument::GetInputPropertyNameFromNode(GraphModel::ConstNodePtr inputNode) const
+    {
+        if (auto propertyNameSlot = inputNode->GetSlot("inName"))
+        {
+            AZStd::string propertyName = AZ::RPI::AssetUtils::SanitizeFileName(propertyNameSlot->GetValue<AZStd::string>());
+            AZ::StringFunc::Replace(propertyName, "-", "_");
+            if (!propertyName.empty())
+            {
+                return propertyName;
+            }
+        }
+
+        return AZStd::string::format("node%u_property", inputNode->GetId());
+    }
+
+    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInputPropertiesFromSlot(
+        GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const
+    {
+        AZStd::vector<AZStd::string> inputPropertiesForSlot;
+
+        if (auto slot = node->GetSlot(slotConfig.m_name))
+        {
+            AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialInput", inputPropertiesForSlot);
+
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), inputPropertiesForSlot);
+            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), inputPropertiesForSlot);
+            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), inputPropertiesForSlot);
+            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), inputPropertiesForSlot);
+            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(node), inputPropertiesForSlot);
+        }
+
+        return inputPropertiesForSlot;
+    }
+
+    AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInputPropertiesFromNodes() const
+    {
+        AZStd::vector<AZStd::string> inputProperties;
+
+        for (const auto& inputNodePair : m_graph->GetNodes())
+        {
+            const auto& inputNode = inputNodePair.second;
+
+            auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
+            if (!dynamicNode)
+            {
+                continue;
+            }
+
+            const auto& nodeConfig = dynamicNode->GetConfig();
+
+            AZStd::vector<AZStd::string> inputPropertiesForNode;
+
+            for (const auto& slotConfig : nodeConfig.m_propertySlots)
+            {
+                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
+                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
+            }
+
+            for (const auto& slotConfig : nodeConfig.m_inputSlots)
+            {
+                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
+                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
+            }
+
+            for (const auto& slotConfig : nodeConfig.m_outputSlots)
+            {
+                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
+                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
+            }
+
+            AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "inputProperties", inputPropertiesForNode);
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), inputPropertiesForNode);
+            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), inputPropertiesForNode);
+            inputProperties.insert(inputProperties.end(), inputPropertiesForNode.begin(), inputPropertiesForNode.end());
+        }
+
+        return inputProperties;
     }
 
     void MaterialCanvasDocument::ReplaceLinesInTemplateBlock(
@@ -677,6 +757,7 @@ namespace MaterialCanvas
         // This could really be any globally defined function, class, struct, define.
         AZStd::vector<AZStd::string> classDefinitions;
         AZStd::vector<AZStd::string> functionDefinitions;
+        AZStd::vector<AZStd::string> inputDefinitions;
 
         AZ_TracePrintf("MaterialCanvasDocument", "Dumping data scraped from traversing material graph.\n");
 
@@ -763,6 +844,15 @@ namespace MaterialCanvas
                         [&functionDefinitions]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             return functionDefinitions;
+                        },
+                        templateLines);
+
+                    ReplaceLinesInTemplateBlock(
+                        "O3DE_GENERATED_MATERIAL_SRG_BEGIN",
+                        "O3DE_GENERATED_MATERIAL_SRG_END",
+                        [&]([[maybe_unused]] const AZStd::string& blockHeader)
+                        {
+                            return GetInputPropertiesFromNodes();
                         },
                         templateLines);
 

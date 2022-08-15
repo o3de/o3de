@@ -108,6 +108,13 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
             GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
+        AZStd::string GetInputPropertyNameFromNode(GraphModel::ConstNodePtr inputNode) const;
+
+        AZStd::vector<AZStd::string> GetInputPropertiesFromSlot(
+            GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
+
+        AZStd::vector<AZStd::string> GetInputPropertiesFromNodes() const;
+
         using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
 
         // Search for marked up blocks of text from a template and replace lines between them with lines provided by a function.
