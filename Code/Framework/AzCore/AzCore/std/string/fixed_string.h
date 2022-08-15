@@ -10,6 +10,7 @@
 #include <wchar.h>
 
 #include <AzCore/std/base.h>
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/iterator.h>
 
 #include <AzCore/std/string/string_view.h>
@@ -76,6 +77,10 @@ namespace AZStd
         // #6
         template<class InputIt, typename = enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_t>>>
         constexpr basic_fixed_string(InputIt first, InputIt last);
+
+        // https://eel.is/c++draft/strings#string.cons-18
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        constexpr basic_fixed_string(from_range_t, R&& rg);
 
         // #7
         constexpr basic_fixed_string(const basic_fixed_string& rhs);
@@ -144,9 +149,15 @@ namespace AZStd
             && !is_convertible_v<const T&, const Element*>, basic_fixed_string&>;
         constexpr auto append(const_pointer ptr) -> basic_fixed_string&;
         constexpr auto append(size_type count, Element ch) -> basic_fixed_string&;
+
         template<class InputIt>
         constexpr auto append(InputIt first, InputIt last)
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
+        template<class R>
+        constexpr auto append_range(R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>;
+
         constexpr auto append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto assign(const basic_fixed_string& rhs) -> basic_fixed_string&;
@@ -159,9 +170,14 @@ namespace AZStd
             && !is_convertible_v<const T&, const Element*>, basic_fixed_string&>;
         constexpr auto assign(const_pointer ptr) -> basic_fixed_string&;
         constexpr auto assign(size_type count, Element ch) -> basic_fixed_string&;
+
         template<class InputIt>
         constexpr auto assign(InputIt first, InputIt last)
             ->enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
+        template<class R>
+        constexpr auto assign_range(R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>;
 
         constexpr auto assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
@@ -177,9 +193,14 @@ namespace AZStd
         constexpr auto insert(const_iterator insertPos) -> iterator;
         constexpr auto insert(const_iterator insertPos, Element ch) -> iterator;
         constexpr auto insert(const_iterator insertPos, size_type count, Element ch) -> iterator;
+
         template<class InputIt>
         constexpr auto insert(const_iterator insertPos, InputIt first, InputIt last)
         -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
+
+        template<class R>
+        constexpr auto insert_range(const_iterator insertPos, R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>;
 
         constexpr auto insert(const_iterator insertPos, AZStd::initializer_list<Element> ilist) -> iterator;
 
@@ -213,9 +234,15 @@ namespace AZStd
             -> AZStd::enable_if_t<is_convertible_v<const T&, basic_string_view<Element, Traits>>
             && !is_convertible_v<const T&, const Element*>, basic_fixed_string&>;
         constexpr auto replace(const_iterator first, const_iterator last, size_type count, Element ch) -> basic_fixed_string&;
+
         template<class InputIt>
         constexpr auto replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
             -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+
+        template<class R>
+        constexpr auto replace_with_range(const_iterator first, const_iterator last, R&& rg)
+            -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>;
+
         constexpr auto replace(const_iterator first, const_iterator last, AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto at(size_type offset) -> reference;

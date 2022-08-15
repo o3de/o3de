@@ -6,7 +6,7 @@
       "CompareFunc": "GreaterEqual"
     }
   },
-  "BlendState" : {
+  "GlobalTargetBlendState" : {
       "Enable" : true,
       "BlendSource" : "AlphaSource",
       "BlendDest" : "One",
