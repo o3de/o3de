@@ -85,17 +85,32 @@ namespace AtomToolsFramework
 
     bool DynamicNodeConfig::Save(const AZStd::string& path) const
     {
-        return AZ::JsonSerializationUtils::SaveObjectToFile(this, GetPathWithoutAlias(path)).IsSuccess();
+        auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile(this, GetPathWithoutAlias(path));
+        if (!saveResult)
+        {
+            AZ_Error("DynamicNodeConfig", false, "Failed to save (%s). %s", path.c_str(), saveResult.GetError().c_str());
+            return false;
+        }
+
+        return true;
     }
 
     bool DynamicNodeConfig::Load(const AZStd::string& path)
     {
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(GetPathWithoutAlias(path));
-        if (loadResult && loadResult.GetValue().is<DynamicNodeConfig>())
+        if (!loadResult)
         {
-            *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());
-            return true;
+            AZ_Error("DynamicNodeConfig", false, "Failed to load (%s). %s", path.c_str(), loadResult.GetError().c_str());
+            return false;
         }
-        return false;
+
+        if (!loadResult.GetValue().is<DynamicNodeConfig>())
+        {
+            AZ_Error("DynamicNodeConfig", false, "Failed to load (%s). Doesn't contain correct type", path.c_str());
+            return false;
+        }
+
+        *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());
+        return true;
     }
 } // namespace AtomToolsFramework
