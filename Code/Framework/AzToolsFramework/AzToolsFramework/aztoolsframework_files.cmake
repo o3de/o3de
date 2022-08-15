@@ -340,7 +340,6 @@ set(FILES
     ToolsComponents/GenericComponentWrapper.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
-    ToolsComponents/SelectionComponentBus.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
