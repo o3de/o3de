@@ -946,6 +946,15 @@ void EditorViewportWidget::SetViewportId(int id)
         }
     );
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
+
+    m_nearFarPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this](float /*nearFarPlaneDistance*/)
+        {
+            OnDefaultCameraNearFarChanged();
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
+    m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearFarPlaneDistanceHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
@@ -1927,6 +1936,13 @@ void EditorViewportWidget::SetDefaultCamera()
         SetFOV(fov);
     }
 
+    // Update camera matrix according to near / far values
+    // Only update if the editor camera is the active view
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetDefaultCameraNearFar();
+    }
+
     // push the default view as the active view
     if (auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get())
     {
@@ -1955,6 +1971,22 @@ void EditorViewportWidget::SetDefaultCamera()
     SetViewTM(m_defaultViewTM);
 
     PostCameraSet();
+}
+
+void EditorViewportWidget::SetDefaultCameraNearFar()
+{
+    auto viewToClip = m_defaultView->GetViewToClipMatrix();
+    AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
+    m_defaultView->SetViewToClipMatrix(viewToClip);
+}
+
+
+void EditorViewportWidget::OnDefaultCameraNearFarChanged()
+{
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetDefaultCameraNearFar();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2295,16 +2327,11 @@ void EditorViewportWidget::EndUndoTransaction()
 
 void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
 {
-    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
-
-    AzFramework::InputSystemCursorRequestBus::EventResult(
-        systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-
-    const bool systemCursorConstrained =
-        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
-         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
-
-    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
+    // Even when the mouse cursor is not in a constrained mode, we still return the viewport as the constraint window,
+    // so that the engine's mouse coordinates will be normalized to the editor viewport rather than the entire application window.
+    // This ensures that viewport mouse interactions are in the correct 2D coordinate space, for example when using ImGuiManager's
+    // debug tools.
+    return renderOverlayHWND();
 }
 
 void EditorViewportWidget::BuildDragDropContext(

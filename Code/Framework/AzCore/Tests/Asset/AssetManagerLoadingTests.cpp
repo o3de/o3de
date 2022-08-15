@@ -435,7 +435,7 @@ namespace UnitTest
         bool timedOut = false;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -462,6 +462,9 @@ namespace UnitTest
         EXPECT_EQ(assetStatus4.m_reloaded, 0);
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
+
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
 
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
@@ -503,6 +506,9 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         OnAssetReadyListener delayLoadAssetStatus(DelayLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
@@ -527,6 +533,10 @@ namespace UnitTest
         ASSERT_FALSE(timedOut);
 
         EXPECT_EQ(delayLoadAssetStatus.m_ready, 1);
+
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
         EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         // This should go through to loading
@@ -895,7 +905,7 @@ namespace UnitTest
         auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 AZ_Assert(false, "Timeout reached.");
@@ -3173,7 +3183,7 @@ namespace UnitTest
         bool timedOut = false;
         while (!(assetStatus1.m_ready && assetStatus2.m_ready))
         {
-            AssetBus::ExecuteQueuedEvents();
+            AssetManager::Instance().DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -3249,14 +3259,22 @@ namespace UnitTest
             m_loadDataSynchronizer.m_readyToLoad = true;
             m_loadDataSynchronizer.m_condition.notify_all();
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
+
             reloadHandler.m_asset.BlockUntilLoadComplete();
 
             ASSERT_TRUE(reloadHandler.m_asset.IsReady());
 
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
+
             // 2) Start a reload which will complete
             AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload to complete\n");
+
             reloadSignal->acquire(); // Wait until reload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another reload of asset\n");
 
             // 3) Start another reload
             m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the reload from progressing too far
@@ -3269,8 +3287,12 @@ namespace UnitTest
             m_loadDataSynchronizer.m_readyToLoad = true;
             m_loadDataSynchronizer.m_condition.notify_all();
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
             // 5) If the bug is still active, this will fail because the asset can never finish loading
             EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
         }
 
         // Shut down the event thread
@@ -3357,14 +3379,22 @@ namespace UnitTest
             m_loadDataSynchronizer.m_readyToLoad = true;
             m_loadDataSynchronizer.m_condition.notify_all();
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
+
             loadSignal->acquire();
 
             ASSERT_TRUE(assetEventHandler.m_asset.IsReady());
 
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
+
             // 2) Start a reload which will complete
             AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload of asset to complete\n");
+
             unloadSignal->acquire(); // Wait until unload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another load of asset\n");
 
             // 3) Start another load
             m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the load from progressing too far
@@ -3377,8 +3407,12 @@ namespace UnitTest
             m_loadDataSynchronizer.m_readyToLoad = true;
             m_loadDataSynchronizer.m_condition.notify_all();
 
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
             // 5) If the bug is still active, this will fail because the asset can never finish loading
             EXPECT_TRUE(loadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
         }
 
         // Shut down the event thread

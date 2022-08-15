@@ -234,6 +234,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzCoreTestCommon
                 3rdParty::Qt::Core
                 3rdParty::Qt::Gui
                 3rdParty::Qt::Widgets

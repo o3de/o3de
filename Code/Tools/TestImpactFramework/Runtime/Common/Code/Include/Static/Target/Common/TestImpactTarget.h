@@ -25,6 +25,9 @@ namespace TestImpact
         //! Returns the path in the source tree to the build target location.
         const RepoPath& GetPath() const;
 
+        //! Returns the build target's dependencies.
+        const TargetDependencies& GetDependencies() const;
+
         //! Returns the build target's sources.
         const TargetSources& GetSources() const;
 

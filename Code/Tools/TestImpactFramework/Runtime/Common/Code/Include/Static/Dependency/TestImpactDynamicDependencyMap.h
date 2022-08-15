@@ -31,7 +31,7 @@ namespace TestImpact
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
         DynamicDependencyMap(const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList);
 
-        const BuildTargetList<ProductionTarget, TestTarget>* GetBuildTargets() const;
+        const BuildTargetList<ProductionTarget, TestTarget>* GetBuildTargetList() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.
@@ -106,12 +106,12 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
         //! The list of build targets (both test and production) in the repository.
-        const BuildTargetList<ProductionTarget, TestTarget>* m_buildTargets;
+        const BuildTargetList<ProductionTarget, TestTarget>* m_buildTargetList;
     };
 
     template<typename ProductionTarget, typename TestTarget>
     DynamicDependencyMap<ProductionTarget, TestTarget>::DynamicDependencyMap(const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList)
-        : m_buildTargets(buildTargetList)
+        : m_buildTargetList(buildTargetList)
     {
         const auto mapBuildTargetSources = [this](const auto* target)
         {
@@ -139,12 +139,12 @@ namespace TestImpact
             }
         };
 
-        for (const auto& target : m_buildTargets->GetProductionTargetList().GetTargets())
+        for (const auto& target : m_buildTargetList->GetProductionTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
         }
 
-        for (const auto& target : m_buildTargets->GetTestTargetList().GetTargets())
+        for (const auto& target : m_buildTargetList->GetTestTargetList().GetTargets())
         {
             mapBuildTargetSources(&target);
             m_testTargetSourceCoverage[&target] = {};
@@ -152,9 +152,9 @@ namespace TestImpact
     }
 
     template<typename ProductionTarget, typename TestTarget>
-    const BuildTargetList<ProductionTarget, TestTarget>* DynamicDependencyMap<ProductionTarget, TestTarget>::GetBuildTargets() const
+    const BuildTargetList<ProductionTarget, TestTarget>* DynamicDependencyMap<ProductionTarget, TestTarget>::GetBuildTargetList() const
     {
-        return m_buildTargets;
+        return m_buildTargetList;
     }
 
     template<typename ProductionTarget, typename TestTarget>
@@ -211,7 +211,7 @@ namespace TestImpact
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
                 if (const TestTarget* testTarget =
-                        m_buildTargets->GetTestTargetList().GetTarget(unresolvedTestTarget);
+                        m_buildTargetList->GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
                     // Source to covering test target mapping
