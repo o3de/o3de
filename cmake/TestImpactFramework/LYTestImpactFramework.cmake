@@ -66,11 +66,14 @@ set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>
 # If we are not provided a path to the Instrumentation bin,
 # set LY_TEST_IMPACT to false so that our tests don't get added
 # and TIAF doesn't get built.
-if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN STREQUAL "")
+if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
     set(LY_TEST_IMPACT_ACTIVE true)
 else()
     set(LY_TEST_IMPACT_ACTIVE false)
 endif()
+
+message("LY_TEST_IMPACT_ACTIVE: ${LY_TEST_IMPACT_ACTIVE}")
+message(FATAL_ERROR "bin: '${LY_TEST_IMPACT_INSTRUMENTATION_BIN}'")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
