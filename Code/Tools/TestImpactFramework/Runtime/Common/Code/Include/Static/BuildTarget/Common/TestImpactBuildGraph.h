@@ -32,8 +32,8 @@ namespace TestImpact
 
     //! Visitor callback for when traversing the build graphs.
     //! @param vertex The current vertex to visit in the build graph.
-    //! @param distance The distance of this vertex to the root build target in the build graph.
-    //! @returns The traversal result for the build graph to act upon.
+    //! @param distance The distance of this vertex to the vertex of the build target whose build graph is being walked.
+    //! @returns The visitor result to determine how the traversal should proceed.
     template<typename ProductionTarget, typename TestTarget>
     using BuildGraphVertexVisitor = AZStd::function<BuildGraphVertexVisitResult(const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)>;
     
