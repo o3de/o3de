@@ -78,7 +78,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/example_pbr.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/MaterialTemplates/ExamplePBR/example_pbr.materialcanvasnode"
                 }
             },
             {
@@ -88,7 +88,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/time.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/time.materialcanvasnode"
                 }
             },
             {
@@ -116,7 +116,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/sin.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/sin.materialcanvasnode"
                 }
             },
             {
@@ -144,7 +144,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Constants/float4.materialcanvasnode"
                 }
             },
             {
@@ -188,7 +188,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/multiply.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/multiply.materialcanvasnode"
                 }
             },
             {
@@ -216,7 +216,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/constant_float4.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Constants/float4.materialcanvasnode"
                 }
             },
             {
@@ -260,7 +260,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/multiply.materialcanvasnode"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/Nodes/Functions/multiply.materialcanvasnode"
                 }
             }
         ],
