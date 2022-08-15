@@ -202,6 +202,8 @@ set(FILES
     Logger/TraceLogger.h
     Manipulators/AngularManipulator.cpp
     Manipulators/AngularManipulator.h
+    Manipulators/AngularManipulatorCircleViewFeedback.cpp
+    Manipulators/AngularManipulatorCircleViewFeedback.h
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
@@ -338,7 +340,6 @@ set(FILES
     ToolsComponents/GenericComponentWrapper.h
     ToolsComponents/SelectionComponent.cpp
     ToolsComponents/SelectionComponent.h
-    ToolsComponents/SelectionComponentBus.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
