@@ -80,6 +80,11 @@ namespace AzToolsFramework
                     ContinueStoringToJsonObjectField(outputValue, "Entities",
                         entities, defaultEntities, azrtti_typeid<Instance::AliasToEntityMap>(), context);
 
+                if (context.ShouldKeepDefaults() && outputValue.Empty())
+                {
+                    outputValue["Entities"].SetObject();
+                }
+
                 result.Combine(resultEntities);
             }
 
@@ -91,6 +96,11 @@ namespace AzToolsFramework
                 JSR::ResultCode resultInstances = ContinueStoringToJsonObjectField(
                     outputValue, "Instances",
                         instances, defaultInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), context);
+
+                if (context.ShouldKeepDefaults() && outputValue.Empty())
+                {
+                    outputValue["Instances"].SetObject();
+                }
 
                 result.Combine(resultInstances);
             }
