@@ -40,7 +40,7 @@ namespace AzToolsFramework
             AZ::EntityComponentIdPair m_pairId; //!< Id of entity component pair.
             AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
             AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
-            AZStd::string m_componentName; //!< Freindly name of component.
+            AZStd::string m_componentName; //!< Friendly name of component.
             AZStd::string m_iconPath; //!< Path of component icon.
             ViewportUi::ButtonId m_buttonId; //!< Button Id of switcher component.
         };
@@ -95,11 +95,11 @@ namespace AzToolsFramework
                 [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
             // EntityCompositionNotificationBus overrides ...
-            void OnEntityComponentAdded(const AZ::EntityId&, const AZ::ComponentId&) override;
-            void OnEntityComponentRemoved(const AZ::EntityId&, const AZ::ComponentId&) override;
-            void OnEntityComponentEnabled(const AZ::EntityId&, const AZ::ComponentId&) override;
-            void OnEntityComponentDisabled(const AZ::EntityId&, const AZ::ComponentId&) override;
-            void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList&) override;
+            void OnEntityComponentAdded(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+            void OnEntityComponentRemoved(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+            void OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+            void OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId) override;
+            void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
 
             // ToolsApplicationBus overrides ...
             void AfterEntitySelectionChanged(
