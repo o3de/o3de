@@ -126,7 +126,7 @@ namespace AZ::SettingsRegistryConsoleUtils
     static void ConsoleDumpSettingsFileOriginValue(SettingsRegistryOriginTracker& settingsRegistryOriginTracker, const ConsoleCommandContainer& commandArgs)
     {
         AZStd::string outputString;
-        for (AZStd::string_view settingsKeyToDump : (commandArgs.empty() ? AZStd::vector<AZStd::string_view>{""} : commandArgs))
+        for (AZStd::string_view settingsKeyToDump : (commandArgs.empty() ? ConsoleCommandContainer{""} : commandArgs))
         {
             settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
             {
