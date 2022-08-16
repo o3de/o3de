@@ -12,10 +12,7 @@
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
-
-AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
-#include <OpenImageIO/imageio.h>
-AZ_POP_DISABLE_WARNING
+#include <Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
 {
@@ -57,40 +54,10 @@ namespace GradientSignal
             channels = 4;
         }
 
-        int bytesPerPixel = 0;
-        OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
-        switch (m_configuration.m_outputFormat)
-        {
-        case OutputFormat::R8:
-            bytesPerPixel = 1;
-            pixelFormat = OIIO::TypeDesc::UINT8;
-            break;
-        case OutputFormat::R16:
-            bytesPerPixel = 2;
-            pixelFormat = OIIO::TypeDesc::UINT16;
-            break;
-        case OutputFormat::R32:
-            bytesPerPixel = 4;
-            pixelFormat = OIIO::TypeDesc::FLOAT;
-            break;
-        default:
-            AZ_Assert(false, "Unsupported output image format (%d)", m_configuration.m_outputFormat);
-            return;
-        }
-        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
+        int bytesPerChannel = ImageCreatorUtils::GetBytesPerChannel(m_configuration.m_outputFormat);
+
+        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerChannel;
         AZStd::vector<AZ::u8> pixels(imageSize, 0);
-
-        AZ::IO::Path absolutePath = m_outputImageAbsolutePath.LexicallyNormal();
-        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
-        if (!outputImage)
-        {
-            AZ_Error("GradientBaker", false, "Failed to write out gradient baked image to path: %s",
-                absolutePath.c_str());
-            return;
-        }
-
-        OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
-        outputImage->open(absolutePath.c_str(), spec);
 
         const AZ::Vector3 inputBoundsCenter = m_inputBounds.GetCenter();
         const AZ::Vector3 inputBoundsExtentsOld = m_inputBounds.GetExtents();
@@ -214,14 +181,16 @@ namespace GradientSignal
         // Don't try to write out the image if the job was canceled
         if (!m_shouldCancel)
         {
-            bool result = outputImage->write_image(pixelFormat, pixels.data());
+            constexpr bool showProgressDialog = false;
+            bool result = ImageCreatorUtils::WriteImage(
+                m_outputImageAbsolutePath.c_str(),
+                imageResolutionX, imageResolutionY, channels, m_configuration.m_outputFormat, pixels,
+                showProgressDialog);
             if (!result)
             {
-                AZ_Error("GradientBaker", result, "Failed to write out gradient baked image to path: %s",
-                    absolutePath.c_str());
+                AZ_Error(
+                    "GradientBaker", result, "Failed to write out gradient baked image to path: %s", m_outputImageAbsolutePath.c_str());
             }
-
-            outputImage->close();
         }
 
         // Safely notify that the job has finished
@@ -304,11 +273,11 @@ namespace GradientSignal
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &GradientBakerConfig::m_outputFormat, "Output Format",
                         "Output format of the baked image.")
-                    ->Attribute(AZ::Edit::Attributes::EnumValues, &GradientImageCreatorRequests::SupportedOutputFormatOptions)
+                    ->Attribute(AZ::Edit::Attributes::EnumValues, &ImageCreatorUtils::SupportedOutputFormatOptions)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &GradientBakerConfig::m_outputImagePath, "Output Path",
                         "Output path to bake the image to.")
-                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, GradientImageCreatorRequests::GetSupportedImagesFilter())
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, ImageCreatorUtils::GetSupportedImagesFilter())
                     ->Attribute(AZ::Edit::Attributes::DefaultAsset, "baked_output_gsi")
                     ;
             }
@@ -466,6 +435,9 @@ namespace GradientSignal
 
     void EditorGradientBakerComponent::OnCompositionChanged()
     {
+        m_previewer.SetPreviewEntity(m_configuration.m_inputBounds);
+        m_previewer.RefreshPreview();
+
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }

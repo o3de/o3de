@@ -61,7 +61,8 @@ namespace GradientSignal
             }
         }
 
-        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::RefreshPreview);
+        // This will eventually need to change to broadcast OnCompositionRegionChanged.
+        LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
 
         return result;
     }

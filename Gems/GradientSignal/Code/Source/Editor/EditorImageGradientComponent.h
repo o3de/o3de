@@ -63,7 +63,6 @@ namespace GradientSignal
         };
 
 
-        void RefreshPreview() override;
         void SaveImage() override;
         AZStd::vector<float>* GetPixelBuffer() override;
 
@@ -72,7 +71,6 @@ namespace GradientSignal
         AZ::Crc32 GetPaintModeVisibility() const;
 
         void CreateImage();
-        bool WriteImage(const AZStd::string& absoluteFileName);
 
         bool RefreshImageAssetStatus();
         static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);

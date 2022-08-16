@@ -12,19 +12,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <Editor/EditorImageGradientComponentMode.h>
-
-AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
-#include <OpenImageIO/imageio.h>
-AZ_POP_DISABLE_WARNING
-
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QApplication>
-#include <QMessageBox>
-#include <QProgressDialog>
-AZ_POP_DISABLE_WARNING
+#include <Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
 {
@@ -146,7 +136,7 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorImageGradientComponent::m_outputFormat,
                         "Output Format", "Output format of the saved image.")
-                        ->Attribute(AZ::Edit::Attributes::EnumValues, &GradientImageCreatorRequests::SupportedOutputFormatOptions)
+                        ->Attribute(AZ::Edit::Attributes::EnumValues, &ImageCreatorUtils::SupportedOutputFormatOptions)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
                     ->UIElement(AZ::Edit::UIHandlers::Button, "", "Create Image")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::CreateImage)
@@ -361,11 +351,6 @@ namespace GradientSignal
         return m_componentModeDelegate.AddedToComponentMode();
     }
 
-    void EditorImageGradientComponent::RefreshPreview()
-    {
-        m_previewer.RefreshPreview();
-    }
-
     void EditorImageGradientComponent::SaveImage()
     {
         CreateImage();
@@ -389,7 +374,7 @@ namespace GradientSignal
         AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_outputImagePath);
 
         // Prompt the user for the file name and path.
-        const QString fileFilter = GradientImageCreatorRequests::GetSupportedImagesFilter().c_str();
+        const QString fileFilter = ImageCreatorUtils::GetSupportedImagesFilter().c_str();
         const QString absoluteSaveFilePath =
             AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(fullPathIO.Native().c_str()), fileFilter);
 
@@ -401,8 +386,11 @@ namespace GradientSignal
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCStr = absoluteSaveFilePathUtf8.constData();
+        fullPathIO.Assign(absoluteSaveFilePathCStr);
 
         // Turn the absolute path selected in the "Save file" dialog back into a relative path.
+        // It's a way to verify that our path exists within the project asset search hierarchy, 
+        // and it will get used as an asset hint until the asset is fully processed.
         AZStd::string relativePath;
         AZStd::string rootFilePath;
         bool relativePathFound;
@@ -418,24 +406,24 @@ namespace GradientSignal
             return;
         }
 
-        // check out the file in source control
-        bool checkedOutSuccessfully = false;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            checkedOutSuccessfully,
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::RequestEditForFileBlocking,
-            absoluteSaveFilePathCStr,
-            "Checking out for edit...",
-            AzToolsFramework::ToolsApplicationRequestBus::Events::RequestEditProgressCallback());
+        // Get the actual resolution of our image.
+        const int imageResolutionX = aznumeric_cast<int>(m_outputResolution.GetX());
+        const int imageResolutionY = aznumeric_cast<int>(m_outputResolution.GetY());
 
-        if (!checkedOutSuccessfully)
+        // The TGA and EXR formats aren't recognized with only single channel data,
+        // so need to use RGBA format for them
+        int channels = 1;
+        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
         {
-            AZ_Error(
-                "EditorImageGradientComponent", false, "Failed to check out file from source control: %s", absoluteSaveFilePathCStr);
-            return;
+            channels = 4;
         }
 
+        auto pixelBuffer = ImageCreatorUtils::CreateDefaultImageBuffer(imageResolutionX, imageResolutionY, channels, m_outputFormat);
+
         // Try to write out the image
-        if (!WriteImage(absoluteSaveFilePathCStr))
+        constexpr bool showProgressDialog = false;
+        if (!ImageCreatorUtils::WriteImage(
+            absoluteSaveFilePathCStr, imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer, showProgressDialog))
         {
             AZ_Error("EditorImageGradientComponent", false, "Failed to create image: %s", absoluteSaveFilePathCStr);
             return;
@@ -485,125 +473,6 @@ namespace GradientSignal
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
     }
 
-    bool EditorImageGradientComponent::WriteImage(const AZStd::string& absoluteFileName)
-    {
-        // Show a dialog box letting the user know the image is being written out.
-        // For large image sizes, it can take 15+ seconds to create and write out the image.
-        QProgressDialog saveDialog;
-        saveDialog.setWindowFlags(saveDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
-        saveDialog.setLabelText("Saving image...");
-        saveDialog.setWindowModality(Qt::WindowModal);
-        saveDialog.setMaximumSize(QSize(256, 96));
-        saveDialog.setMinimum(0);
-        saveDialog.setMaximum(100);
-        saveDialog.setMinimumDuration(0);
-        saveDialog.setAutoClose(false);
-        saveDialog.setCancelButton(nullptr);
-        saveDialog.show();
-        QApplication::processEvents();
 
-        // Get the actual resolution of our image.
-        const int imageResolutionX = aznumeric_cast<int>(m_outputResolution.GetX());
-        const int imageResolutionY = aznumeric_cast<int>(m_outputResolution.GetY());
 
-        int bytesPerPixel = 0;
-        OIIO::TypeDesc pixelFormat = OIIO::TypeDesc::UINT8;
-        switch (m_outputFormat)
-        {
-        case OutputFormat::R8:
-            bytesPerPixel = 1;
-            pixelFormat = OIIO::TypeDesc::UINT8;
-            break;
-        case OutputFormat::R16:
-            bytesPerPixel = 2;
-            pixelFormat = OIIO::TypeDesc::UINT16;
-            break;
-        case OutputFormat::R32:
-            bytesPerPixel = 4;
-            pixelFormat = OIIO::TypeDesc::FLOAT;
-            break;
-        default:
-            AZ_Assert(false, "Unsupported output image format (%d)", m_outputFormat);
-            return false;
-        }
-
-        AZ::IO::Path fullPathIO(absoluteFileName);
-
-        // The TGA and EXR formats aren't recognized with only single channel data,
-        // so need to use RGBA format for them
-        int channels = 1;
-        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
-        {
-            channels = 4;
-        }
-
-        // Fill in our image buffer. Default all values to 0 (black)
-        const size_t imageSize = imageResolutionX * imageResolutionY * channels * bytesPerPixel;
-        AZStd::vector<AZ::u8> pixels(imageSize, 0);
-
-        // If we're saving a 4-channel image, loop through and set the Alpha channel to opaque.
-        if (channels == 4)
-        {
-            for (size_t alphaIndex = (channels - 1); alphaIndex < (imageResolutionX * imageResolutionY * channels); alphaIndex += channels)
-            {
-                switch (m_outputFormat)
-                {
-                case OutputFormat::R8:
-                    {
-                        pixels[alphaIndex] = std::numeric_limits<AZ::u8>::max();
-                        break;
-                    }
-                case OutputFormat::R16:
-                    {
-                        auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                        actualMem[alphaIndex] = std::numeric_limits<AZ::u16>::max();
-                        break;
-                    }
-                case OutputFormat::R32:
-                    {
-                        auto actualMem = reinterpret_cast<float*>(pixels.data());
-                        actualMem[alphaIndex] = 1.0f;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Give our progress dialog another chance to update so we don't look frozen.
-        saveDialog.setValue(1);
-        QApplication::processEvents();
-
-        // Create and save the image on disk
-
-        AZ::IO::Path absolutePath = fullPathIO.LexicallyNormal();
-        std::unique_ptr<OIIO::ImageOutput> outputImage = OIIO::ImageOutput::create(absolutePath.c_str());
-        if (!outputImage)
-        {
-            AZ_Error("EditorImageGradientComponent", false, "Failed to create image at path: %s", absolutePath.c_str());
-            return false;
-        }
-
-        OIIO::ImageSpec spec(imageResolutionX, imageResolutionY, channels, pixelFormat);
-        outputImage->open(absolutePath.c_str(), spec);
-
-        // Callback to upgrade our progress dialog during image saving.
-        auto WriteProgressCallback = [](void* opaqueData, float percentDone) -> bool
-        {
-            QProgressDialog* saveDialog = reinterpret_cast<QProgressDialog*>(opaqueData);
-            saveDialog->setValue(aznumeric_cast<int>(percentDone * 100.0f));
-            QApplication::processEvents();
-            return false;
-        };
-
-        bool result = outputImage->write_image(
-            pixelFormat, pixels.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, WriteProgressCallback, &saveDialog);
-        if (!result)
-        {
-            AZ_Error("EditorImageGradientComponent", result, "Failed to write out gradient image to path: %s", absolutePath.c_str());
-        }
-
-        outputImage->close();
-
-        return result;
-    }
 }
