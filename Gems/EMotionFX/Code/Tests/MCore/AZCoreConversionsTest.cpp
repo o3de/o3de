@@ -6,8 +6,9 @@
  *
  */
 
-#include <AzCore/Math/Vector3.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzTest/AzTest.h>
 #include <MCore/Source/AzCoreConversions.h>
 
