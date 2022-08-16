@@ -8,6 +8,7 @@
 #
 #
 # -------------------------------------------------------------------------
+from multiprocessing import context
 import bpy
 from pathlib import Path
 import webbrowser
@@ -274,6 +275,11 @@ class SceneExporterFileMenu(Operator, ExportHelper):
         description="Export Textures in textures folder",
         default=True,
     )
+    export_mesh_as_triangles : BoolProperty(
+        name="Export Mesh as Triangles",
+        description="Export Mesh as Triangles",
+        #default=bpy.types.WindowManager.mesh_triangle_export_toggle,
+    )
     # Add animation to export
     export_animation : BoolProperty(
         name="Keyframe Animation",
@@ -285,8 +291,11 @@ class SceneExporterFileMenu(Operator, ExportHelper):
         """!
         This function will select the Export Texture Option
         """
+        #window_manager = context.window_manager
         bpy.types.Scene.export_textures_folder = self.export_textures_folder
         bpy.types.Scene.file_menu_animation_export = self.export_animation
+        print(f"We are exporting as Trianges: {self.export_mesh_as_triangles}")
+        bpy.types.Scene.convert_mesh_to_triangles = self.export_mesh_as_triangles
         if self.export_animation:
             bpy.types.Scene.animation_export = constants.KEY_FRAME_ANIMATION
             utils.valid_animation_selection()
@@ -397,7 +406,9 @@ class O3deTools(Panel):
         valid_selection, selected_name = utils.check_selected()
         
         # Validate selection bone names if any
-        bone_names = utils.check_selected_bone_names()
+        invalid_bone_names, bone_are_in_selected = utils.check_selected_bone_names()
+
+        name_selections = [obj.name for obj in bpy.context.selected_objects]
 
         if engine_is_installed: # Checks to see if O3DE is installed
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
@@ -409,14 +420,18 @@ class O3deTools(Panel):
             current_selected_options_row.label(text="CURRENT SELECTED", icon="OUTLINER_DATA_GP_LAYER")
             # Let user know how many objects are selected
             installed_lable = layout.row()
-            selections = [obj.name for obj in bpy.context.selected_objects]
-            if len(selections) == 0: 
+            
+            # Check if there are any selections
+            if len(name_selections) == 0: 
                 installed_lable.label(text='SELECTED: None')
             else:
                 installed_lable.label(text=f'({len(selected_name)}) Selected: {selected_objects.name}')
 
+            # Check to see which Animation Action is active
+            action_name, action_count = utils.check_for_animation_actions()
+            
             # If more than one object is selected, let user choose export options
-            if len(selections) > 1:
+            if len(name_selections) > 1:
                 multi_file_export_label = "Export Multi-Files" if wm.multi_file_export_toggle else "Export a Single File"
                 multi_file_export_button = layout.row()
                 multi_file_export_button.prop(wm, "multi_file_export_toggle", text=multi_file_export_label, toggle=True)
@@ -436,12 +451,18 @@ class O3deTools(Panel):
                 project_path_lable.label(text='Project: None')
             
             # Let user choose animation export options
-            animation_export_lable = layout.row()
-            if not bpy.types.Scene.animation_export == constants.NO_ANIMATION:
-                animation_export_lable.label(text=f'Animation: {bpy.types.Scene.animation_export}')
+            if bone_are_in_selected:
+                animation_action_lable = layout.row()
+                animation_export_lable = layout.row()
+                if bpy.types.Scene.animation_export == constants.NO_ANIMATION:
+                    animation_action_lable.label(text=f'Action: ')
+                    animation_export_lable.label(text=f'Animation: {bpy.types.Scene.animation_export}')
+                else:
+                    animation_action_lable.label(text=f'Action: {action_name} ({action_count})')
+                    animation_export_lable.label(text=f'Animation: {bpy.types.Scene.animation_export}')
             else:
-                animation_export_lable.label(text=f'Animation: {bpy.types.Scene.animation_export}')
-            
+                bpy.types.Scene.animation_export = constants.NO_ANIMATION
+
             # This is the UI Export Texture Option Label
             texture_export_option_label = layout.row()
             if bpy.types.Scene.export_textures_folder:
@@ -492,28 +513,44 @@ class O3deTools(Panel):
                 file_name_lable.label(text='Export File Name')
                 file_name_export_input = self.layout.column(align = True)
                 file_name_export_input.prop(context.scene, "export_file_name_o3de")
-            
+            # Export GUI Rows
             export_files_row = layout.row()
             export_ready_row = layout.row()
+            # Enable Rows on and off
             if bpy.types.Scene.selected_o3de_project_path == '':
                 export_files_row.enabled = False
+                bpy.types.Scene.export_option_gui = False
                 export_ready_row.label(text='No Project Selected.')
             elif not utils.check_if_valid_path(bpy.types.Scene.selected_o3de_project_path):
                 export_files_row.enabled = False
+                bpy.types.Scene.export_option_gui = False
                 export_ready_row.label(text='Project Path Not Found.')
             elif not bpy.types.Scene.export_good_o3de:
                 export_files_row.enabled = False
+                bpy.types.Scene.export_option_gui = False
                 export_ready_row.label(text='Not Ready for Export.')
             elif not valid_selection:
                 export_files_row.enabled = False
+                bpy.types.Scene.export_option_gui = False
                 export_ready_row.label(text='Nothing Selected.')
-            elif bone_names == False:
+            elif invalid_bone_names == False:
                 export_files_row.enabled = False
+                bpy.types.Scene.export_option_gui = False
                 export_ready_row.label(text='Invalid Char in Bone Names.')
             else:
                 export_files_row.enabled = True
+                bpy.types.Scene.export_option_gui = True
             # This is the export button
             export_files_row.operator('vin.o3defilexport', text='EXPORT TO O3DE', icon="BLENDER")
+            # Export mesh options
+            if bpy.types.Scene.export_option_gui:
+                export_mesh_triangles_quads_label = "Exporting as Triangles" if wm.mesh_triangle_export_toggle else "Exporting as Quads"
+                export_mesh_triangles_quads_button = layout.row()
+                export_mesh_triangles_quads_button.prop(wm, "mesh_triangle_export_toggle", text=export_mesh_triangles_quads_label, toggle=True)
+                if wm.mesh_triangle_export_toggle:
+                    bpy.types.Scene.convert_mesh_to_triangles = True
+                else:
+                    bpy.types.Scene.convert_mesh_to_triangles = False
         else:
             # If O3DE is not installed we tell the user
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")

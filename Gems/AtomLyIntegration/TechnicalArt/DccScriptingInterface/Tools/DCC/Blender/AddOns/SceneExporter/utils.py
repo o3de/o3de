@@ -35,18 +35,23 @@ def check_selected_bone_names():
     context = bpy.context
     obj = context.object
 
+    invalid_bone_names = None
+    bone_are_in_selected = None
+
     for selected_obj in context.selected_objects:
         if selected_obj is not []:
             if selected_obj.type == "ARMATURE":
+                bone_are_in_selected = True
                 try:
                     for pb in obj.pose.bones:
                         # Validate all chars in string.
                         check_re =  re.compile(r"^[^<>/{}[\]~.`]*$")
                         if not check_re.match(pb.name):
                             # If any in the ARMATURE are named invalid return will fail.
-                            return False
+                            invalid_bone_names = False
                 except AttributeError:
                     pass
+    return invalid_bone_names, bone_are_in_selected
 
 def selected_hierarchy_and_rig_animation():
     """!
@@ -92,6 +97,25 @@ def valid_animation_selection():
                 selected_attachment_and_rig_animation()
             else:
                 selected_hierarchy_and_rig_animation()
+
+def check_for_animation_actions():
+    """!
+    This function will check to see if the current scene has animation actions
+    return actions[0] is the top level animation action
+    return len(actions) is the number of available actions
+    """
+    obj = bpy.context.object
+    actions = []
+    active_action_name = ""
+    # Look for animation actions available
+    for animations in bpy.data.actions:
+        actions.append(animations.name)
+    # Look for Active Animation Action
+    if not obj.animation_data == None:
+        active_action_name = obj.animation_data.action.name
+    else:
+        active_action_name = ""
+    return active_action_name, len(actions)
 
 def check_if_valid_path(file_path):
     """!
@@ -333,7 +357,7 @@ def create_udp():
         # Set the copy active
         bpy.context.view_layer.objects.active = duplicate_object
         # Add the Decimate Modifier on for user.
-        bpy.ops.object.modifier_add(type="DECIMATE")
+        add_remove_modifier("DECIMATE", True)
         bpy.context.object.modifiers["Decimate"].ratio = 0.5
     else:
         if bpy.types.Scene.udp_type == "_lod":
@@ -352,12 +376,33 @@ def compair_set(list_a, list_b):
     else:
         return False
 
+def add_remove_modifier(modifier_name, add):
+    """!
+    This function will add or remove a modifier to selected
+    @param modifier_name is the name of the modifier you wish to add or remove
+    @param add if Bool True will add the modifier, if False will remove
+    """
+    context = bpy.context
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                if add:
+                    # Set the mesh active
+                    bpy.context.view_layer.objects.active = selected_obj
+                    # Add Modifier
+                    bpy.ops.object.modifier_add(type=modifier_name)
+                else:
+                    # Set the mesh active
+                    bpy.context.view_layer.objects.active = selected_obj
+                    # Remove Modifier
+                    bpy.ops.object.modifier_remove(modifier=modifier_name)
+
 def check_selected_transforms():
     """!
     This function will check to see if there are unfrozen transfors and to warn the artist before export.
     """
     context = bpy.context
-    ob = context.object
     # We will make list for each selection and compair to a frozzen transfrom.
     location_list = []
     location_source = [0.0, 0.0, 0.0]

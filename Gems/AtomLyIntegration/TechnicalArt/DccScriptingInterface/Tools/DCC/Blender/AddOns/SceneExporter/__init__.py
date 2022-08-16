@@ -36,7 +36,7 @@
 bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
-    "version": (1, 4),
+    "version": (1, 5),
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",
@@ -59,7 +59,8 @@ from . import constants
 
 
 def register():
-    """! This is the function that will register Classes and Global Vars for this plugin
+    """! 
+    This is the function that will register Classes and Global Vars for this plugin
     """
     bpy.types.Scene.plugin_directory = str(directory)
     bpy.utils.register_class(ui.O3deTools)
@@ -96,7 +97,10 @@ def register():
     bpy.types.Scene.texture_options_list = EnumProperty(items=constants.EXPORT_LIST_OPTIONS, name='', default='0')
     bpy.types.Scene.animation_options_list = EnumProperty(items=constants.ANIMATION_LIST_OPTIONS, name='', default='0')
     bpy.types.WindowManager.multi_file_export_toggle = bpy.props.BoolProperty()
-
+    bpy.types.WindowManager.mesh_triangle_export_toggle = bpy.props.BoolProperty()
+    bpy.types.Scene.export_option_gui = False
+    bpy.types.Scene.convert_mesh_to_triangles = True
+    
 def unregister():
     """! This is the function that will unregister Classes and Global Vars for this plugin
     """
@@ -131,7 +135,9 @@ def unregister():
     del bpy.types.Scene.file_menu_animation_export
     del bpy.types.Scene.stored_image_source_paths
     del bpy.types.WindowManager.multi_file_export_toggle
-
+    del bpy.types.Scene.export_option_gui
+    del bpy.types.WindowManager.mesh_triangle_export_toggle
+    del bpy.types.Scene.convert_mesh_to_triangles
 
 if __name__ == "__main__":
     register()
