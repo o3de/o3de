@@ -12,6 +12,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ::SettingsRegistryConsoleUtils
@@ -120,6 +121,38 @@ namespace AZ::SettingsRegistryConsoleUtils
                 AZ_STRING_ARG(filePath), jsonAnchorPath.c_str());
             AZ::Debug::Trace::Output("SettingsRegistry", mergeFileOutput.c_str());
         }
+    }
+
+    static void ConsoleDumpSettingsFileOriginValue(SettingsRegistryOriginTracker& settingsRegistryOriginTracker, const ConsoleCommandContainer& commandArgs)
+    {
+        AZStd::string outputString;
+        for (AZStd::string_view settingsKeyToDump : (commandArgs.empty() ? ConsoleCommandContainer{""} : commandArgs))
+        {
+            settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
+            {
+                outputString += AZStd::string::format("Key: \"%s\" Origin: \"%s\" Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
+                        settingsRegistryOrigin.m_originFilePath.c_str(),
+                        settingsRegistryOrigin.m_settingsValue.has_value() ? settingsRegistryOrigin.m_settingsValue.value().c_str()
+                                                                           : "<removed>");
+                    return true;
+            });
+        }
+
+        AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
+    }
+
+    [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryOriginTracker& originTracker, AZ::IConsole& azConsole)
+    {
+        ConsoleFunctorHandle resultHandle{};
+        resultHandle.m_originTrackerConsoleFunctors.emplace_back(
+            azConsole,
+            SettingsRegistryDumpOrigin,
+        R"(Dump the file origin of one or more settings from the global settings registry at the input JSON pointer paths.)" "\n"
+        R"(If no pointer-path argument is supplied, then all file origins for the global settings registry are dumped)" "\n"
+        R"(@param pointer-path - space separate list of JSON key paths whose file origin should be dumped )",
+        ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), originTracker, &ConsoleDumpSettingsFileOriginValue);
+
+        return resultHandle;
     }
 
 

@@ -10,83 +10,9 @@ import datetime
 import json
 import socket
 from tiaf_logger import get_logger
+import tiaf_report_constants as constants
 
 logger = get_logger(__file__)
-
-MARS_JOB_KEY = "job"
-BUILD_NUMBER_KEY = "build_number"
-SRC_COMMIT_KEY = "src_commit"
-DST_COMMIT_KEY = "dst_commit"
-COMMIT_DISTANCE_KEY = "commit_distance"
-SRC_BRANCH_KEY = "src_branch"
-DST_BRANCH_KEY = "dst_branch"
-SUITE_KEY = "suite"
-SOURCE_OF_TRUTH_BRANCH_KEY = "source_of_truth_branch"
-IS_SOURCE_OF_TRUTH_BRANCH_KEY = "is_source_of_truth_branch"
-USE_TEST_IMPACT_ANALYSIS_KEY = "use_test_impact_analysis"
-HAS_CHANGE_LIST_KEY = "has_change_list"
-HAS_HISTORIC_DATA_KEY = "has_historic_data"
-S3_BUCKET_KEY = "s3_bucket"
-DRIVER_ARGS_KEY = "driver_args"
-RUNTIME_ARGS_KEY = "runtime_args"
-RUNTIME_RETURN_CODE_KEY = "return_code"
-NAME_KEY = "name"
-RESULT_KEY = "result"
-NUM_PASSING_TESTS_KEY = "num_passing_tests"
-NUM_FAILING_TESTS_KEY = "num_failing_tests"
-NUM_DISABLED_TESTS_KEY = "num_disabled_tests"
-COMMAND_ARGS_STRING = "command_args"
-NUM_PASSING_TEST_RUNS_KEY = "num_passing_test_runs"
-NUM_FAILING_TEST_RUNS_KEY = "num_failing_test_runs"
-NUM_EXECUTION_FAILURE_TEST_RUNS_KEY = "num_execution_failure_test_runs"
-NUM_TIMED_OUT_TEST_RUNS_KEY = "num_timed_out_test_runs"
-NUM_UNEXECUTED_TEST_RUNS_KEY = "num_unexecuted_test_runs"
-TOTAL_NUM_PASSING_TESTS_KEY = "total_num_passing_tests"
-TOTAL_NUM_FAILING_TESTS_KEY = "total_num_failing_tests"
-TOTAL_NUM_DISABLED_TESTS_KEY = "total_num_disabled_tests"
-START_TIME_KEY = "start_time"
-END_TIME_KEY = "end_time"
-DURATION_KEY = "duration"
-INCLUDED_TEST_RUNS_KEY = "included_test_runs"
-EXCLUDED_TEST_RUNS_KEY = "excluded_test_runs"
-NUM_INCLUDED_TEST_RUNS_KEY = "num_included_test_runs"
-NUM_EXCLUDED_TEST_RUNS_KEY = "num_excluded_test_runs"
-TOTAL_NUM_TEST_RUNS_KEY = "total_num_test_runs"
-PASSING_TEST_RUNS_KEY = "passing_test_runs"
-FAILING_TEST_RUNS_KEY = "failing_test_runs"
-EXECUTION_FAILURE_TEST_RUNS_KEY = "execution_failure_test_runs"
-TIMED_OUT_TEST_RUNS_KEY = "timed_out_test_runs"
-UNEXECUTED_TEST_RUNS_KEY = "unexecuted_test_runs"
-TOTAL_NUM_PASSING_TEST_RUNS_KEY = "total_num_passing_test_runs"
-TOTAL_NUM_FAILING_TEST_RUNS_KEY = "total_num_failing_test_runs"
-TOTAL_NUM_EXECUTION_FAILURE_TEST_RUNS_KEY = "total_num_execution_failure_test_runs"
-TOTAL_NUM_TIMED_OUT_TEST_RUNS_KEY = "total_num_timed_out_test_runs"
-TOTAL_NUM_UNEXECUTED_TEST_RUNS_KEY = "total_num_unexecuted_test_runs"
-SEQUENCE_TYPE_KEY = "type"
-IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY = "impact_analysis"
-SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY = "safe_impact_analysis"
-SEED_SEQUENCE_TYPE_KEY = "seed"
-TEST_TARGET_TIMEOUT_KEY = "test_target_timeout"
-GLOBAL_TIMEOUT_KEY = "global_timeout"
-MAX_CONCURRENCY_KEY = "max_concurrency"
-SELECTED_KEY = "selected"
-DRAFTED_KEY = "drafted"
-DISCARDED_KEY = "discarded"
-SELECTED_TEST_RUN_REPORT_KEY = "selected_test_run_report"
-DISCARDED_TEST_RUN_REPORT_KEY = "discarded_test_run_report"
-DRAFTED_TEST_RUN_REPORT_KEY = "drafted_test_run_report"
-SELECTED_TEST_RUNS_KEY = "selected_test_runs"
-DRAFTED_TEST_RUNS_KEY = "drafted_test_runs"
-DISCARDED_TEST_RUNS_KEY = "discarded_test_runs"
-INSTRUMENTATION_KEY = "instrumentation"
-EFFICIENCY_KEY = "efficiency"
-CONFIG_KEY = "config"
-POLICY_KEY = "policy"
-CHANGE_LIST_KEY = "change_list"
-TEST_RUN_SELECTION_KEY = "test_run_selection"
-DYNAMIC_DEPENDENCY_MAP_POLICY_KEY = "dynamic_dependency_map"
-DYNAMIC_DEPENDENCY_MAP_POLICY_UPDATE_KEY = "update"
-REPORT_KEY = "report"
 
 class FilebeatExn(Exception):
     pass
@@ -187,26 +113,27 @@ def generate_mars_job(tiaf_result, driver_args, build_number: int):
     @return:            The MARS job document with the job meta-data.
     """
 
-    mars_job = {key:tiaf_result[key] for key in 
+    mars_job = {key:tiaf_result.get(key, None) for key in 
     [
-        SRC_COMMIT_KEY,
-        DST_COMMIT_KEY,
-        COMMIT_DISTANCE_KEY,
-        SRC_BRANCH_KEY,
-        DST_BRANCH_KEY,
-        SUITE_KEY,
-        SOURCE_OF_TRUTH_BRANCH_KEY,
-        IS_SOURCE_OF_TRUTH_BRANCH_KEY,
-        USE_TEST_IMPACT_ANALYSIS_KEY,
-        HAS_CHANGE_LIST_KEY,
-        HAS_HISTORIC_DATA_KEY,
-        S3_BUCKET_KEY,
-        RUNTIME_ARGS_KEY,
-        RUNTIME_RETURN_CODE_KEY
+        constants.SRC_COMMIT_KEY,
+        constants.DST_COMMIT_KEY,
+        constants.COMMIT_DISTANCE_KEY,
+        constants.SRC_BRANCH_KEY,
+        constants.DST_BRANCH_KEY,
+        constants.SUITE_KEY,
+        constants.SOURCE_OF_TRUTH_BRANCH_KEY,
+        constants.IS_SOURCE_OF_TRUTH_BRANCH_KEY,
+        constants.USE_TEST_IMPACT_ANALYSIS_KEY,
+        constants.HAS_CHANGE_LIST_KEY,
+        constants.HAS_HISTORIC_DATA_KEY,
+        constants.S3_BUCKET_KEY,
+        constants.RUNTIME_ARGS_KEY,
+        constants.RUNTIME_RETURN_CODE_KEY,
+        constants.RUNTIME_TYPE_KEY
     ]}
 
-    mars_job[DRIVER_ARGS_KEY] = driver_args
-    mars_job[BUILD_NUMBER_KEY] = build_number
+    mars_job[constants.DRIVER_ARGS_KEY] = driver_args
+    mars_job[constants.BUILD_NUMBER_KEY] = build_number
     return mars_job
 
 def generate_test_run_list(test_runs):
@@ -219,7 +146,7 @@ def generate_test_run_list(test_runs):
 
     test_run_list = []
     for test_run in test_runs:
-        test_run_list.append(test_run[NAME_KEY])
+        test_run_list.append(test_run[constants.NAME_KEY])
     return test_run_list
 
 def generate_mars_test_run_selections(test_run_selection, test_run_report, t0_timestamp: float):
@@ -232,34 +159,34 @@ def generate_mars_test_run_selections(test_run_selection, test_run_report, t0_ti
     @return:                   The list of TIAF test runs.
     """
 
-    mars_test_run_selection = {key:test_run_report[key] for key in 
+    mars_test_run_selection = {key:test_run_report.get(key, None) for key in 
     [        
-        RESULT_KEY,
-        NUM_PASSING_TEST_RUNS_KEY,
-        NUM_FAILING_TEST_RUNS_KEY,
-        NUM_EXECUTION_FAILURE_TEST_RUNS_KEY,
-        NUM_TIMED_OUT_TEST_RUNS_KEY,
-        NUM_UNEXECUTED_TEST_RUNS_KEY,
-        TOTAL_NUM_PASSING_TESTS_KEY,
-        TOTAL_NUM_FAILING_TESTS_KEY,
-        TOTAL_NUM_DISABLED_TESTS_KEY
+        constants.RESULT_KEY,
+        constants.NUM_PASSING_TEST_RUNS_KEY,
+        constants.NUM_FAILING_TEST_RUNS_KEY,
+        constants.NUM_EXECUTION_FAILURE_TEST_RUNS_KEY,
+        constants.NUM_TIMED_OUT_TEST_RUNS_KEY,
+        constants.NUM_UNEXECUTED_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_PASSING_TESTS_KEY,
+        constants.TOTAL_NUM_FAILING_TESTS_KEY,
+        constants.TOTAL_NUM_DISABLED_TESTS_KEY
     ]}
     
-    mars_test_run_selection[START_TIME_KEY] = generate_mars_timestamp(test_run_report[START_TIME_KEY], t0_timestamp)
-    mars_test_run_selection[END_TIME_KEY] = generate_mars_timestamp(test_run_report[END_TIME_KEY], t0_timestamp)
-    mars_test_run_selection[DURATION_KEY] = get_duration_in_seconds(test_run_report[DURATION_KEY])
+    mars_test_run_selection[constants.START_TIME_KEY] = generate_mars_timestamp(test_run_report[constants.START_TIME_KEY], t0_timestamp)
+    mars_test_run_selection[constants.END_TIME_KEY] = generate_mars_timestamp(test_run_report[constants.END_TIME_KEY], t0_timestamp)
+    mars_test_run_selection[constants.DURATION_KEY] = get_duration_in_seconds(test_run_report[constants.DURATION_KEY])
 
-    mars_test_run_selection[INCLUDED_TEST_RUNS_KEY] = test_run_selection[INCLUDED_TEST_RUNS_KEY]
-    mars_test_run_selection[EXCLUDED_TEST_RUNS_KEY] = test_run_selection[EXCLUDED_TEST_RUNS_KEY]
-    mars_test_run_selection[NUM_INCLUDED_TEST_RUNS_KEY] = test_run_selection[NUM_INCLUDED_TEST_RUNS_KEY]
-    mars_test_run_selection[NUM_EXCLUDED_TEST_RUNS_KEY] = test_run_selection[NUM_EXCLUDED_TEST_RUNS_KEY]
-    mars_test_run_selection[TOTAL_NUM_TEST_RUNS_KEY] = test_run_selection[TOTAL_NUM_TEST_RUNS_KEY]
+    mars_test_run_selection[constants.INCLUDED_TEST_RUNS_KEY] = test_run_selection[constants.INCLUDED_TEST_RUNS_KEY]
+    mars_test_run_selection[constants.EXCLUDED_TEST_RUNS_KEY] = test_run_selection[constants.EXCLUDED_TEST_RUNS_KEY]
+    mars_test_run_selection[constants.NUM_INCLUDED_TEST_RUNS_KEY] = test_run_selection[constants.NUM_INCLUDED_TEST_RUNS_KEY]
+    mars_test_run_selection[constants.NUM_EXCLUDED_TEST_RUNS_KEY] = test_run_selection[constants.NUM_EXCLUDED_TEST_RUNS_KEY]
+    mars_test_run_selection[constants.TOTAL_NUM_TEST_RUNS_KEY] = test_run_selection[constants.TOTAL_NUM_TEST_RUNS_KEY]
 
-    mars_test_run_selection[PASSING_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[PASSING_TEST_RUNS_KEY])
-    mars_test_run_selection[FAILING_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[FAILING_TEST_RUNS_KEY])
-    mars_test_run_selection[EXECUTION_FAILURE_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[EXECUTION_FAILURE_TEST_RUNS_KEY])
-    mars_test_run_selection[TIMED_OUT_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[TIMED_OUT_TEST_RUNS_KEY])
-    mars_test_run_selection[UNEXECUTED_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[UNEXECUTED_TEST_RUNS_KEY])
+    mars_test_run_selection[constants.PASSING_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[constants.PASSING_TEST_RUNS_KEY])
+    mars_test_run_selection[constants.FAILING_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[constants.FAILING_TEST_RUNS_KEY])
+    mars_test_run_selection[constants.EXECUTION_FAILURE_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[constants.EXECUTION_FAILURE_TEST_RUNS_KEY])
+    mars_test_run_selection[constants.TIMED_OUT_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[constants.TIMED_OUT_TEST_RUNS_KEY])
+    mars_test_run_selection[constants.UNEXECUTED_TEST_RUNS_KEY] = generate_test_run_list(test_run_report[constants.UNEXECUTED_TEST_RUNS_KEY])
 
     return mars_test_run_selection
 
@@ -272,11 +199,11 @@ def generate_test_runs_from_list(test_run_list: list):
     """
 
     test_run_list = {
-    TOTAL_NUM_TEST_RUNS_KEY: len(test_run_list),
-    NUM_INCLUDED_TEST_RUNS_KEY: len(test_run_list),
-    NUM_EXCLUDED_TEST_RUNS_KEY: 0,
-    INCLUDED_TEST_RUNS_KEY: test_run_list,
-    EXCLUDED_TEST_RUNS_KEY: []
+    constants.TOTAL_NUM_TEST_RUNS_KEY: len(test_run_list),
+    constants.NUM_INCLUDED_TEST_RUNS_KEY: len(test_run_list),
+    constants.NUM_EXCLUDED_TEST_RUNS_KEY: 0,
+    constants.INCLUDED_TEST_RUNS_KEY: test_run_list,
+    constants.EXCLUDED_TEST_RUNS_KEY: []
     }
 
     return test_run_list
@@ -292,51 +219,51 @@ def generate_mars_sequence(sequence_report: dict, mars_job: dict, change_list:di
     @return:                The MARS sequence document for the specified TIAF sequence report.
     """
 
-    mars_sequence = {key:sequence_report[key] for key in 
+    mars_sequence = {key:sequence_report.get(key, None) for key in 
     [
-        SEQUENCE_TYPE_KEY, 
-        RESULT_KEY, 
-        POLICY_KEY,
-        TOTAL_NUM_TEST_RUNS_KEY, 
-        TOTAL_NUM_PASSING_TEST_RUNS_KEY,
-        TOTAL_NUM_FAILING_TEST_RUNS_KEY,
-        TOTAL_NUM_EXECUTION_FAILURE_TEST_RUNS_KEY,
-        TOTAL_NUM_TIMED_OUT_TEST_RUNS_KEY,
-        TOTAL_NUM_UNEXECUTED_TEST_RUNS_KEY,
-        TOTAL_NUM_PASSING_TESTS_KEY,
-        TOTAL_NUM_FAILING_TESTS_KEY,
-        TOTAL_NUM_DISABLED_TESTS_KEY
+        constants.SEQUENCE_TYPE_KEY, 
+        constants.RESULT_KEY, 
+        constants.POLICY_KEY,
+        constants.TOTAL_NUM_TEST_RUNS_KEY, 
+        constants.TOTAL_NUM_PASSING_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_FAILING_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_EXECUTION_FAILURE_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_TIMED_OUT_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_UNEXECUTED_TEST_RUNS_KEY,
+        constants.TOTAL_NUM_PASSING_TESTS_KEY,
+        constants.TOTAL_NUM_FAILING_TESTS_KEY,
+        constants.TOTAL_NUM_DISABLED_TESTS_KEY
     ]}
 
-    mars_sequence[START_TIME_KEY] = generate_mars_timestamp(sequence_report[START_TIME_KEY], t0_timestamp)
-    mars_sequence[END_TIME_KEY] = generate_mars_timestamp(sequence_report[END_TIME_KEY], t0_timestamp)
-    mars_sequence[DURATION_KEY] = get_duration_in_seconds(sequence_report[DURATION_KEY])
+    mars_sequence[constants.START_TIME_KEY] = generate_mars_timestamp(sequence_report[constants.START_TIME_KEY], t0_timestamp)
+    mars_sequence[constants.END_TIME_KEY] = generate_mars_timestamp(sequence_report[constants.END_TIME_KEY], t0_timestamp)
+    mars_sequence[constants.DURATION_KEY] = get_duration_in_seconds(sequence_report[constants.DURATION_KEY])
 
     config = {key:sequence_report[key] for key in 
     [
-        TEST_TARGET_TIMEOUT_KEY,
-        GLOBAL_TIMEOUT_KEY,
-        MAX_CONCURRENCY_KEY
+        constants.TEST_TARGET_TIMEOUT_KEY,
+        constants.GLOBAL_TIMEOUT_KEY,
+        constants.MAX_CONCURRENCY_KEY
     ]}
 
     test_run_selection = {}
-    test_run_selection[SELECTED_KEY] = generate_mars_test_run_selections(sequence_report[SELECTED_TEST_RUNS_KEY], sequence_report[SELECTED_TEST_RUN_REPORT_KEY], t0_timestamp)
-    if sequence_report[SEQUENCE_TYPE_KEY] == IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
-        total_test_runs = sequence_report[TOTAL_NUM_TEST_RUNS_KEY] + len(sequence_report[DISCARDED_TEST_RUNS_KEY])
+    test_run_selection[constants.SELECTED_KEY] = generate_mars_test_run_selections(sequence_report[constants.SELECTED_TEST_RUNS_KEY], sequence_report[constants.SELECTED_TEST_RUN_REPORT_KEY], t0_timestamp)
+    if sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+        total_test_runs = sequence_report[constants.TOTAL_NUM_TEST_RUNS_KEY] + len(sequence_report[constants.DISCARDED_TEST_RUNS_KEY])
         if total_test_runs > 0:
-            test_run_selection[SELECTED_KEY][EFFICIENCY_KEY] = (1.0 - (test_run_selection[SELECTED_KEY][TOTAL_NUM_TEST_RUNS_KEY] / total_test_runs)) * 100
+            test_run_selection[constants.SELECTED_KEY][constants.EFFICIENCY_KEY] = (1.0 - (test_run_selection[constants.SELECTED_KEY][constants.TOTAL_NUM_TEST_RUNS_KEY] / total_test_runs)) * 100
         else:
-            test_run_selection[SELECTED_KEY][EFFICIENCY_KEY] = 100
-        test_run_selection[DRAFTED_KEY] = generate_mars_test_run_selections(generate_test_runs_from_list(sequence_report[DRAFTED_TEST_RUNS_KEY]), sequence_report[DRAFTED_TEST_RUN_REPORT_KEY], t0_timestamp)
-        if sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
-            test_run_selection[DISCARDED_KEY] = generate_mars_test_run_selections(sequence_report[DISCARDED_TEST_RUNS_KEY], sequence_report[DISCARDED_TEST_RUN_REPORT_KEY], t0_timestamp)
+            test_run_selection[constants.SELECTED_KEY][constants.EFFICIENCY_KEY] = 100
+        test_run_selection[constants.DRAFTED_KEY] = generate_mars_test_run_selections(generate_test_runs_from_list(sequence_report[constants.DRAFTED_TEST_RUNS_KEY]), sequence_report[constants.DRAFTED_TEST_RUN_REPORT_KEY], t0_timestamp)
+        if sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+            test_run_selection[constants.DISCARDED_KEY] = generate_mars_test_run_selections(sequence_report[constants.DISCARDED_TEST_RUNS_KEY], sequence_report[constants.DISCARDED_TEST_RUN_REPORT_KEY], t0_timestamp)
     else:
-        test_run_selection[SELECTED_KEY][EFFICIENCY_KEY] = 0
+        test_run_selection[constants.SELECTED_KEY][constants.EFFICIENCY_KEY] = 0
 
-    mars_sequence[MARS_JOB_KEY] = mars_job
-    mars_sequence[CONFIG_KEY] = config
-    mars_sequence[TEST_RUN_SELECTION_KEY] = test_run_selection
-    mars_sequence[CHANGE_LIST_KEY] = change_list
+    mars_sequence[constants.MARS_JOB_KEY] = mars_job
+    mars_sequence[constants.CONFIG_KEY] = config
+    mars_sequence[constants.TEST_RUN_SELECTION_KEY] = test_run_selection
+    mars_sequence[constants.CHANGE_LIST_KEY] = change_list
 
     return mars_sequence
 
@@ -351,22 +278,22 @@ def extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp: 
     @return:                The MARS test target documents for the specified TIAF test target.
     """
 
-    mars_test_run = {key:test_run[key] for key in 
+    mars_test_run = {key:test_run.get(key, None) for key in 
     [
-        NAME_KEY,
-        RESULT_KEY,
-        NUM_PASSING_TESTS_KEY,
-        NUM_FAILING_TESTS_KEY,
-        NUM_DISABLED_TESTS_KEY,
-        COMMAND_ARGS_STRING
+        constants.NAME_KEY,
+        constants.RESULT_KEY,
+        constants.NUM_PASSING_TESTS_KEY,
+        constants.NUM_FAILING_TESTS_KEY,
+        constants.NUM_DISABLED_TESTS_KEY,
+        constants.COMMAND_ARGS_STRING
     ]}
 
-    mars_test_run[START_TIME_KEY] = generate_mars_timestamp(test_run[START_TIME_KEY], t0_timestamp)
-    mars_test_run[END_TIME_KEY] = generate_mars_timestamp(test_run[END_TIME_KEY], t0_timestamp)
-    mars_test_run[DURATION_KEY] = get_duration_in_seconds(test_run[DURATION_KEY])
+    mars_test_run[constants.START_TIME_KEY] = generate_mars_timestamp(test_run[constants.START_TIME_KEY], t0_timestamp)
+    mars_test_run[constants.END_TIME_KEY] = generate_mars_timestamp(test_run[constants.END_TIME_KEY], t0_timestamp)
+    mars_test_run[constants.DURATION_KEY] = get_duration_in_seconds(test_run[constants.DURATION_KEY])
 
-    mars_test_run[MARS_JOB_KEY] = mars_job
-    mars_test_run[INSTRUMENTATION_KEY] = instrumentation
+    mars_test_run[constants.MARS_JOB_KEY] = mars_job
+    mars_test_run[constants.INSTRUMENTATION_KEY] = instrumentation
     return mars_test_run
 
 def extract_mars_test_targets_from_report(test_run_report, instrumentation, mars_job, t0_timestamp: float):
@@ -382,15 +309,15 @@ def extract_mars_test_targets_from_report(test_run_report, instrumentation, mars
 
     mars_test_targets = []
 
-    for test_run in test_run_report[PASSING_TEST_RUNS_KEY]:
+    for test_run in test_run_report[constants.PASSING_TEST_RUNS_KEY]:
         mars_test_targets.append(extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp))
-    for test_run in test_run_report[FAILING_TEST_RUNS_KEY]:
+    for test_run in test_run_report[constants.FAILING_TEST_RUNS_KEY]:
         mars_test_targets.append(extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp))
-    for test_run in test_run_report[EXECUTION_FAILURE_TEST_RUNS_KEY]:
+    for test_run in test_run_report[constants.EXECUTION_FAILURE_TEST_RUNS_KEY]:
         mars_test_targets.append(extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp))
-    for test_run in test_run_report[TIMED_OUT_TEST_RUNS_KEY]:
+    for test_run in test_run_report[constants.TIMED_OUT_TEST_RUNS_KEY]:
         mars_test_targets.append(extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp))
-    for test_run in test_run_report[UNEXECUTED_TEST_RUNS_KEY]:
+    for test_run in test_run_report[constants.UNEXECUTED_TEST_RUNS_KEY]:
         mars_test_targets.append(extract_mars_test_target(test_run, instrumentation, mars_job, t0_timestamp))
 
     return mars_test_targets
@@ -408,17 +335,17 @@ def generate_mars_test_targets(sequence_report: dict, mars_job: dict, t0_timesta
     mars_test_targets = []
 
     # Determine whether or not the test targets were executed with instrumentation
-    if sequence_report[SEQUENCE_TYPE_KEY] == SEED_SEQUENCE_TYPE_KEY or sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or (sequence_report[SEQUENCE_TYPE_KEY] == IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY and sequence_report[POLICY_KEY][DYNAMIC_DEPENDENCY_MAP_POLICY_KEY] == DYNAMIC_DEPENDENCY_MAP_POLICY_UPDATE_KEY):
+    if sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SEED_SEQUENCE_TYPE_KEY or sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or (sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY and sequence_report[constants.POLICY_KEY][constants.DYNAMIC_DEPENDENCY_MAP_POLICY_KEY] == constants.DYNAMIC_DEPENDENCY_MAP_POLICY_UPDATE_KEY):
         instrumentation = True
     else:
         instrumentation = False
     
     # Extract the MARS test target documents from each of the test run reports
-    mars_test_targets += extract_mars_test_targets_from_report(sequence_report[SELECTED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
-    if sequence_report[SEQUENCE_TYPE_KEY] == IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
-        mars_test_targets += extract_mars_test_targets_from_report(sequence_report[DRAFTED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
-        if sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
-            mars_test_targets += extract_mars_test_targets_from_report(sequence_report[DISCARDED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
+    mars_test_targets += extract_mars_test_targets_from_report(sequence_report[constants.SELECTED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
+    if sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+        mars_test_targets += extract_mars_test_targets_from_report(sequence_report[constants.DRAFTED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
+        if sequence_report[constants.SEQUENCE_TYPE_KEY] == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+            mars_test_targets += extract_mars_test_targets_from_report(sequence_report[constants.DISCARDED_TEST_RUN_REPORT_KEY], instrumentation, mars_job, t0_timestamp)
 
     return mars_test_targets
 
@@ -441,13 +368,13 @@ def transmit_report_to_mars(mars_index_prefix: str, tiaf_result: dict, driver_ar
         mars_job = generate_mars_job(tiaf_result, driver_args, build_number)
         filebeat.send_event(mars_job, f"{mars_index_prefix}.tiaf.job")
 
-        if tiaf_result[REPORT_KEY]:
+        if tiaf_result[constants.REPORT_KEY]:
             # Generate and transmit the MARS sequence document
-            mars_sequence = generate_mars_sequence(tiaf_result[REPORT_KEY], mars_job, tiaf_result[CHANGE_LIST_KEY], t0_timestamp)
+            mars_sequence = generate_mars_sequence(tiaf_result[constants.REPORT_KEY], mars_job, tiaf_result[constants.CHANGE_LIST_KEY], t0_timestamp)
             filebeat.send_event(mars_sequence, f"{mars_index_prefix}.tiaf.sequence")
             
             # Generate and transmit the MARS test target documents
-            mars_test_targets = generate_mars_test_targets(tiaf_result[REPORT_KEY], mars_job, t0_timestamp)
+            mars_test_targets = generate_mars_test_targets(tiaf_result[constants.REPORT_KEY], mars_job, t0_timestamp)
             for mars_test_target in mars_test_targets:
                 filebeat.send_event(mars_test_target, f"{mars_index_prefix}.tiaf.test_target")
     except FilebeatExn as e:
