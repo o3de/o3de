@@ -103,11 +103,11 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
 
 #if ENABLE_TRANSMISSION
             // o_transmission_mode == NONE is not taken into account because GetBackLighting already ignores this case
-            if (o_transmission_mode == TransmissionMode::ThickObject || o_transmission_mode == TransmissionMode::Burley)
+            if (o_transmission_mode == TransmissionMode::ThickObject)
             {
                 transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position);
             }
-            else if (o_transmission_mode == TransmissionMode::ThinObject)
+            else if (o_transmission_mode == TransmissionMode::ThinObject || o_transmission_mode == TransmissionMode::Burley)
             {
                 transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
             }
