@@ -23,9 +23,9 @@ struct ILogCallback
     // <interfuscator:shuffle>
     virtual ~ILogCallback() {}
     //OnWrite will always be called even if verbosity settings cause OnWriteToConsole and OnWriteToFile to not be called.
-    virtual void OnWrite(const char* sText, IMiniLog::ELogType type) = 0;
-    virtual void OnWriteToConsole(const char* sText, bool bNewLine) = 0;
-    virtual void OnWriteToFile(const char* sText, bool bNewLine) = 0;
+    virtual void OnWrite(AZStd::string_view sText, IMiniLog::ELogType type) = 0;
+    virtual void OnWriteToConsole(AZStd::string_view sText, bool bNewLine) = 0;
+    virtual void OnWriteToFile(AZStd::string_view sText, bool bNewLine) = 0;
     // </interfuscator:shuffle>
 };
 

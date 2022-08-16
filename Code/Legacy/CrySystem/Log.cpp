@@ -360,7 +360,7 @@ void CLog::LogV(const ELogType type, const char* szFormat, va_list args)
     LogV(type, 0, szFormat, args);
 }
 
-void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFormat, va_list args)
+void CLog::LogV(const ELogType type, [[maybe_unused]] int flags, const char* szFormat, va_list args)
 {
     // this is here in case someone called LogV directly, with an invalid formatter.
     if (!CheckLogFormatter(szFormat))
@@ -537,6 +537,112 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     }
 }
 
+void CLog::LogNoFormat(ELogType type, AZStd::string_view message)
+{
+    if (message.empty())
+    {
+        return;
+    }
+
+    if (m_pLogVerbosityOverridesWriteToFile && m_pLogVerbosityOverridesWriteToFile->GetIVal())
+    {
+        if (m_pLogVerbosity && m_pLogVerbosity->GetIVal() < 0)
+        {
+            return;
+        }
+    }
+
+    bool bfile = false;
+    bool bconsole = false;
+
+    uint8_t DefaultVerbosity = 0;   // 0 == Always log (except for special -1 verbosity overrides)
+
+    switch (type)
+    {
+    case eAlways:
+    case eWarningAlways:
+    case eErrorAlways:
+    case eInput:
+    case eInputResponse:
+        DefaultVerbosity = 0;
+        break;
+    case eError:
+        DefaultVerbosity = 1;
+        break;
+    case eWarning:
+        DefaultVerbosity = 2;
+        break;
+    case eMessage:
+        DefaultVerbosity = 3;
+        break;
+    case eComment:
+        DefaultVerbosity = 4;
+        break;
+
+    default:
+        break;
+    }
+
+    CheckAgainstVerbosity("", bfile, bconsole, DefaultVerbosity);
+    if (!bfile && !bconsole)
+    {
+        return;
+    }
+
+    AZStd::fixed_string<8> colorString;
+    AZStd::fixed_string<32> logCategoryString;
+    switch (type)
+    {
+    case eWarning:
+    case eWarningAlways:
+        colorString = "$6";
+        logCategoryString = "[Warning] ";
+        break;
+
+    case eError:
+    case eErrorAlways:
+        colorString = "$4";
+        logCategoryString = "[Error] ";
+        break;
+
+    default:
+        break;
+    }
+
+    LogString(logCategoryString, type);
+    LogString(message, type);
+    if (bfile)
+    {
+        LogStringToFile(logCategoryString, type, false, MessageQueueState::NotQueued);
+        LogStringToFile(message, type, false, MessageQueueState::NotQueued);
+    }
+    if (bconsole)
+    {
+        LogStringToConsole(colorString, ELogType::eAlways, false);
+        LogStringToConsole(logCategoryString, ELogType::eAlways, false);
+        LogStringToConsole(message, ELogType::eAlways, false);
+    }
+
+    switch (type)
+    {
+    case eAlways:
+    case eInput:
+    case eInputResponse:
+    case eComment:
+    case eMessage:
+        GetISystem()->GetIRemoteConsole()->AddLogMessage(message);
+        break;
+    case eWarning:
+    case eWarningAlways:
+        GetISystem()->GetIRemoteConsole()->AddLogWarning(message);
+        break;
+    case eError:
+    case eErrorAlways:
+        GetISystem()->GetIRemoteConsole()->AddLogError(message);
+        break;
+    }
+}
+
 //will log the text both to the end of file and console
 //////////////////////////////////////////////////////////////////////
 #if !defined(EXCLUDE_NORMAL_LOG)
@@ -589,19 +695,18 @@ void CLog::LogPlus(const char* szFormat, ...)
 
 //log to console only
 //////////////////////////////////////////////////////////////////////
-void CLog::LogStringToConsole(const char* szString, ELogType logType, bool bAdd)
+void CLog::LogStringToConsole(AZStd::string_view message, ELogType logType, bool bAdd)
 {
     #if defined(_RELEASE) && defined(EXCLUDE_NORMAL_LOG) // no console logging in release
     return;
     #endif
 
-
-    if (LogToMainThread(szString, logType, bAdd, SLogMsg::Destination::Console))
+    if (message.empty())
     {
         return;
     }
 
-    if (!szString)
+    if (LogToMainThread(message, logType, bAdd, SLogMsg::Destination::Console))
     {
         return;
     }
@@ -617,25 +722,21 @@ void CLog::LogStringToConsole(const char* szString, ELogType logType, bool bAdd)
     }
 
 
-    LogStringType tempString;
-    tempString = szString;
-    if (tempString.length() > MAX_TEMP_LENGTH_SIZE)
-    {
-        tempString.erase(MAX_TEMP_LENGTH_SIZE);
-    }
-    // add \n at end.
-    if (tempString.length() > 0 && tempString[tempString.length() - 1] != '\n')
-    {
-        tempString += '\n';
-    }
-
     if (bAdd)
     {
-        console->PrintLinePlus(tempString.c_str());
+        console->PrintLinePlus(message);
+        if (!message.ends_with('\n'))
+        {
+            console->PrintLinePlus("\n");
+        }
     }
     else
     {
-        console->PrintLine(tempString.c_str());
+        console->PrintLine(message);
+        if (!message.ends_with('\n'))
+        {
+            console->PrintLine("\n");
+        }
     }
 
     // Call callback function.
@@ -643,7 +744,7 @@ void CLog::LogStringToConsole(const char* szString, ELogType logType, bool bAdd)
     {
         for (Callbacks::iterator it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
         {
-            (*it)->OnWriteToConsole(tempString.c_str(), !bAdd);
+            (*it)->OnWriteToConsole(message, !bAdd);
         }
     }
 }
@@ -730,24 +831,14 @@ void CLog::LogToConsolePlus(const char* szFormat, ...)
 
 
 //////////////////////////////////////////////////////////////////////
-[[maybe_unused]] static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
+[[maybe_unused]] static AZStd::string_view RemoveColorCode(AZStd::string_view rStr)
 {
-    char* s = (char*)rStr.c_str();
-    char* d = s;
-
-    while (*s != 0)
+    if (rStr.size() >= 2 && rStr.starts_with('$') && rStr[1] >= '0' && rStr[1] <= '9')
     {
-        if (*s == '$' && *(s + 1) >= '0' && *(s + 1) <= '9')
-        {
-            s += 2;
-            continue;
-        }
-
-        *d++ = *s++;
+        rStr.remove_prefix(2);
     }
-    *d = 0;
 
-    rStr.resize(d - rStr.c_str());
+    return rStr;
 }
 
 #if defined(SUPPORT_LOG_IDENTER)
@@ -825,14 +916,15 @@ const char* CLog::GetAssetScopeString()
 };
 #endif
 
-bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SLogMsg::Destination destination)
+bool CLog::LogToMainThread(AZStd::string_view szString, ELogType logType, bool bAdd, SLogMsg::Destination destination)
 {
     if (CryGetCurrentThreadId() != m_nMainThreadId)
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
         constexpr size_t maxArraySize = AZ_ARRAY_SIZE(msg.msg);
-        azstrncpy(msg.msg, maxArraySize, szString, maxArraySize - 1);
+        const size_t finalOffset = szString.copy(msg.msg, (AZStd::min)(maxArraySize - 1, szString.size()), 0);
+        msg.msg[finalOffset] = '\0';
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
@@ -844,13 +936,13 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
 
 //////////////////////////////////////////////////////////////////////
 #if !defined(EXCLUDE_NORMAL_LOG)
-void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[maybe_unused]] MessageQueueState queueState)
+void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool bAdd, [[maybe_unused]] MessageQueueState queueState)
 {
 #if defined(_RELEASE) && defined(EXCLUDE_NORMAL_LOG) // no file logging in release
     return;
 #endif
 
-    if (!szString)
+    if (message.empty())
     {
         return;
     }
@@ -860,21 +952,12 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         return;
     }
 
-    LogStringType tempString;
-    tempString = szString;
-
     // this is a temp timeStr, it is reused in many branches(moved here to reduce stack usage)
     LogStringType timeStr;
 
-    // Skip any non character.
-    if (tempString.length() > 0 && tempString.at(0) < 32)
-    {
-        tempString.erase(0, 1);
-    }
+    message = RemoveColorCode(message);
 
-    RemoveColorCodeInPlace(tempString);
-
-    bool bIsMainThread = LogToMainThread(szString, logType, bAdd, SLogMsg::Destination::File) == false;
+    bool bIsMainThread = LogToMainThread(message, logType, bAdd, SLogMsg::Destination::File) == false;
 
 #if defined(_RELEASE)
     if (!bIsMainThread)
@@ -897,128 +980,118 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     if (m_pLogIncludeTime)
     {
         uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
-        //      char szTemp[MAX_TEMP_LENGTH_SIZE];
 
-        if (dwCVarState == 1)              // Log_IncludeTime
+        using TimeStringType = AZStd::fixed_string<128>;
+
+        auto GetHourMinuteSeconds = []() -> TimeStringType
         {
-            char sTime[128];
+            char sTime[TimeStringType::max_size()];
             time_t ltime;
             time(&ltime);
 #ifdef AZ_COMPILER_MSVC
             struct tm today;
             localtime_s(&today, &ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", &today);
+            strftime(sTime, TimeStringType::max_size(), "<%H:%M:%S> ", &today);
 #else
             auto today = localtime(&ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", today);
+            strftime(sTime, TimeStringType::max_size(), "<%H:%M:%S> ", today);
 #endif
+            return sTime;
+        };
 
-            timeStr.clear();
-            timeStr.assign(sTime);
-            tempString = timeStr + tempString;
-        }
-        else if (dwCVarState == 2)     // Log_IncludeTime
+        auto GetDateAndHourMinuteSeconds = []() -> TimeStringType
         {
+            char sTime[TimeStringType::max_size()];
+            time_t ltime;
+            time(&ltime);
+#ifdef AZ_COMPILER_MSVC
+            struct tm today;
+            localtime_s(&today, &ltime);
+            strftime(sTime, TimeStringType::max_size(), "<%Y-%m-%d %H:%M:%S> ", &today);
+#else
+            auto today = localtime(&ltime);
+            strftime(sTime, TimeStringType::max_size(), "<%Y-%m-%d %H:%M:%S> ", today);
+#endif
+            return sTime;
+        };
+
+        auto GetElapsedTimeInSeconds = []() -> TimeStringType
+        {
+            TimeStringType elapsedTime;
             static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
             const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
             if (lasttime != AZ::Time::ZeroTimeMs)
             {
-                timeStr.clear();
                 uint32 dwMs = aznumeric_cast<uint32>(currenttime - lasttime);
-                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
-                tempString = timeStr + tempString;
+                elapsedTime = TimeStringType::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
             }
             lasttime = currenttime;
-        }
-        else if (dwCVarState == 3)     // Log_IncludeTime
-        {
-            char sTime[128];
-            time_t ltime;
-            time(&ltime);
 
-#ifdef AZ_COMPILER_MSVC
-            struct tm today;
-            localtime_s(&today, &ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", &today);
-#else
-            auto today = localtime(&ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", today);
-#endif
-            tempString = LogStringType(sTime) + tempString;
+            return elapsedTime;
+        };
+
+        auto GetElapsedTimeSinceStartInSeconds = []() -> TimeStringType
+        {
+            TimeStringType elapsedTime;
 
             static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
             const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
             if (lasttime != AZ::Time::ZeroTimeMs)
             {
-                timeStr.clear();
                 uint32 dwMs = (uint32)(currenttime - lasttime);
-                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
-                tempString = timeStr + tempString;
+                elapsedTime = TimeStringType::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
             }
-            lasttime = currenttime;
-        }
-        else if (dwCVarState == 4)             // Log_IncludeTime
-        {
+
             static bool bFirst = true;
-
-            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
-            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
-            if (lasttime != AZ::Time::ZeroTimeMs)
-            {
-                timeStr.clear();
-                uint32 dwMs = (uint32)(currenttime - lasttime);
-                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
-                tempString = timeStr + tempString;
-            }
             if (bFirst)
             {
                 lasttime = currenttime;
                 bFirst = false;
             }
+
+            return elapsedTime;
+        };
+
+        if (dwCVarState == 1)              // Log_IncludeTime
+        {
+            timeStr = GetHourMinuteSeconds();
+        }
+        else if (dwCVarState == 2)     // Log_IncludeTime
+        {
+            timeStr = GetElapsedTimeInSeconds();
+        }
+        else if (dwCVarState == 3)     // Log_IncludeTime
+        {
+            timeStr = GetHourMinuteSecond();
+            timeStr += GetElapsedTimeInSeconds();
+        }
+        else if (dwCVarState == 4)             // Log_IncludeTime
+        {
+            timeStr = GetElapsedTimeSinceStartInSeconds();
         }
         else if (dwCVarState == 5)             // Log_IncludeTime
         {
-            char sTime[128];
-            time_t ltime;
-            time(&ltime);
-
-#ifdef AZ_COMPILER_MSVC
-            struct tm today;
-            localtime_s(&today, &ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", &today);
-#else
-            auto today = localtime(&ltime);
-            strftime(sTime, 20, "<%H:%M:%S> ", today);
-#endif
-            tempString = LogStringType(sTime) + tempString;
+            timeStr = GetHourMinuteSeconds();
         }
         else if (dwCVarState == 6)              // Log_IncludeTime
         {
-            char sTime[128];
-            time_t ltime;
-            time(&ltime);
-#ifdef AZ_COMPILER_MSVC
-            struct tm today;
-            localtime_s(&today, &ltime);
-            strftime(sTime, 40, "<%Y-%m-%d %H:%M:%S> ", &today);
-#else
-            auto today = localtime(&ltime);
-            strftime(sTime, 40, "<%Y-%m-%d %H:%M:%S> ", today);
-#endif
-            tempString = LogStringType(sTime) + tempString;
+            timeStr = GetDateAndHourMinuteSeconds();
         }
-    }
-
-    if (tempString.empty() || tempString[tempString.length() - 1] != '\n')
-    {
-        tempString += '\n';
     }
 
     // do not OutputDebugString in release.
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        AZ::Debug::Platform::OutputToDebugger(nullptr, tempString.c_str());
+        if (!timeStr.empty())
+        {
+            AZ::Debug::Platform::OutputToDebugger({}, timeStr);
+        }
+        AZ::Debug::Platform::OutputToDebugger({}, message);
+        if (!message.ends_with('\n'))
+        {
+            AZ::Debug::Platform::OutputToDebugger({}, "\n");
+        }
     }
 
     if (!bIsMainThread)
@@ -1034,7 +1107,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     {
         for (Callbacks::iterator it = m_callbacks.begin(); it != m_callbacks.end(); ++it)
         {
-            (*it)->OnWriteToFile(tempString.c_str(), !bAdd);
+            (*it)->OnWriteToFile(message, !bAdd);
         }
     }
     //////////////////////////////////////////////////////////////////////////
@@ -1058,7 +1131,17 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
                 // if adding to a prior line erase the \n at the end.
                 m_logFileHandle.Seek(-2, AZ::IO::GenericStream::SeekMode::ST_SEEK_END);
             }
-            m_logFileHandle.Write(tempString.size(), tempString.c_str());
+
+            if (!timeStr.empty())
+            {
+                m_logFileHandle.Write(timeStr.size(), timeStr.data());
+            }
+            m_logFileHandle.Write(message.size(), message.data());
+            if (!message.ends_with('\n'))
+            {
+                constexpr AZStd::string_view newline = "\n";
+                m_logFileHandle.Write(newline.size(), newline.data());
+            }
 #if !defined(KEEP_LOG_FILE_OPEN)
             CloseLogFile();
 #endif
@@ -1068,7 +1151,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     }
 }
 
-void CLog::LogString(const char* szString, ELogType logType)
+void CLog::LogString(AZStd::string_view szString, ELogType logType)
 {
     if (LogToMainThread(szString, logType, false, SLogMsg::Destination::Default))
     {
@@ -1206,8 +1289,8 @@ void CLog::CreateBackupFile() const
                     if (sName.find("BackupNameAttachment=") == AZStd::string::npos)
                     {
                         AZ::Debug::Platform::OutputToDebugger("CrySystem Log", "Log::CreateBackupFile ERROR '");
-                        AZ::Debug::Platform::OutputToDebugger(nullptr, sName.c_str());
-                        AZ::Debug::Platform::OutputToDebugger(nullptr, "' not recognized \n");
+                        AZ::Debug::Platform::OutputToDebugger({}, sName.c_str());
+                        AZ::Debug::Platform::OutputToDebugger({}, "' not recognized \n");
                         assert(0);      // broken log file? - first line should include this name - written by LogVersion()
                         return;
                     }

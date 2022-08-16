@@ -159,8 +159,8 @@ public:
     ICVar* GetCVar(const char* name) override;
     char* GetVariable(const char* szVarName, const char* szFileName, const char* def_val) override;
     float GetVariable(const char* szVarName, const char* szFileName, float def_val) override;
-    void PrintLine(const char* s) override;
-    void PrintLinePlus(const char* s) override;
+    void PrintLine(AZStd::string_view s) override;
+    void PrintLinePlus(AZStd::string_view s) override;
     bool GetStatus() override;
     void Clear() override;
     void Update() override;
@@ -224,8 +224,8 @@ protected: // ------------------------------------------------------------------
     void RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc = nullptr);
 
     bool ProcessInput(const AzFramework::InputChannel& inputChannel);
-    void AddLine(const char* inputStr);
-    void AddLinePlus(const char* inputStr);
+    void AddLine(AZStd::string_view inputStr);
+    void AddLinePlus(AZStd::string_view inputStr);
     void AddInputUTF8(const AZStd::string& textUTF8);
     void RemoveInputChar(bool bBackSpace);
     void ExecuteInputBuffer();

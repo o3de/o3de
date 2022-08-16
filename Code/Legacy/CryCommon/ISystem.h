@@ -1479,4 +1479,15 @@ inline void CryLogAlways(const char* format, ...)
     }
 }
 
+inline void CryOutput(ILog::ELogType logType, AZStd::string_view message)
+{
+    // writes directly to the log without formatting
+    // This is able to bypase the format limits of 4096 + 32 characters for output
+    if (gEnv && gEnv->pSystem && gEnv->pLog)
+    {
+        gEnv->pLog->LogNoFormat(logType, message);
+    }
+}
+
+
 #endif // EXCLUDE_NORMAL_LOG

@@ -40,6 +40,11 @@ struct IMiniLog
 
     virtual void LogV(ELogType nType, int flags, const char* szFormat, va_list args) PRINTF_PARAMS(4, 0) = 0;
 
+    // Description:
+    //   Logging function which accepts string_view and writes it directly to the log
+    //   It is not restricted by the buffer of a format string, so the message can be larger than 4096 + 32 bytes
+    virtual void LogNoFormat(ELogType nType, AZStd::string_view message) = 0;
+
     // Summary:
     //   Logs using type.
     inline void LogWithType(ELogType nType, const char* szFormat, ...) PRINTF_PARAMS(3, 4);
@@ -118,9 +123,9 @@ struct CNullMiniLog
     // Notes:
     //   The default implementation just won't do anything
     //##@{
-    void LogV([[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) {}
     void LogV([[maybe_unused]] ELogType nType, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
     void LogV ([[maybe_unused]] ELogType nType, [[maybe_unused]] int flags, [[maybe_unused]] const char* szFormat, [[maybe_unused]] va_list args) override {}
+    void LogNoFormat(ELogType, AZStd::string_view) override {}
     //##@}
 };
 

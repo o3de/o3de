@@ -2437,78 +2437,31 @@ bool CXConsole::IsOpened()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::PrintLine(const char* s)
+void CXConsole::PrintLine(AZStd::string_view s)
 {
     AddLine(s);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::PrintLinePlus(const char* s)
+void CXConsole::PrintLinePlus(AZStd::string_view s)
 {
     AddLinePlus(s);
 }
 
-static const char* FindNextEndOfLineCharacter(const char* str, size_t length)
-{
-    size_t index = 0;
-    while (index < length)
-    {
-        if ((str[index] == '\r') || (str[index] == '\n'))
-        {
-            return (str + index);
-        }
-
-        index++;
-    }
-
-    return nullptr;
-}
-
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::AddLine(const char* inputStr)
+void CXConsole::AddLine(AZStd::string_view inputStr)
 {
-    if ((inputStr == nullptr) || (inputStr[0] == 0))
+    if (inputStr.empty())
     {
         return;
     }
 
-    size_t totalLen = strlen(inputStr);
-
-    // strip trailing \n or \r.
-    while ((totalLen > 0) && (inputStr[totalLen - 1] == '\n') || (inputStr[totalLen - 1] == '\r'))
+    // split out each line
+    auto ParseLine = [this](AZStd::string_view line)
     {
-        totalLen--;
-    }
-
-    // split out each line in a memory efficient way
-    size_t remainingLength = totalLen;
-    const char* lastLine = inputStr;
-    const char* cursor = FindNextEndOfLineCharacter(inputStr, remainingLength);
-    while (cursor != nullptr)
-    {
-        size_t subStrLength = (cursor - lastLine);
-
-        PostLine(lastLine, subStrLength);
-
-        // bump us up to the cursor + 1 to move past the end of line character
-        remainingLength = remainingLength - (subStrLength + 1);
-        lastLine = (cursor + 1);
-
-        // Find the next non-end of line character
-        while ((remainingLength > 0) && ((*lastLine == '\n') || (*lastLine == '\r')))
-        {
-            remainingLength--;
-            lastLine++;
-        }
-
-        cursor = FindNextEndOfLineCharacter(lastLine, remainingLength);
-    }
-
-    // check for leftover
-    if (remainingLength > 0)
-    {
-        PostLine(lastLine, remainingLength);
-    }
+        PostLine(line.data(), line.size());
+    };
+    AZ::StringFunc::TokenizeVisitor(inputStr, ParseLine, "\r\n");
 }
 
 void CXConsole::PostLine(const char* lineOfText, size_t len)
@@ -2516,21 +2469,17 @@ void CXConsole::PostLine(const char* lineOfText, size_t len)
     AZStd::string line = AZStd::string(lineOfText, len);
     m_dqConsoleBuffer.push_back(line);
 
-    int nBufferSize = con_line_buffer_size;
+    const int nBufferSize = con_line_buffer_size;
 
-    while (((int)(m_dqConsoleBuffer.size())) > nBufferSize)
+    while (static_cast<int>(m_dqConsoleBuffer.size()) > nBufferSize)
     {
         m_dqConsoleBuffer.pop_front();
     }
 
     // tell everyone who is interested (e.g. dedicated server printout)
+    for (IOutputPrintSink* outputSink : m_OutputSinks)
     {
-        std::vector<IOutputPrintSink*>::iterator it;
-
-        for (it = m_OutputSinks.begin(); it != m_OutputSinks.end(); ++it)
-        {
-            (*it)->Print(line.c_str());
-        }
+        outputSink->Print(line.c_str());
     }
 }
 
@@ -2585,57 +2534,44 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 
 
 //////////////////////////////////////////////////////////////////////////
-void CXConsole::AddLinePlus(const char* inputStr)
+void CXConsole::AddLinePlus(AZStd::string_view inputStr)
 {
-    AZStd::string str, tmpStr;
-
+    if (m_dqConsoleBuffer.empty())
     {
-        if (!m_dqConsoleBuffer.size())
+        return;
+    }
+
+    AZStd::string str;
+    auto ParseLine = [&str, firstIteration = true](AZStd::string_view line) mutable
+    {
+        // Add <space> between lines
+        if (!firstIteration)
         {
-            return;
+            str += ' ';
         }
+        firstIteration = false;
 
-        str = inputStr;
+        str += line;
+    };
+    AZ::StringFunc::TokenizeVisitor(inputStr, ParseLine, "\r\n");
 
-        // strip trailing \n or \r.
-        if (!str.empty() && (str[str.size() - 1] == '\n' || str[str.size() - 1] == '\r'))
-        {
-            str.resize(str.size() - 1);
-        }
+    AZStd::string tmpStr = m_dqConsoleBuffer.back();
 
-        AZStd::string::size_type nPos;
-        while ((nPos = str.find('\n')) != AZStd::string::npos)
-        {
-            str.replace(nPos, 1, 1, ' ');
-        }
+    m_dqConsoleBuffer.pop_back();
 
-        while ((nPos = str.find('\r')) != AZStd::string::npos)
-        {
-            str.replace(nPos, 1, 1, ' ');
-        }
-
-        tmpStr = m_dqConsoleBuffer.back();// += str;
-
-        m_dqConsoleBuffer.pop_back();
-
-        if (tmpStr.size() < 256)
-        {
-            m_dqConsoleBuffer.push_back(tmpStr + str);
-        }
-        else
-        {
-            m_dqConsoleBuffer.push_back(tmpStr);
-        }
+    if (tmpStr.size() < 256)
+    {
+        m_dqConsoleBuffer.push_back(tmpStr + str);
+    }
+    else
+    {
+        m_dqConsoleBuffer.push_back(tmpStr);
     }
 
     // tell everyone who is interested (e.g. dedicated server printout)
+    for (IOutputPrintSink* outputSink : m_OutputSinks)
     {
-        std::vector<IOutputPrintSink*>::iterator it;
-
-        for (it = m_OutputSinks.begin(); it != m_OutputSinks.end(); ++it)
-        {
-            (*it)->Print((tmpStr + str).c_str());
-        }
+        outputSink->Print((tmpStr + str).c_str());
     }
 }
 

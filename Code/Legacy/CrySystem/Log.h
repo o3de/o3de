@@ -95,6 +95,7 @@ public:
     virtual void RemoveCallback(ILogCallback* pCallback);
     virtual void LogV(ELogType ineType, int flags, const char* szFormat, va_list args);
     virtual void LogV(ELogType ineType, const char* szFormat, va_list args);
+    void LogNoFormat(ELogType logType, AZStd::string_view message) override;
     virtual void Update();
     virtual const char* GetModuleFilter();
     virtual void FlushAndClose();
@@ -120,7 +121,7 @@ private: // -------------------------------------------------------------------
     bool IsError(ELogType logType) const { return logType == ELogType::eError || logType == ELogType::eErrorAlways || logType == ELogType::eWarning || logType == ELogType::eWarningAlways; }
 
     //helper function to pass calls to LogString... to the main thread, returns false if you are on the main thread already, in which case just process the work.
-    bool LogToMainThread(const char* szString, ELogType logType, bool bAdd, SLogMsg::Destination destination);
+    bool LogToMainThread(AZStd::string_view szString, ELogType logType, bool bAdd, SLogMsg::Destination destination);
 
     enum class MessageQueueState
     {
@@ -129,13 +130,13 @@ private: // -------------------------------------------------------------------
     };
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-    void LogString(const char* szString, ELogType logType);
-    void LogStringToFile(const char* szString, ELogType logType, bool bAdd, MessageQueueState queueState);
-    void LogStringToConsole(const char* szString, ELogType logType, bool bAdd);
+    void LogString(AZStd::string_view szString, ELogType logType);
+    void LogStringToFile(AZStd::string_view szString, ELogType logType, bool bAdd, MessageQueueState queueState);
+    void LogStringToConsole(AZStd::string_view szString, ELogType logType, bool bAdd);
 #else
-    void LogString(const char* szString, ELogType logType) {}
-    void LogStringToFile(const char* szString, ELogType logType, bool bAdd, MessageQueueState queueState) {}
-    void LogStringToConsole(const char* szString, ELogType logType, bool bAdd) {}
+    void LogString(AZStd::string_view szString, ELogType logType) {}
+    void LogStringToFile(AZStd::string_view szString, ELogType logType, bool bAdd, MessageQueueState queueState) {}
+    void LogStringToConsole(AZStd::string_view szString, ELogType logType, bool bAdd) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
     bool OpenLogFile(const char* filename, AZ::IO::OpenMode mode);

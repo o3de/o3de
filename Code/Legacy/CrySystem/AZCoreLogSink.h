@@ -121,11 +121,14 @@ public:
 
         if (window == AZ::Debug::Trace::GetDefaultSystemWindow())
         {
-            CryLogAlways("%s", message);
+            CryOutput(ILog::eAlways, message);
         }
         else
         {
-            CryLog("(%s) - %s", window, message);
+            constexpr const char* windowMessageSeparator = " - ";
+            CryOutput(ILog::eMessage, window);
+            CryOutput(ILog::eMessage, windowMessageSeparator);
+            CryOutput(ILog::eMessage, message);
         }
         
         return m_suppressSystemOutput;
