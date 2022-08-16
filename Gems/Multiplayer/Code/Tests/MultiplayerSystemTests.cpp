@@ -56,8 +56,8 @@ namespace Multiplayer
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
-            m_endpointDisonnectedHandler = Multiplayer::EndpointDisonnectedEvent::Handler([this](Multiplayer::MultiplayerAgentType value) { TestEndpointDisonnectedEvent(value); });
-            m_mpComponent->AddEndpointDisonnectedHandler(m_endpointDisonnectedHandler);
+            m_endpointDisconnectedHandler = Multiplayer::EndpointDisconnectedEvent::Handler([this](Multiplayer::MultiplayerAgentType value) { TestEndpointDisconnectedEvent(value); });
+            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             m_mpComponent->Activate();
         }
 
@@ -92,7 +92,7 @@ namespace Multiplayer
             m_connectionAcquiredCount += aznumeric_cast<uint32_t>(datum.m_id);
         }
 
-        void TestEndpointDisonnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
+        void TestEndpointDisconnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
         {
             ++m_endpointDisconnectedCount;
         }
@@ -119,7 +119,7 @@ namespace Multiplayer
         Multiplayer::SessionInitEvent::Handler m_initHandler;
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
-        Multiplayer::EndpointDisonnectedEvent::Handler m_endpointDisonnectedHandler;
+        Multiplayer::EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler;
 
         AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;

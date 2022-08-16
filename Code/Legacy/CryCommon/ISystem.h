@@ -1229,7 +1229,7 @@ namespace Detail
         } DummyStaticInstance;                                                           \
         if (!(gEnv->pConsole != 0 ? gEnv->pConsole->Register(&DummyStaticInstance) : 0)) \
         {                                                                                \
-            AZ::Debug::Trace::Break();                                                   \
+            AZ::Debug::Trace::Instance().Break();                                        \
             CryFatalError("Can not register dummy CVar");                                \
         }                                                                                \
     } while (0)
