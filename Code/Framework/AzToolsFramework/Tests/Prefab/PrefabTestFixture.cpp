@@ -100,13 +100,6 @@ namespace UnitTest
                 rootContainerEntity->get().Init();
             }
         }
-
-        // MapSerializer stores an empty entity map as an array instead of an object. So we need to change it to object here.
-        TemplateId rootPrefabTemplateId = m_prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-        PrefabDom& rootPrefabDom = m_prefabSystemComponent->FindTemplateDom(rootPrefabTemplateId);
-        PrefabDomPath entitiesPath(PrefabDomUtils::PathMatchingEntities);
-        PrefabDomValue* entitiesDomValue = entitiesPath.Get(rootPrefabDom);
-        entitiesDomValue->SetObject();
     }
 
     void PrefabTestFixture::PropagateAllTemplateChanges()
