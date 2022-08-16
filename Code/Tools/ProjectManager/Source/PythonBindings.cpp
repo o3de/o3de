@@ -238,7 +238,7 @@ namespace O3DE::ProjectManager
 
     void PythonBindings::OnStdOut(const char* msg)
     {
-        AZ::Debug::Trace::Output("Python", msg);
+        AZ::Debug::Trace::Instance().Output("Python", msg);
     }
 
     void PythonBindings::OnStdError(const char* msg)
@@ -252,7 +252,7 @@ namespace O3DE::ProjectManager
 
         PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
-        AZ::Debug::Trace::Output("Python", msg);
+        AZ::Debug::Trace::Instance().Output("Python", msg);
     }
 
     bool PythonBindings::PythonStarted()
@@ -852,10 +852,6 @@ namespace O3DE::ProjectManager
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
                     gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
-                }
-                else if (gemInfo.m_creator.contains("Amazon Web Services"))
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
                 }
                 else if (data.contains("origin"))
                 {

@@ -154,6 +154,7 @@ namespace AZ::AtomBridge
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) override;
         void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
         void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled = true) override;
+        void DrawPolyLine(AZStd::span<const AZ::Vector3>, bool cycled = true) override;
         void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
