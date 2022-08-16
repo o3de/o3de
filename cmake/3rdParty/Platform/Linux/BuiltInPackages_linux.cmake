@@ -46,7 +46,7 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                 
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-linux                       TARGETS astc-encoder                PACKAGE_HASH 71549d1ca9e4d48391b92a89ea23656d3393810e6777879f6f8a9def2db1610c)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-linux                        TARGETS lz4                         PACKAGE_HASH 5de3dbd3e2a3537c6555d759b3c5bb98e5456cf85c74ff6d046f809b7087290d)
-ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev2-linux                TARGETS pyside2                     PACKAGE_HASH 9c9c0a3616925dfd894078c9658af57b67392b620ebcb7567d87faabf11eef9b)
+ly_associate_package(PACKAGE_NAME pyside2-5.15.2.1-py3.10-rev3-linux                TARGETS pyside2                     PACKAGE_HASH b0bd94be5da8ce6e37c8b688092e075be56169bb22ac1454d8095893ce8dd9b3)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev1-linux                          TARGETS SQLite                      PACKAGE_HASH bee80d6c6db3e312c1f4f089c90894436ea9c9b74d67256d8c1fb00d4d81fe46)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux              TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 83fc1711404d3e5b2faabb1134e97cc92b748d8b87ff4ea99599d8c750b8eff0)
 
