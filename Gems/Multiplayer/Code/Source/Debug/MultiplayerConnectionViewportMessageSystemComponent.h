@@ -25,6 +25,8 @@ namespace Multiplayer
     {
     public:
         static constexpr int MaxMessageLength = 256;
+
+        // Messaging for clients
         static constexpr char CenterViewportDebugTitle[] = "Multiplayer Editor";
         static constexpr char ClientStatusTitle[] = "Multiplayer Client Status:";
         static constexpr char OnServerLaunchedMessage[] = "(1/3) Launching server...";
@@ -34,6 +36,18 @@ namespace Multiplayer
         static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
         static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
         static constexpr char OnEditorServerStoppedUnexpectedly[] ="Editor server has unexpectedly stopped running!";
+
+        // Messaging common for both dedicated server and client-server
+        static constexpr char ServerHostingPort[] = "Hosting on port %i";
+
+        // Messaging for dedicated server
+        static constexpr char DedicatedServerStatusTitle[] = "Multiplayer Dedicated Server Status:";
+        static constexpr char DedicatedServerNotHosting[] = "Not Hosting";
+        static constexpr char DedicatedServerHostingClientCount[] = "%i client(s)";
+
+        // Messaging for client-server
+        static constexpr char ClientServerStatusTitle[] = "Multiplayer Client-Server Status:";
+        static constexpr char ClientServerHostingClientCount[] = "%i client(s) (including self)";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 

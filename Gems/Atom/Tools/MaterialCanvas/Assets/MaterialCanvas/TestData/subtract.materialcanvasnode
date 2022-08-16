@@ -28,7 +28,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             },
@@ -54,7 +54,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_SLOTVALUE;"
+                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
                     ]
                 }
             }
@@ -78,7 +78,7 @@
                 },
                 "settings": {
                     "instructions": [
-                        "O3DE_SLOTTYPE O3DE_NODEID_O3DE_SLOTNAME = O3DE_NODEID_inValue1 - O3DE_NODEID_inValue2;"
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue1 - NODEID_inValue2;"
                     ]
                 }
             }

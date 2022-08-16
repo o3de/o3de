@@ -131,8 +131,6 @@ namespace AZ
 
         void EditorMaterialSystemComponent::OpenMaterialEditor(const AZStd::string& sourcePath)
         {
-            AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
-
             QStringList arguments;
             arguments.append(sourcePath.c_str());
 
@@ -149,7 +147,30 @@ namespace AZ
                 arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
             }
 
+            AZ_TracePrintf("MaterialComponent", "Launching Material Editor");
             AtomToolsFramework::LaunchTool("MaterialEditor", arguments);
+        }
+
+        void EditorMaterialSystemComponent::OpenMaterialCanvas(const AZStd::string& sourcePath)
+        {
+            QStringList arguments;
+            arguments.append(sourcePath.c_str());
+
+            // Use the same RHI as the main Canvas
+            AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            if (!apiName.IsEmpty())
+            {
+                arguments.append(QString("--rhi=%1").arg(apiName.GetCStr()));
+            }
+
+            AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
+            if (!projectPath.empty())
+            {
+                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            }
+
+            AZ_TracePrintf("MaterialComponent", "Launching Material Canvas (Experimental)");
+            AtomToolsFramework::LaunchTool("MaterialCanvas", arguments);
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
@@ -314,6 +335,23 @@ namespace AZ
                 AzToolsFramework::EditorMenuRequestBus::Broadcast(
                     &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
             }
+            if (!m_openMaterialCanvasAction)
+            {
+                m_openMaterialCanvasAction = new QAction("Material Canvas (Experimental)");
+                m_openMaterialCanvasAction->setShortcut(QKeySequence("Ctrl+Shift+M"));
+                m_openMaterialCanvasAction->setCheckable(false);
+                m_openMaterialCanvasAction->setChecked(false);
+                m_openMaterialCanvasAction->setIcon(QIcon(":/Menu/material_canvas.svg"));
+                QObject::connect(
+                    m_openMaterialCanvasAction, &QAction::triggered, m_openMaterialCanvasAction, [this]()
+                    {
+                        OpenMaterialCanvas("");
+                    }
+                );
+
+                AzToolsFramework::EditorMenuRequestBus::Broadcast(
+                    &AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialCanvasAction, true);
+            }
         }
 
         void EditorMaterialSystemComponent::OnResetToolMenuItems()
@@ -322,6 +360,11 @@ namespace AZ
             {
                 delete m_openMaterialEditorAction;
                 m_openMaterialEditorAction = nullptr;
+            }
+            if (m_openMaterialCanvasAction)
+            {
+                delete m_openMaterialCanvasAction;
+                m_openMaterialCanvasAction = nullptr;
             }
         }
 

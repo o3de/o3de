@@ -112,8 +112,8 @@ namespace AssetBundler
     {
         // Check to see if any of the selected platform-specific files already exist on-disk
         QString overwriteExistingFilesList;
-        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames =
-            AzFramework::PlatformHelper::GetPlatforms(GetPlatformFlags());
+        AZStd::fixed_vector<AZStd::string, AzFramework::NumPlatforms> selectedPlatformNames{ AZStd::from_range,
+            AzFramework::PlatformHelper::GetPlatforms(GetPlatformFlags()) };
         for (const AZStd::string& platformName : selectedPlatformNames)
         {
             FilePath platformSpecificFilePath(GetAbsoluteFilePath(), platformName);

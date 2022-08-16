@@ -81,6 +81,9 @@ private:
     bool IsRecentFileActionActive(int index);
     void UpdateRecentFileActions();
 
+    // Toolbox Macros
+    void RefreshToolboxMacroActions();
+
     // Tools
     void RefreshToolActions();
 
@@ -104,6 +107,7 @@ private:
 
     AZStd::vector<AZStd::string> m_layoutMenuIdentifiers;
     AZStd::vector<AZStd::string> m_toolActionIdentifiers;
+    AZStd::vector<AZStd::string> m_toolboxMacroActionIdentifiers;
 
     bool m_isPrefabSystemEnabled = false;
 };

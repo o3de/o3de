@@ -255,6 +255,11 @@ namespace ScriptCanvas
             return m_metaData;
         }
 
+        const AZStd::any& ExecutionTree::GetMetaDataEx() const
+        {
+            return m_metaDataEx;
+        }
+
         const AZStd::string& ExecutionTree::GetName() const
         {
             return m_name;
@@ -443,6 +448,11 @@ namespace ScriptCanvas
         MetaDataPtr ExecutionTree::ModMetaData()
         {
             return m_metaData;
+        }
+
+        AZStd::any& ExecutionTree::ModMetaDataEx()
+        {
+            return m_metaDataEx;
         }
 
         ExecutionTreePtr ExecutionTree::ModParent()

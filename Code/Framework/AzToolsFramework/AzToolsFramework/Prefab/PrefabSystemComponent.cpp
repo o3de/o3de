@@ -13,14 +13,16 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
 {
@@ -42,10 +44,18 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
+            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
+            {
+                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
+            }
         }
 
         void PrefabSystemComponent::Deactivate()
         {
+            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
+            {
+                AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
+            }
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -163,6 +173,36 @@ namespace AzToolsFramework
             else
             {
                 newInstance->SetTemplateId(newTemplateId);
+            }
+        }
+
+        void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
+            if (found != m_templateFilePathToIdMap.end())
+            {
+                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
+                PropagateTemplateChanges(found->second);
+            }
+        }
+
+        void PrefabSystemComponent::SourceFileRemoved(
+            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
+        {
+            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
+            if (found != m_templateFilePathToIdMap.end())
+            {
+                RemoveTemplate(found->second);
+
+                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+                if (prefabEditorEntityOwnershipInterface != nullptr)
+                {
+                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                     PropagateTemplateChanges(rootTemplateId);
+                }
+                
             }
         }
 
@@ -772,7 +812,7 @@ namespace AzToolsFramework
             return newLinkId;
         }
 
-        void PrefabSystemComponent::RemoveLink(const LinkId& linkId)
+        bool PrefabSystemComponent::RemoveLink(const LinkId& linkId)
         {
             auto findLinkResult = FindLink(linkId);
             if (!findLinkResult.has_value())
@@ -782,28 +822,27 @@ namespace AzToolsFramework
                     "Link associated by given Id '%llu' doesn't exist in PrefabSystemComponent.",
                     linkId);
 
-                return;
+                return false;
             }
 
             Link& link = findLinkResult->get();
-            [[maybe_unused]] bool result;
-            result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId, link);
-            AZ_Assert(result,
-                "Prefab - PrefabSystemComponent::RemoveLink - "
-                "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
-                "from TemplateToLinkIdsMap.",
-                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId());
 
-            result = RemoveLinkFromTargetTemplate(linkId, link);
-            AZ_Assert(result,
-                "Prefab - PrefabSystemComponent::RemoveLink - "
-                "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
-                "from target Template with Id '%llu'.",
-                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId(), link.GetTargetTemplateId());
+            bool result = RemoveLinkIdFromTemplateToLinkIdsMap(linkId, link);
+
+            result &= RemoveLinkFromTargetTemplate(linkId, link);
+
+            if (!result)
+            {
+                AZ_Assert(
+                    result,
+                    "PrefabSystemComponent::RemoveLink - Failed to remove Link for Instance '%s' from TemplateToLinkIdsMap.",
+                    link.GetInstanceName().c_str());
+                return false;
+            }
 
             m_linkIdMap.erase(linkId);
 
-            return;
+            return true;
         }
 
         TemplateId PrefabSystemComponent::GetTemplateIdFromFilePath(AZ::IO::PathView filePath) const
@@ -977,7 +1016,21 @@ namespace AzToolsFramework
             }
 
             link.SetLinkDom(instance);
-
+            PrefabDom& targetTemplatePrefabDom = FindTemplateDom(targetTemplateId);
+            PrefabDomPath instancePath = link.GetInstancePath();
+            PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
+            if (!instanceValue)
+            {
+                PrefabDomValueReference templateInstancesReference =
+                    PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::InstancesName);
+                PrefabDomValue& templateInstances = templateInstancesReference->get();
+                PrefabDomValue instanceObject;
+                instanceObject.SetObject();
+                templateInstances.AddMember(
+                    rapidjson::Value(instanceIterator->name.GetString(), targetTemplatePrefabDom.GetAllocator()),
+                    instanceObject.Move(), targetTemplatePrefabDom.GetAllocator());
+            }
+            //initialize link 
             if (!link.UpdateTarget())
             {
                 AZ_Error("Prefab", false,
