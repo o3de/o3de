@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <BuildTarget/Common/TestImpactBuildGraph.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <BuildTarget/Common/TestImpactBuildTargetException.h>
 #include <Target/Common/TestImpactTargetList.h>
 
@@ -47,11 +49,17 @@ namespace TestImpact
         //! @param outputName The output name of the target to get.
         AZStd::string GetTargetNameFromOutputNameOrThrow(const AZStd::string& outputName) const;
 
+        //! Get the build targets in the repository.
+        const AZStd::vector<BuildTarget<ProductionTarget, TestTarget>>& GetBuildTargets() const;
+
         //! Get the list of test targets in the repository.
         const TargetList<TestTarget>& GetTestTargetList() const;
 
         //! Get the list of production targets in the repository.
         const TargetList<ProductionTarget>& GetProductionTargetList() const;
+
+        //! Get the repository build graph with the dependency and depender graphs.
+        const BuildGraph<ProductionTarget, TestTarget>& GetBuildGraph() const;
     private:
         //! The sorted list of unique test targets in the repository.
         TargetList<TestTarget> m_testTargets;
@@ -59,8 +67,14 @@ namespace TestImpact
         //! The sorted list of unique production targets in the repository.
         TargetList<ProductionTarget> m_productionTargets;
 
+        //! The list of all build targets in the repository.
+        AZStd::vector<BuildTarget<ProductionTarget, TestTarget>> m_buildTargets;
+
         //! Mapping of target output names to their targets.
         AZStd::unordered_map<AZStd::string, AZStd::string> m_outputNameToTargetNameMapping;
+
+        //! Dependency and depender graph for each build target in the repository.
+        AZStd::unique_ptr<BuildGraph<ProductionTarget, TestTarget>> m_buildGraph;
     };
 
     template<typename ProductionTarget, typename TestTarget>
@@ -69,15 +83,18 @@ namespace TestImpact
         : m_testTargets(AZStd::move(testTargetList))
         , m_productionTargets(AZStd::move(productionTargetList))
     {
-        for (const auto& target : m_testTargets.GetTargets())
+        const auto compileTargetMetaData = [this](const auto& targets)
         {
-            m_outputNameToTargetNameMapping[target.GetOutputName()] = target.GetName();
-        }
+            for (const auto& target : targets.GetTargets())
+            {
+                m_outputNameToTargetNameMapping[target.GetOutputName()] = target.GetName();
+                m_buildTargets.emplace_back(&target);
+            }
+        };
 
-        for (const auto& target : m_productionTargets.GetTargets())
-        {
-            m_outputNameToTargetNameMapping[target.GetOutputName()] = target.GetName();
-        }
+        compileTargetMetaData(m_productionTargets);
+        compileTargetMetaData(m_testTargets);
+        m_buildGraph = AZStd::make_unique<BuildGraph<ProductionTarget, TestTarget>>(*this);
     }
 
     template<typename ProductionTarget, typename TestTarget>
@@ -113,6 +130,12 @@ namespace TestImpact
     }
 
     template<typename ProductionTarget, typename TestTarget>
+    const AZStd::vector<BuildTarget<ProductionTarget, TestTarget>>& BuildTargetList<ProductionTarget, TestTarget>::GetBuildTargets() const
+    {
+        return m_buildTargets;
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
     const TargetList<TestTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetTestTargetList() const
     {
         return m_testTargets;
@@ -145,5 +168,11 @@ namespace TestImpact
             TargetException,
             AZStd::string::format("Couldn't find target with output name %s", outputName.c_str()).c_str());
         return targetName;
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
+    const BuildGraph<ProductionTarget, TestTarget>& BuildTargetList<ProductionTarget, TestTarget>::GetBuildGraph() const
+    {
+        return *m_buildGraph;
     }
 } // namespace TestImpact

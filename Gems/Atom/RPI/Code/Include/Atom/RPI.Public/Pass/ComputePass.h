@@ -40,8 +40,11 @@ namespace AZ
             //! Sets the target total number of threads to dispatch in each dimension
             void SetTargetThreadCounts(uint32_t targetThreadCountX, uint32_t targetThreadCountY, uint32_t targetThreadCountZ);
 
-            //! Returns the shader resource group.
-            Data::Instance<ShaderResourceGroup> GetShaderResourceGroup();
+            //! Returns the shader resource group
+            Data::Instance<ShaderResourceGroup> GetShaderResourceGroup() const;
+
+            //! Return the shader
+            Data::Instance<Shader> GetShader() const;
 
         protected:
             ComputePass(const PassDescriptor& descriptor);

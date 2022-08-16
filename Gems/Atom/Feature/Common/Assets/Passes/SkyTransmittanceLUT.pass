@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Description" : "This is the pass template that renders the sun transmittance",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyTransmittanceLUTTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "SkyTransmittanceLUTOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader"
+                }
+            }
+        }
+    }
+}

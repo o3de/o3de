@@ -148,8 +148,14 @@ namespace ScriptCanvasEditor
     void Interpreter::OnReady(ScriptCanvas::RuntimeAssetPtr asset)
     {
         MutexLock lock(m_mutex);
-        InitializeExecution(asset);
-        SetSatus(InterpreterStatus::Ready);
+        if (InitializeExecution(asset))
+        {
+            SetSatus(InterpreterStatus::Ready);
+        }
+        else
+        {
+            SetSatus(InterpreterStatus::Misconfigured);
+        }
     }
 
     void Interpreter::OnSourceCompiled()

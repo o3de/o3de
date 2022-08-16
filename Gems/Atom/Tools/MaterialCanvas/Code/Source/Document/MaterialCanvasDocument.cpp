@@ -115,7 +115,7 @@ namespace MaterialCanvas
                 registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
 
             // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
-            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", registeredDataTypes);
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas.azasset", registeredDataTypes);
             graphContext->CreateModuleGraphManager();
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
         };
@@ -476,17 +476,17 @@ namespace MaterialCanvas
                 if (sourceSlot && targetSlot && sourceSlot != targetSlot && sourceSlot != slot)
                 {
                     ReplaceStringsInContainer(
-                        "O3DE_SLOTVALUE",
+                        "SLOTVALUE",
                         AZStd::string::format("node%u_%s", sourceSlot->GetParentNode()->GetId(), sourceSlot->GetName().c_str()),
                         instructionsForSlot);
                     break;
                 }
             }
 
-            ReplaceStringsInContainer("O3DE_NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-            ReplaceStringsInContainer("O3DE_SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-            ReplaceStringsInContainer("O3DE_SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-            ReplaceStringsInContainer("O3DE_SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
+            ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
         }
 
         return instructionsForSlot;
@@ -590,7 +590,7 @@ namespace MaterialCanvas
             // We might need separate blocks of instructions that can be processed before or after the slots are processed.
             AZStd::vector<AZStd::string> instructionsForNode;
             AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-            ReplaceStringsInContainer("O3DE_NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
+            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
             instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
 
@@ -777,7 +777,7 @@ namespace MaterialCanvas
                         [&]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
-                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
+                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n\r\\/", false, false);
                             return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames);
                         },
                         templateLines);
