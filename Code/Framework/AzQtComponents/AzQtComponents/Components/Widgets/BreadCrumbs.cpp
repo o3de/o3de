@@ -262,7 +262,7 @@ namespace AzQtComponents
             imagePath = m_defaultIcon;
         }
 
-        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: middle\" src=\"%1\">%2%2")
+        return !imagePath.isEmpty() ? QStringLiteral("<img width=\"16\" height=\"16\" style=\"vertical-align: top\" src=\"%1\">%2%2")
                                           .arg(imagePath)
                                           .arg("&nbsp;")
                                     : "";
@@ -297,7 +297,15 @@ namespace AzQtComponents
 
         int index = m_currentPathSize - 1;
 
-        htmlString.prepend(generateIconHtml(index) + plainTextPath);
+        // TODO - This should be a setting
+        if (m_currentPathSize == 1)
+        {
+            htmlString.prepend(generateIconHtml(index) + plainTextPath);
+        }
+        else
+        {
+            htmlString.prepend(QString("<a style=\"background-color: #4A90E2;\"> ") + generateIconHtml(index) + plainTextPath + QString(" </a>"));
+        }
         --index;
 
         while (!m_truncatedPaths.isEmpty())

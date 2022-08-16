@@ -306,7 +306,7 @@ namespace AzToolsFramework
         EditorEntityContextNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         EditorEntityInfoNotificationBus::Handler::BusConnect();
-        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
+        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(GetEntityContextId());
         Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         EditorWindowUIRequestBus::Handler::BusConnect();
     }
@@ -905,7 +905,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
     {
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
     }
 
     void EntityOutlinerWidget::OnEntityPickModeStarted()

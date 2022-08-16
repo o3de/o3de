@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/EditorPreferenceGetter.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -105,6 +106,11 @@ namespace AzToolsFramework::Prefab
             "Prefab - PrefabFocusHandler - "
             "ReadOnly Entity Query Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        if (IsPrefabOverridesUxEnabled())
+        {
+            m_prefabEditScope = PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT;
+        }
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)

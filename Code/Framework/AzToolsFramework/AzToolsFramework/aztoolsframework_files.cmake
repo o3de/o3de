@@ -148,6 +148,8 @@ set(FILES
     Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
+    Editor/EditorPreferenceGetter.cpp
+    Editor/EditorPreferenceGetter.h
     Editor/EditorSettingsAPIBus.h
     Editor/RichTextHighlighter.h
     Editor/RichTextHighlighter.cpp
