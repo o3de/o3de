@@ -176,9 +176,8 @@ namespace AzToolsFramework::ComponentModeFramework
         ComponentData newComponentData = ComponentData(pairId);
 
         // if the component has not already been added as a button, add the button
-        if (auto componentDataIt = AZStd::find_if(
-                m_addedComponents.begin(),
-                m_addedComponents.end(),
+        if (auto componentDataIt = AZStd::ranges::find_if(
+                m_addedComponents,
                 [newComponentData](const ComponentData& componentInfo)
                 {
                     return componentInfo.m_component->RTTI_GetType() == newComponentData.m_component->RTTI_GetType();
@@ -214,9 +213,8 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::RemoveComponentButton(const AZ::EntityComponentIdPair pairId)
     {
         // find pairId in m_addedComponents, call ViewportUiRequestBus to remove
-        if (auto componentDataIt = AZStd::find_if(
-                m_addedComponents.begin(),
-                m_addedComponents.end(),
+        if (auto componentDataIt = AZStd::ranges::find_if(
+                m_addedComponents,
                 [pairId](const ComponentData& predComponentData)
                 {
                     return pairId == predComponentData.m_pairId;
@@ -238,9 +236,8 @@ namespace AzToolsFramework::ComponentModeFramework
         ComponentData* componentData = nullptr;
 
         // find component associated with button Id
-        if (auto componentDataIt = AZStd::find_if(
-                m_addedComponents.begin(),
-                m_addedComponents.end(),
+        if (auto componentDataIt = AZStd::ranges::find_if(
+                m_addedComponents,
                 [buttonId](const ComponentData& componentData)
                 {
                     return componentData.m_buttonId == buttonId;
@@ -294,9 +291,8 @@ namespace AzToolsFramework::ComponentModeFramework
         // if the user enters component mode not using the switcher, the switcher should still switch buttons
         if (mode == ViewportEditorMode::Component)
         {
-            if (auto componentDataIt = AZStd::find_if(
-                    m_addedComponents.begin(),
-                    m_addedComponents.end(),
+            if (auto componentDataIt = AZStd::ranges::find_if(
+                    m_addedComponents,
                     [](const ComponentData& componentData)
                     {
                         bool isComponentActive;
@@ -366,7 +362,7 @@ namespace AzToolsFramework::ComponentModeFramework
     // once when it has been added fully to the entity. This is handled in UpdateComponentButton
     void ComponentModeSwitcher::OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList)
     {
-        if (AZStd::find(entityIdList.begin(), entityIdList.end(), m_componentModePair.GetEntityId()) != entityIdList.end())
+        if (AZStd::ranges::find(entityIdList, m_componentModePair.GetEntityId()) != entityIdList.end())
         {
             if (m_addOrRemove == AddOrRemoveComponent::Add)
             {

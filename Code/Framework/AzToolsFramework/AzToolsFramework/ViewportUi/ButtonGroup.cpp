@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
@@ -57,9 +58,8 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ButtonId ButtonGroup::AddButton(const AZStd::string& icon, const AZStd::string& name)
     {
-        const auto lastButtonIdIt = AZStd::max_element(
-            m_buttons.begin(),
-            m_buttons.end(),
+        const auto lastButtonIdIt = AZStd::ranges::max_element(
+            m_buttons,
             [](const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairA,
                const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairB)
             {
@@ -81,12 +81,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     bool ButtonGroup::RemoveButton(ButtonId buttonId)
     {
-        if (m_buttons.find(buttonId) != m_buttons.end())
-        {
-            m_buttons.erase(buttonId);
-            return true;
-        }
-        return false;
+        return m_buttons.erase(buttonId) != 0;
     }
 
     Button* ButtonGroup::GetButton(ButtonId buttonId)
