@@ -12,6 +12,7 @@
 
 #include <Editor/EditorImageGradientComponentMode.h>
 #include <Editor/EditorImageGradientRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -25,10 +26,12 @@ namespace GradientSignal
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
+        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
     }
 
     EditorImageGradientComponentMode::~EditorImageGradientComponentMode()
     {
+        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
     }
 
@@ -50,7 +53,7 @@ namespace GradientSignal
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Down)
         {
             AZStd::vector<float>* pixelBuffer;
-            EditorImageGradientRequestBus::EventResult(pixelBuffer, GetEntityId(), &EditorImageGradientRequests::GetPixelBuffer);
+            ImageGradientModificationBus::EventResult(pixelBuffer, GetEntityId(), &ImageGradientModifications::GetImageModificationBuffer);
 
             if (pixelBuffer)
             {

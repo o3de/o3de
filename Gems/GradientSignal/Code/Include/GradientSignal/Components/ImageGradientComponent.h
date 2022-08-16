@@ -18,6 +18,7 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 
@@ -114,6 +115,7 @@ namespace GradientSignal
         , private AZ::Data::AssetBus::Handler
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
+        , private ImageGradientModificationBus::Handler
         , private GradientTransformNotificationBus::Handler
     {
     public:
@@ -148,6 +150,13 @@ namespace GradientSignal
         AZStd::string GetImageAssetSourcePath() const override;
         void SetImageAssetPath(const AZStd::string& assetPath) override;
         void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
+        uint32_t GetImageHeight() const override;
+        uint32_t GetImageWidth() const override;
+
+        // ImageGradientModificationBus overrides...
+        void StartImageModification() override;
+        void EndImageModification() override;
+        AZStd::vector<float>* GetImageModificationBuffer() override;
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
@@ -157,6 +166,11 @@ namespace GradientSignal
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         void SetupDependencies();
+
+        void CreateImageModificationBuffer();
+        void ClearImageModificationBuffer();
+        bool ModificationBufferIsActive() const;
+        void UpdateCachedImageBufferData(const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData);
 
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
@@ -179,13 +193,19 @@ namespace GradientSignal
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
-        AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
         CustomScaleType m_currentScaleType = CustomScaleType::None;
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
-        AZ::RHI::ImageDescriptor m_imageDescriptor;
         SamplingType m_currentSamplingType = SamplingType::Point;
+
+        //! Cached information for our loaded image data.
+        //! This can either contain information about the image data in the image asset or information about our in-memory modifications.
+        AZ::RHI::ImageDescriptor m_imageDescriptor;
+        AZStd::span<const uint8_t> m_imageData;
+
+        //! If the image is modified at runtime, this buffer will hold the modified image data.
+        AZStd::vector<float> m_modifiedImageData;
     };
 }

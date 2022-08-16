@@ -243,7 +243,10 @@ namespace GradientSignal
         {
             behaviorContext->Constant("ImageGradientComponentTypeId", BehaviorConstant(ImageGradientComponentTypeId));
 
-            behaviorContext->Class<ImageGradientComponent>()->RequestBus("ImageGradientRequestBus");
+            behaviorContext->Class<ImageGradientComponent>()
+                ->RequestBus("ImageGradientRequestBus")
+                ->RequestBus("ImageGradientModificationBus")
+                ;
 
             behaviorContext->EBus<ImageGradientRequestBus>("ImageGradientRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
@@ -260,7 +263,15 @@ namespace GradientSignal
                 ->Event("GetTilingY", &ImageGradientRequestBus::Events::GetTilingY)
                 ->Event("SetTilingY", &ImageGradientRequestBus::Events::SetTilingY)
                 ->VirtualProperty("TilingY", "GetTilingY", "SetTilingY")
-                ;
+            ;
+
+            behaviorContext->EBus<ImageGradientModificationBus>("ImageGradientModificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "vegetation")
+                ->Event("StartImageModification", &ImageGradientModificationBus::Events::StartImageModification)
+                ->Event("EndImageModification", &ImageGradientModificationBus::Events::EndImageModification)
+            ;
         }
     }
 
@@ -331,8 +342,9 @@ namespace GradientSignal
         }
 
         // Update our cached image data
-        m_imageDescriptor = m_configuration.m_imageAsset->GetImageDescriptorForMipLevel(m_currentMipIndex);
-        m_imageData = m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0);
+        UpdateCachedImageBufferData(
+            m_configuration.m_imageAsset->GetImageDescriptorForMipLevel(m_currentMipIndex),
+            m_configuration.m_imageAsset->GetSubImageData(m_currentMipIndex, 0));
 
         // Calculate the multiplier and offset based on our scale type
         // Make sure we do this last, because the calculation might
@@ -614,10 +626,11 @@ namespace GradientSignal
         SetupDependencies();
 
         ImageGradientRequestBus::Handler::BusConnect(GetEntityId());
+        ImageGradientModificationBus::Handler::BusConnect(GetEntityId());
 
         // Invoke the QueueLoad before connecting to the AssetBus, so that
         // if the asset is already ready, then OnAssetReady will be triggered immediately
-        m_imageData = AZStd::span<const uint8_t>();
+        UpdateCachedImageBufferData({}, {});
         m_configuration.m_imageAsset.QueueLoad();
 
         AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_imageAsset.GetId());
@@ -632,10 +645,14 @@ namespace GradientSignal
         GradientRequestBus::Handler::BusDisconnect();
 
         AZ::Data::AssetBus::Handler::BusDisconnect();
+        ImageGradientModificationBus::Handler::BusDisconnect();
         ImageGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
 
         m_dependencyMonitor.Reset();
+
+        // Make sure we don't keep any cached references to the image asset data or the image modification buffer.
+        UpdateCachedImageBufferData({}, {});
 
         m_configuration.m_imageAsset.Release();
     }
@@ -660,28 +677,41 @@ namespace GradientSignal
         return false;
     }
 
+    void ImageGradientComponent::UpdateCachedImageBufferData(
+        const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData)
+    {
+        bool shouldClearModificationBuffer = false;
+
+        // If we're changing our image data from our modification buffer to something else, clear out the modification buffer.
+        if (ModificationBufferIsActive() && (imageData.data() != m_imageData.data()))
+        {
+            shouldClearModificationBuffer = true;
+        }
+
+        m_imageDescriptor = imageDescriptor;
+        m_imageData = imageData;
+
+        if (shouldClearModificationBuffer)
+        {
+            ClearImageModificationBuffer();
+        }
+    }
+
     void ImageGradientComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
         AZStd::unique_lock lock(m_queryMutex);
         m_configuration.m_imageAsset = asset;
-
         GetSubImageData();
     }
 
     void ImageGradientComponent::OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, [[maybe_unused]] void* oldDataPointer)
     {
-        AZStd::unique_lock lock(m_queryMutex);
-        m_configuration.m_imageAsset = asset;
-
-        GetSubImageData();
+        OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZStd::unique_lock lock(m_queryMutex);
-        m_configuration.m_imageAsset = asset;
-
-        GetSubImageData();
+        OnAssetReady(asset);
     }
 
     void ImageGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
@@ -689,6 +719,83 @@ namespace GradientSignal
         AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
+
+    void ImageGradientComponent::StartImageModification()
+    {
+        if (m_modifiedImageData.empty())
+        {
+            CreateImageModificationBuffer();
+        }
+    }
+
+    void ImageGradientComponent::EndImageModification()
+    {
+    }
+
+    AZStd::vector<float>* ImageGradientComponent::GetImageModificationBuffer()
+    {
+        // This will get replaced with safe/robust methods of modifying the image as paintbrush functionality
+        // continues to get added to the Image Gradient component.
+        return &m_modifiedImageData;
+    }
+
+    void ImageGradientComponent::CreateImageModificationBuffer()
+    {
+        if (m_imageData.empty())
+        {
+            AZ_Error("ImageGradientComponent", false, "Image data is empty");
+            return;
+        }
+
+        const auto& width = m_imageDescriptor.m_size.m_width;
+        const auto& height = m_imageDescriptor.m_size.m_height;
+
+        if (m_modifiedImageData.empty())
+        {
+            // Create a memory buffer for holding all of our modified image information.
+            // We'll always use a buffer of floats to ensure that we're modifying at the highest precision possible.
+            m_modifiedImageData.reserve(width * height);
+
+            // Fill the buffer with all of our existing pixel values.
+            for (uint32_t y = 0; y < height; y++)
+            {
+                for (uint32_t x = 0; x < width; x++)
+                {
+                    float pixel = AZ::RPI::GetImageDataPixelValue<float>(
+                        m_imageData, m_imageDescriptor, x, y, aznumeric_cast<AZ::u8>(m_currentChannel));
+                    m_modifiedImageData.emplace_back(pixel);
+                }
+            }
+
+            // Create an image descriptor describing our new buffer (correct width, height, and single-channel 32-bit float format)
+            auto imageDescriptor =
+                AZ::RHI::ImageDescriptor::Create2D(AZ::RHI::ImageBindFlags::None, width, height, AZ::RHI::Format::R32_FLOAT);
+
+            // Set our imageData pointer to point to our modified data buffer.
+            auto imageData = AZStd::span<const uint8_t>(
+                reinterpret_cast<uint8_t*>(m_modifiedImageData.data()), m_modifiedImageData.size() * sizeof(float));
+
+            UpdateCachedImageBufferData(imageDescriptor, imageData);
+        }
+        else
+        {
+            // If this triggers, we've somehow gotten our image modification buffer out of sync with the image descriptor information.
+            AZ_Assert(m_modifiedImageData.size() == (width * height), "Image modification buffer exists but is the wrong size.");
+        }
+    }
+
+    void ImageGradientComponent::ClearImageModificationBuffer()
+    {
+        AZ_Assert(!ModificationBufferIsActive(), "Clearing modified image data while it's still in use!");
+        m_modifiedImageData.resize(0);
+    }
+
+    bool ImageGradientComponent::ModificationBufferIsActive() const
+    {
+        return (m_modifiedImageData.data() != nullptr) &&
+            (reinterpret_cast<const void*>(m_imageData.data()) == reinterpret_cast<const void*>(m_modifiedImageData.data()));
+    }
+
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
@@ -825,6 +932,12 @@ namespace GradientSignal
 
     void ImageGradientComponent::SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset)
     {
+        // If we're setting the component to the same asset we're already using, then early-out.
+        if (asset.GetId() == m_configuration.m_imageAsset.GetId())
+        {
+            return;
+        }
+
         // Stop listening for the current image asset.
         AZ::Data::AssetBus::Handler::BusDisconnect(m_configuration.m_imageAsset.GetId());
 
@@ -834,8 +947,12 @@ namespace GradientSignal
             // we won't get any OnAsset* notifications while we're changing out the asset.
             AZStd::unique_lock lock(m_queryMutex);
 
-            // Clear our cached image data
-            m_imageData = AZStd::span<const uint8_t>();
+            // Clear our cached image data unless we're currently using a modification buffer.
+            // If we're using a modification buffer, we want to keep it active until the new image has finished loading in.
+            if (!asset.IsReady() && !ModificationBufferIsActive())
+            {
+                UpdateCachedImageBufferData({}, {});
+            }
 
             m_configuration.m_imageAsset = asset;
         }
@@ -863,6 +980,16 @@ namespace GradientSignal
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
+
+    uint32_t ImageGradientComponent::GetImageHeight() const
+    {
+        return m_imageDescriptor.m_size.m_height;
+    }
+
+    uint32_t ImageGradientComponent::GetImageWidth() const
+    {
+        return m_imageDescriptor.m_size.m_width;
+    }
 
     float ImageGradientComponent::GetTilingX() const
     {

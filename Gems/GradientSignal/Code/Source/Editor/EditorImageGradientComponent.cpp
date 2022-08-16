@@ -167,6 +167,7 @@ namespace GradientSignal
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
             
         m_currentImageAssetStatus = m_configuration.m_imageAsset.GetStatus();
+        m_currentImageJobsPending = false;
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
@@ -175,6 +176,7 @@ namespace GradientSignal
     void EditorImageGradientComponent::Deactivate()
     {
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
+        m_currentImageJobsPending = false;
         m_componentModeDelegate.Disconnect();
 
         GradientImageCreatorRequestBus::Handler::BusDisconnect();
@@ -242,11 +244,16 @@ namespace GradientSignal
 
     bool EditorImageGradientComponent::RefreshImageAssetStatus()
     {
-        bool statusChanged = (m_currentImageAssetStatus != m_configuration.m_imageAsset.GetStatus());
+        bool jobsPending = ImageHasPendingJobs(m_configuration.m_imageAsset.GetId());
+        bool statusChanged =
+            (m_currentImageAssetStatus != m_configuration.m_imageAsset.GetStatus()) ||
+            (m_currentImageJobsPending != jobsPending);
+
         m_currentImageAssetStatus = m_configuration.m_imageAsset.GetStatus();
+        m_currentImageJobsPending = jobsPending;
 
         // If there's a valid image selected, check to see if it has any current AP jobs running.
-        if (ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
+        if (jobsPending)
         {
             m_configuration.SetImageAssetPropertyName("Image Asset (processing)");
             return statusChanged;
@@ -351,18 +358,90 @@ namespace GradientSignal
         return m_componentModeDelegate.AddedToComponentMode();
     }
 
-    void EditorImageGradientComponent::SaveImage()
+    bool EditorImageGradientComponent::SaveImage()
     {
-        CreateImage();
+        AZ::IO::Path fullPathIO;
+        AZStd::string relativePath;
+        if (!GetSaveLocation(fullPathIO, relativePath))
+        {
+            return false;
+        }
+
+        // The TGA and EXR formats aren't recognized with only single channel data,
+        // so need to use RGBA format for them
+        int channels = 1;
+        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
+        {
+            AZ_Assert(false, "4-channel TGA / EXR isn't currently supported in this method.");
+            return false;
+        }
+
+        // Get the resolution of our modified image.
+        const int imageResolutionX = aznumeric_cast<int>(m_component.GetImageWidth());
+        const int imageResolutionY = aznumeric_cast<int>(m_component.GetImageHeight());
+
+        // Get the image modification buffer
+        auto pixelBuffer = m_component.GetImageModificationBuffer();
+
+        // Try to write out the image
+        constexpr bool showProgressDialog = true;
+        if (!ImageCreatorUtils::WriteImage(
+                fullPathIO.c_str(), imageResolutionX, imageResolutionY, channels, OutputFormat::R32,
+            AZStd::span<const uint8_t>(reinterpret_cast<uint8_t*>(pixelBuffer->data()), pixelBuffer->size() * sizeof(float)),
+            showProgressDialog))
+        {
+            AZ_Error("EditorImageGradientComponent", false, "Failed to save image: %s", fullPathIO.c_str());
+            return false;
+        }
+
+        // Try to find the source information for the new image in the Asset System.
+        bool sourceInfoFound = false;
+        AZ::Data::AssetInfo sourceInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            sourceInfoFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+            fullPathIO.c_str(),
+            sourceInfo,
+            watchFolder);
+
+        // If this triggers, the flow for handling newly-created images needs to be examined further.
+        // It's possible that we need to wait for some sort of asset processing event before we can get
+        // the source asset ID.
+        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", fullPathIO.c_str());
+
+        // Using the source asset ID, get or create an asset referencing using the expected product asset ID.
+        // If we're overwriting an existing source asset, this will already exist, but if we're creating a new file,
+        // the product asset won't exist yet.
+        auto createdAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(
+            AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, AZ::RPI::StreamingImageAsset::GetImageAssetSubId()),
+            azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
+            AZ::Data::AssetLoadBehavior::QueueLoad);
+
+        // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
+        // for the product asset to get created.
+        createdAsset.SetHint(relativePath);
+
+        // Set our output image path to whatever was selected so that we default to the same file name and path next time.
+        m_outputImagePath = fullPathIO.c_str();
+
+        // Set the active image to the created one.
+        m_component.SetImageAsset(createdAsset);
+
+        // Switch our creation/selection choice to using an existing image.
+        m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
+
+        // Resync the configurations and refresh the display to hide the "Create" button
+        // We need to use "Refresh_EntireTree" because "Refresh_AttributesAndValues" isn't enough to refresh the visibility
+        // settings.
+        OnCompositionChanged();
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+
+        return true;
     }
 
-    AZStd::vector<float>* EditorImageGradientComponent::GetPixelBuffer()
-    {
-        return nullptr;
-    }
-
-
-    void EditorImageGradientComponent::CreateImage()
+    bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
     {
         // Create a default path to save our image to if we haven't previously set the image path to anything yet.
         if (m_outputImagePath.empty())
@@ -371,38 +450,55 @@ namespace GradientSignal
         }
 
         // Turn it into an absolute path to give to the "Save file" dialog.
-        AZ::IO::Path fullPathIO = AzToolsFramework::GetAbsolutePathFromRelativePath(m_outputImagePath);
+        fullPath = AzToolsFramework::GetAbsolutePathFromRelativePath(m_outputImagePath);
 
         // Prompt the user for the file name and path.
         const QString fileFilter = ImageCreatorUtils::GetSupportedImagesFilter().c_str();
         const QString absoluteSaveFilePath =
-            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(fullPathIO.Native().c_str()), fileFilter);
+            AzQtComponents::FileDialog::GetSaveFileName(nullptr, "Save As...", QString(fullPath.Native().c_str()), fileFilter);
 
         // User canceled the save dialog, so exit out.
         if (absoluteSaveFilePath.isEmpty())
         {
-            return;
+            return false;
         }
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
         const auto absoluteSaveFilePathCStr = absoluteSaveFilePathUtf8.constData();
-        fullPathIO.Assign(absoluteSaveFilePathCStr);
+        fullPath.Assign(absoluteSaveFilePathCStr);
+        fullPath = fullPath.LexicallyNormal();
 
         // Turn the absolute path selected in the "Save file" dialog back into a relative path.
-        // It's a way to verify that our path exists within the project asset search hierarchy, 
+        // It's a way to verify that our path exists within the project asset search hierarchy,
         // and it will get used as an asset hint until the asset is fully processed.
-        AZStd::string relativePath;
         AZStd::string rootFilePath;
         bool relativePathFound;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             relativePathFound,
             &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
-            absoluteSaveFilePathCStr, relativePath, rootFilePath);
+            absoluteSaveFilePathCStr,
+            relativePath,
+            rootFilePath);
 
         if (!relativePathFound)
         {
-            AZ_Error("EditorImageGradientComponent", false,
-                "Selected path exists outside of the asset processing directories: %s", absoluteSaveFilePathCStr);
+            AZ_Error(
+                "EditorImageGradientComponent",
+                false,
+                "Selected path exists outside of the asset processing directories: %s",
+                absoluteSaveFilePathCStr);
+            return false;
+        }
+
+        return true;
+    }
+
+    void EditorImageGradientComponent::CreateImage()
+    {
+        AZ::IO::Path fullPathIO;
+        AZStd::string relativePath;
+        if (!GetSaveLocation(fullPathIO, relativePath))
+        {
             return;
         }
 
@@ -421,11 +517,11 @@ namespace GradientSignal
         auto pixelBuffer = ImageCreatorUtils::CreateDefaultImageBuffer(imageResolutionX, imageResolutionY, channels, m_outputFormat);
 
         // Try to write out the image
-        constexpr bool showProgressDialog = false;
+        constexpr bool showProgressDialog = true;
         if (!ImageCreatorUtils::WriteImage(
-            absoluteSaveFilePathCStr, imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer, showProgressDialog))
+                fullPathIO.c_str(), imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer, showProgressDialog))
         {
-            AZ_Error("EditorImageGradientComponent", false, "Failed to create image: %s", absoluteSaveFilePathCStr);
+            AZ_Error("EditorImageGradientComponent", false, "Failed to create image: %s", fullPathIO.c_str());
             return;
         }
 
@@ -436,14 +532,14 @@ namespace GradientSignal
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             sourceInfoFound,
             &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            absoluteSaveFilePathCStr,
+            fullPathIO.c_str(),
             sourceInfo,
             watchFolder);
 
         // If this triggers, the flow for handling newly-created images needs to be examined further.
         // It's possible that we need to wait for some sort of asset processing event before we can get
         // the source asset ID.
-        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", absoluteSaveFilePathCStr);
+        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", fullPathIO.c_str());
 
         // Using the source asset ID, get or create an asset referencing using the expected product asset ID.
         // If we're overwriting an existing source asset, this will already exist, but if we're creating a new file,
@@ -457,7 +553,7 @@ namespace GradientSignal
         createdAsset.SetHint(relativePath);
 
         // Set our output image path to whatever was selected so that we default to the same file name and path next time.
-        m_outputImagePath = absoluteSaveFilePathCStr;
+        m_outputImagePath = fullPathIO.c_str();
 
         // Set the active image to the created one.
         m_component.SetImageAsset(createdAsset);

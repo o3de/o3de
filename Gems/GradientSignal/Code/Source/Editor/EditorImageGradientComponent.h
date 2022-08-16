@@ -63,14 +63,13 @@ namespace GradientSignal
         };
 
 
-        void SaveImage() override;
-        AZStd::vector<float>* GetPixelBuffer() override;
+        void CreateImage();
+        bool SaveImage() override;
+        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
 
         AZ::u32 ChangeCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
         AZ::Crc32 GetPaintModeVisibility() const;
-
-        void CreateImage();
 
         bool RefreshImageAssetStatus();
         static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
@@ -86,6 +85,7 @@ namespace GradientSignal
 
         // Keep track of the image asset status so that we can know when it has changed.
         AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
+        bool m_currentImageJobsPending = false;
 
         using BaseClassType::m_component;
         using BaseClassType::m_configuration;

@@ -14,14 +14,20 @@
 
 namespace GradientSignal
 {
-    class EditorImageGradientRequests
+    class ImageGradientModifications
         : public AZ::ComponentBus
     {
     public:
+        /**
+         * Overrides the default AZ::EBusTraits handler policy to allow one
+         * listener only.
+         */
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual bool SaveImage() = 0;
+        virtual void StartImageModification() = 0;
+        virtual void EndImageModification()  = 0;
+        virtual AZStd::vector<float>* GetImageModificationBuffer()  = 0;
     };
 
-    using EditorImageGradientRequestBus = AZ::EBus<EditorImageGradientRequests>;
+    using ImageGradientModificationBus = AZ::EBus<ImageGradientModifications>;
 }
