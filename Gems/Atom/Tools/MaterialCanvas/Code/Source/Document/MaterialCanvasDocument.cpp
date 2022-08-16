@@ -476,13 +476,14 @@ namespace MaterialCanvas
                 {
                     ReplaceStringsInContainer(
                         "SLOTVALUE",
-                        AZStd::string::format("node%u_%s", sourceSlot->GetParentNode()->GetId(), sourceSlot->GetName().c_str()),
+                        AZStd::string::format(
+                            "%s_%s", GetSymbolNameFromNode(sourceSlot->GetParentNode()).c_str(), sourceSlot->GetName().c_str()),
                         instructionsForSlot);
                     break;
                 }
             }
 
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
+            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(node), instructionsForSlot);
             ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
             ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
             ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), instructionsForSlot);
@@ -590,12 +591,20 @@ namespace MaterialCanvas
             // We might need separate blocks of instructions that can be processed before or after the slots are processed.
             AZStd::vector<AZStd::string> instructionsForNode;
             AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), instructionsForNode);
+            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), instructionsForNode);
             ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), instructionsForNode);
             instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
 
         return instructions;
+    }
+
+    AZStd::string MaterialCanvasDocument::GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const
+    {
+        AZStd::string nodeName = AZ::RPI::AssetUtils::SanitizeFileName(inputNode->GetTitle());
+        AZStd::to_lower(nodeName.begin(), nodeName.end());
+        AZ::StringFunc::Replace(nodeName, "-", "_");
+        return AZStd::string::format("%s_node%u", nodeName.c_str(), inputNode->GetId());
     }
 
     AZStd::string MaterialCanvasDocument::GetInputPropertyNameFromNode(GraphModel::ConstNodePtr inputNode) const
@@ -610,7 +619,7 @@ namespace MaterialCanvas
             }
         }
 
-        return AZStd::string::format("node%u_property", inputNode->GetId());
+        return GetSymbolNameFromNode(inputNode) + "_property";
     }
 
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetInputPropertiesFromSlot(
@@ -622,7 +631,7 @@ namespace MaterialCanvas
         {
             AtomToolsFramework::CollectDynamicNodeSettings(slotConfig.m_settings, "materialInput", inputPropertiesForSlot);
 
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", node->GetId()), inputPropertiesForSlot);
+            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(node), inputPropertiesForSlot);
             ReplaceStringsInContainer("SLOTNAME", slot->GetName().c_str(), inputPropertiesForSlot);
             ReplaceStringsInContainer("SLOTTYPE", ConvertSlotTypeToAZSL(slot->GetDataType()->GetDisplayName()), inputPropertiesForSlot);
             ReplaceStringsInContainer("SLOTVALUE", ConvertSlotValueToAZSL(slot->GetValue()), inputPropertiesForSlot);
@@ -669,7 +678,7 @@ namespace MaterialCanvas
             }
 
             AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "inputProperties", inputPropertiesForNode);
-            ReplaceStringsInContainer("NODEID", AZStd::string::format("node%u", inputNode->GetId()), inputPropertiesForNode);
+            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), inputPropertiesForNode);
             ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), inputPropertiesForNode);
             inputProperties.insert(inputProperties.end(), inputPropertiesForNode.begin(), inputPropertiesForNode.end());
         }

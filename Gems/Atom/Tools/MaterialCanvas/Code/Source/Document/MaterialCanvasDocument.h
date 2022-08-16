@@ -108,6 +108,8 @@ namespace MaterialCanvas
         AZStd::vector<AZStd::string> GetInstructionsFromConnectedNodes(
             GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const;
 
+        AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const;
+
         AZStd::string GetInputPropertyNameFromNode(GraphModel::ConstNodePtr inputNode) const;
 
         AZStd::vector<AZStd::string> GetInputPropertiesFromSlot(
