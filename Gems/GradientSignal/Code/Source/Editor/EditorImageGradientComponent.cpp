@@ -20,17 +20,16 @@ namespace GradientSignal
 {
     void EditorImageGradientComponent::Reflect(AZ::ReflectContext* context)
     {
-        BaseClassType::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorImageGradientComponent, BaseClassType>()
+            serializeContext->Class<EditorImageGradientComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(2)
                 ->Field("Previewer", &EditorImageGradientComponent::m_previewer)
                 ->Field("CreationSelectionChoice", &EditorImageGradientComponent::m_creationSelectionChoice)
                 ->Field("OutputResolution", &EditorImageGradientComponent::m_outputResolution)
                 ->Field("OutputFormat", &EditorImageGradientComponent::m_outputFormat)
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
+                ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
                 ;
 
@@ -143,11 +142,14 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Create")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
 
+                    // Configuration for the Image Gradient control itself
+                    ->DataElement(0, &EditorImageGradientComponent::m_configuration, "Configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::ConfigurationChanged)
+
+                    // Paint controls for editing the image
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_componentModeDelegate,
                         "Paint Image", "Paint into an image asset")
-                        // This needs to be a larger number than the one in EditorWrappedComponentBase so that the element
-                        // is drawn below the ImageGradientComponent configuration.
-                        ->Attribute(AZ::Edit::Attributes::DisplayOrder, 10)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
                     ;
@@ -156,12 +158,47 @@ namespace GradientSignal
         }
     }
 
+    void EditorImageGradientComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        // When building the game entity, use the copy of the runtime configuration on the Editor component to create
+        // a new runtime component that's configured correctly.
+        gameEntity->AddComponent(aznew ImageGradientComponent(m_configuration));
+    }
+
+    void EditorImageGradientComponent::Init()
+    {
+        AzToolsFramework::Components::EditorComponentBase::Init();
+
+        // Initialize the copy of the runtime component.
+        m_runtimeComponentActive = false;
+        m_component.ReadInConfig(&m_configuration);
+        m_component.Init();
+    }
+
     void EditorImageGradientComponent::Activate()
     {
+        // This block of code is aligned with EditorWrappedComponentBase
+        {
+            AzToolsFramework::Components::EditorComponentBase::Activate();
+
+            // Use the visibility bus to control whether or not the runtime gradient is active and processing in the Editor.
+            AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusConnect(GetEntityId());
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                m_visible, GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
+
+            // Synchronize the runtime component with the Editor component.
+            m_component.ReadInConfig(&m_configuration);
+            m_component.SetEntity(GetEntity());
+
+            if (m_visible)
+            {
+                m_component.Activate();
+                m_runtimeComponentActive = true;
+            }
+        }
+
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         EditorImageGradientRequestBus::Handler::BusConnect(GetEntityId());
-
-        BaseClassType::Activate();
 
         m_previewer.Activate(GetEntityId());
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
@@ -175,9 +212,10 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::Deactivate()
     {
+        m_componentModeDelegate.Disconnect();
+
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         m_currentImageJobsPending = false;
-        m_componentModeDelegate.Disconnect();
 
         GradientImageCreatorRequestBus::Handler::BusDisconnect();
         m_previewer.Deactivate();
@@ -185,24 +223,24 @@ namespace GradientSignal
         EditorImageGradientRequestBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
-        BaseClassType::Deactivate();
+        // This block of code is aligned with EditorWrappedComponentBase
+        {
+            AzToolsFramework::EditorVisibilityNotificationBus::Handler::BusDisconnect();
+            AzToolsFramework::Components::EditorComponentBase::Deactivate();
+
+            m_runtimeComponentActive = false;
+            m_component.Deactivate();
+            // remove the entity association, in case the parent component is being removed, otherwise the component will be reactivated
+            m_component.SetEntity(nullptr);
+        }
     }
 
-    void EditorImageGradientComponent::OnCompositionChanged()
+    void EditorImageGradientComponent::OnEntityVisibilityChanged(bool visibility)
     {
-        m_previewer.RefreshPreview();
-        m_component.WriteOutConfig(&m_configuration);
-        SetDirty();
-
-        if (RefreshImageAssetStatus())
+        if (m_visible != visibility)
         {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-        }
-        else
-        {
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+            m_visible = visibility;
+            ConfigurationChanged();
         }
     }
 
@@ -282,12 +320,45 @@ namespace GradientSignal
         return statusChanged;
     }
 
+    void EditorImageGradientComponent::OnCompositionChanged()
+    {
+        m_previewer.RefreshPreview();
+        m_component.WriteOutConfig(&m_configuration);
+        SetDirty();
+
+        if (RefreshImageAssetStatus())
+        {
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+        }
+        else
+        {
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+        }
+    }
+
     AZ::u32 EditorImageGradientComponent::ConfigurationChanged()
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = m_previewer.CancelPreviewRendering();
 
-        auto refreshResult = BaseClassType::ConfigurationChanged();
+        // This block of code aligns with EditorWrappedComponentBase
+        {
+            if (m_runtimeComponentActive)
+            {
+                m_runtimeComponentActive = false;
+                m_component.Deactivate();
+            }
+
+            m_component.ReadInConfig(&m_configuration);
+
+            if (m_visible && !m_runtimeComponentActive)
+            {
+                m_component.Activate();
+                m_runtimeComponentActive = true;
+            }
+        }
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
         m_previewer.RefreshPreviews(entityIds);
@@ -295,7 +366,7 @@ namespace GradientSignal
         // This OnCompositionChanged notification will refresh our own preview so we don't need to call RefreshPreview explicitly
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
 
-        return refreshResult;
+        return AZ::Edit::PropertyRefreshLevels::None;
     }
 
     AZ::u32 EditorImageGradientComponent::ChangeCreationSelectionChoice()
@@ -356,89 +427,6 @@ namespace GradientSignal
     bool EditorImageGradientComponent::InComponentMode()
     {
         return m_componentModeDelegate.AddedToComponentMode();
-    }
-
-    bool EditorImageGradientComponent::SaveImage()
-    {
-        AZ::IO::Path fullPathIO;
-        AZStd::string relativePath;
-        if (!GetSaveLocation(fullPathIO, relativePath))
-        {
-            return false;
-        }
-
-        // The TGA and EXR formats aren't recognized with only single channel data,
-        // so need to use RGBA format for them
-        int channels = 1;
-        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
-        {
-            AZ_Assert(false, "4-channel TGA / EXR isn't currently supported in this method.");
-            return false;
-        }
-
-        // Get the resolution of our modified image.
-        const int imageResolutionX = aznumeric_cast<int>(m_component.GetImageWidth());
-        const int imageResolutionY = aznumeric_cast<int>(m_component.GetImageHeight());
-
-        // Get the image modification buffer
-        auto pixelBuffer = m_component.GetImageModificationBuffer();
-
-        // Try to write out the image
-        constexpr bool showProgressDialog = true;
-        if (!ImageCreatorUtils::WriteImage(
-                fullPathIO.c_str(), imageResolutionX, imageResolutionY, channels, OutputFormat::R32,
-            AZStd::span<const uint8_t>(reinterpret_cast<uint8_t*>(pixelBuffer->data()), pixelBuffer->size() * sizeof(float)),
-            showProgressDialog))
-        {
-            AZ_Error("EditorImageGradientComponent", false, "Failed to save image: %s", fullPathIO.c_str());
-            return false;
-        }
-
-        // Try to find the source information for the new image in the Asset System.
-        bool sourceInfoFound = false;
-        AZ::Data::AssetInfo sourceInfo;
-        AZStd::string watchFolder;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            sourceInfoFound,
-            &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            fullPathIO.c_str(),
-            sourceInfo,
-            watchFolder);
-
-        // If this triggers, the flow for handling newly-created images needs to be examined further.
-        // It's possible that we need to wait for some sort of asset processing event before we can get
-        // the source asset ID.
-        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", fullPathIO.c_str());
-
-        // Using the source asset ID, get or create an asset referencing using the expected product asset ID.
-        // If we're overwriting an existing source asset, this will already exist, but if we're creating a new file,
-        // the product asset won't exist yet.
-        auto createdAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(
-            AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, AZ::RPI::StreamingImageAsset::GetImageAssetSubId()),
-            azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-            AZ::Data::AssetLoadBehavior::QueueLoad);
-
-        // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
-        // for the product asset to get created.
-        createdAsset.SetHint(relativePath);
-
-        // Set our output image path to whatever was selected so that we default to the same file name and path next time.
-        m_outputImagePath = fullPathIO.c_str();
-
-        // Set the active image to the created one.
-        m_component.SetImageAsset(createdAsset);
-
-        // Switch our creation/selection choice to using an existing image.
-        m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
-
-        // Resync the configurations and refresh the display to hide the "Create" button
-        // We need to use "Refresh_EntireTree" because "Refresh_AttributesAndValues" isn't enough to refresh the visibility
-        // settings.
-        OnCompositionChanged();
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-
-        return true;
     }
 
     bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
@@ -516,13 +504,54 @@ namespace GradientSignal
 
         auto pixelBuffer = ImageCreatorUtils::CreateDefaultImageBuffer(imageResolutionX, imageResolutionY, channels, m_outputFormat);
 
+        SaveImageInternal(
+            fullPathIO, relativePath,
+            imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer);
+    }
+
+    bool EditorImageGradientComponent::SaveImage()
+    {
+        AZ::IO::Path fullPathIO;
+        AZStd::string relativePath;
+        if (!GetSaveLocation(fullPathIO, relativePath))
+        {
+            return false;
+        }
+
+        // The TGA and EXR formats aren't recognized with only single channel data,
+        // so need to use RGBA format for them
+        int channels = 1;
+        if (fullPathIO.Extension() == ".tga" || fullPathIO.Extension() == ".exr")
+        {
+            AZ_Assert(false, "4-channel TGA / EXR isn't currently supported in this method.");
+            return false;
+        }
+
+        // Get the resolution of our modified image.
+        const int imageResolutionX = aznumeric_cast<int>(m_component.GetImageWidth());
+        const int imageResolutionY = aznumeric_cast<int>(m_component.GetImageHeight());
+
+        // Get the image modification buffer
+        auto pixelBuffer = m_component.GetImageModificationBuffer();
+
+        return SaveImageInternal(
+            fullPathIO, relativePath, imageResolutionX, imageResolutionY, channels, OutputFormat::R32,
+            AZStd::span<const uint8_t>(reinterpret_cast<uint8_t*>(pixelBuffer->data()), pixelBuffer->size() * sizeof(float)));
+    }
+
+    bool EditorImageGradientComponent::SaveImageInternal(
+        AZ::IO::Path& fullPath, AZStd::string& relativePath,
+        int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer)
+    {
         // Try to write out the image
         constexpr bool showProgressDialog = true;
         if (!ImageCreatorUtils::WriteImage(
-                fullPathIO.c_str(), imageResolutionX, imageResolutionY, channels, m_outputFormat, pixelBuffer, showProgressDialog))
+                fullPath.c_str(),
+                imageResolutionX, imageResolutionY, channels, format, pixelBuffer,
+                showProgressDialog))
         {
-            AZ_Error("EditorImageGradientComponent", false, "Failed to create image: %s", fullPathIO.c_str());
-            return;
+            AZ_Error("EditorImageGradientComponent", false, "Failed to save image: %s", fullPath.c_str());
+            return false;
         }
 
         // Try to find the source information for the new image in the Asset System.
@@ -532,28 +561,29 @@ namespace GradientSignal
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             sourceInfoFound,
             &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-            fullPathIO.c_str(),
+            fullPath.c_str(),
             sourceInfo,
             watchFolder);
 
         // If this triggers, the flow for handling newly-created images needs to be examined further.
         // It's possible that we need to wait for some sort of asset processing event before we can get
         // the source asset ID.
-        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", fullPathIO.c_str());
+        AZ_Warning("EditorImageGradientComponent", sourceInfoFound, "Could not find source info for %s", fullPath.c_str());
 
         // Using the source asset ID, get or create an asset referencing using the expected product asset ID.
         // If we're overwriting an existing source asset, this will already exist, but if we're creating a new file,
         // the product asset won't exist yet.
         auto createdAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset(
             AZ::Data::AssetId(sourceInfo.m_assetId.m_guid, AZ::RPI::StreamingImageAsset::GetImageAssetSubId()),
-            azrtti_typeid<AZ::RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::QueueLoad);
+            azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
+            AZ::Data::AssetLoadBehavior::QueueLoad);
 
         // Set the asset hint to the source path so that we can display something reasonably correct in the component while waiting
         // for the product asset to get created.
         createdAsset.SetHint(relativePath);
 
         // Set our output image path to whatever was selected so that we default to the same file name and path next time.
-        m_outputImagePath = fullPathIO.c_str();
+        m_outputImagePath = fullPath.c_str();
 
         // Set the active image to the created one.
         m_component.SetImageAsset(createdAsset);
@@ -567,8 +597,9 @@ namespace GradientSignal
         OnCompositionChanged();
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
-    }
 
+        return true;
+    }
 
 
 }

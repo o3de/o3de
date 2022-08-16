@@ -22,12 +22,6 @@
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 
-namespace LmbrCentral
-{
-    template<typename, typename>
-    class EditorWrappedComponentBase;
-}
-
 namespace GradientSignal
 {
     // Custom JSON serializer for ImageGradientConfig to handle version conversion
@@ -119,7 +113,7 @@ namespace GradientSignal
         , private GradientTransformNotificationBus::Handler
     {
     public:
-        template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
+        friend class EditorImageGradientComponent;
         AZ_COMPONENT(ImageGradientComponent, ImageGradientComponentTypeId);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);

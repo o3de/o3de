@@ -19,18 +19,19 @@
 
 namespace GradientSignal
 {
-    // This class inherits from EditorWrappedComponentBase instead of EditorGradientComponentBase so that we can have control
-    // over where the Editor-specific parameters for image creation and editing appear in the component relative to the other
-    // runtime-only settings.
+    // This class inherits from EditorComponentBase instead of EditorGradientComponentBase / EditorWrappedComponentBase so that
+    // we can have control over where the Editor-specific parameters for image creation and editing appear in the component
+    // relative to the other runtime-only settings.
     class EditorImageGradientComponent
-        : public LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>
+        : public AzToolsFramework::Components::EditorComponentBase
+        , protected AzToolsFramework::EditorVisibilityNotificationBus::Handler
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
         , private EditorImageGradientRequestBus::Handler
     {
     public:
-        using BaseClassType = LmbrCentral::EditorWrappedComponentBase<ImageGradientComponent, ImageGradientConfig>;
-        AZ_EDITOR_COMPONENT(EditorImageGradientComponent, EditorImageGradientComponentTypeId, BaseClassType);
+        AZ_EDITOR_COMPONENT(
+            EditorImageGradientComponent, EditorImageGradientComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
         static constexpr const char* const s_categoryName = "Gradients";
@@ -41,8 +42,13 @@ namespace GradientSignal
         static constexpr const char* const s_helpUrl = "";
 
         //! Component overrides ...
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
+
+        // AzToolsFramework::EditorVisibilityNotificationBus overrides ...
+        void OnEntityVisibilityChanged(bool visibility) override;
 
         // DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
@@ -63,9 +69,12 @@ namespace GradientSignal
         };
 
 
+        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
         void CreateImage();
         bool SaveImage() override;
-        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
+        bool SaveImageInternal(
+            AZ::IO::Path& fullPath, AZStd::string& relativePath,
+            int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer);
 
         AZ::u32 ChangeCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
@@ -87,10 +96,7 @@ namespace GradientSignal
         AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         bool m_currentImageJobsPending = false;
 
-        using BaseClassType::m_component;
-        using BaseClassType::m_configuration;
-
-        AZ::u32 ConfigurationChanged() override;
+        AZ::u32 ConfigurationChanged();
 
     private:
         //! Delegates the handling of component editing mode to a paint controller.
@@ -99,5 +105,11 @@ namespace GradientSignal
 
         //! Preview of the gradient image
         GradientPreviewer m_previewer;
+
+        //! Copies of the runtime component and configuration - we use these to run the full runtime logic in the Editor.
+        ImageGradientComponent m_component;
+        ImageGradientConfig m_configuration;
+        bool m_visible = true;
+        bool m_runtimeComponentActive = false;
     };
 }
