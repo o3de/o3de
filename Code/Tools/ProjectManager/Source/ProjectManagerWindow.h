@@ -9,6 +9,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
+#include <QPointer>
 #include <AzCore/IO/Path/Path.h>
 #include <ScreenDefs.h>
 #endif
@@ -27,7 +28,7 @@ namespace O3DE::ProjectManager
             ProjectManagerScreen startScreen = ProjectManagerScreen::Projects);
 
     private:
-        DownloadController* m_downloadController = nullptr;
+        QPointer<DownloadController> m_downloadController;
     };
 
 } // namespace O3DE::ProjectManager

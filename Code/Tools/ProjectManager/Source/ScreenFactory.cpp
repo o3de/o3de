@@ -29,22 +29,22 @@ namespace O3DE::ProjectManager
         switch(screen)
         {
         case (ProjectManagerScreen::CreateProject):
-            newScreen = new CreateProjectCtrl(parent);
+            newScreen = new CreateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
-            newScreen = new GemCatalogScreen(true, parent, downloadController);
+            newScreen = new GemCatalogScreen(downloadController, true, parent);
             break;
         case (ProjectManagerScreen::ProjectGemCatalog):
-            newScreen = new ProjectGemCatalogScreen(parent, downloadController);
+            newScreen = new ProjectGemCatalogScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::Projects):
-            newScreen = new ProjectsScreen(parent, downloadController);
+            newScreen = new ProjectsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProject):
-            newScreen = new UpdateProjectCtrl(parent);
+            newScreen = new UpdateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProjectSettings):
             newScreen = new UpdateProjectSettingsScreen(parent);

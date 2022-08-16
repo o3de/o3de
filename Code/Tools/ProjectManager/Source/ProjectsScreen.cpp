@@ -51,7 +51,7 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectsScreen::ProjectsScreen(QWidget* parent, DownloadController* downloadController)
+    ProjectsScreen::ProjectsScreen(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
         , m_downloadController(downloadController)
     {

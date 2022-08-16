@@ -36,7 +36,7 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent, DownloadController* downloadController)
+    GemCatalogScreen::GemCatalogScreen(DownloadController* downloadController, bool readOnly, QWidget* parent)
         : ScreenWidget(parent)
         , m_readOnly(readOnly)
         , m_downloadController(downloadController)

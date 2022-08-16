@@ -39,7 +39,7 @@ namespace O3DE::ProjectManager
     {
 
     public:
-        explicit ProjectsScreen(QWidget* parent = nullptr, DownloadController* downloadController = nullptr);
+        explicit ProjectsScreen(DownloadController* downloadController, QWidget* parent = nullptr);
         ~ProjectsScreen();
 
         ProjectManagerScreen GetScreenEnum() override;
