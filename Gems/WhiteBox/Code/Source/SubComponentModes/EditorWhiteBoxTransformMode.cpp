@@ -201,7 +201,7 @@ namespace WhiteBox
     void TransformMode::Display(
         [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair,
         const AZ::Transform& worldFromLocal,
-        const IntersectionAndRenderData& renderData,
+        [[maybe_unused]] const IntersectionAndRenderData& renderData,
         const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
     {
