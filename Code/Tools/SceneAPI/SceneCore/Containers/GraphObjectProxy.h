@@ -48,7 +48,6 @@ namespace AZ
 
                 AZStd::any Invoke(AZStd::string_view method, AZStd::vector<AZStd::any> argList);
                 AZStd::any Fetch(AZStd::string_view property);
-                void Assign(AZStd::string_view property, AZStd::any value);
                 AZStd::any InvokeBehaviorMethod(AZ::BehaviorMethod* behaviorMethod, AZStd::vector<AZStd::any> argList);
 
             private:

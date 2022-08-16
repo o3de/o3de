@@ -743,18 +743,6 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("TestExpectEquals(id, 7)");
     }
 
-    TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_Assign_SetsValue)
-    {
-        ExpectExecute("builder = MockBuilder()");
-        ExpectExecute("builder:BuildSceneGraph()");
-        ExpectExecute("scene = builder:GetScene()");
-        ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
-        ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
-        ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
-        ExpectExecute("proxy:Assign('id', 70)");
-        ExpectExecute("TestExpectEquals(proxy:Fetch('id'), 70)");
-    }
-
     TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_HasProperties)
     {
         SetupEditorPythonConsoleInterface();

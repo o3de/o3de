@@ -191,7 +191,6 @@ namespace AZ
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
                         ->Method("Invoke", &GraphObjectProxy::Invoke)
                         ->Method("Fetch", &GraphObjectProxy::Fetch)
-                        ->Method("Assign", &GraphObjectProxy::Assign)
                         ->Method("GetClassInfo", [](GraphObjectProxy& self) -> Python::PythonBehaviorInfo*
                             {
                                 if (self.m_pythonBehaviorInfo)
@@ -265,38 +264,6 @@ namespace AZ
                 }
 
                 return InvokeBehaviorMethod(entry->second->m_getter, {});
-            }
-
-            void GraphObjectProxy::Assign(AZStd::string_view property, AZStd::any value)
-            {
-                if (!m_behaviorClass)
-                {
-                    AZ_Warning("SceneAPI", false, "Empty behavior class. Use the CastWithTypeName() to assign the concrete type of IGraphObject to Invoke().");
-                    return;
-                }
-
-                auto entry = m_behaviorClass->m_properties.find(property);
-                if (m_behaviorClass->m_properties.end() == entry)
-                {
-                    AZ_Warning("SceneAPI", false, "Missing property %.*s from class %s",
-                        aznumeric_cast<int>(property.size()),
-                        property.data(),
-                        m_behaviorClass->m_name.c_str());
-
-                    return;
-                }
-
-                if (!entry->second->m_setter)
-                {
-                    AZ_Warning("SceneAPI", false, "Property %.*s from class %s has a NULL setter",
-                        aznumeric_cast<int>(property.size()),
-                        property.data(),
-                        m_behaviorClass->m_name.c_str());
-
-                    return;
-                }
-
-                InvokeBehaviorMethod(entry->second->m_setter, { value });
             }
 
             AZStd::any GraphObjectProxy::InvokeBehaviorMethod(AZ::BehaviorMethod* behaviorMethod, AZStd::vector<AZStd::any> argList)
