@@ -28,7 +28,7 @@ class PersistentStorage(ABC):
     COVERAGE_DATA_KEY = "coverage_data"
     PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
 
-    def __init__(self, config: dict, suite: str, commit: str):
+    def __init__(self, config: dict, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str):
         """
         Initializes the persistent storage into a state for which there is no historic data available.
 
@@ -47,19 +47,10 @@ class PersistentStorage(ABC):
         self._historic_data = None
         logger.info(f"Attempting to access persistent storage for the commit '{self._this_commit_hash}' for suite '{self._suite}'")
 
-        try:
-            # The runtime expects the coverage data to be in the location specified in the config file (unless overridden with 
-            # the --datafile command line argument, which the TIAF scripts do not do)
-            self._active_workspace = pathlib.Path(config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
-            self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
-            unpacked_coverage_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
-            previous_test_run_data_file = config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+        self._active_workspace= pathlib.Path(active_workspace).joinpath(pathlib.Path(self._suite))
+        self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file_path)
+        self._previous_test_run_data_file = self._active_workspace.joinpath(previous_test_run_data_file_path)
 
-        except KeyError as e:
-            raise SystemError(f"The config does not contain the key {str(e)}.")
-
-        self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file)
-        self._previous_test_run_data_file = self._active_workspace.joinpath(previous_test_run_data_file)
         
     def _unpack_historic_data(self, historic_data_json: str):
         """

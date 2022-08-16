@@ -37,9 +37,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     namespace Components
-    {
-        class SelectionComponent;
-
+    {        
         /**
          * A base class for all editor components.
          * Derive from this class to create a version of a component to use in the
@@ -130,17 +128,6 @@ namespace AzToolsFramework
             AZ::TransformInterface* GetTransform() const;
 
             /**
-             * Gets the selection component of the entity that the component
-             * belongs to, if the entity has a selection component.
-             * A selection component keeps track of whether the entity is
-             * selected in the editor.
-             * @return A pointer to the selection component. Might be null if
-             * you did not include "SelectionService" in the component's
-             * AZ::ComponentDescriptor::GetRequiredServices().
-             */
-            SelectionComponent* GetSelection() const;
-
-            /**
              * Gets the world transform of the entity that the component belongs
              * to, if the entity has a transform component.
              * An entity's world transform is the entity's position within the
@@ -166,27 +153,6 @@ namespace AzToolsFramework
              * Otherwise, false.
              */
             bool IsSelected() const;
-
-            /**
-             * Identifies whether the component is the primary selection in the editor.
-             * @return True if the component is the primary selection in the editor.
-             * Otherwise, false.
-             */
-            bool IsPrimarySelection() const;
-
-            /// @cond EXCLUDE_DOCS
-            void UnregisterIcon();
-            /// @endcond
-
-            /**
-             * Determines if the entity that the component belongs to
-             * has a selection component.
-             * A selection component keeps track of whether the entity is
-             * selected in the editor.
-             * @return True if the entity has a selection component.
-             * Otherwise, false.
-             */
-            bool HasSelectionComponent() const { return m_selection != nullptr; }
 
             /**
              * Override this function to create one or more game components
@@ -226,7 +192,6 @@ namespace AzToolsFramework
 
         private:
             AZ::TransformInterface* m_transform;
-            SelectionComponent* m_selection;
         };
 
         /// @cond EXCLUDE_DOCS

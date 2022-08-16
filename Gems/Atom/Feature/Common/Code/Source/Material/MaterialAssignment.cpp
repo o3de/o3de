@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <Material/MaterialAssignmentSerializer.h>
 
 namespace AZ
 {
@@ -22,11 +21,6 @@ namespace AZ
         void MaterialAssignment::Reflect(ReflectContext* context)
         {
             MaterialAssignmentId::Reflect(context);
-
-            if (auto jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
-            {
-                jsonContext->Serializer<JsonMaterialAssignmentSerializer>()->HandlesType<MaterialAssignment>();
-            }
 
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {

@@ -118,6 +118,7 @@ set(FILES
     Tests/PhysicsSetupUtils.cpp
     Tests/MCore/CommandManagerTests.cpp
     Tests/MCore/CommandLineTests.cpp
+    Tests/MCore/AlgorithmsTests.cpp
     Tests/Prefabs/LeftArmSkeleton.h
     Tests/TestAssetCode/MotionEvent.h
     Tests/TestAssetCode/MotionEvent.cpp

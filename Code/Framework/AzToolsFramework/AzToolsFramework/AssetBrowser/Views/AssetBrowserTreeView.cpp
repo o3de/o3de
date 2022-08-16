@@ -129,7 +129,7 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
-        AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
+        AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
@@ -140,6 +140,20 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> entries;
             m_assetBrowserModel->SourceIndexesToAssetDatabaseEntries(sourceIndexes, entries);
+
+            if (!includeProducts)
+            {
+                entries.erase(
+                    AZStd::remove_if(
+                        entries.begin(),
+                        entries.end(),
+                        [&](AssetBrowserEntry* entry) -> bool
+                        {
+                            return entry->GetEntryType() == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Product;
+                        }),
+                    entries.end());
+            }
+
             return entries;
         }
 
@@ -484,7 +498,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::DeleteEntries()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // do not include products, you cannot delete those!
 
             if (entries.empty())
             {
@@ -521,7 +535,8 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::RenameEntry()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // you cannot rename product files.
+            // you may not rename products.
             if (entries.size() == 1)
             {
                 edit(currentIndex());
@@ -529,7 +544,7 @@ namespace AzToolsFramework
         }
         void AssetBrowserTreeView::DuplicateEntries()
         {
-            auto entries = GetSelectedAssets();
+            auto entries = GetSelectedAssets(false); // you may not duplicate product files.
             for (auto entry : entries)
             {
                 using namespace AZ::IO;

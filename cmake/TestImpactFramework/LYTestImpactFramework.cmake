@@ -324,31 +324,70 @@ function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FI
      configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
 endfunction()
 
+#! ly_extract_aliased_target_dependencies: recursively extracts the aliases of a target to retrieve the true de-aliased target.
+#
+# \arg:TARGET target to de-alias
+function(ly_extract_aliased_target_dependencies TARGET DE_ALIASED_TARGETS)
+    if(NOT ARGN)
+        # Entry point of recursive call, set the parent target and clear any existing aliases
+        set(PARENT_TARGET ${TARGET})
+        set_property(GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} "")
+    endif()
+
+    # Check for aliases of this target
+    get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET} SET)
+    if(${aliased_targets})
+        # One or more aliases for this target has been found
+        get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET})
+        foreach(aliased_target ${aliased_targets})
+            # Recursively extract any aliases of the alias of this target
+            ly_extract_aliased_target_dependencies(${aliased_target} empty ${PARENT_TARGET})
+        endforeach()
+    else()
+        # No more aliases found for this target, add this target as an alias for the parent target
+        set_property(GLOBAL APPEND PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} ${TARGET})
+    endif()
+
+    if(NOT ARGN)
+        # Exit point of recursive call
+        get_property(de_aliased_targets GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${TARGET})
+        set(${DE_ALIASED_TARGETS} ${de_aliased_targets} PARENT_SCOPE)
+    endif()
+endfunction()
+
 #! ly_extract_target_dependencies: extracts the target dependencies for the specified target as a comma separated list.
 function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_LIST)
     set(dependencies "")
     # Walk the dependency list
-    foreach(target_name_components ${INPUT_DEPENDENCY_LIST})
+    foreach(qualified_target_name ${INPUT_DEPENDENCY_LIST})
         # Extract just the target name, ignoring the namespace
-        string(REPLACE "::" ";" target_name_components ${target_name_components})
-        list(LENGTH target_name_components num_name_components)
-        if(num_name_components GREATER 1)
-            list(GET target_name_components 0 target_namespace)
-            list(GET target_name_components 1 target_name)
-            # Skipt third party dependencies
-            if(NOT target_namespace STREQUAL "3rdParty")
-                list(APPEND dependencies "\"${target_name}\"")
+        if(TARGET ${qualified_target_name})
+            set(target_to_add "")
+            string(REPLACE "::" ";" target_name_components ${qualified_target_name})
+            list(LENGTH target_name_components num_name_components)
+            if(num_name_components GREATER 1)
+                list(GET target_name_components 0 target_namespace)
+                list(GET target_name_components 1 target_name)
+                set(target_to_add ${target_name})
+            else()
+                set(target_to_add ${target_name})
             endif()
-        else()
-            set(target_name ${target_name_components})
-            list(APPEND dependencies "\"${target_name}\"")
+
+            if(NOT ${target_to_add} STREQUAL "")
+                # Extract the targets this target may alias
+                ly_extract_aliased_target_dependencies(${target_to_add} de_aliased_targets)
+                foreach(de_aliased_target ${de_aliased_targets})
+                    # Skip third party dependencies
+                    get_target_property(is_imported ${qualified_target_name} IMPORTED)
+                    if(NOT is_imported)
+                        list(APPEND dependencies "\"${de_aliased_target}\"")
+                    endif()
+                endforeach()
+            endif()
         endif()
     endforeach()
 
-    # Remove the access modifiers and convert to a comma separated list
-    string (REPLACE "\"PUBLIC\";" "" dependencies "${dependencies}")
-    string (REPLACE "\"PRIVATE\";" "" dependencies "${dependencies}")
-    string (REPLACE "\"INTERFACE\";" "" dependencies "${dependencies}")
+    # Convert to a comma separated list
     string (REPLACE ";" ",\n" dependencies "${dependencies}")
     set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
 endfunction()
