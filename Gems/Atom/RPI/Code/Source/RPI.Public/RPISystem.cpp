@@ -73,7 +73,6 @@ namespace AZ
 
             RPISystemDescriptor::Reflect(context);
             GpuQuerySystemDescriptor::Reflect(context);
-            ShaderMetricsSystem::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
         }
@@ -103,7 +102,6 @@ namespace AZ
             m_materialSystem.Init();
             m_modelSystem.Init();
             m_shaderSystem.Init();
-            m_shaderMetricsSystem.Init();
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
@@ -143,7 +141,6 @@ namespace AZ
             m_materialSystem.Shutdown();
             m_modelSystem.Shutdown();
             m_shaderSystem.Shutdown();
-            m_shaderMetricsSystem.Shutdown();
             m_imageSystem.Shutdown();
             m_querySystem.Shutdown();
             m_rhiSystem.Shutdown();

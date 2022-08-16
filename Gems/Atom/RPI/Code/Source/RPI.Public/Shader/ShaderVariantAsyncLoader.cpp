@@ -6,7 +6,6 @@
  *
  */
 #include <Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -105,9 +104,6 @@ namespace AZ
                             tupleItor = newShaderVariantPendingRequests.erase(tupleItor);
                             continue;
                         }
-
-                        // Record the request for metrics.
-                        ShaderMetricsSystem::Get()->RequestShaderVariant(tupleItor->m_shaderAsset.Get(),  tupleItor->m_shaderVariantId, searchResult);
 
                         uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(
                             RHI::Factory::Get().GetAPIUniqueIndex(), tupleItor->m_supervariantIndex.GetIndex(), searchResult.GetStableId());
@@ -253,9 +249,6 @@ namespace AZ
             {
                 return shaderAsset->GetRootVariantAsset();
             }
-
-            // Record the request for metrics.
-            ShaderMetricsSystem::Get()->RequestShaderVariant(shaderAsset.Get(), shaderVariantId, searchResult);
 
             return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), searchResult.GetStableId(), supervariantIndex);
         }
