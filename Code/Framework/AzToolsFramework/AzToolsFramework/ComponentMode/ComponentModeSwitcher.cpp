@@ -341,6 +341,7 @@ namespace AzToolsFramework::ComponentModeFramework
     void ComponentModeSwitcher::OnEntityComponentDisabled(const AZ::EntityId& entityId, [[maybe_unused]] const AZ::ComponentId& componentId)
     {
         UpdateSwitcherOnEntitySelectionChange({ entityId }, {});
+        RemoveComponentButton(AZ::EntityComponentIdPair(entityId, componentId));
     }
 
     void ComponentModeSwitcher::OnEntityComponentEnabled(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)

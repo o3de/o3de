@@ -20,6 +20,8 @@
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+//AzToolsFramework\ToolsComponents\EditorDisabledCompositionBus
 
 namespace UnitTest
 {
@@ -75,7 +77,7 @@ namespace UnitTest
 
         entity->Deactivate();
         [[maybe_unused]] const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
-        [[maybe_unused]] AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
+        AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
         // When the user selects the entity, two components show up in the switcher
@@ -290,7 +292,7 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        [[maybe_unused]] const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
+        const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
         [[maybe_unused]] const AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
@@ -361,7 +363,7 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        [[maybe_unused]] const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
+        AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
         [[maybe_unused]] AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
@@ -372,8 +374,8 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 2);
 
         // Then if one component is disabled, there should only be one component on the switcher
-        AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
-            &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityComponentDisabled, entity->GetId(), placeholder1->GetId());
+        AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+            &AzToolsFramework::EntityCompositionRequests::DisableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
 
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 1);
     }
@@ -391,8 +393,8 @@ namespace UnitTest
         AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
 
         entity->Deactivate();
-        [[maybe_unused]] const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
-        [[maybe_unused]] AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
+        const AZ::Component* placeholder1 = entity->CreateComponent<PlaceholderEditorComponent>();
+        [[maybe_unused]] const AZ::Component* placeholder2 = entity->CreateComponent<AnotherPlaceholderEditorComponent>();
         entity->Activate();
 
         // When the component is disabled it doesn't show up in the switcher
@@ -406,6 +408,8 @@ namespace UnitTest
         EXPECT_TRUE(componentModeSwitcher->GetComponentCount() == 1);
 
         // Then if the component is enabled again, both components show in the switcher
+        //AzToolsFramework::EntityCompositionRequestBus::Broadcast(
+        //    &AzToolsFramework::EntityCompositionRequests::EnableComponents, AZStd::vector<AZ::Component*>{ placeholder1 });
         AzToolsFramework::EntityCompositionNotificationBus::Broadcast(
             &AzToolsFramework::EntityCompositionNotificationBus::Events::OnEntityComponentEnabled, entity->GetId(), placeholder1->GetId());
 
