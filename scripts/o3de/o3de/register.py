@@ -145,7 +145,7 @@ def register_all_o3de_objects_of_type_in_folder(o3de_object_path: pathlib.Path,
 
     o3de_object_path = pathlib.Path(o3de_object_path).resolve()
     if not o3de_object_path.is_dir():
-        logger.error(f'Engines path is not dir.')
+        logger.error(f'{o3de_object_type} path is not dir.')
         return 1
 
     o3de_object_type_set = set()
