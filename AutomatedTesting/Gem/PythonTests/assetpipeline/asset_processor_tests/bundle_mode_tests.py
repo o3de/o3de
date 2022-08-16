@@ -16,6 +16,8 @@ import ly_test_tools.environment.file_system as fs
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.log.log_monitor
 
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
+
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 from ..ap_fixtures.bundler_batch_setup_fixture import bundler_batch_setup_fixture as bundler_batch_helper
 from ..ap_fixtures.timeout_option_fixture import timeout_option_fixture as timeout
@@ -24,21 +26,6 @@ from ..ap_fixtures.timeout_option_fixture import timeout_option_fixture as timeo
 @pytest.mark.parametrize('launcher_platform', ['windows_editor'])
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['TestDependenciesLevel'])
-
-def compile_test_case_name(request):
-    """
-    Compile a test case name for consumption by the TIAF python coverage listener gem.
-    @param request: The fixture request.
-    """
-    try:
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        test_case_name = "::".join([test_case_prefix, request.node.originalname])
-        callspec = request.node.callspec.id
-        compiled_test_case_name = f"{test_case_name}[{callspec}]"
-    except Exception as e:
-        logging.warning(f"Error reading test case name for TIAF. {e}")
-        compiled_test_case_name = "ERROR"
-    return compiled_test_case_name
 
 class TestBundleMode(object):
     def test_bundle_mode_with_levels_mounts_bundles_correctly(self, request, editor, level, launcher_platform,
@@ -91,7 +78,7 @@ class TestBundleMode(object):
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
         test_file = os.path.join(test_directory, 'bundle_mode_in_editor_tests.py')
-        compiled_test_case_name = compile_test_case_name(request)
+        compiled_test_case_name = compile_test_case_name_from_request(request)
         editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog",
                             "--autotest_mode", "--runpythontest", test_file, "--runpythonargs", bundles_folder, f"-pythontestcase={compiled_test_case_name}"])
 

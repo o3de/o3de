@@ -20,6 +20,8 @@ import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.waiter as waiter
 
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
+
 def detect_product(sql_connection, platform, target):
     cur = sql_connection.cursor()
     product_target = f'{platform}/{target}'
@@ -70,7 +72,7 @@ class TestPythonAssetProcessing(object):
         halt_on_unexpected = False
         test_directory = os.path.join(os.path.dirname(__file__))
         testFile = os.path.join(test_directory, 'AssetBuilder_test_case.py')
-        compiled_test_case_name = compile_test_case_name(request)
+        compiled_test_case_name = compile_test_case_name_from_request(request)
         editor.args.extend(['-NullRenderer', '-rhi=Null', "--skipWelcomeScreenDialog", "--autotest_mode", "--runpythontest", testFile, f"-pythontestcase={compiled_test_case_name}"])
 
         with editor.start():

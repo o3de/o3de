@@ -13,6 +13,7 @@ import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
 
 logger = logging.getLogger(__name__)
 
@@ -25,21 +26,6 @@ def teardown_editor(editor):
     process_utils.kill_processes_named('AssetProcessor.exe')
     logger.debug('Ensuring Editor is stopped')
     editor.ensure_stopped()
-
-def compile_test_case_name(request):
-    """
-    Compile a test case name for consumption by the TIAF python coverage listener gem.
-    @param request: The fixture request.
-    """
-    try:
-        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
-        test_case_name = "::".join([test_case_prefix, request.node.originalname])
-        callspec = request.node.callspec.id
-        compiled_test_case_name = f"{test_case_name}[{callspec}]"
-    except Exception as e:
-        logging.warning(f"Error reading test case name for TIAF. {e}")
-        compiled_test_case_name = "ERROR"
-    return compiled_test_case_name
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
                                 halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
@@ -63,7 +49,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
-    compiled_test_case_name = compile_test_case_name(request)
+    compiled_test_case_name = compile_test_case_name_from_request(request)
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         run_python, test_case,
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
