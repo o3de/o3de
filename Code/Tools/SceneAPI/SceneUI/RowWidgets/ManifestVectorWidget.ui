@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>AZ::SceneAPI::UI::ManifestVectorWidget</class>
  <widget class="QWidget" name="AZ::SceneAPI::UI::ManifestVectorWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>142</width>
+    <height>41</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
     <horstretch>0</horstretch>
@@ -56,7 +64,7 @@
         <item>
          <widget class="QLabel" name="m_containerTitle">
           <property name="text">
-           <string></string>
+           <string/>
           </property>
          </widget>
         </item>
@@ -75,6 +83,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="m_addObjectButton">
+          <property name="styleSheet">
+           <string notr="true">padding: 6px;</string>
+          </property>
           <property name="text">
            <string>Add Object</string>
           </property>
