@@ -81,17 +81,20 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
     cache_file = download_repo_manifest(manifest_uri)
 
     if not cache_file:
+        logger.error(f'Could not download file at {manifest_uri}')
         return False
 
     if not validation.valid_o3de_repo_json(cache_file):
+        logger.error(f'Repository JSON {cache_file} could not be loaded or is missing required values')
         return False
 
     if validate_contained_objects:
         repo_data = {}
-        with file_name.open('r') as f:
+        with cache_file.open('r') as f:
             try:
                 repo_data = json.load(f)
             except json.JSONDecodeError as e:
+                logger.error(f'Invalid JSON - {cache_file} could not be loaded')
                 return False
 
         if download_object_manifests(repo_data) != 0:
@@ -100,16 +103,19 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
         gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
         for gem_json in gem_set:
             if not validation.valid_o3de_gem_json(gem_json):
+                logger.error(f'Invalid gem JSON - {gem_json} could not be loaded or is missing required values')
                 return False
 
         project_set = get_project_json_paths_from_cached_repo(repo_uri)
         for project_json in project_set:
             if not validation.valid_o3de_project_json(project_json):
+                logger.error(f'Invalid project JSON - {project_json} could not be loaded or is missing required values')
                 return False
 
         template_set = get_template_json_paths_from_cached_repo(repo_uri)
         for template_json in template_set:
             if not validation.valid_o3de_template_json(template_json):
+                logger.error(f'Invalid template JSON - {template_json} could not be loaded or is missing required values')
                 return False
 
     return True
@@ -133,8 +139,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     with file_name.open('w') as f:
         try:
             time_now = datetime.now()
-            # Convert to lower case because AM/PM is capitalized
-            time_str = time_now.strftime('%d/%m/%Y %I:%M%p').lower()
+            time_str = time_now.strftime('%d/%m/%Y %H:%M')
             repo_data.update({'last_updated': time_str})
             f.write(json.dumps(repo_data, indent=4) + '\n')
         except Exception as e:
