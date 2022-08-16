@@ -8,47 +8,30 @@
 
 #pragma once
 
+// This #define magic lets you use the EvaluateLighting function in this file without making it the final EvaluateLighting
+// used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
+//
+#ifndef EvaluateLighting
+#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_NewPBR(surface, screenPosition)
+#endif
 
-#include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
-#include <Atom/Features/PBR/Decals.azsli>
+#include "../BasePBR/BasePBR_Lighting.azsli"
 
-LightingData EvaluateLighting(Surface surface, float4 screenPosition)
+void InitializeLightingData_NewPBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
-    // ------- Lighting Data -------
+    // Base PBR Lighting properties
+    InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
 
-    LightingData lightingData;
-
-    // Light iterator
-    lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
-    
-    // Surface lighting properties
+    // New PBR lighting properties
     lightingData.emissiveLighting = surface.emissiveLighting;
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
     lightingData.specularOcclusion = surface.specularOcclusion;
+}
 
-    // Diffuse and Specular response (used in IBL calculations)
-    float3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0 - specularResponse;
-
-    // ------- Multiscatter -------
-
-    lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
-
-    // ------- Lighting Calculation -------
-
-    // Apply Decals
-    ApplyDecals(lightingData.tileIterator, surface);
-
-    // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData, screenPosition);
-
-    // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
-
-    // Finalize Lighting
-    lightingData.FinalizeLighting();
-
+LightingData EvaluateLighting_NewPBR(Surface surface, float4 screenPosition)
+{
+    LightingData lightingData;
+    InitializeLightingData_NewPBR(surface, screenPosition, lightingData);
+    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

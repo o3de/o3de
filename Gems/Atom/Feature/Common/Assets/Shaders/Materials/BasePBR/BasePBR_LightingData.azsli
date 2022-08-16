@@ -8,13 +8,19 @@
 
 #pragma once
 
+// This #define magic lets you use the LightingData class in this file without making it the final LightingData
+// used in your shader. Simply #define LightingData to your custom definition before including this file
+// 
+#ifndef LightingData
+#define LightingData        LightingData_BasePBR
+#endif
 
 #include <viewsrg.srgi>
 #include <Atom/Features/Debug.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
-class LightingData
+class LightingData_BasePBR
 {
     LightCullingTileIterator tileIterator;
     
@@ -52,7 +58,7 @@ class LightingData
     void FinalizeLighting();
 };
 
-void LightingData::Init(float3 positionWS, float3 normal, float roughnessLinear)
+void LightingData_BasePBR::Init(float3 positionWS, float3 normal, float roughnessLinear)
 {
     diffuseLighting = float3(0.0, 0.0, 0.0);
     specularLighting = float3(0.0, 0.0, 0.0);
@@ -69,12 +75,12 @@ void LightingData::Init(float3 positionWS, float3 normal, float roughnessLinear)
     brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
 }
 
-void LightingData::CalculateMultiscatterCompensation(float3 specularF0, bool enabled)
+void LightingData_BasePBR::CalculateMultiscatterCompensation(float3 specularF0, bool enabled)
 {
     multiScatterCompensation = GetMultiScatterCompensation(specularF0, brdf, enabled);
 }
 
-void LightingData::FinalizeLighting()
+void LightingData_BasePBR::FinalizeLighting()
 {
     specularLighting *= specularOcclusion;
     specularLighting += emissiveLighting;
@@ -88,4 +94,3 @@ void LightingData::FinalizeLighting()
         diffuseLighting = float3(0, 0, 0);
     }
 }
-

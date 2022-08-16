@@ -8,6 +8,12 @@
 
 #pragma once
 
+// This #define magic lets you use the EvaluatePixelGeometry function in this file without making it the final EvaluatePixelGeometry
+// used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
+//
+#ifndef EvaluatePixelGeometry
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_BasePBR(IN, isFrontFace)
+#endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 
@@ -45,7 +51,7 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_BasePBR(VSOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_BasePBR(VsOutput IN, bool isFrontFace)
 {
     return EvaluatePixelGeometry_BasePBR(
         IN.m_worldPosition,
@@ -55,11 +61,3 @@ PixelGeometryData EvaluatePixelGeometry_BasePBR(VSOutput IN, bool isFrontFace)
         IN.m_uv,
         isFrontFace);
 }
-
-
-#ifdef PIXEL_GEOMETRY_DATA_IS_BASE_PBR
-
-#define     EvaluatePixelGeometry(IN, isFrontFace)                  \
-            EvaluatePixelGeometry_BasePBR(IN, isFrontFace)
-
-#endif

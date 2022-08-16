@@ -13,16 +13,16 @@
 
 // --- Vertex Shader ---
 
-VSOutput VertexShader(VSInput IN)
+VsOutput VertexShader(VsInput IN)
 {
-    VSOutput OUT = EvaluateVertexGeometry(IN);
+    VsOutput OUT = EvaluateVertexGeometry(IN);
     return OUT;
 }
 
 // --- Pixel Shader ---
 
 [earlydepthstencil]
-ForwardPassOutput PixelShader(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     // ------- Geometry -> Surface -> Lighting -------
 

@@ -8,6 +8,12 @@
 
 #pragma once
 
+// This #define magic lets you use the EvaluateSurface function in this file without making it the final EvaluateSurface
+// used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
+//
+#ifndef EvaluateSurface
+#define EvaluateSurface(geoData)        EvaluateSurface_BasePBR(geoData)
+#endif
 
 #include <Atom/Features/MatrixUtility.azsli>
 
@@ -68,11 +74,3 @@ Surface EvaluateSurface_BasePBR(PixelGeometryData geoData)
         geoData.uv,
         geoData.isFrontFace);
 }
-
-
-#ifdef SURFACE_DATA_IS_BASE_PBR
-
-#define     EvaluateSurface(geoData)                    \
-            EvaluateSurface_BasePBR(geoData)
-
-#endif

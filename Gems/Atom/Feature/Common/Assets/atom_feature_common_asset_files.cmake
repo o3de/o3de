@@ -408,16 +408,10 @@ set(FILES
     Shaders/Materials/NewPBR/NewPBR_ForwardPass.azsl
     Shaders/Materials/NewPBR/NewPBR_ForwardPass.shader
     Shaders/Materials/NewPBR/NewPBR_Lighting.azsli
-    Shaders/Materials/NewPBR/NewPBR_LightingData.azsli
-    Shaders/Materials/NewPBR/NewPBR_LightingModel.azsli
     Shaders/Materials/NewPBR/NewPBR_LowEndForward.azsl
     Shaders/Materials/NewPBR/NewPBR_LowEndForward.shader
-    Shaders/Materials/NewPBR/NewPBR_PixelGeometry.azsli
-    Shaders/Materials/NewPBR/NewPBR_PixelGeometryData.azsli
     Shaders/Materials/NewPBR/NewPBR_Surface.azsli
     Shaders/Materials/NewPBR/NewPBR_SurfaceData.azsli
-    Shaders/Materials/NewPBR/NewPBR_Vertex.azsli
-    Shaders/Materials/NewPBR/NewPBR_VertexData.azsli
     Shaders/Materials/Skin/Skin.azsl
     Shaders/Materials/Skin/Skin.shader
     Shaders/Materials/Skin/Skin_Common.azsli

@@ -8,10 +8,18 @@
 
 #pragma once
 
+// This #define magic lets you use the VsInput & VsOutput classes in this file without making it the final VsInput & VsOutput
+// used in your shader. Simply #define VsInput & VsOutput to your custom definitions before including this file
+//
+#ifndef VsInput
+#define VsInput         VsInput_BasePBR
+#endif
 
-#define VERTEX_DATA_IS_BASE_PBR     1
+#ifndef VsOutput
+#define VsOutput        VsOutput_BasePBR
+#endif
 
-struct VSInput
+struct VsInput_BasePBR
 {
     // Base fields (required by the template azsli file)...
     float3 m_position : POSITION;
@@ -24,7 +32,7 @@ struct VSInput
     float2 m_uv1 : UV1;
 };
 
-struct VSOutput
+struct VsOutput_BasePBR
 {
     // Base fields (required by the template azsli file)...
     // "centroid" is needed for SV_Depth to compile

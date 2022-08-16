@@ -8,17 +8,19 @@
 
 #pragma once
 
+// This #define magic lets you use the EvaluateLighting function in this file without making it the final EvaluateLighting
+// used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
+//
+#ifndef EvaluateLighting
+#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_BasePBR(surface, screenPosition)
+#endif
 
 #include <Atom/Features/PBR/Lights/Lights.azsli>
 #include <Atom/Features/PBR/Lights/Ibl.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
-LightingData EvaluateLighting(Surface surface, float4 screenPosition)
+void InitializeLightingData_BasePBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
 {
-    // ------- Lighting Data -------
-
-    LightingData lightingData;
-
     // Light iterator
     lightingData.tileIterator.Init(screenPosition, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
@@ -27,12 +29,12 @@ LightingData EvaluateLighting(Surface surface, float4 screenPosition)
     float3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - specularResponse;
 
-    // ------- Multiscatter -------
-
+    // Multiscatter
     lightingData.CalculateMultiscatterCompensation(surface.specularF0, o_specularF0_enableMultiScatterCompensation);
+}
 
-    // ------- Lighting Calculation -------
-
+void CalculateLighting_BasePBR(Surface surface, float4 screenPosition, inout LightingData lightingData)
+{
     // Apply Decals
     ApplyDecals(lightingData.tileIterator, surface);
 
@@ -44,6 +46,12 @@ LightingData EvaluateLighting(Surface surface, float4 screenPosition)
 
     // Finalize Lighting
     lightingData.FinalizeLighting();
+}
 
+LightingData EvaluateLighting_BasePBR(Surface surface, float4 screenPosition)
+{
+    LightingData lightingData;
+    InitializeLightingData_BasePBR(surface, screenPosition, lightingData);
+    CalculateLighting_BasePBR(surface, screenPosition, lightingData);
     return lightingData;
 }

@@ -8,13 +8,30 @@
 
 #pragma once
 
-
-#define SURFACE_DATA_IS_NEW_PBR     1
+// This #define magic lets you use the Surface class in this file without making it the final Surface
+// used in your shader. Simply #define Surface to your custom definition before including this file
+//
+#ifndef Surface
+#define Surface     SurfaceData_NewPBR
+#endif
 
 // Todo: factor out surface constants into separate file
-#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#include "../BasePBR/BasePBR_SurfaceData.azsli"
 
-class Surface
+// Class inheritance doesn't seem to be working
+#define DOES_CLASS_INHERITANCE_WORK_IN_ASZL 0
+#if DOES_CLASS_INHERITANCE_WORK_IN_ASZL
+
+class SurfaceData_NewPBR : SurfaceData_BasePBR
+{
+    float3 emissiveLighting;        //!< Emissive lighting
+    float diffuseAmbientOcclusion;  //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+    float specularOcclusion;        //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
+};
+
+#else
+
+class SurfaceData_NewPBR
 {   
     precise float3 position;    //!< Position in world-space
     float3 normal;              //!< Normal in world-space
@@ -87,3 +104,5 @@ void Surface::SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor
     albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
     specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
 }
+
+#endif

@@ -39,15 +39,17 @@ COMMON_OPTIONS_EMISSIVE()
 
 // ------- Shader Stitching -------
 
-#include "NewPBR_VertexData.azsli"
-#include "NewPBR_Vertex.azsli"
+// Use same vertex logic as BasePBR
+#include "../BasePBR/BasePBR_VertexData.azsli"
+#include "../BasePBR/BasePBR_Vertex.azsli"
 
-#include "NewPBR_PixelGeometryData.azsli"
-#include "NewPBR_PixelGeometry.azsli"
+// Use same pixel geometry logic at BasePBR
+#include "../BasePBR/BasePBR_PixelGeometryData.azsli"
+#include "../BasePBR/BasePBR_PixelGeometry.azsli"
 
 #include "NewPBR_SurfaceData.azsli"
 #include "NewPBR_Surface.azsli"
 
-#include "NewPBR_LightingData.azsli"
-#include "NewPBR_LightingModel.azsli"
+#include "../BasePBR/BasePBR_LightingData.azsli"
+#include "../BasePBR/BasePBR_LightingModel.azsli"
 #include "NewPBR_Lighting.azsli"
