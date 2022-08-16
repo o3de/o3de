@@ -132,13 +132,13 @@ namespace Multiplayer
             behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
                 ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
-                ->Method("GetOnEndpointDisonnectedEvent", [](AZ::EntityId id) -> EndpointDisonnectedEvent*
+                ->Method("GetOnEndpointDisconnectedEvent", [](AZ::EntityId id) -> EndpointDisconnectedEvent*
                 {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
                         AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
                             "The entity with id %s doesn't exist, please provide a valid entity id.",
                             id.ToString().c_str());
                         return nullptr;
@@ -148,14 +148,16 @@ namespace Multiplayer
                     if (!mpComponent)
                     {
                         AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
                             "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
                             entity->GetName().c_str(), id.ToString().c_str());
                         return nullptr;
                     }
 
-                    return &mpComponent->m_endpointDisonnectedEvent;
+                    return &mpComponent->m_endpointDisconnectedEvent;
                 })
+                    ->Attribute(AZ::Script::Attributes::AzEventDescription,
+                        AZ::BehaviorAzEventDescription{"On Endpoint Disconnected Event", {"Type of Multiplayer Agent that disconnected"}})
                 ->Method("ClearAllEntities", [](AZ::EntityId id)
                 {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
@@ -934,7 +936,7 @@ namespace Multiplayer
             }
         }
 
-        m_endpointDisonnectedEvent.Signal(m_agentType);
+        m_endpointDisconnectedEvent.Signal(m_agentType);
 
         // Clean up any multiplayer connection data we've bound to this connection instance
         if (connection->GetUserData() != nullptr)
@@ -1040,9 +1042,9 @@ namespace Multiplayer
         handler.Connect(m_clientMigrationEndEvent);
     }
 
-    void MultiplayerSystemComponent::AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler)
+    void MultiplayerSystemComponent::AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler)
     {
-        handler.Connect(m_endpointDisonnectedEvent);
+        handler.Connect(m_endpointDisconnectedEvent);
     }
 
     void MultiplayerSystemComponent::AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler)
