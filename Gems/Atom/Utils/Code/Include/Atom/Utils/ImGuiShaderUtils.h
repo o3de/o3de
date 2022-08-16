@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 
 namespace AZ
 {
@@ -17,6 +18,10 @@ namespace AZ
         {
             //! Draws an ImGui table that compares the shader options for a shader variant that was requested and the shader variant that was found.
             void DrawShaderVariantTable(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId requestedVariantId, AZ::RPI::ShaderVariantId selectedVariantId);
+
+            void DrawShaderDetails(const AZ::RPI::MeshDrawPacket::ShaderData& shaderData);
+
+            AZStd::string GetShaderVariantIdJson(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId variantId);
         }
     }
 }

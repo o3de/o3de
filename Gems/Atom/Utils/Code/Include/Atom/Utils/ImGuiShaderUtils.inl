@@ -9,6 +9,7 @@
 #pragma once
 
 #include <imgui/imgui.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ::Render
 {
@@ -67,6 +68,84 @@ namespace AZ::Render
                 }
             }
 
+        }
+
+        inline void DrawShaderDetails(const AZ::RPI::MeshDrawPacket::ShaderData& shaderData)
+        {
+            bool copyVariantTable = false;
+            bool copyRequestedVariantAsJson = false;
+
+            ImGui::Text("Selected Variant StableId: %u", shaderData.m_activeShaderVariantStableId.GetIndex());
+
+            if (ImGui::Button("Copy..."))
+            {
+                ImGui::OpenPopup("CopyPopup");
+            }
+            if (ImGui::BeginPopup("CopyPopup"))
+            {
+                if (ImGui::Selectable("Variant Table"))
+                {
+                    copyVariantTable = true;
+                }
+
+                if (ImGui::Selectable("Requested Variant as JSON"))
+                {
+                    copyRequestedVariantAsJson = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
+            if (copyRequestedVariantAsJson)
+            {
+                AZStd::string json = GetShaderVariantIdJson(shaderData.m_shader->GetAsset()->GetShaderOptionGroupLayout(), shaderData.m_requestedShaderVariantId);
+                ImGui::SetClipboardText(json.c_str());
+            }
+
+            if (copyVariantTable)
+            {
+                ImGui::LogToClipboard();
+            }
+
+            DrawShaderVariantTable(
+                shaderData.m_shader->GetAsset()->GetShaderOptionGroupLayout(),
+                shaderData.m_requestedShaderVariantId,
+                shaderData.m_activeShaderVariantId);
+
+            if (copyVariantTable)
+            {
+                ImGui::LogFinish();
+            }
+        }
+
+        inline AZStd::string GetShaderVariantIdJson(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId variantId)
+        {
+            AZStd::string json;
+            AZStd::unordered_map<AZStd::string/*optionName*/, AZStd::string/*valueName*/> options;
+
+            AZ::RPI::ShaderOptionGroup shaderOptionGroup{layout, variantId};
+
+            const auto& shaderOptionDescriptors = layout->GetShaderOptions();
+            for (const auto& shaderOptionDescriptor : shaderOptionDescriptors)
+            {
+                const auto& optionName = shaderOptionDescriptor.GetName();
+                const auto& optionValue = shaderOptionGroup.GetValue(optionName);
+                if (!optionValue.IsValid())
+                {
+                    continue;
+                }
+
+                const auto& valueName = shaderOptionDescriptor.GetValueName(optionValue);
+                options[optionName.GetStringView()] = valueName.GetStringView();
+            }
+
+
+            rapidjson::Document document;
+            document.SetObject();
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), options);
+            AZ::JsonSerializationUtils::WriteJsonString(document, json);
+
+            return json;
         }
 
     } // namespace Utils

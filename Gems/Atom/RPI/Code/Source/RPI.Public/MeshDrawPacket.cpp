@@ -303,6 +303,7 @@ namespace AZ
                 shaderData.m_shader = AZStd::move(shader);
                 shaderData.m_requestedShaderVariantId = requestedVariantId;
                 shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
+                shaderData.m_activeShaderVariantStableId = variant.GetStableId();
                 shaderList.emplace_back(AZStd::move(shaderData));
 
                 return true;
