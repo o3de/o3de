@@ -12,6 +12,7 @@
 #include <QPushButton>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
 namespace O3DE::ProjectManager

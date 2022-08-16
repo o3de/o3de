@@ -135,8 +135,8 @@ namespace O3DE::ProjectManager
             auto remoteTemplatesResult = PythonBindingsInterface::Get()->GetProjectTemplatesForAllRepos();
             if (remoteTemplatesResult.IsSuccess() && !remoteTemplatesResult.GetValue().isEmpty())
             {
-                QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
-                for (ProjectTemplateInfo& remoteTemplate : remoteTemplates)
+                const QVector<ProjectTemplateInfo>& remoteTemplates = remoteTemplatesResult.GetValue();
+                for (const ProjectTemplateInfo& remoteTemplate : remoteTemplates)
                 {
                     const auto found = AZStd::ranges::find_if(m_templates,
                         [remoteTemplate](const ProjectTemplateInfo& value)
@@ -148,8 +148,6 @@ namespace O3DE::ProjectManager
                         m_templates.append(remoteTemplate);
                     }
                 }
-
-
             }
 
             // sort alphabetically by display name (but putting Standard first) because they could be in any order
