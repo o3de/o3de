@@ -282,20 +282,20 @@ namespace O3DE::ProjectManager
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**
-         * Downloads and registers a Gem.
-         * @param gemName the name of the Gem to download.
-         * @param gemProgressCallback a callback function that is called with an int percentage download value.
-         * @param force should we forcibly overwrite the old version of the gem.
+         * Downloads and registers a project.
+         * @param gemName the name of the project to download.
+         * @param projectProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the project.
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
         virtual DetailedOutcome DownloadProject(
             const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) = 0;
 
         /**
-         * Downloads and registers a Gem.
-         * @param gemName the name of the Gem to download.
-         * @param gemProgressCallback a callback function that is called with an int percentage download value.
-         * @param force should we forcibly overwrite the old version of the gem.
+         * Downloads and registers a template.
+         * @param gemName the name of the template to download.
+         * @param templateProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the template.
          * @return an outcome with a pair of string error and detailed messages on failure.
          */
         virtual DetailedOutcome DownloadTemplate(

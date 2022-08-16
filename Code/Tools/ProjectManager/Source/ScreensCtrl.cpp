@@ -18,6 +18,7 @@ namespace O3DE::ProjectManager
 {
     ScreensCtrl::ScreensCtrl(QWidget* parent, DownloadController* downloadController)
         : QWidget(parent)
+        , m_downloadController(downloadController)
     {
         setObjectName("ScreensCtrl");
 

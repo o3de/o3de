@@ -1399,7 +1399,7 @@ namespace O3DE::ProjectManager
                 {
                     for (auto path : gemPaths)
                     {
-                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none()); 
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
                         gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
                         gemInfos.push_back(gemInfo);
                     }
@@ -1417,7 +1417,7 @@ namespace O3DE::ProjectManager
     IPythonBindings::DetailedOutcome  PythonBindings::DownloadGem(
         const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
     {
-        // This process is currently limited to download a single gem at a time.
+        // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
 
         m_requestCancelDownload = false;
@@ -1457,7 +1457,7 @@ namespace O3DE::ProjectManager
     IPythonBindings::DetailedOutcome PythonBindings::DownloadProject(
         const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force)
     {
-        // This process is currently limited to download a single gem at a time.
+        // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
 
         m_requestCancelDownload = false;
@@ -1496,7 +1496,7 @@ namespace O3DE::ProjectManager
     IPythonBindings::DetailedOutcome PythonBindings::DownloadTemplate(
         const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force)
     {
-        // This process is currently limited to download a single gem at a time.
+        // This process is currently limited to download a single object at a time.
         bool downloadSucceeded = false;
 
         m_requestCancelDownload = false;

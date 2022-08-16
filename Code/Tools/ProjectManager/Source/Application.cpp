@@ -8,6 +8,7 @@
 
 #include <Application.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Utils/Utils.h>
@@ -123,6 +124,8 @@ namespace O3DE::ProjectManager
         {
            return false;
         }
+
+        m_downloadController.reset(new DownloadController());
 
         const AZ::CommandLine* commandLine = GetCommandLine();
         AZ_Assert(commandLine, "Failed to get command line");
@@ -266,6 +269,7 @@ namespace O3DE::ProjectManager
             m_entity = nullptr;
         }
 
+        m_downloadController.reset();
         m_pythonBindings.reset();
         m_mainWindow.reset();
         m_app.reset();

@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
     GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent, DownloadController* downloadController)
         : ScreenWidget(parent)
         , m_readOnly(readOnly)
+        , m_downloadController(downloadController)
     {
         // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
@@ -57,8 +58,6 @@ namespace O3DE::ProjectManager
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
         setLayout(vLayout);
-
-        m_downloadController = downloadController;
 
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxyModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);

@@ -10,15 +10,14 @@
 #include <DownloadWorker.h>
 #include <PythonBindings.h>
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 #include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
     DownloadController::DownloadController(QWidget* parent)
-        : QObject()
-        , m_parent(parent)
+        : QObject(parent)
     {
         m_worker = new DownloadWorker();
         m_worker->moveToThread(&m_workerThread);
@@ -51,9 +50,7 @@ namespace O3DE::ProjectManager
 
     void DownloadController::CancelObjectDownload(const QString& objectName, DownloadObjectType objectType)
     {
-        auto findResult = AZStd::find_if(
-            m_objects.begin(),
-            m_objects.end(),
+        auto findResult = AZStd::ranges::find_if(m_objects,
             [objectName, objectType](const DownloadableObject& object)
             {
                 return (object.m_objectType == objectType && object.m_objectName == objectName);
@@ -88,16 +85,16 @@ namespace O3DE::ProjectManager
         {
             if (!detailedError.isEmpty())
             {
-                QMessageBox gemDownloadError;
-                gemDownloadError.setIcon(QMessageBox::Critical);
-                gemDownloadError.setWindowTitle(tr("Object download"));
-                gemDownloadError.setText(result);
-                gemDownloadError.setDetailedText(detailedError);
-                gemDownloadError.exec();
+                QMessageBox downloadError;
+                downloadError.setIcon(QMessageBox::Critical);
+                downloadError.setWindowTitle(tr("Download failed"));
+                downloadError.setText(result);
+                downloadError.setDetailedText(detailedError);
+                downloadError.exec();
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Object download"), result);
+                QMessageBox::critical(nullptr, tr("Download failed"), result);
             }
             succeeded = false;
         }

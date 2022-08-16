@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
         {
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };
-        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> objectInfoResult;
+        IPythonBindings::DetailedOutcome objectInfoResult;
         if (m_downloadType == DownloadController::DownloadObjectType::Gem)
         {
             objectInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_objectName, objectDownloadProgress, /*force*/ true);
@@ -32,6 +32,14 @@ namespace O3DE::ProjectManager
         else if (m_downloadType == DownloadController::DownloadObjectType::Project)
         {
             objectInfoResult = PythonBindingsInterface::Get()->DownloadProject(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else if (m_downloadType == DownloadController::DownloadObjectType::Template)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadTemplate(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else
+        {
+            AZ_Error("DownloadWorker", false, "Unknown download object type %d", m_downloadType);
         }
 
         if (objectInfoResult.IsSuccess())

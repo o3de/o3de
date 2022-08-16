@@ -70,16 +70,16 @@ namespace O3DE::ProjectManager
         void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
-        void StartObjectDownload(const QString& gemName, DownloadObjectType objectType, bool downloadNow);
-        void Done(const QString& gemName, bool success = true);
-        void ObjectDownloadAdded(const QString& ObjectName, DownloadObjectType objectType);
-        void ObjectDownloadRemoved(const QString& ObjectName, DownloadObjectType objectType);
+        void StartObjectDownload(const QString& objectName, DownloadObjectType objectType, bool downloadNow);
+        void Done(const QString& objectName, bool success = true);
+        void ObjectDownloadAdded(const QString& objectName, DownloadObjectType objectType);
+        void ObjectDownloadRemoved(const QString& objectName, DownloadObjectType objectType);
         void ObjectDownloadProgress(const QString& objectName, DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     private:
         DownloadWorker* m_worker;
         QThread m_workerThread;
-        QWidget* m_parent;
         AZStd::vector<DownloadableObject> m_objects;
     };
+
 } // namespace O3DE::ProjectManager

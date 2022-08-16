@@ -17,7 +17,7 @@
 #include <SettingsInterface.h>
 #include <AddRemoteProjectDialog.h>
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
 #include <AzCore/IO/SystemFile.h>
@@ -53,6 +53,7 @@ namespace O3DE::ProjectManager
 {
     ProjectsScreen::ProjectsScreen(QWidget* parent, DownloadController* downloadController)
         : ScreenWidget(parent)
+        , m_downloadController(downloadController)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setAlignment(Qt::AlignTop);
@@ -74,7 +75,6 @@ namespace O3DE::ProjectManager
 
         connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
-        m_downloadController = downloadController;
         connect(m_downloadController, &DownloadController::Done, this, &ProjectsScreen::HandleDownloadResult);
         connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
     }
@@ -229,13 +229,11 @@ namespace O3DE::ProjectManager
             auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
             if (remoteProjectsResult.IsSuccess() && !remoteProjectsResult.GetValue().isEmpty())
             {
-                QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
-                for (ProjectInfo& remoteProject : remoteProjects)
+                const QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
+                for (const ProjectInfo& remoteProject : remoteProjects)
                 {
-                    auto foundProject = AZStd::find_if(
-                        projects.begin(),
-                        projects.end(),
-                        [remoteProject](const ProjectInfo& value)
+                    auto foundProject = AZStd::ranges::find_if(projects,
+                        [&remoteProject](const ProjectInfo& value)
                         {
                             return remoteProject.m_id == value.m_id;
                         });
@@ -684,10 +682,8 @@ namespace O3DE::ProjectManager
     {
         m_downloadController->AddObjectDownload(projectName, DownloadController::DownloadObjectType::Project);
 
-        auto foundButton = AZStd::find_if(
-            m_projectButtons.begin(),
-            m_projectButtons.end(),
-            [projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+        auto foundButton = AZStd::ranges::find_if(m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
             {
                 return (value.second->GetProjectInfo().m_projectName == projectName);
             });
@@ -711,10 +707,8 @@ namespace O3DE::ProjectManager
         }
 
         //Find button for project name
-        auto foundButton = AZStd::find_if(
-            m_projectButtons.begin(),
-            m_projectButtons.end(),
-            [projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+        auto foundButton = AZStd::ranges::find_if(m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
             {
                 return (value.second->GetProjectInfo().m_projectName == projectName);
             });

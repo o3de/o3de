@@ -166,10 +166,9 @@ namespace O3DE::ProjectManager
             }
         );
 
-        // Simulate repo being entered and UI enabling
         connect(
             m_repoPath->lineEdit(), &QLineEdit::textEdited,
-            [this](const QString& /*text*/)
+            [this]([[maybe_unused]] const QString& text)
             {
                 // wait for a second before attempting to validate so we're less likely to do it per keypress
                 m_inputTimer->start(1000);
@@ -191,7 +190,7 @@ namespace O3DE::ProjectManager
             if (!repoProjects.isEmpty())
             {
                 // only get the first one for now
-                ProjectInfo project = repoProjects.at(0);
+                const ProjectInfo& project = repoProjects.at(0);
                 SetCurrentProject(project);
 
                 validRepository = true;
@@ -215,7 +214,7 @@ namespace O3DE::ProjectManager
         {
             QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
             ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
-            AZ_Error("Project Manager", false, failureMessage.toUtf8());
+            AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
         }
     }
 
@@ -236,7 +235,7 @@ namespace O3DE::ProjectManager
     {
         m_currentProject = projectInfo;
 
-        m_downloadProjectLabel->setText(tr("Download Project ") + projectInfo.m_displayName);
+        m_downloadProjectLabel->setText(tr("Download Project %1").arg(projectInfo.m_displayName));
         m_installPath->lineEdit()->setText(QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectInfo.m_projectName));
         m_requirementsContentLabel->setText(projectInfo.m_requirements);
         m_licensesContentLabel->setText(projectInfo.m_license);

@@ -13,6 +13,7 @@
 #include <PythonBindings.h>
 #include <Settings.h>
 #include <ProjectManagerWindow.h>
+#include <DownloadController.h>
 #endif
 
 namespace AZ
@@ -41,6 +42,7 @@ namespace O3DE::ProjectManager
         AZStd::unique_ptr<Settings> m_settings;
         QSharedPointer<QCoreApplication> m_app;
         QSharedPointer<ProjectManagerWindow> m_mainWindow;
+        QSharedPointer<DownloadController> m_downloadController;
 
         AZ::Entity* m_entity = nullptr;
     };
