@@ -99,8 +99,7 @@ struct SSystemCVars
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
-    int sys_report_files_not_found_in_paks = 0;
-
+    
     int sys_asserts;
     int sys_error_debugbreak;
 

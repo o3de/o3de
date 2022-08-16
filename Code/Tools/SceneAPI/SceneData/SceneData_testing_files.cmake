@@ -13,4 +13,5 @@ set(FILES
     Tests/GraphData/GraphDataBehaviorTests.cpp
     Tests/GraphData/RulesTests.cpp
     Tests/SceneManifest/SceneManifestRuleTests.cpp
+    Tests/SceneManifest/SceneScriptRuleTests.cpp
 )

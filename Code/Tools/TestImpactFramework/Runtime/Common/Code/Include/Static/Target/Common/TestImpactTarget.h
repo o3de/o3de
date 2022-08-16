@@ -16,7 +16,7 @@ namespace TestImpact
     class Target
     {
     public:
-        Target(TargetDescriptor* descriptor);
+        Target(TargetDescriptor&& descriptor);
         virtual ~Target() = default;
 
         //! Returns the build target name.
@@ -25,10 +25,16 @@ namespace TestImpact
         //! Returns the path in the source tree to the build target location.
         const RepoPath& GetPath() const;
 
+        //! Returns the build target's dependencies.
+        const TargetDependencies& GetDependencies() const;
+
         //! Returns the build target's sources.
         const TargetSources& GetSources() const;
 
+        //! Returns the build target's compiled binary name.
+        const AZStd::string& GetOutputName() const;
+
     private:
-        const TargetDescriptor* m_descriptor;
+       TargetDescriptor m_descriptor;
     };
 } // namespace TestImpact

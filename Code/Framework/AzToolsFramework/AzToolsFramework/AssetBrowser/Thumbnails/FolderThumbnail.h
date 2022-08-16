@@ -26,7 +26,7 @@ namespace AzToolsFramework
         public:
             AZ_RTTI(FolderThumbnailKey, "{47B5423B-1324-46AD-BBA9-791D5C4116B5}", ThumbnailKey);
 
-            FolderThumbnailKey(const char* folderPath, bool isGem);
+            FolderThumbnailKey(const char* folderPath);
             const AZStd::string& GetFolderPath() const;
             bool IsGem() const;
             bool Equals(const ThumbnailKey* other) const override;
@@ -34,8 +34,6 @@ namespace AzToolsFramework
         protected:
             //! Absolute folder path
             AZStd::string m_folderPath;
-            //! is folder a gem
-            bool m_isGem;
         };
 
         class FolderThumbnail

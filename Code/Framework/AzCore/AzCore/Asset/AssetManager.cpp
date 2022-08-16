@@ -23,6 +23,7 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Console/ILogger.h>
 #include <cinttypes>
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -984,7 +985,7 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded.  Asset may be missing, not processed or moved.  AssetId: %s",
+                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s",
                     assetId.ToString<AZStd::string>().c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
@@ -1684,6 +1685,7 @@ namespace AZ::Data
                 }
             }
             // Call reloaded before we can call ReloadAsset below to preserve order
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
             // Release the lock before we call reload
             if (requeue)
@@ -1693,6 +1695,7 @@ namespace AZ::Data
         }
         else
         {
+            AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloaded, asset); // Broadcast to any containers first
             AssetBus::Event(assetId, &AssetBus::Events::OnAssetReloaded, asset);
         }
     }
@@ -1828,6 +1831,7 @@ namespace AZ::Data
         AZ_Assert(data, "NotifyAssetReady: asset is missing info!");
         data->m_status = AssetData::AssetStatus::Ready;
 
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReady, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReady, asset);
     }
 
@@ -1857,6 +1861,7 @@ namespace AZ::Data
             AZStd::lock_guard<AZStd::recursive_mutex> assetLock(m_assetMutex);
             m_reloads.erase(asset.GetId());
         }
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetReloadError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetReloadError, asset);
     }
 
@@ -1866,6 +1871,7 @@ namespace AZ::Data
     void AssetManager::NotifyAssetError(Asset<AssetData> asset)
     {
         asset.Get()->m_status = AssetData::AssetStatus::Error;
+        AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetError, asset); // Broadcast to any containers first
         AssetBus::Event(asset.GetId(), &AssetBus::Events::OnAssetError, asset);
     }
 
@@ -2216,8 +2222,6 @@ namespace AZ::Data
         AZStd::shared_ptr<AssetDataStream> stream,
         const AssetFilterCB& assetLoadFilterCB)
     {
-        AZ_PROFILE_SCOPE(AzCore, "AssetHandler::LoadAssetData - %s", asset.GetHint().c_str());
-
 #ifdef AZ_ENABLE_TRACING
         auto start = AZStd::chrono::system_clock::now();
 #endif
@@ -2226,11 +2230,17 @@ namespace AZ::Data
 
 #ifdef AZ_ENABLE_TRACING
         auto loadMs = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(
-                      AZStd::chrono::system_clock::now() - start);
-        AZ_Warning("AssetDatabase", (!cl_assetLoadWarningEnable) ||
-                   loadMs <= AZStd::chrono::milliseconds(cl_assetLoadWarningMsThreshold),
-                   "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms",
-                   asset.GetHint().c_str(), loadMs.count());
+            AZStd::chrono::system_clock::now() - start);
+        if (loadMs.count() > 0)
+        {
+            const double seconds = loadMs.count() / 1000.0;
+            const double kilobytes = stream->GetLoadedSize() / 1024.0;
+            const double rateKbps = kilobytes / seconds;
+            AZ_Warning("AssetDatabase", (!cl_assetLoadWarningEnable) ||
+                loadMs <= AZStd::chrono::milliseconds(cl_assetLoadWarningMsThreshold),
+                "Load time threshold exceeded: LoadAssetData call for %s took %" PRId64 " ms to load %" PRId64 " bytes (%8.4Lf KB/s)",
+                asset.GetHint().c_str(), loadMs.count(), stream->GetLoadedSize(), rateKbps);
+        }
 #endif
 
         return result;

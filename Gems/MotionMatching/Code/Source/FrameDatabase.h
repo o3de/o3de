@@ -77,6 +77,9 @@ namespace EMotionFX::MotionMatching
         //! NOTE: This is a slow operation and should not be used by the runtime without visual debugging.
         size_t FindFrameIndex(Motion* motion, float playtime) const;
 
+        //! Save every frame as a row to a .csv file.
+        void SaveAsCsv(const char* filename, ActorInstance* actorInstance) const;
+
     private:
         void ImportFrame(Motion* motion, float timeValue, bool mirrored);
         bool IsFrameDiscarded(const Motion* motion, float frameTime, AZStd::vector<EventData*>& activeEvents) const;

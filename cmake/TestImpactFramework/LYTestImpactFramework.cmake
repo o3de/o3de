@@ -10,13 +10,16 @@
 set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
 # Name of test impact framework console static library target
-set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
+set(LY_TEST_IMPACT_CONSOLE_NATIVE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
 
 # Name of test impact framework python coverage gem target
 set(LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET "PythonCoverage.Editor.Static")
 
-# Name of test impact framework console target
-set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console.Native")
+# Name of test impact framework native console target
+set(LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET "TestImpact.Frontend.Console.Native")
+
+# Name of test impact framework native console target
+set(LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET "TestImpact.Frontend.Console.Python")
 
 # Directory for test impact artifacts and data
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
@@ -156,9 +159,11 @@ endfunction()
 #
 # \arg:COMPOSITE_TEST test in the form 'namespace::test'
 # \arg:COMPOSITE_SUITES composite list of suites for this target
+# \arg:TEST_NAMESPACE namespace of test
 # \arg:TEST_NAME name of test
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
-function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
+function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAMESPACE TEST_NAME TEST_SUITES)
+
     # Namespace and test are mandatory
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
     list(LENGTH test_components num_test_components)
@@ -193,21 +198,28 @@ endfunction()
 #
 # \arg:COMPOSITE_TEST test in form 'namespace::test' or 'test'
 # \arg:COMPOSITE_SUITES composite list of suites for this target
+# \arg:TEST_NAMESPACE namespace of test
 # \arg:TEST_NAME name of test
 # \arg:TEST_SUITES extracted list of suites for this target in JSON format
-function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAME TEST_SUITES)
+function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUITES TEST_NAMESPACE TEST_NAME TEST_SUITES)
     get_property(script_path GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_SCRIPT_PATH)
     get_property(test_command GLOBAL PROPERTY LY_ALL_TESTS_${COMPOSITE_TEST}_TEST_COMMAND)
+
+    # Strip the separating semicolons to yield the executable command string for this test
+    string(REPLACE ";" " " test_command "${test_command}")
     
     # namespace is optional, in which case this component will be simply the test name
     string(REPLACE "::" ";" test_components ${COMPOSITE_TEST})
     list(LENGTH test_components num_test_components)
     if(num_test_components GREATER 1)
+        list(GET test_components 0 test_namespace)
         list(GET test_components 1 test_name)
     else()
+        set(test_namespace "")
         set(test_name ${test_components})
     endif()
 
+    set(${TEST_NAMESPACE} ${test_namespace} PARENT_SCOPE)
     set(${TEST_NAME} ${test_name} PARENT_SCOPE)
     
     set(test_suites "")
@@ -227,7 +239,7 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"test_command\": \"${test_command}\", \"timeout\": ${test_timeout} }")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout}, \"command\": \"${test_command}\" }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")
@@ -253,25 +265,25 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
         if("${test_type}" STREQUAL "pytest")
             # Python tests
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND python_tests "        { \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "pytest_editor")
             # Python editor tests            
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND python_editor_tests "        { \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googletest")
             # Google tests
-            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_name test_suites)
+            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             ly_test_impact_get_test_launch_method(${test} launch_method)
-            list(APPEND google_tests "        { \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            list(APPEND google_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googlebenchmark")
             # Google benchmarks
-            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_name test_suites)
-            list(APPEND google_benchmarks "        { \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
+            ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
+            list(APPEND google_benchmarks "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         else()
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_name test_suites)
+            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             message("${test_name} is of unknown type (TEST_LIBRARY property is \"${test_type}\")")
-            list(APPEND unknown_tests "        { \"name\": \"${test}\", \"type\": \"${test_type}\" }")
+            list(APPEND unknown_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test}\", \"type\": \"${test_type}\" }")
         endif()
     endforeach()
 
@@ -312,6 +324,74 @@ function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FI
      configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
 endfunction()
 
+#! ly_extract_aliased_target_dependencies: recursively extracts the aliases of a target to retrieve the true de-aliased target.
+#
+# \arg:TARGET target to de-alias
+function(ly_extract_aliased_target_dependencies TARGET DE_ALIASED_TARGETS)
+    if(NOT ARGN)
+        # Entry point of recursive call, set the parent target and clear any existing aliases
+        set(PARENT_TARGET ${TARGET})
+        set_property(GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} "")
+    endif()
+
+    # Check for aliases of this target
+    get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET} SET)
+    if(${aliased_targets})
+        # One or more aliases for this target has been found
+        get_property(aliased_targets GLOBAL PROPERTY O3DE_ALIASED_TARGETS_${TARGET})
+        foreach(aliased_target ${aliased_targets})
+            # Recursively extract any aliases of the alias of this target
+            ly_extract_aliased_target_dependencies(${aliased_target} empty ${PARENT_TARGET})
+        endforeach()
+    else()
+        # No more aliases found for this target, add this target as an alias for the parent target
+        set_property(GLOBAL APPEND PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${PARENT_TARGET} ${TARGET})
+    endif()
+
+    if(NOT ARGN)
+        # Exit point of recursive call
+        get_property(de_aliased_targets GLOBAL PROPERTY LY_EXTRACT_ALIASED_TARGET_DEPENDENCIES_DE_ALIASED_TARGETS_${TARGET})
+        set(${DE_ALIASED_TARGETS} ${de_aliased_targets} PARENT_SCOPE)
+    endif()
+endfunction()
+
+#! ly_extract_target_dependencies: extracts the target dependencies for the specified target as a comma separated list.
+function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_LIST)
+    set(dependencies "")
+    # Walk the dependency list
+    foreach(qualified_target_name ${INPUT_DEPENDENCY_LIST})
+        # Extract just the target name, ignoring the namespace
+        if(TARGET ${qualified_target_name})
+            set(target_to_add "")
+            string(REPLACE "::" ";" target_name_components ${qualified_target_name})
+            list(LENGTH target_name_components num_name_components)
+            if(num_name_components GREATER 1)
+                list(GET target_name_components 0 target_namespace)
+                list(GET target_name_components 1 target_name)
+                set(target_to_add ${target_name})
+            else()
+                set(target_to_add ${target_name})
+            endif()
+
+            if(NOT ${target_to_add} STREQUAL "")
+                # Extract the targets this target may alias
+                ly_extract_aliased_target_dependencies(${target_to_add} de_aliased_targets)
+                foreach(de_aliased_target ${de_aliased_targets})
+                    # Skip third party dependencies
+                    get_target_property(is_imported ${qualified_target_name} IMPORTED)
+                    if(NOT is_imported)
+                        list(APPEND dependencies "\"${de_aliased_target}\"")
+                    endif()
+                endforeach()
+            endif()
+        endif()
+    endforeach()
+
+    # Convert to a comma separated list
+    string (REPLACE ";" ",\n" dependencies "${dependencies}")
+    set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
+endfunction()
+
 #! ly_test_impact_export_source_target_mappings: exports the static source to target mappings to file.
 #
 # \arg:MAPPING_TEMPLATE_FILE path to source to target template file
@@ -337,6 +417,12 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
             # No custom output name was specified so use the target name
             set(target_output_name "${target}")
         endif()
+
+        # Dependencies
+        get_property(build_dependencies GLOBAL PROPERTY LY_ALL_TARGETS_${target}_BUILD_DEPENDENCIES)
+        get_property(runtime_dependencies GLOBAL PROPERTY LY_ALL_TARGETS_${target}_RUNTIME_DEPENDENCIES)
+        ly_extract_target_dependencies("${build_dependencies}" build_dependencies)
+        ly_extract_target_dependencies("${runtime_dependencies}" runtime_dependencies)
 
         # Autogen source file mappings
         get_target_property(autogen_input_files ${target} AUTOGEN_INPUT_FILES)
@@ -407,7 +493,10 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     endif()
 
     # Testrunner binary
-    set(test_runner_bin $<TARGET_FILE:AzTestRunner>)
+    set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
+
+    # Python command
+    set(python_cmd "${LY_ROOT_FOLDER}/python/python.cmd")
 
     # Repository root
     set(repo_dir ${LY_ROOT_FOLDER})
@@ -415,14 +504,23 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Test impact framework output binary dir
     set(bin_dir ${BIN_DIR})
     
-    # Temp dir
-    set(temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
+    # Native temp dir
+    set(native_temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}/Native")
 
-    # Active persistent data dir
-    set(active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/active")
+    # Native active persistent data dir
+    set(native_active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Native/active")
 
-    # Historic persistent data dir
-    set(historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/historic")
+    # Native historic persistent data dir
+    set(native_historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Native/historic")
+
+    # Python temp dir
+    set(python_temp_dir "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}/Python")
+
+    # Python active persistent data dir
+    set(python_active_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Python/active")
+
+    # Python historic persistent data dir
+    set(python_historic_dir "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/Python/historic")
 
     # Source to target mappings dir
     set(source_target_mapping_dir "${LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR}")
@@ -436,8 +534,11 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Build dependency artifact dir
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
 
-    # Test impact analysis framework binary
-    set(tiaf_bin "$<TARGET_FILE:${LY_TEST_IMPACT_CONSOLE_TARGET}>")
+    # Test impact analysis framework native runtime binary
+    set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+
+    # Test impact analysis framework python runtime binary
+    set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
     
     # Substitute config file template with above vars
     ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)

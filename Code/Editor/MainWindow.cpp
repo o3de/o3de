@@ -508,16 +508,6 @@ void MainWindow::Initialize()
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
-    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
-    {
-        auto handleImGuiStateChangeFn = [](bool enabled)
-        {
-            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
-        };
-        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
-        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
-    }
-
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
 
@@ -1065,6 +1055,9 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
             });
 
     // Audio actions
