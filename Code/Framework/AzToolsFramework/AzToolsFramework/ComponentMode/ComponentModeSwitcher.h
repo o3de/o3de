@@ -74,19 +74,19 @@ namespace AzToolsFramework
 
         private:
             //! Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
-            void AddSwitcherButton(ComponentData&);
+            void AddSwitcherButton(ComponentData& componentData);
             //! Adds component button to switcher.
-            void AddComponentButton(const AZ::EntityComponentIdPair);
+            void AddComponentButton(const AZ::EntityComponentIdPair pairId);
             //! Removes component button from switcher.
-            void RemoveComponentButton(const AZ::EntityComponentIdPair);
+            void RemoveComponentButton(const AZ::EntityComponentIdPair pairId);
             //! Add or remove component buttons to/from the switcher based on entities selected.
             void UpdateSwitcherOnEntitySelectionChange(
                 const EntityIdList& newlyselectedEntityIds, const EntityIdList& newlydeselectedEntityIds);
             //! Clears all buttons from switcher.
             void ClearSwitcher();
             //! Remove all components from the switcher that don't exist on all entities.
-            void RemoveNonCommonComponents(const AZ::Entity&);
-            void ActivateComponentMode(const ViewportUi::ButtonId);
+            void RemoveNonCommonComponents(const AZ::Entity& entity);
+            void ActivateComponentMode(const ViewportUi::ButtonId buttonId);
 
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(
