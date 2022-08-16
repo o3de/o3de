@@ -410,14 +410,14 @@ namespace AzToolsFramework
             // Used for loading/saving Prefab Template files.
             PrefabLoader m_prefabLoader;
 
-            // Handles the public Prefab API used by UI and scripting.
-            PrefabPublicHandler m_prefabPublicHandler;
-
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;
 
             // Used for updating Templates when Instances are modified.
             InstanceToTemplatePropagator m_instanceToTemplatePropagator;
+
+            // Handles the public Prefab API used by UI and scripting.
+            PrefabPublicHandler m_prefabPublicHandler;
 
             // Handler of the public Prefab requests.
             PrefabPublicRequestHandler m_prefabPublicRequestHandler;

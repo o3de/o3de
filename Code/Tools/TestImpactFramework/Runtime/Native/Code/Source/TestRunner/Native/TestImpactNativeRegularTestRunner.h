@@ -23,20 +23,21 @@ namespace TestImpact
     {
     public:
         using TestRunner<NativeTestRunJobData<TestRunJobData>>::TestRunner;
-    };
 
-    template<>
-    inline NativeRegularTestRunner::JobPayloadOutcome PayloadFactory(const NativeRegularTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
-    {
-        try
+    protected:
+        JobPayloadOutcome PayloadExtractor(const JobInfo& jobData, const JobMeta& jobMeta) override
         {
-            return AZ::Success(NativeRegularTestRunner::JobPayload(
-                GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
-                jobMeta.m_duration.value()));
-        }
-        catch (const Exception& e)
-        {
-            return AZ::Failure(AZStd::string::format("%s\n", e.what()));
+            try
+            {
+                return AZ::Success(JobPayload(
+                    GTest::TestRunSuitesFactory(ReadFileContents<TestRunnerException>(jobData.GetRunArtifactPath())),
+                    jobMeta.m_duration.value()));
+            }
+            catch (const Exception& e)
+            {
+                return AZ::Failure(AZStd::string::format("%s\n", e.what()));
+            }
         }
     };
+    
 } // namespace TestImpact

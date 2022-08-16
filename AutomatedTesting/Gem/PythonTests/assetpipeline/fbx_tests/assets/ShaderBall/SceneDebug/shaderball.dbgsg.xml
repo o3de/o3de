@@ -64,30 +64,12 @@
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="InnerPortion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -95,30 +77,12 @@
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="MaterialBase" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -126,30 +90,12 @@
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="InlayRings" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
-						</Class>
-					</Class>
-					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
-						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -157,6 +103,19 @@
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="MainSphere" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
 					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
@@ -511,6 +470,37 @@
 						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::u64" field="m_data" value="2219364576630417284" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -1671,6 +1661,37 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="RingLeft" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingLeft" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="MeshData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -1996,6 +2017,37 @@
 						<Class name="AZStd::string" field="value1" value="FaceMaterialIds - Hash" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::u64" field="m_data" value="6371267399123018661" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="IsNull" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="RotationActive" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="bool" field="m_data" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="DefaultAttributeIndex" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="0" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="InheritType" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -2661,6 +2713,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.HubCap.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.HubCap.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -2892,6 +2957,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.InnerSphere.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -3283,6 +3361,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.HubCap_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -3514,6 +3605,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.HubCap_default_shaderball_E95B8EA6_DCA7_501D_AE59_1088AB70DF38__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -3755,6 +3859,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.InnerSphere_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -3991,6 +4108,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InnerPortion.InnerSphere_default_shaderball_473A4A86_CC7E_55D2_91F6_7EF87FBD5C01__optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -4072,6 +4202,19 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="6.3117909" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCone.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -4313,6 +4456,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerPost.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerPost.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -4544,6 +4700,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -4785,6 +4954,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.Inset.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.Inset.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -5016,6 +5198,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.BottomCap.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -5257,6 +5452,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCushion.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCushion.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -5488,6 +5696,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -5879,6 +6100,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCone_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -6110,6 +6344,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCone_default_shaderball_F50B5AC3_CCD7_5683_9F22_9A229001ABFF__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -6351,6 +6598,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerPost_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -6582,6 +6842,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerPost_default_shaderball_FEA7D61B_0535_550B_86E8_B48BD812D84A__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -6823,6 +7096,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -7054,6 +7340,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerBaseCuff_default_shaderball_9714DB61_2272_55A8_80FD_0386DF43C72C__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -7295,6 +7594,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.Inset_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -7526,6 +7838,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.Inset_default_shaderball_6D25426B_F22E_54CA_B38A_1F8D65A05243__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -7767,6 +8092,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.BottomCap_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -7998,6 +8336,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.BottomCap_default_shaderball_1C4F5C76_38DF_5289_AF68_EB96F7658B86__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -8239,6 +8590,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCushion_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -8470,6 +8834,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.InnerCushion_default_shaderball_491DD9C0_9F62_538A_8637_2F85BDEE4675__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -8711,6 +9088,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -8947,6 +9337,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MaterialBase.OuterBaseCuff_default_shaderball_61FA311B_958E_5E8A_A4C1_96AA01552B5D__optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -9028,6 +9431,19 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="6.3117909" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingLeft.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -9264,6 +9680,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingRight.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -9655,6 +10084,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingLeft_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -9886,6 +10328,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingLeft_default_shaderball_92798A1A_DA92_5BCB_8E70_6433043ABDB6__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -10127,6 +10582,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingRight_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -10363,6 +10831,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.InlayRings.RingRight_default_shaderball_60E3FD38_62BE_5AF8_8DF9_085F00380C7C__optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -10444,6 +10925,19 @@
 						<Class name="AZStd::string" field="value1" value="Shininess" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="double" field="m_data" value="6.3117909" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.RightHub.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -10685,6 +11179,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.LeftHub.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.LeftHub.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -10921,6 +11428,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.Inside.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.Inside.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -11152,6 +11672,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.MainOuterSphere.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -11543,6 +12076,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.RightHub_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -11774,6 +12320,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.RightHub_default_shaderball_51CC241B_C54B_50F2_AED7_113C1327FAD0__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -12015,6 +12574,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.LeftHub_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -12246,6 +12818,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.LeftHub_default_shaderball_2386C2AB_0C4B_554F_B3BC_43754B12017E__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -12487,6 +13072,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.Inside_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -12718,6 +13316,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.Inside_default_shaderball_0E8A4436_3658_5EF3_8EA9_0503A42060D6__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>
@@ -12959,6 +13570,19 @@
 				</Class>
 			</Class>
 			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
 				<Class name="AZStd::string" field="Name" value="custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_shaderball_optimized.custom_properties" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="AZStd::string" field="Type" value="CustomPropertyData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -13190,6 +13814,19 @@
 						<Class name="AZStd::string" field="value1" value="GenerationMethod" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
 							<Class name="AZ::s64" field="m_data" value="1" type="{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="DebugNode" field="element" type="{490B9D4C-1847-46EB-BEBC-49812E104626}">
+				<Class name="AZStd::string" field="Name" value="transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Path" value="RootNode.ShaderBall_1m.MainSphere.MainOuterSphere_default_shaderball_1616D68E_F072_5643_BD07_565772CD0E30__optimized.transform" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="Type" value="TransformData" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::vector&lt;AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;, allocator&gt;" field="Data" type="{AB34420F-52EB-5851-B700-14041D779DBC}">
+					<Class name="AZStd::pair&lt;AZStd::basic_string&lt;char, AZStd::char_traits&lt;char&gt;, allocator&gt;, AZStd::any&gt;" field="element" type="{48BF1FCF-92A6-52E1-A543-F0B96702B0E2}">
+						<Class name="AZStd::string" field="value1" value="Matrix" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+						<Class name="AZStd::any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
+							<Class name="Matrix3x4" field="m_data" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000" type="{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}"/>
 						</Class>
 					</Class>
 				</Class>

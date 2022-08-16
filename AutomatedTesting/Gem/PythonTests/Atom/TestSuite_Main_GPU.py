@@ -11,7 +11,7 @@ import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorTestSuite, EditorBatchedTest
 from Atom.atom_utils.atom_component_helper import compare_screenshot_to_golden_image, golden_images_directory
 
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
@@ -151,6 +151,9 @@ class TestAutomation(EditorTestSuite):
                                                       self.test_screenshots,
                                                       self.golden_images,
                                                       similarity_threshold=0.96) is True
+
+    class AtomEditorComponents_HDRColorGrading_Generate_Activate_LUT(EditorBatchedTest):
+        from Atom.tests import periodic_AtomEditorComponents_HDRColorGradingAdded as test_module
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])

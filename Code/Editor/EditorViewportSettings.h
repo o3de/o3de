@@ -20,6 +20,7 @@ namespace SandboxEditor
 {
     using AngleSnappingChangedEvent = AZ::Event<bool>;
     using GridSnappingChangedEvent = AZ::Event<bool>;
+    using NearFarPlaneChangedEvent = AZ::Event<float>;
 
     //! Set callbacks to listen for editor settings change events.
     class EditorViewportSettingsCallbacks
@@ -27,8 +28,10 @@ namespace SandboxEditor
     public:
         virtual ~EditorViewportSettingsCallbacks() = default;
 
-        virtual void SetAngleSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
+        virtual void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) = 0;
         virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
+        virtual void SetFarPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) = 0;
+        virtual void SetNearPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) = 0;
     };
 
     //! Create an instance of EditorViewportSettingsCallbacks
@@ -53,9 +56,6 @@ namespace SandboxEditor
 
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
-
-    SANDBOX_API bool ManipulatorMouseWrap();
-    SANDBOX_API void SetManipulatorMouseWrap(bool enabled);
 
     SANDBOX_API bool StickySelectEnabled();
     SANDBOX_API void SetStickySelectEnabled(bool enabled);
@@ -160,4 +160,10 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraFocusChannelId();
     SANDBOX_API void SetCameraFocusChannelId(AZStd::string_view cameraFocusId);
+
+    SANDBOX_API float CameraDefaultNearPlaneDistance();
+    SANDBOX_API void SetCameraDefaultNearPlaneDistance(float distance);
+
+    SANDBOX_API float CameraDefaultFarPlaneDistance();
+    SANDBOX_API void SetCameraDefaultFarPlaneDistance(float distance);
 } // namespace SandboxEditor

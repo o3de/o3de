@@ -7,16 +7,16 @@
  */
 
 #include <AzCore/DOM/DomUtils.h>
-
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 
 namespace AZ::Dom::Utils
 {
-    const AZ::Name TypeFieldName = AZ::Name::FromStringLiteral("$type");
-    const AZ::Name PointerTypeName = AZ::Name::FromStringLiteral("pointer");
-    const AZ::Name PointerValueFieldName = AZ::Name::FromStringLiteral("value");
-    const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType");
+    const AZ::Name TypeFieldName = AZ::Name::FromStringLiteral("$type", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name PointerTypeName = AZ::Name::FromStringLiteral("pointer", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name PointerValueFieldName = AZ::Name::FromStringLiteral("value", AZ::Interface<AZ::NameDictionary>::Get());
+    const AZ::Name PointerTypeFieldName = AZ::Name::FromStringLiteral("pointerType", AZ::Interface<AZ::NameDictionary>::Get());
 
     Visitor::Result ReadFromString(Backend& backend, AZStd::string_view string, AZ::Dom::Lifetime lifetime, Visitor& visitor)
     {
