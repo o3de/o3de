@@ -48,7 +48,6 @@ namespace AzToolsFramework
             {
                 AzToolsFramework::AssetSystemBus::Handler::BusConnect();
             }
-            
         }
 
         void PrefabSystemComponent::Deactivate()
@@ -1020,7 +1019,7 @@ namespace AzToolsFramework
             PrefabDom& targetTemplatePrefabDom = FindTemplateDom(targetTemplateId);
             PrefabDomPath instancePath = link.GetInstancePath();
             PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
-            if(!instanceValue)
+            if (!instanceValue)
             {
                 PrefabDomValueReference templateInstancesReference =
                     PrefabDomUtils::FindPrefabDomValue(targetTemplatePrefabDom, PrefabDomUtils::InstancesName);

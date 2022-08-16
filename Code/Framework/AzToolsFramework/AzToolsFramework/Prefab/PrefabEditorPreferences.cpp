@@ -24,5 +24,4 @@ namespace AzToolsFramework::Prefab
 
         return isHotReloadingEnabled;
     }
-
-} //namespace AzToolsFramework::Prefab
+} // namespace AzToolsFramework::Prefab
