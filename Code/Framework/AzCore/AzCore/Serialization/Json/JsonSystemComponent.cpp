@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Math/MathReflection.h>
+#include <AzCore/Serialization/Json/AnySerializer.h>
 #include <AzCore/Serialization/Json/ArraySerializer.h>
 #include <AzCore/Serialization/Json/BasicContainerSerializer.h>
 #include <AzCore/Serialization/Json/BoolSerializer.h>

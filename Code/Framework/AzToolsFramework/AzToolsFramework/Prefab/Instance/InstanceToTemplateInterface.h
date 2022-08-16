@@ -46,7 +46,7 @@ namespace AzToolsFramework
             //! @return The string matching the path to the entity alias
             virtual AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) = 0;
 
-            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) = 0;
+            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") = 0;
 
             //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
             //! @param providedPatch The patch to apply to the template.

@@ -42,20 +42,22 @@ namespace AzToolsFramework
     {
         void PrefabPublicHandler::RegisterPrefabPublicHandlerInterface()
         {
+            m_prefabFocusHandler.RegisterPrefabFocusInterface();
+
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceEntityMapperInterface");
 
             m_instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
             AZ_Assert(m_instanceToTemplateInterface, "PrefabPublicHandler - Could not retrieve instance of InstanceToTemplateInterface");
 
+            m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+            AZ_Assert(m_prefabLoaderInterface, "Could not get PrefabLoaderInterface on PrefabPublicHandler construction.");
+
             m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             AZ_Assert(m_prefabFocusInterface, "Could not get PrefabFocusInterface on PrefabPublicHandler construction.");
 
             m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
             AZ_Assert(m_prefabFocusPublicInterface, "Could not get PrefabFocusPublicInterface on PrefabPublicHandler construction.");
-
-            m_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            AZ_Assert(m_prefabLoaderInterface, "Could not get PrefabLoaderInterface on PrefabPublicHandler construction.");
 
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface, "Could not get PrefabSystemComponentInterface on PrefabPublicHandler construction.");
@@ -70,6 +72,15 @@ namespace AzToolsFramework
             AZ::Interface<PrefabPublicInterface>::Unregister(this);
 
             m_prefabUndoCache.Destroy();
+
+            m_prefabSystemComponentInterface = nullptr;
+            m_prefabFocusPublicInterface = nullptr;
+            m_prefabFocusInterface = nullptr;
+            m_prefabLoaderInterface = nullptr;
+            m_instanceToTemplateInterface = nullptr;
+            m_instanceEntityMapperInterface = nullptr;
+
+            m_prefabFocusHandler.UnregisterPrefabFocusInterface();
         }
 
         CreatePrefabResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
@@ -660,6 +671,12 @@ namespace AzToolsFramework
 
             PrefabDom parentEntityDomAfterAddingEntity;
             AZ::Entity* parentEntity = GetEntityById(parentId);
+
+            if (!parentEntity)
+            {
+                return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
+            }
+
             m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
 
             // Select the new entity (and deselect others).
@@ -724,6 +741,11 @@ namespace AzToolsFramework
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
+                // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
+                // of the entity can be stale. Therefore, check whether the parent entity is in the focus tree instead.
+                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(afterParentId);
+                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+
                 if (beforeParentId != afterParentId)
                 {
                     // If the entity parent changed, verify if the owning instance changed too
@@ -738,7 +760,7 @@ namespace AzToolsFramework
                         // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
                         AZStd::vector<Instance*> instancesInvolved;
 
-                        if (isInstanceContainerEntity)
+                        if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                         {
                             instancesInvolved.push_back(&owningInstance->get());
                         }
@@ -798,8 +820,11 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                        PrefabDom newPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(newPatch, beforeState, afterState);
+                        LinkId linkId = m_prefabFocusInterface->AppendPathFromFocusedInstanceToPatchPaths(newPatch, entityId);
+
+                        Internal_HandleContainerOverride(parentUndoBatch, entityId, newPatch, linkId);
                     }
                 }
                 else

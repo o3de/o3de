@@ -30,9 +30,6 @@ namespace AtomToolsFramework
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
 
-        using Node::PostLoadSetup;
-        void PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id) override;
-
         // Get the ID of the dynamic node config used to create this node
         const AZStd::string& GetConfigId() const;
 

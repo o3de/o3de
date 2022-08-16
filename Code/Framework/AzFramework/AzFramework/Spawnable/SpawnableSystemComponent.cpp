@@ -165,7 +165,7 @@ namespace AzFramework
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ_Assert(settingsRegistry, "Unable to change root spawnable callback because Settings Registry is not available.");
 
-        auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto LifecycleCallback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
         {
             LoadRootSpawnableFromSettingsRegistry();
         };
@@ -176,9 +176,9 @@ namespace AzFramework
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
-                if (path.starts_with(RootSpawnableRegistryKey))
+                if (notifyEventArgs.m_jsonKeyPath.starts_with(RootSpawnableRegistryKey))
                 {
                     LoadRootSpawnableFromSettingsRegistry();
                 }

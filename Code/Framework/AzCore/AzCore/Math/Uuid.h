@@ -46,10 +46,10 @@ namespace AZ
         static constexpr int ValidUuidStringLength = 32; /// Number of characters (data only, no extra formatting) in a valid UUID string
         static constexpr size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
         using FixedString = AZStd::fixed_string<MaxStringBuffer>;
-        Uuid() = default;
+        constexpr Uuid() = default;
         Uuid(const char* string, size_t stringLength = 0) { *this = CreateString(string, stringLength); }
 
-        static Uuid CreateNull();
+        static constexpr Uuid CreateNull() { return Uuid{}; };
         /// Create a Uuid (VAR_RFC_4122,VER_RANDOM)
         static Uuid Create()        { return CreateRandom(); }
         /**
@@ -178,7 +178,7 @@ namespace AZ
         }
 
         // or _m128i and VMX ???
-        alignas(16) unsigned char data[16];
+        alignas(16) unsigned char data[16]{};
     };
 } // namespace AZ
 

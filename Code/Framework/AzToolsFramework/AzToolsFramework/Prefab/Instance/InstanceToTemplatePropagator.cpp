@@ -140,7 +140,7 @@ namespace AzToolsFramework
             return AZStd::move(entityAliasPath);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId)
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
         {
             if (!providedPatch.IsArray())
             {
@@ -148,7 +148,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            AZStd::string prefix = GenerateEntityAliasPath(entityId);
+            prefix += GenerateEntityAliasPath(entityId);
 
             if (prefix.empty())
             {

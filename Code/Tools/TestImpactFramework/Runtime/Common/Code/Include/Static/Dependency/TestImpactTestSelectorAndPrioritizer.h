@@ -10,7 +10,6 @@
 
 #include <TestImpactFramework/TestImpactPolicy.h>
 
-#include <Artifact/Static/TestImpactDependencyGraphData.h>
 #include <Dependency/TestImpactChangeDependencyList.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -19,30 +18,22 @@
 
 namespace TestImpact
 {
-    template<typename TestTarget, typename ProductionTarget>
+    template<typename ProductionTarget, typename TestTarget>
     class DynamicDependencyMap;
 
     class Target;
 
-    //! Map of build targets and their dependency graph data.
-    //! For test targets, the dependency graph data is that of the build targets which the test target depends on.
-    //! For production targets, the dependency graph is that of the build targets that depend on it (dependers).
-    //! @note No dependency graph data is not an error, it simple means that the target cannot be prioritized.
-    using DependencyGraphDataMap = AZStd::unordered_map<const AZStd::string, DependencyGraphData>;
-
     //! Selects the test targets that cover a given set of changes based on the CRUD rules and optionally prioritizes the test
     //! selection according to their locality of their covering production targets in the their dependency graphs.
     //! @note the CRUD rules for how tests are selected can be found in the MicroRepo header file.
-    template<typename TestTarget, typename ProductionTarget>
+    template<typename ProductionTarget, typename TestTarget>
     class TestSelectorAndPrioritizer
     {
     public:
         //! Constructs the test selector and prioritizer for the given dynamic dependency map.
         //! @param dynamicDependencyMap The dynamic dependency map representing the repository source tree.
-        //! @param dependencyGraphDataMap The map of build targets and their dependency graph data for use in test prioritization.
         TestSelectorAndPrioritizer(
-            const DynamicDependencyMap<TestTarget, ProductionTarget>* dynamicDependencyMap,
-            DependencyGraphDataMap&& dependencyGraphDataMap);
+            const DynamicDependencyMap<ProductionTarget, TestTarget>& dynamicDependencyMap);
 
         virtual ~TestSelectorAndPrioritizer() = default;
 
@@ -50,7 +41,7 @@ namespace TestImpact
         //! @param changeDependencyList The resolved list of source dependencies for the CRUD source changes.
         //! @param testSelectionStrategy The test selection and prioritization strategy to apply to the given CRUD source changes.
         AZStd::vector<const TestTarget*> SelectTestTargets(
-            const ChangeDependencyList<TestTarget, ProductionTarget>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
+            const ChangeDependencyList<ProductionTarget, TestTarget>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
 
     private:
         //! Map of selected test targets and the production targets they cover for the given set of source changes.
@@ -59,18 +50,16 @@ namespace TestImpact
         //! Selects the test targets covering the set of source changes in the change dependency list.
         //! @param changeDependencyList The change dependency list containing the CRUD source changes to select tests for.
         //! @returns The selected tests and their covering production targets for the given set of source changes.
-        SelectedTestTargetAndDependerMap SelectTestTargets(const ChangeDependencyList<TestTarget, ProductionTarget>& changeDependencyList);
+        SelectedTestTargetAndDependerMap SelectTestTargets(const ChangeDependencyList<ProductionTarget, TestTarget>& changeDependencyList);
 
         //! Prioritizes the selected tests according to the specified test selection strategy,
-        //! @note If no dependency graph data exists for a given test target then that test target still be selected albeit not prioritized.
         //! @param selectedTestTargetAndDependerMap The selected tests to prioritize.
         //! @param testSelectionStrategy The test selection strategy to prioritize the selected tests.
         //! @returns The selected tests either in either arbitrary order or in prioritized with highest priority first.
         AZStd::vector<const TestTarget*> PrioritizeSelectedTestTargets(
             const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
-        const DynamicDependencyMap<TestTarget, ProductionTarget>* m_dynamicDependencyMap;
-        DependencyGraphDataMap m_dependencyGraphDataMap;
+        const DynamicDependencyMap<ProductionTarget, TestTarget>* m_dynamicDependencyMap;
 
     protected:
         //! Action to perform when production sources are created.
@@ -83,7 +72,7 @@ namespace TestImpact
         virtual void UpdateProductionSourceWithCoverageAction(
             const ProductionTarget* target,
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-            const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
+            const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
 
         //! Action to perform when test sources with coverage are updated.
         virtual void UpdateTestSourceWithCoverageAction(
@@ -103,32 +92,31 @@ namespace TestImpact
         //! Action to perform when sources that cannot be determined to be production or test sources without coverage are updated.
         virtual void UpdateIndeterminateSourceWithoutCoverageAction(
             SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-            const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
+            const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
 
         //! Action to perform when sources that cannot be determined to be production or test sources without coverage are deleted.
         virtual void DeleteIndeterminateSourceWithoutCoverageAction(
-            SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<TestTarget, ProductionTarget>& sourceDependency);
+            SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency);
     };
 
-    template<typename TestTarget, typename ProductionTarget>
-    TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::TestSelectorAndPrioritizer(
-        const DynamicDependencyMap<TestTarget, ProductionTarget>* dynamicDependencyMap, DependencyGraphDataMap&& dependencyGraphDataMap)
-        : m_dynamicDependencyMap(dynamicDependencyMap)
-        , m_dependencyGraphDataMap(AZStd::move(dependencyGraphDataMap))
+    template<typename ProductionTarget, typename TestTarget>
+    TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::TestSelectorAndPrioritizer(
+        const DynamicDependencyMap<ProductionTarget, TestTarget>& dynamicDependencyMap)
+        : m_dynamicDependencyMap(&dynamicDependencyMap)
     {
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::SelectTestTargets(
-        const ChangeDependencyList<TestTarget, ProductionTarget>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
+    template<typename ProductionTarget, typename TestTarget>
+    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SelectTestTargets(
+        const ChangeDependencyList<ProductionTarget, TestTarget>& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
     {
         const auto selectedTestTargetAndDependerMap = SelectTestTargets(changeDependencyList);
         const auto prioritizedSelectedTests = PrioritizeSelectedTestTargets(selectedTestTargetAndDependerMap, testSelectionStrategy);
         return prioritizedSelectedTests;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::CreateProductionSourceAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateProductionSourceAction(
         const ProductionTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
@@ -140,8 +128,8 @@ namespace TestImpact
         }
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::CreateTestSourceAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::CreateTestSourceAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
@@ -149,11 +137,11 @@ namespace TestImpact
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::UpdateProductionSourceWithCoverageAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateProductionSourceWithCoverageAction(
         const ProductionTarget* target,
         SelectedTestTargetAndDependerMap& selectedTestTargetMap,
-        const SourceDependency<TestTarget, ProductionTarget>& sourceDependency)
+        const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
     {
         // Action
         // 1. Select all test targets covering this file
@@ -163,8 +151,8 @@ namespace TestImpact
         }
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::UpdateTestSourceWithCoverageAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateTestSourceWithCoverageAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
@@ -172,8 +160,8 @@ namespace TestImpact
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::UpdateProductionSourceWithoutCoverageAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateProductionSourceWithoutCoverageAction(
         [[maybe_unused]] const ProductionTarget* target,
         [[maybe_unused]] SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
@@ -181,8 +169,8 @@ namespace TestImpact
         // 1. Do nothing
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::UpdateTestSourceWithoutCoverageAction(
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateTestSourceWithoutCoverageAction(
         const TestTarget* target, SelectedTestTargetAndDependerMap& selectedTestTargetMap)
     {
         // Action
@@ -190,9 +178,9 @@ namespace TestImpact
         selectedTestTargetMap.insert(target);
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::UpdateIndeterminateSourceWithoutCoverageAction(
-        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<TestTarget, ProductionTarget>& sourceDependency)
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::UpdateIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
     {
         // Action
         // 1. Log potential orphaned source file warning (handled prior by DynamicDependencyMap)
@@ -205,9 +193,9 @@ namespace TestImpact
         }
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    void TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::DeleteIndeterminateSourceWithoutCoverageAction(
-        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<TestTarget, ProductionTarget>& sourceDependency)
+    template<typename ProductionTarget, typename TestTarget>
+    void TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::DeleteIndeterminateSourceWithoutCoverageAction(
+        SelectedTestTargetAndDependerMap& selectedTestTargetMap, const SourceDependency<ProductionTarget, TestTarget>& sourceDependency)
     {
         // Action
         // 1. Select all test targets covering this file
@@ -218,9 +206,9 @@ namespace TestImpact
         }
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    typename TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::SelectTestTargets(
-        const ChangeDependencyList<TestTarget, ProductionTarget>& changeDependencyList)
+    template<typename ProductionTarget, typename TestTarget>
+    typename TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SelectedTestTargetAndDependerMap TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::SelectTestTargets(
+        const ChangeDependencyList<ProductionTarget, TestTarget>& changeDependencyList)
     {
         SelectedTestTargetAndDependerMap selectedTestTargetMap;
 
@@ -361,8 +349,8 @@ namespace TestImpact
         return selectedTestTargetMap;
     }
 
-    template<typename TestTarget, typename ProductionTarget>
-    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<TestTarget, ProductionTarget>::PrioritizeSelectedTestTargets(
+    template<typename ProductionTarget, typename TestTarget>
+    AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::PrioritizeSelectedTestTargets(
         const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
         [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
     {
