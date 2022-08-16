@@ -9,8 +9,8 @@ Tools for inspecting GitHub CODEOWNERS files, with a commandline interface
 
 import argparse
 import logging
-import pathlib
 import os
+import pathlib
 import re
 import sys
 

@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Unit tests for ly_test_tools.cli.codeowners_hint
 """
-import os
 import pytest
 
 import ly_test_tools.cli.codeowners_hint as hint
