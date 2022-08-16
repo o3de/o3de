@@ -123,6 +123,7 @@ private:
 
 int main(int argc, char **argv)
 {
+    const AZ::Debug::Trace tracer;
     ComponentApplicationWrapper componentApplicationWrapper;
 
     QApplication::setOrganizationName("O3DE");
