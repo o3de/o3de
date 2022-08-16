@@ -101,8 +101,9 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
+                // for display use the display name when the name column is aksed for, otherwise use the path.
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
-                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
                 style->drawItemText(
@@ -269,9 +270,9 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
                 }
-
+                // if we are asking for the name, use the display name.  Else we must be asking for the path, so use that.
                 QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
-                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
                 QStyleOptionViewItem optionV4{ option };

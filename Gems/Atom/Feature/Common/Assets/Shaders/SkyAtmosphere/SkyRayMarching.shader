@@ -8,7 +8,7 @@
         }
     },
     "DrawList": "forward",
-    "BlendState": {
+    "GlobalTargetBlendState": {
         "Enable": true,
         "BlendSource": "One",
         "BlendDest": "One",

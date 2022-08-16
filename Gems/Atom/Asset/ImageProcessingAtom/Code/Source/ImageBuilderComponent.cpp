@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 29;   // [GHI-8903]
+        builderDescriptor.m_version = 31;   // [GHI-6381]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);

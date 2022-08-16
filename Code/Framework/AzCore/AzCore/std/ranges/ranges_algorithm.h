@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/function/identity.h>
+#include <AzCore/std/ranges/iter_move.h>
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/ranges/ranges_functional.h>
 #include <AzCore/std/ranges/subrange.h>
@@ -15,6 +16,8 @@
 
 namespace AZStd::ranges
 {
+    // Algorithm result types
+    // https://eel.is/c++draft/algorithms#results
     template<class T>
     struct min_max_result
     {
@@ -45,18 +48,39 @@ namespace AZStd::ranges
         AZ_NO_UNIQUE_ADDRESS I in;
         AZ_NO_UNIQUE_ADDRESS F fun;
 
-        template<class I2, class F2, class = enable_if_t<convertible_to<const I&, I2>&& convertible_to<const F&, F2>>>
+        template<class I2, class F2, class = enable_if_t<convertible_to<const I&, I2> && convertible_to<const F&, F2>>>
         constexpr operator in_fun_result<I2, F2>() const&
         {
             return { in, fun };
         }
 
-        template<class I2, class F2, enable_if_t<convertible_to<I, I2>&& convertible_to<F, F2>>>
+        template<class I2, class F2, enable_if_t<convertible_to<I, I2> && convertible_to<F, F2>>>
         constexpr operator in_fun_result<I2, F2>() &&
         {
             return { AZStd::move(in), AZStd::move(fun) };
         }
     };
+
+
+    template<class I, class O>
+    struct in_out_result
+    {
+        AZ_NO_UNIQUE_ADDRESS I in;
+        AZ_NO_UNIQUE_ADDRESS O out;
+
+        template<class I2, class O2, class = enable_if_t<convertible_to<const I&, I2> && convertible_to<const O&, O2>>>
+        constexpr operator in_out_result<I2, O2>() const&
+        {
+            return { in, out };
+        }
+
+        template<class I2, class O2, class = enable_if_t<convertible_to<I, I2> && convertible_to<O, O2>>>
+        constexpr operator in_out_result<I2, O2>()&&
+        {
+            return { AZStd::move(in), AZStd::move(out) };
+        }
+    };
+
 
     namespace Internal
     {
@@ -1217,5 +1241,228 @@ namespace AZStd::ranges
     {
         constexpr Internal::count_fn count{};
         constexpr Internal::count_if_fn count_if{};
+    }
+
+    // Mutating Sequence Operations
+    // https://eel.is/c++draft/algorithms#alg.modifying.operations
+
+    // ranges::copy
+    // ranges::copy_if
+    // ranges::copy_n
+    // ranges::copy_backward
+    template<class I, class O>
+    using copy_result = in_out_result<I, O>;
+    template<class I, class O>
+    using copy_if_result = in_out_result<I, O>;
+    template<class I, class O>
+    using copy_n_result = in_out_result<I, O>;
+    template<class I1, class I2>
+    using copy_backward_result = in_out_result<I1, I2>;
+
+    namespace Internal
+    {
+        struct copy_fn
+        {
+            template<class I, class S, class O>
+            constexpr auto operator()(I first, S last, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirectly_copyable<I, O>>
+                >, copy_result<I, O>>
+            {
+                for (; first != last; ++first, ++result)
+                {
+                    *result = *first;
+                }
+
+                return { AZStd::move(last), AZStd::move(result) };
+            }
+
+            template<class R, class O>
+            constexpr auto operator()(R&& r, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirectly_copyable<iterator_t<R>, O>>
+                >, copy_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(result));
+            }
+        };
+
+        struct copy_if_fn
+        {
+            template<class I, class S, class O, class Proj = identity, class Pred>
+            constexpr auto operator()(I first, S last, O result, Pred pred, Proj proj = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>,
+                bool_constant<indirectly_copyable<I, O>>
+                >, copy_if_result<I, O>>
+            {
+                for (; first != last; ++first)
+                {
+                    if (AZStd::invoke(pred, AZStd::invoke(proj, *first)))
+                    {
+                        *result = *first;
+                        ++result;
+                    }
+                }
+
+                return { AZStd::move(last), AZStd::move(result) };
+            }
+
+            template<class R, class O, class Proj = identity, class Pred>
+            constexpr auto operator()(R&& r, O result, Pred pred, Proj proj = {}) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<iterator_t<R>, Proj>>>,
+                bool_constant<indirectly_copyable<iterator_t<R>, O>>
+                >, copy_if_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(result),
+                    AZStd::move(pred), AZStd::move(proj));
+            }
+        };
+
+        struct copy_n_fn
+        {
+            template<class I, class O>
+            constexpr auto operator()(I first, iter_difference_t<I> n, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirectly_copyable<I, O>>
+                >, copy_n_result<I, O>>
+            {
+                for (; n > 0; --n, ++first, ++result)
+                {
+                    *result = *first;
+                }
+
+                return { AZStd::move(first), AZStd::move(result) };
+            }
+        };
+
+        struct copy_backward_fn
+        {
+            template<class I1, class S1, class O>
+            constexpr auto operator()(I1 first, S1 last, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<bidirectional_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<bidirectional_iterator<O>>,
+                bool_constant<indirectly_copyable<I1, O>>
+                >, copy_backward_result<I1, O>>
+            {
+                for (I1 iter{ last }; iter != first;)
+                {
+                    *--result = *--iter;
+                }
+
+                return { AZStd::move(last), AZStd::move(result) };
+            }
+
+            template<class R, class O>
+            constexpr auto operator()(R&& r, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<bidirectional_range<R>>,
+                bool_constant<bidirectional_iterator<O>>,
+                bool_constant<indirectly_copyable<iterator_t<R>, O>>
+                >, copy_backward_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(result));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::copy_fn copy{};
+        constexpr Internal::copy_if_fn copy_if{};
+        constexpr Internal::copy_n_fn copy_n{};
+        constexpr Internal::copy_backward_fn copy_backward{};
+    }
+
+    // ranges::move
+
+    // ranges::copy_backward
+    template<class I, class O>
+    using move_result = in_out_result<I, O>;
+    template<class I1, class I2>
+    using move_backward_result = in_out_result<I1, I2>;
+
+    namespace Internal
+    {
+        struct move_fn
+        {
+            template<class I, class S, class O>
+                constexpr auto operator()(I first, S last, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirectly_movable<I, O>>
+                >, move_result<I, O>>
+            {
+                for (; first != last; ++first, ++result)
+                {
+                    *result = AZStd::ranges::iter_move(first);
+                }
+
+                return { AZStd::move(first), AZStd::move(result) };
+            }
+
+            template<class R, class O>
+            constexpr auto operator()(R&& r, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<weakly_incrementable<O>>,
+                bool_constant<indirectly_movable<iterator_t<R>, O>>
+                >, move_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(result));
+            }
+        };
+
+        struct move_backward_fn
+        {
+            template<class I1, class S1, class O>
+            constexpr auto operator()(I1 first, S1 last, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<bidirectional_iterator<I1>>,
+                bool_constant<sentinel_for<S1, I1>>,
+                bool_constant<bidirectional_iterator<O>>,
+                bool_constant<indirectly_movable<I1, O>>
+                >, move_backward_result<I1, O>>
+            {
+                for (I1 iter{ last }; iter != first;)
+                {
+                    *--result = AZStd::ranges::iter_move(--iter);
+                }
+
+                return { AZStd::move(last), AZStd::move(result) };
+            }
+
+            template<class R, class O>
+            constexpr auto operator()(R&& r, O result) const
+                -> enable_if_t<conjunction_v<
+                bool_constant<bidirectional_range<R>>,
+                bool_constant<bidirectional_iterator<O>>,
+                bool_constant<indirectly_movable<iterator_t<R>, O>>
+                >, move_backward_result<borrowed_iterator_t<R>, O>>
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(result));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::move_fn move{};
+        constexpr Internal::move_backward_fn move_backward{};
     }
 } // namespace AZStd::ranges

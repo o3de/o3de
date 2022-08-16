@@ -19,10 +19,9 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // FolderThumbnailKey
         //////////////////////////////////////////////////////////////////////////
-        FolderThumbnailKey::FolderThumbnailKey(const char* folderPath, bool isGem)
+        FolderThumbnailKey::FolderThumbnailKey(const char* folderPath)
             : ThumbnailKey()
             , m_folderPath(folderPath)
-            , m_isGem(isGem)
         {}
 
         const AZStd::string& FolderThumbnailKey::GetFolderPath() const
@@ -30,24 +29,14 @@ namespace AzToolsFramework
             return m_folderPath;
         }
 
-        bool FolderThumbnailKey::IsGem() const
-        {
-            return m_isGem;
-        }
-
         bool FolderThumbnailKey::Equals(const ThumbnailKey* other) const
         {
-            if (!ThumbnailKey::Equals(other))
-            {
-                return false;
-            }
-            return m_isGem == azrtti_cast<const FolderThumbnailKey*>(other)->IsGem();
+            return ThumbnailKey::Equals(other);
         }
         //////////////////////////////////////////////////////////////////////////
         // FolderThumbnail
         //////////////////////////////////////////////////////////////////////////
         static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_16.svg";
-        static constexpr const char* GemIconPath = "Assets/Editor/Icons/AssetBrowser/GemFolder_16.svg";
 
         FolderThumbnail::FolderThumbnail(SharedThumbnailKey key)
             : Thumbnail(key)
@@ -55,10 +44,9 @@ namespace AzToolsFramework
 
         void FolderThumbnail::LoadThread()
         {
-            auto folderKey = azrtti_cast<const FolderThumbnailKey*>(m_key.data());
-            AZ_Assert(folderKey, "Incorrect key type, excpected FolderThumbnailKey");
+            AZ_Assert(azrtti_cast<const FolderThumbnailKey*>(m_key.data()), "Incorrect key type, excpected FolderThumbnailKey");
 
-            const char* folderIcon = folderKey->IsGem() ? GemIconPath : FolderIconPath;
+            const char* folderIcon = FolderIconPath;
             auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / folderIcon;
             m_pixmap.load(absoluteIconPath.c_str());
             m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
