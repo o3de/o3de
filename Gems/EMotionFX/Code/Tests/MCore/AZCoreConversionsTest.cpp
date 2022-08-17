@@ -23,7 +23,7 @@ namespace MCore
 
     TEST_P(AngleRadianTestFixtureXYZ, AzEulerAnglesToAzQuat) {
         auto& param = GetParam();
-        EXPECT_THAT(MCore::AzEulerAnglesToAzQuat(param.eular.GetX(),param.eular.GetY(),param.eular.GetZ()), IsClose(param.result));
+        EXPECT_THAT(MCore::AzEulerAnglesToAzQuat(param.eular.GetX(),param.eular.GetY(),param.eular.GetZ()), UnitTest::IsClose(param.result));
     }
 
     // same test cases in QuaternionTests.cpp AngleRadianTestFixtureZYX
