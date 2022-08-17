@@ -17,11 +17,6 @@
 #include <QObject>
 #include <QModelIndex>
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -40,10 +35,9 @@ namespace AzToolsFramework
             ~SourceAssetBrowserEntry() override;
 
             QVariant data(int column) const override;
-            static void Reflect(AZ::ReflectContext* context);
             AssetEntryType GetEntryType() const override;
 
-            const AZStd::string& GetExtension() const;
+            const AZStd::string GetExtension() const;
             AZ::s64 GetFileID() const;
             AZ::s64 GetSourceID() const;
             AZ::s64 GetScanFolderID() const;
@@ -60,7 +54,6 @@ namespace AzToolsFramework
             static const SourceAssetBrowserEntry* GetSourceByUuid(const AZ::Uuid& sourceUuid);
 
         protected:
-            void UpdateChildPaths(AssetBrowserEntry* child) const override;
             void PathsUpdated() override;
 
         private:

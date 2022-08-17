@@ -115,7 +115,7 @@ namespace MaterialCanvas
                 registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
 
             // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
-            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", registeredDataTypes);
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas.azasset", registeredDataTypes);
             graphContext->CreateModuleGraphManager();
             return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
         };
@@ -777,7 +777,7 @@ namespace MaterialCanvas
                         [&]([[maybe_unused]] const AZStd::string& blockHeader)
                         {
                             AZStd::vector<AZStd::string> inputSlotNames;
-                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n", false, false);
+                            AZ::StringFunc::Tokenize(blockHeader, inputSlotNames, ";:, \t\n\r\\/", false, false);
                             return GetInstructionsFromConnectedNodes(currentNode, inputSlotNames);
                         },
                         templateLines);

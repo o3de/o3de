@@ -67,21 +67,20 @@ namespace TestImpact
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<ProductionTarget, TestTarget>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
-        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(
-            m_dynamicDependencyMap.get(), BuildTargetDependencyGraph{});
+        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(*m_dynamicDependencyMap.get());
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
         if (!testsToExclude.empty())
         {
             // Construct using data from excludeTestFile
             m_testTargetExcludeList =
-                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(), testsToExclude);
         }
         else
         {
             // Construct using data from config file.
             m_testTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedTargets);
+                m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(), m_config.m_target.m_excludedTargets);
         }
 
         // Construct the test engine with the workspace path and launcher binaries
@@ -294,7 +293,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> excludedTestTargets;
         
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
             if (m_testTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {

@@ -350,6 +350,17 @@ namespace AzToolsFramework
                 return findInstancesResult->get();
             }
 
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom)
+            {
+                PrefabDomValueReference findInstancesResult = FindPrefabDomValue(prefabDom, PrefabDomUtils::InstancesName);
+                if (!findInstancesResult.has_value() || !(findInstancesResult->get().IsObject()))
+                {
+                    return AZStd::nullopt;
+                }
+
+                return findInstancesResult->get();
+            }
+
             AZ::JsonSerializationResult::ResultCode ApplyPatches(
                 PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
             {

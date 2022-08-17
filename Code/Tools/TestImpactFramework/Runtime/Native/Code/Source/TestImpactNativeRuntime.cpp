@@ -209,25 +209,25 @@ namespace TestImpact
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<ProductionTarget, TestTarget>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
-        m_testSelectorAndPrioritizer =
-            AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(m_dynamicDependencyMap.get(), BuildTargetDependencyGraph{});
+        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>>(*m_dynamicDependencyMap.get());
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
         if (!testsToExclude.empty())
         {
             // Construct using data from excludeTestFile
             m_regularTestTargetExcludeList =
-                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(), testsToExclude);
             m_instrumentedTestTargetExcludeList =
-                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(), testsToExclude);
         }
         else
         {
             // Construct using data from config file.
             m_regularTestTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedTargets.m_excludedRegularTestTargets);
+                m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(),
+                m_config.m_target.m_excludedTargets.m_excludedRegularTestTargets);
             m_instrumentedTestTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(),
+                m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList(),
                 m_config.m_target.m_excludedTargets.m_excludedInstrumentedTestTargets);
         }
 
@@ -310,7 +310,7 @@ namespace TestImpact
         //EnumerateMutatedTestTargets(changeDependencyList);
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
-        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
             if (!selectedTestTargetSet.contains(&testTarget))
             {
@@ -370,7 +370,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> excludedTestTargets;
         
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
             if (m_regularTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
@@ -725,7 +725,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> excludedTestTargets;
 
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
             if (m_instrumentedTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {

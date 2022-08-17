@@ -17,11 +17,11 @@
     },
 
     // Overwrite the mask texture with any non-zero mask values from the fragment shader output
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : true,
-        "BlendSource" : "None",
-        "BlendDest" : "None",
+        "BlendSource" : "Zero",
+        "BlendDest" : "Zero",
         "BlendOp" : "Maximum"
     },
 

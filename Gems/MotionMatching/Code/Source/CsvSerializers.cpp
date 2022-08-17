@@ -139,8 +139,8 @@ namespace EMotionFX::MotionMatching
             // Store rotation as the X and Y axes The Z axis can be reconstructed by the cross product of the X and Y axes.
             const AZ::Quaternion rotation = transform.m_rotation;
             AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotation);
-            WriteVector3ToString(rotationMatrix.GetBasisX(), outText);
-            WriteVector3ToString(rotationMatrix.GetBasisY(), outText);
+            WriteVector3ToString(rotationMatrix.GetBasisX().GetNormalizedSafe(), outText);
+            WriteVector3ToString(rotationMatrix.GetBasisY().GetNormalizedSafe(), outText);
         }
     }
 

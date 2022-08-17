@@ -15,10 +15,10 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <MotionMatchingData.h>
-#include <MotionMatchingInstance.h>
-#include <FrameDatabase.h>
+#include <FeatureMatrixTransformer.h>
 #include <FeatureVelocity.h>
+#include <FrameDatabase.h>
+#include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
 
 namespace EMotionFX::MotionMatching

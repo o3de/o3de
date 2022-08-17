@@ -22,9 +22,12 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Manipulators/AngularManipulatorCircleViewFeedback.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/RotationManipulators.h>
@@ -40,8 +43,6 @@
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-#include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <Entity/EditorEntityContextBus.h>
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
@@ -50,6 +51,7 @@
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
+static constexpr AZStd::string_view TransformModeChangedUpdaterIdentifier = "o3de.updater.onTransformModeChanged";
 
 namespace AzToolsFramework
 {
@@ -154,9 +156,9 @@ namespace AzToolsFramework
     static const char* const DuplicateUndoRedoDesc = DuplicateTitle;
     static const char* const DeleteUndoRedoDesc = DeleteTitle;
 
-    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode";
-    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode";
-    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode";
+    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode (1)";
+    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode (2)";
+    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode (3)";
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
@@ -1421,6 +1423,10 @@ namespace AzToolsFramework
             RotationManipulatorRadius(), AzFramework::ViewportColors::XAxisColor, AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
+        AZStd::shared_ptr<AngularManipulatorCircleViewFeedback> angularManipulatorCircleViewFeedback =
+            AZStd::make_shared<AngularManipulatorCircleViewFeedback>();
+        rotationManipulators->m_angularManipulatorFeedback = angularManipulatorCircleViewFeedback;
+
         struct SharedRotationState
         {
             AZ::Quaternion m_savedOrientation = AZ::Quaternion::CreateIdentity();
@@ -1432,8 +1438,11 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable
+            [this, sharedRotationState,
+             angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action) mutable
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
                 // important to sort entityIds based on hierarchy order when updating transforms
@@ -1449,9 +1458,11 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallMouseMoveCallback(
-            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(),
-             sharedRotationState](const AngularManipulator::Action& action) mutable
+            [this, prevModifiers = ViewportInteraction::KeyboardModifiers(), sharedRotationState,
+             angularManipulatorCircleViewFeedback](const AngularManipulator::Action& action) mutable
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
                 const Influence influence = InfluenceFromModifiers(action.m_modifiers);
 
@@ -1543,8 +1554,10 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
+            [this, sharedRotationState, angularManipulatorCircleViewFeedback]([[maybe_unused]] const AngularManipulator::Action& action)
             {
+                angularManipulatorCircleViewFeedback->m_mostRecentAction = action;
+
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
                     sharedRotationState->m_entityIds);
@@ -2511,6 +2524,8 @@ namespace AzToolsFramework
             return;
         }
 
+        m_actionManagerInterface->RegisterActionUpdater(TransformModeChangedUpdaterIdentifier);
+
         m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
 
         // Duplicate
@@ -2943,6 +2958,7 @@ namespace AzToolsFramework
 
         // Transform Mode - Move
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.move";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Move";
             actionProperties.m_description = "Select and move selected object(s)";
@@ -2951,25 +2967,27 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.move",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Translation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Translation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 100);
         }
 
         // Transform Mode - Rotate
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.rotate";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Rotate";
             actionProperties.m_description = "Select and rotate selected object(s)";
@@ -2978,25 +2996,27 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.rotate",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
                     return GetTransformMode() == Mode::Rotation;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 200);
         }
 
         // Transform Mode - Scale
         {
+            AZStd::string actionIdentifier = "o3de.action.edit.transform.scale";
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = "Scale";
             actionProperties.m_description = "Select and rotate selected object(s)";
@@ -3005,21 +3025,22 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->RegisterCheckableAction(
                 EditorMainWindowActionContextIdentifier,
-                "o3de.action.edit.transform.scale",
+                actionIdentifier,
                 actionProperties,
-                [&]()
+                [this]()
                 {
                     SetTransformMode(Mode::Rotation);
                 },
-                [&]() -> bool
+                [this]() -> bool
                 {
-                    return GetTransformMode() == Mode::Rotation;
+                    return GetTransformMode() == Mode::Scale;
                 }
             );
 
-            // TODO - Update when the transform mode changes.
+            // Update when the transform mode changes.
+            m_actionManagerInterface->AddActionToUpdater(TransformModeChangedUpdaterIdentifier, actionIdentifier);
 
-            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, actionIdentifier, 300);
         }
     }
 
@@ -3280,7 +3301,8 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
+    void EditorTransformComponentSelection::OverrideComponentModeSwitcher(
+        AZStd::shared_ptr<ComponentModeFramework::ComponentModeSwitcher> componentModeSwitcher)
     {
         m_componentModeSwitcher = componentModeSwitcher;
     }
@@ -3328,7 +3350,13 @@ namespace AzToolsFramework
 
         m_mode = mode;
 
-        // set the corresponding Viewport UI button to active
+        // Update Transform Mode Actions.
+        if (m_actionManagerInterface)
+        {
+            m_actionManagerInterface->TriggerActionUpdater(TransformModeChangedUpdaterIdentifier);
+        }
+
+        // Set the corresponding Viewport UI button to active.
         switch (mode)
         {
         case Mode::Translation:
@@ -4108,6 +4136,8 @@ namespace AzToolsFramework
             // if we have an active manipulator, ensure we refresh the view while drawing
             // in case it needs to be recalculated based on the current view position
             m_entityIdManipulators.m_manipulators->RefreshView(cameraState.m_position);
+            // do any additional drawing for this aggregate manipulator/view pairing
+            m_entityIdManipulators.m_manipulators->DisplayFeedback(debugDisplay, cameraState);
 
             if (m_entityIdManipulators.m_manipulators->PerformingAction())
             {

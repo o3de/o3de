@@ -81,6 +81,10 @@ namespace AZ
         Name FindName(Name::Hash hash) const;
 
         NameDictionary();
+        //! Constructs a NameDictionary with a fixed amount of hash slots
+        //! @param maxHashSlots exclusive max for the hashValue that be calculated. Can be used to generate more hash collisoins
+        //! @precondition maxHashSlots value are [1, 2^64-1)
+        explicit NameDictionary(AZ::u64 maxHashSlots);
         ~NameDictionary();
 
         //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
@@ -135,5 +139,11 @@ namespace AZ
         //! so we keep track of them here to ensure their name data gets correctly cleaned up
         //! when this dictionary is shut down.
         Name m_deferredHead;
+
+        //! Set the maximum number of hash slots to 2^32
+        //! hash values will be mapped between [0, m_maxHashSlots)
+        //! Can only be configured at construction time and cannot change
+        //! value cannot be 0
+        const AZ::u64 m_maxHashSlots{ static_cast<AZ::u64>(AZStd::numeric_limits<Name::Hash>::max()) + 1 };
     };
 }
