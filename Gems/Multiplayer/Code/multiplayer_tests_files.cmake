@@ -16,12 +16,14 @@ set(FILES
     Tests/ClientHierarchyTests.cpp
     Tests/ServerHierarchyBenchmarks.cpp
     Tests/CommonHierarchySetup.h
+    Tests/CommonNetworkEntitySetup.h
     Tests/CommonBenchmarkSetup.h
     Tests/IMultiplayerConnectionMock.h
     Tests/IMultiplayerSpawnerMock.h
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/MultiplayerSystemTests.cpp
+    Tests/NetworkEntityTests.cpp
     Tests/NetworkInputTests.cpp
     Tests/NetworkTransformTests.cpp
     Tests/RewindableContainerTests.cpp
