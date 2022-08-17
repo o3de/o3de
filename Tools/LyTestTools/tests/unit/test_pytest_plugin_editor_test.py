@@ -5,13 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import pytest
-import os
 import unittest.mock as mock
 import unittest
 
 import ly_test_tools._internal.pytest_plugin.multi_testing as editor_test
 
 pytestmark = pytest.mark.SUITE_smoke
+
 
 class TestEditorTest(unittest.TestCase):
 
@@ -24,7 +24,7 @@ class TestEditorTest(unittest.TestCase):
         mock_obj.__bases__ = [mock_base]
 
         editor_test.pytest_pycollect_makeitem(mock_collector, mock_name, mock_obj)
-        mock_base.pytest_custom_makeitem.assert_called_once_with(mock_collector, mock_name, mock_obj)
+        mock_base.pytest_multitest_makeitem.assert_called_once_with(mock_collector, mock_name, mock_obj)
 
     def test_PytestCollectionModifyitem_OneValidClass_CallsOnce(self):
         mock_item = mock.MagicMock()

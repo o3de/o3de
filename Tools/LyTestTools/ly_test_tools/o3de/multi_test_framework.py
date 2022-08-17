@@ -35,7 +35,7 @@ import warnings
 import pytest
 import _pytest.python
 import _pytest.outcomes
-from _pytest.skipping import pytest_runtest_setup as skipping_pytest_runtest_setup
+from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test_utils as editor_utils
@@ -224,7 +224,7 @@ class Result(object):
                      test_spec: type(AbstractTestBase),
                      output: str,
                      ret_code: int,
-                     stacktrace: str,
+                     stacktrace: str or None,
                      log_output: str or None) -> None:
             """
             Represents a test which failed with an unexpected crash
@@ -317,8 +317,8 @@ class Result(object):
             self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
-            self.log_output = log_output
             self.extra_info = extra_info
+            self.log_output = log_output
 
         def __str__(self):
             output = (
@@ -341,11 +341,11 @@ class AbstractTestSuite(object):
     The new test suite class you create for your tests should inherit from this base AbstractTestSuite class.
     """
     # When this object is inherited, add any custom attributes as needed.
-    # Extra cmdline arguments to supply for every editor instance for this test suite
+    # Extra cmdline arguments to supply for every executable instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
-    # Maximum time in seconds for a single editor to stay open across the set of shared tests
+    # Maximum time in seconds for a single executable to stay open across the set of shared tests
     timeout_shared_test = 300
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
     _timeout_crash_log = 20
@@ -490,7 +490,7 @@ class AbstractTestSuite(object):
                             # Hitting this assert could mean if there was an error executing the runner
                             if result_key not in collected_test_data.results:
                                 raise TestResultException(f"No results found for {result_key}. "
-                                                          f"Test may not have ran due to the Editor "
+                                                          f"Test may not have ran due to the executable "
                                                           f"shutting down. Check for issues in previous "
                                                           f"tests.")
                             cls._report_result(result_key, collected_test_data.results[result_key])
@@ -567,7 +567,7 @@ class AbstractTestSuite(object):
         Retrieves the number of parallel executables preference based on cmdline overrides or class overrides.
         Defaults to self.get_number_parallel_executables() from inherited AbstractTestSuite class.
         :request: The Pytest Request object
-        :return: The number of parallel editors to use
+        :return: The number of parallel executables to use
         """
         parallel_executables_value = request.config.getoption("--parallel-executables", None)
         if parallel_executables_value:
@@ -679,7 +679,7 @@ class AbstractTestSuite(object):
 
         def will_run(item):
             try:
-                skipping_pytest_runtest_setup(item)
+                skip_pytest_runtest_setup(item)
                 return True
             except (Warning, Exception, _pytest.outcomes.OutcomeException) as ex:
                 # intentionally broad to avoid events other than system interrupts
@@ -764,12 +764,12 @@ class AbstractTestSuite(object):
                           test_spec: AbstractTestBase,
                           cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
-        Starts the editor with the given test and returns a result dict with a single element specifying the result
+        Starts the executable with the given test and returns a result dict with a single element specifying the result
         :param request: The pytest request
         :param workspace: The LyTestTools Workspace object
         :param executable: The program executable under test
         :param run_id: The unique run id
-        :param log_name: The name of the editor log to retrieve
+        :param log_name: The name of the executabl log to retrieve
         :param test_spec: The type of test class
         :param cmdline_args: Any additional command line args
         :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
@@ -799,8 +799,9 @@ class AbstractTestSuite(object):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         test_case_name = editor_utils.compile_test_case_name(request, test_spec)
         cmdline = []
-        log_path_function = None
-        log_content_function = None
+        # Since there are no default logging features, we default to using Editor logging for any executable.
+        log_path_function = editor_utils.retrieve_log_path
+        log_content_function = editor_utils.retrieve_editor_log_content
         if type(executable) is WinEditor:
             log_path_function = editor_utils.retrieve_log_path
             log_content_function = editor_utils.retrieve_editor_log_content
@@ -920,7 +921,7 @@ class AbstractTestSuite(object):
         :param request: The Pytest Request
         :param workspace: The LyTestTools Workspace object
         :param collected_test_data: The TestData from calling collected_test_data()
-        :param test_spec_list: A list of EditorSharedTest tests to run
+        :param test_spec_list: A list of SharedTest tests to run
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
@@ -942,7 +943,7 @@ class AbstractTestSuite(object):
         parallel_executables = self._get_number_parallel_executables(request)
         assert parallel_executables > 0, "Must have at least one executable"
 
-        # If there are more tests than max parallel editors, we will split them into multiple consecutive runs.
+        # If there are more tests than max parallel executables, we will split them into multiple consecutive runs.
         num_iterations = int(math.ceil(len(test_spec_list) / parallel_executables))
         for iteration in range(num_iterations):
             tests_for_iteration = test_spec_list[iteration*parallel_executables:(iteration+1)*parallel_executables]
@@ -1003,7 +1004,7 @@ class AbstractTestSuite(object):
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :collected_test_data: The TestData from calling collected_test_data()
-        :test_spec_list: A list of EditorSharedTest tests to run
+        :test_spec_list: A list of SharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
@@ -1023,20 +1024,20 @@ class AbstractTestSuite(object):
             return
 
         total_threads = self._get_number_parallel_executables(request)
-        assert total_threads > 0, "Must have at least one editor"
+        assert total_threads > 0, "Must have at least one executable"
         threads = []
         tests_per_executable = int(math.ceil(len(test_spec_list) / total_threads))
         results_per_thread = [None] * total_threads
         for iteration in range(total_threads):
             tests_for_thread = test_spec_list[iteration*tests_per_executable:(iteration+1)*tests_per_executable]
 
-            def make_shared_test_function(test_spec_list_for_editor, index, current_executable):
+            def make_shared_test_function(test_spec_list_for_executable, index, current_executable):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
-                    if len(test_spec_list_for_editor) > 0:
+                    if len(test_spec_list_for_executable) > 0:
                         results = self._exec_multitest(
                             request, workspace, current_executable, index + 1, self._log_attribute,
-                            test_spec_list_for_editor, extra_cmdline_args)
+                            test_spec_list_for_executable, extra_cmdline_args)
                         assert results is not None
                     else:
                         results = {}
@@ -1081,12 +1082,12 @@ class AbstractTestSuite(object):
                         cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts executable with a list of tests and returns a dict of the result of every test ran within it.
-        In case of failure this function also parses the editor output to find out what specific tests failed.
+        In case of failure this function also parses the executable output to find out what specific tests failed.
         :param request: The pytest request
         :param workspace: The LyTestTools Workspace object
         :param executable: The program executable under test
         :param run_id: The unique run id
-        :param log_name: The name of the editor log to retrieve
+        :param log_name: The name of the executable log to retrieve
         :param test_spec_list: A list of test classes to run in the same executable
         :param cmdline_args: Any additional command line args
         :return: A dict of Result objects
@@ -1139,8 +1140,9 @@ class AbstractTestSuite(object):
 
         # Here we handle populating variables based on the type of executable under test.
         cmdline = []
-        log_path_function = None
-        log_content_function = None
+        # Since there are no default logging features, we default to using Editor logging for any executable.
+        log_path_function = editor_utils.retrieve_log_path
+        log_content_function = editor_utils.retrieve_editor_log_content
         if type(executable) is WinEditor:
             log_path_function = editor_utils.retrieve_log_path
             log_content_function = editor_utils.retrieve_editor_log_content
@@ -1246,7 +1248,7 @@ class AbstractTestSuite(object):
                                                                  result.test_spec,
                                                                  result.output,
                                                                  self.timeout_shared_test,
-                                                                 result.editor_log)
+                                                                 result.log_attribute)
                         timed_out_result = result
                     else:
                         # If there are remaining "Unknown" results, these couldn't execute because of the timeout,
@@ -1274,7 +1276,7 @@ class AbstractTestSuite(object):
                                   output: str,
                                   log_output: str) -> dict[any, [Result.Unknown, Result.Pass, Result.Fail]]:
         """
-        Utility function for parsing the output information from the program being tested (i.e. editor).
+        Utility function for parsing the output information from the program being tested (i.e. Editor).
         It de-serializes the JSON content printed in the output for every test and returns that information.
         :param log_attribute: The name of the python log attribute to search for to obtain the log file.
         :param test_spec_list: The list of test classes
