@@ -34,8 +34,6 @@ namespace O3DE::ProjectManager
         m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         m_screenStack->addWidget(m_tabWidget);
         connect(m_tabWidget, &QTabWidget::currentChanged, this, &ScreensCtrl::TabChanged);
-
-        m_downloadController = downloadController;
     }
 
     void ScreensCtrl::BuildScreens(QVector<ProjectManagerScreen> screens)
