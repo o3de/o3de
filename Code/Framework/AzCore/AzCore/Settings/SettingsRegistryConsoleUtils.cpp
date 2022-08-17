@@ -138,7 +138,7 @@ namespace AZ::SettingsRegistryConsoleUtils
             });
         }
 
-        AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
+        AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
     }
 
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryOriginTracker& originTracker, AZ::IConsole& azConsole)
