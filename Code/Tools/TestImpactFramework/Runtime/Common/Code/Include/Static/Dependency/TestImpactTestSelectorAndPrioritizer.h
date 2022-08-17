@@ -9,13 +9,16 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactPolicy.h>
+#include <BuildTarget/Common/TestImpactBuildGraph.h>
 
 #include <Dependency/TestImpactChangeDependencyList.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/set.h>
 
+#pragma optimize("", off)
 namespace TestImpact
 {
     template<typename ProductionTarget, typename TestTarget>
@@ -356,13 +359,71 @@ namespace TestImpact
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
 
-        // Prioritization disabled for now
-        // SPEC-6563
-        for (const auto& [testTarget, dependerTargets] : selectedTestTargetAndDependerMap)
+        auto compareBySecondOpt = [&](auto& left, auto& right) -> bool
         {
-            selectedTestTargets.push_back(testTarget);
-        }
+            return left.second.value_or(SIZE_MAX) < right.second.value_or(SIZE_MAX);
+        };
 
+        auto compareBySecond = [&](auto& left, auto& right) -> bool
+        {
+            return left.second < right.second;
+        };
+        const auto& buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
+        const auto& buildGraph = buildTargetList->GetBuildGraph();
+
+
+        AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, AZStd::optional<size_t>>> testTargetDistancePairs;
+
+        switch (testSelectionStrategy)
+        {
+            case Policy::TestPrioritization::DependencyLocality:
+                
+                for (const auto& [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
+                {
+
+                    for (const auto& productionTarget : productionTargets)
+                    {
+                        AZ_Printf(productionTarget->GetName().c_str(), "\n");
+                    }
+                    AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
+                    buildGraph.WalkBuildDependencies(buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
+                        [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
+                        {
+                            if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget(); productionTarget != nullptr && productionTargets.contains(productionTarget))
+                            {
+                                targetDistancePairs.emplace_back(vertex.m_buildTarget, distance);
+                            }
+                            return BuildGraphVertexVisitResult::Continue;
+                        });
+
+                    if (!targetDistancePairs.empty()) {
+                        AZStd::sort(targetDistancePairs.begin(), targetDistancePairs.end(), compareBySecond);
+                        AZ_Printf(testTarget->GetName().c_str(), "TestTarget\n");
+                        AZ_Printf(targetDistancePairs[0].first.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", targetDistancePairs[0].second);
+                        testTargetDistancePairs.emplace_back(testTarget, targetDistancePairs[0].second);
+                    }
+                    else
+                    {
+                        testTargetDistancePairs.emplace_back(testTarget);
+                    }
+                }
+                
+                AZStd::sort(testTargetDistancePairs.begin(), testTargetDistancePairs.end(), compareBySecondOpt);
+                for (const auto& [testTarget, distance] : testTargetDistancePairs)
+                {
+                    selectedTestTargets.push_back(testTarget.GetTestTarget());
+                }
+                break;
+            case Policy::TestPrioritization::None:
+                for (const auto& [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
+                {
+                    selectedTestTargets.push_back(testTarget);
+                }
+                break;
+        }
         return selectedTestTargets;
+        
     }
 } // namespace TestImpact
+
+#pragma optimize("", on)
