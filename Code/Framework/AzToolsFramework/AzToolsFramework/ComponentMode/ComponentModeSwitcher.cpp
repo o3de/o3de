@@ -109,6 +109,17 @@ namespace AzToolsFramework::ComponentModeFramework
         auto* toolsApplicationRequests = AzToolsFramework::ToolsApplicationRequestBus::FindFirstHandler();
         const auto& selectedEntityIds = toolsApplicationRequests->GetSelectedEntities();
 
+        if (!newlyDeselectedEntityIds.empty())
+        {
+            // clear the switcher then add the components back if entities are still selected
+            ClearSwitcher();
+
+            if (selectedEntityIds.size() >= 1)
+            {
+                UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, EntityIdList{});
+            }
+        }
+
         if (!newlySelectedEntityIds.empty())
         {
             for (auto entityId : newlySelectedEntityIds)
@@ -142,16 +153,6 @@ namespace AzToolsFramework::ComponentModeFramework
                         AddComponentButton(entityComponentIdPair);
                     }
                 }
-            }
-        }
-        else if (!newlyDeselectedEntityIds.empty())
-        {
-            // clear the switcher then add the components back if entities are still selected
-            ClearSwitcher();
-
-            if (selectedEntityIds.size() >= 1)
-            {
-                UpdateSwitcherOnEntitySelectionChange(selectedEntityIds, EntityIdList{});
             }
         }
     }
