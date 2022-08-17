@@ -124,7 +124,7 @@ namespace GradientSignal
                         "Source Type", "Select whether to create a new image or use an existing image.")
                         ->EnumAttribute(ImageCreationOrSelection::UseExistingImage, "Use Existing Image")
                         ->EnumAttribute(ImageCreationOrSelection::CreateNewImage, "Create New Image")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::ChangeCreationSelectionChoice)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
 
                     // Controls for creating a new image
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_outputResolution,
@@ -225,12 +225,14 @@ namespace GradientSignal
 
         m_previewer.Activate(GetEntityId());
         GradientImageCreatorRequestBus::Handler::BusConnect(GetEntityId());
-            
-        m_currentImageAssetStatus = m_configuration.m_imageAsset.GetStatus();
-        m_currentImageJobsPending = false;
+
+        // Make sure our image asset and creation/selection visibility settings are synced in the runtime component's configuration.
+        RefreshImageAssetStatus();
+        RefreshCreationSelectionChoice();
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
+
     }
 
     void EditorImageGradientComponent::Deactivate()
@@ -392,7 +394,7 @@ namespace GradientSignal
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    AZ::u32 EditorImageGradientComponent::ChangeCreationSelectionChoice()
+    AZ::u32 EditorImageGradientComponent::RefreshCreationSelectionChoice()
     {
         m_configuration.SetImageOptionsVisibility(m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage);
 

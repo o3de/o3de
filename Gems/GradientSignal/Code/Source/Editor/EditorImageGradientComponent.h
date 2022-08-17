@@ -81,7 +81,7 @@ namespace GradientSignal
             AZ::IO::Path& fullPath, AZStd::string& relativePath,
             int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer);
 
-        AZ::u32 ChangeCreationSelectionChoice();
+        AZ::u32 RefreshCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
         AZ::Crc32 GetPaintModeVisibility() const;
 
