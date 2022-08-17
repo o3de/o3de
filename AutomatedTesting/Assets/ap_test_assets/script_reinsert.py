@@ -6,6 +6,8 @@
 #
 #
 
+# TODO: move to Gems PythonScripts auto test to test in isolation
+
 sceneJobHandler = None
 
 def clear_sceneJobHandler():
@@ -13,34 +15,55 @@ def clear_sceneJobHandler():
     sceneJobHandler.disconnect()
     sceneJobHandler = None
 
-def on_prepare_for_export(args):
+def on_prepare_for_export(args): 
     print (f'on_prepare_for_export')
-    try:
-        scene = args[0] # azlmbr.scene.Scene
-        outputDirectory = args[1] # string
-        platformIdentifier = args[2] # string
-        productList = args[3] # azlmbr.scene.ExportProductList
-        # return export_chunk_asset(scene, outputDirectory, platformIdentifier, productList)
-        clear_sceneJobHandler()
-        return {}
-    except:
-        #log_exception_traceback()
-        clear_sceneJobHandler()
-        return {}
+
+    import azlmbr.scene
+    import azlmbr.object
+    import azlmbr.paths
+    import json, os
+    import azlmbr.math
+
+    scene = args[0] # azlmbr.scene.Scene
+    outputDirectory = args[1] # string
+
+    # write out a fake export product asset so that it can be found and tested
+    jsonFilename = os.path.basename(scene.sourceFilename)
+    jsonFilename = os.path.join(outputDirectory, jsonFilename + '.fake_asset')
+
+    # prepare output folder
+    basePath, _ = os.path.split(jsonFilename)
+    outputPath = os.path.join(outputDirectory, basePath)
+    if not os.path.exists(outputPath):
+        os.makedirs(outputPath, False)
+
+    # write out a JSON file
+    with open(jsonFilename, "w") as jsonFile:
+        jsonFile.write("{}")
+
+    clear_sceneJobHandler()
+
+    exportProduct = azlmbr.scene.ExportProduct()
+    exportProduct.filename = jsonFilename
+    exportProduct.sourceId = scene.sourceGuid
+    #exportProduct.assetType = azlmbr.math.Uuid_CreateString('{00000000-1111-2222-3333-444444444444}', 0)
+    exportProduct.subId = 2
+
+    exportProductList = azlmbr.scene.ExportProductList()
+    exportProductList.AddProduct(exportProduct)
+    return exportProductList
 
 def on_update_manifest(args):
     print (f'on_update_manifest')
-    data = '{}'
-    try:
-        scene = args[0]
-        #data = update_manifest(scene)
-    except RuntimeError as err:
-        print(f'ERROR - {err}')
-        #log_exception_traceback()
-    except:
-        print(f'ERROR - {err}')
-        #log_exception_traceback()
-
+    data = """{
+        "values": [
+            {
+                "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+                "name": "fake",
+                "nodeSelectionList": { "selectedNodes": ["fake_node"] }
+            }
+        ]
+    }"""
     clear_sceneJobHandler()
     return data
 
@@ -48,8 +71,6 @@ def on_update_manifest(args):
 try:
     import azlmbr.scene as sceneApi
     
-    print (f'sceneJobHandler')
-
     if sceneJobHandler is None:
         sceneJobHandler = sceneApi.ScriptBuildingNotificationBusHandler()
         sceneJobHandler.connect()
