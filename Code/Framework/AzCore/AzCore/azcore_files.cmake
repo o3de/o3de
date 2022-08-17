@@ -400,6 +400,7 @@ set(FILES
     Memory/AllocatorManager.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
+    Memory/ChildAllocatorSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl
     Memory/HphaSchema.cpp

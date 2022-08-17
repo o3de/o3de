@@ -8,6 +8,7 @@
 
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 
 
 namespace UnitTest
