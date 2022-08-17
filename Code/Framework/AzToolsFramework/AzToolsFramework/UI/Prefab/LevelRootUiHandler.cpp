@@ -79,11 +79,7 @@ namespace AzToolsFramework
             return;
         }
 
-        const QSize iconSize = QSize(32, 16);
-        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
-        AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         QPen borderLinePen(s_levelRootBorderColor, s_levelRootBorderThickness);
-
         QRect rect = option.rect;
 
         painter->save();
