@@ -20,6 +20,8 @@ namespace AzToolsFramework
     {
         class PrefabLoaderInterface;
     }
+
+    class PrefabEditorEntityOwnershipInterface;
 }
 
 namespace UnitTest
@@ -54,6 +56,7 @@ namespace UnitTest
         AZStd::unique_ptr<ToolsTestApplication> CreateTestApplication() override;
 
         void CreateRootPrefab();
+        void InitializeRootPrefab();
         AZ::Entity* CreateEntity(AZStd::string entityName, const bool shouldActivate = true);
         AZ::EntityId CreateEntityUnderRootPrefab(AZStd::string name, AZ::EntityId parentId = AZ::EntityId());
         void PropagateAllTemplateChanges();
@@ -82,6 +85,7 @@ namespace UnitTest
         PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+        AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 }

@@ -92,7 +92,6 @@ namespace AzToolsFramework
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
         FocusModeNotificationBus::Handler::BusDisconnect();
-        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -116,7 +115,6 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
-        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(editorEntityContextId);
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
@@ -1240,18 +1238,6 @@ namespace AzToolsFramework
 
         // Always expand containers
         QueueEntityToExpand(entityId, true);
-    }
-
-    void EntityOutlinerListModel::OnInstanceOpened(AZ::EntityId containerEntityId)
-    {
-        QueueEntityToExpand(containerEntityId, true);
-    }
-
-    void EntityOutlinerListModel::OnPrefabFocusChanged(
-        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
-    {
-        QueueEntityToExpand(previousContainerEntityId, false);
-        QueueEntityToExpand(newContainerEntityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
