@@ -80,6 +80,12 @@ namespace AzToolsFramework
                     ContinueStoringToJsonObjectField(outputValue, "Entities",
                         entities, defaultEntities, azrtti_typeid<Instance::AliasToEntityMap>(), context);
 
+                PrefabDomValueReference entitiesDom = PrefabDomUtils::FindPrefabDomValue(outputValue, "Entities");
+                if (entitiesDom.has_value() && context.ShouldKeepDefaults() && entitiesDom->get().IsArray() && entitiesDom->get().Empty())
+                {
+                    entitiesDom->get().SetObject();
+                }
+
                 result.Combine(resultEntities);
             }
 
@@ -91,6 +97,12 @@ namespace AzToolsFramework
                 JSR::ResultCode resultInstances = ContinueStoringToJsonObjectField(
                     outputValue, "Instances",
                         instances, defaultInstances, azrtti_typeid<Instance::AliasToInstanceMap>(), context);
+
+                PrefabDomValueReference instancesDom = PrefabDomUtils::FindPrefabDomValue(outputValue, "Instances");
+                if (instancesDom.has_value() && context.ShouldKeepDefaults() && instancesDom->get().IsArray() && instancesDom->get().Empty())
+                {
+                    instancesDom->get().SetObject();
+                }
 
                 result.Combine(resultInstances);
             }

@@ -183,6 +183,13 @@ namespace AzToolsFramework
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
 
+             /**
+             * Gets the instances DOM value from the given prefab DOM.
+             *
+             * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
+             */
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
+
             //! Identifies instance members modified by inspecting the patches provided.
             //! @param patches The patches to inspect.
             //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
