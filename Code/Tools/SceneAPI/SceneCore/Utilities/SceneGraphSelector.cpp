@@ -44,8 +44,21 @@ namespace AZ
             }
 
             Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+            {
+                return RemapNodeIndex(graph, index, SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
+            }
+
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOriginalUnoptimizedMesh(
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+            {
+                return RemapNodeIndex(graph, index, SceneAPI::Utilities::OriginalUnoptimizedMeshPropertyMapKey);
+            }
+
+            Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapNodeIndex(
                 const Containers::SceneGraph& graph,
-                const Containers::SceneGraph::NodeIndex& index)
+                const Containers::SceneGraph::NodeIndex& index,
+                const AZStd::string_view customPropertyKey)
             {
                 // Search the immediate children for an ICustomPropertyData node to lookup the optimized mesh index
                 const Containers::SceneGraph::NodeIndex customPropertyIndex =
@@ -58,7 +71,7 @@ namespace AZ
 
                     // Now look up the optimized index
                     const auto& propertyMap = customPropertyDataNode->GetPropertyMap();
-                    const auto iter = propertyMap.find(SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
+                    const auto iter = propertyMap.find(customPropertyKey);
 
                     if (iter != propertyMap.end())
                     {

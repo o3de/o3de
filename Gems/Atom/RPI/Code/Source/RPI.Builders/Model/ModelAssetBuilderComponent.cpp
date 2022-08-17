@@ -301,18 +301,17 @@ namespace AZ
                     // Gather mesh content
                     SourceMeshContent sourceMesh;
 
-                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
-                    // this process transparent for the end-asset generated, the name assigned to the source mesh
-                    // content will not include the "_optimized" prefix.
-                    AZStd::string_view sourceMeshName = meshName;
-                    if (sourceMeshName.ends_with(SceneAPI::Utilities::OptimizedMeshSuffix))
-                    {
-                        sourceMeshName.remove_suffix(SceneAPI::Utilities::OptimizedMeshSuffix.size());
-                    }
-                    sourceMesh.m_name = sourceMeshName;
+                    
 
                     const auto node = sceneGraph.Find(meshPath);
                     sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
+                    
+                    SceneAPI::Containers::SceneGraph::NodeIndex originalUnoptimizedMeshIndex =
+                        SceneAPI::Utilities::SceneGraphSelector::RemapToOriginalUnoptimizedMesh(sceneGraph, node);
+                    // Although the nodes used to gather mesh content are the optimized ones (when found), to make
+                    // this process transparent for the end-asset generated, the name assigned to the source mesh
+                    // content will not include the "_optimized" prefix or the group name.
+                    sourceMesh.m_name = sceneGraph.GetNodeName(originalUnoptimizedMeshIndex).GetName();
 
                     // Add the MeshData to the source mesh
                     AddToMeshContent(viewIt.second, sourceMesh);
@@ -346,7 +345,10 @@ namespace AZ
                     // Get the cloth data (only for full mesh LOD 0).
                     sourceMesh.m_meshClothData = (lodIndex == 0)
                         ? SceneAPI::DataTypes::IClothRule::FindClothData(
-                            sceneGraph, node, sourceMesh.m_meshData->GetVertexCount(), context.m_group.GetRuleContainerConst())
+                                                                       sceneGraph,
+                                                                       originalUnoptimizedMeshIndex,
+                                                                       sourceMesh.m_meshData->GetVertexCount(),
+                                                                       context.m_group.GetRuleContainerConst())
                         : AZStd::vector<AZ::Color>{};
 
                     // We've traversed this node and all its children that hold
