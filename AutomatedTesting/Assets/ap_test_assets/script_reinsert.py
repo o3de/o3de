@@ -6,8 +6,6 @@
 #
 #
 
-# TODO: move to Gems PythonScripts auto test to test in isolation
-
 sceneJobHandler = None
 
 def clear_sceneJobHandler():
