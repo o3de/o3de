@@ -71,7 +71,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
         if (!painter)
         {
