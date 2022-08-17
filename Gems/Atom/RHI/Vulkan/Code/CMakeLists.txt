@@ -148,6 +148,7 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atom_rhi_vulkan_glad_files.cmake
+        ${pal_include_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         ${pal_source_dir}/platform_glad_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
