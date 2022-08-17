@@ -386,10 +386,13 @@ namespace AzToolsFramework::Prefab
             return InvalidLinkId;
         }
 
+        // If there are climbed instances, then return the link id stored in the climbed instance
+        // closest to the focused instance.
         if (!climbUpResult.m_climbedInstances.empty())
         {
             AZStd::string prefix = "";
 
+            // Skips the instance closest to the focused instance.
             auto startInstanceIter = ++climbUpResult.m_climbedInstances.rbegin();
             for (auto instanceIter = startInstanceIter; instanceIter != climbUpResult.m_climbedInstances.rend(); ++instanceIter)
             {
