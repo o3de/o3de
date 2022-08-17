@@ -322,7 +322,7 @@ struct IConsole
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Append a string in the last console line
     // @param s the string to print
-    virtual void PrintLinePlus(AZStd::string_view s) = 0;
+    virtual void PrintLineAppendWithPrevLine(AZStd::string_view s) = 0;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Retrieve the status of the console (active/not active)
     // @return the variable value(true = active/false = not active)

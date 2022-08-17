@@ -480,7 +480,7 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus("%s", pszString);
+        gEnv->pLog->LogAppendWithPrevLine("%s", pszString);
     }
 }
 

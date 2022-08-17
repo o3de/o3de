@@ -74,8 +74,8 @@ struct ILog
     virtual void    LogError(const char* szCommand, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
-    //   Logs the text both to the end of file and console.
-    virtual void    LogPlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    //   Logs the text both to the end of file and console by appending with the previous line.
+    virtual void    LogAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
     //   Logs to the file specified in SetFileName.
@@ -83,15 +83,15 @@ struct ILog
     //   SetFileName
     virtual void    LogToFile(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
-    //
-    virtual void    LogToFilePlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    // Logs the text to the end of the file by appending it to the last line
+    virtual void    LogToFileAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
     //   Logs to console only.
     virtual void    LogToConsole(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
-    //
-    virtual void    LogToConsolePlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    // Log the text to the end of the console by appending with the last line
+    virtual void    LogToConsoleAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     //
     virtual void    UpdateLoadingScreen(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;

@@ -42,7 +42,7 @@ public:
     MOCK_METHOD3(GetVariable, char*(const char* szVarName, const char* szFileName, const char* def_val));
     MOCK_METHOD3(GetVariable, float (const char* szVarName, const char* szFileName, float def_val));
     MOCK_METHOD1(PrintLine, void (AZStd::string_view s));
-    MOCK_METHOD1(PrintLinePlus, void (AZStd::string_view s));
+    MOCK_METHOD1(PrintLineAppendWithPrevLine, void (AZStd::string_view s));
     MOCK_METHOD0(GetStatus, bool());
     MOCK_METHOD0(Clear, void());
     MOCK_METHOD0(Update, void());
