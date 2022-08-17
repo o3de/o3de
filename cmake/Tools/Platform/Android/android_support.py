@@ -45,7 +45,11 @@ ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
     '7.2.1': {'min_gradle_version': '7.2.4',
               'sdk_build': '32.0.0',
               'default_ndk': '24.0.8215888',
-              'min_cmake_version': '3.23'}
+              'min_cmake_version': '3.23'},
+    '7.2.2': {'min_gradle_version': '7.2.4',
+              'sdk_build': '33.0.0',
+              'default_ndk': '25.0.8775105',
+              'min_cmake_version': '3.24'}
 }
 
 APP_NAME = 'app'
@@ -372,7 +376,7 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
 
         from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
         into  'outputs/native-lib/{abi}'
-        eachFile {{ 
+        eachFile {{
             logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
         }}
     }}
@@ -422,7 +426,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
-    
+
     compile{config}Aidl.dependsOn syncLYLayoutMode{config}
 
     syncLYLayoutMode{config}.mustRunAfter {{
