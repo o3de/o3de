@@ -36,7 +36,7 @@ namespace AzToolsFramework
             //! In addition, container entity is updated depending on the above relationship with the focused instance.
             //! Note: Link id would be valid in the generated DOM only if the given instance is a proper descendant
             //! of the focused or root instance.
-            //! @param instanceDom The output instance DOM that will be modified.
+            //! @param[out] instanceDom The output instance DOM that will be modified.
             //! @param instance The given instance object.
             //! @return bool on whether the operation succeeds.
             bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
@@ -44,7 +44,7 @@ namespace AzToolsFramework
         private:
             //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
             //! from the root template DOM.
-            //! @param instanceDom The DOM of the instance that will be modified.
+            //! @param[out] instanceDom The DOM of the instance that will be modified.
             //! @param instance The given instance object.
             void UpdateContainerEntityInDomFromRoot(PrefabDom& instanceDom, const Instance& instance) const;
 

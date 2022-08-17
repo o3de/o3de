@@ -22,7 +22,7 @@ namespace AzToolsFramework
             virtual ~InstanceDomGeneratorInterface() = default;
 
             //! Generates an instance DOM that represents a given instance object.
-            //! @param instanceDom The output instance DOM that will be modified.
+            //! @param[out] instanceDom The output instance DOM that will be modified.
             //! @param instance The given instance object.
             //! @return bool on whether the operation succeeds.
             virtual bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const = 0;

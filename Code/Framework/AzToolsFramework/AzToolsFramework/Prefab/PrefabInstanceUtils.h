@@ -20,16 +20,16 @@ namespace AzToolsFramework
         //! Defines climb-up result returned by climb-up operation.
         struct InstanceClimbUpResult
         {
-            //! Instance reference to the destination.
-            InstanceOptionalConstReference reachedInstance = AZStd::nullopt;
+            //! Instance pointer to the destination.
+            const Instance* m_reachedInstance = nullptr;
             //! Instance list that contains instances that are climbed up from bottom to top.
             //! The list does not include the reached instance.
-            AZStd::vector<InstanceOptionalConstReference> climbedInstances;
+            AZStd::vector<InstanceOptionalConstReference> m_climbedInstances;
         };
 
         namespace PrefabInstanceUtils
         {
-            //! Climbs up the instance hierarchy tree from the given start instance untils it hits
+            //! Climbs up the instance hierarchy tree from the given start instance until it hits
             //! the target instance or the root instance.
             //! @param startInstance The instance as the starting point in an instance hierarchy tree.
             //! @param targetInstance The instance to climb up to. If not provided, root instance will be hit.
@@ -46,25 +46,14 @@ namespace AzToolsFramework
             //! Generates a relative path from a list of climbed instances.
             //! @param climbedInstances The list of climbed instances from bottom to top.
             //! @return The relative path string.
-            AZStd::string GetRelativePath(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances);
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances);
 
-            //! Checks if the child instance is a descendant of the parent instance (or ancestor vice versa).
+            //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.
             //! @param parentInstance The given parent instance.
-            //! @return bool on whether the relation is valid.
-            bool IsHierarchical(const Instance& childInstance, const Instance& parentInstance);
+            //! @return bool on whether the relation is valid. Returns true if two instances are identical.
+            bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
 
-            //! Checks if the child instance is a proper descendant (not inclusive) of the parent instance (or ancestor vice versa).
-            //! @param childInstance The given child instance.
-            //! @param parentInstance The given parent instance.
-            //! @return bool on whether the relation is valid.
-            bool IsProperlyHierarchical(const Instance& childInstance, const Instance& parentInstance);
-
-            //! Checks if two instances are identical by address.
-            //! @param instanceA The given instance.
-            //! @param instanceB The given instance to be compared with.
-            //! @return bool on whether the two instances are idendical or both are nullopt.
-            bool CompareInstances(InstanceOptionalConstReference instanceA, InstanceOptionalConstReference instanceB);
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

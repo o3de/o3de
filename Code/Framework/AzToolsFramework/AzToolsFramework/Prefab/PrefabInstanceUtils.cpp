@@ -21,42 +21,41 @@ namespace AzToolsFramework
                 InstanceClimbUpResult result;
                 
                 // Climbs up the instance hierarchy from the start instance until it hits the target or the root instance.
-                const Instance* instance = &startInstance;
+                const Instance* instancePtr = &startInstance;
 
-                while (!CompareInstances(*instance, targetInstance) && instance->HasParentInstance())
+                while (instancePtr != &(targetInstance->get()) && instancePtr->HasParentInstance())
                 {
-                    result.climbedInstances.emplace_back(*instance);
-                    instance = &(instance->GetParentInstance()->get());
+                    result.m_climbedInstances.emplace_back(*instancePtr);
+                    instancePtr = &(instancePtr->GetParentInstance()->get());
                 }
 
-                result.reachedInstance = *instance;
+                result.m_reachedInstance = instancePtr;
                 return result;
             }
 
             AZStd::string GetRelativePathBetweenInstances(const Instance& parentInstance, const Instance& childInstance)
             {
-                const Instance* instance = &childInstance;
+                const Instance* instancePtr = &childInstance;
                 AZStd::vector<InstanceOptionalConstReference> climbedInstances;
 
                 // Climbs up the instance hierarchy from the child instance until it hits the parent instance.
-                while (!CompareInstances(*instance, parentInstance) && instance->HasParentInstance())
+                while (instancePtr != &parentInstance && instancePtr->HasParentInstance())
                 {
-                    climbedInstances.emplace_back(*instance);
-                    instance = &(instance->GetParentInstance()->get());
+                    climbedInstances.emplace_back(*instancePtr);
+                    instancePtr = &(instancePtr->GetParentInstance()->get());
                 }
 
-                if (!CompareInstances(*instance, parentInstance))
+                if (instancePtr != &parentInstance)
                 {
                     AZ_Warning("Prefab", false, "PrefabInstanceUtils::GetRelativePathBetweenInstances() - "
                                "Tried to get relative path but the parent instance is not a valid parent. Returns empty string instead.");
                     return "";
                 }
 
-                // Generates relative path.
-                return GetRelativePath(climbedInstances);
+                return GetRelativePathFromClimbedInstances(climbedInstances);
             }
 
-            AZStd::string GetRelativePath(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances)
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances)
             {
                 AZStd::string relativePath = "";
 
@@ -70,41 +69,22 @@ namespace AzToolsFramework
                 return relativePath;
             }
 
-            bool IsHierarchical(const Instance& childInstance, const Instance& parentInstance)
+            bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance)
             {
-                const Instance* instance = &childInstance;
+                const Instance* instancePtr = &childInstance;
 
-                while (instance)
+                while (instancePtr)
                 {
-                    if (CompareInstances(*instance, parentInstance))
+                    if (instancePtr == &parentInstance)
                     {
                         return true;
                     }
-                    instance = instance->HasParentInstance() ? &(instance->GetParentInstance()->get()) : nullptr;
+                    instancePtr = instancePtr->HasParentInstance() ? &(instancePtr->GetParentInstance()->get()) : nullptr;
                 }
 
                 return false;
             }
 
-            bool IsProperlyHierarchical(const Instance& childInstance, const Instance& parentInstance)
-            {
-                if (!childInstance.HasParentInstance())
-                {
-                    return false;
-                }
-
-                return IsHierarchical(childInstance.GetParentInstance()->get(), parentInstance);
-            }
-
-            bool CompareInstances(InstanceOptionalConstReference instanceA, InstanceOptionalConstReference instanceB)
-            {
-                if (!instanceA.has_value())
-                {
-                    return !instanceB.has_value();
-                }
-
-                return instanceB.has_value() && &(instanceA->get()) == &(instanceB->get());
-            }
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

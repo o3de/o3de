@@ -379,19 +379,19 @@ namespace AzToolsFramework::Prefab
         // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
         InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(
             owningInstance->get(), focusedInstance->get());
-        if (!PrefabInstanceUtils::CompareInstances(climbUpResult.reachedInstance, focusedInstance))
+        if (climbUpResult.m_reachedInstance != &(focusedInstance->get()))
         {
             AZ_Error("Prefab", false, "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
                 "Entity id is not owned by a descendant of the focused prefab instance.");
             return InvalidLinkId;
         }
 
-        if (!climbUpResult.climbedInstances.empty())
+        if (!climbUpResult.m_climbedInstances.empty())
         {
             AZStd::string prefix = "";
 
-            auto startInstanceIter = ++climbUpResult.climbedInstances.rbegin();
-            for (auto instanceIter = startInstanceIter; instanceIter != climbUpResult.climbedInstances.rend(); ++instanceIter)
+            auto startInstanceIter = ++climbUpResult.m_climbedInstances.rbegin();
+            for (auto instanceIter = startInstanceIter; instanceIter != climbUpResult.m_climbedInstances.rend(); ++instanceIter)
             {
                 prefix.append(PrefabDomUtils::PathStartingWithInstances);
                 const Instance& instance = (*instanceIter)->get();
@@ -399,7 +399,7 @@ namespace AzToolsFramework::Prefab
             }
 
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId, AZStd::move(prefix));
-            return climbUpResult.climbedInstances.back()->get().GetLinkId();
+            return climbUpResult.m_climbedInstances.back()->get().GetLinkId();
         }
         else
         {
