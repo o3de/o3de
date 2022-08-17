@@ -3,25 +3,28 @@ from dynaconf import settings
 from pathlib import Path
 from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot, QProcess
+from azpy import constants
 import logging
 import json
 
 
 _LOGGER = logging.getLogger('azpy.shared.qt_process')
-_LOGGER.info('Start QT Process...')
+_LOGGER.info('Starting QT Process...')
 
 
 class QtProcess(QtCore.QObject):
     process_info = Signal(dict)
 
-    def __init__(self, application, target_file, **kwargs):
+    def __init__(self, application, target_files, data):
         super(QtProcess, self).__init__()
 
-        _LOGGER.info('QProcess added...')
-        self.application = application
-        self.target_file = target_file
-        self.environment_variables = self.get_environment_variables(kwargs)
         self.p = None
+        self.application = application
+        self.target_files = target_files
+        self.data = data
+        self.environment_variables = self.parse_data()
+        self.processing_script = self.parse_data('SCRIPT')
+        self.output_information = self.parse_data('OUTPUT_INFORMATION')
         self.process_output = {}
         self.initialize_qprocess()
 
@@ -31,7 +34,11 @@ class QtProcess(QtCore.QObject):
         processed.
         :return:
         """
-        _LOGGER.info(f'Application being passed: {self.application}')
+        _LOGGER.info(f'\n{constants.STR_CROSSBAR}\n::QPROCESS LAUNCHED::::> Application: {self.application}')
+        _LOGGER.info(f'Target File: {self.target_files}')
+        _LOGGER.info(f'Processing Script: {self.processing_script}')
+        _LOGGER.info(f'Output Information: {self.output_information}\n{constants.STR_CROSSBAR}')
+
         self.p = QProcess()
         env = QtCore.QProcessEnvironment.systemEnvironment()
         for item in self.environment_variables:
@@ -44,20 +51,34 @@ class QtProcess(QtCore.QObject):
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.started.connect(self.process_started)
-        self.p.finished.connect(self.cleanup)
+        self.p.finished.connect(self.process_complete)
 
-    def get_environment_variables(self, kwargs):
+    def parse_data(self, target_key=None):
+        """
+        The kwargs argument when instantiating the QProcess class is mainly used for establishing the application
+        environment, with the exception of passing execution scripts as well as also sending output information when
+        the application process is launched. The method for achieving this is to insert "script" and/or
+        "output_information" as keys, and related information as values
+        """
         env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
-        for key, value in kwargs.items():
-            env.append(f'{key}={value}')
+        for element in self.data:
+            listing = element.split('=')
+            key = listing[0]
+            value = '='.join(listing[1:])
+            if key == target_key:
+                return value
+            else:
+                env.append(f'{key}={value}')
         return env
 
-    def process_started(self):
-        _LOGGER.info('QProcess Started....')
-
     def handle_stderr(self):
-        data = str(self.p.readAllStandardError(), 'utf-8')
-        _LOGGER.info(f'STD_ERROR_FIRED: {data}')
+        data = self.p.readAllStandardError()
+        stderr = bytes(data).decode("utf8")
+        _LOGGER.info('STD_ERROR_FIRED: {}'.format(stderr))
+        #
+        #
+        # data = str(self.p.readAllStandardError(), 'utf-8')
+        # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
     def handle_stdout(self):
         """
@@ -86,10 +107,11 @@ class QtProcess(QtCore.QObject):
         state_name = states[state]
         _LOGGER.info(f'QProcess State Change: {state_name}')
 
-    def process_complete(self):
-        _LOGGER.info('Process Completed.')
+    def process_started(self):
+        _LOGGER.info('QProcess Started....')
 
-    def cleanup(self):
+    def process_complete(self):
+        _LOGGER.info('QProcess Completed.')
         self.p.closeWriteChannel()
 
     def start_process(self, detached=True):
@@ -102,7 +124,6 @@ class QtProcess(QtCore.QObject):
         the process subsequently closed.
         :return:
         """
-        _LOGGER.info(f'Process started')
         try:
             if detached:
                 self.p.startDetached()

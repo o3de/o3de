@@ -10,7 +10,7 @@
         "DCCSI_DEV_MODE": false,
         "DCCSI_GDEBUG": false,
         "DCCSI_LOG_LEVEL": 20,
-        "DCCSI_FILE_LOG_LEVEL": 10,
+        "DCCSI_FILE_LOG_LEVEL": "",
         "DCCSI_BASE_DIRECTORY": "",
         "DCCSI_GDEBUGGER": "pycharm",
         "DCCSI_LOGGING_FILE_CFG": "",
@@ -128,6 +128,7 @@
         "PATH_DCCSI_SUBSTANCE": "",
         "PATH_SUBSTANCE_DESIGNER": "",
         "PATH_SUBSTANCE_DESIGNER_CFG": "",
+        "PATH_PYSBS": "",
         "SUBSTANCE_INITIALIZED": false
     },
     "houdini": {

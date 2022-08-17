@@ -41,6 +41,7 @@ from dynaconf import settings
 from azpy import config_utils
 from azpy import constants as constants
 import platform
+import json
 import sys
 import os
 
@@ -69,14 +70,28 @@ import baselogger
 logger = baselogger.BaseLogger(Path(__file__).parent.absolute())
 _MODULENAME = 'DCCsi.config'
 _LOGGER = logger.get_logger(_MODULENAME)
+_LOGGER.info('Getting Configuration...')
 
 
 def initialize_settings():
     if not settings.get('DCCSI_INITIALIZED'):
+        initialize_override_settings()
         initialize_core_settings()
         initialize_o3de_settings()
         initialize_maya_settings()
         initialize_blender_settings()
+        initialize_substance_settings()
+        settings.setenv()
+
+
+def initialize_override_settings():
+    dynaconf_settings = Path(__file__).parent / 'settings.json'
+    with open(dynaconf_settings.as_posix()) as f:
+        data = json.load(f)
+        for key in [key for key in data.keys()]:
+            for env_key, env_value in data[key].items():
+                if env_value:
+                    settings.set(env_key, env_value)
 
 
 # ++++++++++++++++++++++++++++++++---->>
@@ -98,7 +113,7 @@ def initialize_core_settings():
     dccsi_dcc_tools_directory = dccsi_tools_directory / 'Tools'
     dccsi_dev_tools_directory = dccsi_tools_directory / 'Dev/Windows'
     dccsi_python_root = dccsi_root / '3rdParty/Python'
-    dccsi_python_library = dccsi_python_root / f'Lib/{py_major}.x/{py_major}.{py_minor}x/site-packages'
+    dccsi_python_library = dccsi_python_root / f'Lib/{py_major}.x/{py_major}.{py_minor}.x/site-packages'
     dccsi_log_path = dccsi_root / '.temp/logs/dccsi.log'
     dccsi_python_base = o3de_python_root / pybase.get(user_os)
     o3de_scripts_directory = repository_root / 'scripts/o3de'
@@ -171,6 +186,9 @@ def initialize_core_settings():
     substance_location += list(applications_directory.glob('Allegorithmic/Substance Designer/Substance Designer.exe'))
     substance_python_location = list(applications_directory.glob(
         'Adobe/Adobe Substance 3D Designer/plugins/pythonsdk/python.exe'))
+    substance_automation_toolkit_location = dccsi_python_library / 'pysbs'
+    if substance_automation_toolkit_location.is_dir():
+        settings.set("PATH_PYSBS", substance_automation_toolkit_location.as_posix())
 
     app_locations = {
         'PYCHARM_EXE': {'pycharm64.exe': pycharm_location},
@@ -291,14 +309,19 @@ def initialize_blender_settings():
         settings.set('BLENDER_INITIALIZED', True)
 
 
+def initialize_substance_settings():
+    if settings.get('BLENDER_EXE'):
+        pass
+
+
 # ++++++++++++++++++++++++++++++++---->>
 # DEBUG MESSAGING ++++++++++++++++----->>
 # ++++++++++++++++++++++++++++++++---->>
 
 _LOGGER.debug('Initializing: {}.'.format(_MODULENAME))
-_LOGGER.debug('DCCSI_GDEBUG: {}'.format(settings.get('DCCSI_GDEBUG')))
-_LOGGER.debug('DCCSI_DEV_MODE: {}'.format(settings.get('DCCSI_DEV_MODE')))
-_LOGGER.debug('DCCSI_LOGLEVEL: {}'.format(settings.get('DCCSI_LOG_LEVEL')))
+# _LOGGER.debug('DCCSI_GDEBUG: {}'.format(settings.get('DCCSI_GDEBUG')))
+# _LOGGER.debug('DCCSI_DEV_MODE: {}'.format(settings.get('DCCSI_DEV_MODE')))
+# _LOGGER.debug('DCCSI_LOGLEVEL: {}'.format(settings.get('DCCSI_LOG_LEVEL')))
 
 
 # ++++++++++++++++++++++++++++++++---->>

@@ -47,12 +47,14 @@ class BaseLogger:
         self.log_configuration_directory = None
         self.file_handler = None
         self.stream_handler = None
+        self.log_level = logging.INFO
+        self.file_log_level = logging.ERROR
         self.get_dynaconf_configuration()
 
     def set_initial_values(self):
         settings.set('DCCSI_BASE_DIRECTORY', str(self.dccsi_base_directory))
         settings.set('DCCSI_LOG_LEVEL', 20)
-        settings.set('DCCSI_FILE_LOG_LEVEL', 10)
+        settings.set('DCCSI_FILE_LOG_LEVEL', 40)
 
     def get_dynaconf_configuration(self):
         if settings.get('FORCE_RESET'):
@@ -61,17 +63,18 @@ class BaseLogger:
                                        settings.get('DCCSI_LOGGING_FILE_CFG'),
                                        settings.get('DCCSI_FILE_LOG_LEVEL'))
 
-    def set_logging_configuration(self, stream_log_level, file_config, file_log_level=logging.ERROR):
+    def set_logging_configuration(self, log_level, file_config, file_log_level):
         if file_config:
             config.fileConfig(file_config)
         else:
             try:
                 os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
+                self.log_level = self.log_level if not isinstance(log_level, int) else log_level
+                self.file_log_level = self.file_log_level if not isinstance(file_log_level, int) else file_log_level
                 self.stream_handler = logging.StreamHandler(sys.stdout)
                 self.file_handler = logging.FileHandler(filename=self.log_file)
-                self.file_handler.setLevel(file_log_level)
                 handlers = [self.file_handler, self.stream_handler]
-                logging.basicConfig(level=stream_log_level,
+                logging.basicConfig(level=self.log_level,
                                     format=FRMT_LOG_LONG,
                                     datefmt='%m-%d %H:%M',
                                     handlers=handlers)
