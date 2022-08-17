@@ -56,8 +56,6 @@ namespace AtomImGuiTools
 
         // AtomImGuiToolsRequestBus::Handler overrides...
         void ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog) override;
-        void ShowMaterialShaderDetailsForEntityMaterialAssignment(
-            AZ::EntityId entity, const AZ::Render::MaterialAssignmentId& materialAssignmentId, AZ::Data::Instance<AZ::RPI::Material> material, bool autoOpenDialog) override;
 #endif
 
         // CrySystemEventBus overrides...

@@ -18,7 +18,6 @@ namespace AtomImGuiTools
     public:
         void SetSelectedEntityId(AZ::EntityId entityId);
         const AZ::RPI::MeshDrawPacketLods* GetMeshDrawPackets() const;
-        const AZ::RPI::MeshDrawPacket* FindDrawPacket(const AZ::Render::MaterialAssignmentId& materialAssignmentId, AZ::Data::Instance<AZ::RPI::Material> material) const;
         AZStd::string GetSelectionName() const;
 
     private:

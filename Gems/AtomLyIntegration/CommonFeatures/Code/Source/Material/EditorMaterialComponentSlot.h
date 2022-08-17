@@ -79,8 +79,6 @@ namespace AZ
             //! Open the material instance inspector to edit material property overrides for a set of entities 
             void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
             
-            void OpenMaterialShaderDetails();
-
             //! Open the dialog for mapping UV channels for models and materials
             void OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
 

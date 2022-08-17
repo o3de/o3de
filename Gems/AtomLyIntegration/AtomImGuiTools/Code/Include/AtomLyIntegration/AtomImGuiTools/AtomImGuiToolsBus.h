@@ -30,8 +30,6 @@ namespace AtomImGuiTools
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         virtual void ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog) = 0;
-        virtual void ShowMaterialShaderDetailsForEntityMaterialAssignment(
-            AZ::EntityId entity, const AZ::Render::MaterialAssignmentId& materialAssignmentId, AZ::Data::Instance<AZ::RPI::Material> material, bool autoOpenDialog) = 0;
     };
     using AtomImGuiToolsRequestBus = AZ::EBus<AtomImGuiToolsRequests>;
     

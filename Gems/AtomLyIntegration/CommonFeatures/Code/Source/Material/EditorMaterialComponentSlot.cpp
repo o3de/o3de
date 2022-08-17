@@ -130,7 +130,6 @@ namespace AZ
                     ->Method("OpenMaterialExporter", &EditorMaterialComponentSlot::OpenMaterialExporter)
                     ->Method("OpenMaterialEditor", &EditorMaterialComponentSlot::OpenMaterialEditor)
                     ->Method("OpenMaterialInspector", &EditorMaterialComponentSlot::OpenMaterialInspector)
-                    ->Method("OpenMaterialShaderDetails", &EditorMaterialComponentSlot::OpenMaterialShaderDetails)
                     ->Method("OpenUvNameMapInspector", &EditorMaterialComponentSlot::OpenUvNameMapInspector)
                     ->Method("ExportMaterial", &EditorMaterialComponentSlot::ExportMaterial)
                     ;
@@ -307,12 +306,6 @@ namespace AZ
                 &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialInspector, m_entityId, entityIdsToEdit, m_id);
         }
         
-        void EditorMaterialComponentSlot::OpenMaterialShaderDetails()
-        {
-            EditorMaterialSystemComponentRequestBus::Broadcast(
-                &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialShaderDetails, m_entityId, m_id);
-        }
-
         void EditorMaterialComponentSlot::OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit)
         {
             if (GetActiveAssetId().IsValid())
@@ -365,15 +358,6 @@ namespace AZ
             action = menu.addAction("Edit Material Instance UV Map...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
             
-            action = menu.addAction("View Shader Details...", [this]() { OpenMaterialShaderDetails(); });
-            // The handler for OpenMaterialShaderDetails() is not able to resolve material assets without a material instance.
-            // When there is no material override then the material asset comes from from the mesh, which does not readily
-            // expose a corresponding material instance. When there is a material override, the MaterialComponent does
-            // have a material instance for OpenMaterialShaderDetails() to use. That's why we check m_materialAsset instead
-            // of GetActiveAssetId(). OpenMaterialShaderDetails() can also resolve the material when a specific LOD and Slot
-            // are specified.
-            action->setEnabled((m_materialAsset.GetId().IsValid() || m_id.IsLodAndSlotId()) && entityIdsToEdit.size() == 1);
-
             menu.addSeparator();
 
             action = menu.addAction("Clear Material Instance Overrides", [this, entityIdsToEdit]() {

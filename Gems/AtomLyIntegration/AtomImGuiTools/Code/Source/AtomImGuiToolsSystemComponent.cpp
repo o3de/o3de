@@ -142,20 +142,6 @@ namespace AtomImGuiTools
         }
     }
 
-    void AtomImGuiToolsSystemComponent::ShowMaterialShaderDetailsForEntityMaterialAssignment(
-        AZ::EntityId entity, const AZ::Render::MaterialAssignmentId& materialAssignmentId, AZ::Data::Instance<AZ::RPI::Material> material, bool autoOpenDialog)
-    {
-        m_materialDetailsController.SetSelectedEntityId(entity);
-        m_imguiMaterialDetails.SetDrawPacket(m_materialDetailsController.FindDrawPacket(materialAssignmentId, material));
-
-        if (autoOpenDialog)
-        {
-            m_imguiMaterialDetails.OpenDialog();
-            m_showMaterialDetails = true;
-            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::ToggleToImGuiVisibleState, ImGui::DisplayState::Visible);
-        }
-    }
-
 #endif
 
     void AtomImGuiToolsSystemComponent::OnCryEditorInitialized()
