@@ -44,14 +44,18 @@ namespace AZ
         {
             if (!m_material)
             {
-                const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
-                m_material = mesh.m_material;
+                m_material = GetMesh().m_material;
             }
         }
 
         Data::Instance<Material> MeshDrawPacket::GetMaterial() const
         {
             return m_material;
+        }
+        
+        const ModelLod::Mesh& MeshDrawPacket::GetMesh() const
+        {
+            return m_modelLod->GetMeshes()[m_modelLodMeshIndex];
         }
 
         bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value)
@@ -301,6 +305,7 @@ namespace AZ
                 
                 ShaderData shaderData;
                 shaderData.m_shader = AZStd::move(shader);
+                shaderData.m_shaderTag = shaderItem.GetShaderTag();
                 shaderData.m_requestedShaderVariantId = requestedVariantId;
                 shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
                 shaderData.m_activeShaderVariantStableId = variant.GetStableId();

@@ -8,7 +8,9 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include<AtomCore/Instance/Instance.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/EntityId.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 
 namespace AZ
 {
@@ -20,14 +22,21 @@ namespace AZ
 
 namespace AtomImGuiTools
 {
-    //! AtomImGuiToolsBus provides an interface to interact with Atom ImGui debug tools
+    //! AtomImGuiToolsRequestBus provides an interface to interact with Atom ImGui debug tools
     class AtomImGuiToolsRequests : public AZ::EBusTraits
     {
     public:
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void ShowMaterialShaderDetails(AZ::Data::Instance<AZ::RPI::Material> material) = 0;
+        virtual void ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog) = 0;
     };
-    using AtomImGuiToolsBus = AZ::EBus<AtomImGuiToolsRequests>;
+    using AtomImGuiToolsRequestBus = AZ::EBus<AtomImGuiToolsRequests>;
+    
+    class AtomImGuiMeshCallbacks : public AZ::ComponentBus
+    {
+    public:
+        virtual const AZ::RPI::MeshDrawPacketLods* GetDrawPackets() const = 0;
+    };
+    using AtomImGuiMeshCallbackBus = AZ::EBus<AtomImGuiMeshCallbacks>;
 
 } 

@@ -24,9 +24,6 @@ namespace AZ
     {
         class ModelDataInstance;
         
-        using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
-
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
         {
@@ -71,7 +68,7 @@ namespace AZ
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
             //! This function is primarily intended for debug output and testing, by providing insight into what
             //! materials, shaders, etc. are actively being used to render the model.
-            virtual const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
+            virtual const RPI::MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,

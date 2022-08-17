@@ -69,12 +69,17 @@ namespace AZ
             //! Mesh data associated with a specific material.
             struct Mesh final
             {
+                // TODO: We need an explanation for this field and how we merge meshes based on material slot ID. This field
+                // might not be helpful, we might only want m_materialSlotName.
+                AZ::Name m_name;
+
                 RHI::DrawArguments m_drawArguments;
                 RHI::IndexBufferView m_indexBufferView;
 
                 StreamInfoList m_streamInfo;
 
                 ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
+                AZ::Name m_materialSlotName;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;

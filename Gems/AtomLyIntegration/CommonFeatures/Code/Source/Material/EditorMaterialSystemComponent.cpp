@@ -105,6 +105,7 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+            AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
             AZ::SystemTickBus::Handler::BusConnect();
 
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
@@ -119,6 +120,7 @@ namespace AZ
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
+            AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect(); 
             AZ::SystemTickBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
@@ -191,13 +193,13 @@ namespace AZ
         }
         
         void EditorMaterialSystemComponent::OpenMaterialShaderDetails(
-            const AZ::EntityId& entityId,
-            const AZ::Render::MaterialAssignmentId& materialAssignmentId) 
+            const AZ::EntityId& /*entityId*/,
+            const AZ::Render::MaterialAssignmentId& /*materialAssignmentId*/) 
         {
-            MaterialAssignmentMap assignments;
-            MaterialComponentRequestBus::EventResult(assignments, entityId, &MaterialComponentRequests::GetMaterialMap);
+            //MaterialAssignmentMap assignments;
+            //MaterialComponentRequestBus::EventResult(assignments, entityId, &MaterialComponentRequests::GetMaterialMap);
 
-            AtomImGuiTools::AtomImGuiToolsBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetails, assignments[materialAssignmentId].m_materialInstance);
+            //AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, entityId);
         }
 
         void EditorMaterialSystemComponent::RenderMaterialPreview(
@@ -389,6 +391,18 @@ namespace AZ
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
                 "Material Property Inspector", LyViewPane::CategoryTools, inspectorOptions);
+        }
+        
+        void EditorMaterialSystemComponent::AfterEntitySelectionChanged(const AzToolsFramework::EntityIdList& newlySelectedEntities, const AzToolsFramework::EntityIdList&)
+        {
+            if (newlySelectedEntities.size() == 1)
+            {
+                AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, newlySelectedEntities[0], false);
+            }
+            else
+            {
+                AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, AZ::EntityId{}, false);
+            }
         }
 
         AzToolsFramework::AssetBrowser::SourceFileDetails EditorMaterialSystemComponent::GetSourceFileDetails(

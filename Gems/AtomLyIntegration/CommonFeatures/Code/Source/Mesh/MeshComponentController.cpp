@@ -257,6 +257,7 @@ namespace AZ
             const auto entityContextId = FindOwningContextId(entityId);
             MeshComponentRequestBus::Handler::BusConnect(entityId);
             MeshHandleStateRequestBus::Handler::BusConnect(entityId);
+            AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler::BusConnect(entityId);
             TransformNotificationBus::Handler::BusConnect(entityId);
             MaterialReceiverRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
@@ -280,6 +281,7 @@ namespace AZ
             TransformNotificationBus::Handler::BusDisconnect();
             MeshComponentRequestBus::Handler::BusDisconnect();
             MeshHandleStateRequestBus::Handler::BusDisconnect();
+            AtomImGuiTools::AtomImGuiMeshCallbackBus::Handler::BusDisconnect();
 
             m_nonUniformScaleChangedHandler.Disconnect();
 
@@ -502,6 +504,11 @@ namespace AZ
         Data::Instance<RPI::Model> MeshComponentController::GetModel() const
         {
             return m_meshFeatureProcessor ? m_meshFeatureProcessor->GetModel(m_meshHandle) : Data::Instance<RPI::Model>();
+        }
+        
+        const RPI::MeshDrawPacketLods* MeshComponentController::GetDrawPackets() const
+        {
+            return m_meshFeatureProcessor ? &m_meshFeatureProcessor->GetDrawPackets(m_meshHandle) : nullptr;
         }
 
         void MeshComponentController::SetSortKey(RHI::DrawItemSortKey sortKey)

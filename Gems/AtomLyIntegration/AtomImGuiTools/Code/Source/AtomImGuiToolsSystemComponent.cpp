@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
+#include <ImGuiBus.h>
 
 namespace AtomImGuiTools
 {
@@ -59,6 +60,7 @@ namespace AtomImGuiTools
     {
 #if defined(IMGUI_ENABLED)
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+        AtomImGuiToolsRequestBus::Handler::BusConnect();
 #endif
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -68,6 +70,7 @@ namespace AtomImGuiTools
 #if defined(IMGUI_ENABLED)
         m_imguiPassTree.Reset();
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        AtomImGuiToolsRequestBus::Handler::BusDisconnect();
 #endif
 
         CrySystemEventBus::Handler::BusDisconnect();
@@ -96,7 +99,11 @@ namespace AtomImGuiTools
         {
             m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
         }
-        m_imguiMaterialDetails.Tick();
+
+        if (m_showMaterialDetails)
+        {
+            m_imguiMaterialDetails.Tick(m_materialDetailsController.GetSelectionName().c_str(), m_materialDetailsController.GetMeshDrawPackets());
+        }
     }
 
     void AtomImGuiToolsSystemComponent::OnImGuiMainMenuUpdate()
@@ -126,10 +133,16 @@ namespace AtomImGuiTools
         }
     }
     
-    void AtomImGuiToolsSystemComponent::ShowMaterialShaderDetails(AZ::Data::Instance<AZ::RPI::Material> material)
+    void AtomImGuiToolsSystemComponent::ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog)
     {
-        m_imguiMaterialDetails.SetMaterial(material);
-        m_imguiMaterialDetails.OpenDialog();
+        m_materialDetailsController.SetSelectedEntityId(entity);
+
+        if (autoOpenDialog)
+        {
+            m_imguiMaterialDetails.OpenDialog();
+            m_showMaterialDetails = true;
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::ToggleToImGuiVisibleState, ImGui::DisplayState::Visible);
+        }
     }
 
 #endif

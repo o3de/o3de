@@ -242,7 +242,7 @@ namespace AZ
             return {};
         }
         
-        const MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
+        const RPI::MeshDrawPacketLods& MeshFeatureProcessor::GetDrawPackets(const MeshHandle& meshHandle) const
         {
             return meshHandle.IsValid() ? meshHandle->m_drawPacketListsByLod : m_emptyDrawPacketLods;
         }
@@ -705,7 +705,7 @@ namespace AZ
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
             const size_t meshCount = modelLod.GetMeshes().size();
             
-            MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
+            RPI::MeshDrawPacketList& drawPacketListOut = m_drawPacketListsByLod[modelLodIndex];
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 

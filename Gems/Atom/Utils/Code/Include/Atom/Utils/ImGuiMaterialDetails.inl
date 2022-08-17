@@ -11,6 +11,7 @@
 #include <Atom/Utils/ImGuiShaderUtils.h>
 #include <imgui/imgui.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 

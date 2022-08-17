@@ -20,6 +20,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             Gem::Atom_Feature_Common.Public
+            Gem::AtomImGuiTools.Public
 )
 
 ly_add_target(
@@ -102,7 +103,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
-                Gem::AtomImGuiTools.Public
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::Editor.Headers
