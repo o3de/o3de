@@ -108,7 +108,7 @@ namespace GradientSignal
         if (advancedModeIter != inputValue.MemberEnd())
         {
             AZ::ScopedContextPath subPath(context, "AdvancedMode");
-            bool advancedMode;
+            bool advancedMode = false;
             result.Combine(ContinueLoading(&advancedMode, azrtti_typeid<bool>(), advancedModeIter->value, context));
             if (!advancedMode)
             {

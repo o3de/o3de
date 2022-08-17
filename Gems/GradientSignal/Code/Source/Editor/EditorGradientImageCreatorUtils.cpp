@@ -8,6 +8,7 @@
 
 #include <Editor/EditorGradientImageCreatorUtils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
@@ -132,13 +133,16 @@ namespace GradientSignal::ImageCreatorUtils
             return false;
         }
 
+        // We *could* declare this as a local variable and just never show it, but then calling WriteImage would always
+        // require Qt to be started. This way, we can call WriteImage from unit tests without starting Qt as long as we
+        // set showProgressDialog = false.
         QProgressDialog* saveDialog = nullptr;
 
         // Show a dialog box letting the user know the image is being written out.
         // For large image sizes, it can take 15+ seconds to create and write out the image.
         if (showProgressDialog)
         {
-            saveDialog = new QProgressDialog();
+            saveDialog = new QProgressDialog(AzToolsFramework::GetActiveWindow());
             saveDialog->setWindowFlags(saveDialog->windowFlags() & ~Qt::WindowCloseButtonHint);
             saveDialog->setLabelText("Saving image...");
             saveDialog->setWindowModality(Qt::WindowModal);

@@ -351,8 +351,13 @@ namespace GradientSignal
         m_component.WriteOutConfig(&m_configuration);
         SetDirty();
 
-        if (RefreshImageAssetStatus())
+        // Make sure the creation/selection visibility flags have been refreshed correctly.
+        RefreshCreationSelectionChoice();
+
+        if (RefreshImageAssetStatus() && m_configuration.GetImageOptionsVisibility())
         {
+            // If the asset status changed and the image asset property is visible, refresh the entire tree so
+            // that the label change is picked up.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
         }
