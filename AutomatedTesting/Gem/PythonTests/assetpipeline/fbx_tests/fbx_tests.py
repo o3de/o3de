@@ -403,6 +403,16 @@ blackbox_fbx_tests = [
                                     product_name='motion/jack_idle_aim_zup.motion',
                                     sub_id=186392073,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'
+                                ),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup_fbx.procprefab',
+                                    sub_id=1049691217,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'
+                                ),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup_fbx.procprefab.json',
+                                    sub_id=-980081481,
+                                    asset_type=b'00000000000000000000000000000000'
                                 )
                             ]
                         ),
@@ -740,7 +750,8 @@ class TestsFBX_AllPlatforms(object):
     def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
-
+        import shutil
+        shutil.copyfile(debug_graph_path, f"C:/new/{actual_file_path}")
         logger.info(f"Parsing scene graph: {debug_graph_path}")
         with open(debug_graph_path, "r") as scene_file:
             actual_lines = scene_file.readlines()
