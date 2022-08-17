@@ -129,7 +129,6 @@ namespace AzToolsFramework
             }
 
             // Return the highest closed container, or the entity if none is found.
-            AZ::EntityId highestSelectableEntityId = entityId;
             AZ::EntityId secondLastOpenContainerBeforeSelection = entityId;
             AZ::EntityId lastOpenContainerBeforeSelection = entityId;
 
