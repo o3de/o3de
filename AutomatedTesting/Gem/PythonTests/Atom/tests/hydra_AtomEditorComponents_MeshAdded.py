@@ -79,8 +79,11 @@ class Tests:
         "Mesh component removed successfully",
         "P1: Mesh component was not correctly removed from the entity")
     model_asset_is_optimized = (
-        "valenaactor.azmodel has <= 231,904 vertices",
+        "tube.azmodel has <= 66 vertices",
         "P0: Model has not been fully optimized")
+    model_different_bone_ids_same_position_should_weld_vertices = (
+        "sameposition_differentboneIds_shouldnotweldvertices.azmodel has 48 vertices",
+        "P0: Vertices were welded when they shouldnt be")
 
 
 def AtomEditorComponents_Mesh_AddedToEntity():
@@ -118,10 +121,11 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     19) Test IsHidden.
     20) Test IsVisible.
     21) Verify that vertex welding is functioning
-    22) Delete Mesh entity.
-    23) UNDO deletion.
-    24) REDO deletion.
-    25) Look for errors.
+    22) Verify that vertices with the same position but different joint ids aren't welded
+    23) Delete Mesh entity.
+    24) UNDO deletion.
+    25) REDO deletion.
+    26) Look for errors.
 
     :return: None
     """
@@ -321,37 +325,47 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, mesh_entity.is_visible() is True)
         
-        # 21. Set Mesh component asset property
-        model_path = os.path.join('valena', 'valenaactor.azmodel')
+        # 21. Test that vertex welding is functioning
+        model_path = os.path.join('testdata', 'objects', 'tube.azmodel')
         model = Asset.find_asset_by_path(model_path)
         onModelReadyHelper = OnModelReadyHelper()
         onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
         Report.result(Tests.model_asset_specified,
                       mesh_component.get_component_property_value(
                           AtomComponentProperties.mesh('Model Asset')) == model.id)
-        
-        vertex_count = mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Vertex Count LOD0'))
 
         Report.result(Tests.model_asset_is_optimized,
                       mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 231904)
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 66)
 
-        # 22. Delete Mesh entity.
+        # 22. Test that vertices with the same position but different boneId's aren't unintentionally welded
+        model_path = os.path.join('testdata', 'objects', 'skinnedmesh', 'meshoptimization', 'sameposition_differentjointids_shouldnotweldvertices.azmodel')
+        model = Asset.find_asset_by_path(model_path)
+        onModelReadyHelper = OnModelReadyHelper()
+        onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
+        Report.result(Tests.model_asset_specified,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Model Asset')) == model.id)
+
+        Report.result(Tests.model_different_bone_ids_same_position_should_weld_vertices,
+                      mesh_component.get_component_property_value(
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) == 48)
+
+        # 23. Delete Mesh entity.
         mesh_entity.delete()
         Report.result(Tests.entity_deleted, not mesh_entity.exists())
 
-        # 23. UNDO deletion.
+        # 24. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, mesh_entity.exists())
 
-        # 24. REDO deletion.
+        # 25. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not mesh_entity.exists())
 
-        # 25. Look for errors or asserts.
+        # 26. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
