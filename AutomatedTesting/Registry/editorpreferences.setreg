@@ -8,7 +8,7 @@
     "O3DE": {
         "Preferences": {
             "Prefabs": {
-                "EnableOverridesUx": true
+                "EnableOverridesUx": false
             }
         }
     }
