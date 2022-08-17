@@ -480,7 +480,7 @@ namespace AZ
         { 
             AZ_Assert(!m_xrSystem, "XR System is already registered");
             m_xrSystem = xrSystemInterface;
-            m_rhiSystem.RegisterXRSystem(dynamic_cast<RHI::XRRenderingInterface*>(xrSystemInterface));
+            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
         }
 
         void RPISystem::UnregisterXRSystem()

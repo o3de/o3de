@@ -32,7 +32,7 @@ namespace AzToolsFramework
             virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Instance& instance) = 0;
 
             //! Generates a patch using serialization system and places the result in generatedPatch
-            virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) = 0;
+            virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) = 0;
 
             //! Generates a patch to be associated with a link with the given LinkId and places the result in generatedPatch
             virtual bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,

@@ -11,6 +11,12 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
+#include <Atom/RHI.Reflect/Format.h>
+
+namespace AZ::RHI
+{
+    class XRRenderingInterface;
+}
 
 namespace AZ::RPI
 {
@@ -56,11 +62,14 @@ namespace AZ::RPI
         //! Returns true if rendering data is valid for the current frame.
         virtual bool ShouldRender() const = 0;
 
-        //! Return the swapChain width (in pixels) associated with the view index
+        //! Return the swapChain width (in pixels) associated with the view index.
         virtual AZ::u32 GetSwapChainWidth(AZ::u32 viewIndex) const = 0;
 
-        //! Return the swapChain height (in pixels) associated with the view index
+        //! Return the swapChain height (in pixels) associated with the view index.
         virtual AZ::u32 GetSwapChainHeight(AZ::u32 viewIndex) const = 0;
+
+        //! Return the swapChain format associated with the view index.
+        virtual AZ::RHI::Format GetSwapChainFormat(AZ::u32 viewIndex) const = 0;
 
         //! Return the Fov data (in radians) associated with provided view index.
         virtual FovData GetViewFov(AZ::u32 viewIndex) const = 0;
@@ -81,6 +90,8 @@ namespace AZ::RPI
         virtual AZ::Matrix4x4 CreateProjectionOffset(
             float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist) = 0;
 
+        //! Returns the XR specific RHI rendering interface.
+        virtual AZ::RHI::XRRenderingInterface* GetRHIXRRenderingInterface() = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.

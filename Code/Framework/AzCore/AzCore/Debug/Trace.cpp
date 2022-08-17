@@ -16,7 +16,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-#include <stdarg.h>
+#include <cstdarg>
 
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Debug/TraceMessageBus.h>
@@ -55,7 +55,6 @@ namespace AZ::Debug
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
@@ -84,10 +83,18 @@ namespace AZ::Debug
     static constexpr auto ErrorEventId = EventNameHash("Error");
     static constexpr auto AssertEventId = EventNameHash("Assert");
 
-    constexpr LogLevel DefaultLogLevel = LogLevel::Info;
+    static void TraceLevelChanged(const int& newLevel)
+    {
+        Debug::ITrace::Instance().SetLogLevel(static_cast<LogLevel>(newLevel));
+    }
 
-    AZ_CVAR_SCOPED(int, bg_traceLogLevel, DefaultLogLevel, nullptr, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
-    AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, nullptr, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
+    static void AlwaysShowCallstackChanged(const bool& enable)
+    {
+        Debug::ITrace::Instance().SetAlwaysPrintCallstack(enable);
+    }
+
+    AZ_CVAR_SCOPED(int, bg_traceLogLevel, LogLevel::Info, &TraceLevelChanged, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
+    AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, &AlwaysShowCallstackChanged, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
 
     // Allow redirection of trace raw output writes to stdout, stderr or to /dev/null
     static constexpr const char* fileStreamIdentifier = "raw_c_stream";
@@ -236,11 +243,11 @@ namespace AZ::Debug
             return timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs;
         };
 
-        while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())
+        while (!Instance().IsDebuggerPresent() && !hasTimedOut())
         {
             AZStd::this_thread::sleep_for(milliseconds(1));
         }
-        return AZ::Debug::Trace::IsDebuggerPresent();
+        return Instance().IsDebuggerPresent();
 #else
         return false;
 #endif
@@ -254,7 +261,7 @@ namespace AZ::Debug
     Trace::HandleExceptions(bool isEnabled)
     {
         AZ_UNUSED(isEnabled);
-        if (IsDebuggerPresent())
+        if (Instance().IsDebuggerPresent())
         {
             return;
         }
@@ -292,13 +299,8 @@ namespace AZ::Debug
     void Debug::Trace::Terminate(int exitCode)
     {
         AZ_TracePrintf("Exit", "Called Terminate() with exit code: 0x%x", exitCode);
-        AZ::Debug::Trace::PrintCallstack("Exit");
+        Instance().PrintCallstack("Exit");
         Platform::Terminate(exitCode);
-    }
-
-    bool Trace::IsTraceLoggingEnabledForLevel(LogLevel level)
-    {
-        return bg_traceLogLevel >= level;
     }
 
     //=========================================================================
@@ -348,7 +350,7 @@ namespace AZ::Debug
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
 
-        if (bg_alwaysShowCallstack)
+        if (GetAlwaysPrintCallstack())
         {
             // If we're always showing the callstack, print it now before there's any chance of an ebus handler interrupting
             PrintCallstack(g_dbgSystemWnd, 1);
@@ -378,7 +380,7 @@ namespace AZ::Debug
             }
 
             Output(g_dbgSystemWnd, "------------------------------------------------\n");
-            if (!bg_alwaysShowCallstack)
+            if (!GetAlwaysPrintCallstack())
             {
                 PrintCallstack(g_dbgSystemWnd, 1);
             }
@@ -406,7 +408,7 @@ namespace AZ::Debug
             {
                 // You've encountered an assert! By default, the presence of a debugger will cause asserts
                 // to DebugBreak (walk up a few stack frames to understand what happened).
-                g_tracer.Break();
+                Instance().Break();
             }
 #if AZ_ENABLE_TRACE_ASSERTS
             //display native UI dialogs at verbosity level 2
@@ -417,7 +419,7 @@ namespace AZ::Debug
                 switch (buttonResult)
                 {
                 case AZ::NativeUI::AssertAction::BREAK:
-                    g_tracer.Break();
+                    Instance().Break();
                     break;
                 case AZ::NativeUI::AssertAction::IGNORE_ALL_ASSERTS:
                     SetAssertVerbosityLevel(1);
@@ -672,7 +674,7 @@ namespace AZ::Debug
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message
 
-                if (bg_alwaysShowCallstack)
+                if (GetAlwaysPrintCallstack())
                 {
                     // Use Raw Output as this cannot be suppressed
                     RawOutput(window, lines[i]);
