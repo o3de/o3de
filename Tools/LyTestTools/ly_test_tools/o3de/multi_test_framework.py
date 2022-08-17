@@ -1116,6 +1116,8 @@ class AbstractTestSuite(object):
         # Since there are no default logging features, we default to using Editor logging for any executable.
         log_path_function = editor_utils.retrieve_log_path
         log_content_function = editor_utils.retrieve_editor_log_content
+        temp_batched_script_file = None
+        temp_batched_case_file = None
 
         # Editor
         if type(executable) is WinEditor:
