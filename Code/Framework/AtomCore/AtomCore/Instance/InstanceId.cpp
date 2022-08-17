@@ -12,6 +12,13 @@ namespace AZ
 {
     namespace Data
     {
+        InstanceId InstanceId::CreateFromAsset(const Asset<AssetData>& asset)
+        {
+            // Ideally this would use the asset creation token instead of the asset pointer. That requires the asset pointer to be valid
+            // beforehand. If the asset pointer is null this will be the same as CreateFromAssetId.
+            return InstanceId(asset.GetId().m_guid, asset.GetId().m_subId, asset.Get());
+        }
+
         InstanceId InstanceId::CreateFromAssetId(const AssetId& assetId)
         {
             return InstanceId(assetId.m_guid, assetId.m_subId);
@@ -33,27 +40,36 @@ namespace AZ
         }
 
         InstanceId::InstanceId(const Uuid& guid)
-            : m_guid{guid}
-        {}
+            : m_guid{ guid }
+        {
+        }
 
         InstanceId::InstanceId(const Uuid& guid, uint32_t subId)
-            : m_guid{guid}
-            , m_subId{subId}
-        {}
+            : m_guid{ guid }
+            , m_subId{ subId }
+        {
+        }
+
+        InstanceId::InstanceId(const Uuid& guid, uint32_t subId, void* data)
+            : m_guid{ guid }
+            , m_subId{ subId }
+            , m_data{ data }
+        {
+        }
 
         bool InstanceId::IsValid() const
         {
             return m_guid != AZ::Uuid::CreateNull();
         }
 
-        bool InstanceId::operator == (const InstanceId& rhs) const
+        bool InstanceId::operator==(const InstanceId& rhs) const
         {
-            return m_guid == rhs.m_guid && m_subId == rhs.m_subId;
+            return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_data == rhs.m_data;
         }
 
-        bool InstanceId::operator != (const InstanceId& rhs) const
+        bool InstanceId::operator!=(const InstanceId& rhs) const
         {
-            return m_guid != rhs.m_guid || m_subId != rhs.m_subId;
+            return m_guid != rhs.m_guid || m_subId != rhs.m_subId || m_data != rhs.m_data;
         }
-    }
-}
+    } // namespace Data
+} // namespace AZ

@@ -33,15 +33,12 @@ namespace AZ
         Data::Instance<Material> Material::FindOrCreate(const Data::Asset<MaterialAsset>& materialAsset)
         {
             return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(materialAsset.GetId()),
-                materialAsset);
+                Data::InstanceId::CreateFromAsset(materialAsset), materialAsset);
         }
 
         Data::Instance<Material> Material::Create(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(),
-                materialAsset);
+            return Data::InstanceDatabase<Material>::Instance().FindOrCreate(Data::InstanceId::CreateRandom(), materialAsset);
         }
 
         AZ::Data::Instance<Material> Material::CreateInternal(MaterialAsset& materialAsset)
@@ -252,9 +249,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
-
-            if (newMaterialAsset)
+            if (Data::Asset<MaterialAsset> newMaterialAsset = asset)
             {
                 Init(*newMaterialAsset);
                 MaterialReloadNotificationBus::Event(newMaterialAsset.GetId(), &MaterialReloadNotifications::OnMaterialReinitialized, this);
