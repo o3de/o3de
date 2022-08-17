@@ -169,6 +169,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzTestShared
                 Gem::EMotionFX.Static
                 Gem::EMotionFX.Tests.Static
     )

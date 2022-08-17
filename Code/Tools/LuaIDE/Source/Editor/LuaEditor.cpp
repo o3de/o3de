@@ -24,6 +24,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // here we free the console (and close the console window) in release.
 
     int exitCode = 0;
