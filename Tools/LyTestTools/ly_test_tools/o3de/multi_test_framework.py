@@ -805,14 +805,14 @@ class AbstractTestSuite(object):
         if type(executable) is WinEditor:
             log_path_function = editor_utils.retrieve_log_path
             log_content_function = editor_utils.retrieve_editor_log_content
-            cmdline = ["--runpythontest", test_filename,
+            cmdline = ["-runpythontest", test_filename,
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
         elif type(executable) is WinMaterialEditor:
             log_path_function = editor_utils.retrieve_material_editor_log_path
             log_content_function = editor_utils.retrieve_material_editor_log_content
-            cmdline = ["--runpythontest", test_filename,
+            cmdline = ["-runpythontest", test_filename,
                        "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -1111,51 +1111,54 @@ class AbstractTestSuite(object):
 
         results = {}
 
-        # We create a files containing a semicolon separated scripts and test cases for the executable to read.
-        test_script_list = ""
-        test_case_list = ""
-
-        for test_spec in test_spec_list:
-            # Test script
-            test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
-
-            # Test case
-            test_case_name = editor_utils.compile_test_case_name(request, test_spec)
-            test_case_list += f"{test_case_name};"
-
-        # Remove the trailing semicolon from the last entry
-        test_script_list = test_script_list[:-1]
-        test_script_list = test_script_list.replace('\\', '/')
-        test_case_list = test_case_list[:-1]
-
-        temp_batched_script_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-        temp_batched_script_file.write(test_script_list.replace('\\', '\\\\'))
-        temp_batched_script_file.flush()
-        temp_batched_script_file.close()
-
-        temp_batched_case_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
-        temp_batched_case_file.write(test_case_list)
-        temp_batched_case_file.flush()
-        temp_batched_case_file.close()
-
         # Here we handle populating variables based on the type of executable under test.
         cmdline = []
         # Since there are no default logging features, we default to using Editor logging for any executable.
         log_path_function = editor_utils.retrieve_log_path
         log_content_function = editor_utils.retrieve_editor_log_content
+
+        # Editor
         if type(executable) is WinEditor:
+            # We create a file containing a semicolon separated scripts and test cases for the executable to read.
+            test_script_list = ""
+            test_case_list = ""
+
+            for test_spec in test_spec_list:
+                # Test script
+                test_script_list += editor_utils.get_testcase_module_filepath(test_spec.test_module) + ';'
+
+                # Test case
+                test_case_name = editor_utils.compile_test_case_name(request, test_spec)
+                test_case_list += f"{test_case_name};"
+
+            # Remove the trailing semicolon from the last entry
+            test_script_list = test_script_list[:-1]
+            test_script_list = test_script_list.replace('\\', '/')
+            test_case_list = test_case_list[:-1]
+
+            temp_batched_script_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+            temp_batched_script_file.write(test_script_list.replace('\\', '\\\\'))
+            temp_batched_script_file.flush()
+            temp_batched_script_file.close()
+
+            temp_batched_case_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt')
+            temp_batched_case_file.write(test_case_list)
+            temp_batched_case_file.flush()
+            temp_batched_case_file.close()
             log_path_function = editor_utils.retrieve_log_path
             log_content_function = editor_utils.retrieve_editor_log_content
-            cmdline = [
-                "-runpythontest", temp_batched_script_file.name,
-                "-pythontestcase", temp_batched_case_file.name,
-                "-logfile", f"@log@/{log_name}",
-                "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+            cmdline = ["-runpythontest", temp_batched_script_file.name,
+                       "-pythontestcase", temp_batched_case_file.name,
+                       "-logfile", f"@log@/{log_name}",
+                       "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
+        # MaterialEditor
         elif type(executable) is WinMaterialEditor:
             log_path_function = editor_utils.retrieve_material_editor_log_path
             log_content_function = editor_utils.retrieve_material_editor_log_content
-            cmdline = ["--runpythontest", temp_batched_script_file.name,
-                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name) ] + test_cmdline_args
+            test_filenames_str = ";".join(
+                editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
+            cmdline = ["-runpythontest", test_filenames_str,
+                       "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
         executable.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
