@@ -193,13 +193,25 @@ namespace AZ
         }
         
         void EditorMaterialSystemComponent::OpenMaterialShaderDetails(
-            const AZ::EntityId& /*entityId*/,
-            const AZ::Render::MaterialAssignmentId& /*materialAssignmentId*/) 
+            const AZ::EntityId& entityId,
+            const AZ::Render::MaterialAssignmentId& materialAssignmentId) 
         {
-            //MaterialAssignmentMap assignments;
-            //MaterialComponentRequestBus::EventResult(assignments, entityId, &MaterialComponentRequests::GetMaterialMap);
+            AZ::Data::Instance<AZ::RPI::Material> material;
+            MaterialAssignmentMap materialMap;
 
-            //AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntity, entityId);
+            MaterialComponentRequestBus::EventResult(materialMap, entityId, &MaterialComponentRequests::GetMaterialMap);
+            auto iter = materialMap.find(materialAssignmentId);
+
+            // Note there is no point in also checking MaterialComponentRequests::GetDefautMaterialMap here because that will only
+            // include material assets, not material instances.
+
+            if (iter != materialMap.end())
+            {
+                material = iter->second.m_materialInstance;
+            }
+
+            AtomImGuiTools::AtomImGuiToolsRequestBus::Broadcast(&AtomImGuiTools::AtomImGuiToolsRequests::ShowMaterialShaderDetailsForEntityMaterialAssignment,
+                entityId, materialAssignmentId, material, true);
         }
 
         void EditorMaterialSystemComponent::RenderMaterialPreview(

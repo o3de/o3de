@@ -29,6 +29,7 @@ namespace AZ
         {
         public:
             void SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material);
+            void SetDrawPacket(const RPI::MeshDrawPacket* drawPacket);
 
             void OpenDialog();
             void CloseDialog();
@@ -39,8 +40,13 @@ namespace AZ
 
             AZ::Data::Instance<AZ::RPI::Material> m_material;
             bool m_dialogIsOpen = false;
+
+            // There are multiple ways that draw packet selection can be recalled
+            const RPI::MeshDrawPacket* m_selectedDrawPacket = nullptr;
             size_t m_selectedLod = 0;
-            size_t m_selectedDrawPacket = 0;
+            size_t m_selectedDrawPacketIndex = 0;
+
+
         };
     }
 } 
