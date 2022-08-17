@@ -260,11 +260,6 @@ namespace ImageProcessingAtom
             u32 mipLevels = imageDescriptor.m_mipLevels;
             u32 arraySize = imageDescriptor.m_arraySize;
 
-            if (imageDescriptor.m_isCubemap)
-            {
-                height *= 6;
-            }
-
             height *= arraySize;
 
             IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, mipLevels, format));

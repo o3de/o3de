@@ -502,6 +502,16 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
+    void ReflectionAdapter::ConnectPropertyChangeHandler(PropertyChangeEvent::Handler& handler)
+    {
+        handler.Connect(m_propertyChangeEvent);
+    }
+
+    void ReflectionAdapter::NotifyPropertyChanged(const PropertyChangeInfo& changeInfo)
+    {
+        m_propertyChangeEvent.Signal(changeInfo);
+    }
+
     Dom::Value ReflectionAdapter::GenerateContents()
     {
         m_impl->m_builder.BeginAdapter();
@@ -517,17 +527,15 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value ReflectionAdapter::HandleMessage(const AdapterMessage& message)
     {
-        using Nodes::ContainerActionButton;
-        using Nodes::PropertyEditor;
-
         auto handlePropertyEditorChanged =
-            [&](const Dom::Value& valueFromEditor, [[maybe_unused]] PropertyEditor::ValueChangeType changeType)
+            [&](const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
         {
             auto changeHandler = m_impl->m_onChangedCallbacks.ValueAtPath(message.m_messageOrigin, AZ::Dom::PrefixTreeMatch::ExactPath);
             if (changeHandler != nullptr)
             {
                 Dom::Value newValue = (*changeHandler)(valueFromEditor);
                 NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(message.m_messageOrigin / "Value", newValue) });
+                NotifyPropertyChanged({ message.m_messageOrigin, newValue, changeType });
             }
         };
 
@@ -542,7 +550,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 using Nodes::ContainerAction;
                 AZ::Dom::Value node = GetContents()[message.m_messageOrigin];
-                auto action = ContainerActionButton::Action.ExtractFromDomNode(node);
+                auto action = Nodes::ContainerActionButton::Action.ExtractFromDomNode(node);
                 if (!action.has_value())
                 {
                     return;
@@ -570,7 +578,8 @@ namespace AZ::DocumentPropertyEditor
         };
 
         return message.Match(
-            PropertyEditor::OnChanged, handlePropertyEditorChanged, ContainerActionButton::OnActivate, handleContainerOperation,
-            PropertyEditor::RequestTreeUpdate, handleTreeUpdate);
+            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
+            Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
+            Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate);
     }
 } // namespace AZ::DocumentPropertyEditor

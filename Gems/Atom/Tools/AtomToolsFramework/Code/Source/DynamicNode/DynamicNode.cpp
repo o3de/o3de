@@ -33,21 +33,8 @@ namespace AtomToolsFramework
         , m_toolId(toolId)
         , m_configId(configId)
     {
-        m_config = {};
-        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
-            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
-
         RegisterSlots();
         CreateSlotData();
-    }
-
-    void DynamicNode::PostLoadSetup(GraphModel::GraphPtr ownerGraph, GraphModel::NodeId id)
-    {
-        m_config = {};
-        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
-            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
-
-        Node::PostLoadSetup(ownerGraph, id);
     }
 
     const char* DynamicNode::GetTitle() const
@@ -72,6 +59,10 @@ namespace AtomToolsFramework
 
     void DynamicNode::RegisterSlots()
     {
+        m_config = {};
+        AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
+
         // Register all of the input data slots with the dynamic node
         for (const auto& slotConfig : m_config.m_inputSlots)
         {

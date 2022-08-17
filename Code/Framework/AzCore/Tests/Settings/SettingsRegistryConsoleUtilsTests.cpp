@@ -6,11 +6,14 @@
  *
  */
 
+#include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/std/string/string.h>
 
 namespace SettingsRegistryConsoleUtilsTests
 {
@@ -19,9 +22,21 @@ namespace SettingsRegistryConsoleUtilsTests
     {
     public:
 
+        SettingsRegistryConsoleUtilsFixture()
+            : ScopedAllocatorSetupFixture()
+        {
+            AZ::NameDictionary::Create();
+        }
+
+        ~SettingsRegistryConsoleUtilsFixture()
+        {
+            AZ::NameDictionary::Destroy();
+        }
+
         void SetUp() override
         {
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            m_originTracker = AZStd::make_unique<AZ::SettingsRegistryOriginTracker>(*m_registry);
             // Store off the old global settings registry to restore after each test
             m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
             if (m_oldSettingsRegistry != nullptr)
@@ -40,10 +55,12 @@ namespace SettingsRegistryConsoleUtilsTests
                 AZ::SettingsRegistry::Register(m_oldSettingsRegistry);
                 m_oldSettingsRegistry = {};
             }
+            m_originTracker.reset();
             m_registry.reset();
         }
 
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
+        AZStd::unique_ptr<AZ::SettingsRegistryOriginTracker> m_originTracker;
         AZ::SettingsRegistryInterface* m_oldSettingsRegistry{};
     };
 
@@ -248,6 +265,59 @@ namespace SettingsRegistryConsoleUtilsTests
         SettingsRegistryDumpAllCommandHandler traceHandler{ SettingsKey, SettingsKey2, ExpectedValue, ExpectedValue2 };
         traceHandler.BusConnect();
         EXPECT_TRUE(testConsole.PerformCommand(AZ::SettingsRegistryConsoleUtils::SettingsRegistryDumpAll));
+        traceHandler.BusDisconnect();
+    }
+
+    TEST_F(SettingsRegistryConsoleUtilsFixture, SettingsRegistryCommand_DumpOrigin_Succeeds)
+    {
+        constexpr const char* SettingsKey = "TestKey";
+        constexpr const char* SettingsKey2 = "TestKey2";
+        constexpr const char* ExpectedValue = R"(TestValue)";
+        constexpr const char* ExpectedValue2 = R"(Hello World)";
+        AZ::Console testConsole(*m_registry);
+
+        AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle handle{ AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(
+            *m_originTracker, testConsole) };
+
+        // Add settings to settings registry
+        auto jsonPointerPath = AZ::SettingsRegistryInterface::FixedValueString::format("/%s", SettingsKey);
+        EXPECT_TRUE(m_registry->Set(jsonPointerPath, ExpectedValue));
+
+        // Second Setting to set
+        jsonPointerPath = AZ::SettingsRegistryInterface::FixedValueString::format("/%s", SettingsKey2);
+        EXPECT_TRUE(m_registry->Set(jsonPointerPath, ExpectedValue2));
+
+        // Create a TraceMessageBus Handler for capturing the dumping of the settings
+        struct SettingsRegistryDumpOriginCommandHandler : public AZ::Debug::TraceMessageBus::Handler
+        {
+            SettingsRegistryDumpOriginCommandHandler(
+                const char* settingsKey, const char* settingsKey2, const char* expectedValue, const char* expectedValue2)
+                : m_settingsKey{ settingsKey }
+                , m_settingsKey2{ settingsKey2 }
+                , m_expectedValue{ expectedValue }
+                , m_expectedValue2{ expectedValue2 }
+            {
+            }
+            bool OnOutput(const char* window, const char* message) override
+            {
+                if (window == AZStd::string_view("SettingsRegistry"))
+                {
+                    // Test for in memory origin
+                    AZStd::string_view messageView = message;
+                    EXPECT_TRUE(messageView.contains("<in-memory>"));
+                }
+                return false;
+            }
+
+            const char* m_settingsKey{};
+            const char* m_settingsKey2{};
+            const char* m_expectedValue{};
+            const char* m_expectedValue2{};
+        };
+
+        SettingsRegistryDumpOriginCommandHandler traceHandler{ SettingsKey, SettingsKey2, ExpectedValue, ExpectedValue2 };
+        traceHandler.BusConnect();
+        EXPECT_TRUE(testConsole.PerformCommand(AZ::SettingsRegistryConsoleUtils::SettingsRegistryDumpOrigin));
         traceHandler.BusDisconnect();
     }
 } 

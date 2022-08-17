@@ -60,7 +60,6 @@ namespace ScriptCanvas
     static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
-
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
@@ -357,6 +356,11 @@ namespace ScriptCanvas
         static SourceHandle FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path);
 
         static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
+
+        static SourceHandle FromRelativePathAndScenFolder
+            ( AZStd::string_view relativePath
+            , AZStd::string_view scanFolder
+            , const AZ::Uuid& sourceId);
 
         static SourceHandle MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path);
 

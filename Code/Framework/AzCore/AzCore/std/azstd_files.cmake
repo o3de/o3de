@@ -32,6 +32,7 @@ set(FILES
     hash.cpp
     hash.h
     hash_table.h
+    iterator/common_iterator.h
     iterator/iterator_primitives.h
     iterator.h
     limits.h
@@ -42,6 +43,7 @@ set(FILES
     ranges/common_view.h
     ranges/elements_view.h
     ranges/empty_view.h
+    ranges/filter_view.h
     ranges/iter_move.h
     ranges/iter_swap.h
     ranges/join_view.h
@@ -51,7 +53,9 @@ set(FILES
     ranges/ranges_adaptor.h
     ranges/ranges_algorithm.h
     ranges/ranges_functional.h
+    ranges/ranges_to.h
     ranges/ref_view.h
+    ranges/reverse_view.h
     ranges/single_view.h
     ranges/subrange.h
     ranges/split_view.h
@@ -74,6 +78,7 @@ set(FILES
     containers/bitset.h
     containers/compressed_pair.h
     containers/compressed_pair.inl
+    containers/containers_concepts.h
     containers/deque.h
     containers/fixed_forward_list.h
     containers/fixed_list.h

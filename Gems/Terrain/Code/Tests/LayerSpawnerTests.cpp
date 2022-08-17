@@ -184,8 +184,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerCreatesGroundPlaneWhenUseGroundPla
 {
     // Create a terrain world with height bounds from -128 to 128.
     const float queryResolution = 1.0f;
-    const AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f));
-    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+    const AzFramework::Terrain::FloatRange heightBounds = { -128.0f, 128.0f };
+    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
 
     // Create a terrain spawner with useGroundPlane enabled and a box from 0 to 32.
     Terrain::TerrainLayerSpawnerConfig config;
@@ -225,8 +225,8 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDoesNotCreateGroundPlaneWhenUseGro
 {
     // Create a terrain world with height bounds from -128 to 128.
     const float queryResolution = 1.0f;
-    const AZ::Aabb worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-128.0f), AZ::Vector3(128.0f));
-    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, worldBounds);
+    const AzFramework::Terrain::FloatRange heightBounds = { -128.0f, 128.0f };
+    auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, heightBounds);
 
     // Create a terrain spawner with useGroundPlane disabled and a box from 0 to 32.
     Terrain::TerrainLayerSpawnerConfig config;

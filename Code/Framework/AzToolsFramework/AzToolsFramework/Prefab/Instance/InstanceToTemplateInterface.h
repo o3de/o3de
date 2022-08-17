@@ -32,7 +32,7 @@ namespace AzToolsFramework
             virtual bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Instance& instance) = 0;
 
             //! Generates a patch using serialization system and places the result in generatedPatch
-            virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) = 0;
+            virtual bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) = 0;
 
             //! Generates a patch to be associated with a link with the given LinkId and places the result in generatedPatch
             virtual bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
@@ -46,7 +46,7 @@ namespace AzToolsFramework
             //! @return The string matching the path to the entity alias
             virtual AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) = 0;
 
-            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) = 0;
+            virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix = "") = 0;
 
             //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
             //! @param providedPatch The patch to apply to the template.

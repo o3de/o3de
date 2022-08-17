@@ -45,6 +45,9 @@ namespace AzToolsFramework
         void OverrideStreamWriteFn(StreamWriteFn streamWriteFn) override;
         void OverrideStreamReadFn(StreamReadFn streamReadFn) override;
         void OverrideFileExistsFn(FileExistsFn fileExistsFn) override;
+        
+        // temporary value until there is UI to expose the fields
+        static constexpr int DefaultViewBookmarkCount = 12;
 
     private:
         LocalViewBookmarkComponent* FindOrCreateLocalViewBookmarkComponent();
