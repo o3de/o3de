@@ -100,10 +100,7 @@ namespace AtomImGuiTools
             m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
         }
 
-        if (m_showMaterialDetails)
-        {
-            m_imguiMaterialDetails.Tick(m_materialDetailsController.GetSelectionName().c_str(), m_materialDetailsController.GetMeshDrawPackets());
-        }
+        m_showMaterialDetails = m_imguiMaterialDetails.Tick(m_materialDetailsController.GetSelectionName().c_str(), m_materialDetailsController.GetMeshDrawPackets());
     }
 
     void AtomImGuiToolsSystemComponent::OnImGuiMainMenuUpdate()

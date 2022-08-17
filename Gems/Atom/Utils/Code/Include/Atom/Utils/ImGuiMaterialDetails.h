@@ -32,8 +32,8 @@ namespace AZ
 
             void OpenDialog();
             void CloseDialog();
-            void Tick();
-            void Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets);
+            bool Tick();
+            bool Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets);
 
         private:
 

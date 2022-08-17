@@ -32,7 +32,7 @@ namespace AZ::Render
         m_dialogIsOpen = false;
     }
 
-    inline void ImGuiMaterialDetails::Tick()
+    inline bool ImGuiMaterialDetails::Tick()
     {
         if (m_dialogIsOpen)
         {
@@ -88,9 +88,11 @@ namespace AZ::Render
             }
             ImGui::End();
         }
+
+        return m_dialogIsOpen;
     }
     
-    inline void ImGuiMaterialDetails::Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets)
+    inline bool ImGuiMaterialDetails::Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets)
     {
         if (m_dialogIsOpen)
         {
@@ -184,5 +186,7 @@ namespace AZ::Render
             }
             ImGui::End();
         }
+
+        return m_dialogIsOpen;
     }
 } // namespace AtomSampleViewer
