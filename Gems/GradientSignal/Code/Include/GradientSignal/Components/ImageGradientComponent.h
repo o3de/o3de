@@ -82,20 +82,28 @@ namespace GradientSignal
         AZStd::string GetImageAssetPropertyName() const;
         void SetImageAssetPropertyName(const AZStd::string& imageAssetPropertyName);
 
+        // Serialized properties that control the image data.
 
+        //! The image asset used for the image gradient.
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        //! How often the image should repeat within its shape bounds.
         AZ::Vector2 m_tiling = AZ::Vector2::CreateOne();
-
+        //! Which color channel to use from the image.
         ChannelToUse m_channelToUse = ChannelToUse::Red;
+        //! Which mipmap level to use from the image.
+        AZ::u32 m_mipIndex = 0;
+        //! Scale type to apply to the image data. (Auto = auto-scale data to use full 0-1 range, Manual = use scaleRangeMin/Max)
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 1.0f;
-        AZ::u32 m_mipIndex = 0;
+        //! Which sampling method to use for querying gradient values (Point = exact image data, Bilinear = interpolated image data)
         SamplingType m_samplingType = SamplingType::Point;
 
-        // These properties are used by the Editor to control various property edit states.
-        // None of these are serialized:
+        // Non-serialized properties used by the Editor for display purposes.
+
+        //! Show or hide the set of image options. (This is used when switching between image creation and image usage)
         bool m_showImageOptions = true;
+        //! Label to use for the image asset. This gets modified to show current asset loading/processing state.
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
     };
 
@@ -118,6 +126,7 @@ namespace GradientSignal
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
         ImageGradientComponent(const ImageGradientConfig& configuration);
@@ -199,7 +208,7 @@ namespace GradientSignal
         AZ::RHI::ImageDescriptor m_imageDescriptor;
         AZStd::span<const uint8_t> m_imageData;
 
-        //! If the image is modified at runtime, this buffer will hold the modified image data.
+        //! Temporary buffer for runtime modifications of the image data.
         AZStd::vector<float> m_modifiedImageData;
     };
 }

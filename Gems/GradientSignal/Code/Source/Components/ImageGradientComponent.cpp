@@ -102,6 +102,7 @@ namespace GradientSignal
             }
         }
 
+        // The "AdvancedMode" toggle has been removed, all settings are always active and visible now.
         // If the "AdvancedMode" setting was previously disabled, make sure to set the appropriate settings to their defaults
         rapidjson::Value::ConstMemberIterator advancedModeIter = inputValue.FindMember("AdvancedMode");
         if (advancedModeIter != inputValue.MemberEnd())
@@ -213,17 +214,21 @@ namespace GradientSignal
 
     void ImageGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void ImageGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void ImageGradientComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("GradientTransformService"));
+    }
+
+    void ImageGradientComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
     }
 
     void ImageGradientComponent::Reflect(AZ::ReflectContext* context)

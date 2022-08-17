@@ -27,7 +27,8 @@ namespace GradientSignal
                 editContext->Class<EditorGradientComponentBase>("GradientComponentBase", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
 
-                    ->DataElement(0, &EditorGradientComponentBase::m_previewer, "Previewer", "Gradient Previewer")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorGradientComponentBase::m_previewer, "Previewer", "Gradient Previewer")
                     ;
             }
         }

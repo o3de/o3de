@@ -158,6 +158,29 @@ namespace GradientSignal
         }
     }
 
+    // The following methods pass through to the runtime component so that the Editor component shares the same requirements.
+
+    void EditorImageGradientComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        ImageGradientComponent::GetRequiredServices(services);
+    }
+
+    void EditorImageGradientComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        ImageGradientComponent::GetIncompatibleServices(services);
+    }
+
+    void EditorImageGradientComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        ImageGradientComponent::GetProvidedServices(services);
+    }
+
+    void EditorImageGradientComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        ImageGradientComponent::GetDependentServices(services);
+    }
+
+
     void EditorImageGradientComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         // When building the game entity, use the copy of the runtime configuration on the Editor component to create

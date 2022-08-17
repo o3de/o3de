@@ -132,22 +132,23 @@ namespace GradientSignal::ImageCreatorUtils
             return false;
         }
 
-        QProgressDialog saveDialog;
+        QProgressDialog* saveDialog = nullptr;
 
         // Show a dialog box letting the user know the image is being written out.
         // For large image sizes, it can take 15+ seconds to create and write out the image.
         if (showProgressDialog)
         {
-            saveDialog.setWindowFlags(saveDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
-            saveDialog.setLabelText("Saving image...");
-            saveDialog.setWindowModality(Qt::WindowModal);
-            saveDialog.setMaximumSize(QSize(256, 96));
-            saveDialog.setMinimum(0);
-            saveDialog.setMaximum(100);
-            saveDialog.setMinimumDuration(0);
-            saveDialog.setAutoClose(false);
-            saveDialog.setCancelButton(nullptr);
-            saveDialog.show();
+            saveDialog = new QProgressDialog();
+            saveDialog->setWindowFlags(saveDialog->windowFlags() & ~Qt::WindowCloseButtonHint);
+            saveDialog->setLabelText("Saving image...");
+            saveDialog->setWindowModality(Qt::WindowModal);
+            saveDialog->setMaximumSize(QSize(256, 96));
+            saveDialog->setMinimum(0);
+            saveDialog->setMaximum(100);
+            saveDialog->setMinimumDuration(0);
+            saveDialog->setAutoClose(false);
+            saveDialog->setCancelButton(nullptr);
+            saveDialog->show();
             QApplication::processEvents();
         }
 
@@ -157,12 +158,12 @@ namespace GradientSignal::ImageCreatorUtils
         // Give our progress dialog another chance to update so we don't look frozen.
         if (showProgressDialog)
         {
-            saveDialog.setValue(1);
+            saveDialog->setValue(1);
             QApplication::processEvents();
         }
 
-        // check out the file in source control
-        bool checkedOutSuccessfully = false;
+        // check out the file in source control if source control exists.
+        bool checkedOutSuccessfully = true;
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             checkedOutSuccessfully,
             &AzToolsFramework::ToolsApplicationRequestBus::Events::RequestEditForFileBlocking,
@@ -173,6 +174,7 @@ namespace GradientSignal::ImageCreatorUtils
         if (!checkedOutSuccessfully)
         {
             AZ_Error("EditorImageGradientComponent", false, "Failed to check out file from source control: %s", absolutePath.c_str());
+            delete saveDialog;
             return false;
         }
 
@@ -182,6 +184,7 @@ namespace GradientSignal::ImageCreatorUtils
         if (!outputImage)
         {
             AZ_Error("EditorImageGradientComponent", false, "Failed to create image at path: %s", absolutePath.c_str());
+            delete saveDialog;
             return false;
         }
 
@@ -192,7 +195,7 @@ namespace GradientSignal::ImageCreatorUtils
         auto WriteProgressCallback = [](void* opaqueData, float percentDone) -> bool
         {
             QProgressDialog* saveDialog = reinterpret_cast<QProgressDialog*>(opaqueData);
-            if (saveDialog->isVisible())
+            if (saveDialog && saveDialog->isVisible())
             {
                 saveDialog->setValue(aznumeric_cast<int>(percentDone * 100.0f));
                 QApplication::processEvents();
@@ -201,7 +204,7 @@ namespace GradientSignal::ImageCreatorUtils
         };
 
         bool result = outputImage->write_image(
-            pixelFormat, pixelBuffer.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, WriteProgressCallback, &saveDialog);
+            pixelFormat, pixelBuffer.data(), OIIO::AutoStride, OIIO::AutoStride, OIIO::AutoStride, WriteProgressCallback, saveDialog);
         if (!result)
         {
             AZ_Error("EditorImageGradientComponent", result, "Failed to write out gradient image to path: %s", absolutePath.c_str());
@@ -209,6 +212,7 @@ namespace GradientSignal::ImageCreatorUtils
 
         outputImage->close();
 
+        delete saveDialog;
         return result;
     }
 
