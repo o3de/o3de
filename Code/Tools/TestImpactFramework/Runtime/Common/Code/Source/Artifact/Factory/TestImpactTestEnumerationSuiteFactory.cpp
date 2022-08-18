@@ -90,13 +90,13 @@ namespace TestImpact
 
     namespace Python
     {
-        AZStd::vector<ScriptNameTestSuitePair> TestEnumerationSuitesFactory(
+        AZStd::vector<PythonTestEnumerationSuite> TestEnumerationSuitesFactory(
             const AZStd::string& testEnumerationData)
         {
             size_t startLine = 0;
             size_t endLine = 0;
 
-            AZStd::vector<ScriptNameTestSuitePair> pairs;
+            AZStd::vector<PythonTestEnumerationSuite> pairs;
             AZStd::map<AZStd::string, AZStd::vector<TestEnumerationSuite>> testSuiteMap;
             AZStd::string previousTestFixture;
 
@@ -163,7 +163,7 @@ namespace TestImpact
             // Extract the key/value pairs from our testSuiteMap and put them in our pairs output variable.
             for (const auto& [scriptPath, testSuiteVector] : testSuiteMap)
             {
-                pairs.emplace_back(ScriptNameTestSuitePair(scriptPath, testSuiteVector));
+                pairs.emplace_back(PythonTestEnumerationSuite(scriptPath, testSuiteVector));
             }
             return pairs;
         }
