@@ -1219,7 +1219,7 @@ namespace LandscapeCanvasEditor
     QString MainWindow::GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex)
     {
         static const char* ConfigurationPropertyPrefix = "Configuration|";
-        static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
+        static const char* PreviewEntityIdPropertyPath = "Previewer|Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
         static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
