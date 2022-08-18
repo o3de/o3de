@@ -95,6 +95,15 @@ namespace TestImpact
         {
             size_t startLine = 0;
             size_t endLine = 0;
+
+            enum MatchEntries
+            {
+                FullLine,
+                ScriptPath,
+                TestFixture,
+                TestName,
+                NumMatches
+            };
             
             AZStd::vector<ScriptNameTestSuitePair> pairs;
             AZStd::map<AZStd::string, AZStd::vector<TestEnumerationSuite>> testSuiteMap;
@@ -113,9 +122,10 @@ namespace TestImpact
                 AZStd::smatch matchResults;
                 if (AZStd::regex_search(curLine, matchResults, testNamePattern))
                 {
-                    AZStd::string absoluteScriptPath = matchResults[1];
-                    AZStd::string testFixture = matchResults[2];
-                    AZStd::string testName = matchResults[3];
+                    AZ_TestImpact_Eval(matchResults.size() == NumMatches, ArtifactException, "Error, TestSuite match results did not equal expected number of capture groups");
+                    AZStd::string absoluteScriptPath = matchResults[ScriptPath];
+                    AZStd::string testFixture = matchResults[TestFixture];
+                    AZStd::string testName = matchResults[TestName];
 
                     // Fetch or create the vector for this script
                     AZStd::vector<TestEnumerationSuite>& suitesForThisScript = testSuiteMap[absoluteScriptPath];
