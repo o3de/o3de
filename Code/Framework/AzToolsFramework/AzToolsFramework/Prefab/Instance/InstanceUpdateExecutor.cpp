@@ -83,7 +83,16 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_instancesUpdateQueue.emplace_back(&(instance->get()));
+            AddInstanceToQueue(&(instance->get()));
+        }
+
+        void InstanceUpdateExecutor::AddInstanceToQueue(Instance* instance)
+        {
+            if (m_uniqueInstancesForPropagation.find(instance) == m_uniqueInstancesForPropagation.end())
+            {
+                m_uniqueInstancesForPropagation.emplace(instance);
+                m_instancesUpdateQueue.emplace_back(instance);
+            }
         }
 
         void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
@@ -110,17 +119,19 @@ namespace AzToolsFramework
             {
                 if (instance != instanceToExcludePtr)
                 {
-                    m_instancesUpdateQueue.emplace_back(instance);
+                    AddInstanceToQueue(instance);
                 }
             }
         }
 
-        void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(const Instance* instance)
+        void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(Instance* instance)
         {
             AZStd::erase_if(m_instancesUpdateQueue, [instance](Instance* entry)
             {
                 return entry == instance;
             });
+
+            m_uniqueInstancesForPropagation.erase(instance)
         }
 
         void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
@@ -168,6 +179,7 @@ namespace AzToolsFramework
                         Instance* instanceToUpdate = m_instancesUpdateQueue.front();
                         m_instancesUpdateQueue.pop_front();
                         AZ_Assert(instanceToUpdate != nullptr, "Invalid instance on update queue.");
+                        m_uniqueInstancesForPropagation.erase(instanceToUpdate);
 
                         TemplateId instanceTemplateId = instanceToUpdate->GetTemplateId();
                         if (currentTemplateId != instanceTemplateId)
