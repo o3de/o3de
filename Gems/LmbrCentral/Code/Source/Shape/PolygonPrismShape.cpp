@@ -368,7 +368,8 @@ namespace LmbrCentral
     AZ::Aabb PolygonPrismShape::GetEncompassingAabb()
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_aabb;
     }
@@ -386,7 +387,8 @@ namespace LmbrCentral
     bool PolygonPrismShape::IsPointInside(const AZ::Vector3& point)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         // initial early aabb rejection test
         // note: will implicitly do height test too
@@ -401,7 +403,8 @@ namespace LmbrCentral
     float PolygonPrismShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return PolygonPrismUtil::DistanceSquaredFromPoint(*m_polygonPrism, point, m_currentTransform);
     }
@@ -409,7 +412,8 @@ namespace LmbrCentral
     bool PolygonPrismShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         PolygonPrismSharedLockGuard lock(m_mutex, m_uniqueLockThreadId);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, *m_polygonPrism, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(
+            m_currentTransform, *m_polygonPrism, lock.GetMutexForIntersectionDataCache(), m_currentNonUniformScale);
 
         return PolygonPrismUtil::IntersectRay(m_intersectionDataCache.m_triangles, m_currentTransform, src, dir, distance);
     }
