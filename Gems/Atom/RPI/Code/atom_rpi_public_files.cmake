@@ -92,9 +92,6 @@ set(FILES
     Include/Atom/RPI.Public/Shader/ShaderResourceGroupPool.h
     Include/Atom/RPI.Public/Shader/ShaderSystem.h
     Include/Atom/RPI.Public/Shader/ShaderSystemInterface.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetrics.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h
-    Include/Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystemInterface.h
     Include/Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h
     Include/Atom/RPI.Public/GpuQuery/GpuQuerySystem.h
     Include/Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h
@@ -170,8 +167,6 @@ set(FILES
     Source/RPI.Public/Shader/ShaderResourceGroup.cpp
     Source/RPI.Public/Shader/ShaderResourceGroupPool.cpp
     Source/RPI.Public/Shader/ShaderSystem.cpp
-    Source/RPI.Public/Shader/Metrics/ShaderMetrics.cpp
-    Source/RPI.Public/Shader/Metrics/ShaderMetricsSystem.cpp
     Source/RPI.Public/Shader/ShaderVariantAsyncLoader.cpp
     Source/RPI.Public/ColorManagement/GeneratedTransforms/ColorConversionConstants.inl
     Source/RPI.Public/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.inl

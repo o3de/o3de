@@ -262,6 +262,13 @@ namespace AZStd
             insert_iter(begin(), first, last, is_integral<InputIterator>());
         }
 
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        list(from_range_t, R&& rg, const allocator_type& alloc = Allocator())
+            : m_allocator(alloc)
+        {
+            m_head.m_next = m_head.m_prev = &m_head;
+            assign_range(AZStd::forward<R>(rg));
+        }
 
         AZ_FORCE_INLINE list(initializer_list<T> ilist, const allocator_type& alloc = allocator_type())
             : list(ilist.begin(), ilist.end(), alloc)
@@ -302,9 +309,23 @@ namespace AZStd
             }
         }
         template <class InputIterator>
-        AZ_FORCE_INLINE void assign(const InputIterator& first, const InputIterator& last)
+        void assign(InputIterator first, InputIterator last)
         {
             assign_iter(first, last, is_integral<InputIterator>());
+        }
+
+
+        template<class R>
+        auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                assign_iter(ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                assign_iter(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
         }
 
         void assign(initializer_list<T> iList)
@@ -348,8 +369,18 @@ namespace AZStd
 
         // 23.2.2.3 modifiers
         AZ_FORCE_INLINE void push_front(const_reference value)  { insert(begin(), value); }
+        template<class R>
+        auto prepend_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(begin(), AZStd::forward<R>(rg));
+        }
         AZ_FORCE_INLINE void pop_front()                        { erase(begin()); }
         AZ_FORCE_INLINE void push_back(const_reference value)   { insert(end(), value); }
+        template<class R>
+        auto append_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, T>>
+        {
+            insert_range(end(), AZStd::forward<R>(rg));
+        }
         AZ_FORCE_INLINE void pop_back()                         { erase(--end()); }
 
         template <typename MyAllocator=allocator_type>
@@ -474,6 +505,19 @@ namespace AZStd
         AZ_FORCE_INLINE iterator insert(const_iterator insertPos, InputIterator first, InputIterator last)
         {
             return insert_iter(insertPos, first, last, is_integral<InputIterator>());
+        }
+
+        template<class R>
+        auto insert_range(const_iterator insertPos, R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                return insert_iter(insertPos, ranges::begin(rg), ranges::end(rg), false_type{});
+            }
+            else
+            {
+                return insert_iter(insertPos, make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)), false_type{});
+            }
         }
 
         inline iterator erase(const_iterator toErase)
@@ -1294,7 +1338,10 @@ namespace AZStd
 
     // AZStd::list deduction guides
     template <class InputIt, class Alloc = allocator>
-    list(InputIt, InputIt, Alloc = Alloc()) -> list<typename iterator_traits<InputIt>::value_type, Alloc>;
+    list(InputIt, InputIt, Alloc = Alloc()) -> list<iter_value_t<InputIt>, Alloc>;
+
+    template<class R, class Alloc = allocator, class = enable_if_t<ranges::input_range<R>>>
+    list(from_range_t, R&&, Alloc = Alloc()) -> list<ranges::range_value_t<R>, Alloc>;
 
     template< class T, class Allocator >
     AZ_FORCE_INLINE bool operator==(const list<T, Allocator>& left, const list<T, Allocator>& right)

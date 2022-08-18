@@ -34,4 +34,9 @@ namespace TestImpact
     {
         return m_descriptor.m_outputName;
     }
+
+    const TargetDependencies& Target::GetDependencies() const
+    {
+        return m_descriptor.m_dependencies;
+    }
 } // namespace TestImpact

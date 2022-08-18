@@ -13,23 +13,10 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 #include <SceneAPIExt/Rules/ExternalToolRule.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace EMotionFX::Pipeline::Rule
 {
-    struct RootMotionExtractionData
-    {
-        AZ_RTTI(EMotionFX::Pipeline::Rule::RootMotionExtractionData, "{7AA82E47-88CC-4430-9AEE-83BFB671D286}");
-        AZ_CLASS_ALLOCATOR(RootMotionExtractionData, AZ::SystemAllocator, 0)
-
-        virtual ~RootMotionExtractionData() = default;
-        static void Reflect(AZ::ReflectContext* context);
-
-        bool m_transitionZeroXAxis = false;
-        bool m_transitionZeroYAxis = false;
-        bool m_extractRotation = false;
-        AZStd::string m_sampleJoint = "Hip";
-    };
-
     class RootMotionExtractionRule final
         : public ExternalToolRule<RootMotionExtractionData>
     {

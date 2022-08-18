@@ -104,6 +104,7 @@
 #include <Editor/Nodes/Shapes/CylinderShapeNode.h>
 #include <Editor/Nodes/Shapes/DiskShapeNode.h>
 #include <Editor/Nodes/Shapes/PolygonPrismShapeNode.h>
+#include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
@@ -384,6 +385,7 @@ namespace LandscapeCanvasEditor
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, CylinderShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, DiskShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, PolygonPrismShapeNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(shapeCategory, ReferenceShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, SphereShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, TubeShapeNode, editorId);
 

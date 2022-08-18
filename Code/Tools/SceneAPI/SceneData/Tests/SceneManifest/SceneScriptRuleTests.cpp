@@ -16,12 +16,15 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Behaviors/ScriptProcessorRuleBehavior.h>
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
+#include <SceneAPI/SceneCore/Mocks/MockBehaviorUtils.h>
 
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/ReflectionManager.h>
+#include <AzCore/Script/ScriptContextAttributes.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -81,10 +84,11 @@ namespace Testing
             m_behaviorContext->Method("TestExpectTrue", &TestExpectTrue);
             m_behaviorContext->Method("TestEqualNumbers", &TestEqualNumbers);
             m_behaviorContext->Method("TestEqualStrings", &TestEqualStrings);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_ebuses.find("ScriptBuildingNotificationBus")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());
-
 
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 

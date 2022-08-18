@@ -74,7 +74,10 @@ namespace TestImpact
             "sources",
             "static",
             "input",
-            "output"
+            "output",
+            "dependencies",
+            "build",
+            "runtime"
         };
 
         enum
@@ -86,7 +89,10 @@ namespace TestImpact
             SourcesKey,
             StaticKey,
             InputKey,
-            OutputKey
+            OutputKey,
+            DependenciesKey,
+            BuildDependenciesKey,
+            RuntimeDependenciesKey
         };
 
         AZ_TestImpact_Eval(!autogenMatcher.empty(), ArtifactException, "Autogen matcher cannot be empty");
@@ -107,6 +113,22 @@ namespace TestImpact
         AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");
         AZ_TestImpact_Eval(!descriptor.m_outputName.empty(), ArtifactException, "Target output name cannot be empty");
         AZ_TestImpact_Eval(!descriptor.m_path.empty(), ArtifactException, "Target path cannot be empty");
+
+        const auto extractDependencies = [](const auto& dependenciesArray)
+        {
+            DependencyList dependencies;
+            dependencies.reserve(dependenciesArray.Size());
+
+            for (const auto& dependency : dependenciesArray)
+            {
+                dependencies.push_back(dependency.GetString());
+            }
+
+            return dependencies;
+        };
+
+        descriptor.m_dependencies.m_build = extractDependencies(target[Keys[DependenciesKey]][Keys[BuildDependenciesKey]].GetArray());
+        descriptor.m_dependencies.m_runtime = extractDependencies(target[Keys[DependenciesKey]][Keys[RuntimeDependenciesKey]].GetArray());
 
         const auto& sources = buildTarget[Keys[SourcesKey]];
         const auto& staticSources = sources[Keys[StaticKey]].GetArray();

@@ -157,7 +157,7 @@ namespace UnitTest
         AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
         capturer.Start();
         // This message should get captured
-        AZ::Debug::Trace::RawOutput("UnitTest", errorMessage);
+        AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         fflush(stdout);
         capturer.Stop(GetStdout);
         // The message should be found
@@ -168,7 +168,7 @@ namespace UnitTest
 
         // Redirect the Trace output to stderr
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "1" });
-        AZ::Debug::Trace::RawOutput("UnitTest", errorMessage);
+        AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         fflush(stdout);
         // The message should not be found since trace output should be going to stderr
         EXPECT_FALSE(testErrorMessageFound);
@@ -200,7 +200,7 @@ namespace UnitTest
         stdoutCapturer.Start();
         stderrCapturer.Start();
         // This message should get captured
-        AZ::Debug::Trace::RawOutput("UnitTest", errorMessage);
+        AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         // flush both stdout and stderr to make sure it capturer is able to get the data
         fflush(stdout);
         fflush(stderr);
@@ -214,7 +214,7 @@ namespace UnitTest
 
         // Redirect the Trace output to None
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "0" });
-        AZ::Debug::Trace::RawOutput("UnitTest", errorMessage);
+        AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         fflush(stdout);
         fflush(stderr);
         // The message should not be found since trace output should be going to stderr
