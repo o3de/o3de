@@ -77,6 +77,9 @@ namespace AZ
 
             //! Whether PipelineLibrary related serialized data needs to be loaded/saved explicitly as drivers (like dx12/vk) do not support it internally
             bool m_isPsoCacheFileOperationsNeeded = true;
+
+            //! Whether supports undefined swizzle tile resource
+            bool m_tiledResource = true;
             
             /// Additional features here.
         };

@@ -25,6 +25,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
@@ -371,18 +372,15 @@ namespace AtomToolsFramework
             }
         }
 
-        if (mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType()))
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-            if (AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries))
+            for (const auto entry : entries)
             {
-                for (const auto entry : entries)
+                AZStd::string path = entry->GetFullPath();
+                if (ValidateDocumentPath(path))
                 {
-                    AZStd::string path = entry->GetFullPath();
-                    if (ValidateDocumentPath(path))
-                    {
-                        paths.insert(path);
-                    }
+                    paths.insert(path);
                 }
             }
         }

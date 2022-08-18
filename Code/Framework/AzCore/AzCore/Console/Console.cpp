@@ -178,7 +178,8 @@ namespace AZ
     {
         auto DeferredCommandCallable = [this](const DeferredCommand& deferredCommand)
         {
-            return this->DispatchCommand(deferredCommand.m_command, deferredCommand.m_arguments, deferredCommand.m_silentMode,
+            return this->DispatchCommand(deferredCommand.m_command,
+                ConsoleCommandContainer(AZStd::from_range, deferredCommand.m_arguments), deferredCommand.m_silentMode,
                 deferredCommand.m_invokedFrom, deferredCommand.m_requiredSet, deferredCommand.m_requiredClear);
         };
         // Attempt to invoke the deferred command and remove it from the queue if successful
@@ -495,46 +496,20 @@ namespace AZ
         {
         }
 
-        // Responsible for using the Json Serialization Issue Callback system
-        // to determine when a JSON Patch or JSON Merge Patch modifies a value
-        // at a path underneath the IConsole::ConsoleRuntimeCommandKey JSON pointer
-        JsonSerializationResult::ResultCode operator()(AZStd::string_view message,
-            JsonSerializationResult::ResultCode result, AZStd::string_view path)
-        {
-            constexpr AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRuntimeCommandKey, AZ::IO::PosixPathSeparator };
-            constexpr AZ::IO::PathView consoleAutoexecCommandKey{ IConsole::ConsoleAutoexecCommandKey, AZ::IO::PosixPathSeparator };
-            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            if (result.GetTask() == JsonSerializationResult::Tasks::Merge
-                && result.GetProcessing() == JsonSerializationResult::Processing::Completed
-                && (inputKey.IsRelativeTo(consoleRootCommandKey) || inputKey.IsRelativeTo(consoleAutoexecCommandKey)))
-            {
-                if (auto type = m_settingsRegistry.GetType(path); type != SettingsRegistryInterface::Type::NoType)
-                {
-                    operator()(path, type);
-                }
-            }
-
-            // This is the default issue reporting, that logs using the warning category
-            if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
-            {
-                scratchBuffer.append(message.begin(), message.end());
-                scratchBuffer.append("\n    Reason: ");
-                result.AppendToString(scratchBuffer, path);
-                scratchBuffer.append(".");
-                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
-
-                scratchBuffer.clear();
-            }
-            return result;
-        }
-
-        void operator()(AZStd::string_view path, SettingsRegistryInterface::Type type)
+        // NotifyEventHandler function for handling when settings underneath the
+        // ConsoleAutoexecCommandKey or ConsoleRuntimeCommandKey key paths are modified
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
+            if (notifyEventArgs.m_type == AZ::SettingsRegistryInterface::Type::NoType)
+            {
+                return;
+            }
+
             constexpr AZ::IO::PathView consoleRuntimeCommandKey{ IConsole::ConsoleRuntimeCommandKey, AZ::IO::PosixPathSeparator };
             constexpr AZ::IO::PathView consoleAutoexecCommandKey{ IConsole::ConsoleAutoexecCommandKey, AZ::IO::PosixPathSeparator };
-            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
+            AZ::IO::PathView inputKey{ notifyEventArgs.m_jsonKeyPath, AZ::IO::PosixPathSeparator };
 
             // Abuses the IsRelativeToFuncton function of the path class to extract the console
             // command from the settings registry objects
@@ -556,9 +531,9 @@ namespace AZ
                 // and therefore doesn't own the memory.
                 FixedValueString commandArgString;
 
-                if (type == SettingsRegistryInterface::Type::String)
+                if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::String)
                 {
-                    if (m_settingsRegistry.Get(commandArgString, path))
+                    if (m_settingsRegistry.Get(commandArgString, notifyEventArgs.m_jsonKeyPath))
                     {
                         auto ConvertCommandArgumentToArray = [&commandArgs](AZStd::string_view token)
                         {
@@ -568,35 +543,35 @@ namespace AZ
                         StringFunc::TokenizeVisitor(commandArgString, ConvertCommandArgumentToArray, commandSeparators);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::Boolean)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::Boolean)
                 {
                     bool commandArgBool{};
-                    if (m_settingsRegistry.Get(commandArgBool, path))
+                    if (m_settingsRegistry.Get(commandArgBool, notifyEventArgs.m_jsonKeyPath))
                     {
                         commandArgString = commandArgBool ? "true" : "false";
                         commandArgs.emplace_back(commandArgString);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::Integer)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::Integer)
                 {
                     // Try converting to a signed 64-bit number first and then an unsigned 64-bit number
                     AZ::s64 commandArgInt{};
                     AZ::u64 commandArgUInt{};
-                    if (m_settingsRegistry.Get(commandArgInt, path))
+                    if (m_settingsRegistry.Get(commandArgInt, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgInt);
                         commandArgs.emplace_back(commandArgString);
                     }
-                    else if (m_settingsRegistry.Get(commandArgUInt, path))
+                    else if (m_settingsRegistry.Get(commandArgUInt, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgUInt);
                         commandArgs.emplace_back(commandArgString);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::FloatingPoint)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::FloatingPoint)
                 {
                     double commandArgFloat{};
-                    if (m_settingsRegistry.Get(commandArgFloat, path))
+                    if (m_settingsRegistry.Get(commandArgFloat, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgFloat);
                         commandArgs.emplace_back(commandArgString);
@@ -645,8 +620,6 @@ namespace AZ
             IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
-        JsonApplyPatchSettings applyPatchSettings;
-        applyPatchSettings.m_reporting = ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this };
-        settingsRegistry.SetApplyPatchSettings(applyPatchSettings);
+        settingsRegistry.SetNotifyForMergeOperations(true);
     }
 }

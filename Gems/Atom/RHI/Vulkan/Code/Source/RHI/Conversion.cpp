@@ -15,6 +15,7 @@
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/ImageView.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/bitset.h>
 
 namespace AZ
@@ -757,6 +758,25 @@ namespace AZ
             return RHI::CheckBitsAny(
                 bindFlags,
                 RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable | RHI::BufferBindFlags::RayTracingAccelerationStructure | RHI::BufferBindFlags::RayTracingScratchBuffer);
+        }
+
+        bool HasExplicitClear(const RHI::ScopeAttachment& scopeAttachment, const RHI::ScopeAttachmentDescriptor& descriptor)
+        {
+            const auto& usageAndAccess = scopeAttachment.GetUsageAndAccess();
+            const bool isClearAction = descriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
+            const bool isClearActionStencil = descriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
+            if ((isClearAction || isClearActionStencil) &&
+                AZStd::any_of(
+                    usageAndAccess.begin(),
+                    usageAndAccess.end(),
+                    [](auto& usage)
+                    {
+                        return usage.m_usage == RHI::ScopeAttachmentUsage::Shader;
+                    }))
+            {
+                return true;
+            }
+            return false;
         }
 
         VkPipelineStageFlags GetSupportedPipelineStages(RHI::PipelineStateType type)

@@ -123,11 +123,9 @@ namespace AZ
                 // are mapped to null.
                 ID3D12Heap* m_destinationHeap = nullptr;
 
-                // If m_destinationHeap is valid, the size of this vector must match the number of tiles
-                // in m_sourceSize. Each index is the source tile index in the resource, and the value is
-                // the destination heap tile index. If m_destinationHeap is null, this vector is ignored and
-                // may be left empty.
-                AZStd::vector<uint32_t> m_destinationTileMap;
+                AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;     // pRangeFlags in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeStartOffsets;            // pHeapRangeStartOffsets in UpdateTileMappings 
+                AZStd::vector<uint32_t> m_rangeTileCounts;              // pRangeTileCounts in UpdateTileMappings 
             };
 
             // Queues a new tile map requests.

@@ -8,6 +8,7 @@
 
 // LY Game Gem crash uploader extension - Windows
 
+#include <AzCore/Debug/Trace.h>
 #include <AzCore/PlatformIncl.h>
 
 #include <handler/handler_main.h>
@@ -29,6 +30,7 @@ namespace
 }
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, [[maybe_unused]] wchar_t* lpCmdLine, int)
 {
+    const AZ::Debug::Trace tracer;
     return crashpad::ToolSupport::Wmain(__argc, __wargv, HandlerMain);
 }
 

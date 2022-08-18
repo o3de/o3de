@@ -65,8 +65,8 @@ namespace AzToolsFramework
             return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
         }
 
-        bool InstanceToTemplatePropagator::GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState,
-            const PrefabDom& modifiedState)
+        bool InstanceToTemplatePropagator::GeneratePatch(
+            PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState)
         {
             //generate patch using json serialization CreatePatch
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
