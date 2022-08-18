@@ -1186,7 +1186,7 @@ namespace AZ
 
         bool ModelAssetBuilderComponent::VertexStreamLayoutMatches(const ProductMeshContent& lhs, const ProductMeshContent& rhs) const
         {
-            bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
+            [[maybe_unused]] bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
 
             // Check that the stream counts and types match
             bool layoutMatches =
