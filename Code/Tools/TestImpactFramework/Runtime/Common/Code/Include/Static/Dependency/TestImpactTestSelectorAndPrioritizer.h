@@ -8,17 +8,16 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactPolicy.h>
 #include <BuildTarget/Common/TestImpactBuildGraph.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <Dependency/TestImpactChangeDependencyList.h>
 
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/vector.h>
 
-#pragma optimize("", off)
 namespace TestImpact
 {
     template<typename ProductionTarget, typename TestTarget>
@@ -354,8 +353,7 @@ namespace TestImpact
 
     template<typename ProductionTarget, typename TestTarget>
     AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::PrioritizeSelectedTestTargets(
-        const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
-        const Policy::TestPrioritization testSelectionStrategy)
+        const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, const Policy::TestPrioritization testSelectionStrategy)
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
         selectedTestTargets.reserve(selectedTestTargetAndDependerMap.size());
@@ -366,7 +364,10 @@ namespace TestImpact
                 containerOfPairs.begin(),
                 containerOfPairs.end(),
                 AZStd::back_inserter(selectedTestTargets),
-                [](const auto& pair) { return pair.first; });
+                [](const auto& pair)
+                {
+                    return pair.first;
+                });
         };
 
         if (testSelectionStrategy == Policy::TestPrioritization::DependencyLocality)
@@ -377,11 +378,13 @@ namespace TestImpact
             AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<size_t>>> testTargetDistancePairs;
             testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
 
-            // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the prroduction targets in productionTargets
+            // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the
+            // prroduction targets in productionTargets
             for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
             {
                 AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
-                buildGraph.WalkBuildDependencies(buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
+                buildGraph.WalkBuildDependencies(
+                    buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
                     [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
                     {
                         if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
@@ -393,10 +396,14 @@ namespace TestImpact
                     });
 
                 // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map
-                // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance and the test targets priority will be lower
+                // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance
+                // and the test targets priority will be lower
                 if (!targetDistancePairs.empty())
                 {
-                    AZStd::sort(targetDistancePairs.begin(), targetDistancePairs.end(), [](const auto& left, const auto& right)
+                    AZStd::sort(
+                        targetDistancePairs.begin(),
+                        targetDistancePairs.end(),
+                        [](const auto& left, const auto& right)
                         {
                             return left.second < right.second;
                         });
@@ -409,7 +416,10 @@ namespace TestImpact
             }
 
             // Sort our pairs by distance and put our test targets into the vector in order of distance(closest first)
-            AZStd::sort(testTargetDistancePairs.begin(), testTargetDistancePairs.end(), [](const auto& left, const auto& right)
+            AZStd::sort(
+                testTargetDistancePairs.begin(),
+                testTargetDistancePairs.end(),
+                [](const auto& left, const auto& right)
                 {
                     if (!left.second.has_value())
                     {
@@ -433,5 +443,3 @@ namespace TestImpact
         return selectedTestTargets;
     }
 } // namespace TestImpact
-
-#pragma optimize("", on)
