@@ -44,15 +44,15 @@ namespace AZ
             }
 
             Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOptimizedMesh(
-                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex)
             {
-                return RemapNodeIndex(graph, index, SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
+                return RemapNodeIndex(graph, unoptimizedMeshNodeIndex, SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
             }
 
             Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapToOriginalUnoptimizedMesh(
-                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& index)
+                const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& optimizedMeshNodeIndex)
             {
-                return RemapNodeIndex(graph, index, SceneAPI::Utilities::OriginalUnoptimizedMeshPropertyMapKey);
+                return RemapNodeIndex(graph, optimizedMeshNodeIndex, SceneAPI::Utilities::OriginalUnoptimizedMeshPropertyMapKey);
             }
 
             Containers::SceneGraph::NodeIndex SceneGraphSelector::RemapNodeIndex(
@@ -75,11 +75,11 @@ namespace AZ
 
                     if (iter != propertyMap.end())
                     {
-                        const AZStd::any& optimizedNodeIndex = iter->second;
+                        const AZStd::any& remappedNodeIndex = iter->second;
 
-                        if (!optimizedNodeIndex.empty() && optimizedNodeIndex.is<Containers::SceneGraph::NodeIndex>())
+                        if (!remappedNodeIndex.empty() && remappedNodeIndex.is<Containers::SceneGraph::NodeIndex>())
                         {
-                            return AZStd::any_cast<Containers::SceneGraph::NodeIndex>(optimizedNodeIndex);
+                            return AZStd::any_cast<Containers::SceneGraph::NodeIndex>(remappedNodeIndex);
                         }
                     }
                 }
@@ -90,10 +90,10 @@ namespace AZ
 
             AZStd::string SceneGraphSelector::GenerateOptimizedMeshNodeName(
                 const Containers::SceneGraph& graph,
-                const Containers::SceneGraph::NodeIndex& index,
+                const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex,
                 const DataTypes::ISceneNodeGroup& sceneNodeGroup)
             {
-                const auto& nodeName = graph.GetNodeName(index);
+                const auto& nodeName = graph.GetNodeName(unoptimizedMeshNodeIndex);
 
                 return AZStd::string::format(
                     "%s_%s%s", nodeName.GetName(), sceneNodeGroup.GetName().c_str(), SceneAPI::Utilities::OptimizedMeshSuffix.data());

@@ -48,29 +48,45 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API static bool IsMesh(const Containers::SceneGraph& graph, Containers::SceneGraph::NodeIndex& index);
         SCENE_CORE_API static bool IsMeshObject(const AZStd::shared_ptr<const DataTypes::IGraphObject>& object);
 
+        //! Returns the index that is passed in without remapping it.
+        //! GenerateTargetNodes takes a NodeRemapFunction as input. NoRemap is used as the default
+        //! if you want to call GenerateTargetNodes without doing any re-mapping
         SCENE_CORE_API static Containers::SceneGraph::NodeIndex NoRemap(
             [[maybe_unused]] const Containers::SceneGraph& /*graph*/,
             const Containers::SceneGraph::NodeIndex& index)
         {
             return index;
         }
+
+        //! Remaps unoptimizedMeshNodeIndex to the optimized version of the mesh, if it exists.
+        //! @param graph The scene graph
+        //! @param unoptimizedMeshNodeIndex The node index of the unoptimized mesh
+        //! @return Returns the node index of the optimized mesh if it exists, or unoptimizedMeshNodeIndex if it doesn't exist
         SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOptimizedMesh(
-            const Containers::SceneGraph& graph,
-            const Containers::SceneGraph::NodeIndex& index);
+            const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex);
 
+        //! Remap optimizedMeshNodeIndex to the original unoptimized version of the mesh, if it exists
+        //! @param graph The scene graph
+        //! @param optimizedMeshNodeIndex The node index of the optimized mesh
+        //! @return Returns the node index of the original unoptimized mesh if it exists. Returns optimizedMeshNodeIndex if it doesn't exist.
         SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapToOriginalUnoptimizedMesh(
-            const Containers::SceneGraph& graph,
-            const Containers::SceneGraph::NodeIndex& index);
+            const Containers::SceneGraph& graph, const Containers::SceneGraph::NodeIndex& optimizedMeshNodeIndex);
 
+        //! Look for a ICustomPropertyData child node. If it exists, use the property map
+        //! to look for an entry that matches customPropertyKey, and return the result
+        //! @param graph The scene graph
+        //! @param index The node index that is being remapped
+        //! @param customPropertyKey The key to use to look up the remapped index in the property map
+        //! @return Returns the remapped node index if one matching customPropertyKey is found. Returns the input index if it doesn't exist.
         SCENE_CORE_API static Containers::SceneGraph::NodeIndex RemapNodeIndex(
-                const Containers::SceneGraph& graph,
-                const Containers::SceneGraph::NodeIndex& index,
-                const AZStd::string_view customPropertyKey
-                );
-
-        SCENE_CORE_API static AZStd::string GenerateOptimizedMeshNodeName(
             const Containers::SceneGraph& graph,
             const Containers::SceneGraph::NodeIndex& index,
+            const AZStd::string_view customPropertyKey);
+
+        //! Generate a name for an optimized mesh node based on the name of the original node and the mesh group it belongs to
+        SCENE_CORE_API static AZStd::string GenerateOptimizedMeshNodeName(
+            const Containers::SceneGraph& graph,
+            const Containers::SceneGraph::NodeIndex& unoptimizedMeshNodeIndex,
             const DataTypes::ISceneNodeGroup& meshGroup);
 
     private:

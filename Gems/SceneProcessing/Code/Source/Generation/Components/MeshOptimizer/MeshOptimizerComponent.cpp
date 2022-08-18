@@ -285,21 +285,15 @@ namespace AZ::SceneGenerationComponents
         return customPropertyDataNode->GetPropertyMap();
     }
 
-    static bool HasOptimizedMeshNode(Containers::SceneGraph& graph, ICustomPropertyData::PropertyMap& propertyMap)
+    static bool HasOptimizedMeshNode(ICustomPropertyData::PropertyMap& propertyMap)
     {
         // Now look up the optimized index
-        if (auto iter = propertyMap.find(SceneAPI::Utilities::OptimizedMeshPropertyMapKey); iter != propertyMap.end())
+        auto iter = propertyMap.find(SceneAPI::Utilities::OptimizedMeshPropertyMapKey);
+        if (iter != propertyMap.end())
         {
-            const auto& [key, anyNodeIndex] = *iter;
-            if (!anyNodeIndex.empty() && anyNodeIndex.is<NodeIndex>())
+            const auto& [key, optimizedAnyIndex] = *iter;
+            if (!optimizedAnyIndex.empty() && optimizedAnyIndex.is<NodeIndex>())
             {
-                NodeIndex optimizedMeshIndex = AZStd::any_cast<NodeIndex>(anyNodeIndex);
-                AZ_TracePrintf(
-                    AZ::SceneAPI::Utilities::LogWindow,
-                    "Optimized mesh already exists at '%s', there must be multiple mesh groups that have selected this mesh. Skipping "
-                    "the additional ones.",
-                    graph.GetNodeName(optimizedMeshIndex).GetName());
-
                 return true;
             }
         }
@@ -395,7 +389,7 @@ namespace AZ::SceneGenerationComponents
                 }
 
                 ICustomPropertyData::PropertyMap& unoptimizedPropertyMap = FindOrCreateCustomPropertyData(graph, nodeIndex);
-                if (HasOptimizedMeshNode(graph, unoptimizedPropertyMap))
+                if (HasOptimizedMeshNode(unoptimizedPropertyMap))
                 {
                     // There is already an optimized mesh node for this mesh, so skip it.
                     // There must be another mesh group already referencing this mesh node.
