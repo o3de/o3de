@@ -99,8 +99,4 @@ namespace AZ
         bool m_isReady = false;
         bool m_registrationEnabled = true;
     };
-
-    namespace Internal  {
-        struct AllocatorDummy{};
-    }
 }

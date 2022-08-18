@@ -963,7 +963,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter!=records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClass");
             }
             delete ptr;
 
@@ -1026,7 +1025,6 @@ namespace UnitTest
                 const Debug::AllocationRecordsType& records = poolAllocator.GetRecords()->GetMap();
                 Debug::AllocationRecordsType::const_iterator iter = records.find(ptr);
                 EXPECT_TRUE(iter != records.end());  // our allocation is in the list
-                EXPECT_STREQ(iter->second.m_name, "MyClass");
             }
             delete ptr;
 
