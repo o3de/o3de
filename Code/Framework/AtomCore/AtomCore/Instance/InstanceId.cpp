@@ -14,8 +14,9 @@ namespace AZ
     {
         InstanceId InstanceId::CreateFromAsset(const Asset<AssetData>& asset)
         {
-            // Ideally this would use the asset creation token instead of the asset pointer. That requires the asset pointer to be valid
-            // beforehand. If the asset pointer is null this will be the same as CreateFromAssetId.
+            // Passing the asset data pointer in as a unique identifier for this version of the asset. Ideally this would use the asset
+            // creation token instead of the asset pointer but that requires the asset pointer to be valid beforehand. If the asset pointer
+            // is null this will be the same as CreateFromAssetId.
             return InstanceId(asset.GetId().m_guid, asset.GetId().m_subId, asset.Get());
         }
 
@@ -50,10 +51,10 @@ namespace AZ
         {
         }
 
-        InstanceId::InstanceId(const Uuid& guid, uint32_t subId, void* data)
+        InstanceId::InstanceId(const Uuid& guid, uint32_t subId, void* versionId)
             : m_guid{ guid }
             , m_subId{ subId }
-            , m_data{ data }
+            , m_versionId{ versionId }
         {
         }
 
@@ -64,12 +65,12 @@ namespace AZ
 
         bool InstanceId::operator==(const InstanceId& rhs) const
         {
-            return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_data == rhs.m_data;
+            return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_versionId == rhs.m_versionId;
         }
 
         bool InstanceId::operator!=(const InstanceId& rhs) const
         {
-            return m_guid != rhs.m_guid || m_subId != rhs.m_subId || m_data != rhs.m_data;
+            return m_guid != rhs.m_guid || m_subId != rhs.m_subId || m_versionId != rhs.m_versionId;
         }
     } // namespace Data
 } // namespace AZ

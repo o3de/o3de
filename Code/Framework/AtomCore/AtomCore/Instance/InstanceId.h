@@ -27,14 +27,14 @@ namespace AZ
 
             /**
              * Creates an instance id from an asset. The instance id will share the same guid,
-             * sub id, and an opaque pointer value to a specific version of an asset. This is
-             * an explicit create method rather than a constructor in order to make it explicit.
+             * sub id, and an opaque pointer value to identify a specific version of an asset. This is
+             * a create method rather than a constructor in order to make it explicit.
              */
             static InstanceId CreateFromAsset(const Asset<AssetData>& asset);
 
             /**
              * Creates an instance id from an asset id. The two will share the same guid and
-             * sub id. This is an explicit create method rather than a constructor in order
+             * sub id. This is a create method rather than a constructor in order
              * to make it explicit.
              */
             static InstanceId CreateFromAssetId(const AssetId& assetId);
@@ -59,7 +59,7 @@ namespace AZ
 
             explicit InstanceId(const Uuid& guid);
             explicit InstanceId(const Uuid& guid, uint32_t subId);
-            explicit InstanceId(const Uuid& guid, uint32_t subId, void* data);
+            explicit InstanceId(const Uuid& guid, uint32_t subId, void* versionId);
 
             bool IsValid() const;
 
@@ -74,7 +74,10 @@ namespace AZ
 
             Uuid m_guid = Uuid::CreateNull();
             uint32_t m_subId = 0;
-            void* m_data = nullptr;
+
+            // Pointer used to uniquely identify a version of the data, usually an asset. It is not intended to be
+            // dereferenced or used to access asset data.
+            void* m_versionId = nullptr; 
         };
 
         template<class StringType>
@@ -88,7 +91,7 @@ namespace AZ
         template<class StringType>
         inline void InstanceId::ToString(StringType& result) const
         {
-            result = StringType::format("%s:%x:%p", m_guid.ToString<StringType>().c_str(), m_subId, m_data);
+            result = StringType::format("%s:%x:%p", m_guid.ToString<StringType>().c_str(), m_subId, m_versionId);
         }
     } // namespace Data
 } // namespace AZ
@@ -106,7 +109,7 @@ namespace AZStd
         {
             size_t h = id.m_guid.GetHash();
             hash_combine(h, id.m_subId);
-            hash_combine(h, id.m_data);
+            hash_combine(h, id.m_versionId);
             return h;
         }
     };
