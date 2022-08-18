@@ -95,21 +95,21 @@ namespace TestImpact
         {
             size_t startLine = 0;
             size_t endLine = 0;
-            int count = 0;
             
             AZStd::vector<ScriptNameTestSuitePair> pairs;
             AZStd::map<AZStd::string, AZStd::vector<TestEnumerationSuite>> testSuiteMap;
             AZStd::string previousTestFixture;
 
-            // This regex matches pytest test names, in the form ScriptPath::TestFixture::TestName. It will accept both parameterized
-            // and unparamaterized tests (with or without [] at the end).
-            const AZStd::basic_regex testNamePattern = AZStd::basic_regex("(.*py)::([A-Za-z_/\\-0-9]*)::(.*)");
-            // Steps through our string line by line. Assumes lines are split by newline characters.
             while ((startLine = testEnumerationData.find_first_not_of('\n', endLine)) != AZStd::string::npos)
             {
                 endLine = testEnumerationData.find('\n', startLine);
                 AZStd::string curLine = testEnumerationData.substr(startLine, endLine - startLine);
 
+                // This regex matches pytest test names, in the form ScriptPath::TestFixture::TestName. It will accept both parameterized
+                // and unparamaterized tests (with or without [] at the end).
+                const AZStd::basic_regex testNamePattern = AZStd::basic_regex("(.*py)::([A-Za-z_/\\-0-9]*)::(.*)");
+
+                // Steps through our string line by line. Assumes lines are split by newline characters.
                 AZStd::smatch matchResults;
                 if (AZStd::regex_search(curLine, matchResults, testNamePattern))
                 {
@@ -144,7 +144,6 @@ namespace TestImpact
 
                     // Update previoust test fixture so that we can keep track of when test fixtures change.
                     previousTestFixture = testFixture;
-                    count++;
                 }
             }
 
