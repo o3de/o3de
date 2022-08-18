@@ -403,6 +403,16 @@ blackbox_fbx_tests = [
                                     product_name='motion/jack_idle_aim_zup.motion',
                                     sub_id=186392073,
                                     asset_type=b'00494b8e75784ba28b28272e90680787'
+                                ),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup_fbx.procprefab',
+                                    sub_id=1049691217,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'
+                                ),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup_fbx.procprefab.json',
+                                    sub_id=-980081481,
+                                    asset_type=b'00000000000000000000000000000000'
                                 )
                             ]
                         ),
@@ -492,6 +502,110 @@ blackbox_fbx_tests = [
                                     sub_id=2139660816,
                                     asset_type=b'00000000000000000000000000000000'
                                 ),
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        ),
+    ),
+    pytest.param(
+        BlackboxAssetTest(
+            test_name="MorphTargetOneMaterial_RunAP_SuccessWithMatchingProducts",
+            asset_folder="MorphTargetOneMaterial",
+            scene_debug_file="morphtargetonematerial.dbgsg",
+            assets=[
+                asset_db_utils.DBSourceAsset(
+                    source_file_name="morphtargetonematerial.fbx",
+                    uuid=b'6f2c17db3f4a5be8bcd2bece01c92f6d',
+                    jobs=[
+                        asset_db_utils.DBJob(
+                            job_key='Scene compilation',
+                            builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
+                            status=4,
+                            error_count=9,
+                            products=[
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.actor',
+                                    sub_id=-999339669,
+                                    asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.assetinfo.dbg',
+                                    sub_id=-1650525758,
+                                    asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.dbgsg',
+                                    sub_id=1414413688,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.dbgsg.xml',
+                                    sub_id=1435013070,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial.motion',
+                                    sub_id=692653652,
+                                    asset_type=b'00494b8e75784ba28b28272e90680787'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab',
+                                    sub_id=532704096,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargetonematerial/morphtargetonematerial_fbx.procprefab.json',
+                                    sub_id=-613416016,
+                                    asset_type=b'00000000000000000000000000000000'
+                                ),
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        ),
+    ),
+    pytest.param(
+        BlackboxAssetTest(
+            test_name="MorphTargetTwoMaterials_RunAP_SuccessWithMatchingProducts",
+            asset_folder="MorphTargetTwoMaterials",
+            scene_debug_file="morphtargettwomaterials.dbgsg",
+            assets=[
+                asset_db_utils.DBSourceAsset(
+                    source_file_name="morphtargettwomaterials.fbx",
+                    uuid=b'37c55eedd26658a4a6f7cbe2bec267d7',
+                    jobs=[
+                        asset_db_utils.DBJob(
+                            job_key='Scene compilation',
+                            builder_guid=b'bd8bf65894854fe3830e8ec3a23c35f3',
+                            status=4,
+                            error_count=9,
+                            products=[
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.actor',
+                                    sub_id=-557664045,
+                                    asset_type=b'f67cc648ea51464c9f5d4a9ce41a7f86'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.assetinfo.dbg',
+                                    sub_id=-657938679,
+                                    asset_type=b'48a78be7b3f244b88aa6f0607e9a75a5'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg',
+                                    sub_id=594741318,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.dbgsg.xml',
+                                    sub_id=-990870494,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials.motion',
+                                    sub_id=1527116269,
+                                    asset_type=b'00494b8e75784ba28b28272e90680787'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab',
+                                    sub_id=-1878759677,
+                                    asset_type=b'9b7c8459471e4eada3637990cc4065a9'),
+                                asset_db_utils.DBProduct(
+                                    product_name='morphtargettwomaterials/morphtargettwomaterials_fbx.procprefab.json',
+                                    sub_id=1703480205,
+                                    asset_type=b'00000000000000000000000000000000'
+                                )
                             ]
                         ),
                     ]
@@ -636,7 +750,8 @@ class TestsFBX_AllPlatforms(object):
     def compare_scene_debug_file(asset_processor, expected_file_path, actual_file_path):
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
         expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
-
+        import shutil
+        shutil.copyfile(debug_graph_path, f"C:/new/{actual_file_path}")
         logger.info(f"Parsing scene graph: {debug_graph_path}")
         with open(debug_graph_path, "r") as scene_file:
             actual_lines = scene_file.readlines()
