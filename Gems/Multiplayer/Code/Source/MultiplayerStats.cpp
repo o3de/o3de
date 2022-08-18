@@ -58,7 +58,7 @@ namespace Multiplayer
         else
         {
             AZ_Warning("MultiplayerStats", false,
-                "Component ID %u has fewer than %u propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
+                "Component ID %u has fewer than %u sent propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
         }
 
         m_events.m_propertySent.Signal(netComponentId, propertyId, totalBytes);
@@ -78,7 +78,7 @@ namespace Multiplayer
         else
         {
             AZ_Warning("MultiplayerStats", false,
-                "Component ID %u has fewer than %u propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
+                "Component ID %u has fewer than %u receive propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
         }
 
         m_events.m_propertyReceived.Signal(netComponentId, propertyId, totalBytes);
@@ -99,7 +99,7 @@ namespace Multiplayer
         else
         {
             AZ_Warning("MultiplayerStats", false,
-                "Component ID %u has fewer than %u rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
+                "Component ID %u has fewer than %u sent rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
         }
 
         m_events.m_rpcSent.Signal(entityId, entityName, netComponentId, rpcId, totalBytes);
@@ -119,7 +119,7 @@ namespace Multiplayer
         else
         {
             AZ_Warning("MultiplayerStats", false,
-                "Component ID %u has fewer than %u rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
+                "Component ID %u has fewer than %u receive rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
         }
 
         m_events.m_rpcReceived.Signal(entityId, entityName, netComponentId, rpcId, totalBytes);
