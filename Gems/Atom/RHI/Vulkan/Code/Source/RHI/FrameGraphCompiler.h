@@ -100,6 +100,12 @@ namespace AZ
             VkPipelineStageFlags srcPipelineStageFlags = prevScopeAttachment ? GetResourcePipelineStateFlags(*prevScopeAttachment) : VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
             VkAccessFlags srcAccessFlags = prevScopeAttachment ? GetResourceAccessFlags(*prevScopeAttachment) : 0;
 
+            // Add VK_ACCESS_TRANSFER_WRITE_BIT in case we want to do a clear operation.
+            if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
+            {
+                srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+            }
+        
             auto subresourceRange = GetSubresourceRange(scopeAttachment);
             auto subresourceOwnerList = resource.GetOwnerQueue(&subresourceRange);
             const QueueId destinationQueueId = queueContext.GetCommandQueue(scope.GetHardwareQueueClass()).GetId();
