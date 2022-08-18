@@ -129,7 +129,7 @@ void QtViewport::dragLeaveEvent(QDragLeaveEvent* event)
 //////////////////////////////////////////////////////////////////////////
 float CViewport::GetFOV() const
 {
-    return SandboxEditor::CameraDefaultFov();
+    return SandboxEditor::CameraDefaultFovRadians();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1235,7 +1235,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
 //////////////////////////////////////////////////////////////////////////
 float QtViewport::GetFOV() const
 {
-    return SandboxEditor::CameraDefaultFov();
+    return SandboxEditor::CameraDefaultFovRadians();
 }
 
 //////////////////////////////////////////////////////////////////////////

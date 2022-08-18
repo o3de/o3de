@@ -319,7 +319,7 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         }
         else
         {
-            OnFOVChanged(SandboxEditor::CameraDefaultFov());
+            OnFOVChanged(SandboxEditor::CameraDefaultFovRadians());
         }
 
         m_viewportTitleDlg.OnViewportSizeChanged(pViewport->width(), pViewport->height());
@@ -330,7 +330,7 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
 void CLayoutViewPane::DetachViewport()
 {
     DisconnectRenderViewportInteractionRequestBus();
-    OnFOVChanged(SandboxEditor::CameraDefaultFov());
+    OnFOVChanged(SandboxEditor::CameraDefaultFovRadians());
     m_viewport = nullptr;
 }
 
@@ -466,7 +466,7 @@ void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
         // if viewport camera is active, make selected fov new default
         if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
         {
-            SandboxEditor::SetCameraDefaultFov(fovRadians);
+            SandboxEditor::SetCameraDefaultFovRadians(fovRadians);
         }
 
         OnFOVChanged(fovRadians);

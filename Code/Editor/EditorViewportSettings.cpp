@@ -606,12 +606,12 @@ namespace SandboxEditor
         AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
 
-    float CameraDefaultFov()
+    float CameraDefaultFovRadians()
     {
         return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, 90.0));
     }
 
-    void SetCameraDefaultFov(float fov)
+    void SetCameraDefaultFovRadians(float fov)
     {
         AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fov));
     }

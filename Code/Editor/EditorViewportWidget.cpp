@@ -952,7 +952,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             if (m_viewSourceType == ViewSourceType::None)
             {
-                const float fov = SandboxEditor::CameraDefaultFov();
+                const float fov = SandboxEditor::CameraDefaultFovRadians();
                 if (m_viewPane)
                 {
                     m_viewPane->OnFOVChanged(fov);
@@ -1953,7 +1953,7 @@ void EditorViewportWidget::SetDefaultCamera()
     // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = SandboxEditor::CameraDefaultFov();
+        const float fov = SandboxEditor::CameraDefaultFovRadians();
         m_viewPane->OnFOVChanged(fov);
         SetFOV(fov);
     }
