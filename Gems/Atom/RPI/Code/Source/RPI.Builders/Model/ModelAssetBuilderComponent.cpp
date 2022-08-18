@@ -1126,7 +1126,7 @@ namespace AZ
 
                 const size_t mergedMeshCount = meshesByMatUid.size();
                 finalMeshList.reserve(mergedMeshCount + unmergeableMeshCount);
-bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
+                bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
 
                 // Add the merged meshes
                 for (auto& it : meshesByMatUid)
