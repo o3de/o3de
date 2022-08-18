@@ -96,7 +96,6 @@ namespace TestImpact
             size_t startLine = 0;
             size_t endLine = 0;
 
-            AZStd::vector<PythonTestEnumerationSuite> pairs;
             AZStd::map<AZStd::string, AZStd::vector<TestEnumerationSuite>> testSuiteMap;
             AZStd::string previousTestFixture;
 
@@ -112,29 +111,28 @@ namespace TestImpact
                 };
 
                 endLine = testEnumerationData.find('\n', startLine);
-                AZStd::string curLine = testEnumerationData.substr(startLine, endLine - startLine);
+                const AZStd::string curLine = testEnumerationData.substr(startLine, endLine - startLine);
 
                 // This regex matches pytest test names, in the form ScriptPath::TestFixture::TestName. It will accept both parameterized
-                // and unparamaterized tests (with or without [] at the end).
+                // and unparamaterized tests (with or without [] at the end)
                 const AZStd::basic_regex testNamePattern = AZStd::basic_regex("(.*py)::([A-Za-z_/\\-0-9]*)::(.*)");
 
                 // Steps through our string line by line. Assumes lines are split by newline characters.
-                AZStd::smatch matchResults;
-                if (AZStd::regex_search(curLine, matchResults, testNamePattern))
+                if (AZStd::smatch matchResults; AZStd::regex_search(curLine, matchResults, testNamePattern))
                 {
                     AZ_TestImpact_Eval(
                         matchResults.size() == NumMatches,
                         ArtifactException,
-                        "Error, TestSuite match results did not equal expected number of capture groups");
-                    AZStd::string absoluteScriptPath = matchResults[ScriptPath];
-                    AZStd::string testFixture = matchResults[TestFixture];
-                    AZStd::string testName = matchResults[TestName];
+                        "TestSuite match results did not equal expected number of capture groups");
+                    const AZStd::string absoluteScriptPath = matchResults[ScriptPath];
+                    const AZStd::string testFixture = matchResults[TestFixture];
+                    const AZStd::string testName = matchResults[TestName];
 
                     // Fetch or create the vector for this script
                     AZStd::vector<TestEnumerationSuite>& suitesForThisScript = testSuiteMap[absoluteScriptPath];
 
                     // If we're not working with the same fixture as our prevous iteration, or our suites vector is empty, create a test
-                    // suite, add the current test case to it, and add the suite to our vector.
+                    // suite, add the current test case to it, and add the suite to our vector
                     if (previousTestFixture != testFixture || suitesForThisScript.empty())
                     {
                         TestEnumerationSuite currentTestSuite =
@@ -142,30 +140,27 @@ namespace TestImpact
                         currentTestSuite.m_tests.emplace_back(TestEnumerationCase{ testName, true });
                         suitesForThisScript.push_back(currentTestSuite);
                     }
-                    // Else, find the test suite in our vector, get the reference to it and add our current test case to it.
+                    // Else, find the test suite in our vector, get the reference to it and add our current test case to it
                     else
                     {
-                        auto matchTestSuite = [&testFixture](const TestEnumerationSuite& suite)
-                        {
-                            return suite.m_name == testFixture;
-                        };
-                        TestEnumerationSuite* currentTestSuitePointer =
-                            AZStd::find_if(suitesForThisScript.begin(), suitesForThisScript.end(), matchTestSuite);
+                        TestEnumerationSuite* currentTestSuitePointer = AZStd::find_if(
+                            suitesForThisScript.begin(),
+                            suitesForThisScript.end(),
+                            [&](const TestEnumerationSuite& suite)
+                            {
+                                return suite.m_name == testFixture;
+                            });
                         TestEnumerationSuite& currentTestSuite = *currentTestSuitePointer;
                         currentTestSuite.m_tests.emplace_back(TestEnumerationCase{ testName, true });
                     }
 
-                    // Update previoust test fixture so that we can keep track of when test fixtures change.
+                    // Update previous test fixture so that we can keep track of when test fixtures change
                     previousTestFixture = testFixture;
                 }
             }
 
-            // Extract the key/value pairs from our testSuiteMap and put them in our pairs output variable.
-            for (const auto& [scriptPath, testSuiteVector] : testSuiteMap)
-            {
-                pairs.emplace_back(PythonTestEnumerationSuite(scriptPath, testSuiteVector));
-            }
-            return pairs;
+            // Extract the key/value pairs from our testSuiteMap and put them in our pairs output variable            
+            return AZStd::vector(testSuiteMap.begin(), testSuiteMap.end());;
         }
 
     } // namespace Python
