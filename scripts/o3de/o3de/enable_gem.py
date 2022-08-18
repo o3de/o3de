@@ -135,8 +135,8 @@ def check_gem_compatibility(gem_json_data: dict, project_path:pathlib.Path, gem_
         return True
 
     # check engine compatibility
-    engine_dependencies = gem_json_data.get('engine_dependencies','')
-    if engine_dependencies:
+    compatible_engines = gem_json_data.get('compatible_engines','')
+    if compatible_engines:
         if 'engine' in project_json_data:
             engine_json_data = manifest.get_engine_json_data(engine_name=project_json_data['engine'])
         else:
@@ -154,9 +154,9 @@ def check_gem_compatibility(gem_json_data: dict, project_path:pathlib.Path, gem_
             logger.warning(f'{gem_json_data["gem_name"]} has engine dependencies but the engine'
                            f'"{engine_name}" does not have an engine_version field.')
         else:
-            if not version.has_compatible_version(gem_json_data['engine_dependencies'], engine_name, engine_version): 
+            if not version.has_compatible_version(gem_json_data['compatible_engines'], engine_name, engine_version): 
                 logger.error(f'{engine_name} {engine_version} is not compatible with'
-                                f'{gem_json_data["gem_name"]} {gem_json_data["engine_dependencies"]}.'
+                                f'{gem_json_data["gem_name"]} {gem_json_data["compatible_engines"]}.'
                                 f'  Use the --force option to override.')
                 return False
 

@@ -183,41 +183,44 @@ class TestEnableGemCommand:
                 assert gem_json.get('gem_name', '') not in project_json.get('gem_names', [])
 
     @pytest.mark.parametrize("gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,"
-                             "gem_version, gem_dependencies, gem_names_and_versions, check, "
-                             "engine_dependencies, test_engine_name, test_engine_version, expected_result", [
+                             "gem_version, gem_dependencies, gem_names_and_versions, check, force, "
+                             "compatible_engines, test_engine_name, test_engine_version, expected_result", [
         # passes when no version information is provided
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 
-                    '', [], {}, False, [], 'o3de-test', '', 0),
+                    '', [], {}, False, False, [], 'o3de-test', '', 0),
         # passes when a compatible engine version is provided
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
-                    '1.2.3.4', [], {}, False, ['o3de-test>=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    '1.2.3.4', [], {}, False, False, ['o3de-test>=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
         # fails when no compatible engine version is found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', [], {}, False, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+                    '1.2.3.4', [], {}, False, False, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+        # passes when forced even if no compatible engine version is found
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
+                    '1.2.3.4', [], {}, False, True, ['o3de-test<1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
         # fails when no compatible engine is found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
-                    '1.2.3.4', [], {}, False, ['o3de-test<1.0.0.0'], 'other-engine', '0.0.0.0', 1),
+                    '1.2.3.4', [], {}, False, False, ['o3de-test<1.0.0.0'], 'other-engine', '0.0.0.0', 1),
         # passes when dependent gems and engines are found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
                     '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
-                    False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    False, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
         # fails when dependent gem is not found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
                     '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4'}, 
-                    False, ['o3de-test<=1.0.0.0'], 'o3de-test', '0.0.0.0', 1),
+                    False, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '0.0.0.0', 1),
         # fails when dependent gem with wrong version found
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False,
                     '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.0.0.0', 'testgem2':'1.0.0.0'}, 
-                    False, ['o3de-test~=1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
+                    False, False, ['o3de-test~=1.0.0.0'], 'o3de-test', '1.0.0.0', 1),
         # does not modify project when check only 
         pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False,
                     '1.2.3.4', ['testgem1==1.2.3.4','testgem2>1.0.0.0'], { 'testgem1':'1.2.3.4', 'testgem2':'2.0.0.0'}, 
-                    True, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
+                    True, False, ['o3de-test<=1.0.0.0'], 'o3de-test', '1.0.0.0', 0),
         ]
     )
     def test_enable_gem_checks_version_compatibility(self, gem_path, project_path, gem_registered_with_project, 
                                                     gem_registered_with_engine, gem_version, gem_dependencies, 
-                                                    gem_names_and_versions, check, engine_dependencies, 
+                                                    gem_names_and_versions, check, force, compatible_engines, 
                                                     test_engine_name, test_engine_version, expected_result):
 
         def get_registered_path(project_name: str = None, gem_name: str = None) -> pathlib.Path:
@@ -256,7 +259,7 @@ class TestEnableGemCommand:
             else:
                 gem_data['gem_version'] = gem_version
                 gem_data['dependencies'] = gem_dependencies
-                gem_data['engine_dependencies'] = engine_dependencies
+                gem_data['compatible_engines'] = compatible_engines
             return gem_data
 
         def get_project_gems(project_path: pathlib.Path):
@@ -285,7 +288,7 @@ class TestEnableGemCommand:
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as valid_gem_json_patch:
 
             self.enable_gem.project_data.pop('gem_names', None)
-            result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, check=check)
+            result = enable_gem.enable_gem_in_project(gem_path=gem_path, project_path=project_path, force=force, check=check)
             assert result == expected_result
 
             gem_json = get_gem_json_data(gem_path, project_path)
