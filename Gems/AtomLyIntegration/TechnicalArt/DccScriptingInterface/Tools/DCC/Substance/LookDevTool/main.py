@@ -370,7 +370,6 @@ class ConvertSBS(QtWidgets.QWidget):
         self.output_directory_browse.setFixedSize(30, 25)
         self.output_directory_layout.addWidget(self.output_directory_browse)
         self.get_tool_settings()
-        # self.initialize_qprocess()
 
     def add_separator_bar(self, target_layout):
         self.separator_layout = QtWidgets.QHBoxLayout()
@@ -426,7 +425,6 @@ class ConvertSBS(QtWidgets.QWidget):
 
     def convert_list_to_string(self, id_):
         target_id = self.get_field_by_id(id_)
-        _LOGGER.info(f'TargetID: {target_id}')
         try:
             if isinstance(self.current_paths[target_id], list):
                 path_string = ''
@@ -453,6 +451,10 @@ class ConvertSBS(QtWidgets.QWidget):
                 target_field.setStyleSheet('')
         _LOGGER.info('ValidationStatus: {}'.format(validated))
         return validated
+
+    def create_sbs_files(self, processed_material_information):
+        output_setting = self.get_sbs_output_setting()
+        substance_materials.create_designer_files(output_setting, processed_material_information)
 
     def get_browse_filter(self, current_tab, button_id):
         if current_tab == 2 or button_id % 2 != 0:
@@ -498,15 +500,16 @@ class ConvertSBS(QtWidgets.QWidget):
         return env
 
     def get_sbs_output_setting(self):
-        if self.output_size_combobox.currentText() == '512':
+        output_setting = self.output_size_combobox.currentText()
+        if output_setting == '512':
             return sbsenum.OutputSizeEnum.SIZE_512
-        elif self.output_size_combobox.currentText() == '1024':
+        elif output_setting == '1024':
             return sbsenum.OutputSizeEnum.SIZE_1024
-        elif self.output_size_combobox.currentText() == '2048':
+        elif output_setting == '2048':
             return sbsenum.OutputSizeEnum.SIZE_2048
-        elif self.output_size_combobox.currentText() == '4096':
+        elif output_setting == '4096':
             return sbsenum.OutputSizeEnum.SIZE_4096
-        elif self.output_size_combobox.currentText() == '8192':
+        elif output_setting == '8192':
             return sbsenum.OutputSizeEnum.SIZE_8192
         return None
 
@@ -572,8 +575,9 @@ class ConvertSBS(QtWidgets.QWidget):
             try:
                 envars = self.get_process_environment()
                 envars.append(f'SCRIPT={self.script_path.as_posix()}')
-                envars.append(f'OUTPUT_INFORMATION={self.output_location}')
+                envars.append(f'OUTPUT_DATA={self.output_location}')
                 maya = QtProcess(self.mayapy_location, target_files, envars)
+                maya.process_info.connect(self.get_process_info)
                 maya.start_process(detached=False)
             except Exception as e:
                 _LOGGER.warning('Error creating Maya Files: {}'.format(e))
@@ -585,45 +589,14 @@ class ConvertSBS(QtWidgets.QWidget):
             msg.setWindowTitle("Maya Not Found")
             msg.setStandardButtons(QMessageBox.Ok)
 
-    # def processStarted(self):
-    #     _LOGGER.info('Maya Standalone Process Started....')
-    #
-    # def handle_stderr(self):
-    #     # data = self.p.readAllStandardError()
-    #     # stderr = bytes(data).decode("utf8")
-    #     # _LOGGER.info('STD_ERROR_FIRED: {}'.format(stderr))
-    #     pass
-
-    def handle_stdout(self):
-        """
-        This catches standard output from Maya while processing. It is used for keeping track of progress, and once
-        the last FBX file in a target directory is processed, it updates the database with the newly created Maya files.
-        :return:
-        """
-        data = self.p.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
-        if stdout.startswith('{'):
-            _LOGGER.info('QProcess Complete.')
-            self.processed_material_information = json.loads(stdout)
-            _LOGGER.info('ProcessedMaterialInfo: {}'.format(self.processed_material_information))
-            output_setting = self.get_sbs_output_setting()
-            substance_materials.create_designer_files(output_setting, self.processed_material_information)
-
-
-    def cleanup(self):
-        self.p.closeWriteChannel()
-        _LOGGER.info("Source File Conversion Complete")
-
     # +++++++++++++++++++++++++-->
     # Button Actions ++++++++++--->
     # +++++++++++++++++++++++++-->
 
     def browse_button_clicked(self, id_):
-        _LOGGER.info('BrowseButtonClicked')
         browse_filter = self.get_browse_filter(self.window_tabs.currentIndex(), id_)
         target_path = self.browse_for_path(browse_filter)
         if target_path:
-            _LOGGER.info('TargetPath[{}]: {}'.format(id_, target_path))
             self.current_paths[id_] = target_path[1] if browse_filter != 'directory' else target_path[0]
             self.path_fields[id_].setText(self.current_paths[id_])
 
@@ -632,19 +605,15 @@ class ConvertSBS(QtWidgets.QWidget):
                     self.enable_window_tabs(True)
 
     def create_substance_files(self):
-        _LOGGER.info('CreateSubstanceFilesClicked')
         self.output_location = self.output_directory_field.text()
         self.start_maya_session(self.get_conversion_files())
 
     def execute_clicked(self):
-        _LOGGER.info('ExecuteClicked')
         target_id = self.existing_radio_group.checkedId()
         field_text = self.input_directory_field.text()
         asset_list = field_text.split(';')
         asset_directory = os.path.dirname(asset_list[0]) if os.path.isfile(asset_list[0]) else asset_list[0]
         asset_name = []
-
-        _LOGGER.info(f'ExecuteClicked [{target_id}] ::: {asset_list}')
 
         if target_id == 0:
             file_extension = asset_list[0].split('.')[-1]
@@ -656,6 +625,15 @@ class ConvertSBS(QtWidgets.QWidget):
             asset_name = [x for x in asset_list] if len(asset_list) > 1 else ''
 
         self.get_sbs_assets(asset_type, asset_directory, asset_name)
+
+    # +++++++++++++++++++++++++-->
+    # Signals/Slots +++++++++++--->
+    # +++++++++++++++++++++++++-->
+
+    @Slot(dict)
+    def get_process_info(self, process_info):
+        _LOGGER.info(f'Returned Process Information: {process_info}')
+        self.create_sbs_files(process_info)
 
 
 if __name__ == '__main__':

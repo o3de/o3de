@@ -1,6 +1,6 @@
-import config
-from dynaconf import settings
-from pathlib import Path
+# import config
+# from dynaconf import settings
+# from pathlib import Path
 from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot, QProcess
 from azpy import constants
@@ -24,7 +24,8 @@ class QtProcess(QtCore.QObject):
         self.data = data
         self.environment_variables = self.parse_data()
         self.processing_script = self.parse_data('SCRIPT')
-        self.output_information = self.parse_data('OUTPUT_INFORMATION')
+        self.input_data = self.parse_data('INPUT_DATA')
+        self.output_data = self.parse_data('OUTPUT_DATA')
         self.process_output = {}
         self.initialize_qprocess()
 
@@ -37,7 +38,7 @@ class QtProcess(QtCore.QObject):
         _LOGGER.info(f'\n{constants.STR_CROSSBAR}\n::QPROCESS LAUNCHED::::> Application: {self.application}')
         _LOGGER.info(f'Target File: {self.target_files}')
         _LOGGER.info(f'Processing Script: {self.processing_script}')
-        _LOGGER.info(f'Output Information: {self.output_information}\n{constants.STR_CROSSBAR}')
+        _LOGGER.info(f'Output Information: {self.output_data}\n{constants.STR_CROSSBAR}')
 
         self.p = QProcess()
         env = QtCore.QProcessEnvironment.systemEnvironment()
@@ -58,7 +59,7 @@ class QtProcess(QtCore.QObject):
         The kwargs argument when instantiating the QProcess class is mainly used for establishing the application
         environment, with the exception of passing execution scripts as well as also sending output information when
         the application process is launched. The method for achieving this is to insert "script" and/or
-        "output_information" as keys, and related information as values
+        "input_data/output_data" as keys, and related information as values
         """
         env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
         for element in self.data:
@@ -69,14 +70,13 @@ class QtProcess(QtCore.QObject):
                 return value
             else:
                 env.append(f'{key}={value}')
+        if target_key:
+            return None
         return env
 
     def handle_stderr(self):
-        data = self.p.readAllStandardError()
-        stderr = bytes(data).decode("utf8")
-        _LOGGER.info('STD_ERROR_FIRED: {}'.format(stderr))
-        #
-        #
+        pass
+        # Keep this enabled unless you need to register all events while debugging
         # data = str(self.p.readAllStandardError(), 'utf-8')
         # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
@@ -124,11 +124,21 @@ class QtProcess(QtCore.QObject):
         the process subsequently closed.
         :return:
         """
+
+        info_list = [self.target_files, self.input_data, self.output_data]
+        command = [self.processing_script]
+        for entry in info_list:
+            command.append(str(entry))
+        self.p.setArguments(command)
+        _LOGGER.info(f'\n\nCommand:::::>\n{command}')
+        _LOGGER.info(self.p.arguments())
+
         try:
             if detached:
                 self.p.startDetached()
             else:
                 self.p.start()
+                self.p.waitForFinished(-1)
         except Exception as e:
             _LOGGER.info(f'QProcess failed: {e}')
 

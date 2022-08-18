@@ -3,8 +3,7 @@ from pysbs import sbsenum
 from pysbs import substance
 from pysbs import sbsgenerator
 from pysbs import batchtools
-
-# from pysbs.batchtools import thumbnail
+from pysbs.batchtools import thumbnail
 
 from pysbs import mdl
 from pysbs import sbsbakers
@@ -19,12 +18,14 @@ import constants
 import json
 import os
 
-_LOGGER = logging.getLogger('LABC.substance_materials')
+
+_LOGGER = logging.getLogger('Tools.DCC.Substance.LookDevTool.substance_materials')
+
 
 # Create SAT Context >>>>>>>>>>>>
 aContext = context.Context()
 # Declaration of alias 'myAlias'
-aContext.getUrlAliasMgr().setAliasAbsPath(aAliasName='myAlias', aAbsPath='<myAliasAbsolutePath>')
+aContext.getUrlAliasMgr().setAliasAbsPath(aAliasName='myAlias', aAbsPath='myAliasAbsolutePath')
 
 
 def create_designer_files(output_setting, material_info):

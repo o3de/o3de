@@ -5,15 +5,17 @@ import maya.cmds as mc
 mc.loadPlugin("fbxmaya")
 import maya.mel as mel
 mel.eval('loadPlugin fbxmaya')
+from pathlib import Path
 import logging
 import shutil
 import json
+import ast
 import sys
 import os
 
 
-_LOGGER = logging.getLogger('LABC.maya_materials')
-_LOGGER.info('Maya Materials added')
+_LOGGER = logging.getLogger('Tools.DCC.Substance.LookDevTool.maya_materials')
+
 
 class MayaMaterials(QtCore.QObject):
     def __init__(self, target_files, output_directory, parent=None):
@@ -197,7 +199,7 @@ class MayaMaterials(QtCore.QObject):
         materials = mc.ls(mc.listConnections(shading_group), materials=1)
         return list(set(materials))
 
-
-files = sys.argv[1:-1]
+_LOGGER.info(f'ARGV: {sys.argv}')
+files = ast.literal_eval(sys.argv[1])
 output = sys.argv[-1]
 MayaMaterials(files, output)
