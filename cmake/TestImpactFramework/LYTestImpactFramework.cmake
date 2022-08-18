@@ -63,6 +63,15 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
+# If we are not provided a path to the Instrumentation bin,
+# set LY_TEST_IMPACT to false so that our tests don't get added
+# and TIAF doesn't get built.
+if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
+    set(LY_TEST_IMPACT_ACTIVE true)
+else()
+    set(LY_TEST_IMPACT_ACTIVE false)
+endif()
+
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
@@ -579,7 +588,7 @@ endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
-    if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
+    if(NOT LY_TEST_IMPACT_ACTIVE)
         return()
     endif()
 
