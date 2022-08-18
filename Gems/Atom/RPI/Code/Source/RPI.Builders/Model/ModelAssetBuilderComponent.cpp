@@ -1126,6 +1126,7 @@ namespace AZ
 
                 const size_t mergedMeshCount = meshesByMatUid.size();
                 finalMeshList.reserve(mergedMeshCount + unmergeableMeshCount);
+bool mismatchedVertexLayoutsAreErrors = MismatchedVertexLayoutsAreErrors();
 
                 // Add the merged meshes
                 for (auto& it : meshesByMatUid)
@@ -1140,7 +1141,7 @@ namespace AZ
                         // common case is that everything assigned to the same material uid likely matches already anyways
                         if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
                         {
-                            if (MismatchedVertexLayoutsAreErrors())
+                            if (mismatchedVertexLayoutsAreErrors)
                             {
                                 return AZ::Failure();
                             }
