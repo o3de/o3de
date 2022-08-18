@@ -19,8 +19,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
-#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
@@ -45,6 +43,7 @@ namespace Multiplayer
         , public ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
+        , AzFramework::RootSpawnableNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerSystemComponent, "{7C99C4C1-1103-43F9-AD62-8B91CF7C1981}");
@@ -115,7 +114,7 @@ namespace Multiplayer
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
-        void AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler) override;
+        void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) override;
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
@@ -140,13 +139,19 @@ namespace Multiplayer
         void DumpStats(const AZ::ConsoleCommandContainer& arguments);
         //! @}
 
+        //! AzFramework::RootSpawnableNotificationBus::Handler
+        //! @{
+        void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
+        //! @}
+
     private:
 
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-        void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
+        static void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId ownerConnectionId);
+        static void StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection);
 
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
@@ -164,7 +169,7 @@ namespace Multiplayer
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
-        EndpointDisonnectedEvent m_endpointDisonnectedEvent;
+        EndpointDisconnectedEvent m_endpointDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;
         NotifyClientMigrationEvent m_notifyClientMigrationEvent;
@@ -183,6 +188,21 @@ namespace Multiplayer
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
         bool m_spawnNetboundEntities = false;
+
+        // Store player information if they connect before there is a level and IPlayerSpawner available
+        struct PlayerWaitingToBeSpawned
+        {
+            PlayerWaitingToBeSpawned(uint64_t userId, MultiplayerAgentDatum agent, AzNetworking::IConnection* connection)
+                : userId(userId), agent(agent), connection(connection)
+            {
+            }
+
+            uint64_t userId;
+            MultiplayerAgentDatum agent;
+            AzNetworking::IConnection* connection = nullptr;
+        };
+
+        AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

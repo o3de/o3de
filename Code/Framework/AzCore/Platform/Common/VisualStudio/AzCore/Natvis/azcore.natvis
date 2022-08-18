@@ -44,6 +44,17 @@
     </Expand>
   </Type>
 
+  <Type Name="AZStd::span&lt;*&gt;">
+    <DisplayString>span[{m_size}]</DisplayString>
+    <Expand>
+      <Item Name="[size]">m_size</Item>
+      <ArrayItems>
+        <Size>m_size</Size>
+        <ValuePointer>m_data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
   <Type Name="AZStd::Internal::fixed_zero_size_storage&lt;*&gt;">
     <AlternativeType Name="AZStd::fixed_vector&lt;*,0&gt;" />
     <DisplayString>fixed_vector[0] capacity 0</DisplayString>
@@ -964,6 +975,13 @@
         <DisplayString Condition="m_rootNode.m_data.has_value()">{m_rootNode.m_data}</DisplayString>
         <Expand>
             <Item Condition="m_rootNode.m_data.has_value()" Name="&quot;&quot;">m_rootNode</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="AZ::SettingsRegistryImpl">
+        <DisplayString>{m_settings}</DisplayString>
+        <Expand>
+            <ExpandedItem>m_settings</ExpandedItem>
         </Expand>
     </Type>
 

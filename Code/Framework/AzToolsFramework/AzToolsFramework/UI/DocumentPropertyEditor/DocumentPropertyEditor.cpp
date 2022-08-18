@@ -16,19 +16,11 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
-
-AZ_CVAR(
-    bool,
-    ed_showDPEDebugView,
-    false,
-    nullptr,
-    AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
-    "If set, instances of the DPE also spawn a DPE debug view window, which allows users inspect the hierarchy and the DOM in pseudo XML "
-    "format");
 
 AZ_CVAR(
     bool,
@@ -46,6 +38,7 @@ namespace AzToolsFramework
         , m_depth(depth)
     {
     }
+
     DPELayout::~DPELayout()
     {
         if (m_expanderWidget)
@@ -91,8 +84,20 @@ namespace AzToolsFramework
         return m_expanded;
     }
 
+    void DPELayout::invalidate()
+    {
+        QHBoxLayout::invalidate();
+        m_cachedLayoutSize = QSize();
+        m_cachedMinLayoutSize = QSize();
+    }
+
     QSize DPELayout::sizeHint() const
     {
+        if (m_cachedLayoutSize.isValid())
+        {
+            return m_cachedLayoutSize;
+        }
+
         int cumulativeWidth = 0;
         int preferredHeight = 0;
 
@@ -104,11 +109,20 @@ namespace AzToolsFramework
             cumulativeWidth += widgetSizeHint.width();
             preferredHeight = AZStd::max(widgetSizeHint.height(), preferredHeight);
         }
+
+        m_cachedLayoutSize = QSize(cumulativeWidth, preferredHeight);
+
         return { cumulativeWidth, preferredHeight };
     }
 
     QSize DPELayout::minimumSize() const
     {
+        if (m_cachedMinLayoutSize.isValid())
+        {
+            return m_cachedMinLayoutSize;
+        }
+
+
         int cumulativeWidth = 0;
         int minimumHeight = 0;
 
@@ -127,6 +141,9 @@ namespace AzToolsFramework
                 minimumHeight = AZStd::max(widgetChild->sizeHint().height(), minimumHeight);
             }
         }
+
+        m_cachedMinLayoutSize = QSize(cumulativeWidth, minimumHeight);
+
         return { cumulativeWidth, minimumHeight };
     }
 
@@ -308,6 +325,14 @@ namespace AzToolsFramework
             {
                 auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
                 auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
+                auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(childValue).value_or("");
+
+                // if this row doesn't already have a tooltip, use the first valid
+                // tooltip from a child PropertyEditor (like the RPE)
+                if (!descriptionString.empty() && toolTip().isEmpty())
+                {
+                    setToolTip(QString::fromUtf8(descriptionString.data()));
+                }
 
                 // if we found a valid handler, grab its widget to add to the column layout
                 if (handlerId)
@@ -316,6 +341,12 @@ namespace AzToolsFramework
                     auto handler = dpeSystem->CreateHandlerInstance(handlerId);
                     handler->SetValueFromDom(childValue);
                     addedWidget = handler->GetWidget();
+
+                    // only set the widget's tooltip if it doesn't already have its own
+                    if (!descriptionString.empty() && addedWidget->toolTip().isEmpty())
+                    {
+                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data()));
+                    }
                     m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
                 }
             }
@@ -632,10 +663,7 @@ namespace AzToolsFramework
         m_handlerCleanupTimer->setInterval(0);
         connect(m_handlerCleanupTimer, &QTimer::timeout, this, &DocumentPropertyEditor::CleanupReleasedHandlers);
 
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            console->GetCvarValue("ed_showDPEDebugView", m_spawnDebugView);
-        }
+        m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     }

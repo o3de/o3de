@@ -18,7 +18,7 @@
 #include <RHI/AsyncUploadQueue.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
@@ -295,7 +295,7 @@ namespace AZ
             }
 
             //Load device features now that we have loaded all extension info
-            physicalDevice.LoadSupportedFeatures();
+            physicalDevice.LoadSupportedFeatures(m_context);
             return RHI::ResultCode::Success;
         }
 
@@ -661,7 +661,7 @@ namespace AZ
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            physicalDevice.CompileMemoryStatistics(builder);
+            physicalDevice.CompileMemoryStatistics(m_context, builder);
         }
 
         void Device::UpdateCpuTimingStatisticsInternal() const

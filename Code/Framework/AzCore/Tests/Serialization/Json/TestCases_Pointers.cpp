@@ -21,6 +21,47 @@ namespace JsonSerializationTests
         azfree(m_pointer1);
     }
 
+    SimpleNullPointer::SimpleNullPointer(const SimpleNullPointer& rhs)
+    {
+        *this = rhs;
+    }
+
+    SimpleNullPointer::SimpleNullPointer(SimpleNullPointer&& rhs)
+    {
+        *this = AZStd::move(rhs);
+    }
+
+    SimpleNullPointer& SimpleNullPointer::operator=(const SimpleNullPointer& rhs)
+    {
+        azfree(m_pointer1);
+        if (rhs.m_pointer1)
+        {
+            m_pointer1 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *m_pointer1 = *rhs.m_pointer1;
+        }
+
+        azfree(m_pointer2);
+        if (rhs.m_pointer2)
+        {
+            m_pointer2 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *m_pointer2 = *rhs.m_pointer2;
+        }
+
+        return *this;
+    }
+
+    SimpleNullPointer& SimpleNullPointer::operator=(SimpleNullPointer&& rhs)
+    {
+        azfree(m_pointer1);
+        m_pointer1 = rhs.m_pointer1;
+        rhs.m_pointer1 = nullptr;
+
+        azfree(m_pointer2);
+        m_pointer2 = rhs.m_pointer2;
+        rhs.m_pointer2 = nullptr;
+        return *this; 
+    }
+
     bool SimpleNullPointer::Equals(const SimpleNullPointer& rhs, bool /*fullReflection*/) const
     {
         if (m_pointer1)
@@ -317,6 +358,40 @@ namespace JsonSerializationTests
 
     // ComplexNullInheritedPointer
 
+    ComplexNullInheritedPointer::ComplexNullInheritedPointer(const ComplexNullInheritedPointer& rhs)
+    {
+        *this = rhs;
+    }
+
+    ComplexNullInheritedPointer::ComplexNullInheritedPointer(ComplexNullInheritedPointer&& rhs)
+    {
+        *this = AZStd::move(rhs);
+    }
+
+    ComplexNullInheritedPointer& ComplexNullInheritedPointer::operator=(const ComplexNullInheritedPointer& rhs)
+    {
+        delete m_pointer;
+
+        if (rhs.m_pointer)
+        {
+            m_pointer = aznew SimpleInheritence(*static_cast<const SimpleInheritence*>(rhs.m_pointer));
+        }
+        else
+        {
+            m_pointer = nullptr;
+        }
+
+        return *this;
+    }
+
+    ComplexNullInheritedPointer& ComplexNullInheritedPointer::operator=(ComplexNullInheritedPointer&& rhs)
+    {
+        delete m_pointer;
+        m_pointer = rhs.m_pointer;
+        rhs.m_pointer = nullptr;
+        return *this;
+    }
+
     ComplexNullInheritedPointer::~ComplexNullInheritedPointer()
     {
         delete m_pointer;
@@ -412,15 +487,14 @@ namespace JsonSerializationTests
 
     ComplexAssignedDifferentInheritedPointer::ComplexAssignedDifferentInheritedPointer(
         const ComplexAssignedDifferentInheritedPointer& rhs)
-        : m_pointer(aznew BaseClass(*rhs.m_pointer))
     {
+        *this = rhs;
     }
 
     ComplexAssignedDifferentInheritedPointer::ComplexAssignedDifferentInheritedPointer(
         ComplexAssignedDifferentInheritedPointer&& rhs)
-        : m_pointer(rhs.m_pointer)
     {
-        rhs.m_pointer = nullptr;
+        *this = AZStd::move(rhs);
     }
 
     ComplexAssignedDifferentInheritedPointer::~ComplexAssignedDifferentInheritedPointer()
@@ -431,7 +505,10 @@ namespace JsonSerializationTests
     ComplexAssignedDifferentInheritedPointer& ComplexAssignedDifferentInheritedPointer::operator=(
         const ComplexAssignedDifferentInheritedPointer& rhs)
     {
-        m_pointer = aznew BaseClass(*rhs.m_pointer);
+        if (rhs.m_pointer)
+        {
+            m_pointer = rhs.m_pointer->Clone();
+        }
         return *this;
     }
 
@@ -515,7 +592,8 @@ namespace JsonSerializationTests
         member->m_baseVar = -88.0f;
         instance->m_pointer = member;
 
-        const char* json = R"(
+        // because it is configured with a different object type in the pointer, the JSON is ALWAYS tracking the default
+        const char* jsonWithDefaults = R"(
             {
                 "pointer": 
                 {
@@ -525,7 +603,8 @@ namespace JsonSerializationTests
                     "var2": 88.0
                 }
             })";
-        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), jsonWithDefaults, jsonWithDefaults);
     }
 
 
@@ -640,7 +719,18 @@ namespace JsonSerializationTests
                     "var2": 88.0
                 }
             })";
-        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+
+        const char* keptDefaults = R"(
+            {
+                "pointer": 
+                {
+                    "$type": "SimpleInheritence",
+                    "base_var": -88.0,
+                    "var1": 88,
+                    "var2": 88.0
+                }
+            })";
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), json, keptDefaults);
     }
 
 
@@ -650,9 +740,16 @@ namespace JsonSerializationTests
     {
         for (int* instance : rhs.m_array)
         {
-            int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-            *newInstance = *instance;
-            m_array.push_back(newInstance);
+            if (instance)
+            {
+                int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+                *newInstance = *instance;
+                m_array.push_back(newInstance);
+            }
+            else
+            {
+                m_array.push_back(nullptr);
+            }
         }
     }
     
@@ -669,9 +766,16 @@ namespace JsonSerializationTests
     {
         for (int* instance : rhs.m_array)
         {
-            int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-            *newInstance = *instance;
-            m_array.push_back(newInstance);
+            if (instance)
+            {
+                int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+                *newInstance = *instance;
+                m_array.push_back(newInstance);
+            }
+            else
+            {
+                m_array.push_back(nullptr);
+            }
         }
         return *this;
     }
@@ -713,10 +817,13 @@ namespace JsonSerializationTests
         *member = 42;
         instance->m_array.push_back(member);
         instance->m_array.push_back(nullptr);
+        member = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+        *member = 43;
+        instance->m_array.push_back(member);
 
         const char* defaults = R"(
             {
-                "array": [ 42, null ] 
+                "array": [ 42, null, 43 ] 
             })";
         return MakeInstanceWithSomeDefaults(AZStd::move(instance), defaults, defaults);
     }
@@ -727,7 +834,7 @@ namespace JsonSerializationTests
         int* member0 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
         int* member1 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
         int* member2 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-        *member0 = 42;
+        *member0 = 53;
         *member1 = 88;
         *member2 = 13;
         instance->m_array.push_back(member0);
@@ -736,7 +843,7 @@ namespace JsonSerializationTests
 
         const char* json = R"(
             {
-                "array": [ 42, 88, 13 ]
+                "array": [ 53, 88, 13 ]
             })";
         return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
     }
@@ -748,7 +855,7 @@ namespace JsonSerializationTests
     {
         for (SimpleClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleClass(*instance));
+            m_array.push_back(instance ? aznew SimpleClass(*instance) : nullptr);
         }
     }
 
@@ -765,7 +872,7 @@ namespace JsonSerializationTests
     {
         for (SimpleClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleClass(*instance));
+            m_array.push_back(instance ? aznew SimpleClass(*instance) : nullptr);
         }
         return *this;
     }
@@ -862,7 +969,7 @@ namespace JsonSerializationTests
     {
         for (BaseClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)));
+            m_array.push_back(instance ? aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)) : nullptr);
         }
     }
 
@@ -879,7 +986,7 @@ namespace JsonSerializationTests
     {
         for (BaseClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)));
+            m_array.push_back(instance ? aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)) : nullptr);
         }
         return *this;
     }

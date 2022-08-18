@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
+#include <SceneAPI/SceneCore/Mocks/MockBehaviorUtils.h>
 
 // the DLL entry point for SceneCore to reflect its behavior context
 extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
@@ -154,6 +155,7 @@ namespace AZ::SceneAPI::Containers
                     {
                         return self.m_scene.get();
                     });
+
             }
         }
     };
@@ -448,7 +450,8 @@ namespace AZ::SceneAPI::Containers
                     ->Method("AddAndSet", [](DataTypes::MockIGraphObject& self, int lhs, int rhs)
                     {
                         self.m_id = lhs + rhs;
-                    });
+                    })
+                    ->Property("id", BehaviorValueProperty(&AZ::SceneAPI::DataTypes::MockIGraphObject::m_id));
 
                 behaviorContext->Class<MockIGraphObjectTester>("MockIGraphObjectTester")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
@@ -487,6 +490,9 @@ namespace AZ::SceneAPI::Containers
             ReflectBehavior(m_behaviorContext.get());
             ReflectTestTypes(m_behaviorContext.get());
             MockBuilder::Reflect(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());
@@ -511,7 +517,7 @@ namespace AZ::SceneAPI::Containers
         void SetupEditorPythonConsoleInterface()
         {
             EXPECT_CALL(*m_editorPythonConsoleInterface, FetchPythonTypeName(::testing::_))
-                .Times(4)
+                .Times(6)
                 .WillRepeatedly(::testing::Invoke([](const AZ::BehaviorParameter&) {return "int"; }));
         }
 
@@ -729,6 +735,32 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("TestExpectEquals(productList:Front().productDependencies:GetSize(), 1)");
     }
 
+    TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_Fetch_GetsValue)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+        ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+        ExpectExecute("id = proxy:Fetch('id')");
+        ExpectExecute("TestExpectEquals(id, 7)");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_HasProperties)
+    {
+        SetupEditorPythonConsoleInterface();
+
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("nodeG = scene.graph:FindWithPath('A.C.E.G')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(nodeG)");
+        ExpectExecute("TestExpectTrue(proxy:CastWithTypeName('MockIGraphObject'))");
+        ExpectExecute("info = proxy:GetClassInfo()");
+        ExpectExecute("TestExpectTrue(info.propertyList[1] == 'id(int)->int')");
+    }
+
     //
     // SceneManifestBehaviorScriptTest is meant to test the script abilities of the SceneManifest
     //
@@ -763,6 +795,9 @@ namespace AZ::SceneAPI::Containers
             MockBuilder::Reflect(m_behaviorContext.get());
             MockManifestRule::Reflect(m_behaviorContext.get());
             ReflectBehavior(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
 
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());

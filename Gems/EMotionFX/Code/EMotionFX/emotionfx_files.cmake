@@ -352,6 +352,8 @@ set(FILES
     Source/MotionData/NonUniformMotionData.h
     Source/MotionData/UniformMotionData.cpp
     Source/MotionData/UniformMotionData.h
+    Source/MotionData/RootMotionExtractionData.h
+    Source/MotionData/RootMotionExtractionData.cpp
     Source/MotionEvent.cpp
     Source/MotionEvent.h
     Source/MotionEventTable.cpp

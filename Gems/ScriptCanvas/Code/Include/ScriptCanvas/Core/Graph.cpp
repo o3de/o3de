@@ -27,6 +27,7 @@
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidationIds.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
@@ -37,6 +38,7 @@
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
 #include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
+#include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
@@ -316,7 +318,12 @@ namespace ScriptCanvas
 
             if (validationResults.HasResults())
             {
-                AZ_Error("ScriptCanvas", result.IsModelValid(), "Script Canvas parsing failed");
+                // reduce the noise of reporting against empty graphs
+                if (!(validationResults.ErrorCount() == 1
+                    && validationResults.GetEvents().front()->GetIdCrc() == ScriptCanvas::ParsingValidationIds::EmptyGraphCrc))
+                {
+                    AZ_Error("ScriptCanvas", result.IsModelValid(), "Script Canvas parsing failed");
+                }
             }
         }
     }

@@ -30,15 +30,84 @@ namespace Terrain
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<TerrainWorldDebuggerConfig, AZ::ComponentConfig>()
+            serialize->Class<TerrainDebugQueryVisualizerConfig>()
                 ->Version(1)
+                ->Field("DrawQueries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
+                ->Field("Sampler", &TerrainDebugQueryVisualizerConfig::m_sampler)
+                ->Field("PointsPerDirection", &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection)
+                ->Field("Spacing", &TerrainDebugQueryVisualizerConfig::m_spacing)
+                ->Field("DrawHeights", &TerrainDebugQueryVisualizerConfig::m_drawHeights)
+                ->Field("HeightPointSize", &TerrainDebugQueryVisualizerConfig::m_heightPointSize)
+                ->Field("DrawNormals", &TerrainDebugQueryVisualizerConfig::m_drawNormals)
+                ->Field("NormalHeight", &TerrainDebugQueryVisualizerConfig::m_normalHeight)
+                ->Field("UseCameraPos", &TerrainDebugQueryVisualizerConfig::m_useCameraPosition)
+                ->Field("CenterPos", &TerrainDebugQueryVisualizerConfig::m_centerPosition)
+                ;
+
+            serialize->Class<TerrainWorldDebuggerConfig, AZ::ComponentConfig>()
+                ->Version(2)
                 ->Field("DebugWireframe", &TerrainWorldDebuggerConfig::m_drawWireframe)
                 ->Field("DebugWorldBounds", &TerrainWorldDebuggerConfig::m_drawWorldBounds)
-            ;
+                ->Field("DebugQueries", &TerrainWorldDebuggerConfig::m_debugQueries)
+                ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
+                edit->Class<TerrainDebugQueryVisualizerConfig>(
+                    "Terrain Debug Queries", "Settings related to visualizing the results of terrain queries.")
+                    ->GroupElementToggle("Show Terrain Queries", &TerrainDebugQueryVisualizerConfig::m_drawQueries)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &TerrainDebugQueryVisualizerConfig::m_sampler, "Sampler",
+                        "The type of query sampler to use for querying the terrain values (Exact, Clamp, Bilinear)")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, "Exact")
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, "Clamp")
+                        ->EnumAttribute(AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, "Bilinear")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_pointsPerDirection, "Point count",
+                        "The number of points in each direction to visualize")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::Min, 1)
+                        ->Attribute(AZ::Edit::Attributes::Max, 64)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_spacing, "Spacing (m)",
+                        "Determines how far apart the query results should be drawn in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawHeights, "Draw Heights",
+                        "Enable visualization of terrain height queries")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_heightPointSize,
+                        "Height Point Size (m)", "Determines the size of the height point in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableHeights)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1.0f / 128.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_drawNormals, "Draw Normals",
+                        "Enable visualization of terrain normal queries")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &TerrainDebugQueryVisualizerConfig::m_normalHeight, "Normal Height (m)",
+                        "Determines the height of the normal line in meters")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableNormals)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.25f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_useCameraPosition, "Use Camera Position",
+                        "Determines whether to use the current camera position or a specified position")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DrawQueriesDisabled)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainDebugQueryVisualizerConfig::m_centerPosition, "World Position",
+                        "Center of the area to draw query results in")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainDebugQueryVisualizerConfig::DisableCenterPosition)
+                    ;
+
                 edit->Class<TerrainWorldDebuggerConfig>(
                     "Terrain World Debugger Component", "Optional component for enabling terrain debugging features.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -46,8 +115,15 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe, "Show Wireframe", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds", "");
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWireframe, "Show Wireframe",
+                        "Draw a wireframe for the terrain quads in an area around the camera")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds",
+                        "Draw the current world bounds for the terrain")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_debugQueries, "Show Normals",
+                        "Settings for drawing terrain normals")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ;
             }
         }
     }
@@ -195,6 +271,109 @@ namespace Terrain
         debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
     }
 
+    void TerrainWorldDebuggerComponent::DrawQueries(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        if (!m_configuration.m_debugQueries.m_drawQueries)
+        {
+            return;
+        }
+
+        // Early out if none of our draw toggles are enabled.
+        if (!(m_configuration.m_debugQueries.m_drawHeights || m_configuration.m_debugQueries.m_drawNormals))
+        {
+            return;
+        }
+
+        const float spacing = m_configuration.m_debugQueries.m_spacing;
+        const float halfDistance = spacing * (m_configuration.m_debugQueries.m_pointsPerDirection / 2.0f);
+        const size_t totalPositions =
+            m_configuration.m_debugQueries.m_pointsPerDirection * m_configuration.m_debugQueries.m_pointsPerDirection;
+
+        // Get the center point for our visualization area either from the camera or a configured location.
+        AZ::Vector3 centerPos = m_configuration.m_debugQueries.m_centerPosition;
+        if (m_configuration.m_debugQueries.m_useCameraPosition)
+        {
+            if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
+            {
+                AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+
+                // Get our camera's center point
+                centerPos = cameraTransform.GetTranslation();
+            }
+        }
+
+        // Build up the list of positions to query.
+        AZStd::vector<AZ::Vector3> positionList;
+        positionList.reserve(totalPositions);
+
+        for (size_t yPoint = 0; yPoint < m_configuration.m_debugQueries.m_pointsPerDirection; yPoint++)
+        {
+            for (size_t xPoint = 0; xPoint < m_configuration.m_debugQueries.m_pointsPerDirection; xPoint++)
+            {
+                float x = centerPos.GetX() - halfDistance + (spacing * xPoint);
+                float y = centerPos.GetY() - halfDistance + (spacing * yPoint);
+                positionList.emplace_back(x, y, 0.0f);
+            }
+        }
+
+        // Process the terrain data query and turn the results into debug visualizations.
+        // We'll reuse the normalLineVertices buffer for drawing both heights and normals. The first point of each normal line
+        // always starts at the height position, so we can use those to draw heights.
+        const float normalHeight = m_configuration.m_debugQueries.m_normalHeight;
+        AZStd::vector<AZ::Vector3> normalLineVertices;
+        normalLineVertices.reserve(totalPositions * 2);
+        auto ProcessSurfacePoint =
+            [normalHeight, &normalLineVertices](const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
+        {
+            if (terrainExists)
+            {
+                normalLineVertices.emplace_back(surfacePoint.m_position);
+                normalLineVertices.emplace_back(surfacePoint.m_position + (surfacePoint.m_normal * normalHeight));
+            }
+        };
+
+        // Query for the terrain data. For now we'll just query both heights and normals all the time, but we could eventually
+        // get more selective and only query for heights if we've disabled drawing normals. We can never query just for normals
+        // because we still need the heights in that case to know where to draw the normals at.
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::QueryList,
+            positionList,
+            static_cast<AzFramework::Terrain::TerrainDataRequests::TerrainDataMask>(
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights |
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Normals),
+            ProcessSurfacePoint,
+            m_configuration.m_debugQueries.m_sampler);
+
+        // Draw the heights
+        if (m_configuration.m_debugQueries.m_drawHeights && !normalLineVertices.empty())
+        {
+            const AZ::Color heightColor = AZ::Color(0.0f, 0.0f, 1.0f, 1.0f);
+            const AZ::Vector3 boxHalfSize(m_configuration.m_debugQueries.m_heightPointSize / 2.0f);
+            debugDisplay.SetColor(heightColor);
+            for (size_t index = 0; index < normalLineVertices.size(); index += 2)
+            {
+                // We use SolidBox instead of Point because DX12 doesn't support point sizes, so they're too small to see.
+                debugDisplay.DrawSolidBox(normalLineVertices[index] - boxHalfSize, normalLineVertices[index] + boxHalfSize);
+            }
+        }
+
+        // Draw the normals
+        if (m_configuration.m_debugQueries.m_drawNormals && !normalLineVertices.empty())
+        {
+            for (size_t index = 0; index < normalLineVertices.size(); index += 2)
+            {
+                AZ::Vector3 normal = (normalLineVertices[index + 1] - normalLineVertices[index]).GetNormalized();
+                const AZ::Vector4 normalColor = (AZ::Vector4(normal, 1.0f) + AZ::Vector4(1.0f)) / 2.0f;
+                debugDisplay.DrawLine(normalLineVertices[index], normalLineVertices[index + 1], normalColor, normalColor);
+            }
+        }
+
+    }
+
     void TerrainWorldDebuggerComponent::DrawWireframe(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
@@ -331,7 +510,7 @@ namespace Terrain
     {
         DrawWorldBounds(debugDisplay);
         DrawWireframe(viewportInfo, debugDisplay);
-
+        DrawQueries(viewportInfo, debugDisplay);
     }
 
     void TerrainWorldDebuggerComponent::RebuildSectorWireframe(WireframeSector& sector, float gridResolution)

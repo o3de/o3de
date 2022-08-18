@@ -212,6 +212,12 @@ namespace AzToolsFramework
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
                 m_dpe = new DocumentPropertyEditor(this);
                 propertyEditor = m_dpe;
+                m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                    [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        this->OnDocumentPropertyChanged(changeInfo);
+                    });
+                m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
             }
 
             propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
@@ -957,6 +963,14 @@ namespace AzToolsFramework
         void AssetEditorWidget::AfterPropertyModified(InstanceDataNode* /*node*/)
         {
             DirtyAsset();
+        }
+
+        void AssetEditorWidget::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+        {
+            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+            {
+                DirtyAsset();
+            }
         }
 
         void AssetEditorWidget::RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& point)

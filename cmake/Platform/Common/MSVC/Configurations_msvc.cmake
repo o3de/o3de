@@ -158,3 +158,13 @@ else()
 endif()
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)
+
+if(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION VERSION_LESS_EQUAL "10.0.19041.0")
+  # Suppresses warning C5105 which triggers with Windows 10 SDK 10.0.19041 and below when using the /Zc:preprocessor option
+  # https://developercommunity.visualstudio.com/t/stdc17-generates-warning-compiling-windowsh/1249671
+  ly_append_configurations_options(
+        COMPILATION
+            /wd5104
+            /wd5105
+    )
+endif()

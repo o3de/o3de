@@ -6,56 +6,30 @@
  *
  */
 
-// Workaround to enable DEBUG_ALLOCATOR for this test. We define and include the cpp file directly
-// in the test which will put precedence for the linker to grab these symbols.
-// In order to make this private to other tests, we are forcing internal linkage by including it into a namespace. This
-// requires to do some using of namespaces so HphaSchema gets the right things.
+// This test validates the Debug functionality of the HphaSchema allocator(via its DebugAllocator template parameter)
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Math/Random.h>
 #include <AzCore/Math/Sfmt.h>
-
-
-namespace Internal
-{
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    }
-    namespace AZ
-    {
-        using namespace ::AZ;
-
-        namespace Debug
-        {
-            using namespace ::AZ::Debug;
-        }
-    }
-
-    using AZ::Debug::SymbolStorage;
-    using AZ::Debug::Trace;
-
-#define DEBUG_ALLOCATOR
-#include <AzCore/Memory/HphaSchema.cpp>
-#include <AzCore/Memory/MallocSchema.cpp>
-#undef DEBUG_ALLOCATOR
-} // namespace Internal
+#include <AzCore/std/containers/set.h>
 
 namespace UnitTest
 {
-    // Dummy allocator implementation of the HphaSchema. Here we use our own allocator instead of the SystemAllocator
-    // to avoid SystemAllocator's symbols to be used (since they will call the HphaSchema implementation that does not
-    // define DEBUG_ALLOCATOR
+    // allocator implementation of the HphaSchema with the debugging functionality enabled 
+    static constexpr bool HphaDebugAllocator = true;
+
     class HphaSchemaErrorDetection_TestAllocator
-        : public AZ::SimpleSchemaAllocator<Internal::AZ::HphaSchema>
+        : public AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>
     {
     public:
         AZ_TYPE_INFO(HphaSchemaErrorDetection_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
-        using Base = AZ::SimpleSchemaAllocator<Internal::AZ::HphaSchema>;
+        using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
         using Descriptor = Base::Descriptor;
 
         HphaSchemaErrorDetection_TestAllocator()
@@ -65,12 +39,12 @@ namespace UnitTest
 
     // Another allocator to test allocating/deallocating with different allocators
     class AnotherTestAllocator
-        : public AZ::SimpleSchemaAllocator<Internal::AZ::HphaSchema>
+        : public AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>
     {
     public:
         AZ_TYPE_INFO(AnotherTestAllocator, "{83038931-010E-407F-8183-2ACBB50706C2}");
 
-        using Base = AZ::SimpleSchemaAllocator<Internal::AZ::HphaSchema>;
+        using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
         using Descriptor = Base::Descriptor;
 
         AnotherTestAllocator()
@@ -283,7 +257,7 @@ AZ_POP_DISABLE_WARNING
         delete someObject;
 
         // The first bytes are reused for an intrusive list node that keeps track of the free entries in the bucket
-        for (size_t i = sizeof(Internal::AZ::HpAllocator::free_link); i < 32; i += 4)
+        for (size_t i = AZ::HphaSchemaBase<HphaDebugAllocator>::GetFreeLinkSize(); i < 32; i += 4)
         {
             EXPECT_EQ(0xFF, someObject->m_member[i + 0]);
             EXPECT_EQ(0xC0, someObject->m_member[i + 1]);
@@ -303,7 +277,7 @@ AZ_POP_DISABLE_WARNING
         TestClass<16>* someObject = aznew TestClass<16>();
 
         unsigned char* pointerToEnd = &someObject->m_member[16];
-        for (size_t i = 0; i < Internal::AZ::HpAllocator::MEMORY_GUARD_SIZE; ++i)
+        for (size_t i = 0; i < AZ::HphaSchemaBase<HphaDebugAllocator>::GetMemoryGuardSize(); ++i)
         {
             EXPECT_EQ(expectedInitialGuard + i, pointerToEnd[i]);
         }

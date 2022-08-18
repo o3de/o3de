@@ -31,7 +31,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<DiskLightFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
