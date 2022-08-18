@@ -22,13 +22,7 @@ namespace TestImpact
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData)
         {
             // Keys for pertinent XML node and attribute names
-            constexpr const char* Keys[] =
-            {
-                "testsuites",
-                "testsuite",
-                "name",
-                "testcase"
-            };
+            constexpr const char* Keys[] = { "testsuites", "testsuite", "name", "testcase" };
 
             enum
             {
@@ -73,13 +67,11 @@ namespace TestImpact
 
                     testSuites.emplace_back(AZStd::move(testSuite));
                 }
-            }
-            catch (const std::exception& e)
+            } catch (const std::exception& e)
             {
                 AZ_Error("TestEnumerationSuitesFactory", false, e.what());
                 throw ArtifactException(e.what());
-            }
-            catch (...)
+            } catch (...)
             {
                 throw ArtifactException("An unknown error occured parsing the XML data");
             }
@@ -90,8 +82,7 @@ namespace TestImpact
 
     namespace Python
     {
-        AZStd::vector<PythonTestEnumerationSuite> TestEnumerationSuitesFactory(
-            const AZStd::string& testEnumerationData)
+        AZStd::vector<PythonTestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData)
         {
             size_t startLine = 0;
             size_t endLine = 0;
@@ -159,9 +150,8 @@ namespace TestImpact
                 }
             }
 
-            // Extract the key/value pairs from our testSuiteMap and put them in our pairs output variable            
-            return AZStd::vector(testSuiteMap.begin(), testSuiteMap.end());;
+            // Extract the key/value pairs from our testSuiteMap and put them in our pairs output variable
+            return AZStd::vector(testSuiteMap.begin(), testSuiteMap.end());
         }
-
     } // namespace Python
 } // namespace TestImpact
