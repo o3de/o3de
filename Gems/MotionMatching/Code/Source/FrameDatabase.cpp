@@ -248,7 +248,7 @@ namespace EMotionFX::MotionMatching
         return InvalidIndex;
     }
 
-    void FrameDatabase::SaveAsCsv(const char* filename, ActorInstance* actorInstance) const
+    void FrameDatabase::SaveAsCsv(const char* filename, ActorInstance* actorInstance, const ETransformSpace transformSpace) const
     {
         PoseWriterCsv poseWriter;
         poseWriter.Begin(filename, actorInstance);
@@ -260,7 +260,7 @@ namespace EMotionFX::MotionMatching
         for (const Frame& currentFrame : m_frames)
         {
             currentFrame.SamplePose(&pose);
-            poseWriter.WritePose(pose);
+            poseWriter.WritePose(pose, transformSpace);
         }
     }
 } // namespace EMotionFX::MotionMatching

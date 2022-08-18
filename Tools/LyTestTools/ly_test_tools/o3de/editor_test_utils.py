@@ -17,6 +17,20 @@ import ly_test_tools.environment.waiter as waiter
 
 logger = logging.getLogger(__name__)
 
+def compile_test_case_name_from_request(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """
@@ -268,12 +282,20 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
 
 
 def compile_test_case_name(request, test_spec):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    :param request: The fixture request.
+    :param test_spec: The test spec for this test case.
+    """
     test_case_prefix = "::".join(str.split(str(request.node.nodeid), "::")[:2])
     regex_result = re.search("\<class \'(.*)\'\>", str(test_spec))
-    if regex_result:
+    try:
         class_name = str.split(regex_result.group(1), ".")[-1:]
-        compiled_test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
-    else:
+        test_case_name = f"{'::'.join([test_case_prefix, class_name[0]])}"
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
         compiled_test_case_name = "ERROR"
     return compiled_test_case_name
 
