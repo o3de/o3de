@@ -255,7 +255,7 @@ def print_manifest_json_data(uri_json_data: list,
         # if it's not local it should be in the cache
         parsed_uri = urllib.parse.urlparse(pathlib.Path(manifest_uri).as_posix())
         if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-            repo_sha256 = hashlib.sha256(manifest_uri.encode())
+            repo_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
             cache_folder = manifest.get_o3de_cache_folder()
             manifest_json_path = cache_folder / str(repo_sha256.hexdigest() + '.json')
         else:
@@ -273,7 +273,8 @@ def print_repos_data(repos_data: dict) -> int:
     print("Repos================================================")
     cache_folder = manifest.get_o3de_cache_folder()
     for repo_uri in repos_data:
-        repo_sha256 = hashlib.sha256(repo_uri.encode())
+        repo_uri_parsed = urllib.parse.urlparse(repo_uri)
+        repo_sha256 = hashlib.sha256(repo_uri_parsed.geturl().encode())
         cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
         if validation.valid_o3de_repo_json(cache_file):
             with cache_file.open('r') as s:
