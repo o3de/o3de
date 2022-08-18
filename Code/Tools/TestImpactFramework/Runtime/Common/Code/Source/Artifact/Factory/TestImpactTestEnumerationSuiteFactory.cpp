@@ -22,7 +22,12 @@ namespace TestImpact
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData)
         {
             // Keys for pertinent XML node and attribute names
-            constexpr const char* Keys[] = { "testsuites", "testsuite", "name", "testcase" };
+            constexpr const char* Keys[] = {
+                "testsuites",
+                "testsuite",
+                "name",
+                "testcase"
+            };
 
             enum
             {
@@ -67,11 +72,13 @@ namespace TestImpact
 
                     testSuites.emplace_back(AZStd::move(testSuite));
                 }
-            } catch (const std::exception& e)
+            }
+            catch (const std::exception& e)
             {
                 AZ_Error("TestEnumerationSuitesFactory", false, e.what());
                 throw ArtifactException(e.what());
-            } catch (...)
+            }
+            catch (...)
             {
                 throw ArtifactException("An unknown error occured parsing the XML data");
             }
@@ -143,7 +150,7 @@ namespace TestImpact
                             });
                         TestEnumerationSuite& currentTestSuite = *currentTestSuitePointer;
                         currentTestSuite.m_tests.emplace_back(TestEnumerationCase{ testName, true });
-                    }
+                    }   
 
                     // Update previous test fixture so that we can keep track of when test fixtures change
                     previousTestFixture = testFixture;
