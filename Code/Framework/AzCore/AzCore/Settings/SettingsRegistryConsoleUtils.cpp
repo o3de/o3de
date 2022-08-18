@@ -36,7 +36,7 @@ namespace AZ::SettingsRegistryConsoleUtils
             const auto setOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
                 R"(Successfully set value at path "%s" into the global settings registry)" "\n",
                 combinedKeyValueCommand.c_str());
-            AZ::Debug::Trace::Output("SettingsRegistry", setOutput.c_str());
+            AZ::Debug::Trace::Instance().Output("SettingsRegistry", setOutput.c_str());
         }
     }
 
@@ -56,7 +56,7 @@ namespace AZ::SettingsRegistryConsoleUtils
                 const auto removeOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
                     R"(Successfully removed value at path "%.*s" from the global settings registry)" "\n",
                     aznumeric_cast<int>(commandArg.size()), commandArg.data());
-                AZ::Debug::Trace::Output("SettingsRegistry", removeOutput.c_str());
+                AZ::Debug::Trace::Instance().Output("SettingsRegistry", removeOutput.c_str());
             }
         }
     }
@@ -89,7 +89,7 @@ namespace AZ::SettingsRegistryConsoleUtils
             }
         }
 
-        AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
+        AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
     }
 
     static void ConsoleDumpAllSettingsRegistryValues(SettingsRegistryInterface& settingsRegistry,
@@ -119,7 +119,7 @@ namespace AZ::SettingsRegistryConsoleUtils
             const auto mergeFileOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
                 R"(Merged json file "%.*s" anchored to json path "%s" into the global settings registry)" "\n",
                 AZ_STRING_ARG(filePath), jsonAnchorPath.c_str());
-            AZ::Debug::Trace::Output("SettingsRegistry", mergeFileOutput.c_str());
+            AZ::Debug::Trace::Instance().Output("SettingsRegistry", mergeFileOutput.c_str());
         }
     }
 
@@ -138,7 +138,7 @@ namespace AZ::SettingsRegistryConsoleUtils
             });
         }
 
-        AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
+        AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
     }
 
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryOriginTracker& originTracker, AZ::IConsole& azConsole)

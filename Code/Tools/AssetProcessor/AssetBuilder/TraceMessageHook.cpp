@@ -64,7 +64,7 @@ namespace AssetBuilder
         if (m_skipErrorsCount == 0)
         {
             CleanMessage(stdout, "E", message, true);
-            AZ::Debug::Trace::PrintCallstack("", 3); // Skip all the Trace.cpp function calls
+            AZ::Debug::Trace::Instance().PrintCallstack("", 3); // Skip all the Trace.cpp function calls
             std::fflush(stdout);
             ++m_totalErrorCount;
         }
@@ -124,7 +124,7 @@ namespace AssetBuilder
         CleanMessage(stdout, "E", message, true);
         ++m_totalErrorCount;
         AZ::Debug::Trace::HandleExceptions(false);
-        AZ::Debug::Trace::PrintCallstack("", 3); // Skip all the Trace.cpp function calls
+        AZ::Debug::Trace::Instance().PrintCallstack("", 3); // Skip all the Trace.cpp function calls
         // note that the above call ultimately results in a whole bunch of TracePrint/Outputs, which will end up in OnOutput below.
 
         std::fflush(stdout);
