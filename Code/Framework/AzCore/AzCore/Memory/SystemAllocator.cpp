@@ -200,14 +200,9 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::Allocate(
+    SystemAllocator::pointer_type SystemAllocator::allocate(
         size_type byteSize,
-        size_type alignment,
-        int flags,
-        const char* name,
-        const char* fileName,
-        int lineNum,
-        unsigned int suppressStackRecord)
+        size_type alignment)
     {
         if (byteSize == 0)
         {
@@ -218,14 +213,14 @@ namespace AZ
 
         byteSize = MemorySizeAdjustedUp(byteSize);
         SystemAllocator::pointer_type address =
-            m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+            m_schema->allocate(byteSize, alignment);
 
         if (address == nullptr)
         {
             // Free all memory we can and try again!
             AllocatorManager::Instance().GarbageCollect();
 
-            address = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord + 1);
+            address = m_schema->allocate(byteSize, alignment);
         }
 
         if (address == nullptr)
@@ -234,11 +229,11 @@ namespace AZ
         }
 
         AZ_Assert(
-            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize,
-            alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
+            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d!", byteSize,
+            alignment);
 
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
-        AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
+        AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, 1));
 
         return address;
     }
@@ -247,25 +242,25 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void SystemAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void SystemAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         byteSize = MemorySizeAdjustedUp(byteSize);
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
-        m_schema->DeAllocate(ptr, byteSize, alignment);
+        m_schema->deallocate(ptr, byteSize, alignment);
     }
 
     //=========================================================================
     // ReAllocate
     // [9/13/2011]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    SystemAllocator::pointer_type SystemAllocator::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-        pointer_type newAddress = m_schema->ReAllocate(ptr, newSize, newAlignment);
+        pointer_type newAddress = m_schema->reallocate(ptr, newSize, newAlignment);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
 

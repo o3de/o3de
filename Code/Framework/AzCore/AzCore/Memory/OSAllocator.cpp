@@ -62,12 +62,12 @@ namespace AZ
     // [9/2/2009]
     //=========================================================================
     OSAllocator::pointer_type
-    OSAllocator::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+    OSAllocator::allocate(size_type byteSize, size_type alignment)
     {
         OSAllocator::pointer_type address;
         if (m_custom)
         {
-            address = m_custom->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord);
+            address = m_custom->allocate(byteSize, alignment);
         }
         else
         {
@@ -78,7 +78,7 @@ namespace AZ
         {
             AZ_Printf("Memory", "======================================================\n");
             AZ_Printf("Memory", "OSAllocator run out of system memory!\nWe can't track the debug allocator, since it's used for tracking and pipes trought the OS... here are the other allocator status:\n");
-            OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum);
+            OnOutOfMemory(byteSize, alignment);
         }
 
         m_numAllocatedBytes += byteSize;
@@ -90,12 +90,12 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void OSAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void OSAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         (void)alignment;
         if (m_custom)
         {
-            m_custom->DeAllocate(ptr);
+            m_custom->deallocate(ptr);
         }
         else
         {

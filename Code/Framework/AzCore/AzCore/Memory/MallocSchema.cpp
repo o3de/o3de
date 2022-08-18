@@ -37,21 +37,10 @@ namespace AZ
     {
     }
 
-    MallocSchema::pointer_type MallocSchema::Allocate(
+    MallocSchema::pointer_type MallocSchema::allocate(
         size_type byteSize,
-        size_type alignment,
-        int flags,
-        const char* name,
-        const char* fileName,
-        int lineNum,
-        unsigned int suppressStackRecord)
+        size_type alignment)
     {
-        (void)flags;
-        (void)name;
-        (void)fileName;
-        (void)lineNum;
-        (void)suppressStackRecord;
-
         if (!byteSize)
         {
             return nullptr;
@@ -80,7 +69,7 @@ namespace AZ
         return result;
     }
 
-    void MallocSchema::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void MallocSchema::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         (void)byteSize;
         (void)alignment;
@@ -99,13 +88,13 @@ namespace AZ
         AZ_OS_FREE(freePtr);
     }
 
-    MallocSchema::pointer_type MallocSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    MallocSchema::pointer_type MallocSchema::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
-        void* newPtr = Allocate(newSize, newAlignment, 0);
+        void* newPtr = allocate(newSize, newAlignment);
         size_t oldSize = AllocationSize(ptr);
 
         memcpy(newPtr, ptr, AZStd::min(oldSize, newSize));
-        DeAllocate(ptr, 0, 0);
+        deallocate(ptr, 0, 0);
 
         return newPtr;
     }

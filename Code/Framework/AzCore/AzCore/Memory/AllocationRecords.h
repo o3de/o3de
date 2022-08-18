@@ -186,7 +186,7 @@ namespace AZ
             const char* GetAllocatorName() const                { return m_allocatorName; }
 
             // @{ Allocation tracking management - we assume this functions are called with the lock locked.
-            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount);
+            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             void    UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info);
             // the address of the variable will not change we are just updating the statistics.
             void    ResizeAllocation(void* address, size_t newSize);

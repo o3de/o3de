@@ -68,28 +68,27 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocatorSchema
         //---------------------------------------------------------------------
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = nullptr, const char* fileName = nullptr, int lineNum = 0, unsigned int suppressStackRecord = 0) override
+        pointer_type allocate(size_type byteSize, size_type alignment) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
-            pointer_type ptr = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord);
+            pointer_type ptr = m_schema->allocate(byteSize, alignment);
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
-                AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
+                AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, 1));
             }
 
             AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // conditional expression is constant
             if (ReportOutOfMemory && !ptr)
             AZ_POP_DISABLE_WARNING
             {
-                OnOutOfMemory(byteSize, alignment, flags, name, fileName, lineNum);
+                OnOutOfMemory(byteSize, alignment);
             }
 
             return ptr;
         }
 
-        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override
+        void deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
 
@@ -99,7 +98,7 @@ namespace AZ
                 AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             }
 
-            m_schema->DeAllocate(ptr, byteSize, alignment);
+            m_schema->deallocate(ptr, byteSize, alignment);
         }
 
         size_type Resize(pointer_type ptr, size_type newSize) override
@@ -117,7 +116,7 @@ namespace AZ
             return result;
         }
 
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
+        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
         {
             if (ProfileAllocations)
             {
@@ -131,7 +130,7 @@ namespace AZ
                 AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
             }
 
-            pointer_type newPtr = m_schema->ReAllocate(ptr, newSize, newAlignment);
+            pointer_type newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
 
             if (ProfileAllocations)
             {
@@ -143,7 +142,7 @@ namespace AZ
             if (ReportOutOfMemory && newSize && !newPtr)
             AZ_POP_DISABLE_WARNING
             {
-                OnOutOfMemory(newSize, newAlignment, 0, nullptr, nullptr, 0);
+                OnOutOfMemory(newSize, newAlignment);
             }
 
             return newPtr;

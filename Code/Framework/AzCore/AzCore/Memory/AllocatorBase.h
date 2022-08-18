@@ -70,7 +70,7 @@ namespace AZ
         void DisableRegistration();
 
         /// Records an allocation for profiling.
-        void ProfileAllocation(void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord);
+        void ProfileAllocation(void* ptr, size_t byteSize, size_t alignment, int suppressStackRecord);
 
         /// Records a deallocation for profiling.
         void ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info);
@@ -89,7 +89,7 @@ namespace AZ
         void ProfileResize(void* ptr, size_t newSize);
 
         /// User allocator should call this function when they run out of memory!
-        bool OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum);
+        bool OnOutOfMemory(size_t byteSize, size_t alignment);
 
     private:
         Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records

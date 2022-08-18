@@ -1491,7 +1491,7 @@ static void* LuaMemoryHook(void* userData, void* ptr, size_t osize, size_t nsize
     }
     else if (ptr == nullptr)
     {
-        return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT, 0, "Script", __FILE__, __LINE__, 1);
+        return allocator->Allocate(nsize, LUA_DEFAULT_ALIGNMENT);
     }
     else
     {
@@ -2338,12 +2338,12 @@ LUA_API const Node* lua_getDummyNode()
                     bool usedBackupAlloc = false;
                     if (backupAllocator != nullptr && sizeof(T) > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
-                        value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
+                        value.m_value = backupAllocator->allocate(sizeof(T), AZStd::alignment_of<T>::value);
                         usedBackupAlloc = true;
                     }
                     else
                     {
-                        value.m_value = tempAllocator.allocate(sizeof(T), AZStd::alignment_of<T>::value, 0);
+                        value.m_value = tempAllocator.allocate(sizeof(T), AZStd::alignment_of<T>::value);
                     }
                     memset(value.m_value, 0, sizeof(T));
                     return usedBackupAlloc;
@@ -2372,12 +2372,12 @@ LUA_API const Node* lua_getDummyNode()
                     bool usedBackupAlloc = false;
                     if (backupAllocator != nullptr && valueClass->m_size > AZStd::allocator_traits<decltype(tempAllocator)>::max_size(tempAllocator))
                     {
-                        value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment, 0);
+                        value.m_value = backupAllocator->allocate(valueClass->m_size, valueClass->m_alignment);
                         usedBackupAlloc = true;
                     }
                     else
                     {
-                        value.m_value = tempAllocator.allocate(valueClass->m_size, valueClass->m_alignment, 0);
+                        value.m_value = tempAllocator.allocate(valueClass->m_size, valueClass->m_alignment);
                     }
                     if (valueClass->m_defaultConstructor)
                     {

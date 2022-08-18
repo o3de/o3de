@@ -35,9 +35,9 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocatorSchema
         //---------------------------------------------------------------------
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
-        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        pointer_type allocate(size_type byteSize, size_type alignment) override;
+        void deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
         size_type Resize(pointer_type ptr, size_type newSize) override;
         size_type AllocationSize(pointer_type ptr) override;
 

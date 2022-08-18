@@ -62,10 +62,10 @@ namespace AZ
         bool Create(const Descriptor& desc);
         bool Destroy();
 
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord) override;
-        void DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
+        pointer_type allocate(size_type byteSize, size_type alignment) override;
+        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
         size_type Resize(pointer_type ptr, size_type newSize) override;
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
         size_type AllocationSize(pointer_type ptr) override;
 
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
@@ -108,10 +108,10 @@ namespace AZ
         bool Create(const Descriptor& desc);
         bool Destroy();
 
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord) override;
-        void DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
+        pointer_type allocate(size_type byteSize, size_type alignment) override;
+        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
         size_type Resize(pointer_type ptr, size_type newSize) override;
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
         size_type AllocationSize(pointer_type ptr) override;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;

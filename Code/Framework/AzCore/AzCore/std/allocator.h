@@ -41,7 +41,7 @@ namespace AZStd
      *  allocator(const allocator& rhs, const char* name);
      *  allocator& operator=(const allocator& rhs;
      *
-     *  pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0);
+     *  pointer_type allocate(size_type byteSize, size_type alignment);
      *  void         deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
      *  /// Tries to resize an existing memory chunck. Returns the resized memory block or 0 if resize is not supported.
      *  size_type    resize(pointer_type ptr, size_type newSize);
@@ -97,7 +97,7 @@ namespace AZStd
         AZ_FORCE_INLINE const char*  get_name() const                   { return m_name; }
         AZ_FORCE_INLINE void         set_name(const char* name)         { m_name = name; }
 
-        pointer_type    allocate(size_type byteSize, size_type alignment, int flags = 0);
+        pointer_type    allocate(size_type byteSize, size_type alignment);
         void            deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
         size_type       resize(pointer_type ptr, size_type newSize);
         // max_size actually returns the true maximum size of a single allocation
@@ -151,7 +151,7 @@ namespace AZStd
 
         // none of this functions are implemented we should get a link error if we use them!
         AZ_FORCE_INLINE allocator& operator=(const allocator& rhs);
-        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0);
+        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment);
         AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
         AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize);
 

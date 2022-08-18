@@ -46,7 +46,7 @@ namespace AZStd
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_allocator->get_allocated_size(); }
 
         AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)              { m_name = rhs.m_name; m_allocator = rhs.m_allocator; return *this; }
-        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0) { return m_allocator->allocate(byteSize, alignment, flags); }
+        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment) { return m_allocator->allocate(byteSize, alignment); }
 
         AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment) { m_allocator->deallocate(ptr, byteSize, alignment); }
 

@@ -25,7 +25,7 @@ namespace AZ
         using size_type = typename Base::size_type;
         using difference_type = typename Base::difference_type;
         
-        pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
+        pointer_type allocate(size_type byteSize, size_type alignment) override;
 
         // DeAllocate with file/line, to track when allocs were freed from Cry
         void DeAllocate(pointer_type ptr, const char* file, const int line, size_type byteSize = 0, size_type alignment = 0);
@@ -33,9 +33,9 @@ namespace AZ
         // Realloc with file/line, because Cry uses realloc(nullptr) and realloc(ptr, 0) to mimic malloc/free
         pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment, const char* file, const int line);
 
-        void DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        void deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
 
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
+        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
     };
 
     using StdLegacyAllocator = AZStdAlloc<LegacyAllocator>;

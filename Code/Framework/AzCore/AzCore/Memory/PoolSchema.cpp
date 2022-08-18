@@ -68,7 +68,7 @@ namespace AZ
         PoolSchemaImpl(const PoolSchema::Descriptor& desc);
         ~PoolSchemaImpl();
 
-        PoolSchema::pointer_type Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment, int flags = 0);
+        PoolSchema::pointer_type Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
         void DeAllocate(PoolSchema::pointer_type ptr);
         PoolSchema::size_type AllocationSize(PoolSchema::pointer_type ptr);
 
@@ -131,7 +131,7 @@ namespace AZ
             // We store the page struct at the end of the block
             char* memBlock;
             memBlock = reinterpret_cast<char*>(
-                m_pageAllocator->Allocate(m_pageSize, m_pageSize, 0, "AZSystem::PoolSchemaImpl::ConstructPage", __FILE__, __LINE__));
+                m_pageAllocator->Allocate(m_pageSize, m_pageSize));
             size_t pageDataSize = m_pageSize - sizeof(Page);
             Page* page = new (memBlock + pageDataSize) Page();
             page->SetupFreeList(elementSize, pageDataSize);
@@ -227,7 +227,7 @@ namespace AZ
             ThreadPoolSchema::SetThreadPoolData threadPoolSetter);
         ~ThreadPoolSchemaImpl();
 
-        ThreadPoolSchema::pointer_type Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment, int flags = 0);
+        ThreadPoolSchema::pointer_type Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
         void DeAllocate(ThreadPoolSchema::pointer_type ptr);
         ThreadPoolSchema::size_type AllocationSize(ThreadPoolSchema::pointer_type ptr);
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
@@ -258,7 +258,7 @@ namespace AZ
             // We store the page struct at the end of the block
             char* memBlock;
             memBlock = reinterpret_cast<char*>(
-                m_pageAllocator->Allocate(m_pageSize, m_pageSize, 0, "AZSystem::ThreadPoolSchema::ConstructPage", __FILE__, __LINE__));
+                m_pageAllocator->allocate(m_pageSize, m_pageSize));
             size_t pageDataSize = m_pageSize - sizeof(Page);
             Page* page = new (memBlock + pageDataSize) Page(m_threadPoolGetter());
             page->SetupFreeList(elementSize, pageDataSize);
@@ -274,7 +274,7 @@ namespace AZ
             // We store the page struct at the end of the block
             char* memBlock = reinterpret_cast<char*>(page) - m_pageSize + sizeof(Page);
             page->~Page(); // destroy the page
-            m_pageAllocator->DeAllocate(memBlock);
+            m_pageAllocator->deallocate(memBlock);
         }
 
         inline Page* PageFromAddress(void* address)
@@ -374,7 +374,7 @@ namespace AZ
         m_numBuckets = m_maxAllocationSize / m_minAllocationSize;
         AZ_Assert(m_numBuckets <= 0xffff, "You can't have more than 65535 number of buckets! We need to increase the index size!");
         m_buckets = reinterpret_cast<BucketType*>(
-            alloc->m_pageAllocator->Allocate(sizeof(BucketType) * m_numBuckets, AZStd::alignment_of<BucketType>::value));
+            alloc->m_pageAllocator->allocate(sizeof(BucketType) * m_numBuckets, alignof(BucketType)));
         for (size_t i = 0; i < m_numBuckets; ++i)
         {
             new (m_buckets + i) BucketType();
@@ -394,7 +394,7 @@ namespace AZ
         {
             m_buckets[i].~BucketType();
         }
-        m_allocator->m_pageAllocator->DeAllocate(m_buckets, sizeof(BucketType) * m_numBuckets);
+        m_allocator->m_pageAllocator->deallocate(m_buckets, sizeof(BucketType) * m_numBuckets);
     }
 
     //=========================================================================
@@ -641,20 +641,10 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchema::Allocate(
+    PoolSchema::pointer_type PoolSchema::allocate(
         size_type byteSize,
-        size_type alignment,
-        int flags,
-        const char* name,
-        const char* fileName,
-        int lineNum,
-        unsigned int suppressStackRecord)
+        size_type alignment)
     {
-        (void)flags;
-        (void)name;
-        (void)fileName;
-        (void)lineNum;
-        (void)suppressStackRecord;
         return m_impl->Allocate(byteSize, alignment);
     }
 
@@ -662,7 +652,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void PoolSchema::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void PoolSchema::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         (void)byteSize;
         (void)alignment;
@@ -684,7 +674,7 @@ namespace AZ
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    PoolSchema::pointer_type PoolSchema::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
@@ -766,7 +756,7 @@ namespace AZ
         {
             // We store the page struct at the end of the block
             char* memBlock = reinterpret_cast<char*>(m_pageAllocator->Allocate(
-                m_pageSize * m_numStaticPages, m_pageSize, 0, "AZSystem::PoolAllocation::Page static array", __FILE__, __LINE__));
+                m_pageSize * m_numStaticPages, m_pageSize));
             m_staticDataBlock = memBlock;
             size_t pageDataSize = m_pageSize - sizeof(Page);
             for (unsigned int i = 0; i < m_numStaticPages; ++i)
@@ -819,11 +809,10 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment, int flags)
+    PoolSchema::pointer_type PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't allocation from a different context/thread, use
         // ThreadPoolAllocator!");
-        (void)flags;
         void* address = m_allocator.Allocate(byteSize, alignment);
         return address;
     }
@@ -984,20 +973,10 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    ThreadPoolSchema::pointer_type ThreadPoolSchema::Allocate(
+    ThreadPoolSchema::pointer_type ThreadPoolSchema::allocate(
         size_type byteSize,
-        size_type alignment,
-        int flags,
-        const char* name,
-        const char* fileName,
-        int lineNum,
-        unsigned int suppressStackRecord)
+        size_type alignment)
     {
-        (void)flags;
-        (void)name;
-        (void)fileName;
-        (void)lineNum;
-        (void)suppressStackRecord;
         return m_impl->Allocate(byteSize, alignment);
     }
 
@@ -1005,7 +984,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void ThreadPoolSchema::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void ThreadPoolSchema::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         (void)byteSize;
         (void)alignment;
@@ -1027,7 +1006,7 @@ namespace AZ
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    ThreadPoolSchema::pointer_type ThreadPoolSchema::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    ThreadPoolSchema::pointer_type ThreadPoolSchema::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
@@ -1118,7 +1097,7 @@ namespace AZ
         {
             // We store the page struct at the end of the block
             char* memBlock = reinterpret_cast<char*>(m_pageAllocator->Allocate(
-                m_pageSize * m_numStaticPages, m_pageSize, 0, "AZSystem::ThreadPoolSchemaImpl::Page static array", __FILE__, __LINE__));
+                m_pageSize * m_numStaticPages, m_pageSize));
             m_staticDataBlock = memBlock;
             size_t pageDataSize = m_pageSize - sizeof(Page);
             for (unsigned int i = 0; i < m_numStaticPages; ++i)
@@ -1191,10 +1170,8 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchema::pointer_type ThreadPoolSchemaImpl::Allocate(
-        ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment, int flags)
+        ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment)
     {
-        (void)flags;
-
         ThreadPoolData* threadData = m_threadPoolGetter();
 
         if (threadData == nullptr)

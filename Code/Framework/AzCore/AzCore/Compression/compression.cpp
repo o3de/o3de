@@ -56,7 +56,7 @@ ZLib::~ZLib()
 void* ZLib::AllocateMem(void* userData, unsigned int items, unsigned int size)
 {
     IAllocator* allocator = reinterpret_cast<IAllocator*>(userData);
-    return allocator->Allocate(items * size, 4, 0, "ZLib", __FILE__, __LINE__);
+    return allocator->Allocate(items * size, 4);
 }
 
 //=========================================================================

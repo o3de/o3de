@@ -51,10 +51,10 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocatorSchema
-        pointer_type    Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
-        void            DeAllocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer_type    allocate(size_type byteSize, size_type alignment) override;
+        void            deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
         size_type       Resize(pointer_type ptr, size_type newSize) override { return m_custom ? m_custom->Resize(ptr, newSize) : 0; }
-        pointer_type    ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override     { return m_custom ? m_custom->ReAllocate(ptr, newSize, newAlignment) : NULL; }
+        pointer_type    reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override     { return m_custom ? m_custom->reallocate(ptr, newSize, newAlignment) : NULL; }
         size_type       AllocationSize(pointer_type ptr) override { return m_custom ? m_custom->AllocationSize(ptr) : 0; }
 
         size_type       NumAllocatedBytes() const override       { return m_custom ? m_custom->NumAllocatedBytes() : m_numAllocatedBytes; }

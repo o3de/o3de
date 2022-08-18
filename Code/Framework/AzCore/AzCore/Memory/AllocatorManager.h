@@ -40,7 +40,7 @@ namespace AZ
         AllocatorManager();
         ~AllocatorManager();
 
-        typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/, int/* flags*/, const char* /*name*/, const char* /*fileName*/, int lineNum /*=0*/)>    OutOfMemoryCBType;
+        typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/)>    OutOfMemoryCBType;
 
         static IAllocator* CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*));  // May be called at any time before shutdown
         static AllocatorManager& Instance();

@@ -97,9 +97,6 @@ namespace AZ::Debug
         void* address,
         size_t byteSize,
         size_t alignment,
-        const char* name,
-        const char* fileName,
-        int lineNum,
         unsigned int stackSuppressCount)
     {
         (void)stackSuppressCount;
@@ -141,39 +138,15 @@ namespace AZ::Debug
         Debug::AllocationInfo& ai = iterBool.first->second;
         ai.m_byteSize = byteSize;
         ai.m_alignment = static_cast<unsigned int>(alignment);
-        if ((m_saveNames || m_mode == RECORD_FULL) && name && fileName)
-        {
-            // In RECORD_FULL mode or when specifically enabled in app descriptor with
-            // m_allocationRecordsSaveNames, we allocate our own memory to save off name and fileName.
-            // When testing for memory leaks, on process shutdown AllocationRecords::~AllocationRecords
-            // gets called to enumerate the remaining (leaked) allocations. Unfortunately, any names
-            // referenced in dynamic module memory whose modules are unloaded won't be valid
-            // references anymore and we won't get useful information from the enumeration print.
-            // This code block ensures we keep our name/fileName valid for when we need it.
-            const size_t nameLength = strlen(name);
-            const size_t fileNameLength = strlen(fileName);
-            const size_t totalLength = nameLength + fileNameLength + 2; // + 2 for terminating null characters
-            ai.m_namesBlock = m_records.get_allocator().allocate(totalLength, 1);
-            ai.m_namesBlockSize = totalLength;
-            char* savedName = reinterpret_cast<char*>(ai.m_namesBlock);
-            char* savedFileName = savedName + nameLength + 1;
-            memcpy(reinterpret_cast<void*>(savedName), reinterpret_cast<const void*>(name), nameLength + 1);
-            memcpy(reinterpret_cast<void*>(savedFileName), reinterpret_cast<const void*>(fileName), fileNameLength + 1);
-            ai.m_name = savedName;
-            ai.m_fileName = savedFileName;
-        }
-        else
-        {
-            ai.m_name = name;
-            ai.m_fileName = fileName;
-            ai.m_namesBlock = nullptr;
-            ai.m_namesBlockSize = 0;
-        }
-        ai.m_lineNum = lineNum;
+        ai.m_name = nullptr;
+        ai.m_fileName = nullptr;
+        ai.m_namesBlock = nullptr;
+        ai.m_namesBlockSize = 0;
+        ai.m_lineNum = 0;
         ai.m_timeStamp = AZStd::GetTimeNowMicroSecond();
 
         // if we don't have a fileName,lineNum record the stack or if the user requested it.
-        if ((fileName == nullptr && m_mode == RECORD_STACK_IF_NO_FILE_LINE) || m_mode == RECORD_FULL)
+        if (m_mode == RECORD_STACK_IF_NO_FILE_LINE || m_mode == RECORD_FULL)
         {
             ai.m_stackFrames = m_numStackLevels ? reinterpret_cast<AZ::Debug::StackFrame*>(m_records.get_allocator().allocate(
                                                       sizeof(AZ::Debug::StackFrame) * m_numStackLevels, 1))

@@ -1112,7 +1112,7 @@ namespace AZStd
         AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */, size_type expandedSize)
         {
             size_type byteSize = (expandedSize == 0) ? (sizeof(node_type) * (m_end - m_start)) : expandedSize;
-            m_allocator.deallocate(m_start, byteSize, alignment_of<node_type>::value);
+            m_allocator.deallocate(m_start, byteSize, alignof(node_type));
         }
         //#pragma endregion
 

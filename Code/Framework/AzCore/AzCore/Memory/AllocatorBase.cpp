@@ -251,14 +251,14 @@ namespace AZ
     }
 
     void AllocatorBase::ProfileAllocation(
-        void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
+        void* ptr, size_t byteSize, size_t alignment, int suppressStackRecord)
     {
         if (m_isProfilingActive)
         {
             auto records = GetRecords();
             if (records)
             {
-                records->RegisterAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1);
+                records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
             }
         }
 
@@ -292,7 +292,7 @@ namespace AZ
         {
             Debug::AllocationInfo info;
             ProfileDeallocation(ptr, 0, 0, &info);
-            ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
+            ProfileAllocation(newPtr, newSize, newAlignment, 0);
         }
 #if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
@@ -320,11 +320,11 @@ namespace AZ
 #endif
     }
 
-    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum)
+    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment)
     {
         if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
         {
-            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment, flags, name, fileName, lineNum);
+            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment);
             return true;
         }
         return false;

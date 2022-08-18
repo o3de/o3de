@@ -10,7 +10,7 @@
 
 namespace AZ
 {
-    LegacyAllocator::pointer_type LegacyAllocator::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+    LegacyAllocator::pointer_type LegacyAllocator::allocate(size_type byteSize, size_type alignment)
     {
         if (alignment == 0)
         {
@@ -19,9 +19,9 @@ namespace AZ
             alignment = sizeof(void*) * 2; 
         }
 
-        pointer_type ptr = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord);
+        pointer_type ptr = m_schema->allocate(byteSize, alignment);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
-        AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
+        AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, 1));
         AZ_Assert(ptr || byteSize == 0, "OOM - Failed to allocate %zu bytes from LegacyAllocator", byteSize);
         return ptr;
     }
@@ -53,13 +53,13 @@ namespace AZ
         return newPtr;
     }
 
-    void LegacyAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void LegacyAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
     {
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, 0, 0, nullptr));
-        Base::DeAllocate(ptr, byteSize, alignment);
+        Base::deallocate(ptr, byteSize, alignment);
     }
 
-    LegacyAllocator::pointer_type LegacyAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    LegacyAllocator::pointer_type LegacyAllocator::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
     {
         if (newAlignment == 0)
         {
@@ -69,7 +69,7 @@ namespace AZ
         }
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-        pointer_type newPtr = Base::ReAllocate(ptr, newSize, newAlignment);
+        pointer_type newPtr = Base::reallocate(ptr, newSize, newAlignment);
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
         AZ_Assert(newPtr || newSize == 0, "OOM - Failed to reallocate %zu bytes from LegacyAllocator", newSize);
         return newPtr;

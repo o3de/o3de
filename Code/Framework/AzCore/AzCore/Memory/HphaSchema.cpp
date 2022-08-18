@@ -2293,7 +2293,7 @@ namespace AZ
     {
         if (m_subAllocator)
         {
-            return m_subAllocator->Allocate(size, align, 0, "HphaSchema sub allocation", __FILE__, __LINE__);
+            return m_subAllocator->Allocate(size, align);
         }
         AZ_Assert(align % OS_VIRTUAL_PAGE_SIZE == 0, "Invalid allocation/page alignment %d should be a multiple of %d!", size, OS_VIRTUAL_PAGE_SIZE);
         return AZ_OS_MALLOC(size, align);
@@ -2574,7 +2574,7 @@ namespace AZ
             if (m_desc.m_fixedMemoryBlock == nullptr)
             {
                 AZ_Assert(m_desc.m_subAllocator != nullptr, "Sub allocator must point to a valid allocator if m_fixedMemoryBlock is NOT allocated (NULL)!");
-                m_desc.m_fixedMemoryBlock = m_desc.m_subAllocator->Allocate(m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment, 0, "HphaSchema", __FILE__, __LINE__, 1);
+                m_desc.m_fixedMemoryBlock = m_desc.m_subAllocator->Allocate(m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment);
                 AZ_Assert(m_desc.m_fixedMemoryBlock != nullptr, "Failed to allocate %d bytes!", m_desc.m_fixedMemoryBlockByteSize);
                 m_ownMemoryBlock = true;
             }
@@ -2612,14 +2612,9 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::Allocate(size_type byteSize, size_type alignment, int flags, const char* name, const char* fileName, int lineNum, unsigned int suppressStackRecord)
+    auto HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
         -> pointer_type
     {
-        (void)flags;
-        (void)name;
-        (void)fileName;
-        (void)lineNum;
-        (void)suppressStackRecord;
         pointer_type address = m_allocator->alloc(byteSize, alignment);
         if (address == nullptr)
         {
@@ -2634,7 +2629,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    auto HphaSchemaBase<DebugAllocator>::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
         -> pointer_type
     {
         pointer_type address = m_allocator->realloc(ptr, newSize, newAlignment);
@@ -2651,7 +2646,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    void HphaSchemaBase<DebugAllocator>::DeAllocate(pointer_type ptr, size_type size, size_type alignment)
+    void HphaSchemaBase<DebugAllocator>::deallocate(pointer_type ptr, size_type size, size_type alignment)
     {
         if (ptr == nullptr)
         {

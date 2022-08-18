@@ -43,7 +43,7 @@ static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing i
 IAllocator* AllocatorManager::CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*))
 {
     static MallocSchema mallocSchema;
-    void* mem = mallocSchema.Allocate(size, alignment, 0);
+    void* mem = mallocSchema.Allocate(size, alignment);
     IAllocator* result = creationFn(mem);
 
     return result;
