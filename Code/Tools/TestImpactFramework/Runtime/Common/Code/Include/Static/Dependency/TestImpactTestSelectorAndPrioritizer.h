@@ -359,11 +359,13 @@ namespace TestImpact
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
 
+        // Lambda to compare our pairs for sorting by distance when an optional is involved
         auto compareBySecondOpt = [&](auto& left, auto& right) -> bool
         {
             return left.second.value_or(SIZE_MAX) < right.second.value_or(SIZE_MAX);
         };
 
+        // Lambda to compare our pairs for sorting by distance
         auto compareBySecond = [&](auto& left, auto& right) -> bool
         {
             return left.second < right.second;
@@ -377,14 +379,9 @@ namespace TestImpact
         switch (testSelectionStrategy)
         {
             case Policy::TestPrioritization::DependencyLocality:
-                
+                // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the prroduction targets in productionTargets
                 for (const auto& [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
                 {
-
-                    for (const auto& productionTarget : productionTargets)
-                    {
-                        AZ_Printf(productionTarget->GetName().c_str(), "\n");
-                    }
                     AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
                     buildGraph.WalkBuildDependencies(buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
                         [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
@@ -396,10 +393,12 @@ namespace TestImpact
                             return BuildGraphVertexVisitResult::Continue;
                         });
 
+                    // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map.
+                    // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance and the test targets priority will be lower.
                     if (!targetDistancePairs.empty()) {
                         AZStd::sort(targetDistancePairs.begin(), targetDistancePairs.end(), compareBySecond);
-                        AZ_Printf(testTarget->GetName().c_str(), "TestTarget\n");
-                        AZ_Printf(targetDistancePairs[0].first.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", targetDistancePairs[0].second);
+                        //AZ_Printf(testTarget->GetName().c_str(), "TestTarget\n");
+                        //AZ_Printf(targetDistancePairs[0].first.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", targetDistancePairs[0].second);
                         testTargetDistancePairs.emplace_back(testTarget, targetDistancePairs[0].second);
                     }
                     else
@@ -407,10 +406,12 @@ namespace TestImpact
                         testTargetDistancePairs.emplace_back(testTarget);
                     }
                 }
-                
+
+                // Sort our pairs by distance and put our test targets into the vector in order of distance(closest first)
                 AZStd::sort(testTargetDistancePairs.begin(), testTargetDistancePairs.end(), compareBySecondOpt);
                 for (const auto& [testTarget, distance] : testTargetDistancePairs)
                 {
+                    AZ_Printf(testTarget.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", distance);
                     selectedTestTargets.push_back(testTarget.GetTestTarget());
                 }
                 break;
