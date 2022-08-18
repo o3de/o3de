@@ -22,6 +22,7 @@
 #include <Atom/RHI.Reflect/RenderStates.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/Query.h>
