@@ -48,6 +48,7 @@ set(FILES
     Source/Editor/ObjectEditorCard.cpp
     Source/Editor/ObjectEditorCardPool.h
     Source/Editor/ObjectEditorCardPool.cpp
+    Source/Editor/Picking.h
     Source/Editor/QtMetaTypes.h
     Source/Editor/ReselectingTreeView.cpp
     Source/Editor/ReselectingTreeView.h
@@ -102,6 +103,8 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsPicking.h
+    Source/Editor/Plugins/Ragdoll/PhysicsPicking.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h

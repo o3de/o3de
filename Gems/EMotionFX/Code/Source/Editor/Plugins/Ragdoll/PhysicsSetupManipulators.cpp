@@ -39,4 +39,20 @@ namespace EMotionFX
     {
         m_viewportId = viewportId;
     }
+
+    void PhysicsSetupManipulatorsNull::Setup([[maybe_unused]] const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    {
+    }
+
+    void PhysicsSetupManipulatorsNull::Refresh()
+    {
+    }
+
+    void PhysicsSetupManipulatorsNull::Teardown()
+    {
+    }
+
+    void PhysicsSetupManipulatorsNull::ResetValues()
+    {
+    }
 } // namespace EMotionFX
