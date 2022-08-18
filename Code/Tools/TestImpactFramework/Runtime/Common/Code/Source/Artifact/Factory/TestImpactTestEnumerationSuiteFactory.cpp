@@ -129,18 +129,18 @@ namespace TestImpact
                     // Fetch or create the vector for this script
                     AZStd::vector<TestEnumerationSuite>& suitesForThisScript = testSuiteMap[absoluteScriptPath];
 
-                    // If we're not working with the same fixture as our prevous iteration, or our suites vector is empty, create a test
-                    // suite, add the current test case to it, and add the suite to our vector
                     if (previousTestFixture != testFixture || suitesForThisScript.empty())
                     {
+                        // If we're not working with the same fixture as our prevous iteration, or our suites vector is empty, create a test
+                        // suite, add the current test case to it, and add the suite to our vector
                         TestEnumerationSuite currentTestSuite =
                             TestEnumerationSuite{ testFixture, true, AZStd::vector<TestEnumerationCase>() };
                         currentTestSuite.m_tests.emplace_back(TestEnumerationCase{ testName, true });
                         suitesForThisScript.push_back(currentTestSuite);
                     }
-                    // Else, find the test suite in our vector, get the reference to it and add our current test case to it
                     else
                     {
+                        // Else, find the test suite in our vector, get the reference to it and add our current test case to it
                         TestEnumerationSuite* currentTestSuitePointer = AZStd::find_if(
                             suitesForThisScript.begin(),
                             suitesForThisScript.end(),
