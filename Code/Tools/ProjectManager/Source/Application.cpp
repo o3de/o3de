@@ -18,7 +18,6 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <ProjectManager_Traits_Platform.h>
 
-
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>

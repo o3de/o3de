@@ -123,7 +123,6 @@ namespace O3DE::ProjectManager
         m_requirementsContentLabel->setWordWrap(true);
         m_requirementsContentLabel->setAlignment(Qt::AlignLeft);
         m_requirementsContentLabel->setFixedWidth(350);
-        m_requirementsContentLabel->setText(tr("Test Requirements"));
         extraInfoGridLayout->addWidget(m_requirementsContentLabel, 1, 0);
 
         m_licensesContentLabel = new TextOverflowLabel(tr("Licenses"));
