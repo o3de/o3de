@@ -1479,4 +1479,18 @@ inline void CryLogAlways(const char* format, ...)
     }
 }
 
+//! Writes to CLog via a callback function
+//! Any formatting is the responsiblity of the callback function
+//! The callback function should write to the supplied stream argument
+inline void CryOutputToCallback(ILog::ELogType logType, const ILog::LogWriteCallback& messageCallback)
+{
+    // writes directly to the log without formatting
+    // This is able to bypase the format limits of 4096 + 32 characters for output
+    if (gEnv && gEnv->pLog)
+    {
+        gEnv->pLog->LogWithCallback(logType, messageCallback);
+    }
+}
+
+
 #endif // EXCLUDE_NORMAL_LOG
