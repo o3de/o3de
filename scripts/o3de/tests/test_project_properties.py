@@ -10,6 +10,7 @@ import json
 import pytest
 import pathlib
 from unittest.mock import patch
+
 from o3de import project_properties
 
 
@@ -54,6 +55,7 @@ class TestEditProjectProperties:
                               project_display, project_summary, project_icon, project_version, \
                               add_tags, delete_tags, replace_tags, expected_tags, \
                               add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names, \
+                              engine_name, \
                               add_compatible_engines, delete_compatible_engines, replace_compatible_engines, \
                               expected_compatible_engines, expected_result",  [
         pytest.param(pathlib.PurePath('E:/TestProject'),
@@ -61,6 +63,7 @@ class TestEditProjectProperties:
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'NewEngineName',
                     'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
                     0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
@@ -68,6 +71,7 @@ class TestEditProjectProperties:
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'o3de-sdk',
                     'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
                     0),
         pytest.param(pathlib.PurePath('D:/TestProject'),
@@ -75,6 +79,7 @@ class TestEditProjectProperties:
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'o3de-install',
                     # removal uses exact matching, it doesn't support partial matches 
                     None, 'a>=0.1 b==1.0', None, ['b==1.0,==2.0'],
                     0),
@@ -83,6 +88,7 @@ class TestEditProjectProperties:
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    None,
                     None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
                     1),
         pytest.param('', # invalid path
@@ -90,6 +96,7 @@ class TestEditProjectProperties:
                     'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     ['GemA','GemB'], None, ['GemC'], ['GemC'],
+                    None,
                     None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
                     1)
         ]
@@ -98,6 +105,7 @@ class TestEditProjectProperties:
                                      project_display, project_summary, project_icon, project_version, 
                                      add_tags, delete_tags, replace_tags, expected_tags, expected_result,
                                      add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names,
+                                     engine_name,
                                      add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                      expected_compatible_engines):
 
@@ -117,6 +125,7 @@ class TestEditProjectProperties:
                                                            project_origin, project_display, project_summary, project_icon,
                                                            add_tags, delete_tags, replace_tags,
                                                            add_gem_names, delete_gem_names, replace_gem_names,
+                                                           engine_name,
                                                            add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                                            project_version)
             assert result == expected_result
@@ -129,6 +138,9 @@ class TestEditProjectProperties:
                 assert self.project_json.data.get('summary', '') == project_summary
                 assert self.project_json.data.get('icon_path', '') == project_icon
                 assert self.project_json.data.get('version', '') == project_version
+
+                if engine_name:
+                    assert self.project_json.data.get('engine', '') == engine_name
 
                 assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
                 assert set(self.project_json.data.get('gem_names', [])) == set(expected_gem_names)

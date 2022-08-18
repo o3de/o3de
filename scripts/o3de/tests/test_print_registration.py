@@ -8,7 +8,6 @@
 
 import argparse
 import json
-import logging
 import pytest
 import pathlib
 from unittest.mock import patch

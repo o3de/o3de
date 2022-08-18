@@ -7,7 +7,6 @@
 #
 
 import json
-
 import pytest
 import pathlib
 from unittest.mock import patch
