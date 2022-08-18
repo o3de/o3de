@@ -1228,7 +1228,7 @@ namespace AZ
                 }
                 for (size_t i = 0; i < lhs.m_colorCustomNames.size(); ++i)
                 {
-                    if (lhs.m_colorCustomNames[i] != rhs.m_uvCustomNames[i])
+                    if (lhs.m_colorCustomNames[i] != rhs.m_colorCustomNames[i])
                     {
                         namesMatch = false;
                         AZStd::string errorMessage = AZStd::string::format(
