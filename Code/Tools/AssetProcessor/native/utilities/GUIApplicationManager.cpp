@@ -475,13 +475,13 @@ bool GUIApplicationManager::OnAssert(const char* message)
 
     // Asserts should be severe enough for data corruption,
     // so the process should quit to avoid that happening for users.
-    if (!AZ::Debug::Trace::IsDebuggerPresent())
+    if (!AZ::Debug::Trace::Instance().IsDebuggerPresent())
     {
         QuitRequested();
         return true;
     }
 
-    AZ::Debug::Trace::Break();
+    AZ::Debug::Trace::Instance().Break();
     return true;
 }
 

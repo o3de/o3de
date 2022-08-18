@@ -21,7 +21,7 @@ class PersistentStorageLocal(PersistentStorage):
     HISTORIC_KEY = "historic"
     DATA_KEY = "data"
 
-    def __init__(self, config: str, suite: str, commit: str):
+    def __init__(self, config: str, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, historic_workspace: str, historic_data_file_path: str):
         """
         Initializes the persistent storage with any local historic data available.
 
@@ -30,8 +30,8 @@ class PersistentStorageLocal(PersistentStorage):
         @param commit: The commit hash for this build.
         """
 
-        super().__init__(config, suite, commit)
-        self._retrieve_historic_data(config)
+        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path)
+        self._retrieve_historic_data(config, historic_workspace, historic_data_file_path)
 
     def _store_historic_data(self, historic_data_json: str):
         """
@@ -48,12 +48,12 @@ class PersistentStorageLocal(PersistentStorage):
             logger.error(
                 f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
 
-    def _retrieve_historic_data(self, config: dict):
+    def _retrieve_historic_data(self, config: dict, historic_workspace: str, historic_data_file_path: str):
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
-            self._historic_workspace = pathlib.Path(config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.HISTORIC_KEY][self.ROOT_KEY])
+            self._historic_workspace = pathlib.Path(historic_workspace)
             self._historic_workspace = self._historic_workspace.joinpath(pathlib.Path(self._suite))
-            historic_data_file = pathlib.Path(config[self.COMMON_CONFIG_KEY][self.WORKSPACE_KEY][self.HISTORIC_KEY][self.RELATIVE_PATHS_KEY][self.DATA_KEY])
+            historic_data_file = pathlib.Path(historic_data_file_path)
             
             # Attempt to unpack the local historic data file
             self._historic_data_file = self._historic_workspace.joinpath(

@@ -51,7 +51,7 @@ namespace EMotionFX::Pipeline::Behavior
                 // Select the first matching joint in the default name list.
                 if (AzFramework::StringFunc::Find(it->GetName(), defaultJoint) != AZStd::string::npos)
                 {
-                    Rule::RootMotionExtractionData data = rootMotionExtractionRule->GetData();
+                    RootMotionExtractionData data = rootMotionExtractionRule->GetData();
                     // Set the sample joint name to the 'path' which is unique.
                     data.m_sampleJoint = it->GetPath();
                     rootMotionExtractionRule->SetData(data);

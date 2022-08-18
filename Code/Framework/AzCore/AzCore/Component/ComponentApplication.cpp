@@ -41,6 +41,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Module/Module.h>
@@ -198,14 +199,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project settings when the project path is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
 
             AZ::IO::FixedMaxPath newProjectPath;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectPathKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectPath.Native(), projectPathKey) && newProjectPath != m_oldProjectPath)
             {
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
@@ -231,14 +232,14 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the project specialization when the project name is set
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
             const auto projectNameKey = FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey) + "/project_name";
 
             FixedValueString newProjectName;
-            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, path)
+            if (SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(projectNameKey, notifyEventArgs.m_jsonKeyPath)
                 && m_registry.Get(newProjectName, projectNameKey) && newProjectName != m_oldProjectName)
             {
                 // Add the project_name as a specialization for loading the build system dependency .setreg files
@@ -267,10 +268,10 @@ namespace AZ
         {
         }
 
-        void operator()(AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             // Update the ComponentApplication CommandLine instance when the command line settings are merged into the Settings Registry
-            if (path == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
+            if (notifyEventArgs.m_jsonKeyPath == AZ::SettingsRegistryMergeUtils::CommandLineValueChangedKey)
             {
                 AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(m_registry, m_commandLine);
             }
@@ -470,6 +471,14 @@ namespace AZ
             SettingsRegistry::Register(m_settingsRegistry.get());
         }
 
+        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
+
+        // Register the Settings Registry Origin Tracker with the AZ Interface system
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == nullptr)
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Register(m_settingsRegistryOriginTracker.get());
+        }
+
         // Add the Command Line arguments into the SettingsRegistry
         SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);
 
@@ -516,6 +525,7 @@ namespace AZ
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
             m_settingsRegistryConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistry, *m_console);
+            m_settingsRegistryOriginTrackerConsoleFunctors = AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_settingsRegistryOriginTracker, *m_console);
             ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "ConsoleAvailable", R"({})");
         }
     }
@@ -552,6 +562,13 @@ namespace AZ
         m_console.reset();
 
         m_moduleManager.reset();
+
+        // Unregister the global settings registry origin tracker if this application owns is
+        if (AZ::Interface<AZ::SettingsRegistryOriginTracker>::Get() == m_settingsRegistryOriginTracker.get())
+        {
+            AZ::Interface<AZ::SettingsRegistryOriginTracker>::Unregister(m_settingsRegistryOriginTracker.get());
+        }
+        m_settingsRegistryOriginTracker.reset();
         // Unregister the global Settings Registry if it is owned by this application instance
         if (AZ::SettingsRegistry::Get() == m_settingsRegistry.get())
         {

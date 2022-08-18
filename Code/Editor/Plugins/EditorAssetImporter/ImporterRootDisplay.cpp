@@ -15,6 +15,10 @@
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzQtComponents/Components/Widgets/Text.h>
+
+#include <QDir>
+#include <QFileInfo>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
@@ -27,6 +31,19 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->m_updateButton->setEnabled(false);
     ui->m_updateButton->setProperty("class", "Primary");
+    
+    ui->locationLabel->setVisible(false);
+    ui->nameLabel->setVisible(false);
+
+    ui->headerFrame->setVisible(false);
+
+    ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
+
+    AzQtComponents::Text::addTitleStyle(ui->m_filePathText);
+    AzQtComponents::Text::addTitleStyle(ui->m_fullPathText);
+    
+    AzQtComponents::Text::addSubtitleStyle(ui->locationLabel);
+    AzQtComponents::Text::addSubtitleStyle(ui->nameLabel);
 
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
 
@@ -46,7 +63,9 @@ AZ::SceneAPI::UI::ManifestWidget* ImporterRootDisplay::GetManifestWidget()
 
 void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
-    ui->m_filePathText->setText(headerText);
+    QFileInfo fileInfo(headerText);
+    ui->m_filePathText->setText(fileInfo.fileName());
+    ui->m_fullPathText->setText(QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator()));
 }
 
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
@@ -59,6 +78,9 @@ void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd
     }
 
     SetSceneHeaderText(headerText);
+    ui->locationLabel->setVisible(true);
+    ui->nameLabel->setVisible(true);
+    ui->headerFrame->setVisible(true);
 
     HandleSceneWasReset(scene);
 
