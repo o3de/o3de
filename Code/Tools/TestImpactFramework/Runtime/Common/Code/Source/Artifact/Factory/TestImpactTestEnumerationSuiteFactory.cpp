@@ -96,21 +96,21 @@ namespace TestImpact
             size_t startLine = 0;
             size_t endLine = 0;
 
-            enum MatchEntries
-            {
-                FullMatch,
-                ScriptPath,
-                TestFixture,
-                TestName,
-                NumMatches
-            };
-            
             AZStd::vector<ScriptNameTestSuitePair> pairs;
             AZStd::map<AZStd::string, AZStd::vector<TestEnumerationSuite>> testSuiteMap;
             AZStd::string previousTestFixture;
 
             while ((startLine = testEnumerationData.find_first_not_of('\n', endLine)) != AZStd::string::npos)
             {
+                enum MatchEntries
+                {
+                    FullMatch,
+                    ScriptPath,
+                    TestFixture,
+                    TestName,
+                    NumMatches
+                };
+
                 endLine = testEnumerationData.find('\n', startLine);
                 AZStd::string curLine = testEnumerationData.substr(startLine, endLine - startLine);
 
@@ -122,7 +122,10 @@ namespace TestImpact
                 AZStd::smatch matchResults;
                 if (AZStd::regex_search(curLine, matchResults, testNamePattern))
                 {
-                    AZ_TestImpact_Eval(matchResults.size() == NumMatches, ArtifactException, "Error, TestSuite match results did not equal expected number of capture groups");
+                    AZ_TestImpact_Eval(
+                        matchResults.size() == NumMatches,
+                        ArtifactException,
+                        "Error, TestSuite match results did not equal expected number of capture groups");
                     AZStd::string absoluteScriptPath = matchResults[ScriptPath];
                     AZStd::string testFixture = matchResults[TestFixture];
                     AZStd::string testName = matchResults[TestName];
