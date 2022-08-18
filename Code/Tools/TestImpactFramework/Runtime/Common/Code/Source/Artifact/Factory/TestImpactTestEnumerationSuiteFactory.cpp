@@ -98,7 +98,7 @@ namespace TestImpact
 
             enum MatchEntries
             {
-                FullLine,
+                FullMatch,
                 ScriptPath,
                 TestFixture,
                 TestName,
