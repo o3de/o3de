@@ -595,6 +595,12 @@ namespace AZ::Render
 
     void AtomActorInstance::RegisterActor()
     {
+        if (!m_skinnedMeshInstance)
+        {
+            AZ_Error("AtomActorInstance", m_skinnedMeshInstance, "SkinnedMeshInstance must be created before register this actor.");
+            return;
+        }
+        
         MaterialAssignmentMap materials;
         MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);

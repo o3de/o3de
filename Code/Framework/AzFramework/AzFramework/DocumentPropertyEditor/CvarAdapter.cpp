@@ -107,7 +107,7 @@ namespace AZ::DocumentPropertyEditor
                         {
                             newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
                         }
-                        (*functor)(ConsoleCommandContainer(newValue));
+                        (*functor)(ConsoleCommandContainer(AZStd::from_range, newValue));
                         m_adapter->OnContentsChanged(path, value);
                     });
                 builder.EndPropertyEditor();

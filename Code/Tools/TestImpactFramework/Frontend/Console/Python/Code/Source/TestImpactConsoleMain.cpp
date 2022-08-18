@@ -7,17 +7,15 @@
  */
 
 #include <TestImpactFramework/TestImpactConsoleMain.h>
-#include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactChangeListException.h>
 #include <TestImpactFramework/TestImpactChangeListSerializer.h>
 #include <TestImpactFramework/TestImpactConfigurationException.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/Python/TestImpactPythonRuntime.h>
 
+#include <TestImpactConsoleUtils.h>
 #include <TestImpactPythonCommandLineOptions.h>
 #include <TestImpactPythonRuntimeConfigurationFactory.h>
-#include <TestImpactCommandLineOptionsException.h>
-#include <TestImpactConsoleUtils.h>
 
 namespace TestImpact::Console
 {
@@ -68,35 +66,53 @@ namespace TestImpact::Console
             {
             case TestSequenceType::Regular:
             {
-                std::cout << "TestSequenceType::Regular" << std::endl;
-                break;
+                return ConsumeSequenceReportAndGetReturnCode(
+                    runtime.RegularTestSequence(
+                        options.GetTestTargetTimeout(),
+                        options.GetGlobalTimeout(),
+                        TestSequenceStartCallback,
+                        RegularTestSequenceCompleteCallback,
+                        TestRunCompleteCallback),
+                    options);
             }
             case TestSequenceType::Seed:
             {
-                std::cout << "TestSequenceType::Seed" << std::endl;
-                break;
+                return ConsumeSequenceReportAndGetReturnCode(
+                    runtime.SeededTestSequence(
+                        options.GetTestTargetTimeout(),
+                        options.GetGlobalTimeout(),
+                        TestSequenceStartCallback,
+                        SeedTestSequenceCompleteCallback,
+                        TestRunCompleteCallback),
+                    options);
             }
             case TestSequenceType::ImpactAnalysisNoWrite:
-            {
-                std::cout << "TestSequenceType::ImpactAnalysisNoWrite" << std::endl;
-                break;
-            }
             case TestSequenceType::ImpactAnalysis:
             {
-                std::cout << "TestSequenceType::ImpactAnalysis" << std::endl;
-                break;
+                return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
             }
             case TestSequenceType::ImpactAnalysisOrSeed:
             {
-                std::cout << "TestSequenceType::ImpactAnalysisOrSeed" << std::endl;
-                break;
+                if (runtime.HasImpactAnalysisData())
+                {
+                    return WrappedImpactAnalysisTestSequence(options, runtime, changeList);
+                }
+                else
+                {
+                    return ConsumeSequenceReportAndGetReturnCode(
+                        runtime.SeededTestSequence(
+                            options.GetTestTargetTimeout(),
+                            options.GetGlobalTimeout(),
+                            TestSequenceStartCallback,
+                            SeedTestSequenceCompleteCallback,
+                            TestRunCompleteCallback),
+                        options);
+                }
             }
             default:
                 std::cout << "Unexpected TestSequenceType value: " << static_cast<size_t>(type) << std::endl;
                 return ReturnCode::UnknownError;
             }
-
-            return ReturnCode::Success;
         }
         catch (const CommandLineOptionsException& e)
         {

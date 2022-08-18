@@ -22,7 +22,7 @@ namespace TestImpact
     //! @param path The path to the file to read the contents of.
     //! @returns The contents of the file.
     template<typename ExceptionType>
-    AZStd::string ReadFileContents(const RepoPath& path)
+    [[nodiscard]] AZStd::string ReadFileContents(const RepoPath& path)
     {
         const auto fileSize = AZ::IO::SystemFile::Length(path.c_str());
         AZ_TestImpact_Eval(fileSize > 0, ExceptionType, AZStd::string::format("File %s does not exist", path.c_str()));
@@ -65,10 +65,13 @@ namespace TestImpact
     //! Deletes the specified file.
     void DeleteFile(const RepoPath& file);
 
+    //! Returns the list of files in the specified path that match the specified pattern.
+    [[nodiscard]] AZStd::vector<AZStd::string> ListFiles(const RepoPath& path, const AZStd::string& pattern);
+
     //! Counts the number files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for counting.
-    size_t FileCount(const RepoPath& path, const AZStd::string& pattern);
+    [[nodiscard]] size_t FileCount(const RepoPath& path, const AZStd::string& pattern);
 
     //! User-friendly names for the test suite types.
     AZStd::string SuiteTypeAsString(SuiteType suiteType);

@@ -12,17 +12,11 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <DynamicNode/DynamicNodeSlotConfigSerializer.h>
 
 namespace AtomToolsFramework
 { 
     void DynamicNodeSlotConfig::Reflect(AZ::ReflectContext* context)
     {
-        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
-        {
-            jsonContext->Serializer<JsonDynamicNodeSlotConfigSerializer>()->HandlesType<DynamicNodeSlotConfig>();
-        }
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DynamicNodeSlotConfig>()

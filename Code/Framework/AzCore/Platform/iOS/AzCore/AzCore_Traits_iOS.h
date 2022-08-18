@@ -95,7 +95,7 @@
 #define AZ_TRAIT_THREAD_AFFINITY_MASK_MAINTHREAD AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
 #define AZ_TRAIT_THREAD_AFFINITY_MASK_RENDERTHREAD AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
 #define AZ_TRAIT_THREAD_AFFINITY_MASK_WORKERTHREADS AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
-#define AZ_TRAIT_THREAD_AFFINITY_MASK_ASSET_PROCESSOR_CONNECTION_THREAD 4
+#define AZ_TRAIT_THREAD_AFFINITY_MASK_ASSET_PROCESSOR_CONNECTION_THREAD AZStd::clamp(4, 0, static_cast<int>(AZStd::thread::hardware_concurrency()) - 1)
 #define AZ_TRAIT_THREAD_HARDWARE_CONCURRENCY_RETURN_VALUE static_cast<unsigned int>(sysconf(_SC_NPROCESSORS_ONLN));
 #define AZ_TRAIT_UNITTEST_NON_PREALLOCATED_HPHA_TEST 0
 #define AZ_TRAIT_USE_POSIX_STRERROR_R 1
@@ -107,7 +107,7 @@
 
 // wchar_t/char formatting
 // Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160
-// The Z type character, and the behavior of the c, C, s, and S type characters when they're used with the printf and wprintf functions, 
+// The Z type character, and the behavior of the c, C, s, and S type characters when they're used with the printf and wprintf functions,
 // are Microsoft extensions. The ISO C standard uses c and s consistently for narrow characters and strings, and C and S for wide characters
 // and strings, in all formatting functions.
 #define AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR "%c"

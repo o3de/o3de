@@ -20,6 +20,7 @@
 #include <EMotionFX/Source/EventHandler.h>
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/MotionData/MotionDataSampleSettings.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
 
 namespace MCore
 {
@@ -277,7 +278,7 @@ namespace EMotionFX
         void SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale);
 #endif
 
-        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation);
+        virtual void ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data);
 
         static AZStd::string ReadStringFromStream(MCore::Stream* stream, MCore::Endian::EEndianType sourceEndianType);
 

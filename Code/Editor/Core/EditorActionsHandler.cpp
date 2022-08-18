@@ -31,6 +31,8 @@
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <MainWindow.h>
 #include <QtViewPaneManager.h>
+#include <ToolBox.h>
+#include <ToolsConfigPage.h>
 
 #include <QDesktopServices>
 #include <QLabel>
@@ -66,6 +68,7 @@ static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game"
 static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
 static constexpr AZStd::string_view GameAudioMenuIdentifier = "o3de.menu.editor.game.audio";
 static constexpr AZStd::string_view GameDebuggingMenuIdentifier = "o3de.menu.editor.game.debugging";
+static constexpr AZStd::string_view ToolBoxMacrosMenuIdentifier = "o3de.menu.editor.toolbox.macros";
 static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
 static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
 static constexpr AZStd::string_view LayoutsMenuIdentifier = "o3de.menu.editor.view.layouts";
@@ -156,6 +159,9 @@ void EditorActionsHandler::Initialize(MainWindow* mainWindow)
             RefreshToolActions();
         }
     );
+
+    // Initialize the Toolbox Macro actions
+    RefreshToolboxMacroActions();
 
     const int DefaultViewportId = 0;
     AzToolsFramework::EditorEventsBus::Handler::BusConnect();
@@ -826,6 +832,48 @@ void EditorActionsHandler::InitializeActions()
         );
     }
 
+    // Error Report
+    {
+        AZStd::string actionIdentifier = "o3de.action.game.debugging.errorDialog";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Error Report";
+        actionProperties.m_description = "Open the Error Report dialog.";
+        actionProperties.m_category = "Debugging";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [qtViewPaneManager = m_qtViewPaneManager]()
+            {
+                qtViewPaneManager->OpenPane(LyViewPane::ErrorReport);
+            }
+        );
+    }
+
+    // Configure Toolbox Macros
+    {
+        AZStd::string actionIdentifier = "o3de.action.game.debugging.toolboxMacros";
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Configure Toolbox Macros...";
+        actionProperties.m_description = "Open the Toolbox Macros dialog.";
+        actionProperties.m_category = "Debugging";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            actionIdentifier,
+            actionProperties,
+            [&]()
+            {
+                ToolsConfigDialog dlg;
+                if (dlg.exec() == QDialog::Accepted)
+                {
+                    RefreshToolboxMacroActions();
+                }
+            }
+        );
+    }
+
     // --- View Actions
 
     // Component Entity Layout
@@ -1272,19 +1320,24 @@ void EditorActionsHandler::InitializeMenus()
     }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Play Game";
-                m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Play Game";
+            m_menuManagerInterface->RegisterMenu(PlayGameMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Audio";
-                m_menuManagerInterface->RegisterMenu(GameAudioMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Audio";
+            m_menuManagerInterface->RegisterMenu(GameAudioMenuIdentifier, menuProperties);
         }
         {
             AzToolsFramework::MenuProperties menuProperties;
-                menuProperties.m_name = "Debugging";
-                m_menuManagerInterface->RegisterMenu(GameDebuggingMenuIdentifier, menuProperties);
+            menuProperties.m_name = "Debugging";
+            m_menuManagerInterface->RegisterMenu(GameDebuggingMenuIdentifier, menuProperties);
         }
+            {
+                AzToolsFramework::MenuProperties menuProperties;
+                menuProperties.m_name = "ToolBox Macros";
+                m_menuManagerInterface->RegisterMenu(ToolBoxMacrosMenuIdentifier, menuProperties);
+            }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Tools";
@@ -1419,12 +1472,19 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSeparatorToMenu(GameMenuIdentifier, 1000);
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, GameDebuggingMenuIdentifier, 1100);
         {
+            m_menuManagerInterface->AddActionToMenu(GameDebuggingMenuIdentifier, "o3de.action.game.debugging.errorDialog", 100);
+            m_menuManagerInterface->AddSeparatorToMenu(GameDebuggingMenuIdentifier, 200);
+            m_menuManagerInterface->AddSubMenuToMenu(GameDebuggingMenuIdentifier, ToolBoxMacrosMenuIdentifier, 300);
+            {
+                // Some of the contents of the ToolBox Mactos menu are initialized in RefreshToolboxMacrosActions.
+
+                m_menuManagerInterface->AddSeparatorToMenu(ToolBoxMacrosMenuIdentifier, 200);
+                m_menuManagerInterface->AddActionToMenu(ToolBoxMacrosMenuIdentifier, "o3de.action.game.debugging.toolboxMacros", 300);
+            }
         }
     }
 
     // View
-
-
     {
         m_menuManagerInterface->AddSubMenuToMenu(ViewMenuIdentifier, LayoutsMenuIdentifier, 100);
         {
@@ -1483,6 +1543,13 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSeparatorToMenu(HelpMenuIdentifier, 500);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
         m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
+    }
+
+    // Add helper actions to the Viewport top toolbar helpers button.
+    // This is temporary until that toolbar is completely refactored.
+    {
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleHelpers", 100);
+        m_menuManagerInterface->AddActionToMenu("o3de.menu.viewport.helpers", "o3de.action.view.toggleIcons", 200);
     }
 }
 
@@ -1798,6 +1865,52 @@ void EditorActionsHandler::RefreshLayoutActions()
 
         m_layoutMenuIdentifiers.push_back(layoutMenuIdentifier);
         m_menuManagerInterface->AddSubMenuToMenu(LayoutsMenuIdentifier, layoutMenuIdentifier, sortKey);
+    }
+}
+
+void EditorActionsHandler::RefreshToolboxMacroActions()
+{
+    // If the toolbox macros are being displayed in the menu already, remove them.
+    m_menuManagerInterface->RemoveActionsFromMenu(ToolBoxMacrosMenuIdentifier, m_toolboxMacroActionIdentifiers);
+    m_toolboxMacroActionIdentifiers.clear();
+
+    // Place all actions in the same sort index in the menu .
+    // This will display them in order of addition (alphabetical).
+    const int sortKey = 0;
+
+    auto tools = GetIEditor()->GetToolBoxManager();
+    const int macroCount = tools->GetMacroCount(true);
+
+    for (int macroIndex = 0; macroIndex < macroCount; ++macroIndex)
+    {
+        auto macro = tools->GetMacro(macroIndex, true);
+        const int toolbarId = macro->GetToolbarId();
+        if (toolbarId == -1 || toolbarId == ID_TOOLS_TOOL1)
+        {
+            AZStd::string toolboxMacroActionIdentifier = AZStd::string::format("o3de.action.toolboxMacro[%s]", macro->GetTitle().toStdString().c_str());
+
+            // Create the action if it does not already exist.
+            if (!m_actionManagerInterface->IsActionRegistered(toolboxMacroActionIdentifier))
+            {
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = macro->GetTitle().toStdString().c_str();
+                actionProperties.m_category = "Toolbox Macro";
+                actionProperties.m_iconPath = macro->GetIconPath().toStdString().c_str();
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorMainWindowActionContextIdentifier,
+                    toolboxMacroActionIdentifier,
+                    actionProperties,
+                    [macro]
+                    {
+                        macro->Execute();
+                    }
+                );
+            }
+
+            m_menuManagerInterface->AddActionToMenu(ToolBoxMacrosMenuIdentifier, toolboxMacroActionIdentifier, sortKey);
+            m_toolboxMacroActionIdentifiers.push_back(AZStd::move(toolboxMacroActionIdentifier));
+        }
     }
 }
 
