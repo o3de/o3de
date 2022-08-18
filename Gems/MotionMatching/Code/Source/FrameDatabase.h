@@ -79,7 +79,7 @@ namespace EMotionFX::MotionMatching
         size_t FindFrameIndex(Motion* motion, float playtime) const;
 
         //! Save every frame as a row to a .csv file.
-        void SaveAsCsv(const char* filename, ActorInstance* actorInstance, const ETransformSpace transformSpace) const;
+        void SaveAsCsv(const char* filename, ActorInstance* actorInstance, const ETransformSpace transformSpace, bool writePositions, bool writeRotations) const;
 
     private:
         void ImportFrame(Motion* motion, float timeValue, bool mirrored);
