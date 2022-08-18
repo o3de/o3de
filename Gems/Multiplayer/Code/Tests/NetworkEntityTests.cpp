@@ -71,9 +71,6 @@ namespace Multiplayer
         AZStd::unique_ptr<EntityInfo> m_root;
     };
 
-    constexpr float BLEND_FACTOR_SCALE = 1.1f;
-    constexpr uint32_t TIME_SCALE = 10;
-
     TEST_F(MultiplayerNetworkEntityTests, ConstNetworkEntityHandleTest)
     {
         ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
