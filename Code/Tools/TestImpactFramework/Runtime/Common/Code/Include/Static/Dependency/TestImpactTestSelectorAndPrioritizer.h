@@ -355,75 +355,82 @@ namespace TestImpact
     template<typename ProductionTarget, typename TestTarget>
     AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer<ProductionTarget, TestTarget>::PrioritizeSelectedTestTargets(
         const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
-        [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
+        const Policy::TestPrioritization testSelectionStrategy)
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
+        selectedTestTargets.reserve(selectedTestTargetAndDependerMap.size());
 
-        // Lambda to compare our pairs for sorting by distance when an optional is involved
-        auto compareBySecondOpt = [&](auto& left, auto& right) -> bool
+        const auto fillSelectedTestTargets = [&](const auto& containerOfPairs)
         {
-            return left.second.value_or(SIZE_MAX) < right.second.value_or(SIZE_MAX);
+            AZStd::transform(
+                containerOfPairs.begin(),
+                containerOfPairs.end(),
+                AZStd::back_inserter(selectedTestTargets),
+                [](const auto& pair) { return pair.first; });
         };
 
-        // Lambda to compare our pairs for sorting by distance
-        auto compareBySecond = [&](auto& left, auto& right) -> bool
+        if (testSelectionStrategy == Policy::TestPrioritization::DependencyLocality)
         {
-            return left.second < right.second;
-        };
-        const auto& buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
-        const auto& buildGraph = buildTargetList->GetBuildGraph();
+            const auto& buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
+            const auto& buildGraph = buildTargetList->GetBuildGraph();
 
+            AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<size_t>>> testTargetDistancePairs;
+            testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
 
-        AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, AZStd::optional<size_t>>> testTargetDistancePairs;
-
-        switch (testSelectionStrategy)
-        {
-            case Policy::TestPrioritization::DependencyLocality:
-                // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the prroduction targets in productionTargets
-                for (const auto& [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
-                {
-                    AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
-                    buildGraph.WalkBuildDependencies(buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
-                        [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
-                        {
-                            if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget(); productionTarget != nullptr && productionTargets.contains(productionTarget))
-                            {
-                                targetDistancePairs.emplace_back(vertex.m_buildTarget, distance);
-                            }
-                            return BuildGraphVertexVisitResult::Continue;
-                        });
-
-                    // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map.
-                    // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance and the test targets priority will be lower.
-                    if (!targetDistancePairs.empty()) {
-                        AZStd::sort(targetDistancePairs.begin(), targetDistancePairs.end(), compareBySecond);
-                        //AZ_Printf(testTarget->GetName().c_str(), "TestTarget\n");
-                        //AZ_Printf(targetDistancePairs[0].first.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", targetDistancePairs[0].second);
-                        testTargetDistancePairs.emplace_back(testTarget, targetDistancePairs[0].second);
-                    }
-                    else
+            // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the prroduction targets in productionTargets
+            for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
+            {
+                AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
+                buildGraph.WalkBuildDependencies(buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
+                    [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
                     {
-                        testTargetDistancePairs.emplace_back(testTarget);
-                    }
-                }
+                        if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
+                            productionTarget && productionTargets.contains(productionTarget))
+                        {
+                            targetDistancePairs.emplace_back(vertex.m_buildTarget, distance);
+                        }
+                        return BuildGraphVertexVisitResult::Continue;
+                    });
 
-                // Sort our pairs by distance and put our test targets into the vector in order of distance(closest first)
-                AZStd::sort(testTargetDistancePairs.begin(), testTargetDistancePairs.end(), compareBySecondOpt);
-                for (const auto& [testTarget, distance] : testTargetDistancePairs)
+                // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map
+                // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance and the test targets priority will be lower
+                if (!targetDistancePairs.empty())
                 {
-                    AZ_Printf(testTarget.GetTarget()->GetName().c_str(), "this is the closest target, at %zu vertices away from the root\n", distance);
-                    selectedTestTargets.push_back(testTarget.GetTestTarget());
+                    AZStd::sort(targetDistancePairs.begin(), targetDistancePairs.end(), [](const auto& left, const auto& right)
+                        {
+                            return left.second < right.second;
+                        });
+                    testTargetDistancePairs.emplace_back(testTarget, targetDistancePairs.front().second);
                 }
-                break;
-            case Policy::TestPrioritization::None:
-                for (const auto& [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
+                else
                 {
-                    selectedTestTargets.push_back(testTarget);
+                    testTargetDistancePairs.emplace_back(testTarget);
                 }
-                break;
+            }
+
+            // Sort our pairs by distance and put our test targets into the vector in order of distance(closest first)
+            AZStd::sort(testTargetDistancePairs.begin(), testTargetDistancePairs.end(), [](const auto& left, const auto& right)
+                {
+                    if (!left.second.has_value())
+                    {
+                        return false;
+                    }
+                    else if (!right.second.has_value())
+                    {
+                        return true;
+                    }
+
+                    return left.second.value() < right.second.value();
+                });
+
+            fillSelectedTestTargets(testTargetDistancePairs);
         }
+        else
+        {
+            fillSelectedTestTargets(selectedTestTargetAndDependerMap);
+        }
+
         return selectedTestTargets;
-        
     }
 } // namespace TestImpact
 
