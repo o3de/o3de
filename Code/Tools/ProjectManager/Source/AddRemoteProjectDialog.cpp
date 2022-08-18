@@ -186,7 +186,7 @@ namespace O3DE::ProjectManager
         auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
         if (repoProjectsResult.IsSuccess())
         {
-            auto repoProjects = repoProjectsResult.GetValue();
+            const auto repoProjects = repoProjectsResult.GetValue();
             if (!repoProjects.isEmpty())
             {
                 // only get the first one for now

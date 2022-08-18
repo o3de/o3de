@@ -8,7 +8,6 @@
 
 #include <Application.h>
 #include <ProjectUtils.h>
-#include <DownloadController.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Utils/Utils.h>
@@ -18,6 +17,7 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <ProjectManager_Traits_Platform.h>
+
 
 #include <QApplication>
 #include <QDir>

@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
             setWindowTitle(QString("O3DE %1").arg(tr("Project Manager")));
         }
 
-        m_downloadController = new DownloadController();
+        m_downloadController = new DownloadController(this);
 
         ScreensCtrl* screensCtrl = new ScreensCtrl(nullptr, m_downloadController);
 

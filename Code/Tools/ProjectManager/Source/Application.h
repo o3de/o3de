@@ -13,7 +13,6 @@
 #include <PythonBindings.h>
 #include <Settings.h>
 #include <ProjectManagerWindow.h>
-#include <DownloadController.h>
 #endif
 
 namespace AZ
