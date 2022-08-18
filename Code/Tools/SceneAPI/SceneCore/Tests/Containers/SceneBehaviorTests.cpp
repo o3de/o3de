@@ -22,6 +22,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
+#include <SceneAPI/SceneCore/Mocks/MockBehaviorUtils.h>
 
 // the DLL entry point for SceneCore to reflect its behavior context
 extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context);
@@ -487,6 +488,9 @@ namespace AZ::SceneAPI::Containers
             ReflectBehavior(m_behaviorContext.get());
             ReflectTestTypes(m_behaviorContext.get());
             MockBuilder::Reflect(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
 
             m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
             m_scriptContext->BindTo(m_behaviorContext.get());
@@ -763,6 +767,9 @@ namespace AZ::SceneAPI::Containers
             MockBuilder::Reflect(m_behaviorContext.get());
             MockManifestRule::Reflect(m_behaviorContext.get());
             ReflectBehavior(m_behaviorContext.get());
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("Scene")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProduct")->second->m_attributes);
+            UnitTest::ScopeForUnitTest(m_behaviorContext->m_classes.find("ExportProductList")->second->m_attributes);
 
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
             AZ::JsonSystemComponent::Reflect(m_jsonRegistrationContext.get());

@@ -11,7 +11,7 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/CommandList.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 
 namespace AZ
 {
