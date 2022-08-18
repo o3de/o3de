@@ -95,7 +95,7 @@ namespace UnitTest
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
     }
 
-        TEST_F(ComponentModeSwitcherTestFixture, InstantaneousChangeOfEntitySelectionUpdatesSwitcherCorrectly)
+    TEST_F(ComponentModeSwitcherTestFixture, InstantaneousChangeOfEntitySelectionUpdatesSwitcherCorrectly)
     {
         // Given an entity with two components
         AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
@@ -123,12 +123,12 @@ namespace UnitTest
         entity2->Activate();
 
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId2 });
-
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
 
-        EXPECT_EQ(2, componentModeSwitcher->GetComponentCount());
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId2 });
+
+        EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
     }
 
     TEST_F(ComponentModeSwitcherTestFixture, AddingDuplicateComponentsDoesNotAddComponentsToSwitcher)
