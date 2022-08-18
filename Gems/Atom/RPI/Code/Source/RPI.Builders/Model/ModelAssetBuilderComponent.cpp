@@ -103,7 +103,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(33);  // Fix parent-child relationship in scene
+                    ->Version(34);  // Fix vertex welding
             }
         }
 
