@@ -18,7 +18,7 @@ TEST_PROJECT_JSON_PAYLOAD = '''
     "project_name": "TestProject",
     "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
     "project_version" : "0.0.0.0",
-    "engine_dependencies" : [
+    "compatible_engines" : [
         "o3de-sdk==2205.01"
     ],
     "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
@@ -54,8 +54,8 @@ class TestEditProjectProperties:
                               project_display, project_summary, project_icon, project_version, \
                               add_tags, delete_tags, replace_tags, expected_tags, \
                               add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names, \
-                              add_engine_dependencies, delete_engine_dependencies, replace_engine_dependencies, \
-                              expected_engine_dependencies, expected_result",  [
+                              add_compatible_engines, delete_compatible_engines, replace_compatible_engines, \
+                              expected_compatible_engines, expected_result",  [
         pytest.param(pathlib.PurePath('E:/TestProject'),
                     'ProjNameA', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
@@ -98,8 +98,8 @@ class TestEditProjectProperties:
                                      project_display, project_summary, project_icon, project_version, 
                                      add_tags, delete_tags, replace_tags, expected_tags, expected_result,
                                      add_gem_names, delete_gem_names, replace_gem_names, expected_gem_names,
-                                     add_engine_dependencies, delete_engine_dependencies, replace_engine_dependencies,
-                                     expected_engine_dependencies):
+                                     add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
+                                     expected_compatible_engines):
 
         def get_project_json_data(project_name: str, project_path) -> dict:
             if not project_path:
@@ -117,7 +117,7 @@ class TestEditProjectProperties:
                                                            project_origin, project_display, project_summary, project_icon,
                                                            add_tags, delete_tags, replace_tags,
                                                            add_gem_names, delete_gem_names, replace_gem_names,
-                                                           add_engine_dependencies, delete_engine_dependencies, replace_engine_dependencies,
+                                                           add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                                            project_version)
             assert result == expected_result
             if result == 0:
@@ -132,6 +132,6 @@ class TestEditProjectProperties:
 
                 assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
                 assert set(self.project_json.data.get('gem_names', [])) == set(expected_gem_names)
-                assert set(self.project_json.data.get('engine_dependencies', [])) == set(expected_engine_dependencies)
+                assert set(self.project_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
             elif not project_path:
                 assert not self.project_json.data
