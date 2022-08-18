@@ -415,6 +415,18 @@ namespace GradientSignal
 
     AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
     {
+        // temporary setting to disable this feature unless the registry key is set.
+        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+        {
+            constexpr AZStd::string_view ImageGradientPaintFeature = "/O3DE/Preferences/ImageGradient/PaintFeature";
+            bool hasPaintFeature = false;
+            settingsRegistry->Get(hasPaintFeature, ImageGradientPaintFeature);
+            if (!hasPaintFeature)
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+        }
+
         // Only show the image painting button while we're using an image, not while we're creating one.
         return (m_configuration.GetImageOptionsVisibility()
                 && m_configuration.m_imageAsset.IsReady()
