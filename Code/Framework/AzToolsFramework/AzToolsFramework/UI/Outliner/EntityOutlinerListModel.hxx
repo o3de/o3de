@@ -22,7 +22,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
-#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
@@ -58,7 +57,6 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
-        , private Prefab::PrefabFocusNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
         , private ContainerEntityNotificationBus::Handler
     {
@@ -154,10 +152,6 @@ namespace AzToolsFramework
 
         void EnableAutoExpand(bool enable);
 
-        // PrefabFocusNotificationBus overrides ...
-        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
-        void OnInstanceOpened(AZ::EntityId containerEntityId) override;
-
         AZStd::string GetFilterString() const
         {
             return m_filterString;
@@ -243,17 +237,13 @@ namespace AzToolsFramework
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
-        // Drag/Drop of entities.
+        // Drag/Drop of entities.  Internally handled.
         bool canDropMimeDataForEntityIds(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
         bool dropMimeDataEntities(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
 
-        // Drag/Drop of assets from asset browser.
-        using ComponentAssetPair = AZStd::pair<AZ::TypeId, AZ::Data::AssetId>;
-        using ComponentAssetPairs = AZStd::vector<ComponentAssetPair>;
-        bool DecodeAssetMimeData(const QMimeData* data, AZStd::optional<ComponentAssetPairs*> componentAssetPairs = AZStd::nullopt,
-            AZStd::optional<AZStd::vector<AZStd::string>*> sourceFiles = AZStd::nullopt) const;
-        bool DropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
-        bool CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
+        // Drag/Drop of assets that are not internally handled
+        bool DropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+        bool CanDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
 
         QMap<int, QVariant> itemData(const QModelIndex& index) const override;
         QVariant dataForAll(const QModelIndex& index, int role) const;

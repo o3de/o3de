@@ -102,12 +102,6 @@ namespace AtomToolsFramework
     {
         Base::Reflect(context);
 
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
         AzToolsFramework::QWidgetSavedState::Reflect(context);
 

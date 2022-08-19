@@ -725,9 +725,6 @@ namespace LUAEditor
             {
                 AZStd::string inputValue = commandLine->GetSwitchValue(k_luaScriptFileString, i);
 
-                // Open the file(s)
-                AZStd::to_lower(const_cast<AZStd::string&>(inputValue).begin(), const_cast<AZStd::string&>(inputValue).end());
-
                 // Cache the files we want to open, we will open them when we activate the main window.
                 m_filesToOpen.push_back(inputValue);
             }

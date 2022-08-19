@@ -71,6 +71,9 @@ namespace UnitTest
     */
     TEST_F(SceneTests, FeatureProcessorManagement)
     {
+        AZ::Test::ScopedAutoTempDirectory tempDirectory;
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@user@", tempDirectory.GetDirectory());
+
         // Create scene with two test feature processors
         SceneDescriptor sceneDesc;
         sceneDesc.m_featureProcessorNames.push_back(AZStd::string(TestFeatureProcessor1::RTTI_TypeName()));

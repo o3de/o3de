@@ -182,8 +182,8 @@ namespace TestImpact
                     for (const auto& coveredModule : job.GetCoverge().value().GetModuleCoverages())
                     {
                         const auto moduleName = AZ::IO::Path(coveredModule.m_path.Stem()).String();
-                        const auto buildTargetName = dynamicDependencyMap.GetBuildTargets()->GetTargetNameFromOutputNameOrThrow(moduleName);
-                        const auto buildTarget = dynamicDependencyMap.GetBuildTargets()->GetBuildTargetOrThrow(buildTargetName);
+                        const auto buildTargetName = dynamicDependencyMap.GetBuildTargetList()->GetTargetNameFromOutputNameOrThrow(moduleName);
+                        const auto buildTarget = dynamicDependencyMap.GetBuildTargetList()->GetBuildTargetOrThrow(buildTargetName);
                         buildTarget.Visit(
                             [&coverage, &repoRoot, testTarget](auto&& target)
                             {

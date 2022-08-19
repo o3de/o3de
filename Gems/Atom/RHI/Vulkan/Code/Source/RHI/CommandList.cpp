@@ -12,7 +12,7 @@
 #include <RHI/BufferView.h>
 #include <RHI/CommandList.h>
 #include <RHI/CommandPool.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSet.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
