@@ -109,27 +109,35 @@ namespace EMotionFX::MotionMatching
         WriteLine(m_tempBuffer);
     }
 
-    void PoseWriterCsv::WritePose(Pose& pose)
+    void PoseWriterCsv::WritePose(Pose& pose, const ETransformSpace transformSpace)
     {
         if (!IsReady() || !m_actorInstance)
         {
             return;
         }
 
-        SavePoseToString(pose, m_tempBuffer);
+        SavePoseToString(pose, transformSpace, m_tempBuffer);
         WriteLine(m_tempBuffer);
     }
 
-    void PoseWriterCsv::SavePoseToString(Pose& pose, AZStd::string& outText)
+    void PoseWriterCsv::SavePoseToString(Pose& pose, const ETransformSpace transformSpace, AZStd::string& outText)
     {
         const size_t numEnabledJoints = m_actorInstance->GetNumEnabledNodes();
         outText.clear();
         outText.reserve(10 * 3 * 3 * numEnabledJoints);
 
+        Transform transform;
         for (size_t i = 0; i < numEnabledJoints; ++i)
         {
             const size_t jointIndex = m_actorInstance->GetEnabledNode(i);
-            const Transform& transform = pose.GetLocalSpaceTransform(jointIndex);
+
+            transform = Transform::CreateIdentity();
+            switch (transformSpace)
+            {
+            case TRANSFORM_SPACE_LOCAL: { transform = pose.GetLocalSpaceTransform(jointIndex); break; }
+            case TRANSFORM_SPACE_MODEL: { transform = pose.GetModelSpaceTransform(jointIndex); break; }
+            default: { AZ_Error("Motion Matching", false, "Unsupported transform space"); break; }
+            }
 
             // Position
             const AZ::Vector3 position = transform.m_position;
@@ -251,17 +259,25 @@ namespace EMotionFX::MotionMatching
         return true;
     }
 
-    void PoseReaderCsv::ApplyPose(ActorInstance* actorInstance, Pose& pose, size_t index)
+    void PoseReaderCsv::ApplyPose(ActorInstance* actorInstance, Pose& pose, const ETransformSpace transformSpace, size_t index)
     {
         AZStd::vector<AZStd::string> valueTokens;
         AZ::StringFunc::Tokenize(m_poseValueLines[index], valueTokens, ',');
 
+        Transform transform;
         size_t valueIndex = 0;
         const size_t numEnabledJoints = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabledJoints; ++i)
         {
             const size_t jointIndex = actorInstance->GetEnabledNode(i);
-            Transform transform = pose.GetLocalSpaceTransform(jointIndex);
+
+            transform = Transform::CreateIdentity();
+            switch (transformSpace)
+            {
+            case TRANSFORM_SPACE_LOCAL: { transform = pose.GetLocalSpaceTransform(jointIndex); break; }
+            case TRANSFORM_SPACE_MODEL: { transform = pose.GetModelSpaceTransform(jointIndex); break; }
+            default: { AZ_Error("Motion Matching", false, "Unsupported transform space"); break; }
+            }
 
             auto LoadVector3FromString = [&valueTokens](size_t& valueIndex, AZ::Vector3& outVec)
             {
@@ -295,7 +311,12 @@ namespace EMotionFX::MotionMatching
                 transform.m_rotation = AZ::Quaternion::CreateFromMatrix3x3(rotationMatrix);
             }
 
-            pose.SetLocalSpaceTransform(jointIndex, transform);
+            switch (transformSpace)
+            {
+            case TRANSFORM_SPACE_LOCAL: { pose.SetLocalSpaceTransform(jointIndex, transform); break; }
+            case TRANSFORM_SPACE_MODEL: { pose.SetModelSpaceTransform(jointIndex, transform); break; }
+            default: { AZ_Error("Motion Matching", false, "Unsupported transform space"); break; }
+            }
         }
     }
 
