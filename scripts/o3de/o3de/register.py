@@ -21,8 +21,6 @@ import sys
 import urllib.parse
 import urllib.request
 
-import re
-
 from o3de import get_registration, manifest, repo, utils, validation
 
 logger = logging.getLogger('o3de.register')
