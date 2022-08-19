@@ -38,7 +38,7 @@ set(LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFI
 
 # Directory for static artifacts produced as part of the build system generation process
 set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
-
+    
 # Directory for source to build target mappings
 set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Mapping")
 
@@ -608,7 +608,6 @@ function(ly_test_impact_clean_directories)
         file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
     endforeach()
     
-
     # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
     file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
 endfunction()
