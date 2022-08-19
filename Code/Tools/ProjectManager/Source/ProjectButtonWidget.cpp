@@ -558,7 +558,7 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::SetProgressBarPercentage(const float percent)
     {
-        m_projectImageLabel->GetProgressBar()->setValue(percent*100);
+        m_projectImageLabel->GetProgressBar()->setValue(static_cast<int>(percent*100));
         m_projectImageLabel->GetProgressPercentage()->setText(QString("%1%").arg(static_cast<int>(percent*100)));
     }
 
@@ -601,6 +601,7 @@ namespace O3DE::ProjectManager
         HideContextualLabelButtonWidgets();
         SetLaunchingEnabled(false);
         SetProjectBuilding(false);
+        SetProgressBarPercentage(0);
 
         m_projectImageLabel->GetDownloadMessageLabel()->setVisible(false);
         m_projectImageLabel->GetProgressPercentage()->setVisible(false);
