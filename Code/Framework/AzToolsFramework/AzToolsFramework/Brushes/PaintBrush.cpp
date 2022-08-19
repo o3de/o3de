@@ -9,6 +9,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Geometry2DUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -127,6 +128,7 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = true;
+                m_isFirstPaintedPoint = true;
                 HandleMouseEvent(mouseInteraction);
                 return true;
             }
@@ -153,16 +155,30 @@ namespace AzToolsFramework
         if (worldSurfacePosition.has_value())
         {
             m_center = worldSurfacePosition.value();
-
             AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
             PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
 
             if (m_isPainting)
             {
+                // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
+                // that covers everything in-between.
+                if (m_isFirstPaintedPoint)
+                {
+                    m_previousCenter = m_center;
+                    m_isFirstPaintedPoint = false;
+                }
+
+                // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
+                // points that fall in-between as well.
+                AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, m_radius);
+                strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, m_radius));
+
                 PaintBrushNotificationBus::Event(
                     m_ownerEntityComponentId,
                     &PaintBrushNotificationBus::Events::OnPaint,
-                    AZ::Aabb::CreateCenterRadius(m_center, m_radius));
+                    strokeRegion);
+
+                m_previousCenter = m_center;
             }
 
             return true;
@@ -173,22 +189,12 @@ namespace AzToolsFramework
 
     void PaintBrush::GetValue(const AZ::Vector3& point, float& intensity, float& opacity, bool& isValid)
     {
-        const float xDiffSq = (point.GetX() - m_center.GetX()) * (point.GetX() - m_center.GetX());
-        const float yDiffSq = (point.GetY() - m_center.GetY()) * (point.GetY() - m_center.GetY());
-        const float manipulatorRadiusSq = m_radius * m_radius;
-
-        if (m_isPainting && xDiffSq + yDiffSq <= manipulatorRadiusSq)
-        {
-            intensity = GetIntensity();
-            opacity = GetOpacity();
-            isValid = true;
-        }
-        else
-        {
-            intensity = 0.0f;
-            opacity = 0.0f;
-            isValid = false;
-        }
+        GetValues(
+            AZStd::span<const AZ::Vector3>(&point, 1),
+            AZStd::span<float>(&intensity, 1),
+            AZStd::span<float>(&opacity, 1),
+            AZStd::span<bool>(&isValid, 1)
+        );
     }
 
     void PaintBrush::GetValues(
@@ -197,9 +203,32 @@ namespace AzToolsFramework
         AZStd::span<float> opacities,
         AZStd::span<bool> validFlags)
     {
+        const float manipulatorRadiusSq = m_radius * m_radius;
+        const AZ::Vector2 previousCenter2D(m_previousCenter);
+        const AZ::Vector2 center2D(m_center);
+
         for (size_t index = 0; index < points.size(); index++)
         {
-            GetValue(points[index], intensities[index], opacities[index], validFlags[index]);
+            // Any point that falls within our brush stroke is considered valid. Since our brush is a circle, the brush stroke
+            // ends up being a capsule with a circle on each end, and effectively a box connecting the two circles.
+            // We can easily check to see if the point falls in the capsule by getting the distance between the point
+            // and the line segment formed between the center of the start and end circles.
+            // If this distance is less than the radius of the circle, then it falls within the brush stroke.
+            // This works equally well whether the point is closest to an endpoint of the segment or a point along the segment.
+            if (m_isPainting &&
+                (AZ::Geometry2DUtils::ShortestDistanceSqPointSegment(
+                    AZ::Vector2(points[index]), previousCenter2D, center2D) <= manipulatorRadiusSq))
+            {
+                intensities[index] = GetIntensity();
+                opacities[index] = GetOpacity();
+                validFlags[index] = true;
+            }
+            else
+            {
+                intensities[index] = 0.0f;
+                opacities[index] = 0.0f;
+                validFlags[index] = false;
+            }
         }
     }
 

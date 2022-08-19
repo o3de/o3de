@@ -52,6 +52,7 @@ namespace AzToolsFramework
 
         // Keep track of the previous location we painted so that we can generate a continuous stroke.
         AZ::Vector3 m_previousCenter;
+        bool m_isFirstPaintedPoint = true;
 
         AZ::Vector3 m_center;
         float m_radius = 2.0f;
