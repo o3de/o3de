@@ -216,6 +216,7 @@ namespace Multiplayer
         friend class HierarchyTests;
         friend class HierarchyBenchmarkBase;
         friend class MultiplayerSystemTests;
+        friend class NetworkEntityTests;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);
