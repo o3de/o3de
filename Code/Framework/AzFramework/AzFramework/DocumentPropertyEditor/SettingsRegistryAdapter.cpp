@@ -265,7 +265,7 @@ namespace AZ::DocumentPropertyEditor
             domData.m_callback = [](AZStd::string_view, const AZ::Dom::Value&) -> AZ::Dom::Value
             {
                 // When support for adding for objects/array types
-                // are implemented, This function will need to prompty the user
+                // are implemented, This function will need to prompt the user
                 // for the name of the new field(objects only) and the value type of the field
                 return {};
             };
