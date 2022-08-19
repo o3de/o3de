@@ -7,8 +7,6 @@
 #
 
 from abc import ABC, abstractmethod
-from doctest import REPORT_CDIFF
-import uuid
 from pathlib import PurePath, Path
 import json
 import subprocess
@@ -249,6 +247,8 @@ class BaseTestImpact(ABC):
         JENKINS_KEY = "jenkins"
         USE_TIAF_KEY = "use_test_impact_analysis"
         RUNTIME_BIN_KEY = "runtime_bin"
+        RUNTIME_ARTIFACT_DIR_KEY = "run_artifact_dir"
+        RUNTIME_COVERAGE_DIR_KEY = "coverage_artifact_dir"
 
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
@@ -273,12 +273,18 @@ class BaseTestImpact(ABC):
                 self._active_workspace = config[self.runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
                 self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
                 self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
+
+                # Data file paths
                 self._unpacked_coverage_data_file = config[self.runtime_type][
                     WORKSPACE_KEY][ACTIVE_KEY][RELATIVE_PATHS_KEY][TEST_IMPACT_DATA_FILE_KEY]
                 self._previous_test_run_data_file = config[self.runtime_type][WORKSPACE_KEY][
                     ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
                 self._historic_data_file = config[self.runtime_type][WORKSPACE_KEY][
                     HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
+
+                # Runtime artifact and coverage directories
+                self._runtime_artifact_directory = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][RUNTIME_ARTIFACT_DIR_KEY]
+                self._runtime_coverage_directory = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][RUNTIME_COVERAGE_DIR_KEY]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
@@ -415,7 +421,7 @@ class BaseTestImpact(ABC):
         @return: Compiled s3_top_level_dir name
         """
         if dir_name:
-            dir_name = os.path.join(dir_name, self.runtime_type)
+            dir_name = f"{dir_name}/{self.runtime_type}"
             return dir_name
         raise SystemError(
             "s3_top_level_dir not set while trying to access s3 instance.")
@@ -474,8 +480,10 @@ class BaseTestImpact(ABC):
             test_runs = self._extract_test_runs_from_sequence_report(report)
 
             # Attempt to store the historic data for this branch and sequence
-            if self._is_source_of_truth_branch and self._persistent_storage:
-                self._persistent_storage.update_and_store_historic_data(test_runs)
+            if self._persistent_storage:
+                if self._is_source_of_truth_branch:
+                    self._persistent_storage.update_and_store_historic_data(test_runs)
+                self._persistent_storage.store_artifacts(self._runtime_artifact_directory, self._runtime_coverage_directory)
         else:
             logger.error(
                 f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
