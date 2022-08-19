@@ -1212,8 +1212,8 @@ namespace AZ
                         namesMatch = false;
                         AZStd::string errorMessage = AZStd::string::format(
                             "Two meshes have the same material assignment, but the uv names don't match. "
-                            "Mesh '%s' uv '%d' is named '%s'. "
-                            "Mesh '%s' uv '%d' is named '%s'. "
+                            "Mesh '%s' uv '%zu' is named '%s'. "
+                            "Mesh '%s' uv '%zu' is named '%s'. "
                             "Consider re-naming the uvs to match. "
                             "They will not be merged, but will still show up as a single material slot for material assignments. ",
                             lhs.m_name.GetCStr(),
@@ -1234,8 +1234,8 @@ namespace AZ
                         namesMatch = false;
                         AZStd::string errorMessage = AZStd::string::format(
                             "Two meshes have the same material assignment, but the color names don't match. "
-                            "Mesh '%s' color '%d' is named '%s'. "
-                            "Mesh '%s' color '%d' is named '%s'. "
+                            "Mesh '%s' color '%zu' is named '%s'. "
+                            "Mesh '%s' color '%zu' is named '%s'. "
                             "Consider re-naming the colors to match. "
                             "They will not be merged, but will still show up as a single material slot for material assignments.",
                             lhs.m_name.GetCStr(),
