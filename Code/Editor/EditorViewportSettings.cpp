@@ -112,9 +112,9 @@ namespace SandboxEditor
                 );
 
                 m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(CameraFovSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(CameraFovSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_perspectiveChanged.Signal();
                         }
