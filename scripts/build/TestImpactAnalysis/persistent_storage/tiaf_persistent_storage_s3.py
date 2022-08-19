@@ -138,13 +138,19 @@ class PersistentStorageS3(PersistentStorage):
         """
         Store the coverage artifacts in the designated persistent storage location.
 
-        @param runtime_coverage_dir: The directory contianing the runtime coverage artifacts to store.
+        @param runtime_coverage_dir: The directory containing the runtime coverage artifacts to store.
         """
         source_directory = pathlib.Path(runtime_coverage_dir)
         self._zip_and_upload_directory(source_directory, self.RUNTIME_COVERAGE_DIRECTORY)
 
-    def _zip_and_upload_directory(self, source_directory: pathlib.Path, target_directory):
-        artifact_key = f"{self._historic_data_dir}/{target_directory}.zip"
+    def _zip_and_upload_directory(self, source_directory: pathlib.Path, object_name: str):
+        """
+        Zip the directory indicated in source_directory and store it in the s3_bucket as a folder in the historic_data_dir.
+        
+        @param source_directory: Path to the directory to zip.
+        @param target_directory: Name for the uploaded object.
+        """
+        artifact_key = f"{self._historic_data_dir}/{object_name}.zip"
         temp_directory = tempfile.mkdtemp()
         try:
             compressed_directory = shutil.make_archive(f"{temp_directory}/compressed_artifacts", 'zip', source_directory)
