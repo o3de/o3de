@@ -34,6 +34,7 @@ namespace AzToolsFramework
     void RegisterMultiLineEditHandler();
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
+    void RegisterExeSelectPropertyHandler();
 
     namespace Components
     {
@@ -177,14 +178,20 @@ namespace AzToolsFramework
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::InProgressEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
         }
 
         void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
         {
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
-                AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
+        }
+
+        void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnRequestPropertyNotify);
         }
 
         void PropertyManagerComponent::CreateBuiltInHandlers()
@@ -208,6 +215,7 @@ namespace AzToolsFramework
             RegisterVectorHandlers();
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
+            RegisterExeSelectPropertyHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
@@ -263,19 +271,19 @@ namespace AzToolsFramework
                         return true;
                     },
                     handlerType);
-                if (classes.empty())
+                for (auto cls = classes.begin(); cls != classes.end(); ++cls)
                 {
-                    return pHandlerFound;
-                }
-                else
-                {
-                    for (auto cls = classes.begin(); cls != classes.end(); ++cls)
+                    pHandlerFound = ResolvePropertyHandler(handlerName, (*cls)->m_typeId);
+                    if (pHandlerFound)
                     {
-                        pHandlerFound = ResolvePropertyHandler(handlerName, (*cls)->m_typeId);
-                        if (pHandlerFound)
-                        {
-                            return pHandlerFound;
-                        }
+                        return pHandlerFound;
+                    }
+                }
+                if (const auto* genericInfo = sc->FindGenericClassInfo(handlerType))
+                {
+                    if (genericInfo->GetGenericTypeId() != handlerType)
+                    {
+                        return ResolvePropertyHandler(handlerName, genericInfo->GetGenericTypeId());
                     }
                 }
             }

@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -27,10 +28,19 @@
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
+
+#include <AutoGenFunctionRegistry.generated.h>
+#include <AutoGenNodeableRegistry.generated.h>
+#include <AutoGenGrammarRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(ScriptCanvasStatic);
 
 namespace ScriptCanvasSystemComponentCpp
 {
@@ -57,10 +67,25 @@ namespace ScriptCanvasSystemComponentCpp
 
 namespace ScriptCanvas
 {
+    AZ_ENUM_CLASS(PerformanceReportFileStream,
+        None,
+        Stdout,
+        Stderr
+    );
+}
+
+namespace ScriptCanvas
+{
+    // Console Variable to determine where the scriptcanvas output performance report is sent
+    AZ_CVAR(PerformanceReportFileStream, sc_outputperformancereport, PerformanceReportFileStream::None, {}, AZ::ConsoleFunctorFlags::Null,
+        "Determines where the Script Canvas performance report should be output.");
+
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ScriptCanvas::AutoGenRegistryManager::Reflect(context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
+        SourceHandle::Reflect(context);
         ReflectLibraries(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -160,12 +185,34 @@ namespace ScriptCanvas
         const double latent = aznumeric_caster(report.timing.latentTime);
         const double total = aznumeric_caster(report.timing.totalTime);
 
-        std::cerr << "Global ScriptCanvas Performance Report:\n";
-        std::cerr << "[ INITIALIZE] " << AZStd::string::format("%7.3f ms \n", ready / 1000.0).c_str();
-        std::cerr << "[  EXECUTION] " << AZStd::string::format("%7.3f ms \n", instant / 1000.0).c_str();
-        std::cerr << "[     LATENT] " << AZStd::string::format("%7.3f ms \n", latent / 1000.0).c_str();
-        std::cerr << "[      TOTAL] " << AZStd::string::format("%7.3f ms \n", total / 1000.0).c_str();
-
+        FILE* performanceReportStream = nullptr;
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            if (PerformanceReportFileStream performanceOutputOption;
+                console->GetCvarValue("sc_outputperformancereport", performanceOutputOption) == AZ::GetValueResult::Success)
+            {
+                switch (performanceOutputOption)
+                {
+                case PerformanceReportFileStream::None:
+                    performanceReportStream = nullptr;
+                    break;
+                case PerformanceReportFileStream::Stdout:
+                    performanceReportStream = stdout;
+                    break;
+                case PerformanceReportFileStream::Stderr:
+                    performanceReportStream = stderr;
+                    break;
+                }
+            }
+        }
+        if (performanceReportStream != nullptr)
+        {
+            fprintf(performanceReportStream, "Global ScriptCanvas Performance Report:\n");
+            fprintf(performanceReportStream, "[ INITIALIZE] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", ready / 1000.0).c_str());
+            fprintf(performanceReportStream, "[  EXECUTION] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", instant / 1000.0).c_str());
+            fprintf(performanceReportStream, "[     LATENT] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", latent / 1000.0).c_str());
+            fprintf(performanceReportStream, "[      TOTAL] %s\n", AZStd::fixed_string<32>::format("%7.3f ms", total / 1000.0).c_str());
+        }
         SafeUnregisterPerformanceTracker();
     }
 

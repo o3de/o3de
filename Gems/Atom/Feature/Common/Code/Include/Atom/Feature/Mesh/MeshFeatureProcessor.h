@@ -88,10 +88,9 @@ namespace AZ
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
+            
+            MeshDrawPacketLods m_drawPacketListsByLod;
 
-            using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
-
-            AZStd::fixed_vector<DrawPacketList, RPI::ModelLodAsset::LodCountMax> m_drawPacketListsByLod;
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
 
@@ -108,6 +107,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            AZ::Uuid m_rayTracingUuid;
 
             Aabb m_aabb = Aabb::CreateNull();
 
@@ -125,7 +125,7 @@ namespace AZ
         {
         public:
 
-            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", MeshFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -156,6 +156,7 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
+            const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const override;
             const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const override;
             void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
@@ -204,6 +205,7 @@ namespace AZ
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
+            MeshDrawPacketLods m_emptyDrawPacketLods;
             bool m_forceRebuildDrawPackets = false;
         };
     } // namespace Render

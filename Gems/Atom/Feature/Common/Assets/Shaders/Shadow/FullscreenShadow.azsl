@@ -1,0 +1,169 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#define THREADS 16
+
+// Todo: test Compute Shader version with async compute and LDS optimizations
+#define USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT 0
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
+#include <scenesrg.srgi>
+
+#include <Atom/RPI/Math.azsli>
+
+#if !USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+    #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+    #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#endif
+
+#include <Atom/Features/Shadow/NormalOffsetShadows.azsli>
+#include <Atom/Features/Shadow/BicubicPcfFilters.azsli>
+#include <Atom/Features/Shadow/Shadow.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+    
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    struct Constants
+    {
+        float2 m_screenSize;
+        int m_lightIndex;
+        int m_filterMode;
+        int m_blendBetweenCascadesEnable;        
+        int m_receiverShadowPlaneBiasEnable;
+        int m_msaaCount;
+        float m_invMsaaCount;
+    };
+    
+    Constants m_constantData;
+    Texture2DArray<float> m_directionalShadowmaps;
+    Texture2DArray<float> m_directionalShadowmapsESM;
+    Texture2DMS<float> m_depth;
+    Texture2D<float> m_depthLinear;
+#if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+    RWTexture2D<float> m_fullscreenShadowOutput;
+#endif
+}
+
+#include <Atom/Features/Shadow/DirectionalLightShadowCalculator.azsli>
+
+#if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+    void ComputeWorldNormalAndPosition(const uint2 screenPos, out float3 outPositionWS, out float3 outNormalWS)
+#else
+    void ComputeWorldNormalAndPosition(VSOutput IN, out float3 outPositionWS, out float3 outNormalWS)
+#endif
+{
+    const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
+    const float2 halfPixel = pixelSize * 0.5f;
+
+#if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+    const float2 screenUV  = screenPos * pixelSize + halfPixel;             // The UV value [0, 1] of the screen pixel
+#else
+    const int2   screenPos = IN.m_position.xy;          // The coordinates of the screen pixel being shaded
+    const float2 screenUV  = IN.m_texCoord.xy;          // The UV value [0, 1] of the screen pixel
+#endif
+
+    // Do 2 depth gather ops to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
+    //  W Z
+    //  X Y
+    float4 depthUpLeft = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV - halfPixel);
+    float4 depthBottomRight = PassSrg::m_depthLinear.Gather(PassSrg::PointSampler, screenUV + halfPixel);
+
+    float3 positionVS = ViewSrg::GetViewSpacePosition(screenUV, depthUpLeft.y);
+
+    float3 diffX;
+    {
+        float3 positionLeft  = ViewSrg::GetViewSpacePosition( float2(screenUV.x - pixelSize.x, screenUV.y), depthUpLeft.x);
+        float3 positionRight = ViewSrg::GetViewSpacePosition( float2(screenUV.x + pixelSize.x, screenUV.y), depthBottomRight.z);
+        float3 diffLeft = positionVS - positionLeft;
+        float3 diffRight = positionRight - positionVS;
+        diffX = (abs(diffLeft.z) < abs(diffRight.z)) ? diffLeft : diffRight;
+    }
+    float3 diffY;
+    {
+        float3 positionUp   = ViewSrg::GetViewSpacePosition( float2(screenUV.x, screenUV.y - pixelSize.y), depthUpLeft.z);
+        float3 positionDown = ViewSrg::GetViewSpacePosition( float2(screenUV.x, screenUV.y + pixelSize.y), depthBottomRight.x);
+        float3 diffUp = positionVS - positionUp;
+        float3 diffDown = positionDown - positionVS;
+        diffY = (abs(diffUp.z) < abs(diffDown.z)) ? diffUp : diffDown;
+    }
+
+    float3 normalVS = normalize( cross(diffX, diffY) );
+    
+    positionVS.z = -positionVS.z;
+    normalVS.z = -normalVS.z;
+
+    outPositionWS = mul(ViewSrg::m_viewMatrixInverse, float4(positionVS, 1) ).xyz;
+    outNormalWS   = mul(ViewSrg::m_viewMatrixInverse, float4(normalVS, 0) ).xyz;
+}
+
+#if USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
+
+[numthreads(THREADS, THREADS, 1)]
+void MainCS(uint3 thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uint3 dispatch_id: SV_DispatchThreadID, uint linear_id : SV_GroupIndex)
+{
+    float3 positionWS;
+    float3 normalWS;
+    ComputeWorldNormalAndPosition(dispatch_id.xy, positionWS, normalWS);
+   
+    DirectionalShadowCalculator calc;
+    calc.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
+    calc.SetWorldNormal(normalWS);
+    calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
+    calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+    calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
+    calc.SetWorldPos(positionWS);
+
+   PassSrg::m_fullscreenShadowOutput[dispatch_id.xy] = calc.GetVisibility();
+}
+
+#else
+
+PSOutput MainPS(VSOutput IN)
+{
+    float3 positionWS;
+    float3 normalWS;
+    ComputeWorldNormalAndPosition(IN, positionWS, normalWS);
+
+    DirectionalShadowCalculator calc;
+    calc.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
+    calc.SetWorldNormal(normalWS);
+    calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
+    calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+    calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
+    calc.SetWorldPos(positionWS);
+
+    PSOutput OUT;
+    float vis = calc.GetVisibility();
+    OUT.m_color = saturate(vis.xxxx);
+   
+    return OUT; 
+}
+
+#endif

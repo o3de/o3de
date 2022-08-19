@@ -70,12 +70,29 @@ namespace Physics
         /// Gets the observed velocity of the character, which may differ from the desired velocity if the character is obstructed.
         virtual AZ::Vector3 GetVelocity() const = 0;
 
-        /// Queues up a request to apply a velocity to the character.
-        /// All requests received during a tick are accumulated (so for example, the effects of animation and gravity
-        /// can be applied in two separate requests), and a movement with the accumulated velocity is performed once
-        /// per tick, prior to the physics update.
+        // O3DE_DEPRECATION_NOTICE(GHI-10883)
+        // Please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.
+        virtual void AddVelocity(const AZ::Vector3& velocity)
+        {
+            AddVelocityForTick(velocity);
+        };
+
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the tick.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the tick.
         /// Obstacles may prevent the actual movement from exactly matching the requested movement.
-        virtual void AddVelocity(const AZ::Vector3& velocity) = 0;
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of the tick.
+        virtual void AddVelocityForTick(const AZ::Vector3& velocity) = 0;
+
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the physics timestep.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the physics timestep.
+        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of a physics timestep.
+        virtual void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) = 0;
+
 
         /// Check if there is a character physics component present.
         /// Return true in the request handler implementation in order for things like the animation system to work properly.

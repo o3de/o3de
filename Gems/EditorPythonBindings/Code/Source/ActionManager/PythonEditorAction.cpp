@@ -11,18 +11,18 @@
 namespace EditorPythonBindings
 {
     PythonEditorAction::PythonEditorAction(PyObject* handler)
-        : m_handler(handler)
+        : m_pythonCallableObject(handler)
     {
     }
 
-    PyObject* PythonEditorAction::GetHandler()
+    PyObject* PythonEditorAction::GetPyObject()
     {
-        return m_handler;
+        return m_pythonCallableObject;
     }
 
-    const PyObject* PythonEditorAction::GetHandler() const
+    const PyObject* PythonEditorAction::GetPyObject() const
     {
-        return m_handler;
+        return m_pythonCallableObject;
     }
 
 } // namespace EditorPythonBindings

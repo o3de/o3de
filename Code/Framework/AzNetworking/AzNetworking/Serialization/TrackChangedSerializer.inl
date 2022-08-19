@@ -146,15 +146,15 @@ namespace AzNetworking
     }
 
     template <typename BASE_TYPE>
-    bool TrackChangedSerializer<BASE_TYPE>::BeginObject(const char* name, const char* typeName)
+    bool TrackChangedSerializer<BASE_TYPE>::BeginObject(const char* name)
     {
-        return BASE_TYPE::BeginObject(name, typeName);
+        return BASE_TYPE::BeginObject(name);
     }
 
     template <typename BASE_TYPE>
-    bool TrackChangedSerializer<BASE_TYPE>::EndObject(const char* name, const char* typeName)
+    bool TrackChangedSerializer<BASE_TYPE>::EndObject(const char* name)
     {
-        return BASE_TYPE::EndObject(name, typeName);
+        return BASE_TYPE::EndObject(name);
     }
 
     template <typename BASE_TYPE>

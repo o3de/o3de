@@ -10,6 +10,7 @@
 
 #include "AtomFontSystemComponent.h"
 
+#include <Atom/RHI/RHIUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -90,24 +91,13 @@ namespace AZ
             gEnv = system.GetGlobalEnvironment();
 #endif
 
-            if (gEnv->IsDedicated())
+            if (RHI::IsNullRHI())
             {
-        #if defined(USE_NULLFONT)
                 gEnv->pCryFont = new AtomNullFont();
-        #else
-                // The NULL font implementation must be present for all platforms
-                // supporting running as a pure dedicated server.
-                system.GetILog()->LogError("Missing NULL font implementation for dedicated server");
-                gEnv->pCryFont = NULL;
-        #endif
             }
             else
             {
-        #if defined(USE_NULLFONT) && defined(USE_NULLFONT_ALWAYS)
-                gEnv->pCryFont = new AtomNullFont();
-        #else
                 gEnv->pCryFont = new AtomFont(&system);
-        #endif
             }
 
             if (gEnv->pCryFont)

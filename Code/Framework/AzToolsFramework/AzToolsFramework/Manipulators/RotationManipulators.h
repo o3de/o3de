@@ -11,6 +11,12 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
+#include <AzToolsFramework/Manipulators/AngularManipulatorCircleViewFeedback.h>
+
+namespace AzFramework
+{
+    struct CameraState;
+}
 
 namespace AzToolsFramework
 {
@@ -29,11 +35,13 @@ namespace AzToolsFramework
         void InstallLeftMouseUpCallback(const AngularManipulator::MouseActionCallback& onMouseUpCallback);
         void InstallMouseMoveCallback(const AngularManipulator::MouseActionCallback& onMouseMoveCallback);
 
+        // Manipulators overrides ...
         void SetSpaceImpl(const AZ::Transform& worldFromLocal) override;
         void SetLocalTransformImpl(const AZ::Transform& localTransform) override;
         void SetLocalPositionImpl(const AZ::Vector3& localPosition) override;
         void SetLocalOrientationImpl(const AZ::Quaternion& localOrientation) override;
         void RefreshView(const AZ::Vector3& worldViewPosition) override;
+        void DisplayFeedback(AzFramework::DebugDisplayRequests& debugDisplayRequests, const AzFramework::CameraState& cameraState) override;
 
         void SetLocalAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3);
         void SetViewAxis(const AZ::Vector3& axis);
@@ -45,13 +53,15 @@ namespace AzToolsFramework
         //! Sets the bound width to use for the circle (torus) of an angular manipulator.
         void SetCircleBoundWidth(float circleBoundWidth);
 
+        void ProcessManipulators(const ManipulatorVisitCallback&) override;
+
+        AZStd::shared_ptr<AngularManipulatorCircleViewFeedback> m_angularManipulatorFeedback;
+
     private:
         AZ_DISABLE_COPY_MOVE(RotationManipulators)
 
-        void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
-
         AZStd::array<AZStd::shared_ptr<AngularManipulator>, 3> m_localAngularManipulators;
         AZStd::shared_ptr<AngularManipulator> m_viewAngularManipulator;
-        float m_circleBoundWidth = 0.1f;  //!< The default circle bound width for the angular manipulator torus.
+        float m_circleBoundWidth = 0.1f; //!< The default circle bound width for the angular manipulator torus.
     };
 } // namespace AzToolsFramework

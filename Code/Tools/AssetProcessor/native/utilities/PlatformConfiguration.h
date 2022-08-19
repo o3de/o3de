@@ -35,6 +35,7 @@ namespace AZ
 namespace AssetProcessor
 {
     inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
+    inline constexpr const char* AssetProcessorServerKey{ "/O3DE/AssetProcessor/Settings/Server" };
     class PlatformConfiguration;
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
@@ -58,21 +59,32 @@ namespace AssetProcessor
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs
-    class AssetPlatformSpec
+    enum class AssetInternalSpec
     {
-    public:
-        QString m_extraRCParams;
+        Copy,
+        Skip
     };
 
     //! The data about a particular recognizer, including all platform specs.
     //! essentially a plain data holder, but with helper funcs
     struct AssetRecognizer
     {
+        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
+
         AssetRecognizer() = default;
 
-        AssetRecognizer(const QString& name, bool testLockSource, int priority, 
-            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher, 
-            const QString& version, const AZ::Data::AssetType& productAssetType, bool outputProductDependencies, bool checkServer = false)
+        AssetRecognizer(
+            const AZStd::string& name,
+            bool testLockSource,
+            int priority,
+            bool critical,
+            bool supportsCreateJobs,
+            AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+            const AZStd::string& version,
+            const AZ::Data::AssetType& productAssetType,
+            bool outputProductDependencies,
+            bool checkServer = false)
             : m_name(name)
             , m_testLockSource(testLockSource)
             , m_priority(priority)
@@ -85,13 +97,13 @@ namespace AssetProcessor
             , m_checkServer(checkServer)
         {}
 
-        QString m_name;
+        AZStd::string m_name;
         AssetBuilderSDK::FilePatternMatcher  m_patternMatcher;
-        QString m_version = QString();
+        AZStd::string m_version = {};
 
         // the QString is the Platform Identifier ("pc")
-        // the AssetPlatformSpec is the details for processing that asset on that platform.
-        QHash<QString, AssetPlatformSpec> m_platformSpecs;
+        // the AssetInternalSpec specifies the type of internal job to process
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecs;
 
         // an optional parameter which is a UUID of types to assign to the output asset(s)
         // if you don't specify one, then a heuristic will be used
@@ -105,7 +117,7 @@ namespace AssetProcessor
         bool m_outputProductDependencies = false;
     };
     //! Dictionary of Asset Recognizers based on name
-    typedef QHash<QString, AssetRecognizer> RecognizerContainer;
+    typedef AZStd::unordered_map<AZStd::string, AssetRecognizer> RecognizerContainer;
     typedef QList<const AssetRecognizer*> RecognizerPointerContainer;
 
     //! The structure holds information about a particular exclude recognizer
@@ -119,8 +131,12 @@ namespace AssetProcessor
     //! Interface to get constant references to asset and exclude recognizers
     struct RecognizerConfiguration
     {
+        AZ_RTTI(RecognizerConfiguration, "{2E4DD73E-8D1E-42BC-A3E3-1A671D636DAC}");
+
         virtual const RecognizerContainer& GetAssetRecognizerContainer() const = 0;
+        virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
+        virtual bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) = 0;
     };
 
     //! Visitor for reading the "/Amazon/AssetProcessor/Settings/ScanFolder *" entries from the Settings Registry
@@ -164,10 +180,10 @@ namespace AssetProcessor
         AZStd::stack<AZStd::string> m_excludeNameStack;
     };
 
-    struct RCVisitor
+    struct SimpleJobVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
-        RCVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
+        SimpleJobVisitor(const AZ::SettingsRegistryInterface& settingsRegistry, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& enabledPlatforms)
             : m_registry(settingsRegistry)
             , m_enabledPlatforms(enabledPlatforms)
         {
@@ -180,19 +196,38 @@ namespace AssetProcessor
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
-        struct RCAssetRecognizer
+        struct SimpleJobAssetRecognizer
         {
             AssetRecognizer m_recognizer;
             AZStd::string m_defaultParams;
             bool m_ignore{};
         };
-        AZStd::vector<RCAssetRecognizer> m_assetRecognizers;
+        AZStd::vector<SimpleJobAssetRecognizer> m_assetRecognizers;
     private:
         void ApplyParamsOverrides(AZStd::string_view path);
 
-        AZStd::stack<AZStd::string> m_rcNameStack;
+        AZStd::stack<AZStd::string> m_simpleJobNameStack;
         const AZ::SettingsRegistryInterface& m_registry;
         const AZStd::vector<AssetBuilderSDK::PlatformInfo>& m_enabledPlatforms;
+    };
+
+    //! This vistor reads in the Asset Cache Server configuration elements from the settings registry
+    struct ACSVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+            AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
+        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZStd::vector<AssetRecognizer> m_assetRecognizers;
+    private:
+        AssetRecognizer* CurrentAssetRecognizer();
+
+        AZStd::stack<AZStd::string> m_nameStack;
     };
 
     /** Reads the platform ini configuration file to determine
@@ -210,6 +245,8 @@ namespace AssetProcessor
     public:
         explicit PlatformConfiguration(QObject* pParent = nullptr);
         virtual ~PlatformConfiguration() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         /** Use this function to parse the set of config files and the gem file to set up the platform config.
         * This should be about the only function that is required to be called in order to end up with
@@ -246,6 +283,9 @@ namespace AssetProcessor
         //! Gets the minumum jobs specified in the configuration file
         int GetMinJobs() const;
         int GetMaxJobs() const;
+
+        void EnableCommonPlatform();
+        void AddIntermediateScanFolder();
 
         //! Return how many scan folders there are
         int GetScanFolderCount() const;
@@ -298,7 +338,7 @@ namespace AssetProcessor
         QString GetOverridingFile(QString relativeName, QString scanFolderName) const;
 
         //! given a relative name, loop over folders and resolve it to a full path with the first existing match.
-        QString FindFirstMatchingFile(QString relativeName) const;
+        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
         QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
@@ -331,7 +371,14 @@ namespace AssetProcessor
 
         const RecognizerContainer& GetAssetRecognizerContainer() const override;
 
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override;
+
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
+
+        bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) override;
+
+        static bool ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText);
+        static bool ConvertFromJson(const AZStd::string& jsonText, RecognizerContainer& recognizerContainer);
 
         /** returns true if the config is valid.
         * configs are considered invalid if critical information is missing.
@@ -347,6 +394,9 @@ namespace AssetProcessor
         const AZStd::string& GetError() const;
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
+
+        void CacheIntermediateAssetsScanFolderId();
+        AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
 
     protected:
 
@@ -367,11 +417,13 @@ namespace AssetProcessor
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
         RecognizerContainer m_assetRecognizers;
+        RecognizerContainer m_assetCacheServerRecognizers;
         ExcludeRecognizerContainer m_excludeAssetRecognizers;
         AZStd::vector<AssetProcessor::ScanFolderInfo> m_scanFolders;
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
+        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

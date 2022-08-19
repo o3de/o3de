@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/ShapeAreaFalloffGradientRequestBus.h>
@@ -48,6 +49,7 @@ namespace GradientSignal
         , private GradientRequestBus::Handler
         , private ShapeAreaFalloffGradientRequestBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
+        , private AZ::EntityBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -74,6 +76,11 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
+        ////////////////////////////////////////////////////////////////////////
+        // EntityEvents
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
+        void OnEntityDeactivated(const AZ::EntityId& entityId) override;
+
         ////////////////////////////////////////////////////////////////////////
         // LmbrCentral::ShapeComponentNotificationsBus
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons) override;

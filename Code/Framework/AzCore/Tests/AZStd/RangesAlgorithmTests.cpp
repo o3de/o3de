@@ -261,4 +261,159 @@ namespace UnitTest
         EXPECT_TRUE(AZStd::ranges::any_of(numbers, [](int i) { return i == 3; })) << "At least one number should equal 3";
         EXPECT_FALSE(AZStd::ranges::any_of(numbers, [](int i) { return i == 6; })) << "No number should equal 6";
     }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesForEach_LoopsOverElements_Success)
+    {
+        constexpr AZStd::string_view expectedString = "HelloWorldLongString";
+        constexpr AZStd::array words{ "Hello", "World", "Long", "String" };
+
+        {
+            // Check for_each which accepts iterators
+            AZStd::string resultString;
+            AZStd::ranges::for_each(words.begin(), words.end(), [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedString, resultString);
+        }
+        {
+            // Check for_each which accepts a range
+            AZStd::string resultString;
+            AZStd::ranges::for_each(words, [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedString, resultString);
+        }
+        {
+            // Check for_each_n which accepts an iterator and a count
+            constexpr AZStd::string_view expectedForEachString = "HelloWorld";
+            AZStd::string resultString;
+            AZStd::ranges::for_each_n(words.begin(), 2, [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedForEachString, resultString);
+        }
+    }
+    TEST_F(RangesAlgorithmTestFixture, RangesCount_CountsCharacters_Succeeds)
+    {
+        constexpr AZStd::string_view sourceString = "HelloWorldLongString";
+        constexpr size_t expectedChar_o_count = 3;
+
+        {
+            // Check count which accepts iterators
+            EXPECT_EQ(expectedChar_o_count, AZStd::ranges::count(sourceString.begin(), sourceString.end(), 'o'));
+        }
+        {
+            // Check count which accepts a range
+            EXPECT_EQ(expectedChar_o_count, AZStd::ranges::count(sourceString, 'o'));
+        }
+        {
+            // Check count_if which accepts iterators and a unary predicate
+            constexpr size_t expectedChar_l_count = 3;
+            auto CountLetter_l = [](char elem) { return elem == 'l'; };
+            EXPECT_EQ(expectedChar_l_count, AZStd::ranges::count_if(sourceString.begin(), sourceString.end(), AZStd::move(CountLetter_l)));
+        }
+        {
+            // Check count_if which accepts a range and a unary predicate
+            constexpr size_t expectedChar_r_count = 2;
+            auto CountLetter_r = [](char elem) { return elem == 'r'; };
+            EXPECT_EQ(expectedChar_r_count, AZStd::ranges::count_if(sourceString, AZStd::move(CountLetter_r)));
+        }
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesCopy_CopyRangeIntoOutputIterator_Succeeds)
+    {
+        constexpr AZStd::string_view sourceString = "HelloWorld";
+
+        AZStd::vector<char> charVector;
+        AZStd::ranges::copy(sourceString, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+
+        AZStd::ranges::copy(sourceString.begin(), sourceString.end(), AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+
+        auto SkipCapitalLetters = [](const char elem) -> bool
+        {
+            return islower(elem);
+        };
+        charVector.clear();
+        AZStd::ranges::copy_if(sourceString, AZStd::back_inserter(charVector), SkipCapitalLetters);
+        EXPECT_THAT(charVector, ::testing::ElementsAre('e', 'l', 'l', 'o', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+        AZStd::ranges::copy_if(sourceString.begin(), sourceString.end(), AZStd::back_inserter(charVector), SkipCapitalLetters);
+        EXPECT_THAT(charVector, ::testing::ElementsAre('e', 'l', 'l', 'o', 'o', 'r', 'l', 'd'));
+
+        charVector.clear();
+        AZStd::ranges::copy_n(sourceString.begin(), 5, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o'));
+
+        charVector.clear();
+        charVector.resize_no_construct(sourceString.size());
+        AZStd::ranges::copy_backward(sourceString, charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        charVector.clear();
+        charVector.resize_no_construct(sourceString.size());
+        AZStd::ranges::copy_backward(sourceString.begin(), sourceString.end(), charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+    }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesMove_MoveElementsIntoOutputIterator_Succeeds)
+    {
+        struct MoveOpRemoveContents
+        {
+            MoveOpRemoveContents() = default;
+            MoveOpRemoveContents(const MoveOpRemoveContents&) = default;
+            MoveOpRemoveContents& operator=(const MoveOpRemoveContents&) = default;
+
+            MoveOpRemoveContents(char elem)
+                : m_elem{elem}
+            {}
+            MoveOpRemoveContents(MoveOpRemoveContents&& other)
+                : m_elem{ other.m_elem }
+            {
+                // Reset the other element the NUL character
+                other.m_elem = {};
+            }
+            MoveOpRemoveContents& operator=(MoveOpRemoveContents&& other)
+            {
+                m_elem = other.m_elem;
+                other.m_elem = {};
+                return *this;
+            }
+
+            char m_elem{};
+
+            bool operator==(const MoveOpRemoveContents& other) const
+            {
+                return m_elem == other.m_elem;
+            }
+            bool operator!=(const MoveOpRemoveContents& other) const
+            {
+                return !operator==(other);
+            }
+        };
+
+        // testString will be moved several times in this test
+        // So it the contents need to be re-initialized after each ranges::move* call
+        AZStd::vector<MoveOpRemoveContents> testString{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+
+        AZStd::vector<MoveOpRemoveContents> charVector;
+        AZStd::ranges::move(testString, AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        AZStd::ranges::move(testString.begin(), testString.end(), AZStd::back_inserter(charVector));
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        charVector.resize_no_construct(testString.size());
+        AZStd::ranges::move_backward(testString, charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+
+        charVector.clear();
+        testString = AZStd::vector<MoveOpRemoveContents>{ 'H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd' };
+        charVector.resize_no_construct(testString.size());
+        AZStd::ranges::move_backward(testString.begin(), testString.end(), charVector.end());
+        EXPECT_THAT(charVector, ::testing::ElementsAre('H', 'e', 'l', 'l', 'o', 'W', 'o', 'r', 'l', 'd'));
+        EXPECT_THAT(testString, ::testing::ElementsAre('\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0'));
+    }
 }

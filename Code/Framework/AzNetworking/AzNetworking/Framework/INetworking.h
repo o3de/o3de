@@ -89,5 +89,9 @@ namespace AzNetworking
         //! Returns the total time spent updating our UdpReaderThread.
         //! @return the total time spent updating our UdpReaderThread
         virtual AZ::TimeMs GetUdpReaderThreadUpdateTime() const = 0;
+
+        //! Forcibly swaps reader thread buffers and updates all Network Interfaces
+        //! CAUTION: For use when SystemTickBus is suspended or similar
+        virtual void ForceUpdate() = 0;
     };
 }

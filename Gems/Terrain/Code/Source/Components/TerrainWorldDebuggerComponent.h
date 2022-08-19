@@ -24,6 +24,47 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    class TerrainDebugQueryVisualizerConfig
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TerrainDebugQueryVisualizerConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainDebugQueryVisualizerConfig, "{6FA6540D-D90A-44AC-8F5D-35071689291B}");
+
+        TerrainDebugQueryVisualizerConfig() = default;
+        virtual ~TerrainDebugQueryVisualizerConfig() = default;
+
+        bool DrawQueriesDisabled()
+        {
+            return !m_drawQueries;
+        }
+
+        bool DisableHeights()
+        {
+            return !(m_drawQueries && m_drawHeights);
+        }
+
+        bool DisableNormals()
+        {
+            return !(m_drawQueries && m_drawNormals);
+        }
+
+        bool DisableCenterPosition()
+        {
+            return !m_drawQueries || m_useCameraPosition;
+        }
+
+        bool m_drawQueries{ false };
+        AzFramework::Terrain::TerrainDataRequests::Sampler m_sampler{ AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR };
+        size_t m_pointsPerDirection{ 32 };
+        float m_spacing{ 0.5f };
+        bool m_drawHeights{ true };
+        float m_heightPointSize{ 1.0f / 16.0f };
+        bool m_drawNormals{ true };
+        float m_normalHeight{ 1.0f };
+        bool m_useCameraPosition{ true };
+        AZ::Vector3 m_centerPosition{ AZ::Vector3(0.0f) };
+    };
+
     class TerrainWorldDebuggerConfig
         : public AZ::ComponentConfig
     {
@@ -34,6 +75,7 @@ namespace Terrain
 
         bool m_drawWireframe{ true };
         bool m_drawWorldBounds{ true };
+        TerrainDebugQueryVisualizerConfig m_debugQueries;
     };
 
 
@@ -100,13 +142,13 @@ namespace Terrain
             // This should only be called within the scope of a lock on m_sectorStateMutex.
             void SetDirty();
 
-            AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> m_jobContext;
+            AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> m_jobContext;
             AZStd::unique_ptr<AZStd::semaphore> m_jobCompletionEvent;
             AZStd::recursive_mutex m_sectorStateMutex;
             AZ::Aabb m_aabb{ AZ::Aabb::CreateNull() };
             AZStd::vector<AZ::Vector3> m_lineVertices;
-            AZStd::vector<float> m_rowHeights;
-            float m_previousHeight = 0.0f;
+            AZStd::vector<AZ::Vector3> m_sectorVertices;
+            AZStd::vector<bool> m_sectorVertexExists;
             bool m_isDirty{ true };
         };
 
@@ -114,6 +156,7 @@ namespace Terrain
         void MarkDirtySectors(const AZ::Aabb& dirtyRegion);
         void DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay);
         void DrawWireframe(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
+        void DrawQueries(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay);
 
         // Each sector contains an N x N grid of squares that it will draw.  Since this is a count of the number of terrain grid points
         // in each direction, the actual world size will depend on the terrain grid resolution in each direction.

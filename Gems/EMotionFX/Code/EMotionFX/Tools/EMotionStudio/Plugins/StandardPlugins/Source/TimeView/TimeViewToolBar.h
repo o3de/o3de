@@ -24,7 +24,6 @@ namespace EMStudio
 {
     // forward declarations
     class TimeViewPlugin;
-    class MotionWindowPlugin;
 
     class TimeViewToolBar
         : public QToolBar
@@ -47,8 +46,6 @@ namespace EMStudio
         void OnDetailedNodes();
         void UpdateMotions();
         void UpdateInterface();
-
-        static MotionWindowPlugin* GetMotionWindowPlugin();
 
         RecorderGroup* GetRecorderGroup() const { return m_recorderGroup; }
         PlaybackControlsGroup* GetPlaybackControlsGroup() const { return m_playbackControls; }

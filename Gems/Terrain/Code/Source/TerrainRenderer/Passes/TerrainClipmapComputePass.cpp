@@ -232,6 +232,16 @@ namespace Terrain
 
         const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
+        if (!clipmapManager.IsClipmapEnabled())
+        {
+            return false;
+        }
+
         return clipmapManager.HasDetailClipmapUpdate();
+    }
+
+    bool TerrainDetailClipmapGenerationPass::ClipmapFeatureIsEnabled() const
+    {
+        return AZ::RPI::Pass::IsEnabled();
     }
 } // namespace Terrain

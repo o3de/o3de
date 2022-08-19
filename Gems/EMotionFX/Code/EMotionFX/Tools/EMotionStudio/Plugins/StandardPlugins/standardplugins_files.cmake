@@ -158,14 +158,8 @@ set(FILES
     Source/MotionSetsWindow/MotionSetWindow.h
     Source/MotionWindow/MotionExtractionWindow.cpp
     Source/MotionWindow/MotionExtractionWindow.h
-    Source/MotionWindow/MotionListWindow.cpp
-    Source/MotionWindow/MotionListWindow.h
     Source/MotionWindow/MotionPropertiesWindow.cpp
     Source/MotionWindow/MotionPropertiesWindow.h
-    Source/MotionWindow/MotionRetargetingWindow.cpp
-    Source/MotionWindow/MotionRetargetingWindow.h
-    Source/MotionWindow/MotionWindowPlugin.cpp
-    Source/MotionWindow/MotionWindowPlugin.h
     Source/NodeGroups/NodeGroupManagementWidget.cpp
     Source/NodeGroups/NodeGroupManagementWidget.h
     Source/NodeGroups/NodeGroupsPlugin.cpp

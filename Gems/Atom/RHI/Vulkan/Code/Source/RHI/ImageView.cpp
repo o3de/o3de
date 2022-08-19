@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -86,7 +86,7 @@ namespace AZ
             createInfo.components = VkComponentMapping{}; // identity mapping
             createInfo.subresourceRange = vkRange;
 
-            const VkResult result = vkCreateImageView(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImageView);
+            const VkResult result = device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImageView);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
@@ -108,7 +108,8 @@ namespace AZ
             if (m_vkImageView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, vkDestroyImageView));
+                device.QueueForRelease(
+                    new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, device.GetContext().DestroyImageView));
                 m_vkImageView = VK_NULL_HANDLE;
             }
         }

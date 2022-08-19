@@ -683,7 +683,10 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         if (!configFileOpened)
         {
-            AZ_Warning("SettingsRegistryMergeUtils", false, R"(Unable to open file "%s")", configPath.c_str());
+            // While all parsing and formatting errors are actual errors, config files that are not present
+            // are not an error as they are always optional.  In this case, show a brief trace message
+            // that indicates the location the file could be placed at in order to run it.
+            AZ_TracePrintf("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
             return false;
         }
 
@@ -797,14 +800,14 @@ namespace AZ::SettingsRegistryMergeUtils
     {
         auto MergeGemPathToRegistry = [&registry](AZStd::string_view manifestKey,
             AZStd::string_view gemName,
-            AZStd::string_view gemRootPath)
+            AZ::IO::PathView gemRootPath)
         {
             using FixedValueString = SettingsRegistryInterface::FixedValueString;
             if (manifestKey == GemNameKey)
             {
                 const auto manifestGemJsonPath = FixedValueString::format("%s/%.*s/Path",
                     ManifestGemsRootKey, AZ_STRING_ARG(gemName));
-                registry.Set(manifestGemJsonPath, gemRootPath);
+                registry.Set(manifestGemJsonPath, gemRootPath.LexicallyNormal().Native());
             }
         };
 
@@ -1459,8 +1462,8 @@ namespace AZ::SettingsRegistryMergeUtils
             if (FixedValueString externalSubdirectoryPath;
                 manifestJsonRegistry.Get(externalSubdirectoryPath, externalSubdirectoryJsonPath))
             {
-                auto gemManifestPath = AZ::IO::FixedMaxPath(manifestRootDirView)
-                    / externalSubdirectoryPath / Internal::GemJsonFilename;
+                auto gemManifestPath = (AZ::IO::FixedMaxPath(manifestRootDirView)
+                    / externalSubdirectoryPath / Internal::GemJsonFilename).LexicallyNormal();
                 if (AZ::IO::SystemFile::Exists(gemManifestPath.c_str()))
                 {
                     VisitManifestJson(gemManifestCallback, gemManifestPath.Native(), GemNameKey);

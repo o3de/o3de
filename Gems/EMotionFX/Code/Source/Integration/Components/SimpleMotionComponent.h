@@ -76,7 +76,6 @@ namespace EMotionFX
             }
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
                 dependent.push_back(AZ_CRC("MeshService", 0x71d8a455));
             }
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -101,6 +100,7 @@ namespace EMotionFX
             float GetPlaySpeed() const override;
             void PlayTime(float time) override;
             float GetPlayTime() const override;
+            float GetDuration() const override;
             void Motion(AZ::Data::AssetId assetId) override;
             AZ::Data::AssetId  GetMotion() const override;
             void BlendInTime(float time) override;

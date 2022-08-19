@@ -15,6 +15,16 @@
 
 namespace AZ::RPI
 {
+    // State to track what update functions of the pass tree are currently in progress
+    enum class PassTreeState : u8
+    {
+        Idle,
+        RemovingPasses,
+        BuildingPasses,
+        InitializingPasses,
+        ValidatingPasses
+    };
+
     // Helper class used by the PassSystem and RenderPipeline to contain and update passes
     // Passes owned by the container are stored as a tree under the container's root pass
     // The container has queues for pass building, initialization and removal. These queues
@@ -22,10 +32,14 @@ namespace AZ::RPI
     // rendering, but instead at the start of the frame when it is safe to do so.
     class PassTree
     {
-        // Everything is private, class should only be used by PassSystem and RenderPipeline
         friend class PassSystem;
         friend class RenderPipeline;
 
+    public:
+        // Returns the state the PassTree is currently in (see PassTreeState enum above)
+        PassTreeState GetPassTreeState() const { return m_state; }
+
+    private: 
         // Used to remove passes from the update list
         void EraseFromLists(AZStd::function<bool(const RHI::Ptr<Pass>&)> predicate);
 
@@ -50,5 +64,8 @@ namespace AZ::RPI
 
         // Tracks whether any changes to the passes in this container have occurred in the frame
         bool m_passesChangedThisFrame = false;
+
+        // What state the PassTree is currently in (see PassTreeState enum above)
+        PassTreeState m_state = PassTreeState::Idle;
     };
 }

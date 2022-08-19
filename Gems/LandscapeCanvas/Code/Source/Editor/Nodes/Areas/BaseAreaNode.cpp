@@ -19,9 +19,6 @@
 #include <GraphModel/Integration/Helpers.h>
 #include <GraphModel/Model/Slot.h>
 
-// Vegetation
-#include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
-
 // Landscape Canvas
 #include "BaseAreaNode.h"
 #include <Editor/Core/GraphContext.h>
@@ -76,15 +73,14 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr invalidEntityDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
         GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         GraphModel::DataTypePtr areaDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Area);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             PLACEMENT_BOUNDS_SLOT_ID,
             PLACEMENT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
-            boundsDataType->GetDefaultValue(),
+            { boundsDataType },
+            AZStd::any(AZ::EntityId()),
             PLACEMENT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(

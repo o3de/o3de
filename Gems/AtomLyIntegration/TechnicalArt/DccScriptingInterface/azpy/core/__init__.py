@@ -8,25 +8,24 @@
 #
 #
 # -------------------------------------------------------------------------
-__copyright__ = "Copyright 2021, Amazon"
+"""! @brief
+<DCCsi>/core/azpy/__init__.py
+
+core is a sub-module of the azpy pure-python api.
+"""
 # -------------------------------------------------------------------------
 import sys
 import logging as _logging
 # -------------------------------------------------------------------------
 
-#pulling from azpy.constants causes cyclical imports :(
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_DCCSI_GDEBUG = False
-_DCCSI_LOGLEVEL = int(20)
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-    
+# -------------------------------------------------------------------------
+# global scope
 _PACKAGENAME = 'azpy.core'
-_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 __all__ = []
+
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 if sys.version_info >= (3, 6):
     from azpy.core.py3.utils import get_datadir
@@ -38,5 +37,4 @@ else:
     from azpy.core.py2.utils import get_datadir
 
 __all__ = ['get_datadir'] # you should hope it works
-
 # -------------------------------------------------------------------------

@@ -21,10 +21,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/regex.h>
-
-#include <AzFramework/Gem/GemInfo.h>
 
 #include <Libraries/Core/AzEventHandler.h>
 #include <Libraries/Libraries.h>
@@ -495,12 +492,6 @@ namespace ScriptCanvasEditorTools
                 }
             }
 
-            if (details.m_category.empty())
-            {
-                // Get the library's name as the category
-                details.m_category = Helpers::GetLibraryCategory(*m_serializeContext, classData->m_name);
-            }
-
             if (ScriptCanvas::Node* nodeComponent = reinterpret_cast<ScriptCanvas::Node*>(classData->m_factory->Create(classData->m_name)))
             {
                 nodeComponent->Init();
@@ -609,10 +600,8 @@ namespace ScriptCanvasEditorTools
                 details.m_category = "Uncategorized";
             }
 
-            AZStd::string prefix = GraphCanvas::TranslationKey::Sanitize(details.m_category);
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(details.m_name);
-
-            AZStd::string targetFile = AZStd::string::format("Nodes/%s_%s", prefix.c_str(), filename.c_str());
+            AZStd::string fileName = ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(details.m_name, classData->m_typeId);
+            AZStd::string targetFile = AZStd::string::format("Nodes/%s", fileName.c_str());
 
             SaveJSONData(targetFile, translationRoot);
 
@@ -1272,8 +1261,7 @@ namespace ScriptCanvasEditorTools
 
         document.AddMember("entries", entries, document.GetAllocator());
 
-        AZ::IO::Path gemPath = Helpers::GetGemPath("ScriptCanvas");
-        gemPath = gemPath / AZ::IO::Path("TranslationAssets");
+        AZ::IO::Path gemPath = ScriptCanvasEditor::TranslationHelper::GetTranslationDefaultFolderPath();
         gemPath = gemPath / filename;
         gemPath.ReplaceExtension(".names");
 
@@ -1372,36 +1360,6 @@ namespace ScriptCanvasEditorTools
             }
         }
 
-        AZStd::string GetGemPath(const AZStd::string& gemName)
-        {
-            if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
-            {
-                AZ::IO::Path gemSourceAssetDirectories;
-                AZStd::vector<AzFramework::GemInfo> gemInfos;
-                if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
-                {
-                    auto FindGemByName = [gemName](const AzFramework::GemInfo& gemInfo)
-                    {
-                        return gemInfo.m_gemName == gemName;
-                    };
-
-                    // Gather unique list of Gem Paths from the Settings Registry
-                    auto foundIt = AZStd::find_if(gemInfos.begin(), gemInfos.end(), FindGemByName);
-                    if (foundIt != gemInfos.end())
-                    {
-                        const AzFramework::GemInfo& gemInfo = *foundIt;
-                        for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                        {
-                            gemSourceAssetDirectories = (absoluteSourcePath / gemInfo.GetGemAssetFolder());
-                        }
-
-                        return gemSourceAssetDirectories.c_str();
-                    }
-                }
-            }
-            return "";
-        }
-
         AZStd::string GetCategory(const AZ::SerializeContext::ClassData* classData)
         {
             AZStd::string categoryPath;
@@ -1422,70 +1380,6 @@ namespace ScriptCanvasEditorTools
             }
 
             return categoryPath;
-        }
-
-        AZStd::string GetLibraryCategory(const AZ::SerializeContext& serializeContext, const AZStd::string& nodeName)
-        {
-            AZStd::string category;
-
-            // Get all the types.
-            auto EnumerateLibraryDefintionNodes = [&nodeName, &category, &serializeContext](
-                const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
-            {
-                AZStd::string categoryPath = classData->m_editData ? classData->m_editData->m_name : classData->m_name;
-
-                if (classData->m_editData)
-                {
-                    auto editorElementData = classData->m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
-                    if (editorElementData)
-                    {
-                        if (auto categoryAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Category))
-                        {
-                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryAttribute))
-                            {
-                                categoryPath = categoryAttributeData->Get(nullptr);
-                            }
-                        }
-                    }
-                }
-
-                // Children
-                for (auto& node : ScriptCanvas::Library::LibraryDefinition::GetNodes(classData->m_typeId))
-                {
-                    // Pass in the associated class data so we can do more intensive lookups?
-                    const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
-
-                    if (nodeClassData == nullptr)
-                    {
-                        continue;
-                    }
-
-                    // Skip over some of our more dynamic nodes that we want to populate using different means
-                    else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
-                    {
-                        continue;
-                    }
-                    else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        if (node.second == nodeName)
-                        {
-                            category = categoryPath;
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-            };
-
-            const AZ::TypeId& libraryDefTypeId = azrtti_typeid<ScriptCanvas::Library::LibraryDefinition>();
-            serializeContext.EnumerateDerived(EnumerateLibraryDefintionNodes, libraryDefTypeId, libraryDefTypeId);
-
-            return category;
         }
 
         AZStd::vector<AZ::TypeId> GetUnpackedTypes(const AZ::TypeId& typeID)

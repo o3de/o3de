@@ -4,14 +4,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import logging
-import os
 import pytest
 
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
-
-logger = logging.getLogger(__name__)
-TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "tests")
 
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -21,6 +16,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525657")
     class AtomEditorComponents_BloomAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
+
+    @pytest.mark.test_case_id("C36553393")
+    class AtomEditorComponents_CubeMapCaptureAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_CubeMapCaptureAdded as test_module
 
     @pytest.mark.test_case_id("C32078118")
     class AtomEditorComponents_DecalAdded(EditorBatchedTest):

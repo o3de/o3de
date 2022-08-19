@@ -17,6 +17,7 @@
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/WindowContext.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 
@@ -24,8 +25,6 @@ namespace AZ
 {
     namespace RPI
     {
-        class WindowContext;
-
         //! Pass that outputs to a SwapChain
         //! Holds all the passes needed to render a frame like depth, forward, post effects etc.
         class SwapChainPass final
@@ -36,7 +35,7 @@ namespace AZ
             AZ_RTTI(SwapChainPass, "{551AD61F-8603-4998-A7D1-226F03022295}", ParentPass);
             AZ_CLASS_ALLOCATOR(SwapChainPass, SystemAllocator, 0);
 
-            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext);
+            SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapChainMode);
             ~SwapChainPass();
 
             Ptr<ParentPass> Recreate() const override;
@@ -72,6 +71,7 @@ namespace AZ
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
+            WindowContext::SwapChainMode m_swapChainMode = WindowContext::SwapChainMode::Default;
         };
 
     }   // namespace RPI

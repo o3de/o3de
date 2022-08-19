@@ -114,6 +114,7 @@ set(FILES
     Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
+    Editor/Translation/TranslationHelper.cpp
     Editor/Translation/TranslationHelper.h
     Editor/Undo/ScriptCanvasGraphCommand.cpp
     Editor/Undo/ScriptCanvasGraphCommand.h
@@ -235,6 +236,8 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
+    Editor/View/Windows/ScriptEventMenu.cpp
+    Editor/View/Windows/ScriptEventMenu.h
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui

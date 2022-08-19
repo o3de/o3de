@@ -197,6 +197,8 @@ namespace PhysX::Utils
                 return nullptr;
             }
 
+            PHYSX_SCENE_WRITE_LOCK(actorData.parentActor->getScene());
+
             const physx::PxTransform parentWorldTransform =
                 actorData.parentActor ? actorData.parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
             const physx::PxTransform childWorldTransform =

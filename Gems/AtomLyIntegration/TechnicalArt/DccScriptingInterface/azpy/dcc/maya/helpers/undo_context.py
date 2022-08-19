@@ -7,21 +7,14 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
-
 # -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-# <DCCsi>\\azpy\\maya\\\callbacks\\node_message_callback_handler.py
-# Maya node message callback handler
+# <DCCsi>\\azpy\\maya\\\helpers\\undo_context.py
+# Maya undo context
 # Reference: Rob Galanakis, Tech-artists.org
 # -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-
-
 """
 This module creates a simple Class object for managing Maya Undo Chunking.
 """
-
 # -------------------------------------------------------------------------
 # -- Standard Python modules
 import os

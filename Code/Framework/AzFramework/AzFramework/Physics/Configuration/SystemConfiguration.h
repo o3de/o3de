@@ -9,7 +9,6 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
-#include <AzFramework/Physics/Material.h>
 
 namespace AZ
 {
@@ -20,7 +19,7 @@ namespace AzPhysics
 {
     //! Contains global physics settings.
     //! Used to initialize the Physics System.
-    struct SystemConfiguration
+    struct alignas(16) SystemConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(AzPhysics::SystemConfiguration, "{24697CAF-AC00-443D-9C27-28D58734A84C}");
@@ -42,9 +41,6 @@ namespace AzPhysics
         //! Each Physics Scene uses this as a base and will override as needed.
         CollisionConfiguration m_collisionConfig;
 
-        Physics::DefaultMaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
-
         //! Controls whether the Physics System will self register to the TickBus and call StartSimulation / FinishSimulation on each Scene.
         //! Disable this to manually control Physics Scene simulation logic.
         bool m_autoManageSimulationUpdate = true;
@@ -56,5 +52,16 @@ namespace AzPhysics
         // helpers for edit context
         AZ::u32 OnMaxTimeStepChanged();
         float GetFixedTimeStepMax() const;
+
+        // Padding with a 16 byte aligned structure to make SystemConfiguration aligned to 16 bytes too.
+        // Without this, SystemConfiguration generates warnings everywhere it is used indicating that
+        // padding was added. But having this structure limits the warnings to this member usage because
+        // SystemConfiguration won't need extra padding to achieve 16 byte alignment.
+        AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") // structure was padded due to alignment
+        struct alignas(16)
+        {
+            unsigned char m_unused[16];
+        } m_unusedPadding;
+        AZ_POP_DISABLE_WARNING
     };
 }

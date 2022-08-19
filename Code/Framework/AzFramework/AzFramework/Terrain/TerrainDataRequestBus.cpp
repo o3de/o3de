@@ -12,6 +12,69 @@
 
 namespace AzFramework::Terrain
 {
+
+    void FloatRange::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<FloatRange>()
+                ->Version(1)
+                ->Field("Min", &FloatRange::m_min)
+                ->Field("Max", &FloatRange::m_max)
+                ;
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<FloatRange>()
+                ->Property("min", BehaviorValueProperty(&FloatRange::m_min))
+                ->Property("max", BehaviorValueProperty(&FloatRange::m_max))
+                ;
+        }
+
+    }
+
+    TerrainQueryRegion::TerrainQueryRegion(
+        const AZ::Vector3& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize)
+        : m_startPoint(startPoint)
+        , m_numPointsX(numPointsX)
+        , m_numPointsY(numPointsY)
+        , m_stepSize(stepSize)
+    {
+    }
+
+    TerrainQueryRegion::TerrainQueryRegion(const AZ::Vector2& startPoint, size_t numPointsX, size_t numPointsY, const AZ::Vector2& stepSize)
+        : m_startPoint(startPoint)
+        , m_numPointsX(numPointsX)
+        , m_numPointsY(numPointsY)
+        , m_stepSize(stepSize)
+    {
+    }
+
+    TerrainQueryRegion TerrainQueryRegion::CreateFromAabbAndStepSize(const AZ::Aabb& region, const AZ::Vector2& stepSize)
+    {
+        TerrainQueryRegion queryRegion;
+
+        if (region.IsValid() && (stepSize.GetX() > 0.0f) && (stepSize.GetY() > 0.0f))
+        {
+            queryRegion.m_startPoint = region.GetMin();
+            queryRegion.m_stepSize = stepSize;
+
+            const AZ::Vector3 regionExtents = region.GetExtents();
+
+            // We'll treat the region as min-inclusive, max-exclusive.
+            // Ex: (1,1) - (6,6) with stepSize(1) will process 1, 2, 3, 4, 5 but not 6 in each direction.
+            // If the region is smaller than stepSize, make sure we still process at least the start point ("min-inclusive").
+            // However, when an extent is zero-size (i.e. min == max), we need to choose whether to follow the "min-inclusive" rule
+            // and include the start/end point, or the "max-exclusive" rule and exclude the start/end point. We're choosing to go
+            // with "max-exclusive", since it seems likely that a 0-length extent wasn't intended to include any points.
+            queryRegion.m_numPointsX = aznumeric_cast<size_t>(AZStd::ceil(regionExtents.GetX() / stepSize.GetX()));
+            queryRegion.m_numPointsY = aznumeric_cast<size_t>(AZStd::ceil(regionExtents.GetY() / stepSize.GetY()));
+        }
+
+        return queryRegion;
+    }
+
     // Create a handler that can be accessed from Python scripts to receive terrain change notifications.
     class TerrainDataNotificationHandler final
         : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
@@ -57,6 +120,8 @@ namespace AzFramework::Terrain
 
     void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
+        FloatRange::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             // Register all the tuple types used below so that they marshal to/from python correctly.
@@ -87,6 +152,7 @@ namespace AzFramework::Terrain
                     "SetTerrainSurfaceDataQueryResolution",
                     &AzFramework::Terrain::TerrainDataRequestBus::Events::SetTerrainSurfaceDataQueryResolution)
                 ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
+                ->Event("GetTerrainHeightBounds", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightBounds)
                 ->Event(
                     "GetHeight",
                     [](AzFramework::Terrain::TerrainDataRequests* handler, const AZ::Vector3& position,

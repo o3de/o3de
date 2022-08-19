@@ -175,10 +175,10 @@ namespace AzToolsFramework
 
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+                const LinkId linkId);
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+                PrefabDom& afterState);
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(
@@ -199,11 +199,11 @@ namespace AzToolsFramework
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
-            // Handles the Prefab Focus API that determines what prefab is being edited.
-            PrefabFocusHandler m_prefabFocusHandler;
-
-            // Caches entity states for undo/redo purposes
+            //! Caches entity states for undo/redo purposes.
             PrefabUndoCache m_prefabUndoCache;
+
+            //! Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             uint64_t m_newEntityCounter = 1;
         };

@@ -153,7 +153,7 @@ namespace EMotionFX
             saveDirtyPopupHandler.WaitForCompletion();
             resetSettingsHandler.WaitForCompletion();
 
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
             ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
         }
 
@@ -162,13 +162,6 @@ namespace EMotionFX
             // AnimGraph
             m_animGraphPlugin->GetViewWidget()->OnCreateAnimGraph();
             ASSERT_TRUE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to create AnimGraph.";
-
-            // MotionSset
-            EMStudio::MotionSetManagementWindow* managementWindow = GetMotionSetManagementWindow();
-            ASSERT_TRUE(managementWindow);
-
-            managementWindow->OnCreateMotionSet();
-            ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Failed to create motion set for reset test.";
 
             CreateAnimGraphParameter("TestParam1");
             CreateAnimGraphParameter("TestParam2");
@@ -241,7 +234,7 @@ namespace EMotionFX
         ResetAll();
 
         //Check everything has gone.
-        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 0) << "Failed to reset MotionSets.";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "The default motion set should be present.";
         ASSERT_FALSE(m_animGraphPlugin->GetActiveAnimGraph()) << "Failed to reset AnimGraphs.";
 
         // Reload the saved workspace and check everything reappears:

@@ -134,7 +134,7 @@ namespace UnitTest
                     ->Field("myMap", &PropertyTreeEditorTester::m_myMap)
                     ->Field("mySubBlock", &PropertyTreeEditorTester::m_mySubBlock)
                     ->Field("myHiddenDouble", &PropertyTreeEditorTester::m_myHiddenDouble)
-                    ->Field("myReadOnlyShort", &PropertyTreeEditorTester::m_myReadOnlyShort)                    
+                    ->Field("myReadOnlyShort", &PropertyTreeEditorTester::m_myReadOnlyShort)
                     ->Field("nestedTesterHiddenChildren", &PropertyTreeEditorTester::m_nestedTesterHiddenChildren)
                     ->Field("myAssetData", &PropertyTreeEditorTester::m_myAssetData)
                     ->Field("myTestSimpleAsset", &PropertyTreeEditorTester::m_myTestSimpleAsset)
@@ -174,7 +174,7 @@ namespace UnitTest
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->DataElement(nullptr, &PropertyTreeEditorTester::m_mySubBlock, "My Sub Block", "sub block test")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)                            
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Grouped")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &PropertyTreeEditorTester::m_myGroupedString, "My Grouped String", "A test grouped string.")
                         ;
@@ -197,7 +197,7 @@ namespace UnitTest
         {
             m_app.Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
@@ -279,7 +279,7 @@ namespace UnitTest
         }
 
     }
-    
+
     TEST_F(PropertyTreeEditorTests, WritePropertyTreeValues)
     {
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -607,7 +607,7 @@ namespace UnitTest
 
         // BuildPathsListWithTypes
         {
-            static auto stringContains = [](const AZStd::string& data, const char* subString) -> bool
+            [[maybe_unused]] static auto stringContains = [](const AZStd::string& data, const char* subString) -> bool
             {
                 return data.find(subString) != AZStd::string::npos;
             };
@@ -622,11 +622,11 @@ namespace UnitTest
 
         // GetPropertyType
         {
-            EXPECT_STREQ("AZStd::unordered_map", propertyTree.GetPropertyType("My Map").c_str());
-            EXPECT_STREQ("AZStd::vector", propertyTree.GetPropertyType("My New List").c_str());
-            EXPECT_STREQ("AZStd::string", propertyTree.GetPropertyType("Nested|My Nested String").c_str());
-            EXPECT_STREQ("double", propertyTree.GetPropertyType("My Hidden Double").c_str());
-            EXPECT_STREQ("PropertyTreeEditorTester", propertyTree.GetPropertyType("Nested").c_str());
+            EXPECT_TRUE(propertyTree.GetPropertyType("My Map").starts_with("AZStd::unordered_map"));
+            EXPECT_TRUE(propertyTree.GetPropertyType("My New List").starts_with("AZStd::vector"));
+            EXPECT_EQ("AZStd::string", propertyTree.GetPropertyType("Nested|My Nested String"));
+            EXPECT_EQ("double", propertyTree.GetPropertyType("My Hidden Double"));
+            EXPECT_EQ("PropertyTreeEditorTester", propertyTree.GetPropertyType("Nested"));
         }
 
         // BuildPathsList after enforcement removes the "show children only" nodes from the paths

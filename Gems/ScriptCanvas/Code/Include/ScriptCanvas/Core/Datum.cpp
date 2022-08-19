@@ -17,8 +17,9 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Math/Transform.h>
 
-#include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Core/GraphScopedTypes.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 
 #include "DatumBus.h"
 
@@ -1291,15 +1292,19 @@ namespace ScriptCanvas
         const_cast<bool&>(m_isOverloadedStorage) = isOverloadedStorage;
     }
 
-    void Datum::DeepCopyDatum(const Datum& source)
+    void Datum::CopyDatumTypeAndValue(const Datum& source)
     {
         if (this != &source)
         {
-            m_originality = eOriginality::Original;
-            InitializeOverloadedStorage(source.m_type, m_originality);
-            m_class = source.m_class;
-            m_type = source.m_type;
+            SetType(source.m_type);
+            CopyDatumStorage(source);
+        }
+    }
 
+    void Datum::CopyDatumStorage(const Datum& source)
+    {
+        if (this != &source)
+        {
             if (!Data::IsValueType(m_type))
             {
                 AZ::BehaviorContext* behaviorContext = nullptr;
@@ -1320,6 +1325,19 @@ namespace ScriptCanvas
                 m_storage.value = source.m_storage.value;
                 m_conversionStorage = source.m_conversionStorage;
             }
+        }
+    }
+
+    void Datum::DeepCopyDatum(const Datum& source)
+    {
+        if (this != &source)
+        {
+            m_originality = eOriginality::Original;
+            InitializeOverloadedStorage(source.m_type, m_originality);
+            m_class = source.m_class;
+            m_type = source.m_type;
+
+            CopyDatumStorage(source);
 
             m_notificationId = source.m_notificationId;
 
@@ -2057,7 +2075,7 @@ namespace ScriptCanvas
             {
                 m_class = classIter->second;
             }
-            else
+            else if (m_type.GetAZType() != AZ::Uuid::CreateString(k_ExecutionStateAzTypeIdString))
             {
                 AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
@@ -2091,6 +2109,8 @@ namespace ScriptCanvas
             {
                 editContext->Class<Datum>("Datum", "Datum")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Datum")
+                    ->Attribute(AZ::Edit::Attributes::ChildNameLabelOverride, &Datum::GetLabel)
+                    ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &Datum::GetLabel)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Datum::m_storage, "Datum", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &Datum::GetDatumVisibility)

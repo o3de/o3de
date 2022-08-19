@@ -1,0 +1,21 @@
+{
+    "gem_name": "Meshlets",
+    "display_name": "Meshlets",
+        "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "The Meshlets Gem is a POC for rendering meshes solely on the GPU using meshlets / mesh clusters.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Meshlets"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "Compiled library for meshlets generation is required to be linked. The open source library meshoptimizer is required for that: https://github.com/zeux/meshoptimizer",
+    "documentation_url": "",
+    "dependencies": [],
+    "restricted": "Meshlets"
+}

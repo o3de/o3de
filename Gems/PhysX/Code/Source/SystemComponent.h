@@ -19,7 +19,6 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -30,7 +29,6 @@
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <Configuration/PhysXSettingsRegistryManager.h>
 #include <DefaultWorldComponent.h>
-#include <Material.h>
 
 namespace AzPhysics
 {
@@ -41,6 +39,7 @@ namespace AzPhysics
 
 namespace PhysX
 {
+    class MaterialManager;
     class WindProvider;
     class PhysXSystem;
 
@@ -72,27 +71,26 @@ namespace PhysX
     protected:
         SystemComponent(const SystemComponent&) = delete;
 
-        // SystemRequestsBus
+        // SystemRequestsBus overrides...
         physx::PxConvexMesh* CreateConvexMesh(const void* vertices, AZ::u32 vertexNum, AZ::u32 vertexStride) override; // should we use AZ::Vector3* or physx::PxVec3 here?
         physx::PxConvexMesh* CreateConvexMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
         physx::PxTriangleMesh* CreateTriangleMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) override;
-        physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns) override;
-
-
-        bool CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount) override;
-        
-        bool CookConvexMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result) override;
-
-        bool CookTriangleMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount,
-            const AZ::u32* indices, AZ::u32 indexCount) override;
-
-        bool CookTriangleMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount,
-            const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
-
+        physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows) override;
         physx::PxFilterData CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group) override;
         physx::PxCooking* GetCooking() override;
 
-        // CollisionRequestBus
+        // Physics::SystemRequestBus overrides...
+        AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
+        void ReleaseNativeMeshObject(void* nativeMeshObject) override;
+        void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) override;
+        bool CookConvexMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount) override;
+        bool CookConvexMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result) override;
+        bool CookTriangleMeshToFile(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount,
+            const AZ::u32* indices, AZ::u32 indexCount) override;
+        bool CookTriangleMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount,
+            const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
+
+        // CollisionRequestBus overrides...
         AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
         AZStd::string GetCollisionLayerName(const AzPhysics::CollisionLayer& layer) override;
         bool TryGetCollisionLayerByName(const AZStd::string& layerName, AzPhysics::CollisionLayer& layer) override;
@@ -102,27 +100,22 @@ namespace PhysX
         AzPhysics::CollisionGroup GetCollisionGroupById(const AzPhysics::CollisionGroups::Id& groupId) override;
         void SetCollisionLayerName(int index, const AZStd::string& layerName) override;
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) override;
+        bool ShouldCollide(
+            const Physics::ColliderConfiguration& colliderConfigurationA,
+            const Physics::ColliderConfiguration& colliderConfigurationB) override;
 
-        // AZ::Component interface implementation
+        // AZ::Component overrides...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
 
-        // Physics::SystemRequestBus::Handler
-        AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
-        AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
-
-        void ReleaseNativeMeshObject(void* nativeMeshObject) override;
-        void ReleaseNativeHeightfieldObject(void* nativeHeightfieldObject) override;
-
         // Assets related data
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
-        PhysX::MaterialsManager m_materialManager;
 
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
     private:
-        // AZ::TickBus::Handler ...
+        // AZ::TickBus::Handler overrides...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         int GetTickOrder() override;
 
@@ -132,6 +125,7 @@ namespace PhysX
 
         bool m_enabled; ///< If false, this component will not activate itself in the Activate() function.
 
+        AZStd::unique_ptr<MaterialManager> m_materialManager;
         AZStd::unique_ptr<WindProvider> m_windProvider;
         DefaultWorldComponent m_defaultWorldComponent;
         AZ::Interface<Physics::CollisionRequests> m_collisionRequests;

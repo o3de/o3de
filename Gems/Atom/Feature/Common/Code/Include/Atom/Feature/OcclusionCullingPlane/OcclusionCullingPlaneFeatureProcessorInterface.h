@@ -25,7 +25,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::OcclusionCullingPlaneFeatureProcessorInterface, "{50F6B45E-A622-44EC-B962-DE25FBD44095}");
+            AZ_RTTI(AZ::Render::OcclusionCullingPlaneFeatureProcessorInterface, "{50F6B45E-A622-44EC-B962-DE25FBD44095}", AZ::RPI::FeatureProcessor);
 
             virtual OcclusionCullingPlaneHandle AddOcclusionCullingPlane(const AZ::Transform& transform) = 0;
             virtual void RemoveOcclusionCullingPlane(OcclusionCullingPlaneHandle& handle) = 0;

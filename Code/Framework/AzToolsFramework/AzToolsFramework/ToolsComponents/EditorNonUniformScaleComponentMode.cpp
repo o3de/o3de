@@ -93,5 +93,10 @@ namespace AzToolsFramework
         void NonUniformScaleComponentMode::Refresh()
         {
         }
+
+        AZStd::string NonUniformScaleComponentMode::GetComponentModeName() const
+        {
+            return "Non Uniform Scale Edit Mode";
+        }
     } // namespace Components
 } // namespace AzToolsFramework

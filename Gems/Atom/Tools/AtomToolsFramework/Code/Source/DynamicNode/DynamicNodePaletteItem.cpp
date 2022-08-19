@@ -21,12 +21,15 @@ namespace AtomToolsFramework
         {
             serializeContext->Class<CreateDynamicNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
                 ->Version(0)
-                ->Field("config", &CreateDynamicNodeMimeEvent::m_config);
+                ->Field("toolId", &CreateDynamicNodeMimeEvent::m_toolId)
+                ->Field("configId", &CreateDynamicNodeMimeEvent::m_configId);
         }
     }
 
-    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(const DynamicNodeConfig& config)
-        : m_config(config)
+    CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(
+        const AZ::Crc32& toolId, const AZStd::string& configId)
+        : m_toolId(toolId)
+        , m_configId(configId)
     {
     }
 
@@ -38,7 +41,7 @@ namespace AtomToolsFramework
             graph, &GraphModelIntegration::GraphManagerRequests::GetGraph, graphCanvasSceneId);
         if (graph)
         {
-            AZStd::shared_ptr<GraphModel::Node> node = AZStd::make_shared<DynamicNode>(graph, m_config);
+            AZStd::shared_ptr<GraphModel::Node> node = AZStd::make_shared<DynamicNode>(graph, m_toolId, m_configId);
             if (node)
             {
                 GraphModelIntegration::GraphControllerRequestBus::Event(
@@ -50,14 +53,16 @@ namespace AtomToolsFramework
         return false;
     }
 
-    DynamicNodePaletteItem::DynamicNodePaletteItem(GraphCanvas::EditorId editorId, const DynamicNodeConfig& config)
-        : DraggableNodePaletteTreeItem(config.m_title.c_str(), editorId)
-        , m_config(config)
+    DynamicNodePaletteItem::DynamicNodePaletteItem(
+        const AZ::Crc32& toolId, const AZStd::string& configId, const DynamicNodeConfig& config)
+        : DraggableNodePaletteTreeItem(config.m_title.c_str(), toolId)
+        , m_toolId(toolId)
+        , m_configId(configId)
     {
     }
 
     GraphCanvas::GraphCanvasMimeEvent* DynamicNodePaletteItem::CreateMimeEvent() const
     {
-        return aznew CreateDynamicNodeMimeEvent(m_config);
+        return aznew CreateDynamicNodeMimeEvent(m_toolId, m_configId);
     }
 } // namespace AtomToolsFramework

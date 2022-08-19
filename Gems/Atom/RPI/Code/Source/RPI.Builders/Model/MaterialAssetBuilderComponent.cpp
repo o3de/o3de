@@ -95,11 +95,17 @@ namespace AZ
                 // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
                 // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
                 // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
-                
-                // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
-                // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
-                // This can significantly reduce AP processing time when a material type or its shaders are edited.
-                jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? AssetBuilderSDK::JobDependencyType::Order : AssetBuilderSDK::JobDependencyType::OrderOnce;
+
+                // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data
+                // won't be used. However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the
+                // material type asset so the builder can get it's AssetId. This can significantly reduce AP processing time when a material
+                // type or its shaders are edited.
+
+                // Note that without the normal job dependencies, materials may not load or reload consistently or in sync with shader and
+                // material type changes without manually monitoring and handling dependency changes.
+                jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets()
+                    ? AssetBuilderSDK::JobDependencyType::Order
+                    : AssetBuilderSDK::JobDependencyType::OrderOnce;
 
                 jobDependencyList.push_back(jobDependency);
             }
@@ -109,18 +115,11 @@ namespace AZ
         {
             // This will cause scene files to be reprocessed whenever the global MaterialConverter settings change.
 
-            bool conversionEnabled = false;
-            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
-            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
+            AZStd::string conversionInfo = "[Material conversion info missing]";
+            RPI::MaterialConverterBus::BroadcastResult(conversionInfo, &RPI::MaterialConverterBus::Events::GetFingerprintInfo);
+            fingerprintInfo.insert(conversionInfo);
              
             fingerprintInfo.insert(AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets()));
-
-            if (!conversionEnabled)
-            {
-                AZStd::string defaultMaterialPath;
-                RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
-                fingerprintInfo.insert(AZStd::string::format("[MaterialConverter defaultMaterial=%s]", defaultMaterialPath.c_str()));
-            }
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)

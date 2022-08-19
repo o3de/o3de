@@ -12,18 +12,14 @@
 #include <algorithm>
 
 // Qt
-#include <QMenuBar>
-#include <QDebug>
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QHBoxLayout>
 #ifdef Q_OS_WIN
 #include <QAbstractEventDispatcher>
 #endif
-
-// Atom
-#include <Atom/RPI.Public/ViewportContext.h>
-#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <QDebug>
+#include <QHBoxLayout>
+#include <QInputDialog>
+#include <QMenuBar>
+#include <QMessageBox>
 
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
@@ -49,15 +45,15 @@
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
-#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
@@ -413,11 +409,6 @@ MainWindow::~MainWindow()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
-    if (m_toolbarManager)
-    {
-        delete m_toolbarManager;
-    }
-
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -426,6 +417,14 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
+    
+    if (!IsNewActionManagerEnabled())
+    {
+        delete m_levelEditorMenuHandler;
+        delete m_toolbarManager;
+        delete m_actionManager;
+        delete m_shortcutDispatcher;
+    }
 }
 
 void MainWindow::InitCentralWidget()
@@ -478,6 +477,10 @@ void MainWindow::Initialize()
 
         m_levelEditorMenuHandler->Initialize();
     }
+    else
+    {
+        m_editorActionsHandler.Initialize(this);
+    }
 
     InitStatusBar();
 
@@ -504,16 +507,6 @@ void MainWindow::Initialize()
     // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
     ActionOverrideRequestBus::Event(
         GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
-
-    if (auto imGuiManager = AZ::Interface<ImGui::IImGuiManager>::Get())
-    {
-        auto handleImGuiStateChangeFn = [](bool enabled)
-        {
-            EditorWindowUIRequestBus::Broadcast(&EditorWindowUIRequests::SetEditorUiEnabled, enabled);
-        };
-        m_handleImGuiStateChangeHandler = ImGui::IImGuiManager::ImGuiSetEnabledEvent::Handler(handleImGuiStateChangeFn);
-        imGuiManager->ConnectImGuiSetEnabledChangedHandler(m_handleImGuiStateChangeHandler);
-    }
 
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
@@ -870,24 +863,22 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Center on Selection (Z)"))
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
 
-    const auto goToViewBookmarkFn = [](int index)
+    const auto goToViewBookmarkFn = [](const int index)
     {
-        AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
-        if (!bookmarkLoader)
+        AzToolsFramework::ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+        if (!viewBookmarkInterface)
         {
             AZ_Warning("Main Window", false, "Couldn't find View Bookmark Loader");
             return false;
         }
 
-        const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark =
-            bookmarkLoader->LoadBookmarkAtIndex(index);
-
+        const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark = viewBookmarkInterface->LoadBookmarkAtIndex(index);
         if (!bookmark.has_value())
         {
             return false;
         }
 
-        // Check the bookmark we want to load is not exactly 0 
+        // Check the bookmark we want to load is not exactly 0
         if (bookmark.value().IsZero())
         {
             QString tagConsoleText = tr("View Bookmark %1 has not been set yet").arg(index + 1);
@@ -895,26 +886,15 @@ void MainWindow::InitActions()
             return false;
         }
 
-        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        if (!viewportContextManager)
-        {
-            return false;
-        }
-
-        auto viewportContext = viewportContextManager->GetDefaultViewportContext();
-        if (!viewportContext)
-        {
-            return false;
-        }
-
         SandboxEditor::InterpolateDefaultViewportCameraToTransform(
-            bookmark->m_position, bookmark->m_rotation.GetX(), bookmark->m_rotation.GetZ());
+            bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
         QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
                                      .arg(index + 1)
                                      .arg(bookmark->m_position.GetX(), 0, 'f', 2)
                                      .arg(bookmark->m_position.GetY(), 0, 'f', 2)
                                      .arg(bookmark->m_position.GetZ(), 0, 'f', 2);
+
         AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
         return true;
     };
@@ -968,40 +948,18 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Go to Location 12 (Shift+F12)"))
         .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(11);});
 
-    const auto tagViewBookmarkFn = [](int index)
+    const auto tagViewBookmarkFn = [](const int index)
     {
-        AzToolsFramework::ViewBookmarkLoaderInterface* bookmarkLoader = AZ::Interface<ViewBookmarkLoaderInterface>::Get();
-        if (!bookmarkLoader)
+        if (auto viewBookmark = AzToolsFramework::StoreViewBookmarkFromActiveCameraAtIndex(index); viewBookmark.has_value())
         {
-            QString tagConsoleText = tr("Failed to tag View Bookmark %1").arg(index + 1);
-            AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
-            return false;
+            const QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
+                                               .arg(index + 1)
+                                               .arg(viewBookmark->m_position.GetX(), 0, 'f', 2)
+                                               .arg(viewBookmark->m_position.GetY(), 0, 'f', 2)
+                                               .arg(viewBookmark->m_position.GetZ(), 0, 'f', 2);
+
+            AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
         }
-
-        bool found = false;
-        AzFramework::CameraState cameraState;
-        Camera::EditorCameraRequestBus::BroadcastResult(
-            found, &Camera::EditorCameraRequestBus::Events::GetActiveCameraState, cameraState);
-
-        if (!found)
-        {
-            AZ_Warning("Main Window", false, "tagLocation: Couldn't find Active Camera State.");
-            return false;
-        }
-
-        ViewBookmark bookmark;
-        bookmark.m_position = cameraState.m_position;
-        bookmark.m_rotation =
-            AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromColumns(cameraState.m_side, cameraState.m_forward, cameraState.m_up));
-
-        bookmarkLoader->ModifyBookmarkAtIndex(bookmark, index);
-        QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
-                                     .arg(index + 1)
-                                     .arg(bookmark.m_position.GetX(), 0, 'f', 2)
-                                     .arg(bookmark.m_position.GetY(), 0, 'f', 2)
-                                     .arg(bookmark.m_position.GetZ(), 0, 'f', 2);
-        AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
-        return true;
     };
 
     am->AddAction(ID_TAG_LOC1, tr("Location 1"))
@@ -1097,6 +1055,9 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetIconsVisible(!AzToolsFramework::IconsVisible());
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
+                    AzToolsFramework::IconsVisible());
             });
 
     // Audio actions
@@ -1173,15 +1134,12 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"));
 
     // Disable layouts menu
-    if (CViewManager::IsMultiViewportEnabled())
-    {
-        am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
+    am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
 
-        am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
-            .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
-        am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
-            .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
-    }
+    am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
+        .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
+    am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
+        .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
 
     am->AddAction(ID_SKINS_REFRESH, tr("Refresh Style"))
         .SetToolTip(tr("Refreshes the editor stylesheet"))
@@ -1417,6 +1375,11 @@ void MainWindow::AdjustToolBarIconSize(AzQtComponents::ToolBar::ToolBarIconSize 
 
 void MainWindow::OnGameModeChanged(bool inGameMode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
@@ -1479,7 +1442,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         break;
     // Remove track view option to avoid starting in bad state
     case eNotify_OnBeginSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -1489,7 +1452,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         }
         break;
     case eNotify_OnEndSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)

@@ -110,7 +110,6 @@ namespace ScriptCanvasEditor
 {
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
-        SourceHandle::Reflect(context);
         Configuration::Reflect(context);
         Interpreter::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);
@@ -131,6 +130,7 @@ namespace ScriptCanvasEditor
         CreateNodeGroupMimeEvent::Reflect(context);
         CreateCommentNodeMimeEvent::Reflect(context);
         CreateCustomNodeMimeEvent::Reflect(context);
+        CreateDataDrivenNodeMimeEvent::Reflect(context);
         CreateEBusHandlerMimeEvent::Reflect(context);
         CreateEBusHandlerEventMimeEvent::Reflect(context);
         CreateEBusSenderMimeEvent::Reflect(context);

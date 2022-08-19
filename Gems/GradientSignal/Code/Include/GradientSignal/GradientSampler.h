@@ -37,6 +37,9 @@ namespace GradientSignal
 
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const;
 
+        //! Given a dirty region for a gradient, transform the dirty region in world space based on the gradient transform settings.
+        AZ::Aabb TransformDirtyRegion(const AZ::Aabb& dirtyRegion) const;
+
         AZ::EntityId m_gradientId;
         //! Entity that owns the gradientSampler itself, used by the gradient previewer
         AZ::EntityId m_ownerEntityId;
@@ -60,6 +63,8 @@ namespace GradientSignal
         bool ValidateGradientEntityId();
 
     private:
+        AZ::Matrix3x4 GetTransformMatrix() const;
+
         // Pass-through for UIElement attribute
         GradientSampler* GetSampler();
         AZ::u32 ChangeNotify() const;
@@ -84,6 +89,22 @@ namespace GradientSignal
         }
     }
 
+    inline AZ::Matrix3x4 GradientSampler::GetTransformMatrix() const
+    {
+        if (m_enableTransform)
+        {
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
+            return matrix3x4;
+        }
+        else
+        {
+            return AZ::Matrix3x4::CreateIdentity();
+        }
+    }
+
     inline float GradientSampler::GetValue(const GradientSampleParams& sampleParams) const
     {
         if (m_opacity <= 0.0f || !m_gradientId.IsValid())
@@ -96,11 +117,8 @@ namespace GradientSignal
         //apply transform if set
         if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
         {
-            AZ::Matrix3x4 matrix3x4;
-            matrix3x4.SetFromEulerDegrees(m_rotate);
-            matrix3x4.MultiplyByScale(m_scale);
-            matrix3x4.SetTranslation(m_translate);
-
+            // We use the inverse here because we're going from world space to gradient space.
+            AZ::Matrix3x4 matrix3x4 = GetTransformMatrix().GetInverseFull();
             sampleParamsTransformed.m_position = matrix3x4 * sampleParamsTransformed.m_position;
         }
 
@@ -153,10 +171,8 @@ namespace GradientSignal
         // apply transform if set
         if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
         {
-            AZ::Matrix3x4 matrix3x4;
-            matrix3x4.SetFromEulerDegrees(m_rotate);
-            matrix3x4.MultiplyByScale(m_scale);
-            matrix3x4.SetTranslation(m_translate);
+            // We use the inverse here because we're going from world space to gradient space.
+            AZ::Matrix3x4 matrix3x4 = GetTransformMatrix().GetInverseFull();
 
             useTransformedPositions = true;
             transformedPositions.resize(positions.size());

@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_ToUpper",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Upper",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_ToUpper",
+                    "details": {
+                        "name": "To Upper",
+                        "tooltip": "Convert source string to its uppercase equivalent string."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "Source string to be converted to upper case."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The uppercase equivalent to source string, if any."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

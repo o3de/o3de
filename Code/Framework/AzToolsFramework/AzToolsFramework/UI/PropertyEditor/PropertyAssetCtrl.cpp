@@ -55,6 +55,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
@@ -149,7 +150,7 @@ namespace AzToolsFramework
         m_view->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
         m_view->setSelectionBehavior(QAbstractItemView::SelectItems);
 
-        m_model->SetFilter(m_currentAssetType);
+        m_model->SetFilter(GetSelectableAssetTypes());
     }
 
     void PropertyAssetCtrl::RefreshAutocompleter()
@@ -329,7 +330,7 @@ namespace AzToolsFramework
             QMimeData* newMimeData = new QMimeData();
 
             AzToolsFramework::EditorAssetMimeDataContainer mimeDataContainer;
-            mimeDataContainer.AddEditorAsset(GetCurrentAssetID(), m_currentAssetType);
+            mimeDataContainer.AddEditorAsset(GetCurrentAssetID(), GetCurrentAssetType());
             mimeDataContainer.AddToMimeData(newMimeData);
 
             clipboard->setMimeData(newMimeData);
@@ -344,8 +345,11 @@ namespace AzToolsFramework
     }
 
     bool PropertyAssetCtrl::CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const
-    {        
-        return (assetId.IsValid() && !assetType.IsNull() && assetType == GetCurrentAssetType());
+    {
+        const auto selectableAssetTypes = GetSelectableAssetTypes();
+        const auto isSelectableAssetType =
+            AZStd::find(selectableAssetTypes.begin(), selectableAssetTypes.end(), assetType) != selectableAssetTypes.end();
+        return (assetId.IsValid() && !assetType.IsNull() && isSelectableAssetType);
     }
 
     bool PropertyAssetCtrl::IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId, AZ::Data::AssetType* pAssetType) const
@@ -424,8 +428,8 @@ namespace AzToolsFramework
 
         if (pData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
-            if (AssetBrowser::AssetBrowserEntry::FromMimeData(pData, entries))
+            AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
+            if (AssetBrowser::Utils::FromMimeData(pData, entries))
             {
                 // Searching all source data entries for a compatible asset
                 for (const auto entry : entries)
@@ -614,6 +618,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::ClearAssetInternal()
     {
+        ClearErrorButton();
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
@@ -705,7 +710,7 @@ namespace AzToolsFramework
 
     AssetSelectionModel PropertyAssetCtrl::GetAssetSelectionModel()
     {
-        auto selectionModel = AssetSelectionModel::AssetTypeSelection(GetCurrentAssetType());
+        auto selectionModel = AssetSelectionModel::AssetTypesSelection(GetSelectableAssetTypes());
         selectionModel.SetTitle(m_title);
         return selectionModel;
     }
@@ -787,7 +792,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::PopupAssetPicker()
     {
-        AZ_Assert(m_currentAssetType != AZ::Data::s_invalidAssetType, "No asset type was assigned.");
+        AZ_Assert(!GetSelectableAssetTypes().empty(), "No asset type was assigned.");
 
         // Request the AssetBrowser Dialog and set a type filter
         AssetSelectionModel selection = GetAssetSelectionModel();
@@ -961,8 +966,18 @@ namespace AzToolsFramework
         else
         {
             const AZStd::string platformName = ""; // Empty for default
-            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequest::GetAssetInfoById, defaultID, m_currentAssetType, platformName, assetInfo, rootFilePath);
-            assetPath = assetInfo.m_relativePath;
+            for (const auto& assetType : GetSelectableAssetTypes())
+            {
+                bool result = false;
+                AssetSystemRequestBus::BroadcastResult(
+                    result, &AssetSystem::AssetSystemRequest::GetAssetInfoById, defaultID, assetType, platformName, assetInfo,
+                    rootFilePath);
+                if (result)
+                {
+                    assetPath = assetInfo.m_relativePath;
+                    break;
+                }
+            }
         }
 
         if (!assetPath.empty())
@@ -1060,6 +1075,17 @@ namespace AzToolsFramework
                             ClearErrorButton();
                         }
                         break;
+                    }
+                }
+                else
+                {
+                    // If there aren't any jobs and the asset ID is valid, the asset must have been removed.
+                    if (assetID.IsValid())
+                    {
+                        UpdateErrorButtonWithMessage(AZStd::string::format(
+                            "Asset has been removed.\n\nID: %s\nHint:%s",
+                            assetID.ToString<AZStd::string>().c_str(),
+                            GetCurrentAssetHint().c_str()));
                     }
                 }
 
@@ -1301,6 +1327,26 @@ namespace AzToolsFramework
         m_thumbnail->SetCustomThumbnailPixmap(pixmap);
     }
 
+    void PropertyAssetCtrl::SetSupportedAssetTypes(const AZStd::vector<AZ::Data::AssetType>& supportedAssetTypes)
+    {
+        m_supportedAssetTypes = supportedAssetTypes;
+    }
+
+    const AZStd::vector<AZ::Data::AssetType>& PropertyAssetCtrl::GetSupportedAssetTypes() const
+    {
+        return m_supportedAssetTypes;
+    }
+
+    AZStd::vector<AZ::Data::AssetType> PropertyAssetCtrl::GetSelectableAssetTypes() const
+    {
+        AZStd::vector<AZ::Data::AssetType> types = GetSupportedAssetTypes();
+        if (GetCurrentAssetType() != AZ::Data::s_invalidAssetType)
+        {
+            types.push_back(GetCurrentAssetType());
+        }
+        return types;
+    }
+
     void PropertyAssetCtrl::SetThumbnailCallback(EditCallbackType* editNotifyCallback)
     {
         m_thumbnailCallback = editNotifyCallback;
@@ -1524,6 +1570,14 @@ namespace AzToolsFramework
             {
                 GUI->SetShowThumbnailDropDownButton(false);
                 GUI->SetThumbnailCallback(nullptr);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("SupportedAssetTypes"))
+        {
+            AZStd::vector<AZ::Data::AssetType> supportedAssetTypes;
+            if (attrValue->Read<AZStd::vector<AZ::Data::AssetType>>(supportedAssetTypes))
+            {
+                GUI->SetSupportedAssetTypes(supportedAssetTypes);
             }
         }
     }

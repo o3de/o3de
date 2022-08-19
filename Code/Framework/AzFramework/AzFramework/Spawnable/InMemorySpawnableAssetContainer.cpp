@@ -13,7 +13,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
 namespace AzFramework
@@ -77,8 +76,6 @@ namespace AzFramework
             {
                 auto spawnable = azrtti_cast<Spawnable*>(assetData);
 
-                SpawnableAssetEventsBus::Broadcast(&SpawnableAssetEvents::OnPreparingSpawnable,
-                    *spawnable, assetInfo.m_relativePath);
                 spawnables.push_back(AZStd::make_pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
 
                 if (assetInfo.m_relativePath == rootProductId)
@@ -89,7 +86,19 @@ namespace AzFramework
 
             AZ::Data::AssetCatalogRequestBus::Broadcast(
                 &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, assetInfo.m_assetId, assetInfo);
-            spawnableAssetData.m_assets.emplace_back(assetInfo.m_assetId, assetData, AZ::Data::AssetLoadBehavior::Default);
+
+            // The asset Id may not already be set in the asset data in which case we will pass it to the asset creation.
+            // For example, spawnable asset data is serialized and sent to the server, but the asset Id is not included
+            // in the serialization
+            if (assetData->GetId().IsValid())
+            {
+                AZ_Assert(assetData->GetId() == assetInfo.m_assetId, "Asset data already has an asset Id but it's different from the Id set in the corresponding assetInfo.");
+                spawnableAssetData.m_assets.emplace_back(assetData, AZ::Data::AssetLoadBehavior::Default);
+            }
+            else
+            {
+                spawnableAssetData.m_assets.emplace_back(assetInfo.m_assetId, assetData, AZ::Data::AssetLoadBehavior::Default);
+            }
 
             // Ensure the product asset is registered with the AssetManager
             // Hold on to the returned asset to keep ref count alive until we assign it the latest data
@@ -178,11 +187,11 @@ namespace AzFramework
 
         for (AZ::Data::Asset<AZ::Data::AssetData>& asset : spawnable.m_assets)
         {
-            auto callback = [&blockingAssets](
+            auto callback = [sc, &blockingAssets](
                                 void* object, const AZ::SerializeContext::ClassData* classData,
-                                [[maybe_unused]]const AZ::SerializeContext::ClassElement* elementData) -> bool
+                                const AZ::SerializeContext::ClassElement* elementData) -> bool
             {
-                if (classData->m_typeId == AZ::GetAssetClassId())
+                if (const auto* genericInfo = elementData ? elementData->m_genericClassInfo : sc->FindGenericClassInfo(classData->m_typeId); genericInfo && genericInfo->GetGenericTypeId() == AZ::GetAssetClassId())
                 {
                     auto asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(object);
 

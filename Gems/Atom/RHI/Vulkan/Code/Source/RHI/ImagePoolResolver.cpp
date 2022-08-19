@@ -9,7 +9,7 @@
 #include <RHI/ImagePool.h>
 #include <RHI/ImagePoolResolver.h>
 #include <RHI/MemoryView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/Bits.h>
 
 namespace AZ
@@ -197,7 +197,7 @@ namespace AZ
         {
             for (const auto& barrierInfo : barriers)
             {
-                vkCmdPipelineBarrier(
+                m_device.GetContext().CmdPipelineBarrier(
                     commandList.GetNativeCommandBuffer(),
                     barrierInfo.m_srcStageMask,
                     barrierInfo.m_dstStageMask,

@@ -99,7 +99,7 @@ namespace AzFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator, 0);
-        AZ_RTTI((SimpleAssetReference<AssetType>, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
+        AZ_RTTI((SimpleAssetReference, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
 
         static void Register(AZ::SerializeContext& context)
         {

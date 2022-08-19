@@ -78,13 +78,21 @@ namespace PhysX
             if (pxHit.faceIndex != 0xFFFFffff)
             {
                 PHYSX_SCENE_READ_LOCK(pxHit.actor->getScene());
-                hit.m_material = Utils::GetUserData(pxHit.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex));
+                if (const auto* physicsMaterial = Utils::GetUserData(pxHit.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex));
+                    physicsMaterial != nullptr)
+                {
+                    hit.m_physicsMaterialId = physicsMaterial->GetId();
+                }
             }
             else if (hit.m_shape != nullptr)
             {
-                hit.m_material = hit.m_shape->GetMaterial().get();
+                if (const auto& physicsMaterial = hit.m_shape->GetMaterial();
+                    physicsMaterial.get() != nullptr)
+                {
+                    hit.m_physicsMaterialId = physicsMaterial->GetId();
+                }
             }
-            if (hit.m_material != nullptr)
+            if (hit.m_physicsMaterialId.IsValid())
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Material;
             }

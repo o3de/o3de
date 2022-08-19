@@ -7,6 +7,7 @@
  */
 
 #include <ProjectManagerWindow.h>
+#include <PythonBindingsInterface.h>
 #include <ScreensCtrl.h>
 
 namespace O3DE::ProjectManager
@@ -14,7 +15,15 @@ namespace O3DE::ProjectManager
     ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
     {
-        setWindowTitle(tr("O3DE Project Manager"));
+        if (auto engineInfoOutcome = PythonBindingsInterface::Get()->GetEngineInfo(); engineInfoOutcome)
+        {
+            auto engineInfo = engineInfoOutcome.GetValue<EngineInfo>();
+            setWindowTitle(QString("%1 %2 %3").arg(engineInfo.m_name.toUpper(), engineInfo.m_version, tr("Project Manager")));
+        }
+        else
+        {
+            setWindowTitle(QString("O3DE %1").arg(tr("Project Manager")));
+        }
 
         ScreensCtrl* screensCtrl = new ScreensCtrl();
 
@@ -22,9 +31,11 @@ namespace O3DE::ProjectManager
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::Projects,
+            ProjectManagerScreen::GemCatalog,
             ProjectManagerScreen::Engine,
             ProjectManagerScreen::CreateProject,
-            ProjectManagerScreen::UpdateProject
+            ProjectManagerScreen::UpdateProject,
+            ProjectManagerScreen::GemsGemRepos
         };
         screensCtrl->BuildScreens(screenEnums);
 

@@ -38,7 +38,7 @@ namespace Blast
         , m_actorFactory(desc.m_actorFactory)
         , m_entityProvider(desc.m_entityProvider)
         , m_listener(desc.m_listener)
-        , m_physicsMaterialId(desc.m_physicsMaterial)
+        , m_physicsMaterialId(desc.m_physicsMaterialId)
         , m_blastMaterial(desc.m_blastMaterial)
         , m_actorConfiguration(desc.m_actorConfiguration)
         , m_isSpawned(false)

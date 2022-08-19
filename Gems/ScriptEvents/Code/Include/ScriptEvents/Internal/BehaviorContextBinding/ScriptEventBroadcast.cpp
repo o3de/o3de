@@ -56,7 +56,7 @@ namespace ScriptEvents
 
             SetArgumentName(index, argumentName);
 
-            m_behaviorParameters.push_back();
+            m_behaviorParameters.emplace_back();
             Internal::Utils::BehaviorParameterFromParameter(behaviorContext, parameter, m_argumentNames[index].c_str(), m_behaviorParameters.back());
 
             const AZStd::string& tooltip = parameter.GetTooltip();

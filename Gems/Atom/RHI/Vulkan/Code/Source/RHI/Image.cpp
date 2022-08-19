@@ -8,7 +8,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/sort.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
 #include <RHI/SwapChain.h>
@@ -50,7 +50,8 @@ namespace AZ
             if (m_vkImage != VK_NULL_HANDLE && m_isOwnerOfNativeImage)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkImage>(device.GetNativeDevice(), m_vkImage, vkDestroyImage));
+                device.QueueForRelease(
+                    new ReleaseContainer<VkImage>(device.GetNativeDevice(), m_vkImage, device.GetContext().DestroyImage));
             }
             m_vkImage = VK_NULL_HANDLE;
             m_memoryView = MemoryView();
@@ -167,7 +168,7 @@ namespace AZ
             RHI::ResultCode result = BuildNativeImage();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            vkGetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
+            device.GetContext().GetImageMemoryRequirements(device.GetNativeDevice(), m_vkImage, &m_memoryRequirements);
             SetName(GetName());
             return result;
         }
@@ -178,7 +179,8 @@ namespace AZ
             AZ_Assert(memoryView.IsValid(), "MemoryView is not valid.");
 
             auto& device = static_cast<Device&>(GetDevice());
-            VkResult vkResult = vkBindImageMemory(device.GetNativeDevice(), m_vkImage, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
+            VkResult vkResult = device.GetContext().BindImageMemory(
+                device.GetNativeDevice(), m_vkImage, memoryView.GetMemory()->GetNativeDeviceMemory(), memoryView.GetOffset());
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
@@ -204,9 +206,8 @@ namespace AZ
             createInfo.usage = GetImageUsageFlags();
 
             VkImageFormatProperties formatProps{};
-            AssertSuccess(vkGetPhysicalDeviceImageFormatProperties(
-                physicalDevice.GetNativePhysicalDevice(), createInfo.format,
-                createInfo.imageType, createInfo.tiling, createInfo.usage,
+            AssertSuccess(device.GetContext().GetPhysicalDeviceImageFormatProperties(
+                physicalDevice.GetNativePhysicalDevice(), createInfo.format, createInfo.imageType, createInfo.tiling, createInfo.usage,
                 createInfo.flags, &formatProps));
 
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
@@ -235,7 +236,7 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            const VkResult result = vkCreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
+            const VkResult result = device.GetContext().CreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
             AssertSuccess(result);
 
             m_isOwnerOfNativeImage = true;

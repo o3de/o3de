@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
 """
 Module Documentation:
     DccScriptingInterface:: SDK//maya//scripts//set_shelf.py

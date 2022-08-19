@@ -11,7 +11,9 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 
 #include "ScriptCanvasPhysicsSystemComponent.h"
-#include "PhysicsNodeLibrary.h"
+#include <AutoGenFunctionRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasPhysicsStatic);
 
 namespace ScriptCanvasPhysics
 {
@@ -33,8 +35,6 @@ namespace ScriptCanvasPhysics
                 ;
             }
         }
-
-        PhysicsNodeLibrary::Reflect(context);
     }
 
     void ScriptCanvasPhysicsSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -59,7 +59,6 @@ namespace ScriptCanvasPhysics
 
     void ScriptCanvasPhysicsSystemComponent::Init()
     {
-        PhysicsNodeLibrary::InitNodeRegistry(ScriptCanvas::GetNodeRegistry().Get());
     }
 
     void ScriptCanvasPhysicsSystemComponent::Activate()

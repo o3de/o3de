@@ -28,6 +28,8 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include "IEditor.h"
+
+#include <Core/EditorActionsHandler.h>
 #endif
 
 class ActionManager;
@@ -76,8 +78,8 @@ namespace AzToolsFramework
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"
 #define MAINFRM_LAYOUT_PREVIEW "PreviewLayout"
 
-// Subclassing so we can add slots to our toolbar widgets
-// Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
+// Sub-classing so we can add slots to our toolbar widgets
+// Using lambdas is prone to crashes since the lambda doesn't know when the widget is deleted.
 
 class UndoRedoToolButton
     : public QToolButton
@@ -229,6 +231,8 @@ private Q_SLOTS:
     void OnOpenAssetImporterManager(const QStringList& list);
 
 private:
+    friend class EditorActionsHandler;
+
     bool IsGemEnabled(const QString& uuid, const QString& version) const;
 
     // Broadcast the SystemTick event
@@ -259,6 +263,8 @@ private:
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
     AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
+
+    EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static MainWindow* m_instance;

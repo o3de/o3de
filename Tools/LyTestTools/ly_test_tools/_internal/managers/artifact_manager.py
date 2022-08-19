@@ -24,7 +24,7 @@ class ArtifactManager(object):
     def __init__(self, root):
         self.artifact_path = root  # i.e.: ~/dev/TestResults/2019-10-15T13_38_42_855000/
         self.dest_path = None
-        self._set_dest_path()  # Sets the self.dest_path attribute as the main artifact save path for test files.
+        self.set_dest_path()  # Sets the self.dest_path attribute as the main artifact save path for test files.
 
     def _get_collision_handled_filename(self, file_path, amount=1):
         # type: (str, int) -> str
@@ -48,16 +48,19 @@ class ArtifactManager(object):
             updated_path = f"{file_without_ext}_{i}{extension}"
             if not os.path.exists(updated_path):
                 return updated_path
-        logger.info(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
-                    f"{file_path}. Ending on {updated_path} which will override the existing file.")
+        logger.warning(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
+                       f"{file_path}. Ending on {updated_path} which will override the existing file.")
         return updated_path
 
-    def _set_dest_path(self, test_name=None, amount=1):
+    def set_dest_path(self, test_name=None, amount=1):
         """
         Sets self.dest_path if not set, and returns the value currently set in self.dest_path. Also creates the
         directory if it already doesn't exist.
 
-        :param test_name: If set, will update self.dest_path to include the test_name value passed.
+        :param test_name: Set the test name used to log the artifacts, format of "module_class_method"
+            i.e. "test_module_TestClass_test_BasicTestMethod_ValidInputTest_ReturnsTrue_1"
+            If set, all artifacts are saved to a subdir named after this test. This value will get appended to the main
+            path in the self.dest_path attribute.
         :param amount: The amount of folders to create matching self.dest_path and adding an index value to each.
         :return: None, but sets the self.dest_path attribute when called.
         """
@@ -78,17 +81,6 @@ class ArtifactManager(object):
             except (IOError, OSError, WindowsError) as err:
                 problem = WindowsError(f'Failed to create new artifact path: "{self.dest_path}"')
                 six.raise_from(problem, err)
-
-    def set_test_name(self, test_name=None, amount=1):
-        """
-        Set the test name used to log the artifacts, if set, all artifacts are saved to a subdir named after this test.
-        This value will get appended to the main path in the self.dest_path attribute.
-        :param test_name: Name of the test, format of "module_class_method",
-            i.e.: "test_module_TestClass_test_BasicTestMethod_ValidInputTest_ReturnsTrue_1"
-        :param amount: int representing the amount of folders to create for test_name
-        :return: None but updates the self.dest_path attribute with the test name in it.
-        """
-        self._set_dest_path(test_name=test_name, amount=amount)
 
     def generate_folder_name(self, test_module, test_class, test_method):
         """
@@ -116,6 +108,7 @@ class ArtifactManager(object):
         :param artifact_name: string representing a new artifact name for log if necessary, max length: 25 characters.
         :param amount: amount of renames possible for the saved artifact if file name collision occurs by appending
         integers to the name. If the amount is reached, the save will override the file instead.
+        :return destination_path: a destination folder if a folder is copied, a destination file path if a file is copied
         """
         if artifact_name:
             artifact_name = file_system.reduce_file_name_length(file_name=artifact_name, max_length=25)
@@ -131,6 +124,7 @@ class ArtifactManager(object):
         else:
             shutil.copy(artifact_path, dest_path)
             os.chmod(dest_path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+        return dest_path
 
     def generate_artifact_file_name(self, artifact_name):
         """
@@ -140,10 +134,8 @@ class ArtifactManager(object):
             ~/dev/TestResults/2019-10-14T11_36_12_234000/pytest_results/test_module_TestClass_Method_1/ToolsInfo.log
         """
         if not artifact_name:
-            raise ValueError('artifact_name is a required parameter for generate_artifact_file_name()')
-        file_path = os.path.join(self.dest_path,
-                                 artifact_name)
-        return file_path
+            raise ValueError(f'artifact_name is a required parameter. Actual: {artifact_name}')
+        return os.path.join(self.dest_path, artifact_name)
 
     def gather_artifacts(self, destination, format='zip'):
         """
@@ -158,8 +150,8 @@ class ArtifactManager(object):
             return shutil.make_archive(destination, format, self.dest_path)
         except WindowsError:
             logger.exception(
-                'Windows failed to find the target artifact path: "{}" '
-                'which may indicate test setup failed.'.format(self.dest_path))
+                f'Windows failed to find the target artifact path: "{self.dest_path}" '
+                'which may indicate test setup failed.')
 
 
 class NullArtifactManager(ArtifactManager):

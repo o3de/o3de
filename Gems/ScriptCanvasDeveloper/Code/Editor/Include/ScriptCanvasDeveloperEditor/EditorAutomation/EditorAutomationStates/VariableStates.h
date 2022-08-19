@@ -25,7 +25,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/VariableActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will create a variable and give it a name(assuming one is provided), using the specified creation method.

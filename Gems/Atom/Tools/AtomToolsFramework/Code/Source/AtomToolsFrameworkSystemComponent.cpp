@@ -20,8 +20,6 @@
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
 
-#include <PropertyEditor/PropertyImageAssetCtrl.h>
-
 namespace AtomToolsFramework
 {
     void AtomToolsFrameworkSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -80,7 +78,6 @@ namespace AtomToolsFramework
 
     void AtomToolsFrameworkSystemComponent::Activate()
     {
-        ImageAssetPropertyHandler::Register();
     }
 
     void AtomToolsFrameworkSystemComponent::Deactivate()

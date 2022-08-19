@@ -2,16 +2,13 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/ForEach.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="ForEach"
-	       QualifiedName="ScriptCanvas::Nodes::Core::ForEach"
-	       PreferredClassName="For Each"
-           Uuid="{31823035-A3FF-4B8D-A3A6-819519478B7C}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Containers"
-           Version="2"
-           VersionConverter="ScriptCanvas::VersionConverters::ForEachVersionConverter"
-           GeneratePropertyFriend="True"
-           Description="Node for iterating through a container">
+        QualifiedName="ScriptCanvas::Nodes::Core::ForEach"
+        PreferredClassName="For Each"
+        Uuid="{31823035-A3FF-4B8D-A3A6-819519478B7C}"
+        Category="Containers"
+        Version="2"
+        VersionConverter="ScriptCanvas::VersionConverters::ForEachVersionConverter"
+        Description="Node for iterating through a container">
         <In Name="In" Description="Signaled upon node entry"/>
         <In Name="Break" Description="Stops the iteration when signaled"/>
         <Out Name="Each" Description="Signalled after each element of the container"/>

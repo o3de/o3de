@@ -102,12 +102,6 @@ namespace AtomToolsFramework
     {
         Base::Reflect(context);
 
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::RootAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry::Reflect(context);
-        AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry::Reflect(context);
-
         AzToolsFramework::QTreeViewWithStateSaving::Reflect(context);
         AzToolsFramework::QWidgetSavedState::Reflect(context);
 
@@ -173,8 +167,19 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
+        // Before serializing data to the log file, determine if it should be cleared first.
         const bool clearLogFile = GetSettingsValue("/O3DE/AtomToolsFramework/Application/ClearLogOnStart", false);
-        m_traceLogger.OpenLogFile(m_targetName + ".log", clearLogFile);
+
+        // Now that the base application is initialized, open the file to record any log messages and dump any pending content into it.
+        if (m_commandLine.HasSwitch("logfile"))
+        {
+            // If a custom log file name was supplied via command line, redirect output to it.
+            m_traceLogger.OpenLogFile(m_commandLine.GetSwitchValue("logfile", 0), clearLogFile);
+        }
+        else
+        {
+            m_traceLogger.OpenLogFile(m_targetName + ".log", clearLogFile);
+        }
 
         ConnectToAssetProcessor();
 
@@ -536,6 +541,14 @@ namespace AtomToolsFramework
 
     bool AtomToolsApplication::LaunchLocalServer()
     {
+        // The socket and server are currently used to forward all requests to an existing application process if one is already running.
+        // These additional settings will allow multiple instances to be launched in automated testing batch mode and other scenarios.
+        const bool allowMultipleInstances = GetSettingsValue("/O3DE/AtomToolsFramework/Application/AllowMultipleInstances", false);
+        if (allowMultipleInstances || m_commandLine.HasSwitch("allowMultipleInstances") || m_commandLine.HasSwitch("batchmode"))
+        {
+            return true;
+        }
+
         // Determine if this is the first launch of the tool by attempting to connect to a running server
         if (m_socket.Connect(QApplication::applicationName()))
         {

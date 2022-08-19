@@ -27,7 +27,6 @@
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasBuilder
 {
@@ -39,23 +38,26 @@ namespace ScriptCanvasBuilder
 
     void Worker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
     {
+        using namespace ScriptCanvas;
+
         AZStd::string fullPath;
         AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, false);
         AzFramework::StringFunc::Path::Normalize(fullPath);
         AZ_TracePrintf(s_scriptCanvasBuilder, "Start Creating Job: %s", fullPath.c_str());
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+        const_cast<Worker*>(this)->m_sourceUuid = request.m_sourceFileUUID;
 
         const ScriptCanvasEditor::EditorGraph* sourceGraph = nullptr;
         const ScriptCanvas::GraphData* graphData = nullptr;
-        ScriptCanvasEditor::SourceHandle sourceHandle;
+        SourceHandle sourceHandle;
 
         // By default, entity IDs are made unique, so that multiple instances of the script canvas file can be loaded at the same time.
         // However, in this case the file is not loaded multiple times at once, and the entity IDs need to be stable so that
         // the logic used to generate the fingerprint for this file remains stable.
-        auto sourceOutcome = ScriptCanvasEditor::LoadFromFile(fullPath, /*makeEntityIdsUnique*/ false);
-        if (sourceOutcome.IsSuccess())
+        auto result = LoadFromFile(fullPath, MakeInternalGraphEntitiesUnique::No, LoadReferencedAssets::No);
+        if (result)
         {
-            sourceHandle = sourceOutcome.GetValue().handle;
+            sourceHandle = result.m_handle;
             sourceGraph = sourceHandle.Get();
             graphData = sourceGraph->GetGraphDataConst();
         }
@@ -119,7 +121,7 @@ namespace ScriptCanvasBuilder
             if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset>>())
             {
                 const auto* subgraphAsset = reinterpret_cast<AZ::Data::Asset<const ScriptCanvas::SubgraphInterfaceAsset>*>(instancePointer);
-                if (subgraphAsset->GetId().IsValid())
+                if (subgraphAsset->GetId().IsValid() && subgraphAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = subgraphAsset->GetId().m_guid;
@@ -131,7 +133,7 @@ namespace ScriptCanvasBuilder
             else if (azTypeId == azrtti_typeid<AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>>())
             {
                 const auto* eventAsset = reinterpret_cast<AZ::Data::Asset<const ScriptEvents::ScriptEventsAsset>*>(instancePointer);
-                if (eventAsset->GetId().IsValid())
+                if (eventAsset->GetId().IsValid() && eventAsset->GetId().m_guid != this->m_sourceUuid)
                 {
                     AssetBuilderSDK::SourceFileDependency dependency;
                     dependency.m_sourceFileDependencyUUID = eventAsset->GetId().m_guid;
@@ -250,8 +252,8 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        auto loadOutcome = ScriptCanvasEditor::LoadFromFile(request.m_fullPath);
-        if (!loadOutcome.IsSuccess())
+        auto result = LoadFromFile(request.m_fullPath);
+        if (!result)
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Loading of ScriptCanvas asset for source file "%s" has failed)", fullPath.data());
             return;
@@ -264,7 +266,7 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), fileNameOnly.c_str(), runtimeScriptCanvasOutputPath, true, true);
         AzFramework::StringFunc::Path::ReplaceExtension(runtimeScriptCanvasOutputPath, ScriptCanvas::RuntimeAsset::GetFileExtension());
 
-        auto sourceHandle = loadOutcome.GetValue().handle;
+        auto sourceHandle = result.m_handle;
 
         if (request.m_jobDescription.m_jobKey == s_scriptCanvasProcessJobKey)
         {

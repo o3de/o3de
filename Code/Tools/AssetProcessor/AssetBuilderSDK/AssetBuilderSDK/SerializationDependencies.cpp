@@ -24,16 +24,16 @@ namespace AssetBuilderSDK
         {
             return false;
         }
-        if (classData->m_typeId == AZ::GetAssetClassId())
+        const auto isAssetClass = [&serializeContext, classData, classElement]
         {
-            auto* asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instancePointer);
-
-            if (asset->GetId().IsValid())
+            if (classData->m_typeId == AZ::GetAssetClassId() && classData->m_version <= 2)
             {
-                productDependencySet[asset->GetId()] = AZ::Data::ProductDependencyInfo::CreateFlags(asset->GetAutoLoadBehavior());
+                return true;
             }
-        }
-        else if (classData->m_typeId == azrtti_typeid<AZ::Data::AssetId>())
+            const auto* genericInfo = classElement ? classElement->m_genericClassInfo : serializeContext.FindGenericClassInfo(classData->m_typeId);
+            return genericInfo && genericInfo->GetGenericTypeId() == AZ::GetAssetClassId();
+        };
+        if (classData->m_typeId == azrtti_typeid<AZ::Data::AssetId>())
         {
             auto* assetId = reinterpret_cast<AZ::Data::AssetId*>(instancePointer);
 
@@ -71,6 +71,15 @@ namespace AssetBuilderSDK
                 }
 
                 productPathDependencySet.emplace(filePath, ProductPathDependencyType::ProductFile);
+            }
+        }
+        else if (isAssetClass())
+        {
+            auto* asset = reinterpret_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instancePointer);
+
+            if (asset->GetId().IsValid())
+            {
+                productDependencySet[asset->GetId()] = AZ::Data::ProductDependencyInfo::CreateFlags(asset->GetAutoLoadBehavior());
             }
         }
         else if(enumerateChildren)

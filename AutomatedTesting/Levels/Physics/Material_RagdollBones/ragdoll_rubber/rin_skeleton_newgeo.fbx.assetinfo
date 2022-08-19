@@ -320,16 +320,17 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -337,7 +338,7 @@
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
                                                         "Height": 0.4000000059604645,
-                                                        "Radius": 0.15000000596046449
+                                                        "Radius": 0.15000000596046448
                                                     }
                                                 ]
                                             ]
@@ -358,16 +359,17 @@
                                                             0.0,
                                                             0.7132986783981323
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -396,16 +398,17 @@
                                                             0.0,
                                                             0.725512683391571
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -424,7 +427,7 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.20000000298023225,
+                                                            0.20000000298023224,
                                                             0.0,
                                                             0.0
                                                         ],
@@ -434,16 +437,17 @@
                                                             0.0,
                                                             0.7008591294288635
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -462,7 +466,7 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            -0.20000000298023225,
+                                                            -0.20000000298023224,
                                                             0.0,
                                                             0.0
                                                         ],
@@ -472,16 +476,17 @@
                                                             0.0,
                                                             0.6881973743438721
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -501,7 +506,7 @@
                                                     {
                                                         "Position": [
                                                             0.10000000149011612,
-                                                            -0.019999999552965165,
+                                                            -0.019999999552965164,
                                                             0.0
                                                         ],
                                                         "Rotation": [
@@ -510,16 +515,17 @@
                                                             0.2755587100982666,
                                                             0.9615697264671326
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -542,7 +548,7 @@
                                                     {
                                                         "Position": [
                                                             -0.10000000149011612,
-                                                            0.019999999552965165,
+                                                            0.019999999552965164,
                                                             0.0
                                                         ],
                                                         "Rotation": [
@@ -551,16 +557,17 @@
                                                             0.2755587100982666,
                                                             0.9615697264671326
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -569,7 +576,7 @@
                                                         "$type": "BoxShapeConfiguration",
                                                         "Configuration": [
                                                             0.25,
-                                                            0.07000000029802323,
+                                                            0.07000000029802322,
                                                             0.10000000149011612
                                                         ]
                                                     }
@@ -581,23 +588,24 @@
                                             "shapes": [
                                                 [
                                                     {
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.33000001311302187,
+                                                        "Height": 0.33000001311302185,
                                                         "Radius": 0.10000000149011612
                                                     }
                                                 ]
@@ -613,24 +621,25 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.30000001192092898,
-                                                        "Radius": 0.07000000029802323
+                                                        "Height": 0.30000001192092896,
+                                                        "Radius": 0.07000000029802322
                                                     }
                                                 ]
                                             ]
@@ -645,24 +654,25 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.30000001192092898,
-                                                        "Radius": 0.07000000029802323
+                                                        "Height": 0.30000001192092896,
+                                                        "Radius": 0.07000000029802322
                                                     }
                                                 ]
                                             ]
@@ -673,20 +683,21 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.07000000029802323,
+                                                            0.07000000029802322,
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -694,7 +705,7 @@
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
                                                         "Height": 0.25,
-                                                        "Radius": 0.07000000029802323
+                                                        "Radius": 0.07000000029802322
                                                     }
                                                 ]
                                             ]
@@ -705,26 +716,27 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.15000000596046449,
+                                                            0.15000000596046448,
                                                             0.0,
                                                             0.0
                                                         ],
                                                         "Rotation": [
-                                                            -2.0000000233721949e-7,
+                                                            -2.0000000233721948e-7,
                                                             -0.7075905203819275,
-                                                            2.0000000233721949e-7,
+                                                            2.0000000233721948e-7,
                                                             0.7066226005554199
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -743,20 +755,21 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.07000000029802323,
+                                                            0.07000000029802322,
                                                             0.0,
-                                                            -0.019999999552965165
+                                                            -0.019999999552965164
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -785,16 +798,17 @@
                                                             0.0,
                                                             0.7071068286895752
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -817,16 +831,17 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -844,26 +859,27 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.07000000029802323,
+                                                            0.07000000029802322,
                                                             0.009999999776482582,
                                                             0.0
                                                         ],
                                                         "Rotation": [
                                                             0.6727613806724548,
-                                                            0.21843160688877107,
-                                                            0.21843160688877107,
+                                                            0.21843160688877106,
+                                                            0.21843160688877106,
                                                             0.6727614998817444
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -882,20 +898,21 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            -0.07000000029802323,
+                                                            -0.07000000029802322,
                                                             0.0,
-                                                            0.019999999552965165
+                                                            0.019999999552965164
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -914,7 +931,7 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            -0.15000000596046449,
+                                                            -0.15000000596046448,
                                                             0.0,
                                                             0.0
                                                         ],
@@ -924,16 +941,17 @@
                                                             0.0,
                                                             0.7071068286895752
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -962,23 +980,24 @@
                                                             0.0,
                                                             0.7071068286895752
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.30000001192092898,
+                                                        "Height": 0.30000001192092896,
                                                         "Radius": 0.05000000074505806
                                                     }
                                                 ]
@@ -994,16 +1013,17 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -1013,7 +1033,7 @@
                                                         "Configuration": [
                                                             0.11999999731779099,
                                                             0.07999999821186066,
-                                                            0.029999999329447748
+                                                            0.029999999329447746
                                                         ]
                                                     }
                                                 ]
@@ -1035,23 +1055,24 @@
                                                             0.0,
                                                             0.7071068286895752
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
                                                     },
                                                     {
                                                         "$type": "CapsuleShapeConfiguration",
-                                                        "Height": 0.30000001192092898,
+                                                        "Height": 0.30000001192092896,
                                                         "Radius": 0.05000000074505806
                                                     }
                                                 ]
@@ -1067,16 +1088,17 @@
                                                             0.0,
                                                             0.0
                                                         ],
-                                                        "MaterialSelection": {
-                                                            "Material": {
-                                                                "assetId": {
-                                                                    "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                },
-                                                                "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                            },
-                                                            "MaterialIds": [
+                                                        "MaterialSlots": {
+                                                            "Slots": [
                                                                 {
-                                                                    "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                    "Name": "Entire object",
+                                                                    "MaterialAsset": {
+                                                                        "assetId": {
+                                                                            "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                            "subId": 1
+                                                                        },
+                                                                        "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                    }
                                                                 }
                                                             ]
                                                         }
@@ -1086,7 +1108,7 @@
                                                         "Configuration": [
                                                             0.11999999731779099,
                                                             0.07999999821186066,
-                                                            0.029999999329447748
+                                                            0.029999999329447746
                                                         ]
                                                     }
                                                 ]
@@ -1106,448 +1128,127 @@
                                             "name": "L_leg_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    -0.20254400372505189,
-                                                    -0.6249864101409912,
-                                                    0.7367693781852722,
-                                                    0.1618904024362564
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.7375792264938355,
-                                                    0.0,
-                                                    0.0,
-                                                    0.6753178238868713
-                                                ],
-                                                "SwingLimitY": 50.0,
-                                                "SwingLimitZ": 30.0,
-                                                "TwistLowerLimit": -21.0,
-                                                "TwistUpperLimit": 23.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_leg_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.18296609818935395,
-                                                    0.6832081079483032,
-                                                    -0.6832082271575928,
-                                                    -0.18296639621257783
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    -0.0,
-                                                    0.7255232930183411,
-                                                    0.6882146000862122,
-                                                    0.0
-                                                ],
-                                                "SwingLimitY": 50.0,
-                                                "SwingLimitZ": 30.0,
-                                                "TwistLowerLimit": -16.0,
-                                                "TwistUpperLimit": 17.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_knee_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.6036934852600098,
-                                                    -0.36913779377937319,
-                                                    -0.36888980865478518,
-                                                    0.60325688123703
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0100685004144907,
-                                                    -0.01671529933810234,
-                                                    -0.07859530299901962,
-                                                    0.9967455863952637
-                                                ],
-                                                "SwingLimitY": 70.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": -98.0,
-                                                "TwistUpperLimit": -75.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_knee_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    -0.3260999023914337,
-                                                    -0.6149802207946777,
-                                                    0.6509910821914673,
-                                                    0.30416950583457949
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.9999656081199646,
-                                                    -0.008921699598431588
-                                                ],
-                                                "SwingLimitY": 69.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": 77.0,
-                                                "TwistUpperLimit": 102.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_foot_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.09583680331707001,
-                                                    0.995438814163208
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    -0.514680027961731,
-                                                    0.8578065037727356
-                                                ],
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 20.0,
-                                                "TwistLowerLimit": -34.0,
-                                                "TwistUpperLimit": 50.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_foot_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.9909648895263672,
-                                                    -0.13970449566841126
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    -0.0267730001360178,
-                                                    -0.024081699550151826,
-                                                    0.8836833834648132,
-                                                    0.46900999546051028
-                                                ],
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 20.0,
-                                                "TwistLowerLimit": -29.0,
-                                                "TwistUpperLimit": 28.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_spine_01_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.704440712928772,
-                                                    0.06162650138139725,
-                                                    0.06162650138139725,
-                                                    0.704440712928772
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.7071067094802856,
-                                                    0.0,
-                                                    0.0,
-                                                    0.7071068286895752
-                                                ],
-                                                "SwingLimitY": 15.0,
-                                                "SwingLimitZ": 5.0,
-                                                "TwistLowerLimit": -10.0,
-                                                "TwistUpperLimit": 10.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_spine_02_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.704440712928772,
-                                                    0.06162650138139725,
-                                                    0.06162650138139725,
-                                                    0.704440712928772
-                                                ],
-                                                "SwingLimitY": 15.0,
-                                                "SwingLimitZ": 5.0,
-                                                "TwistLowerLimit": -100.0,
-                                                "TwistUpperLimit": -80.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_spine_03_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.704440712928772,
-                                                    0.06162650138139725,
-                                                    0.06162650138139725,
-                                                    0.704440712928772
-                                                ],
-                                                "SwingLimitY": 15.0,
-                                                "SwingLimitZ": 5.0,
-                                                "TwistLowerLimit": -100.0,
-                                                "TwistUpperLimit": -80.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_spine_04_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.704440712928772,
-                                                    0.06162650138139725,
-                                                    0.06162650138139725,
-                                                    0.704440712928772
-                                                ],
-                                                "SwingLimitY": 15.0,
-                                                "SwingLimitZ": 5.0,
-                                                "TwistLowerLimit": -100.0,
-                                                "TwistUpperLimit": -80.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_arm_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    -0.3254435956478119,
-                                                    0.0,
-                                                    0.9459221959114075
-                                                ],
-                                                "SwingLimitY": 25.0,
-                                                "SwingLimitZ": 85.0,
-                                                "TwistLowerLimit": -20.0,
-                                                "TwistUpperLimit": 20.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_clavicle_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    -0.6882243752479553,
-                                                    0.0,
-                                                    0.725512683391571
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    -0.01745240017771721,
-                                                    0.9998490810394287
-                                                ],
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": -10.0,
-                                                "TwistUpperLimit": 10.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_neck_01_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.07845719903707504,
-                                                    0.9969456791877747
-                                                ],
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": -10.0,
-                                                "TwistUpperLimit": 10.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_neck_02_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": -10.0,
-                                                "TwistUpperLimit": 10.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "C_head_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 25.0,
-                                                "TwistLowerLimit": -30.0,
-                                                "TwistUpperLimit": 30.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_clavicle_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    3.000000106112566e-7,
-                                                    0.6944776773452759,
-                                                    3.000000106112566e-7,
-                                                    0.7195212244987488
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    1.0,
-                                                    0.0
-                                                ],
-                                                "SwingLimitY": 10.0,
-                                                "SwingLimitZ": 10.0,
-                                                "TwistLowerLimit": -10.0,
-                                                "TwistUpperLimit": 10.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_arm_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    0.9351276159286499,
-                                                    0.0,
-                                                    0.35854610800743105
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    -0.008921699598431588,
-                                                    0.999965488910675,
-                                                    -0.0,
-                                                    -0.0
-                                                ],
-                                                "SwingLimitY": 25.0,
-                                                "SwingLimitZ": 85.0,
-                                                "TwistLowerLimit": -20.0,
-                                                "TwistUpperLimit": 20.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_elbow_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.040344301611185077,
-                                                    -0.016693100333213807,
-                                                    0.38212141394615176,
-                                                    0.9235191941261292
-                                                ],
-                                                "SwingLimitY": 15.0,
-                                                "TwistLowerLimit": -25.0,
-                                                "TwistUpperLimit": 25.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "L_wrist_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "SwingLimitZ": 15.0,
-                                                "TwistLowerLimit": -20.0,
-                                                "TwistUpperLimit": 20.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_elbow_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    0.9186229109764099,
-                                                    -0.3986668884754181
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    1.0,
-                                                    0.0
-                                                ],
-                                                "SwingLimitY": 15.0
-                                            }
+                                            "Compute inertia": false
                                         },
                                         {
                                             "name": "R_wrist_JNT",
                                             "Sleep threshold": 0.5,
                                             "Compute Mass": false,
-                                            "Compute inertia": false,
-                                            "JointLimit": {
-                                                "$type": "D6JointLimitConfiguration",
-                                                "ParentLocalRotation": [
-                                                    -1.0000000116860974e-7,
-                                                    -0.0,
-                                                    0.9999998807907105,
-                                                    2.0000000233721949e-7
-                                                ],
-                                                "ChildLocalRotation": [
-                                                    0.0,
-                                                    0.0,
-                                                    1.0,
-                                                    0.0
-                                                ],
-                                                "SwingLimitZ": 15.0,
-                                                "TwistLowerLimit": -20.0,
-                                                "TwistUpperLimit": 20.0
-                                            }
+                                            "Compute inertia": false
                                         }
                                     ],
                                     "colliders": {
@@ -1562,16 +1263,17 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1579,7 +1281,7 @@
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
                                                             "Height": 0.4000000059604645,
-                                                            "Radius": 0.15000000596046449
+                                                            "Radius": 0.15000000596046448
                                                         }
                                                     ]
                                                 ]
@@ -1600,16 +1302,17 @@
                                                                 0.0,
                                                                 0.7132986783981323
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1638,16 +1341,17 @@
                                                                 0.0,
                                                                 0.725512683391571
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1666,7 +1370,7 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                0.20000000298023225,
+                                                                0.20000000298023224,
                                                                 0.0,
                                                                 0.0
                                                             ],
@@ -1676,16 +1380,17 @@
                                                                 0.0,
                                                                 0.7008591294288635
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1704,7 +1409,7 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                -0.20000000298023225,
+                                                                -0.20000000298023224,
                                                                 0.0,
                                                                 0.0
                                                             ],
@@ -1714,16 +1419,17 @@
                                                                 0.0,
                                                                 0.6881973743438721
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1743,7 +1449,7 @@
                                                         {
                                                             "Position": [
                                                                 0.10000000149011612,
-                                                                -0.019999999552965165,
+                                                                -0.019999999552965164,
                                                                 0.0
                                                             ],
                                                             "Rotation": [
@@ -1752,16 +1458,17 @@
                                                                 0.2755587100982666,
                                                                 0.9615697264671326
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1784,7 +1491,7 @@
                                                         {
                                                             "Position": [
                                                                 -0.10000000149011612,
-                                                                0.019999999552965165,
+                                                                0.019999999552965164,
                                                                 0.0
                                                             ],
                                                             "Rotation": [
@@ -1793,16 +1500,17 @@
                                                                 0.2755587100982666,
                                                                 0.9615697264671326
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1811,7 +1519,7 @@
                                                             "$type": "BoxShapeConfiguration",
                                                             "Configuration": [
                                                                 0.25,
-                                                                0.07000000029802323,
+                                                                0.07000000029802322,
                                                                 0.10000000149011612
                                                             ]
                                                         }
@@ -1823,23 +1531,24 @@
                                                 "shapes": [
                                                     [
                                                         {
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.33000001311302187,
+                                                            "Height": 0.33000001311302185,
                                                             "Radius": 0.10000000149011612
                                                         }
                                                     ]
@@ -1855,24 +1564,25 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.30000001192092898,
-                                                            "Radius": 0.07000000029802323
+                                                            "Height": 0.30000001192092896,
+                                                            "Radius": 0.07000000029802322
                                                         }
                                                     ]
                                                 ]
@@ -1887,24 +1597,25 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.20000000298023225,
-                                                            "Radius": 0.07000000029802323
+                                                            "Height": 0.20000000298023224,
+                                                            "Radius": 0.07000000029802322
                                                         }
                                                     ]
                                                 ]
@@ -1915,28 +1626,29 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                0.07000000029802323,
+                                                                0.07000000029802322,
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.15000000596046449,
-                                                            "Radius": 0.07000000029802323
+                                                            "Height": 0.15000000596046448,
+                                                            "Radius": 0.07000000029802322
                                                         }
                                                     ]
                                                 ]
@@ -1947,26 +1659,27 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                0.15000000596046449,
+                                                                0.15000000596046448,
                                                                 0.0,
                                                                 0.0
                                                             ],
                                                             "Rotation": [
-                                                                -2.0000000233721949e-7,
+                                                                -2.0000000233721948e-7,
                                                                 -0.7075905203819275,
-                                                                2.0000000233721949e-7,
+                                                                2.0000000233721948e-7,
                                                                 0.7066226005554199
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -1985,20 +1698,21 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                0.07000000029802323,
+                                                                0.07000000029802322,
                                                                 0.0,
-                                                                -0.019999999552965165
+                                                                -0.019999999552965164
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2027,16 +1741,17 @@
                                                                 0.0,
                                                                 0.7071068286895752
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2059,16 +1774,17 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2086,26 +1802,27 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                0.07000000029802323,
+                                                                0.07000000029802322,
                                                                 0.009999999776482582,
                                                                 0.0
                                                             ],
                                                             "Rotation": [
                                                                 0.6727613806724548,
-                                                                0.21843160688877107,
-                                                                0.21843160688877107,
+                                                                0.21843160688877106,
+                                                                0.21843160688877106,
                                                                 0.6727614998817444
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2124,20 +1841,21 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                -0.07000000029802323,
+                                                                -0.07000000029802322,
                                                                 0.0,
-                                                                0.019999999552965165
+                                                                0.019999999552965164
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2156,7 +1874,7 @@
                                                     [
                                                         {
                                                             "Position": [
-                                                                -0.15000000596046449,
+                                                                -0.15000000596046448,
                                                                 0.0,
                                                                 0.0
                                                             ],
@@ -2166,16 +1884,17 @@
                                                                 0.0,
                                                                 0.7071068286895752
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2204,23 +1923,24 @@
                                                                 0.0,
                                                                 0.7071068286895752
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.30000001192092898,
+                                                            "Height": 0.30000001192092896,
                                                             "Radius": 0.05000000074505806
                                                         }
                                                     ]
@@ -2236,16 +1956,17 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2255,7 +1976,7 @@
                                                             "Configuration": [
                                                                 0.11999999731779099,
                                                                 0.07999999821186066,
-                                                                0.029999999329447748
+                                                                0.029999999329447746
                                                             ]
                                                         }
                                                     ]
@@ -2277,23 +1998,24 @@
                                                                 0.0,
                                                                 0.7071068286895752
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
                                                         },
                                                         {
                                                             "$type": "CapsuleShapeConfiguration",
-                                                            "Height": 0.30000001192092898,
+                                                            "Height": 0.30000001192092896,
                                                             "Radius": 0.05000000074505806
                                                         }
                                                     ]
@@ -2309,16 +2031,17 @@
                                                                 0.0,
                                                                 0.0
                                                             ],
-                                                            "MaterialSelection": {
-                                                                "Material": {
-                                                                    "assetId": {
-                                                                        "guid": "{49D81C0E-872B-5954-B9B1-13D873728AAD}"
-                                                                    },
-                                                                    "assetHint": "levels/physics/c4925580_material_ragdollbonesmaterial/c4925580_material_ragdollbonesmaterial.physmaterial"
-                                                                },
-                                                                "MaterialIds": [
+                                                            "MaterialSlots": {
+                                                                "Slots": [
                                                                     {
-                                                                        "MaterialId": "{E9BF3E6A-71C2-4A42-847C-8CA6C93B73D7}"
+                                                                        "Name": "Entire object",
+                                                                        "MaterialAsset": {
+                                                                            "assetId": {
+                                                                                "guid": "{72396F74-E9B7-5082-ACA8-F8B110C779E2}",
+                                                                                "subId": 1
+                                                                            },
+                                                                            "assetHint": "levels/physics/material_ragdollbones/rubber.physicsmaterial"
+                                                                        }
                                                                     }
                                                                 ]
                                                             }
@@ -2328,7 +2051,7 @@
                                                             "Configuration": [
                                                                 0.11999999731779099,
                                                                 0.07999999821186066,
-                                                                0.029999999329447748
+                                                                0.029999999329447746
                                                             ]
                                                         }
                                                     ]
@@ -2345,10 +2068,17 @@
                                                 [
                                                     {
                                                         "Position": [
-                                                            0.022891199216246606,
+                                                            0.022891199216246605,
                                                             0.03267350047826767,
-                                                            0.0029446000698953869
+                                                            0.0029446000698953867
                                                         ],
+                                                        "MaterialSlots": {
+                                                            "Slots": [
+                                                                {
+                                                                    "Name": "Entire object"
+                                                                }
+                                                            ]
+                                                        },
                                                         "propertyVisibilityFlags": 248
                                                     },
                                                     {

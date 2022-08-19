@@ -27,6 +27,7 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/UICore/SaveChangesDialog.hxx>
@@ -123,6 +124,26 @@ namespace LUAEditor
     {
         m_fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(m_fileIO, "FileIO system is not present, make sure a FileIO instance is set by the application.");
+
+        auto* remoteToolsInterface = AzFramework::RemoteToolsInterface::Get();
+        if (remoteToolsInterface)
+        {
+            m_connectedEventHandler = AzFramework::RemoteToolsEndpointConnectedEvent::Handler(
+                [this](bool value)
+                {
+                    this->DesiredTargetConnected(value);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointConnectedHandler(
+                AzFramework::LuaToolsKey, m_connectedEventHandler);
+
+            m_changedEventHandler = AzFramework::RemoteToolsEndpointChangedEvent::Handler(
+                [this](AZ::u32 oldVal, AZ::u32 newVal)
+                {
+                    this->DesiredTargetChanged(oldVal, newVal);
+                });
+            remoteToolsInterface->RegisterRemoteToolsEndpointChangedHandler(
+                AzFramework::LuaToolsKey, m_changedEventHandler);
+        }
     }
 
     void Context::Activate()
@@ -135,7 +156,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusConnect();
         LUABreakpointRequestMessages::Handler::BusConnect();
         LUAStackRequestMessages::Handler::BusConnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
         LUAWatchesRequestMessages::Handler::BusConnect();
         LUATargetContextRequestMessages::Handler::BusConnect();
         HighlightedWords::Handler::BusConnect();
@@ -191,7 +211,6 @@ namespace LUAEditor
         Context_DebuggerManagement::Handler::BusDisconnect();
         LUAStackRequestMessages::Handler::BusDisconnect();
         LUABreakpointRequestMessages::Handler::BusDisconnect();
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
         HighlightedWords::Handler::BusDisconnect();
         AzFramework::AssetSystemInfoBus::Handler::BusDisconnect();
 
@@ -509,14 +528,15 @@ namespace LUAEditor
         }
     }
 
-    void Context::DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID)
+    void Context::DesiredTargetChanged([[maybe_unused]] AZ::u32 newTargetID, AZ::u32 oldTargetID)
     {
-        (void)oldTargetID;
-        (void)newTargetID;
-
         AZ_TracePrintf(LUAEditorDebugName, "Context::RemoteTargetChanged()\n");
 
-        RequestDetachDebugger();
+        // If there's no prior target, there's nothing to detach
+        if (oldTargetID != 0)
+        {
+            RequestDetachDebugger();
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -704,9 +724,6 @@ namespace LUAEditor
             for (size_t i = 0; i < numSwitchValues; ++i)
             {
                 AZStd::string inputValue = commandLine->GetSwitchValue(k_luaScriptFileString, i);
-
-                // Open the file(s)
-                AZStd::to_lower(const_cast<AZStd::string&>(inputValue).begin(), const_cast<AZStd::string&>(inputValue).end());
 
                 // Cache the files we want to open, we will open them when we activate the main window.
                 m_filesToOpen.push_back(inputValue);
@@ -1797,8 +1814,16 @@ namespace LUAEditor
     void Context::OnBreakpointHit(const AZStd::string& relativePath, int lineNumber)
     {
         // Convert from debug path (relative) to absolute path (how the Lua IDE stores files)
-        AZStd::string absolutePath = relativePath.substr(1);
-        EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, absolutePath, absolutePath);
+        AZStd::string absolutePath;
+        AZStd::string formattedRelativePath = relativePath.substr(1);
+        EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, formattedRelativePath, absolutePath);
+
+        // If finding a .lua fails, attempt the equivalent .luac
+        if (absolutePath.empty() && relativePath.ends_with(".lua"))
+        {
+            formattedRelativePath = relativePath.substr(1) + "c";
+            EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, formattedRelativePath, absolutePath); 
+        }
 
         //AZ_TracePrintf(LUAEditorDebugName, "Breakpoint '%s' was hit on line %i\n", assetIdString.c_str(), lineNumber);
         EBUS_EVENT(LUAEditorDebuggerMessages::Bus, GetCallstack);
