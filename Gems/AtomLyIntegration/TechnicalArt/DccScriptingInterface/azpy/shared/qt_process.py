@@ -35,10 +35,11 @@ class QtProcess(QtCore.QObject):
         processed.
         :return:
         """
-        _LOGGER.info(f'\n{constants.STR_CROSSBAR}\n::QPROCESS LAUNCHED::::> Application: {self.application}')
+        _LOGGER.info(f'**** QPROCESS LAUNCHED ****************************************')
+        _LOGGER.info(f'Application: {self.application}')
         _LOGGER.info(f'Target File: {self.target_files}')
         _LOGGER.info(f'Processing Script: {self.processing_script}')
-        _LOGGER.info(f'Output Information: {self.output_data}\n{constants.STR_CROSSBAR}')
+        _LOGGER.info(f'Output Information: {self.output_data}')
 
         self.p = QProcess()
         env = QtCore.QProcessEnvironment.systemEnvironment()
@@ -87,7 +88,7 @@ class QtProcess(QtCore.QObject):
         :return:
         """
         data = str(self.p.readAllStandardOutput(), 'utf-8')
-        _LOGGER.info(f'STDOUT Firing: {data}')
+        # _LOGGER.info(f'STDOUT::: {data}')
         if data.startswith('{'):
             self.process_output = json.loads(data)
             self.process_info.emit(self.process_output)
@@ -105,13 +106,13 @@ class QtProcess(QtCore.QObject):
             QProcess.Running:    'Running'
         }
         state_name = states[state]
-        _LOGGER.info(f'QProcess State Change: {state_name}')
+        _LOGGER.info(f'+ QProcess State Change: {state_name}')
 
     def process_started(self):
-        _LOGGER.info('QProcess Started....')
+        _LOGGER.info('+ QProcess Started....')
 
     def process_complete(self):
-        _LOGGER.info('QProcess Completed.')
+        _LOGGER.info('+ QProcess Completed.')
         self.p.closeWriteChannel()
 
     def start_process(self, detached=True):
@@ -130,8 +131,7 @@ class QtProcess(QtCore.QObject):
         for entry in info_list:
             command.append(str(entry))
         self.p.setArguments(command)
-        _LOGGER.info(f'\n\nCommand:::::>\n{command}')
-        _LOGGER.info(self.p.arguments())
+        _LOGGER.info(f'Command:::::> {self.p.arguments()}')
 
         try:
             if detached:
@@ -140,7 +140,7 @@ class QtProcess(QtCore.QObject):
                 self.p.start()
                 self.p.waitForFinished(-1)
         except Exception as e:
-            _LOGGER.info(f'QProcess failed: {e}')
+            _LOGGER.info(f'+ QProcess failed: {e}')
 
     @Slot(dict)
     def get_process_output(self):

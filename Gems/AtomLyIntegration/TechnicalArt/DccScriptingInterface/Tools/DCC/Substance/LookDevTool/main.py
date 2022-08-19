@@ -449,7 +449,6 @@ class ConvertSBS(QtWidgets.QWidget):
                 validated = False
             else:
                 target_field.setStyleSheet('')
-        _LOGGER.info('ValidationStatus: {}'.format(validated))
         return validated
 
     def create_sbs_files(self, processed_material_information):
@@ -571,6 +570,7 @@ class ConvertSBS(QtWidgets.QWidget):
         :param target_fbx:
         :return:
         """
+        _LOGGER.info('\n\nGathering Maya Source File Information::::::::::::::')
         if target_files and self.mayapy_location:
             try:
                 envars = self.get_process_environment()
@@ -632,7 +632,7 @@ class ConvertSBS(QtWidgets.QWidget):
 
     @Slot(dict)
     def get_process_info(self, process_info):
-        _LOGGER.info(f'Returned Process Information: {process_info}')
+        _LOGGER.info(f'PROCESS RESPONSE: {process_info}')
         self.create_sbs_files(process_info)
 
 

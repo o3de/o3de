@@ -1,16 +1,12 @@
 import config
 from dynaconf import settings
-import logging
-from pathlib import Path
+from Tools.Launcher.main import ContentContainer
+from Tools.Launcher.data.configuration import Configuration
+from Tools.Launcher.data.model import LauncherModel
 from PySide2 import QtWidgets, QtCore, QtGui
+from pathlib import Path
+import logging
 import sys
-
-# Get Launcher modules
-launcher_package_location = Path(settings.get('PATH_DCCSI_TOOLS_DEV')) / 'Launcher'
-sys.path.append(launcher_package_location.as_posix())
-from main import ContentContainer
-from data.configuration import Configuration
-from data.model import LauncherModel
 
 
 _LOGGER = logging.getLogger('DCCsi.start')
@@ -30,7 +26,7 @@ class Launcher(QtWidgets.QMainWindow):
         self.setGeometry(50, 50, 1280, 720)
         self.setObjectName('DCCsiLauncher')
         self.setWindowTitle('DCCsi Launcher')
-        self.icon_path = (launcher_package_location / 'images/o3de_icon.png').as_posix()
+        self.icon_path = (settings.get('PATH_DCCSI_TOOLS_DEV') / 'images/o3de_icon.png').as_posix()
         self.setWindowIcon(QtGui.QIcon(self.icon_path))
         self.isTopLevel()
         self.model = LauncherModel()
@@ -60,4 +56,3 @@ if __name__ == '__main__':
     launcher.show()
     sys.exit(app.exec_())
 
-    

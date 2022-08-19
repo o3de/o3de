@@ -32,10 +32,10 @@ import logging
 from pathlib import Path
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Slot
-from data.configuration import Configuration
-from data.model import LauncherModel
-from navigation import Navigation
-from sections import splash, tools, projects, output, setup, help
+from Tools.Launcher.data.configuration import Configuration
+from Tools.Launcher.data.model import LauncherModel
+from Tools.Launcher.navigation import Navigation
+from Tools.Launcher.sections import splash, tools, projects, output, setup, help
 from box import Box
 import sys
 import os

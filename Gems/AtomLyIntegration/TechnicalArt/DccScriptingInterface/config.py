@@ -81,7 +81,6 @@ def initialize_settings():
         initialize_maya_settings()
         initialize_blender_settings()
         initialize_substance_settings()
-        settings.setenv()
 
 
 def initialize_override_settings():

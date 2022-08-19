@@ -1,5 +1,5 @@
 from dynaconf import settings
-import data.project_constants as constants
+import Tools.Launcher.data.project_constants as constants
 from box import Box
 import logging
 import os
