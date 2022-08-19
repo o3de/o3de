@@ -131,7 +131,7 @@ namespace AzToolsFramework
                 return entry == instance;
             });
 
-            m_uniqueInstancesForPropagation.erase(instance)
+            m_uniqueInstancesForPropagation.erase(instance);
         }
 
         void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
