@@ -251,7 +251,7 @@ def ProcessTemplateConversion(autogenConfig, dataInputSet, dataInputFiles, templ
                         if autogenConfig.verbose == True:
                             print('Generating %s with template %s and inputs %s' % (outputFile, templateFile, ", ".join(dataInputFiles)))
                         else:
-                            print('Generated %s' % (os.path.basename(outputFile)))
+                            print('Generating %s' % (os.path.basename(outputFile)))
         else:
             with open(outputFile, 'w+') as outputFD:
                 outputFD.write(compareFD.getvalue())
