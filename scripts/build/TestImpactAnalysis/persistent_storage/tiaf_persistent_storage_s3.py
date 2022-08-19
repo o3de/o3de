@@ -6,6 +6,7 @@
 #
 #
 
+import os
 import shutil
 import tempfile
 import boto3
@@ -154,4 +155,4 @@ class PersistentStorageS3(PersistentStorage):
         except botocore.exceptions.ClientError as e:
             logger.error(f"There was a problem with the s3 client: {e}")
         finally:
-            temp_directory.unlink()
+            os.unlink(temp_directory)
