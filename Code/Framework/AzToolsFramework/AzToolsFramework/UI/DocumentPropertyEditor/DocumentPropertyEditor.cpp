@@ -371,9 +371,18 @@ namespace AzToolsFramework
                 auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(childValue);
                 if (alignment.has_value())
                 {
-                    (alignment.value() == AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight
-                        ? m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, Qt::AlignRight)
-                        : m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, Qt::AlignLeft));
+                    Qt::Alignment widgetAlignment;
+                    switch (alignment.value())
+                    {
+                    case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                        widgetAlignment = Qt::AlignLeft;
+                        break;
+                    case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                        widgetAlignment = Qt::AlignRight;
+                        break;
+                    }
+
+                    m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, widgetAlignment);
                 }
 
                 // insert after the found index; even if nothing were found and priorIndex is still -1,
