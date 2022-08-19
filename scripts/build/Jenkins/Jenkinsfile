@@ -465,14 +465,12 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
 
         dir(workspace) {
             dir(ENGINE_REPOSITORY_NAME) {
-                echo 'Start registration'
                 PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
                 PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines || ver>nul", "Registering engines in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines")
                 PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects || ver>nul", "Registering projects in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects")
                 PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems || ver>nul", "Registering gems in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems")
                 PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates || ver>nul", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates")
                 PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted || ver>nul", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted")
-                echo 'End Registration'
                 PlatformSh(command, "Running ${platform} ${type}")
             }
         }
