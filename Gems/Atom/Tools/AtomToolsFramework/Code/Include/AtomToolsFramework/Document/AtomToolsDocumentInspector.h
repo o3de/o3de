@@ -56,6 +56,8 @@ namespace AtomToolsFramework
         void RequestPropertyContextMenu([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, const QPoint&) override {}
         void PropertySelectionChanged([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode, bool) override {}
 
+        void Populate();
+
         const AZ::Crc32 m_toolId = {};
 
         bool m_editInProgress = {};
