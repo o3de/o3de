@@ -44,7 +44,7 @@ include(cmake/SettingsRegistry.cmake)
 include(cmake/CMakeFiles.cmake)
 include(cmake/O3DEJson.cmake)
 include(cmake/Subdirectories.cmake)
-include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
+include(cmake/TestImpactFramework/LYTestImpactFramework.cmake) # Put at end as nothing else depends on it
 
 # Gather the list of o3de_manifest external Subdirectories
 # into the LY_EXTERNAL_SUBDIRS_O3DE_MANIFEST_PROPERTY

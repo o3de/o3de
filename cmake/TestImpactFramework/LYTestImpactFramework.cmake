@@ -63,10 +63,10 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
-# Path to the directory that the result of GTest runs will be stored in.
+# Path to the directory that the result of native runs will be stored in.
 set(LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR "${GTEST_XML_OUTPUT_DIR}")
 
-# Path to the directory that the result of Pytest runs will be stored in.
+# Path to the directory that the result of python runs will be stored in.
 set(LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR "${PYTEST_XML_OUTPUT_DIR}")
 
 # If we are not provided a path to the Instrumentation bin,
@@ -596,7 +596,7 @@ endfunction()
 #! and the persistent directories containing TIAF configs for each build configuration.
 function(ly_test_impact_clean_directories)
 
-    # Clean the output folders of GTest and Pytest to ensure only the most current run is in there.
+    # Clean the output folders of native and python tests to ensure only the most current run is in there.
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
     message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
