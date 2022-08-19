@@ -748,7 +748,8 @@ namespace GradientSignal
     {
         if (m_imageData.empty())
         {
-            AZ_Error("ImageGradientComponent", false, "Image data is empty");
+            AZ_Error("ImageGradientComponent", false,
+                "Image data is empty. Make sure the image asset is fully loaded before attempting to modify it.");
             return;
         }
 
