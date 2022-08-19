@@ -88,9 +88,9 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::AddInstanceToQueue(Instance* instance)
         {
-            if (m_uniqueInstancesForPropagation.find(instance) == m_uniqueInstancesForPropagation.end())
+            // Skip the insertion into queue if the instance is already present in the set.
+            if (m_uniqueInstancesForPropagation.emplace(instance).second)
             {
-                m_uniqueInstancesForPropagation.emplace(instance);
                 m_instancesUpdateQueue.emplace_back(instance);
             }
         }
@@ -126,12 +126,16 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(Instance* instance)
         {
-            AZStd::erase_if(m_instancesUpdateQueue, [instance](Instance* entry)
+            // Skip the removal from the queue if the instance is not present in the set.
+            if (m_uniqueInstancesForPropagation.erase(instance))
             {
-                return entry == instance;
-            });
-
-            m_uniqueInstancesForPropagation.erase(instance);
+                AZStd::erase_if(
+                    m_instancesUpdateQueue,
+                    [instance](Instance* entry)
+                    {
+                        return entry == instance;
+                    });
+            }
         }
 
         void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
