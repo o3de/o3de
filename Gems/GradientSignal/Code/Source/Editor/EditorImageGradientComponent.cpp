@@ -31,6 +31,7 @@ namespace GradientSignal
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
                 ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
+                ->Field("PaintBrush", &EditorImageGradientComponent::m_paintBrush)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -152,6 +153,10 @@ namespace GradientSignal
                         "Paint Image", "Paint into an image asset")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
+                        "Paint Brush", "Paint Brush Properties")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::InComponentMode)
                     ;
 
             }
@@ -230,6 +235,9 @@ namespace GradientSignal
         RefreshImageAssetStatus();
         RefreshCreationSelectionChoice();
 
+        m_paintBrush.Activate(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        AzToolsFramework::PaintBrushComponentNotificationBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
 
@@ -238,6 +246,9 @@ namespace GradientSignal
     void EditorImageGradientComponent::Deactivate()
     {
         m_componentModeDelegate.Disconnect();
+
+        AzToolsFramework::PaintBrushComponentNotificationBus::Handler::BusDisconnect();
+        m_paintBrush.Deactivate();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         m_currentImageJobsPending = false;

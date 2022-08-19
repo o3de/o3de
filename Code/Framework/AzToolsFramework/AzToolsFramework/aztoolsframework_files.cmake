@@ -124,6 +124,11 @@ set(FILES
     AssetBundle/AssetBundleComponent.h
     AssetDatabase/AssetDatabaseConnection.cpp
     AssetDatabase/AssetDatabaseConnection.h
+    Brushes/PaintBrush.h
+    Brushes/PaintBrush.cpp
+    Brushes/PaintBrushComponentNotificationBus.h
+    Brushes/PaintBrushNotificationBus.h
+    Brushes/PaintBrushRequestBus.h
     Debug/TraceContext.inl
     Debug/TraceContext.h
     Debug/TraceContextStackInterface.h
@@ -207,6 +212,8 @@ set(FILES
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
+    Manipulators/BrushManipulator.cpp
+    Manipulators/BrushManipulator.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
     Manipulators/HoverSelection.h

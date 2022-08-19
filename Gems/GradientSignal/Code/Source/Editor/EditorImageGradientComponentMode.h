@@ -8,23 +8,33 @@
 
 #pragma once
 
+#include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
+#include <AzToolsFramework/Manipulators/BrushManipulator.h>
 
 namespace GradientSignal
 {
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
+        , private AzToolsFramework::PaintBrushNotificationBus::Handler
     {
     public:
         EditorImageGradientComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorImageGradientComponentMode() override;
 
         // EditorBaseComponentMode
-        void Refresh() override
-        {
-        }
+        void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::string GetComponentModeName() const override;
+
+    protected:
+        // PaintBrushNotificationBus overrides
+        void OnRadiusChanged(float radius) override;
+        void OnPaint(const AZ::Aabb& dirtyArea) override;
+        void OnWorldSpaceChanged(AZ::Transform result) override;
+
+    private:
+        AZStd::shared_ptr<AzToolsFramework::BrushManipulator> m_brushManipulator;
     };
 } // namespace GradientSignal

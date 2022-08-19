@@ -19,6 +19,7 @@ namespace AzToolsFramework
     class PlanarManipulator;
     class LinearManipulator;
     class AngularManipulator;
+    class BrushManipulator;
     class LineSegmentSelectionManipulator;
     class SplineSelectionManipulator;
 
@@ -304,6 +305,30 @@ namespace AzToolsFramework
         bool m_depthTest = false;
     };
 
+    /// Displays a full, projected circle.
+    class ManipulatorViewProjectedCircle : public ManipulatorView
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(ManipulatorViewProjectedCircle, AZ::SystemAllocator, 0)
+        AZ_RTTI(ManipulatorViewProjectedCircle, "{2F6C918C-3B2D-41A1-871A-B143463324B1}", ManipulatorView)
+
+        void Draw(
+            ManipulatorManagerId managerId,
+            const ManipulatorManagerState& managerState,
+            ManipulatorId manipulatorId,
+            const ManipulatorState& manipulatorState,
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AzFramework::CameraState& cameraState,
+            const ViewportInteraction::MouseInteraction& mouseInteraction) override;
+
+        void SetRadius(float radius);
+
+        AZ::Vector3 m_axis = AZ::Vector3::CreateAxisZ();
+        float m_width = 0.5f;
+        float m_radius = 2.0f;
+        AZ::Color m_color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+    };
+
     //! Displays a wire circle. DrawCircleFunc can be used to either draw a full
     //! circle or a half dotted circle where the part of the circle facing away
     //! from the camera is dotted (useful for angular/rotation manipulators).
@@ -408,6 +433,9 @@ namespace AzToolsFramework
 
     AZStd::unique_ptr<ManipulatorViewSphere> CreateManipulatorViewSphere(
         const AZ::Color& color, float radius, const DecideColorFn& decideColor, bool enableDepthTest = false);
+
+    AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
+        const BrushManipulator& brushManipulator, const AZ::Color& color, float radius, float width);
 
     AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
         const AngularManipulator& angularManipulator,

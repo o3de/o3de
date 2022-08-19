@@ -288,6 +288,7 @@ namespace GradientSignal
     void ImageGradientComponent::SetupDependencies()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_imageAsset.GetId());
     }
@@ -997,6 +998,22 @@ namespace GradientSignal
         return m_imageDescriptor.m_size.m_width;
     }
 
+    AZ::Vector2 ImageGradientComponent::GetImagePixelsPerMeter() const
+    {
+        const auto& width = m_imageDescriptor.m_size.m_width;
+        const auto& height = m_imageDescriptor.m_size.m_height;
+
+        if (width > 0 && height > 0)
+        {
+            const AZ::Aabb bounds = m_gradientTransform.GetBounds();
+            const AZ::Vector2 boundsMeters(bounds.GetExtents());
+            const AZ::Vector2 imagePixelsInBounds(width / GetTilingX(), height / GetTilingY());
+            return imagePixelsInBounds / boundsMeters;
+        }
+
+        return AZ::Vector2(0.0f, 0.0f);
+    }
+
     float ImageGradientComponent::GetTilingX() const
     {
         return m_configuration.m_tiling.GetX();
@@ -1028,4 +1045,80 @@ namespace GradientSignal
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
+
+    void ImageGradientComponent::SetValue(const AZ::Vector3& position, float value)
+    {
+        SetValues(AZStd::span<const AZ::Vector3>(&position, 1), AZStd::span<float>(&value, 1));
+    }
+
+    void ImageGradientComponent::SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values)
+    {
+        AZStd::unique_lock lock(m_queryMutex);
+
+        if (m_modifiedImageData.empty())
+        {
+            AZ_Error("ImageGradientComponent", false,
+                "Image modification mode needs to be started before the image values can be set.");
+            return;
+        }
+
+        const auto& width = m_imageDescriptor.m_size.m_width;
+        const auto& height = m_imageDescriptor.m_size.m_height;
+
+        // No pixels, so nothing to modify.
+        if ((width == 0) || (height == 0))
+        {
+            return;
+        }
+
+        const AZ::Vector3 tiledDimensions((width * GetTilingX()), (height * GetTilingY()), 0.0f);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            AZ::Vector3 uvw = positions[index];
+            bool wasPointRejected = true;
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                // When "rasterizing" from uvs, a range of 0-1 has slightly different meanings depending on the sampler state.
+                // For repeating states (Unbounded/None, Repeat), a uv value of 1 should wrap around back to our 0th pixel.
+                // For clamping states (Clamp to Zero, Clamp to Edge), a uv value of 1 should point to the last pixel.
+
+                // We assume here that the code handling sampler states has handled this for us in the clamping cases
+                // by reducing our uv by a small delta value such that anything that wants the last pixel has a value
+                // just slightly less than 1.
+
+                // Keeping that in mind, we scale our uv from 0-1 to 0-image size inclusive.  So a 4-pixel image will scale
+                // uv values of 0-1 to 0-4, not 0-3 as you might expect.  This is because we want the following range mappings:
+                // [0 - 1/4)   = pixel 0
+                // [1/4 - 1/2) = pixel 1
+                // [1/2 - 3/4) = pixel 2
+                // [3/4 - 1)   = pixel 3
+                // [1 - 1 1/4) = pixel 0
+                // ...
+
+                // Also, based on our tiling settings, we extend the size of our image virtually by a factor of tilingX and tilingY.
+                // A 16x16 pixel image and tilingX = tilingY = 1  maps the uv range of 0-1 to 0-16 pixels.
+                // A 16x16 pixel image and tilingX = tilingY = 1.5 maps the uv range of 0-1 to 0-24 pixels.
+
+                // Convert from uv space back to pixel space
+                AZ::Vector3 pixelLookup = (uvw * tiledDimensions);
+
+                // UVs outside the 0-1 range are treated as infinitely tiling, so that we behave the same as the
+                // other gradient generators.  As mentioned above, if clamping is desired, we expect it to be applied
+                // outside of this function.
+                float pixelX = pixelLookup.GetX();
+                float pixelY = pixelLookup.GetY();
+                auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
+                auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
+
+                // Flip the y because images are stored in reverse of our world axes
+                y = (height - 1) - y;
+
+                m_modifiedImageData[(y * width) + x] = values[index];
+            }
+        }
+    }
+
 }

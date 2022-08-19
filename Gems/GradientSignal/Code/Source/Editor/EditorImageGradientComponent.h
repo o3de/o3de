@@ -13,6 +13,8 @@
 #include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
 
+#include <AzToolsFramework/Brushes/PaintBrush.h>
+#include <AzToolsFramework/Brushes/PaintBrushComponentNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
@@ -28,6 +30,7 @@ namespace GradientSignal
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
         , private EditorImageGradientRequestBus::Handler
+        , private AzToolsFramework::PaintBrushComponentNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -107,6 +110,7 @@ namespace GradientSignal
         //! Delegates the handling of component editing mode to a paint controller.
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate;
+        AzToolsFramework::PaintBrush m_paintBrush;
 
         //! Preview of the gradient image
         GradientPreviewer m_previewer;
@@ -116,5 +120,6 @@ namespace GradientSignal
         ImageGradientConfig m_configuration;
         bool m_visible = true;
         bool m_runtimeComponentActive = false;
+
     };
 }
