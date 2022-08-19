@@ -16,7 +16,6 @@ ly_add_target(
     NAMESPACE AZ
     FILES_CMAKE
         AzFramework/azframework_files.cmake
-        AzFramework/azframework_autogen_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake

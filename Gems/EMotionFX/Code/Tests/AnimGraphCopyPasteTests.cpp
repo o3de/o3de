@@ -159,7 +159,7 @@ namespace EMotionFX
                     (azrtti_typeid<>(conditionPrototype) != azrtti_typeid<AnimGraphTransitionCondition>()))
                 {
                     AZ::TypeId type = azrtti_typeid<>(conditionPrototype);
-                    AZ::Debug::Platform::OutputToDebugger(nullptr, AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
+                    AZ::Debug::Platform::OutputToDebugger({}, AZStd::string::format("Condition: Name=%s, Type=%s\n", conditionPrototype->GetPaletteName(), type.ToString<AZStd::string>().c_str()).c_str());
                     result.emplace_back(azrtti_typeid<>(conditionPrototype));
                 }
             }

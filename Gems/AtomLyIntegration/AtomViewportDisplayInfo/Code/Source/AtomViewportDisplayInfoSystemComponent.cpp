@@ -336,10 +336,15 @@ namespace AZ::Render
         float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
         float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        AZ::Color fontColor = AZ::Colors::White;
+        if (imagePoolTotalAllocatedMB > 0.99f * imagePoolBudgetMB && imagePoolBudgetMB > 0)
+        {
+            fontColor = AZ::Colors::Red;
+        }
 
         DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool (used/total): %.2f / %.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB),
-            (imagePoolTotalAllocatedMB > 0.99f * imagePoolBudgetMB) ? AZ::Colors::Red : AZ::Colors::White
+            AZStd::string::format("RPI AssetStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            fontColor
         );
     }
 
