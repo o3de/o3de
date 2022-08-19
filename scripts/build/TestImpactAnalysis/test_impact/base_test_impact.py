@@ -479,7 +479,7 @@ class BaseTestImpact(ABC):
             # Grab the list of failing test targets for this sequence
             test_runs = self._extract_test_runs_from_sequence_report(report)
 
-            # Attempt to store the historic data for this branch and sequence
+            # Attempt to store the historic data and artifacts for this branch and sequence
             if self._persistent_storage:
                 if self._is_source_of_truth_branch:
                     self._persistent_storage.update_and_store_historic_data(test_runs)
