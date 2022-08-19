@@ -6,13 +6,14 @@
  *
  */
 
-#include <Editor/Plugins/Ragdoll/PhysicsPicking.h>
+#include <AzCore/Math/IntersectSegment.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <Editor/Plugins/Ragdoll/PhysicsPicking.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
 #include <Editor/SkeletonModel.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Source/TransformData.h>
-#include <AzCore/Math/IntersectSegment.h>
 
 namespace EMotionFX
 {
@@ -22,6 +23,16 @@ namespace EMotionFX
         float m_distance = AZ::Constants::FloatMax;
         size_t m_jointIndex = 0;
     };
+
+    void CompareIntersection(PickingIntersection& closestIntersection, float distance, size_t jointIndex)
+    {
+        if (distance < closestIntersection.m_distance)
+        {
+            closestIntersection.m_intersected = true;
+            closestIntersection.m_distance = distance;
+            closestIntersection.m_jointIndex = jointIndex;
+        }
+    }
 
     bool PhysicsPicking::HandleMouseInteraction(
         [[maybe_unused]] const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent)
@@ -48,6 +59,8 @@ namespace EMotionFX
 
         PickingIntersection closestIntersection;
         const EMotionFX::Skeleton* skeleton = actorInstance->GetActor()->GetSkeleton();
+        const AZ::Vector3& rayOrigin = mouseInteraction.m_mousePick.m_rayOrigin;
+        const AZ::Vector3& rayDirection = mouseInteraction.m_mousePick.m_rayDirection;
 
         if (AZ::RHI::CheckBitsAny(m_renderFlags, EMotionFX::ActorRenderFlags::LineSkeleton))
         {
@@ -77,23 +90,84 @@ namespace EMotionFX
                 const float boneLength = (parentPos - bonePos).GetLength();
                 float t1 = AZ::Constants::FloatMax;
                 float t2 = AZ::Constants::FloatMax;
-                int numIntersections = AZ::Intersect::IntersectRayCappedCylinder(
-                    mouseInteraction.m_mousePick.m_rayOrigin,
-                    mouseInteraction.m_mousePick.m_rayDirection,
-                    bonePos,
-                    boneDir,
-                    boneLength,
-                    PickingMargin,
-                    t1,
-                    t2);
+                int numIntersections =
+                    AZ::Intersect::IntersectRayCappedCylinder(rayOrigin, rayDirection, bonePos, boneDir, boneLength, PickingMargin, t1, t2);
                 if (numIntersections > 0)
                 {
                     float distance = (numIntersections == 1) ? t1 : AZ::GetMin(t1, t2);
-                    if (distance < closestIntersection.m_distance)
+                    CompareIntersection(closestIntersection, distance, parentIndex);
+                }
+            }
+        }
+
+        if (AZ::RHI::CheckBitsAny(m_renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders))
+        {
+            Physics::CharacterColliderConfiguration* ragdollColliderConfiguration =
+                actorInstance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Ragdoll);
+            for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : ragdollColliderConfiguration->m_nodes)
+            {
+                const EMotionFX::Actor* actor = actorInstance->GetActor();
+                const EMotionFX::Node* joint = actor->GetSkeleton()->FindNodeByName(nodeConfig.m_name.c_str());
+                if (joint)
+                {
+                    const size_t jointIndex = joint->GetNodeIndex();
+                    const EMotionFX::Transform& actorInstanceGlobalTransform = actorInstance->GetWorldSpaceTransform();
+                    const EMotionFX::Transform& emfxNodeGlobalTransform =
+                        actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(jointIndex);
+                    const AZ::Transform worldTransform = (emfxNodeGlobalTransform * actorInstanceGlobalTransform).ToAZTransform();
+                    for (const AzPhysics::ShapeColliderPair& shapeColliderPair : nodeConfig.m_shapes)
                     {
-                        closestIntersection.m_intersected = true;
-                        closestIntersection.m_distance = distance;
-                        closestIntersection.m_jointIndex = jointIndex;
+                        const AZ::Transform colliderOffsetTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                            shapeColliderPair.first->m_rotation, shapeColliderPair.first->m_position);
+                        const AZ::Transform colliderGlobalTransform = worldTransform * colliderOffsetTransform;
+                        const AZ::TypeId colliderType = shapeColliderPair.second->RTTI_GetType();
+                        if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
+                        {
+                            auto* sphere = static_cast<Physics::SphereShapeConfiguration*>(shapeColliderPair.second.get());
+                            float distance = AZ::Constants::FloatMax;
+                            AZ::Intersect::SphereIsectTypes result = AZ::Intersect::IntersectRaySphere(
+                                rayOrigin, rayDirection, colliderGlobalTransform.GetTranslation(), sphere->m_radius, distance);
+                            if (result != AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_NONE)
+                            {
+                                CompareIntersection(closestIntersection, distance, jointIndex);
+                            }
+                        }
+                        else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
+                        {
+                            auto* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(shapeColliderPair.second.get());
+                            const AZ::Vector3 capsuleZ = colliderGlobalTransform.GetBasisZ();
+                            const float cylinderHeight = AZ::GetMax(AZ::Constants::Tolerance, capsule->m_height - 2.0f * capsule->m_radius);
+                            const AZ::Vector3 cylinderEnd1 = colliderGlobalTransform.GetTranslation() - 0.5f * cylinderHeight * capsuleZ;
+                            const AZ::Vector3 cylinderEnd2 = colliderGlobalTransform.GetTranslation() + 0.5f * cylinderHeight * capsuleZ;
+                            const float rayLength = 1000.0f;
+                            float t = AZ::Constants::FloatMax;
+                            const AZ::Intersect::CapsuleIsectTypes result = AZ::Intersect::IntersectSegmentCapsule(
+                                rayOrigin, rayDirection * rayLength, cylinderEnd1, cylinderEnd2, capsule->m_radius, t);
+                            if (result != AZ::Intersect::CapsuleIsectTypes::ISECT_RAY_CAPSULE_NONE)
+                            {
+                                const float distance = rayLength * t;
+                                CompareIntersection(closestIntersection, distance, jointIndex);
+                            }
+                        }
+                        else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
+                        {
+                            auto* box = static_cast<Physics::BoxShapeConfiguration*>(shapeColliderPair.second.get());
+                            float distance = AZ::Constants::FloatMax;
+                            if (AZ::Intersect::IntersectRayBox(
+                                    rayOrigin,
+                                    rayDirection,
+                                    colliderGlobalTransform.GetTranslation(),
+                                    colliderGlobalTransform.GetBasisX(),
+                                    colliderGlobalTransform.GetBasisY(),
+                                    colliderGlobalTransform.GetBasisZ(),
+                                    0.5f * box->m_dimensions.GetX(),
+                                    0.5f * box->m_dimensions.GetY(),
+                                    0.5f * box->m_dimensions.GetZ(),
+                                    distance))
+                            {
+                                CompareIntersection(closestIntersection, distance, jointIndex);
+                            }
+                        }
                     }
                 }
             }
@@ -101,12 +175,8 @@ namespace EMotionFX
 
         if (closestIntersection.m_intersected)
         {
-            Node* node = skeleton->GetNode(closestIntersection.m_jointIndex);
-            if (node)
-            {
-                QModelIndex modelIndex = skeletonModel->GetModelIndex(node->GetParentNode());
-                skeletonModel->GetSelectionModel().select(modelIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-            }
+            QModelIndex modelIndex = skeletonModel->GetModelIndex(skeleton->GetNode(closestIntersection.m_jointIndex));
+            skeletonModel->GetSelectionModel().select(modelIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         }
 
         return closestIntersection.m_intersected;
