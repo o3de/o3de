@@ -596,12 +596,11 @@ endfunction()
 #! and the persistent directories containing TIAF configs for each build configuration.
 function(ly_test_impact_clean_directories)
 
+    # Clean the output folders of GTest and Pytest to ensure only the most current run is in there.
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
     message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
     message("${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}")
-    file(REMOVE_RECURSE ${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR})
-    message("${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}")
 
     # For each build configuration type, delete the persistent and temp folders
     foreach(config_type ${LY_CONFIGURATION_TYPES})
