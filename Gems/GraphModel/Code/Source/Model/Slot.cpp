@@ -105,12 +105,27 @@ namespace GraphModel
     /////////////////////////////////////////////////////////
     // SlotDefinition
 
-    SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
-        return CreateInputData(name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration);
+        return CreateInputData(
+            name, displayName, DataTypeList{ dataType }, defaultValue, description, extendableSlotConfiguration, supportsEditingOnNode);
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateInputData(AZStd::string_view name, AZStd::string_view displayName, DataTypeList supportedDataTypes, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypeList supportedDataTypes,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -120,13 +135,20 @@ namespace GraphModel
         slotDefinition->m_supportedDataTypes = supportedDataTypes;
         slotDefinition->m_defaultValue = defaultValue;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateOutputData(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateOutputData(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Output;
@@ -135,13 +157,19 @@ namespace GraphModel
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateInputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateInputEvent(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -149,13 +177,19 @@ namespace GraphModel
         slotDefinition->m_name = name;
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateOutputEvent(AZStd::string_view name, AZStd::string_view displayName, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateOutputEvent(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Output;
@@ -163,13 +197,21 @@ namespace GraphModel
         slotDefinition->m_name = name;
         slotDefinition->m_displayName = displayName;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    SlotDefinitionPtr SlotDefinition::CreateProperty(AZStd::string_view name, AZStd::string_view displayName, DataTypePtr dataType, AZStd::any defaultValue, AZStd::string_view description, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    SlotDefinitionPtr SlotDefinition::CreateProperty(
+        AZStd::string_view name,
+        AZStd::string_view displayName,
+        DataTypePtr dataType,
+        AZStd::any defaultValue,
+        AZStd::string_view description,
+        ExtendableSlotConfiguration* extendableSlotConfiguration,
+        bool supportsEditingOnNode)
     {
         AZStd::shared_ptr<SlotDefinition> slotDefinition = AZStd::make_shared<SlotDefinition>();
         slotDefinition->m_slotDirection = SlotDirection::Input;
@@ -179,13 +221,15 @@ namespace GraphModel
         slotDefinition->m_supportedDataTypes = { dataType };
         slotDefinition->m_defaultValue = defaultValue;
         slotDefinition->m_description = description;
+        slotDefinition->m_supportsEditingOnNode = supportsEditingOnNode;
 
         HandleExtendableSlotRegistration(slotDefinition, extendableSlotConfiguration);
 
         return slotDefinition;
     }
 
-    void SlotDefinition::HandleExtendableSlotRegistration(AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration)
+    void SlotDefinition::HandleExtendableSlotRegistration(
+        AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration)
     {
         if (extendableSlotConfiguration)
         {
@@ -227,14 +271,19 @@ namespace GraphModel
         return GetSlotType() == SlotType::Data || GetSlotType() == SlotType::Event;
     }
 
-    bool SlotDefinition::Is(SlotDirection slotDirection, SlotType slotType) const
+    bool SlotDefinition::SupportsEditingOnNode() const
     {
-        return GetSlotDirection() == slotDirection && GetSlotType() == slotType;
+        return m_supportsEditingOnNode;
     }
 
     bool SlotDefinition::SupportsExtendability() const
     {
         return m_extendableSlotConfiguration.m_isValid;
+    }
+
+    bool SlotDefinition::Is(SlotDirection slotDirection, SlotType slotType) const
+    {
+        return GetSlotDirection() == slotDirection && GetSlotType() == slotType;
     }
 
     const DataTypeList& SlotDefinition::GetSupportedDataTypes() const
@@ -395,6 +444,7 @@ namespace GraphModel
     bool                 Slot::SupportsDataTypes()      const { return m_slotDefinition->SupportsDataTypes(); }
     bool                 Slot::SupportsConnections()   const { return m_slotDefinition->SupportsConnections(); }
     bool                 Slot::SupportsExtendability() const { return m_slotDefinition->SupportsExtendability(); }
+    bool                 Slot::SupportsEditingOnNode()      const { return m_slotDefinition->SupportsEditingOnNode(); }
     const SlotName&      Slot::GetName()               const { return m_slotDefinition->GetName(); }
     const AZStd::string& Slot::GetDisplayName()        const { return m_slotDefinition->GetDisplayName(); }
     const AZStd::string& Slot::GetDescription()        const { return m_slotDefinition->GetDescription(); }
