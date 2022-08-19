@@ -166,20 +166,11 @@ namespace AZ
 
 namespace DPEDebugView
 {
-    class DPEDebugApplication : public AzToolsFramework::ToolsApplication
+    class DPEDebugApplication
+        : public AzToolsFramework::ToolsApplication
     {
     public:
-        DPEDebugApplication(int* argc = nullptr, char*** argv = nullptr)
-            : AzToolsFramework::ToolsApplication(argc, argv)
-        {
-            AZ::NameDictionary::Create();
-            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
-        }
-
-        virtual ~DPEDebugApplication()
-        {
-            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
-        }
+        using AzToolsFramework::ToolsApplication::ToolsApplication;
 
         void Reflect(AZ::ReflectContext* context) override
         {
@@ -218,7 +209,8 @@ int main(int argc, char** argv)
     QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
 
     // create a real DPE to track the same adapter selected for the debug tool
-    AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->setAttribute(Qt::WA_DeleteOnClose);
     dpeInstance->SetSpawnDebugView(false); // don't allow this DPE to spawn debug views, as we've made our own
     QObject::connect(
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
