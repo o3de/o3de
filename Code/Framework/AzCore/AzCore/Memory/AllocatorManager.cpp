@@ -12,7 +12,6 @@
 
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MallocSchema.h>
 
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -39,15 +38,6 @@ namespace AZ
 
 static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
 static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
-
-IAllocator* AllocatorManager::CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*))
-{
-    static MallocSchema mallocSchema;
-    void* mem = mallocSchema.Allocate(size, alignment);
-    IAllocator* result = creationFn(mem);
-
-    return result;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool AllocatorManager::IsReady()
@@ -79,29 +69,12 @@ AllocatorManager& AllocatorManager::Instance()
 }
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Create malloc schema using custom AZ_OS_MALLOC allocator.
-MallocSchema* AllocatorManager::CreateMallocSchema()
-{
-    return static_cast<MallocSchema*>(new(AZ_OS_MALLOC(sizeof(MallocSchema), alignof(MallocSchema))) MallocSchema());
-}
-
-
 //=========================================================================
 // AllocatorManager
 // [9/11/2009]
 //=========================================================================
 AllocatorManager::AllocatorManager()
     : m_profilingRefcount(0)
-    , m_mallocSchema(CreateMallocSchema(), [](MallocSchema* schema)
-    {
-        if (schema)
-        {
-            schema->~MallocSchema();
-            AZ_OS_FREE(schema);
-        }
-    }
-)
 {
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;

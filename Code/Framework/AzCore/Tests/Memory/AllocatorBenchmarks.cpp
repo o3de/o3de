@@ -12,7 +12,6 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/HphaSchema.h>
-#include <AzCore/Memory/MallocSchema.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/PoolSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -89,7 +88,6 @@ namespace Benchmark
 
     /// <summary>
     /// Basic allocator used as a baseline. This allocator is the most basic allocation possible with the OS (AZ_OS_MALLOC).
-    /// MallocSchema cannot be used here because it has extra logic that we don't want to use as a baseline.
     /// </summary>
     class RawMallocAllocator {};
 
@@ -155,13 +153,6 @@ namespace Benchmark
 
     private:
          inline static size_t s_numAllocatedBytes = 0;
-    };
-
-    // Some allocator are not fully declared, those we simply setup from the schema
-    class MallocSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::MallocSchema>
-    {
-    public:
-        AZ_TYPE_INFO(MallocSchemaAllocator, "{3E68224F-E676-402C-8276-CE4B49C05E89}");
     };
 
     // We use both this HphaSchemaAllocator and the SystemAllocator configured with Hpha because the SystemAllocator
@@ -567,7 +558,6 @@ namespace Benchmark
     BM_REGISTER_ALLOCATOR(WarmUpAllocator, RawMallocAllocator);
 
     BM_REGISTER_ALLOCATOR(RawMallocAllocator, RawMallocAllocator);
-    BM_REGISTER_ALLOCATOR(MallocSchemaAllocator, MallocSchemaAllocator);
     BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
     

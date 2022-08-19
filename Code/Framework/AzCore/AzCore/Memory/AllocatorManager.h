@@ -21,7 +21,6 @@
 namespace AZ
 {
     class IAllocator;
-    class MallocSchema;
 
     /**
     * Global allocation manager. It has access to all
@@ -42,7 +41,6 @@ namespace AZ
 
         typedef AZStd::function<void (IAllocator* allocator, size_t /*byteSize*/, size_t /*alignment*/)>    OutOfMemoryCBType;
 
-        static IAllocator* CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*));  // May be called at any time before shutdown
         static AllocatorManager& Instance();
         static bool IsReady();
         static void Destroy();
@@ -143,7 +141,6 @@ namespace AZ
     private:
         void InternalDestroy();
         void DebugBreak(void* address, const Debug::AllocationInfo& info);
-        AZ::MallocSchema* CreateMallocSchema();
 
         AllocatorManager(const AllocatorManager&);
         AllocatorManager& operator=(const AllocatorManager&);
@@ -162,7 +159,6 @@ namespace AZ
         AZStd::atomic<int>  m_profilingRefcount;
 
         AZ::Debug::AllocationRecords::Mode m_defaultTrackingRecordMode;
-        AZStd::unique_ptr<AZ::MallocSchema, void(*)(AZ::MallocSchema*)> m_mallocSchema;
 
         static AllocatorManager g_allocMgr;    ///< The single instance of the allocator manager
     };

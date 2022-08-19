@@ -163,7 +163,6 @@ set(FILES
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
     Memory/LeakDetection.cpp
-    Memory/MallocSchema.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
     Metrics/EventLoggerUtilsTests.cpp

@@ -20,7 +20,6 @@
 #include <AzCore/Memory/AllocationRecords.h>
 
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MallocSchema.h>
 
 #include <AzCore/Metrics/EventLoggerFactoryImpl.h>
 #include <AzCore/Metrics/JsonTraceEventLogger.h>
@@ -110,8 +109,6 @@ namespace AZ
 
     AZ_CONSOLEFREEFUNC(PrintEntityName, AZ::ConsoleFunctorFlags::Null,
         "Parameter: EntityId value, Prints the name of the entity to the console");
-
-    static EnvironmentVariable<MallocSchema> s_mallocSchema;
 
     static EnvironmentVariable<ReflectionEnvironment> s_reflectionEnvironment;
     static const char* s_reflectionEnvironmentName = "ReflectionEnvironment";
@@ -921,7 +918,6 @@ namespace AZ
             m_isSystemAllocatorOwner = false;
         }
 
-        s_mallocSchema.Reset();
         if (m_isOSAllocatorOwner)
         {
             AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();

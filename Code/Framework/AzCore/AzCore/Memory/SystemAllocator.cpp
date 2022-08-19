@@ -19,29 +19,14 @@
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
-#if !defined(AZCORE_SYSTEM_ALLOCATOR)
-// define the default
-#define AZCORE_SYSTEM_ALLOCATOR AZCORE_SYSTEM_ALLOCATOR_HPHA
-#endif
-
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
-    #include <AzCore/Memory/HphaSchema.h>
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-    #include <AzCore/Memory/MallocSchema.h>
-#else
-    #error "Invalid allocator selected for SystemAllocator"
-#endif
+#include <AzCore/Memory/HphaSchema.h>
 
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
     // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
     static bool g_isSystemSchemaUsed = false;
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
     static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-    static AZStd::aligned_storage<sizeof(MallocSchema), AZStd::alignment_of<MallocSchema>::value>::type g_systemSchema;
-#endif
 
     //////////////////////////////////////////////////////////////////////////
 
@@ -96,7 +81,6 @@ namespace AZ
         else
         {
             m_isCustom = false;
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
             HphaSchema::Descriptor heapDesc;
             heapDesc.m_pageSize = desc.m_heap.m_pageSize;
             heapDesc.m_poolPageSize = desc.m_heap.m_poolPageSize;
@@ -110,18 +94,11 @@ namespace AZ
             heapDesc.m_isPoolAllocations = desc.m_heap.m_isPoolAllocations;
             // Fix SystemAllocator from growing in small chunks
             heapDesc.m_systemChunkSize = desc.m_heap.m_systemChunkSize;
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-            MallocSchema::Descriptor heapDesc;
-#endif
             if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
             {
                 AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
 
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
                 m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                m_schema = new (&g_systemSchema) MallocSchema(heapDesc);
-#endif
                 g_isSystemSchemaUsed = true;
                 isReady = true;
             }
@@ -132,11 +109,7 @@ namespace AZ
                     AllocatorInstance<SystemAllocator>::IsReady(),
                     "System allocator must be created before any other allocator! They allocate from it.");
 
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
                 m_schema = azcreate(HphaSchema, (heapDesc), SystemAllocator);
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                m_schema = azcreate(MallocSchema, (heapDesc), SystemAllocator);
-#endif
                 if (m_schema == nullptr)
                 {
                     isReady = false;
@@ -167,11 +140,7 @@ namespace AZ
         {
             if ((void*)m_schema == (void*)&g_systemSchema)
             {
-#if AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_HPHA
                 static_cast<HphaSchema*>(m_schema)->~HphaSchema();
-#elif AZCORE_SYSTEM_ALLOCATOR == AZCORE_SYSTEM_ALLOCATOR_MALLOC
-                static_cast<MallocSchema*>(m_schema)->~MallocSchema();
-#endif
                 g_isSystemSchemaUsed = false;
             }
             else
