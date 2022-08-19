@@ -56,32 +56,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="prefabTargetLabel">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>20</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <italic>false</italic>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Target:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-     <property name="indent">
-      <number>-2</number>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="AzQtComponents::BreadCrumbs" name="m_prefabFocusPath" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">

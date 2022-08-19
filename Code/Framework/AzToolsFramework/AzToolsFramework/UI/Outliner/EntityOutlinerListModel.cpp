@@ -2232,6 +2232,13 @@ namespace AzToolsFramework
     {
         if (event->type() == QEvent::MouseButtonPress)
         {
+            if (index.column() == EntityOutlinerListModel::Column::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::Column::ColumnLockToggle)
+            {
+                // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
+                // This prevents selection from changing if a toggle is clicked
+                return true;
+            }
+
             QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
             AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
             if (auto editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get(); editorEntityUiInterface != nullptr)
@@ -2250,13 +2257,6 @@ namespace AzToolsFramework
                         return true;
                     }
                 }
-            }
-
-            if (index.column() == EntityOutlinerListModel::Column::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::Column::ColumnLockToggle)
-            {
-                // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
-                // This prevents selection from changing if a toggle is clicked
-                return true;
             }
         }
 

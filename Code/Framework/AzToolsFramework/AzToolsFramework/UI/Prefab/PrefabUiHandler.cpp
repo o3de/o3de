@@ -53,9 +53,6 @@ namespace AzToolsFramework
 
         // Get EditorEntityContextId
         EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-        // Initialize Font Metrics
-        m_fontMetrics = new QFontMetrics(QFont("Open Sans", m_prefabFileNameFontSize));
     }
 
     QString PrefabUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const

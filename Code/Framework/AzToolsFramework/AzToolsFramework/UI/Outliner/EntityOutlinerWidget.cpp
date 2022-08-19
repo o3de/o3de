@@ -905,7 +905,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
     {
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
     }
 
     void EntityOutlinerWidget::OnEntityPickModeStarted()
