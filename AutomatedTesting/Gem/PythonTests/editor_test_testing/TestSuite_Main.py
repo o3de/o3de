@@ -13,7 +13,8 @@ import importlib
 
 import ly_test_tools
 import ly_test_tools.environment.process_utils as process_utils
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite, Result
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
+from ly_test_tools.o3de.multi_test_framework import Result
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
