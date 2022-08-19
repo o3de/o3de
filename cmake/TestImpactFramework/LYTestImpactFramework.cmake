@@ -38,7 +38,7 @@ set(LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFI
 
 # Directory for static artifacts produced as part of the build system generation process
 set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
-    
+
 # Directory for source to build target mappings
 set(LY_TEST_IMPACT_SOURCE_TARGET_MAPPING_DIR "${LY_TEST_IMPACT_ARTIFACT_DIR}/Mapping")
 
@@ -77,7 +77,7 @@ if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
 else()
     set(LY_TEST_IMPACT_ACTIVE false)
 endif()
-    
+
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
