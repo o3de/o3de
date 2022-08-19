@@ -10,7 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QThread>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/deque.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
             return m_objects.empty();
         }
 
-        const AZStd::vector<DownloadableObject>& GetDownloadQueue() const
+        const AZStd::deque<DownloadableObject>& GetDownloadQueue() const
         {
             return m_objects;
         }
@@ -79,7 +79,7 @@ namespace O3DE::ProjectManager
     private:
         DownloadWorker* m_worker;
         QThread m_workerThread;
-        AZStd::vector<DownloadableObject> m_objects;
+        AZStd::deque<DownloadableObject> m_objects;
     };
 
 } // namespace O3DE::ProjectManager

@@ -73,8 +73,11 @@ namespace O3DE::ProjectManager
 
     void DownloadController::UpdateUIProgress(int bytesDownloaded, int totalBytes)
     {
-        const DownloadableObject& downloadableObject = m_objects.front();
-        emit ObjectDownloadProgress(downloadableObject.m_objectName, downloadableObject.m_objectType, bytesDownloaded, totalBytes);
+        if (!m_objects.empty())
+        {
+            const DownloadableObject& downloadableObject = m_objects.front();
+            emit ObjectDownloadProgress(downloadableObject.m_objectName, downloadableObject.m_objectType, bytesDownloaded, totalBytes);
+        }
     }
 
     void DownloadController::HandleResults(const QString& result, const QString& detailedError)
@@ -99,10 +102,13 @@ namespace O3DE::ProjectManager
             succeeded = false;
         }
 
-        DownloadableObject downloadableObject = m_objects.front();
-        m_objects.erase(m_objects.begin());
-        emit Done(downloadableObject.m_objectName, succeeded);
-        emit ObjectDownloadRemoved(downloadableObject.m_objectName, downloadableObject.m_objectType);
+        if (!m_objects.empty())
+        {
+            DownloadableObject downloadableObject = m_objects.front();
+            m_objects.erase(m_objects.begin());
+            emit Done(downloadableObject.m_objectName, succeeded);
+            emit ObjectDownloadRemoved(downloadableObject.m_objectName, downloadableObject.m_objectType);
+        }
 
         if (!m_objects.empty())
         {

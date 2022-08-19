@@ -237,7 +237,7 @@ namespace O3DE::ProjectManager
                         {
                             return remoteProject.m_id == value.m_id;
                         });
-                    if (foundProject== projects.end())
+                    if (foundProject == projects.end())
                     {
                         projects.append(remoteProject);
                     }

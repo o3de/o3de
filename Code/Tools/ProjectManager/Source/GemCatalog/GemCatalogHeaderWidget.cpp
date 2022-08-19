@@ -219,7 +219,7 @@ namespace O3DE::ProjectManager
         else
         {
             // Setup gem download rows for gems that are already in the queue
-            const AZStd::vector<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
+            const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
 
             for (const DownloadController::DownloadableObject& o3deObject : downloadQueue)
             {
@@ -271,7 +271,7 @@ namespace O3DE::ProjectManager
 
         m_downloadingListWidget->layout()->addWidget(newGemDownloadWidget);
 
-        const AZStd::vector<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
+        const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
         QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
         numDownloads->setText(QString("%1 %2")
                                   .arg(downloadQueue.size())
