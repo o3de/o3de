@@ -102,34 +102,37 @@ namespace Multiplayer
 
         sourceInstance->GetEntities([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnableAssetId](AZStd::unique_ptr<AZ::Entity>& sourceEntity)
         { 
-            if (sourceEntity->FindComponent<NetBindComponent>())
+            if (!sourceEntity->FindComponent<NetBindComponent>())
             {
-                AZ::Entity* entity = sourceEntity.get();
-                AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
-                    prefabName,
-                    *rootSourceInstance,
-                    uniqueName,
-                    *rootNetworkInstance,
-                    *networkInstance,
-                    entity->GetId(),
-                    AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType::Replace,
-                    AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad,
-                    NetworkEntityManager::NetworkEntityTag,
-                    context);
-
-                AZ_Assert(
-                    netEntity, "Unable to create alias for entity %s [%zu] from the source prefab instance", entity->GetName().c_str(),
-                    aznumeric_cast<AZ::u64>(entity->GetId()));
-
-                netEntity->InvalidateDependencies();
-                netEntity->EvaluateDependencies();
-
-                PrefabEntityId prefabEntityId;
-                prefabEntityId.m_prefabName = sourceEntity->GetName();
-                NetBindComponent* netBindComponent = netEntity->FindComponent<NetBindComponent>();
-                netBindComponent->SetPrefabAssetId(networkSpawnableAssetId);
-                netBindComponent->SetPrefabEntityId(prefabEntityId);
+                return true; // return true tells GetEntities to continue iterating over all the entities
             }
+
+            AZ::Entity* entity = sourceEntity.get();
+            AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
+                prefabName,
+                *rootSourceInstance,
+                uniqueName,
+                *rootNetworkInstance,
+                *networkInstance,
+                entity->GetId(),
+                AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType::Replace,
+                AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasSpawnableLoadBehavior::DependentLoad,
+                NetworkEntityManager::NetworkEntityTag,
+                context);
+
+            AZ_Assert(
+                netEntity, "Unable to create alias for entity %s [%zu] from the source prefab instance", entity->GetName().c_str(),
+                aznumeric_cast<AZ::u64>(entity->GetId()));
+
+            netEntity->InvalidateDependencies();
+            netEntity->EvaluateDependencies();
+
+            PrefabEntityId prefabEntityId;
+            prefabEntityId.m_prefabName = sourceEntity->GetName();
+            NetBindComponent* netBindComponent = netEntity->FindComponent<NetBindComponent>();
+            netBindComponent->SetPrefabAssetId(networkSpawnableAssetId);
+            netBindComponent->SetPrefabEntityId(prefabEntityId);
+            
             return true;
         });
 
@@ -182,6 +185,11 @@ namespace Multiplayer
             prefabName,
             context,
             networkSpawnableAssetId);
+
+        if (networkInstance.GetEntityAliasCount() == 0 && networkInstance.GetNestedEntityAliasCount() == 0)
+        {
+            return false;
+        }
 
         context.AddPrefab(AZStd::move(networkPrefab));
 

@@ -135,6 +135,7 @@ namespace AzToolsFramework
             * Gets the ids for the entities in the Instance DOM.  Can recursively trace all nested instances.
             */
             void GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const;
+            size_t GetNestedEntityAliasCount() const;
 
             void GetEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const;
             void GetEntityIdToAlias(const AZStd::function<bool(AZ::EntityId, EntityAliasView)>& callback) const;

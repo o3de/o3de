@@ -467,6 +467,11 @@ namespace AzToolsFramework
             return m_entities.size();
         }
 
+        size_t Instance::GetNestedEntityAliasCount() const
+        {
+            return m_nestedInstances.size();
+        }
+
         void Instance::GetNestedEntityIds(const AZStd::function<bool(AZ::EntityId)>& callback) const
         {
             GetEntityIds(callback);
