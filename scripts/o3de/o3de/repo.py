@@ -78,17 +78,8 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
             cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
 
             parsed_uri = urllib.parse.urlparse(manifest_json_uri)
-            
-            if parsed_uri.netloc in ['github.com']:
-                pattern = r"^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+?)(.git)*$"
-                matches = re.search(pattern, r"{}".format(o3de_object_uri))
-                editedurl = f'https://api.github.com/repos/{matches.group(4)}/{matches.group(5)}/contents/{manifest_json}'
-                logger.warning(f'GitHub re {editedurl}.')
-                with urllib.request.urlopen(editedurl) as url:
-                    data = json.loads(url.read().decode())
-                    dlurl = data['download_url']
-                    parsed_uri = urllib.parse.urlparse(dlurl)
-                    logger.warning(f'GitHub data {dlurl}.')
+
+            parsed_uri = utils.get_file_uri_from_git_api(parsed_uri)
 
             download_file_result = utils.download_file(parsed_uri, cache_file, True)
             if download_file_result != 0:

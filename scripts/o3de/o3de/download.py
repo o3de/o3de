@@ -24,8 +24,6 @@ from datetime import datetime
 
 from o3de import manifest, repo, utils, validation, register
 
-import subprocess
-
 logger = logging.getLogger('o3de.download')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
@@ -115,67 +113,59 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
 
     # If we have a git link then we should clone to the given download path here otherwise download and extract the zip
     
-    if parsed_uri.netloc in ['github.com']:
+    if 'github.com' in parsed_uri.netloc:
         if not dest_path:
             dest_path = manifest.get_registered(default_folder=default_folder_name)
             dest_path = pathlib.Path(dest_path).resolve()
             dest_path = dest_path / object_name
         else:
             dest_path = pathlib.Path(dest_path).resolve()
-        process = subprocess.Popen(["git", "clone", parsed_uri.geturl(), dest_path.as_posix()], stdout=subprocess.PIPE)
-        output = process.communicate()[0]
-        return 0
-        #pattern = r"^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+?)(.git)*$"
-        #matches = re.search(pattern, r"{}".format(o3de_object_uri))
-        #editedurl = f'https://api.github.com/repos/{matches.group(4)}/{matches.group(5)}/contents/{manifest_json}'
-        #logger.warning(f'GitHub re {editedurl}.')
-        #with urllib.request.urlopen(editedurl) as url:
-        #    data = json.loads(url.read().decode())
-        #    dlurl = data['download_url']
-        #    parsed_uri = urllib.parse.urlparse(dlurl)
-        #    logger.warning(f'GitHub data {dlurl}.')
-
-    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, object_name, download_progress_callback)
-    if download_zip_result != 0:
-        return download_zip_result
-
-    if not validate_downloaded_zip_sha256(downloadable_object_data, download_zip_path, f'{object_type}.json'):
-        logger.error(f'Could not validate zip, deleting {download_zip_path}')
-        os.unlink(download_zip_path)
-        return 1
-    logger.warning('download_o3de_object A')
-    if not dest_path:
-        dest_path = manifest.get_registered(default_folder=default_folder_name)
-        dest_path = pathlib.Path(dest_path).resolve()
-        dest_path = dest_path / object_name
+        clone_result = utils.clone_git_uri(parsed_uri.geturl(), dest_path)
+        if clone_result:
+            logger.error(f'Could not clone {parsed_uri.geturl()}')
+            return 1
     else:
-        dest_path = pathlib.Path(dest_path).resolve()
-    logger.warning('download_o3de_object A')
-    if not dest_path:
-        logger.error(f'Destination path cannot be empty.')
-        return 1
-    if dest_path.exists():
-        if not force_overwrite:
-            logger.error(f'Destination path {dest_path} already exists.')
+        download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, object_name, download_progress_callback)
+        if download_zip_result != 0:
+            return download_zip_result
+
+        if not validate_downloaded_zip_sha256(downloadable_object_data, download_zip_path, f'{object_type}.json'):
+            logger.error(f'Could not validate zip, deleting {download_zip_path}')
+            os.unlink(download_zip_path)
             return 1
+
+        if not dest_path:
+            dest_path = manifest.get_registered(default_folder=default_folder_name)
+            dest_path = pathlib.Path(dest_path).resolve()
+            dest_path = dest_path / object_name
         else:
-            try:
-                shutil.rmtree(dest_path)
-            except OSError:
-                logger.error(f'Could not remove existing destination path {dest_path}.')
-                return 1
-    logger.warning('download_o3de_object C')
-    dest_path.mkdir(exist_ok=True)
-    logger.warning('download_o3de_object D')
-    # extract zip
-    with zipfile.ZipFile(download_zip_path, 'r') as zip_file_ref:
-        try:
-            zip_file_ref.extractall(dest_path)
-        except Exception:
-            logger.error(f'Error unzipping {download_zip_path} to {dest_path}. Deleting {dest_path}.')
-            shutil.rmtree(dest_path)
+            dest_path = pathlib.Path(dest_path).resolve()
+
+        if not dest_path:
+            logger.error(f'Destination path cannot be empty.')
             return 1
-    logger.warning('download_o3de_object E')
+        if dest_path.exists():
+            if not force_overwrite:
+                logger.error(f'Destination path {dest_path} already exists.')
+                return 1
+            else:
+                try:
+                    shutil.rmtree(dest_path)
+                except OSError:
+                    logger.error(f'Could not remove existing destination path {dest_path}.')
+                    return 1
+
+        dest_path.mkdir(exist_ok=True)
+
+        # extract zip
+        with zipfile.ZipFile(download_zip_path, 'r') as zip_file_ref:
+            try:
+                zip_file_ref.extractall(dest_path)
+            except Exception:
+                logger.error(f'Error unzipping {download_zip_path} to {dest_path}. Deleting {dest_path}.')
+                shutil.rmtree(dest_path)
+                return 1
+
     if not skip_auto_register:
         if object_type == 'gem':
             return register.register(gem_path=dest_path)

@@ -11,11 +11,14 @@ This file contains utility functions
 import argparse
 import sys
 import uuid
+import json
 import os
 import pathlib
 import shutil
+import urllib.parse
 import urllib.request
 import logging
+import subprocess
 import zipfile
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
@@ -162,6 +165,31 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+def get_file_uri_from_git_api(parsed_uri):
+    """
+    Uses known git APIs to det a direct link to a file
+    :param parsed_uri: git uri with file appended
+    :return: direct link uri
+    """
+    if 'github.com' in parsed_uri.netloc:
+        components = parsed_uri.path.split('/')
+        components = [ele for ele in components if ele.strip()]
+
+        if len(components) < 3:
+            return parsed_uri
+
+        user = components[0]
+        repository = components[1].replace('.git','')
+        filepath = '/'.join(components[2:len(components)])
+        api_url = f'http://api.github.com/repos/{user}/{repository}/contents/{filepath}'
+
+        with urllib.request.urlopen(api_url) as url:
+            json_data = json.loads(url.read().decode())
+            download_url = json_data['download_url']
+            parsed_uri = urllib.parse.urlparse(download_url)
+        return parsed_uri
+    else:
+        return parsed_uri
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
@@ -247,6 +275,20 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     return 0
 
+def clone_git_uri(uri, download_path: pathlib.Path) -> int:
+    """
+    :param uri: uniform resource identifier
+    :param download_path: location path on disk to download file
+    """
+    params = ["git", "clone", uri, download_path.as_posix()]
+    try:
+        with subprocess.Popen(params, stdout=subprocess.PIPE) as proc:
+            print(proc.stdout.read())
+    except Exception as e:
+        logger.error(str(e))
+        return 1
+
+    return proc.returncode
 
 def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
