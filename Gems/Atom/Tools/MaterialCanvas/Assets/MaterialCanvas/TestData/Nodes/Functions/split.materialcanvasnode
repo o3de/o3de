@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{E641D9D2-66B6-4E54-BA11-AAAA53E6AC8D}",
         "category": "Math Functions",
         "title": "split",
         "inputSlots": [

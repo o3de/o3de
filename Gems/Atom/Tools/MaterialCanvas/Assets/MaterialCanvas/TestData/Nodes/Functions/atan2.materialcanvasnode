@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{7DAE735C-CC7B-49C9-9B18-CC3314792650}",
         "category": "Math Functions",
         "title": "atan2",
         "inputSlots": [

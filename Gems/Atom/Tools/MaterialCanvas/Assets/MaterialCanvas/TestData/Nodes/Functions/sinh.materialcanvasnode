@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{9041104C-C659-46FB-A363-84F4E733C766}",
         "category": "Math Functions",
         "title": "sinh",
         "inputSlots": [

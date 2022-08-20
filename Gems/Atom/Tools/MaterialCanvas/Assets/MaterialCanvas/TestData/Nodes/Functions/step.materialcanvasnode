@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{5A76042C-CDD1-44E2-A87A-52A1B440BA11}",
         "category": "Math Functions",
         "title": "step",
         "inputSlots": [

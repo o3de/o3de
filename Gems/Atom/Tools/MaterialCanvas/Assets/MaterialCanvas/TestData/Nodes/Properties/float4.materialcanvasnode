@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{AAE2C622-F9D7-4B2D-9743-BB7CBC773BA7}",
         "category": "Properties",
         "title": "Float4 Property",
         "propertySlots": [

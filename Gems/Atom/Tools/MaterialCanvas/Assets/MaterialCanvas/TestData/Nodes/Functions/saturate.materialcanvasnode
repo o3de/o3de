@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{FCACB52B-CE60-4092-A5C7-17C35E8E4292}",
         "category": "Math Functions",
         "title": "saturate",
         "inputSlots": [

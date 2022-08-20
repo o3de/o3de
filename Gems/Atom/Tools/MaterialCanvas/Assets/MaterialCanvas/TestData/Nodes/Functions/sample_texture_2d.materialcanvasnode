@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
         "category": "Texturing",
         "title": "Sample Texture 2D",
         "inputSlots": [

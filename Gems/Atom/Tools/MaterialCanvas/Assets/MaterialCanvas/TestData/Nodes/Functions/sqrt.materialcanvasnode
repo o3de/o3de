@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{FECA6F9D-4389-4ABE-9A65-610F81F5F211}",
         "category": "Math Functions",
         "title": "sqrt",
         "inputSlots": [

@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{5B845EBE-180E-42AE-9BCC-27559E6CBA56}",
         "category": "Math Functions",
         "title": "rcp",
         "inputSlots": [

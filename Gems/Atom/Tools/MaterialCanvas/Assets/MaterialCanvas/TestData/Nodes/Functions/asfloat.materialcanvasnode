@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{F43D854D-3336-436C-8E28-D4BD95291DE4}",
         "category": "Math Functions",
         "title": "asfloat",
         "inputSlots": [

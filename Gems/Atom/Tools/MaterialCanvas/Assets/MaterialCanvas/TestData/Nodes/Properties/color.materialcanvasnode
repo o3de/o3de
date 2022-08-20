@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{2A23578C-FB72-4A9F-AC95-06B278CEA913}",
         "category": "Properties",
         "title": "Color Property",
         "propertySlots": [
@@ -12,11 +13,7 @@
                 "description": "Name",
                 "supportedDataTypes": [
                     "string"
-                ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                ]
             },
             {
                 "name": "inGroup",
@@ -24,11 +21,7 @@
                 "description": "Group",
                 "supportedDataTypes": [
                     "string"
-                ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                ]
             },
             {
                 "name": "inValue",
@@ -52,15 +45,6 @@
                 "supportedDataTypes": [
                     "color"
                 ],
-                "defaultValue": {
-                    "$type": "Color",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::PROPERTYNAME;"

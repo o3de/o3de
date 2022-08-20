@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{C451808F-3604-46A8-9014-2D51293EAD55}",
         "category": "Constants",
         "title": "Float2 Constant",
         "propertySlots": [

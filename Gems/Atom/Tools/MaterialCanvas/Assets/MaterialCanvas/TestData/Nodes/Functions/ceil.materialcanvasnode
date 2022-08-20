@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{39509794-1EC9-477C-B882-FDEA2439FE3B}",
         "category": "Math Functions",
         "title": "ceil",
         "inputSlots": [

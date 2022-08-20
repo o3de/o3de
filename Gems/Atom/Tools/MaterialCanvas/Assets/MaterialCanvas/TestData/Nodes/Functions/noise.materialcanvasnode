@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{A761FE61-29AF-42B1-8DBD-8F1237D0DD2B}",
         "category": "Math Functions",
         "title": "noise",
         "inputSlots": [

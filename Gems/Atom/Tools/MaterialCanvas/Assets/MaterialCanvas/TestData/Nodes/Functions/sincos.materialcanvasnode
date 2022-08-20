@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{229D9C2B-6AD4-45DC-83F0-AB5BE771298C}",
         "category": "Math Functions",
         "title": "sincos",
         "settings": {

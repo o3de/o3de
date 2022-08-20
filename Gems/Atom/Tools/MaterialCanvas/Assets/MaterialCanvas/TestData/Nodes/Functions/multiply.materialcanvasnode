@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{7DE0F2F0-1ADC-4B4B-ADDB-CA21B8D97816}",
         "category": "Math Functions",
         "title": "multiply",
         "inputSlots": [

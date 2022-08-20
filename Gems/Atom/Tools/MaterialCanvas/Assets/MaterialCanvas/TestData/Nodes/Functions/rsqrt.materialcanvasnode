@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{C0428164-40B8-4DC0-BD35-2A20F64E99EB}",
         "category": "Math Functions",
         "title": "rsqrt",
         "inputSlots": [

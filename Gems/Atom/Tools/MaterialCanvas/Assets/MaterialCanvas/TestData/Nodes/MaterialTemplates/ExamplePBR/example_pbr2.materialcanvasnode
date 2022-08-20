@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{E1C4E4F9-94E9-46F2-920B-011F2B4BE502}",
         "category": "Material Templates",
         "title": "Example PBR 2",
         "settings": {

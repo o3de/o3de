@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{31851737-6638-45F5-A28C-B7F578B1F0F3}",
         "category": "Math Functions",
         "title": "pow",
         "inputSlots": [

@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{A1E09C36-7B95-47F1-93A3-A059EC12F06F}",
         "category": "Math Functions",
         "title": "ddx_coarse",
         "inputSlots": [

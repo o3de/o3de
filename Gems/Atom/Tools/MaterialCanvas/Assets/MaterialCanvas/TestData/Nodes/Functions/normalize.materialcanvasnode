@@ -3,6 +3,7 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
+        "id": "{A663809B-882E-4295-834C-F6A118356A11}",
         "category": "Math Functions",
         "title": "normalize",
         "inputSlots": [
