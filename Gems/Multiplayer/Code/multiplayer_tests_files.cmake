@@ -24,6 +24,7 @@ set(FILES
     Tests/MultiplayerSystemTests.cpp
     Tests/NetworkInputTests.cpp
     Tests/NetworkTransformTests.cpp
+    Tests/PrefabProcessingTests.cpp
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
     Tests/ServerHierarchyTests.cpp

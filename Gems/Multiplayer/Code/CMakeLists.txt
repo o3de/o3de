@@ -157,7 +157,11 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzTestShared
+                AZ::AzToolsFramework
+                AZ::AzToolsFrameworkTestCommon
                 Gem::Multiplayer.Static
+                Gem::Multiplayer.Tools.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
             *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
