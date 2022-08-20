@@ -84,12 +84,16 @@ namespace MaterialCanvas
         // Listen for GraphController notifications on the new graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
 
+        GraphCanvas::SceneNotificationBus::Handler::BusConnect(m_graphId);
+
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }
 
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
+
+        GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         // Stop listening for GraphController notifications for this graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
@@ -152,6 +156,27 @@ namespace MaterialCanvas
         }
 
         AtomToolsFramework::DocumentObjectInfoVector objects;
+        objects.reserve(m_groups.size());
+
+        for (const auto& group : m_groups)
+        {
+            if (!group->m_properties.empty())
+            {
+                AtomToolsFramework::DocumentObjectInfo objectInfo;
+                objectInfo.m_visible = group->m_visible;
+                objectInfo.m_name = group->m_name;
+                objectInfo.m_displayName = group->m_displayName;
+                objectInfo.m_description = group->m_description;
+                objectInfo.m_objectType = azrtti_typeid<AtomToolsFramework::DynamicPropertyGroup>();
+                objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group.get());
+                objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* /*node*/)
+                {
+                    return ":/Icons/blank.png";
+                };
+                objects.push_back(objectInfo);
+            }
+        }
+
         return objects;
     }
 
@@ -255,13 +280,13 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::BeginEdit()
     {
+        RecordGraphState();
         return true;
     }
 
     bool MaterialCanvasDocument::EndEdit()
     {
         auto undoState = m_graphStateForUndoRedo;
-
         RecordGraphState();
         auto redoState = m_graphStateForUndoRedo;
 
@@ -272,11 +297,13 @@ namespace MaterialCanvas
                 [this, redoState]() { RestoreGraphState(redoState); });
 
             m_modified = true;
-            QueueCompileGraph();
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
-                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            //BuildEditablePropertyGroups();
+            //AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            //    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+            GraphCanvas::ViewRequestBus::Event(m_graphId, &GraphCanvas::ViewRequests::RefreshView);
+            QueueCompileGraph();
         }
         return true;
     }
@@ -296,6 +323,7 @@ namespace MaterialCanvas
         DestroyGraph();
         m_compileGraphQueued = false;
         m_graphStateForUndoRedo.clear();
+        m_groups.clear();
         m_modified = false;
 
         AtomToolsFramework::AtomToolsDocument::Clear();
@@ -313,8 +341,27 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
     {
-        BeginEdit();
-        EndEdit();
+        // Undo and redo is being handled differently for edits received directly from graph model and graph canvas. By the time this is
+        // reached, changes have already been applied to the graph. Other operations performed in the document class ensure that a last
+        // known good graph state was recorded after every change to be able  to undo this operation. .
+        auto undoState = m_graphStateForUndoRedo;
+        RecordGraphState();
+        auto redoState = m_graphStateForUndoRedo;
+
+        if (undoState != redoState)
+        {
+            AddUndoRedoHistory(
+                [this, undoState]() { RestoreGraphState(undoState); },
+                [this, redoState]() { RestoreGraphState(redoState); });
+
+            m_modified = true;
+            BuildEditablePropertyGroups();
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+            QueueCompileGraph();
+        }
     }
 
     void MaterialCanvasDocument::OnGraphModelTriggerUndo()
@@ -325,6 +372,13 @@ namespace MaterialCanvas
     void MaterialCanvasDocument::OnGraphModelTriggerRedo()
     {
         Redo();
+    }
+
+    void MaterialCanvasDocument::OnSelectionChanged()
+    {
+        BuildEditablePropertyGroups();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
     }
 
     void MaterialCanvasDocument::RecordGraphState()
@@ -347,11 +401,11 @@ namespace MaterialCanvas
         CreateGraph(graph);
 
         m_modified = true;
-        QueueCompileGraph();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        QueueCompileGraph();
     }
 
     void MaterialCanvasDocument::CreateGraph(GraphModel::GraphPtr graph)
@@ -360,6 +414,7 @@ namespace MaterialCanvas
 
         m_graph = graph;
         m_graph->PostLoadSetup(m_graphContext);
+        BuildEditablePropertyGroups();
         RecordGraphState();
 
         // The graph controller will create all of the scene items on construction.
@@ -378,6 +433,89 @@ namespace MaterialCanvas
         GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPushPreventUndoStateUpdate);
         GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::ClearScene);
         GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
+    }
+
+    void MaterialCanvasDocument::BuildEditablePropertyGroups()
+    {
+        // Get a list of currently selected nodes that will be used to populate the inspector
+        GraphModel::NodePtrList selectedNodes;
+        GraphModelIntegration::GraphControllerRequestBus::EventResult(
+            selectedNodes, m_graphId, &GraphModelIntegration::GraphControllerRequests::GetSelectedNodes);
+
+        // Sort all the nodes according to their connection so they appear in a consistent order in the inspector
+        AZStd::sort(
+            selectedNodes.begin(),
+            selectedNodes.end(),
+            [](GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB)
+            {
+                if (!nodeA->HasConnections() && nodeB->HasConnections())
+                {
+                    return true;
+                }
+                return nodeA != nodeB && nodeA->HasOutputConnectionToNode(nodeB);
+            });
+
+        m_groups.clear();
+        for (auto currentNode : selectedNodes)
+        {
+            auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(currentNode.get());
+            if (!dynamicNode)
+            {
+                continue;
+            }
+
+            // Create a new property group and set up the header to match the node
+            AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> group;
+            group.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
+            group->m_name = GetSymbolNameFromNode(currentNode);
+            group->m_displayName = currentNode->GetTitle();
+            group->m_description = currentNode->GetSubTitle();
+
+            // Visit all of the slots in the order that they will be displayed on the node
+            const auto& nodeConfig = dynamicNode->GetConfig();
+            AtomToolsFramework::VisitDynamicNodeSlotConfigs(
+                nodeConfig,
+                [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
+                {
+                    if (auto currentSlot = currentNode->GetSlot(slotConfig.m_name))
+                    {
+                        if (currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input)
+                        {
+                            // Create and add a dynamic property for each input slot on the node
+                            AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+                            propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Invalid;
+                            propertyConfig.m_id = currentSlot->GetName();
+                            propertyConfig.m_name = currentSlot->GetName();
+                            propertyConfig.m_displayName = currentSlot->GetDisplayName();
+                            propertyConfig.m_groupName = group->m_name;
+                            propertyConfig.m_groupDisplayName = group->m_displayName;
+                            propertyConfig.m_description = currentSlot->GetDescription();
+                            propertyConfig.m_defaultValue = currentSlot->GetDefaultValue();
+                            propertyConfig.m_originalValue = currentSlot->GetValue();
+                            propertyConfig.m_parentValue = currentSlot->GetDefaultValue();
+                            propertyConfig.m_readOnly = !currentSlot->GetConnections().empty();
+                            propertyConfig.m_showThumbnail = true;
+
+                            // Set up the change call back to apply the value of the property from the inspector to the slot. This could
+                            // also send a document modified notifications and queue regeneration of shader and material assets but the
+                            // compilation process and going through the AP is not responsive enough what is the matter.
+                            propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
+                            {
+                                currentSlot->SetValue(value);
+                                return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+                            };
+
+                            group->m_properties.push_back(AtomToolsFramework::DynamicProperty(propertyConfig));
+                        }
+                    }
+                });
+
+            // Only register the group it has properties that would be displayed in the inspector
+            if (!group->m_properties.empty())
+            {
+                m_groups.emplace_back(group);
+            }
+        }
     }
 
     AZStd::string MaterialCanvasDocument::GetGraphName() const
