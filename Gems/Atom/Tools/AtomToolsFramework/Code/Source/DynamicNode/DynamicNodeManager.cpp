@@ -55,7 +55,6 @@ namespace AtomToolsFramework
             DynamicNodeConfig config;
             if (config.Load(configPath))
             {
-                config.Save(configPath);
                 AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
                 RegisterConfig(config);
             }
