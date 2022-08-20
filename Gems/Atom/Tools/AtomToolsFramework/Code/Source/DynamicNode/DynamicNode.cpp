@@ -24,11 +24,12 @@ namespace AtomToolsFramework
             serializeContext->Class<DynamicNode, GraphModel::Node>()
                 ->Version(0)
                 ->Field("toolId", &DynamicNode::m_toolId)
-                ->Field("configId", &DynamicNode::m_configId);
+                ->Field("configId", &DynamicNode::m_configId)
+                ;
         }
     }
 
-    DynamicNode::DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZStd::string& configId)
+    DynamicNode::DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZ::Uuid& configId)
         : GraphModel::Node(ownerGraph)
         , m_toolId(toolId)
         , m_configId(configId)
@@ -47,7 +48,7 @@ namespace AtomToolsFramework
         return m_config.m_subTitle.c_str();
     }
 
-    const AZStd::string& DynamicNode::GetConfigId() const
+    const AZ::Uuid& DynamicNode::GetConfigId() const
     {
         return m_configId;
     }
@@ -61,7 +62,7 @@ namespace AtomToolsFramework
     {
         m_config = {};
         AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
-            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfig, m_configId);
+            m_config, m_toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetConfigById, m_configId);
 
         // Register all of the input data slots with the dynamic node
         for (const auto& slotConfig : m_config.m_inputSlots)
@@ -81,7 +82,7 @@ namespace AtomToolsFramework
                         "Unable to register input slot \"%s\" with unsupported data type \"%s\", from DynamicNodeConfig \"%s\"",
                         slotConfig.m_displayName.c_str(),
                         dataTypeName.c_str(),
-                        m_configId.c_str());
+                        m_configId.ToString<AZStd::string>().c_str());
                     continue;
                 }
 
@@ -95,7 +96,7 @@ namespace AtomToolsFramework
                     false,
                     "Unable to register input slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
                     slotConfig.m_displayName.c_str(),
-                    m_configId.c_str());
+                    m_configId.ToString<AZStd::string>().c_str());
                 continue;
             }
 
@@ -109,7 +110,7 @@ namespace AtomToolsFramework
                     false,
                     "Unable to register input slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
                     slotConfig.m_displayName.c_str(),
-                    m_configId.c_str());
+                    m_configId.ToString<AZStd::string>().c_str());
                 continue;
             }
 
@@ -137,7 +138,7 @@ namespace AtomToolsFramework
                     false,
                     "Unable to register output slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
                     slotConfig.m_displayName.c_str(),
-                    m_configId.c_str());
+                    m_configId.ToString<AZStd::string>().c_str());
                 continue;
             }
 
@@ -165,7 +166,7 @@ namespace AtomToolsFramework
                     false,
                     "Unable to register property slot \"%s\" with no supported data types, from DynamicNodeConfig \"%s\"",
                     slotConfig.m_displayName.c_str(),
-                    m_configId.c_str());
+                    m_configId.ToString<AZStd::string>().c_str());
                 continue;
             }
 
@@ -178,7 +179,7 @@ namespace AtomToolsFramework
                     false,
                     "Unable to register property slot \"%s\" with invalid default value, from DynamicNodeConfig \"%s\"",
                     slotConfig.m_displayName.c_str(),
-                    m_configId.c_str());
+                    m_configId.ToString<AZStd::string>().c_str());
                 continue;
             }
 

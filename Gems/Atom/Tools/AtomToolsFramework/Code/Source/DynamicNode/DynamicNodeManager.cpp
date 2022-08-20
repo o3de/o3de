@@ -52,36 +52,34 @@ namespace AtomToolsFramework
         // Load and register all discovered dynamic node configuration
         for (AZStd::string configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
         {
-            // Convert path to use alias so that is consistent for loading and for the config ID
-            configPath = GetPathWithAlias(configPath);
-
             DynamicNodeConfig config;
             if (config.Load(configPath))
             {
+                config.Save(configPath);
                 AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" loaded.\n", configPath.c_str());
-                RegisterConfig(configPath, config);
+                RegisterConfig(config);
             }
         }
     }
 
-    bool DynamicNodeManager::RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config)
+    bool DynamicNodeManager::RegisterConfig(const DynamicNodeConfig& config)
     {
-        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registering.\n", configId.c_str());
+        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registering.\n", config.m_id.ToFixedString().c_str());
 
-        if (!ValidateSlotConfigVec(configId, config.m_inputSlots) ||
-            !ValidateSlotConfigVec(configId, config.m_outputSlots) ||
-            !ValidateSlotConfigVec(configId, config.m_propertySlots))
+        if (!ValidateSlotConfigVec(config.m_id, config.m_inputSlots) ||
+            !ValidateSlotConfigVec(config.m_id, config.m_outputSlots) ||
+            !ValidateSlotConfigVec(config.m_id, config.m_propertySlots))
         {
-            AZ_Error("DynamicNodeManager", false, "DynamicNodeConfig \"%s\" could not be registered.", configId.c_str());
+            AZ_Error("DynamicNodeManager", false, "DynamicNodeConfig \"%s\" could not be registered.", config.m_id.ToFixedString().c_str());
             return false;
         }
 
-        m_nodeConfigMap[configId] = config;
-        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registered.\n", configId.c_str());
+        m_nodeConfigMap[config.m_id] = config;
+        AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" registered.\n", config.m_id.ToFixedString().c_str());
         return true;
     }
 
-    DynamicNodeConfig DynamicNodeManager::GetConfig(const AZStd::string& configId) const
+    DynamicNodeConfig DynamicNodeManager::GetConfigById(const AZ::Uuid& configId) const
     {
         auto configItr = m_nodeConfigMap.find(configId);
         if (configItr != m_nodeConfigMap.end())
@@ -89,15 +87,10 @@ namespace AtomToolsFramework
             return configItr->second;
         }
 
-        AZ_Error(
-            "DynamicNodeManager",
-            false,
-            "DynamicNodeConfig \"%s\" could not be retrieved because it is not registered.",
-            configId.c_str());
-
+        AZ_Error("DynamicNodeManager", false, "DynamicNodeConfig \"%s\" could not be found.", configId.ToFixedString().c_str());
         return DynamicNodeConfig();
     }
-
+    
     void DynamicNodeManager::Clear()
     {
         m_nodeConfigMap.clear();
@@ -111,7 +104,7 @@ namespace AtomToolsFramework
         categoryMap[""] = rootItem;
 
         // Create a container of all of the node configs, sorted by category and title to generate the node palette
-        AZStd::vector<AZStd::pair<AZStd::string, DynamicNodeConfig>> sortedConfigVec(
+        AZStd::vector<AZStd::pair<AZ::Uuid, DynamicNodeConfig>> sortedConfigVec(
             m_nodeConfigMap.begin(), m_nodeConfigMap.end());
 
         AZStd::sort(
@@ -124,8 +117,9 @@ namespace AtomToolsFramework
             });
 
         // Create the node palette tree by traversing this sorted configuration container, registering any unique categories and child items
-        for (const auto& [configId, config] : sortedConfigVec)
+        for (const auto& configPair : sortedConfigVec)
         {
+            const auto& config = configPair.second;
             auto categoryItr = categoryMap.find(config.m_category);
             if (categoryItr == categoryMap.end())
             {
@@ -133,7 +127,7 @@ namespace AtomToolsFramework
                     rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>(config.m_category, m_toolId)).first;
             }
 
-            categoryItr->second->CreateChildNode<DynamicNodePaletteItem>(m_toolId, configId, config);
+            categoryItr->second->CreateChildNode<DynamicNodePaletteItem>(m_toolId, config);
         }
 
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, m_toolId);
@@ -141,7 +135,7 @@ namespace AtomToolsFramework
     }
 
     bool DynamicNodeManager::ValidateSlotConfig(
-        [[maybe_unused]] const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const
+        [[maybe_unused]] const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const
     {
         if (slotConfig.m_supportedDataTypes.empty())
         {
@@ -149,7 +143,7 @@ namespace AtomToolsFramework
                 "DynamicNodeManager",
                 false,
                 "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" has no supported data types.",
-                configId.c_str(),
+                configId.ToFixedString().c_str(),
                 slotConfig.m_displayName.c_str());
             return false;
         }
@@ -168,7 +162,7 @@ namespace AtomToolsFramework
                     "DynamicNodeManager",
                     false,
                     "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" references unregistered data type \"%s\".",
-                    configId.c_str(),
+                    configId.ToFixedString().c_str(),
                     slotConfig.m_displayName.c_str(),
                     dataTypeName.c_str());
                 return false;
@@ -179,7 +173,7 @@ namespace AtomToolsFramework
     }
 
     bool DynamicNodeManager::ValidateSlotConfigVec(
-        [[maybe_unused]] const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const
+        [[maybe_unused]] const AZ::Uuid& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const
     {
         for (const auto& slotConfig : slotConfigVec)
         {
@@ -189,7 +183,7 @@ namespace AtomToolsFramework
                     "DynamicNodeManager",
                     false,
                     "DynamicNodeConfig \"%s\" could not be validated because DynamicNodeSlotConfig \"%s\" could not be validated.",
-                    configId.c_str(),
+                    configId.ToFixedString().c_str(),
                     slotConfig.m_displayName.c_str());
                 return false;
             }
