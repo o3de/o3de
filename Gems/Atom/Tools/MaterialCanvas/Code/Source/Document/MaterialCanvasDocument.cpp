@@ -535,12 +535,12 @@ namespace MaterialCanvas
         AZ::StringFunc::Path::GetFullFileName(templateInputPath.c_str(), templateInputFileName);
         AZ::StringFunc::Replace(templateInputFileName, ".template", "");
 
-        AZStd::string templateOuputPath = m_absolutePath;
-        AZ::StringFunc::Path::ReplaceFullName(templateOuputPath, templateInputFileName.c_str());
+        AZStd::string templateOutputPath = m_absolutePath;
+        AZ::StringFunc::Path::ReplaceFullName(templateOutputPath, templateInputFileName.c_str());
 
-        AZ::StringFunc::Replace(templateOuputPath, "MaterialGraphName", GetGraphName().c_str());
+        AZ::StringFunc::Replace(templateOutputPath, "MaterialGraphName", GetGraphName().c_str());
 
-        return templateOuputPath;
+        return templateOutputPath;
     }
 
     void MaterialCanvasDocument::ReplaceStringsInContainer(
@@ -1019,13 +1019,13 @@ namespace MaterialCanvas
                         },
                         templateLines);
 
-                    // After everything has been substituted and inserted, save the file.
-                    AZStd::string templateOuputPathText;
-                    AZ::StringFunc::Join(templateOuputPathText, templateLines, '\n');
+                    // Save the file generated from the template to the same folder as the graph.
+                    AZStd::string templateOutputText;
+                    AZ::StringFunc::Join(templateOutputText, templateLines, '\n');
 
-                    const AZStd::string templateOuputPath = GetOutputPathFromTemplatePath(templateInputPath);
-                    AZ::Utils::WriteFile(templateOuputPathText, templateOuputPath);
-                    m_generatedFiles.push_back(templateOuputPath);
+                    const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+                    AZ::Utils::WriteFile(templateOutputText, templateOutputPath);
+                    m_generatedFiles.push_back(templateOutputPath);
                 }
             }
         }
