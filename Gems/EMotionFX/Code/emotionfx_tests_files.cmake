@@ -38,6 +38,7 @@ set(FILES
     Tests/AnimGraphParameterActionTests.cpp
     Tests/AnimGraphParameterActionTests.cpp
     Tests/AnimGraphParameterConditionCommandTests.cpp
+    Tests/MCore/AZCoreConversionsTest.cpp
     Tests/AnimGraphParameterConditionTests.cpp
     Tests/AnimGraphParameterConditionCommandTests.cpp
     Tests/AnimGraphRefCountTests.cpp
@@ -118,6 +119,7 @@ set(FILES
     Tests/PhysicsSetupUtils.cpp
     Tests/MCore/CommandManagerTests.cpp
     Tests/MCore/CommandLineTests.cpp
+    Tests/MCore/AlgorithmsTests.cpp
     Tests/Prefabs/LeftArmSkeleton.h
     Tests/TestAssetCode/MotionEvent.h
     Tests/TestAssetCode/MotionEvent.cpp

@@ -134,7 +134,7 @@ namespace LmbrCentral
     AZ::Aabb BoxShape::GetEncompassingAabb()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         return m_intersectionDataCache.m_aabb;
     }
@@ -149,7 +149,7 @@ namespace LmbrCentral
     bool BoxShape::IsPointInside(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -162,7 +162,7 @@ namespace LmbrCentral
     float BoxShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -175,7 +175,7 @@ namespace LmbrCentral
     bool BoxShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         if (m_intersectionDataCache.m_axisAligned)
         {
@@ -200,7 +200,7 @@ namespace LmbrCentral
     AZ::Vector3 BoxShape::GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, m_mutex, m_currentNonUniformScale);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_boxShapeConfig, &m_mutex, m_currentNonUniformScale);
 
         float x = 0;
         float y = 0;

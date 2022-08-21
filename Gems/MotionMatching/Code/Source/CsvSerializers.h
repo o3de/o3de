@@ -10,6 +10,7 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <EMotionFX/Source/Pose.h>
+#include <EMotionFX/Source/TransformSpace.h>
 
 namespace EMotionFX
 {
@@ -56,12 +57,12 @@ namespace EMotionFX::MotionMatching
         virtual ~PoseWriterCsv() = default;
 
         bool Begin(const char* filename, ActorInstance* actorInstance);
-        void WritePose(Pose& pose);
+        void WritePose(Pose& pose, const ETransformSpace transformSpace);
         void End() override;
 
     private:
         void SaveColumnNamesToString(AZStd::string& outText);
-        void SavePoseToString(Pose& pose, AZStd::string& outText);
+        void SavePoseToString(Pose& pose, const ETransformSpace transformSpace, AZStd::string& outText);
 
         ActorInstance* m_actorInstance = nullptr;
     };
@@ -101,7 +102,7 @@ namespace EMotionFX::MotionMatching
         ~PoseReaderCsv();
 
         bool Begin(const char* filename);
-        void ApplyPose(ActorInstance* actorInstance, Pose& pose, size_t index);
+        void ApplyPose(ActorInstance* actorInstance, Pose& pose, const ETransformSpace transformSpace, size_t index);
         size_t GetNumPoses() const { return m_poseValueLines.size(); }
         void End();
 

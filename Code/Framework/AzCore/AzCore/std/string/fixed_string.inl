@@ -72,6 +72,14 @@ namespace AZStd
         assign(first, last);
     }
 
+    // https://eel.is/c++draft/strings#string.cons-18
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R, typename>
+    inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(from_range_t, R&& rg)
+    {
+        assign_range(AZStd::forward<R>(rg));
+    }
+
     // #7
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr basic_fixed_string<Element, MaxElementCount, Traits>::basic_fixed_string(const basic_fixed_string& rhs)
@@ -328,7 +336,7 @@ namespace AZStd
         -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
             return append(AZStd::to_address(first), AZStd::distance(first, last));
         }
@@ -363,6 +371,15 @@ namespace AZStd
             return append(inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append_range(R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        return append(basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
     {
@@ -464,7 +481,7 @@ namespace AZStd
         -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
             return assign(AZStd::to_address(first), AZStd::distance(first, last));
         }
@@ -499,6 +516,15 @@ namespace AZStd
             return assign(inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign_range(R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        return assign(ranges::begin(rg), ranges::end(rg));
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&
     {
@@ -631,7 +657,7 @@ namespace AZStd
     {   // insert [_First, _Last) at _Where
         size_type insertOffset = AZStd::distance(cbegin(), insertPos);
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
             insert(insertOffset, AZStd::to_address(first), AZStd::distance(first, last));
         }
@@ -667,6 +693,16 @@ namespace AZStd
             insert(insertOffset, inputCopy.c_str(), inputCopy.size());
         }
         return begin() + insertOffset;
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::insert_range(const_iterator insertPos, R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, iterator>
+    {
+        size_t offset = insertPos - begin();
+        insert(insertPos - begin(), basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+        return begin() + offset;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>
@@ -930,7 +966,7 @@ namespace AZStd
         InputIt replaceFirst, InputIt replaceLast) -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>
     {   // replace [first, last) with [replaceFirst,replaceLast)
         if constexpr (contiguous_iterator<InputIt>
-            && is_same_v<typename AZStd::iterator_traits<InputIt>::value_type, value_type>)
+            && is_same_v<iter_value_t<InputIt>, value_type>)
         {
             return replace(first, last, AZStd::to_address(replaceFirst), AZStd::distance(replaceFirst, replaceLast));
         }
@@ -970,6 +1006,16 @@ namespace AZStd
             return replace(first, last, inputCopy.c_str(), inputCopy.size());
         }
     }
+
+    template<class Element, size_t MaxElementCount, class Traits>
+    template<class R>
+    inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace_with_range(
+        const_iterator first, const_iterator last, R&& rg)
+        -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
+    {
+        return replace(first, last, basic_fixed_string(from_range, AZStd::forward<R>(rg)));
+    }
+
     template<class Element, size_t MaxElementCount, class Traits>
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::replace(const_iterator first, const_iterator last,
         AZStd::initializer_list<Element> ilist) -> basic_fixed_string&

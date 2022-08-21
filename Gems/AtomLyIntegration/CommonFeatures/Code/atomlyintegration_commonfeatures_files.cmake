@@ -141,6 +141,11 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeComponent.cpp
     Source/ReflectionProbe/ReflectionProbeComponentController.h
     Source/ReflectionProbe/ReflectionProbeComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentConfig.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.h
+    Source/SkyAtmosphere/SkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponent.h
     Source/SkyBox/HDRiSkyboxComponentConfig.cpp
     Source/SkyBox/HDRiSkyboxComponentController.cpp
     Source/SkyBox/HDRiSkyboxComponentController.h

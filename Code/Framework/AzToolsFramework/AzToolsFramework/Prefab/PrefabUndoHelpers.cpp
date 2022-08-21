@@ -50,6 +50,29 @@ namespace AzToolsFramework
                 linkRemoveUndo->SetParent(undoBatch);
                 linkRemoveUndo->Redo();
             }
+
+            void AddEntity(
+                const PrefabDomValue& parentEntityDomBeforeAddingEntity,
+                const PrefabDomValue& parentEntityDomAfterAddingEntity,
+                const PrefabDomValue& newEntityDom,
+                AZ::EntityId entityId,
+                AZ::EntityId parentEntityId,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch)
+            {
+                // Create undo node for adding entity to the appropriate prefab template.
+                PrefabUndoAddEntity* addEntityUndoState = aznew PrefabUndoAddEntity("Undo Adding Entity");
+                addEntityUndoState->SetParent(undoBatch);
+                addEntityUndoState->Capture(newEntityDom, entityId, templateId);
+                addEntityUndoState->Redo();
+
+                // Create undo node to account for changes to parent entity due to adding a new entity under it. Currently only the
+                // EditorEntitySortComponent get modified on the parent but more things can change in the future too.
+                PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate("Undo parent entity update");
+                state->SetParent(undoBatch);
+                state->Capture(parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityId);
+                state->Redo();
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

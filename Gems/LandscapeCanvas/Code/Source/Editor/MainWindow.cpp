@@ -35,7 +35,7 @@
 // Gradient Signal
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 
 // Qt
 #include <QApplication>
@@ -104,6 +104,7 @@
 #include <Editor/Nodes/Shapes/CylinderShapeNode.h>
 #include <Editor/Nodes/Shapes/DiskShapeNode.h>
 #include <Editor/Nodes/Shapes/PolygonPrismShapeNode.h>
+#include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
@@ -384,6 +385,7 @@ namespace LandscapeCanvasEditor
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, CylinderShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, DiskShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, PolygonPrismShapeNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(shapeCategory, ReferenceShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, SphereShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, TubeShapeNode, editorId);
 
@@ -1217,7 +1219,7 @@ namespace LandscapeCanvasEditor
     QString MainWindow::GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex)
     {
         static const char* ConfigurationPropertyPrefix = "Configuration|";
-        static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
+        static const char* PreviewEntityIdPropertyPath = "Previewer|Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
         static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
@@ -1566,8 +1568,8 @@ namespace LandscapeCanvasEditor
         // So we need to use the corresponding request bus APIs to update the image asset path on
         // the Image Gradient
         AZ::IO::Path outputImagePath;
-        GradientSignal::GradientBakerRequestBus::EventResult(
-            outputImagePath, sourceEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+        GradientSignal::GradientImageCreatorRequestBus::EventResult(
+            outputImagePath, sourceEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
         if (!outputImagePath.empty())
         {
@@ -2616,7 +2618,8 @@ namespace LandscapeCanvasEditor
         }
     }
 
-    void MainWindow::OnPrefabFocusChanged()
+    void MainWindow::OnPrefabFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
     {
         // Make sure to close any open graphs that aren't currently in prefab focus
         // to prevent the user from making modifications outside of the allowed focus scope
@@ -2628,6 +2631,7 @@ namespace LandscapeCanvasEditor
                 dockWidgetsToClose.push_back(dockWidgetId);
             }
         }
+
         for (auto dockWidgetId : dockWidgetsToClose)
         {
             CloseEditor(dockWidgetId);
@@ -3353,8 +3357,8 @@ namespace LandscapeCanvasEditor
                 }
 
                 AZ::IO::Path outputImagePath;
-                GradientSignal::GradientBakerRequestBus::EventResult(
-                    outputImagePath, nodeEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+                GradientSignal::GradientImageCreatorRequestBus::EventResult(
+                    outputImagePath, nodeEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
                 if (imageSourceAssetPath == outputImagePath)
                 {

@@ -33,12 +33,12 @@ namespace AzToolsFramework
             virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) = 0;
 
             //! Updates instances in the waiting queue.
-            //! @return bool on wheter the operation succeeds.
+            //! @return bool on whether the operation succeeds.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
 
             //! Removes an instance from the waiting queue.
             //! @param instance The instance to be removed from queue.
-            virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
+            virtual void RemoveTemplateInstanceFromQueue(Instance* instance) = 0;
 
             //! Sets the flag that tells whether root prefab instance is loaded to false.
             //! A notification OnRootPrefabInstanceLoaded will fire during the propagation if root

@@ -28,7 +28,7 @@
 
 namespace O3DE::ProjectManager
 {
-    UpdateProjectCtrl::UpdateProjectCtrl(QWidget* parent)
+    UpdateProjectCtrl::UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -41,7 +41,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_projectGemCatalogScreen = new ProjectGemCatalogScreen();
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);

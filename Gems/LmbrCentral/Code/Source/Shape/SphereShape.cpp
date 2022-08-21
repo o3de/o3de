@@ -99,7 +99,7 @@ namespace LmbrCentral
     AZ::Aabb SphereShape::GetEncompassingAabb()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         return AZ::Aabb::CreateCenterRadius(m_currentTransform.GetTranslation(), m_intersectionDataCache.m_radius);
     }
@@ -114,7 +114,7 @@ namespace LmbrCentral
     bool SphereShape::IsPointInside(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         return AZ::Intersect::PointSphere(
             m_intersectionDataCache.m_position, powf(m_intersectionDataCache.m_radius, 2.0f), point);
@@ -123,7 +123,7 @@ namespace LmbrCentral
     float SphereShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         const AZ::Vector3 pointToSphereCenter = m_intersectionDataCache.m_position - point;
         const float distance = pointToSphereCenter.GetLength() - m_intersectionDataCache.m_radius;
@@ -133,7 +133,7 @@ namespace LmbrCentral
     bool SphereShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_sphereShapeConfig, &m_mutex);
 
         return AZ::Intersect::IntersectRaySphere(
             src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, distance) > 0;

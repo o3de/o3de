@@ -629,42 +629,6 @@ namespace AzToolsFramework
             
             Instance& entityOwningInstance = owningInstanceOfParentEntity->get();
 
-            // Get the template for our owning instance from the root prefab DOM and use that to generate our patch
-            AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
-
-            InstanceOptionalReference rootInstance = owningInstanceOfParentEntity;
-            while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
-            {
-                pathOfInstances.emplace_back(rootInstance);
-                rootInstance = rootInstance->get().GetParentInstance();
-            }
-
-            AZStd::string aliasPathResult = "";
-            for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
-            {
-                aliasPathResult.append("/Instances/");
-                aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
-            }
-
-            PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
-
-            PrefabDom& rootPrefabTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
-
-            auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
-            if (!instanceDomFromRootValue)
-            {
-                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
-            }
-
-            PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
-            if (!instanceDomFromRoot.has_value())
-            {
-                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
-            }
-
-            PrefabDom instanceDomBeforeUpdate;
-            instanceDomBeforeUpdate.CopyFrom(instanceDomFromRoot.value().get(), instanceDomBeforeUpdate.GetAllocator());
-
             ScopedUndoBatch undoBatch("Add Entity");
 
             entityOwningInstance.AddEntity(*entity, entityAlias);
@@ -690,7 +654,30 @@ namespace AzToolsFramework
             {
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
+
+            // Get the alias of the parent entity in the owning template's DOM.
+            AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
+            PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
             
+            PrefabDom& owningTemplateDom =
+                m_prefabSystemComponentInterface->FindTemplateDom(owningInstanceOfParentEntity->get().GetTemplateId());
+            const PrefabDomValue* parentEntityDomInOwningTemplate = entityPathInOwningTemplate.Get(owningTemplateDom);
+            if (!parentEntityDomInOwningTemplate)
+            {
+                return AZ::Failure<AZStd::string>("Could not load entity DOM from the owning template's DOM.");
+            }
+
+            const PrefabDomValue& parentEntityDomBeforeAddingEntity = *parentEntityDomInOwningTemplate;
+
+            PrefabDom parentEntityDomAfterAddingEntity;
+            AZ::Entity* parentEntity = GetEntityById(parentId);
+
+            if (!parentEntity)
+            {
+                return AZ::Failure<AZStd::string>("Parent entity cannot be found while adding an entity.");
+            }
+
+            m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterAddingEntity, *parentEntity);
 
             // Select the new entity (and deselect others).
             AzToolsFramework::EntityIdList selection = {entityId};
@@ -700,9 +687,18 @@ namespace AzToolsFramework
 
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selection);
 
-            PrefabUndoHelpers::UpdatePrefabInstance(
-                entityOwningInstance, "Undo adding entity", instanceDomBeforeUpdate, undoBatch.GetUndoBatch());
+            PrefabDom newEntityDom;
+            m_instanceToTemplateInterface->GenerateDomForEntity(newEntityDom, *entity);
 
+            PrefabUndoHelpers::AddEntity(
+                parentEntityDomBeforeAddingEntity,
+                parentEntityDomAfterAddingEntity,
+                newEntityDom,
+                entityId,
+                parentId,
+                entityOwningInstance.GetTemplateId(),
+                undoBatch.GetUndoBatch());
+                
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 
@@ -745,6 +741,11 @@ namespace AzToolsFramework
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
+                // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
+                // of the entity can be stale. Therefore, check whether the parent entity is in the focus tree instead.
+                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(afterParentId);
+                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+
                 if (beforeParentId != afterParentId)
                 {
                     // If the entity parent changed, verify if the owning instance changed too
@@ -759,7 +760,7 @@ namespace AzToolsFramework
                         // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
                         AZStd::vector<Instance*> instancesInvolved;
 
-                        if (isInstanceContainerEntity)
+                        if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                         {
                             instancesInvolved.push_back(&owningInstance->get());
                         }
@@ -819,8 +820,11 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                        PrefabDom newPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(newPatch, beforeState, afterState);
+                        LinkId linkId = m_prefabFocusInterface->AppendPathFromFocusedInstanceToPatchPaths(newPatch, entityId);
+
+                        Internal_HandleContainerOverride(parentUndoBatch, entityId, newPatch, linkId);
                     }
                 }
                 else
