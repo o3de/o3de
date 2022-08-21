@@ -116,18 +116,18 @@ namespace TestImpact
         descriptor.m_outputName = target[Keys[OutputNameKey]].GetString();
         descriptor.m_path = target[Keys[PathKey]].GetString();
 
-        if (const auto targetTypeString = target[Keys[TargetTypeKey]].GetString();
-            strcmp(targetTypeString, Keys[ProductionTargetTypeKey]) == 0)
+        if (const auto& targetType = target[Keys[TargetTypeKey]];
+            targetType == Keys[ProductionTargetTypeKey])
         {
             descriptor.m_type = TargetType::ProductionTarget;
         }
-        else if (strcmp(targetTypeString, Keys[TestTargetTypeKey]) == 0)
+        else if (targetType == Keys[TestTargetTypeKey])
         {
             descriptor.m_type = TargetType::TestTarget;
         }
         else
         {
-            throw(ArtifactException(AZStd::string::format("Unexpected target type '%s'", targetTypeString)));
+            throw(ArtifactException(AZStd::string::format("Unexpected target type '%s'", targetType.GetString())));
         }
 
         AZ_TestImpact_Eval(!descriptor.m_name.empty(), ArtifactException, "Target name cannot be empty");

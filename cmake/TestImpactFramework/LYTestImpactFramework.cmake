@@ -394,15 +394,14 @@ endfunction()
 # \arg:TARGET target to get the type for
 # \arg:TARGET_TYPE the retrieved target type
 function(ly_get_target_type TARGET TARGET_TYPE)
-    get_property(O3DE_ALL_TESTS_DE_NAMSPACED GLOBAL PROPERTY O3DE_ALL_TESTS_DE_NAMSPACED)
-    if(${target_name} IN_LIST O3DE_ALL_TESTS_DE_NAMSPACED)
+    get_property(O3DE_ALL_TESTS_DE_NAMESPACED GLOBAL PROPERTY O3DE_ALL_TESTS_DE_NAMESPACED)
+    if(${target_name} IN_LIST O3DE_ALL_TESTS_DE_NAMESPACED)
         set(target_type "test")
     else()
         set(target_type "production")
     endif()
 
     set(${TARGET_TYPE} ${target_type} PARENT_SCOPE)
-    set(${TYPE_META} ${type_meta} PARENT_SCOPE)
 
 endfunction()
 
