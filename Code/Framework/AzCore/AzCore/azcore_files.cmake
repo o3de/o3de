@@ -399,7 +399,6 @@ set(FILES
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
     Memory/AllocatorWrapper.h
-    Memory/AllocatorScope.h
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl

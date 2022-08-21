@@ -72,8 +72,6 @@ namespace UnitTest
         {
             // start application
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;
 
@@ -86,7 +84,6 @@ namespace UnitTest
             m_application->Stop();
             delete m_application;
             m_application = nullptr;
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
