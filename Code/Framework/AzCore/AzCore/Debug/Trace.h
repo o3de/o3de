@@ -12,13 +12,22 @@
 #include <AzCore/O3DEKernelConfiguration.h>
 #include <cstdarg>
 
+namespace AZStd
+{
+    template <class Element>
+    struct char_traits;
+
+    template <class Element, class Traits>
+    class basic_string_view;
+}
+
 namespace AZ
 {
     namespace Debug
     {
         namespace Platform
         {
-            void OutputToDebugger(const char* window, const char* message);
+            void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
 
         enum LogLevel : int

@@ -51,6 +51,7 @@ namespace AZ
             RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
             if (!heapMemoryUsage->CanAllocate(m_descriptor.m_pageSizeInBytes))
             {
+                AZ_Warning("HeapFactory", false, "Heap allocation failed: reach the memory budget");
                 return nullptr;
             }
            
@@ -65,6 +66,7 @@ namespace AZ
                 return heap.Get();
             }
 
+            AZ_Warning("HeapFactory", false, "Heap allocation failed: failed to create a dx12 heap");
             return nullptr;
         }
 

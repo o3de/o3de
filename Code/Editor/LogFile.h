@@ -66,9 +66,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // ILogCallback
     //////////////////////////////////////////////////////////////////////////
-    virtual void OnWrite([[maybe_unused]] const char* sText, [[maybe_unused]] IMiniLog::ELogType type) override {};
-    virtual void OnWriteToConsole(const char* sText, bool bNewLine) override;
-    virtual void OnWriteToFile(const char* sText, bool bNewLine) override;
+    virtual void OnWrite([[maybe_unused]] AZStd::string_view sText, [[maybe_unused]] IMiniLog::ELogType type) override {};
+    virtual void OnWriteToConsole(AZStd::string_view sText, bool bNewLine) override;
+    virtual void OnWriteToFile(AZStd::string_view sText, bool bNewLine) override;
     //////////////////////////////////////////////////////////////////////////
 
     // logs some useful information

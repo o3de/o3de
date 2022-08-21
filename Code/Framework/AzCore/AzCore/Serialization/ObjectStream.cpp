@@ -800,8 +800,6 @@ namespace AZ
                 // Serializable leaf element.
                 else if (classData->m_serializer)
                 {
-                    AZ_PROFILE_SCOPE(AzCore, "ObjectStreamImpl::LoadClass Load");
-
                     // Wrap the stream
                     IO::GenericStream* currentStream = &m_inStream;
                     IO::MemoryStream memStream(m_inStream.GetData()->data(), 0, element.m_dataSize);

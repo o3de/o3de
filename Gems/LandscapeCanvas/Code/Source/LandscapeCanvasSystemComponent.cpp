@@ -21,6 +21,7 @@
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/DiskShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LmbrCentral/Shape/TubeShapeComponentBus.h>
 
@@ -74,6 +75,7 @@
 #include <Editor/Nodes/Shapes/CylinderShapeNode.h>
 #include <Editor/Nodes/Shapes/DiskShapeNode.h>
 #include <Editor/Nodes/Shapes/PolygonPrismShapeNode.h>
+#include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
 
@@ -139,6 +141,7 @@ namespace LandscapeCanvas
     VISITOR_FUNCTION<CylinderShapeNode>(LmbrCentral::EditorCylinderShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<DiskShapeNode>(LmbrCentral::EditorDiskShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PolygonPrismShapeNode>(LmbrCentral::EditorPolygonPrismShapeComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<ReferenceShapeNode>(LmbrCentral::EditorReferenceShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<SphereShapeNode>(LmbrCentral::EditorSphereShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TubeShapeNode>(LmbrCentral::EditorTubeShapeComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient generator nodes */    \

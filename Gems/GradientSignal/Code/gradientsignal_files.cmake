@@ -45,6 +45,7 @@ set(FILES
     Include/GradientSignal/Ebuses/SmoothStepGradientRequestBus.h
     Include/GradientSignal/Ebuses/ThresholdGradientRequestBus.h
     Include/GradientSignal/Ebuses/ConstantGradientRequestBus.h
+    Include/GradientSignal/Ebuses/ImageGradientModificationBus.h
     Include/GradientSignal/Ebuses/ImageGradientRequestBus.h
     Include/GradientSignal/Ebuses/MixedGradientRequestBus.h
     Include/GradientSignal/Ebuses/ReferenceGradientRequestBus.h
