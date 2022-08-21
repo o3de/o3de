@@ -551,10 +551,10 @@ namespace AZ
     class AZStdAlloc
     {
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;         ///< Regular allocators should not leak.
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
         AZ_FORCE_INLINE AZStdAlloc()
         {
@@ -574,15 +574,15 @@ namespace AZ
         AZ_FORCE_INLINE AZStdAlloc(const AZStdAlloc& rhs, const char* name)
             : m_name(name) { (void)rhs; }
         AZ_FORCE_INLINE AZStdAlloc& operator=(const AZStdAlloc& rhs) { m_name = rhs.m_name; return *this; }
-        AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment)
+        AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment)
         {
             return AllocatorInstance<Allocator>::Get().allocate(byteSize, alignment);
         }
-        AZ_FORCE_INLINE size_type resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type resize(pointer ptr, size_type newSize)
         {
             return AllocatorInstance<Allocator>::Get().Resize(ptr, newSize);
         }
-        AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        AZ_FORCE_INLINE void deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             AllocatorInstance<Allocator>::Get().deallocate(ptr, byteSize, alignment);
         }
@@ -614,10 +614,10 @@ namespace AZ
     class AZStdIAllocator
     {
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;         ///< Regular allocators should not leak.
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type;         ///< Regular allocators should not leak.
 
         AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator, const char* name = "AZ::AZStdIAllocator")
             : m_allocator(allocator)
@@ -632,15 +632,15 @@ namespace AZ
             : m_allocator(rhs.m_allocator)
             , m_name(name) { (void)rhs; }
         AZ_FORCE_INLINE AZStdIAllocator& operator=(const AZStdIAllocator& rhs) { m_allocator = rhs.m_allocator; m_name = rhs.m_name; return *this; }
-        AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment)
+        AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment)
         {
             return m_allocator->allocate(byteSize, alignment);
         }
-        AZ_FORCE_INLINE size_type resize(pointer_type ptr, size_t newSize)
+        AZ_FORCE_INLINE size_type resize(pointer ptr, size_t newSize)
         {
             return m_allocator->Resize(ptr, newSize);
         }
-        AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_t byteSize, size_t alignment)
+        AZ_FORCE_INLINE void deallocate(pointer ptr, size_t byteSize, size_t alignment)
         {
             m_allocator->deallocate(ptr, byteSize, alignment);
         }
@@ -665,7 +665,7 @@ namespace AZ
     class AZStdFunctorAllocator
     {
     public:
-        using pointer_type = void*;
+        using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
         using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
@@ -684,15 +684,15 @@ namespace AZ
         }
         constexpr AZStdFunctorAllocator(const AZStdFunctorAllocator& rhs) = default;
         constexpr AZStdFunctorAllocator& operator=(const AZStdFunctorAllocator& rhs) = default;
-        pointer_type allocate(size_t byteSize, size_t alignment)
+        pointer allocate(size_t byteSize, size_t alignment)
         {
             return m_allocatorFunctor().allocate(byteSize, alignment);
         }
-        size_type resize(pointer_type ptr, size_t newSize)
+        size_type resize(pointer ptr, size_t newSize)
         {
             return m_allocatorFunctor().Resize(ptr, newSize);
         }
-        void deallocate(pointer_type ptr, size_t byteSize, size_t alignment)
+        void deallocate(pointer ptr, size_t byteSize, size_t alignment)
         {
             m_allocatorFunctor().deallocate(ptr, byteSize, alignment);
         }

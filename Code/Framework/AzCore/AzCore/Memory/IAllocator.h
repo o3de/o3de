@@ -47,7 +47,7 @@ namespace AZ
     {
     public:
         using value_type = void;
-        using pointer_type = void*;
+        using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
         using align_type = AZStd::size_t;
@@ -56,13 +56,13 @@ namespace AZ
         IAllocatorSchema() = default;
         virtual ~IAllocatorSchema() = default;
 
-        virtual pointer_type allocate(size_type byteSize, align_type alignment = 1) = 0;
-        virtual void deallocate(pointer_type ptr, size_type byteSize = 0, align_type alignment = 0) = 0;
-        virtual pointer_type reallocate(pointer_type ptr, size_type newSize, align_type newAlignment = 1) = 0;
+        virtual pointer allocate(size_type byteSize, align_type alignment = 1) = 0;
+        virtual void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) = 0;
+        virtual pointer reallocate(pointer ptr, size_type newSize, align_type newAlignment = 1) = 0;
 
         // Kept for backwards-compatibility reasons
         /////////////////////////////////////////////
-        pointer_type Allocate(
+        pointer Allocate(
             size_type byteSize,
             size_type alignment = 1,
             [[maybe_unused]] int flags = 0,
@@ -74,25 +74,25 @@ namespace AZ
             return allocate(byteSize, alignment);
         }
 
-        void DeAllocate(pointer_type ptr, size_type byteSize = 0, [[maybe_unused]] size_type alignment = 0)
+        void DeAllocate(pointer ptr, size_type byteSize = 0, [[maybe_unused]] size_type alignment = 0)
         {
             deallocate(ptr, byteSize);
         }
 
         /// Resize an allocated memory block. Returns the new adjusted size (as close as possible or equal to the requested one) or 0 (if
         /// you don't support resize at all).
-        virtual size_type Resize([[maybe_unused]] pointer_type ptr, [[maybe_unused]] size_type newSize) = 0;
+        virtual size_type Resize([[maybe_unused]] pointer ptr, [[maybe_unused]] size_type newSize) = 0;
 
         /// Realloc an allocate memory memory block. Similar to Resize except it will move the memory block if needed. Return NULL if
         /// realloc is not supported or run out of memory.
-        pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+        pointer ReAllocate(pointer ptr, size_type newSize, size_type newAlignment)
         {
             return reallocate(ptr, newSize, newAlignment);
         }
 
         ///
         /// Returns allocation size for given address. 0 if the address doesn't belong to the allocator.
-        virtual size_type               AllocationSize(pointer_type ptr) = 0;
+        virtual size_type               AllocationSize(pointer ptr) = 0;
         /**
          * Call from the system when we want allocators to free unused memory.
          * IMPORTANT: This function is/should be thread safe. We can call it from any context to free memory.

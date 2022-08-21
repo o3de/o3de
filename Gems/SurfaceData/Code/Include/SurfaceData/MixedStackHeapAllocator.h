@@ -48,7 +48,7 @@ namespace SurfaceData
     public:
         AZ_TYPE_INFO(mixed_stack_heap_allocator, "{49B6706B-716F-42F2-92CB-7FD1A57BE2F9}");
 
-        typedef void* pointer_type;
+        typedef void* pointer;
         typedef AZStd::size_t size_type;
         typedef AZStd::ptrdiff_t difference_type;
         typedef AZStd::false_type allow_memory_leaks;
@@ -87,7 +87,7 @@ namespace SurfaceData
             m_name = name;
         }
 
-        auto allocate(size_type byteSize, size_type alignment, int flags = 0) -> pointer_type
+        auto allocate(size_type byteSize, size_type alignment, int flags = 0) -> pointer
         {
             // If the requested allocation will fit in our static buffer, and we aren't already using the static buffer,
             // then mark the static buffer as used and return a pointer to it.
@@ -102,7 +102,7 @@ namespace SurfaceData
             return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(byteSize, alignment, flags, m_name, __FILE__, __LINE__, 1);
         }
 
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             // If the pointer is our static buffer, mark the static buffer as unused and return.
             if (ptr == m_lastStaticAllocation)
@@ -115,7 +115,7 @@ namespace SurfaceData
             AZ::AllocatorInstance<AZ::SystemAllocator>::Get().DeAllocate(ptr, byteSize, alignment);
         }
 
-        auto resize(pointer_type ptr, size_type newSize) -> size_type
+        auto resize(pointer ptr, size_type newSize) -> size_type
         {
             // If we're trying to resize our static buffer, allow it to succeed as long as the new size is within the total size of the
             // static buffer. Otherwise, return 0 to fail the resize request.

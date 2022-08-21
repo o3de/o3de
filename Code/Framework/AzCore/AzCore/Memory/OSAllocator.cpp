@@ -61,10 +61,10 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    OSAllocator::pointer_type
+    OSAllocator::pointer
     OSAllocator::allocate(size_type byteSize, size_type alignment)
     {
-        OSAllocator::pointer_type address;
+        OSAllocator::pointer address;
         if (m_custom)
         {
             address = m_custom->allocate(byteSize, alignment);
@@ -90,7 +90,7 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void OSAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void OSAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         (void)alignment;
         if (m_custom)

@@ -27,7 +27,7 @@ namespace AZStd
      * {
      * public:
      *  // Type of the returned pointer. Usually void*
-     *  typedef <impl defined>  pointer_type;
+     *  typedef <impl defined>  pointer;
      *  // Size type, any container using this allocator will use this size_type. Usually AZStd::size_t
      *  typedef <impl defined>  size_type;
      *  // Pointer difference type, usually AZStd::ptrdiff_t.
@@ -41,10 +41,10 @@ namespace AZStd
      *  allocator(const allocator& rhs, const char* name);
      *  allocator& operator=(const allocator& rhs;
      *
-     *  pointer_type allocate(size_type byteSize, size_type alignment);
-     *  void         deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
+     *  pointer      allocate(size_type byteSize, size_type alignment);
+     *  void         deallocate(pointer ptr, size_type byteSize, size_type alignment);
      *  /// Tries to resize an existing memory chunck. Returns the resized memory block or 0 if resize is not supported.
-     *  size_type    resize(pointer_type ptr, size_type newSize);
+     *  size_type    resize(pointer ptr, size_type newSize);
      *
      *  const char* get_name() const;
      *  void        set_name(const char* name);
@@ -80,10 +80,10 @@ namespace AZStd
 
         AZ_TYPE_INFO(allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}");
 
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;
+        using pointer = void *;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE allocator(const char* name = "AZStd::allocator")
             : m_name(name) {}
@@ -97,9 +97,9 @@ namespace AZStd
         AZ_FORCE_INLINE const char*  get_name() const                   { return m_name; }
         AZ_FORCE_INLINE void         set_name(const char* name)         { m_name = name; }
 
-        pointer_type    allocate(size_type byteSize, size_type alignment);
-        void            deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
-        size_type       resize(pointer_type ptr, size_type newSize);
+        pointer    allocate(size_type byteSize, size_type alignment);
+        void            deallocate(pointer ptr, size_type byteSize, size_type alignment);
+        size_type       resize(pointer ptr, size_type newSize);
         // max_size actually returns the true maximum size of a single allocation
         size_type       max_size() const;
         size_type       get_allocated_size() const;
@@ -140,10 +140,10 @@ namespace AZStd
     class no_default_allocator
     {
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE no_default_allocator(const char* name = "Invalid allocator") { (void)name; }
         AZ_FORCE_INLINE no_default_allocator(const allocator&) {}
@@ -151,9 +151,9 @@ namespace AZStd
 
         // none of this functions are implemented we should get a link error if we use them!
         AZ_FORCE_INLINE allocator& operator=(const allocator& rhs);
-        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment);
-        AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment);
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize);
+        AZ_FORCE_INLINE pointer allocate(size_type byteSize, size_type alignment);
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, size_type byteSize, size_type alignment);
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize);
 
         AZ_FORCE_INLINE const char*  get_name() const;
         AZ_FORCE_INLINE void         set_name(const char* name);

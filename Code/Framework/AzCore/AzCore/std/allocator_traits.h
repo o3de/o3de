@@ -30,8 +30,8 @@ namespace AZStd
         };
 
         //! pointer
-        //! Attempts to use the C++ standard allocator_type::pointer typedef if avialable,
-        //! otherwise attempt to fallback to the AZStd pointer_type typedef.
+        //! Attempts to use the C++ standard allocator_type::pointer typedef if available,
+        //! otherwise attempt to fallback to the AZStd pointer typedef.
         //! if neither typedef is available fallbacks to value_type*
         template <typename Allocator, typename = void>
         static constexpr bool has_pointer = false;
@@ -41,7 +41,7 @@ namespace AZStd
         template <typename Allocator, typename = void>
         static constexpr bool has_pointer_type = false;
         template <typename Allocator>
-        static constexpr bool has_pointer_type<Allocator, void_t<typename Allocator::pointer_type>> = true;
+        static constexpr bool has_pointer_type<Allocator, void_t<typename Allocator::pointer>> = true;
 
         template <typename Allocator, typename ValueType, bool has_std_pointer_alias = has_pointer<Allocator>, bool has_azstd_pointer_alias = has_pointer_type<Allocator>>
         struct get_pointer_type
@@ -56,7 +56,7 @@ namespace AZStd
         template <typename Allocator, typename ValueType>
         struct get_pointer_type<Allocator, ValueType, false, true>
         {
-            using type = typename Allocator::pointer_type;
+            using type = typename Allocator::pointer;
         };
 
         //! const_pointer

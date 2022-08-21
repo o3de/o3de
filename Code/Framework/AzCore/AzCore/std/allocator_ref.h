@@ -21,12 +21,12 @@ namespace AZStd
     {
         typedef allocator_ref<Allocator> this_type;
     public:
-        typedef typename Allocator::pointer_type        pointer_type;
-        typedef typename Allocator::size_type           size_type;
-        typedef typename Allocator::difference_type     difference_type;
-        typedef typename Allocator::allow_memory_leaks  allow_memory_leaks;
-        typedef Allocator*                              allocator_pointer;
-        typedef Allocator&                              allocator_reference;
+        using pointer = typename Allocator::pointer;
+        using size_type = typename Allocator::size_type;
+        using difference_type = typename Allocator::difference_type;
+        using allow_memory_leaks = typename Allocator::allow_memory_leaks;
+        using allocator_pointer = Allocator *;
+        using allocator_reference = Allocator &;
 
         AZ_FORCE_INLINE allocator_ref(allocator_reference allocator, const char* name = "AZStd::allocator_ref")
             : m_name(name)
@@ -46,11 +46,11 @@ namespace AZStd
         AZ_FORCE_INLINE size_type   get_allocated_size() const  { return m_allocator->get_allocated_size(); }
 
         AZ_FORCE_INLINE this_type& operator=(const this_type& rhs)              { m_name = rhs.m_name; m_allocator = rhs.m_allocator; return *this; }
-        AZ_FORCE_INLINE pointer_type allocate(size_type byteSize, size_type alignment) { return m_allocator->allocate(byteSize, alignment); }
+        AZ_FORCE_INLINE pointer allocate(size_type byteSize, size_type alignment) { return m_allocator->allocate(byteSize, alignment); }
 
-        AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment) { m_allocator->deallocate(ptr, byteSize, alignment); }
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, size_type byteSize, size_type alignment) { m_allocator->deallocate(ptr, byteSize, alignment); }
 
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)                    { return m_allocator->resize(ptr, newSize); }
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)                    { return m_allocator->resize(ptr, newSize); }
 
         AZ_FORCE_INLINE allocator_reference get_allocator() const           { return *m_allocator; }
     private:

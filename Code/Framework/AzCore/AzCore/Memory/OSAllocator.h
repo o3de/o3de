@@ -51,11 +51,11 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocatorSchema
-        pointer_type    allocate(size_type byteSize, size_type alignment) override;
-        void            deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        size_type       Resize(pointer_type ptr, size_type newSize) override { return m_custom ? m_custom->Resize(ptr, newSize) : 0; }
-        pointer_type    reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override     { return m_custom ? m_custom->reallocate(ptr, newSize, newAlignment) : NULL; }
-        size_type       AllocationSize(pointer_type ptr) override { return m_custom ? m_custom->AllocationSize(ptr) : 0; }
+        pointer    allocate(size_type byteSize, size_type alignment) override;
+        void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        size_type       Resize(pointer ptr, size_type newSize) override { return m_custom ? m_custom->Resize(ptr, newSize) : 0; }
+        pointer    reallocate(pointer ptr, size_type newSize, size_type newAlignment) override     { return m_custom ? m_custom->reallocate(ptr, newSize, newAlignment) : NULL; }
+        size_type       AllocationSize(pointer ptr) override { return m_custom ? m_custom->AllocationSize(ptr) : 0; }
 
         size_type       NumAllocatedBytes() const override       { return m_custom ? m_custom->NumAllocatedBytes() : m_numAllocatedBytes; }
         size_type       Capacity() const override                { return m_custom ? m_custom->Capacity() : AZ_CORE_MAX_ALLOCATOR_SIZE; } // custom size or unlimited

@@ -15,7 +15,7 @@ namespace AZStd
     // allocate
     // [1/1/2008]
     //=========================================================================
-    allocator::pointer_type
+    allocator::pointer
     allocator::allocate(size_type byteSize, size_type alignment)
     {
         return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(byteSize, alignment);
@@ -25,7 +25,7 @@ namespace AZStd
     // [1/1/2008]
     //=========================================================================
     void
-    allocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    allocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         AZ::AllocatorInstance<AZ::SystemAllocator>::Get().deallocate(ptr, byteSize, alignment);
     }
@@ -35,7 +35,7 @@ namespace AZStd
     // [1/1/2008]
     //=========================================================================
     allocator::size_type
-    allocator::resize(pointer_type ptr, size_type newSize)
+    allocator::resize(pointer ptr, size_type newSize)
     {
         return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Resize(ptr, newSize);
     }

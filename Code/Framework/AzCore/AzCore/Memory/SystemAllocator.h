@@ -88,11 +88,11 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         // IAllocatorSchema
 
-        pointer_type    allocate(size_type byteSize, size_type alignment) override;
-        void            deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override;
-        pointer_type    reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
-        size_type       Resize(pointer_type ptr, size_type newSize) override;
-        size_type       AllocationSize(pointer_type ptr) override;
+        pointer         allocate(size_type byteSize, size_type alignment) override;
+        void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
+        pointer         reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        size_type       Resize(pointer ptr, size_type newSize) override;
+        size_type       AllocationSize(pointer ptr) override;
         void            GarbageCollect() override                 { GetSchema()->GarbageCollect(); }
 
         size_type       NumAllocatedBytes() const override       { return GetSchema()->NumAllocatedBytes(); }

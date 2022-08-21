@@ -62,11 +62,11 @@ namespace AZ
         bool Create(const Descriptor& desc);
         bool Destroy();
 
-        pointer_type allocate(size_type byteSize, size_type alignment) override;
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
-        size_type Resize(pointer_type ptr, size_type newSize) override;
-        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
-        size_type AllocationSize(pointer_type ptr) override;
+        pointer allocate(size_type byteSize, size_type alignment) override;
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        size_type Resize(pointer ptr, size_type newSize) override;
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        size_type AllocationSize(pointer ptr) override;
 
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
@@ -108,11 +108,11 @@ namespace AZ
         bool Create(const Descriptor& desc);
         bool Destroy();
 
-        pointer_type allocate(size_type byteSize, size_type alignment) override;
-        void deallocate(pointer_type ptr, size_type byteSize, size_type alignment) override;
-        size_type Resize(pointer_type ptr, size_type newSize) override;
-        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override;
-        size_type AllocationSize(pointer_type ptr) override;
+        pointer allocate(size_type byteSize, size_type alignment) override;
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
+        size_type Resize(pointer ptr, size_type newSize) override;
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
+        size_type AllocationSize(pointer ptr) override;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 

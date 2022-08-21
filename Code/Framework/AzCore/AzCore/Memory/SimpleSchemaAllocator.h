@@ -27,7 +27,7 @@ namespace AZ
         AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema, DescriptorType), AllocatorBase)
 
         using Descriptor = DescriptorType;
-        using pointer_type = typename Schema::pointer_type;
+        using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
 
@@ -68,10 +68,10 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocatorSchema
         //---------------------------------------------------------------------
-        pointer_type allocate(size_type byteSize, size_type alignment) override
+        pointer allocate(size_type byteSize, size_type alignment) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
-            pointer_type ptr = m_schema->allocate(byteSize, alignment);
+            pointer ptr = m_schema->allocate(byteSize, alignment);
 
             if (ProfileAllocations)
             {
@@ -88,7 +88,7 @@ namespace AZ
             return ptr;
         }
 
-        void deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override
+        void deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             byteSize = MemorySizeAdjustedUp(byteSize);
 
@@ -101,7 +101,7 @@ namespace AZ
             m_schema->deallocate(ptr, byteSize, alignment);
         }
 
-        size_type Resize(pointer_type ptr, size_type newSize) override
+        size_type Resize(pointer ptr, size_type newSize) override
         {
             newSize = MemorySizeAdjustedUp(newSize);
             size_t result = m_schema->Resize(ptr, newSize);
@@ -116,7 +116,7 @@ namespace AZ
             return result;
         }
 
-        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
             if (ProfileAllocations)
             {
@@ -130,7 +130,7 @@ namespace AZ
                 AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
             }
 
-            pointer_type newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
+            pointer newPtr = m_schema->reallocate(ptr, newSize, newAlignment);
 
             if (ProfileAllocations)
             {
@@ -148,7 +148,7 @@ namespace AZ
             return newPtr;
         }
                 
-        size_type AllocationSize(pointer_type ptr) override
+        size_type AllocationSize(pointer ptr) override
         {
             return MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
         }

@@ -547,20 +547,20 @@ namespace AZ
         class DebugAllocator
         {
         public:
-            typedef void* pointer_type;
+            typedef void* pointer;
             typedef AZStd::size_t size_type;
             typedef AZStd::ptrdiff_t difference_type;
             typedef AZStd::false_type allow_memory_leaks; ///< Regular allocators should not leak.
 
-            AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
+            AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
             {
                 return AZ_OS_MALLOC(byteSize, alignment);
             }
-            AZ_FORCE_INLINE size_type resize(pointer_type, size_type)
+            AZ_FORCE_INLINE size_type resize(pointer, size_type)
             {
                 return 0;
             }
-            AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_type, size_type)
+            AZ_FORCE_INLINE void deallocate(pointer ptr, size_type, size_type)
             {
                 AZ_OS_FREE(ptr);
             }
@@ -2613,9 +2613,9 @@ namespace AZ
     //=========================================================================
     template<bool DebugAllocator>
     auto HphaSchemaBase<DebugAllocator>::allocate(size_type byteSize, size_type alignment)
-        -> pointer_type
+        -> pointer
     {
-        pointer_type address = m_allocator->alloc(byteSize, alignment);
+        pointer address = m_allocator->alloc(byteSize, alignment);
         if (address == nullptr)
         {
             GarbageCollect();
@@ -2625,14 +2625,14 @@ namespace AZ
     }
 
     //=========================================================================
-    // pointer_type
+    // pointer
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
-        -> pointer_type
+    auto HphaSchemaBase<DebugAllocator>::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
+        -> pointer
     {
-        pointer_type address = m_allocator->realloc(ptr, newSize, newAlignment);
+        pointer address = m_allocator->realloc(ptr, newSize, newAlignment);
         if (address == nullptr && newSize > 0)
         {
             GarbageCollect();
@@ -2642,11 +2642,11 @@ namespace AZ
     }
 
     //=========================================================================
-    // DeAllocate(pointer_type ptr,size_type size,size_type alignment)
+    // DeAllocate(pointer ptr,size_type size,size_type alignment)
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    void HphaSchemaBase<DebugAllocator>::deallocate(pointer_type ptr, size_type size, size_type alignment)
+    void HphaSchemaBase<DebugAllocator>::deallocate(pointer ptr, size_type size, size_type alignment)
     {
         if (ptr == nullptr)
         {
@@ -2671,7 +2671,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::Resize(pointer_type ptr, size_type newSize) -> size_type
+    auto HphaSchemaBase<DebugAllocator>::Resize(pointer ptr, size_type newSize) -> size_type
     {
         return m_allocator->resize(ptr, newSize);
     }
@@ -2681,7 +2681,7 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::AllocationSize(pointer_type ptr) -> size_type
+    auto HphaSchemaBase<DebugAllocator>::AllocationSize(pointer ptr) -> size_type
     {
         return m_allocator->AllocationSize(ptr);
     }

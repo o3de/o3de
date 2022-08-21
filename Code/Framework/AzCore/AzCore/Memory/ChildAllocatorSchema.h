@@ -31,27 +31,27 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocatorSchema
         //---------------------------------------------------------------------
-        pointer_type allocate(size_type byteSize, size_type alignment) override
+        pointer allocate(size_type byteSize, size_type alignment) override
         {
             return AZ::AllocatorInstance<Parent>::Get().allocate(byteSize, alignment);
         }
 
-        void deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0) override
+        void deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override
         {
             AZ::AllocatorInstance<Parent>::Get().deallocate(ptr, byteSize, alignment);
         }
 
-        size_type Resize(pointer_type ptr, size_type newSize) override
+        size_type Resize(pointer ptr, size_type newSize) override
         {
             return AZ::AllocatorInstance<Parent>::Get().Resize(ptr, newSize);
         }
 
-        pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
+        pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
             return AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
         }
 
-        size_type AllocationSize(pointer_type ptr) override
+        size_type AllocationSize(pointer ptr) override
         {
             return AZ::AllocatorInstance<Parent>::Get().AllocationSize(ptr);
         }

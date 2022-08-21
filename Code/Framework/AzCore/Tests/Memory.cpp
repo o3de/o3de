@@ -1039,15 +1039,15 @@ namespace UnitTest
         class DebugSysAllocSchema
             : public AZ::IAllocatorSchema
         {
-            pointer_type    allocate(size_type byteSize, size_type alignment) override
+            pointer    allocate(size_type byteSize, size_type alignment) override
             {
                 return AZ_OS_MALLOC(byteSize, alignment);
             }
-            void                    deallocate(pointer_type ptr, size_type, size_type) override
+            void                    deallocate(pointer ptr, size_type, size_type) override
             {
                 AZ_OS_FREE(ptr);
             }
-            pointer_type    reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
+            pointer    reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
             {
                 (void)ptr;
                 (void)newSize;
@@ -1056,9 +1056,9 @@ namespace UnitTest
                 return NULL;
             }
             /// Resize an allocated memory block. Returns the new expanded size (up to newSize) or AllocationSize(ptr) or 0 (if you don't support resize at all)
-            size_type               Resize(pointer_type ptr, size_type newSize) override  { (void)ptr; (void)newSize; return 0; }
+            size_type               Resize(pointer ptr, size_type newSize) override  { (void)ptr; (void)newSize; return 0; }
             /// Returns allocation size for given address. 0 if the address doesn't belong to the allocator.
-            size_type               AllocationSize(pointer_type ptr) override             { (void)ptr; return 0; }
+            size_type               AllocationSize(pointer ptr) override             { (void)ptr; return 0; }
 
             size_type               NumAllocatedBytes() const override                    { return 0; }
             /// Returns the capacity of the Allocator in bytes. If the return value is 0 the Capacity is undefined (usually depends on another allocator)

@@ -29,10 +29,10 @@ namespace AZStd
         static_assert(Size > 0, "Size of static buffer must be not be 0");
         typedef static_buffer_allocator<Size, Alignment> this_type;
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::true_type    allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::true_type;
 
         AZ_FORCE_INLINE static_buffer_allocator(const char* name = "AZStd::static_buffer_allocator")
             : m_name(name)
@@ -66,7 +66,7 @@ namespace AZStd
         constexpr size_type         max_size() const { return Size; }
         AZ_FORCE_INLINE size_type   get_allocated_size() const { return m_freeData - reinterpret_cast<const char*>(&m_data); }
                 
-        pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
         {
             (void)flags;
             AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "AZStd::static_buffer_allocator::allocate - alignment must be > 0 and power of 2");
@@ -84,7 +84,7 @@ namespace AZStd
             }
         }
 
-        AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize = 0, size_type alignment = 0)
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0)
         {
             (void)byteSize;
             (void)alignment;
@@ -95,7 +95,7 @@ namespace AZStd
                 m_freeData = reinterpret_cast<char*>(ptr);
             }
         }
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             // We allow resize on last allocations only
             if (ptr == m_lastAllocation && newSize <= (Size - size_t(reinterpret_cast<char*>(ptr) - reinterpret_cast<char*>(&m_data))))
@@ -165,10 +165,10 @@ namespace AZStd
         };
 
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
+        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE static_pool_allocator(const char* name = "AZStd::static_pool_allocator")
             : m_name(name)
@@ -202,7 +202,7 @@ namespace AZStd
             return reinterpret_cast<Node*>(poolNode);
         }
 
-        inline pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        inline pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
         {
             (void)alignment;
             (void)byteSize;
@@ -226,7 +226,7 @@ namespace AZStd
             --m_numOfAllocatedNodes;
         }
 
-        inline void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        inline void  deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             (void)byteSize;
             (void)alignment;
@@ -235,7 +235,7 @@ namespace AZStd
             deallocate(reinterpret_cast<Node*>(ptr));
         }
 
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             (void)ptr;
             (void)newSize;

@@ -24,20 +24,20 @@ namespace
     class DebugAllocator
     {
     public:
-        using pointer_type = void*;
+        using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
         using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
 
-        AZ_FORCE_INLINE pointer_type allocate(size_t byteSize, size_t alignment, int = 0)
+        AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
         {
             return AZ_OS_MALLOC(byteSize, alignment);
         }
-        AZ_FORCE_INLINE size_type resize(pointer_type, size_type)
+        AZ_FORCE_INLINE size_type resize(pointer, size_type)
         {
             return 0;
         }
-        AZ_FORCE_INLINE void deallocate(pointer_type ptr, size_type, size_type)
+        AZ_FORCE_INLINE void deallocate(pointer ptr, size_type, size_type)
         {
             AZ_OS_FREE(ptr);
         }

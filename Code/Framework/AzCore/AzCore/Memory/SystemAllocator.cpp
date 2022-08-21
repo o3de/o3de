@@ -169,7 +169,7 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::allocate(
+    SystemAllocator::pointer SystemAllocator::allocate(
         size_type byteSize,
         size_type alignment)
     {
@@ -181,7 +181,7 @@ namespace AZ
         AZ_Assert((alignment & (alignment - 1)) == 0, "Alignment must be power of 2!");
 
         byteSize = MemorySizeAdjustedUp(byteSize);
-        SystemAllocator::pointer_type address =
+        SystemAllocator::pointer address =
             m_schema->allocate(byteSize, alignment);
 
         if (address == nullptr)
@@ -211,7 +211,7 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void SystemAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void SystemAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         byteSize = MemorySizeAdjustedUp(byteSize);
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
@@ -223,13 +223,13 @@ namespace AZ
     // ReAllocate
     // [9/13/2011]
     //=========================================================================
-    SystemAllocator::pointer_type SystemAllocator::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    SystemAllocator::pointer SystemAllocator::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         newSize = MemorySizeAdjustedUp(newSize);
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-        pointer_type newAddress = m_schema->reallocate(ptr, newSize, newAlignment);
+        pointer newAddress = m_schema->reallocate(ptr, newSize, newAlignment);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
 
@@ -240,7 +240,7 @@ namespace AZ
     // Resize
     // [8/12/2011]
     //=========================================================================
-    SystemAllocator::size_type SystemAllocator::Resize(pointer_type ptr, size_type newSize)
+    SystemAllocator::size_type SystemAllocator::Resize(pointer ptr, size_type newSize)
     {
         newSize = MemorySizeAdjustedUp(newSize);
         size_type resizedSize = m_schema->Resize(ptr, newSize);
@@ -254,7 +254,7 @@ namespace AZ
     //
     // [8/12/2011]
     //=========================================================================
-    SystemAllocator::size_type SystemAllocator::AllocationSize(pointer_type ptr)
+    SystemAllocator::size_type SystemAllocator::AllocationSize(pointer ptr)
     {
         size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
 

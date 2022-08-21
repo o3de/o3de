@@ -28,7 +28,7 @@ namespace AZ
         {
         public:
             using Base = SimpleSchemaAllocator<Schema, typename Schema::Descriptor, true, false>;
-            using pointer_type = typename Base::pointer_type;
+            using pointer = typename Base::pointer;
             using size_type = typename Base::size_type;
             using difference_type = typename Base::difference_type;
 
@@ -101,7 +101,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // IAllocatorSchema
-            pointer_type reallocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
+            pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
             {
                 (void)ptr;
                 (void)newSize;
@@ -110,7 +110,7 @@ namespace AZ
                 return nullptr;
             }
 
-            size_type Resize(pointer_type ptr, size_type newSize) override
+            size_type Resize(pointer ptr, size_type newSize) override
             {
                 (void)ptr;
                 (void)newSize;

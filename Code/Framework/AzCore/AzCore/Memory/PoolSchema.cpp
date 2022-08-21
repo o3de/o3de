@@ -68,9 +68,9 @@ namespace AZ
         PoolSchemaImpl(const PoolSchema::Descriptor& desc);
         ~PoolSchemaImpl();
 
-        PoolSchema::pointer_type Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
-        void DeAllocate(PoolSchema::pointer_type ptr);
-        PoolSchema::size_type AllocationSize(PoolSchema::pointer_type ptr);
+        PoolSchema::pointer Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
+        void DeAllocate(PoolSchema::pointer ptr);
+        PoolSchema::size_type AllocationSize(PoolSchema::pointer ptr);
 
         /**
          * We allocate memory for pools in pages. Page is a information struct
@@ -227,9 +227,9 @@ namespace AZ
             ThreadPoolSchema::SetThreadPoolData threadPoolSetter);
         ~ThreadPoolSchemaImpl();
 
-        ThreadPoolSchema::pointer_type Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
-        void DeAllocate(ThreadPoolSchema::pointer_type ptr);
-        ThreadPoolSchema::size_type AllocationSize(ThreadPoolSchema::pointer_type ptr);
+        ThreadPoolSchema::pointer Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
+        void DeAllocate(ThreadPoolSchema::pointer ptr);
+        ThreadPoolSchema::size_type AllocationSize(ThreadPoolSchema::pointer ptr);
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect();
         //////////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchema::allocate(
+    PoolSchema::pointer PoolSchema::allocate(
         size_type byteSize,
         size_type alignment)
     {
@@ -652,7 +652,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void PoolSchema::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void PoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         (void)byteSize;
         (void)alignment;
@@ -663,7 +663,7 @@ namespace AZ
     // Resize
     // [10/14/2018]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::Resize(pointer_type ptr, size_type newSize)
+    PoolSchema::size_type PoolSchema::Resize(pointer ptr, size_type newSize)
     {
         (void)ptr;
         (void)newSize;
@@ -674,7 +674,7 @@ namespace AZ
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchema::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    PoolSchema::pointer PoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
@@ -688,7 +688,7 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::AllocationSize(pointer_type ptr)
+    PoolSchema::size_type PoolSchema::AllocationSize(pointer ptr)
     {
         return m_impl->AllocationSize(ptr);
     }
@@ -809,7 +809,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::pointer_type PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment)
+    PoolSchema::pointer PoolSchemaImpl::Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't allocation from a different context/thread, use
         // ThreadPoolAllocator!");
@@ -821,7 +821,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void PoolSchemaImpl::DeAllocate(PoolSchema::pointer_type ptr)
+    void PoolSchemaImpl::DeAllocate(PoolSchema::pointer ptr)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't deallocate from a different context/thread, use
         // ThreadPoolAllocator!");
@@ -832,7 +832,7 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchemaImpl::AllocationSize(PoolSchema::pointer_type ptr)
+    PoolSchema::size_type PoolSchemaImpl::AllocationSize(PoolSchema::pointer ptr)
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't use PoolAllocator from a different context/thread, use
         // ThreadPoolAllocator!");
@@ -973,7 +973,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    ThreadPoolSchema::pointer_type ThreadPoolSchema::allocate(
+    ThreadPoolSchema::pointer ThreadPoolSchema::allocate(
         size_type byteSize,
         size_type alignment)
     {
@@ -984,7 +984,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void ThreadPoolSchema::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void ThreadPoolSchema::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         (void)byteSize;
         (void)alignment;
@@ -995,7 +995,7 @@ namespace AZ
     // Resize
     // [10/14/2018]
     //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchema::Resize(pointer_type ptr, size_type newSize)
+    ThreadPoolSchema::size_type ThreadPoolSchema::Resize(pointer ptr, size_type newSize)
     {
         (void)ptr;
         (void)newSize;
@@ -1006,7 +1006,7 @@ namespace AZ
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
-    ThreadPoolSchema::pointer_type ThreadPoolSchema::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    ThreadPoolSchema::pointer ThreadPoolSchema::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         (void)ptr;
         (void)newSize;
@@ -1020,7 +1020,7 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchema::AllocationSize(pointer_type ptr)
+    ThreadPoolSchema::size_type ThreadPoolSchema::AllocationSize(pointer ptr)
     {
         return m_impl->AllocationSize(ptr);
     }
@@ -1169,7 +1169,7 @@ namespace AZ
     // Allocate
     // [9/15/2009]
     //=========================================================================
-    ThreadPoolSchema::pointer_type ThreadPoolSchemaImpl::Allocate(
+    ThreadPoolSchema::pointer ThreadPoolSchemaImpl::Allocate(
         ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment)
     {
         ThreadPoolData* threadData = m_threadPoolGetter();
@@ -1200,7 +1200,7 @@ namespace AZ
     // DeAllocate
     // [9/15/2009]
     //=========================================================================
-    void ThreadPoolSchemaImpl::DeAllocate(ThreadPoolSchema::pointer_type ptr)
+    void ThreadPoolSchemaImpl::DeAllocate(ThreadPoolSchema::pointer ptr)
     {
         Page* page = PageFromAddress(ptr);
         if (page == nullptr)
@@ -1233,7 +1233,7 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchemaImpl::AllocationSize(ThreadPoolSchema::pointer_type ptr)
+    ThreadPoolSchema::size_type ThreadPoolSchemaImpl::AllocationSize(ThreadPoolSchema::pointer ptr)
     {
         Page* page = PageFromAddress(ptr);
         if (page == nullptr)

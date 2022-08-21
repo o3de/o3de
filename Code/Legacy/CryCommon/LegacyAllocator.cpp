@@ -10,7 +10,7 @@
 
 namespace AZ
 {
-    LegacyAllocator::pointer_type LegacyAllocator::allocate(size_type byteSize, size_type alignment)
+    LegacyAllocator::pointer LegacyAllocator::allocate(size_type byteSize, size_type alignment)
     {
         if (alignment == 0)
         {
@@ -19,7 +19,7 @@ namespace AZ
             alignment = sizeof(void*) * 2; 
         }
 
-        pointer_type ptr = m_schema->allocate(byteSize, alignment);
+        pointer ptr = m_schema->allocate(byteSize, alignment);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
         AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, 1));
         AZ_Assert(ptr || byteSize == 0, "OOM - Failed to allocate %zu bytes from LegacyAllocator", byteSize);
@@ -27,7 +27,7 @@ namespace AZ
     }
 
     // DeAllocate with file/line, to track when allocs were freed from Cry
-    void LegacyAllocator::DeAllocate(pointer_type ptr, [[maybe_unused]] const char* file, [[maybe_unused]] const int line, size_type byteSize, size_type alignment)
+    void LegacyAllocator::DeAllocate(pointer ptr, [[maybe_unused]] const char* file, [[maybe_unused]] const int line, size_type byteSize, size_type alignment)
     {
         AZ_PROFILE_MEMORY_FREE_EX(MemoryReserved, file, line, ptr);
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
@@ -35,7 +35,7 @@ namespace AZ
     }
 
     // Realloc with file/line, because Cry uses realloc(nullptr) and realloc(ptr, 0) to mimic malloc/free
-    LegacyAllocator::pointer_type LegacyAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment, [[maybe_unused]] const char* file, [[maybe_unused]] const int line)
+    LegacyAllocator::pointer LegacyAllocator::ReAllocate(pointer ptr, size_type newSize, size_type newAlignment, [[maybe_unused]] const char* file, [[maybe_unused]] const int line)
     {
         if (newAlignment == 0)
         {
@@ -46,20 +46,20 @@ namespace AZ
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE_EX(MemoryReserved, file, line, ptr);
-        pointer_type newPtr = m_schema->ReAllocate(ptr, newSize, newAlignment);
+        pointer newPtr = m_schema->ReAllocate(ptr, newSize, newAlignment);
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, file, line, newPtr, newSize, "LegacyAllocator Realloc");
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
         AZ_Assert(newPtr || newSize == 0, "OOM - Failed to reallocate %zu bytes from LegacyAllocator", newSize);
         return newPtr;
     }
 
-    void LegacyAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void LegacyAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, 0, 0, nullptr));
         Base::deallocate(ptr, byteSize, alignment);
     }
 
-    LegacyAllocator::pointer_type LegacyAllocator::reallocate(pointer_type ptr, size_type newSize, size_type newAlignment)
+    LegacyAllocator::pointer LegacyAllocator::reallocate(pointer ptr, size_type newSize, size_type newAlignment)
     {
         if (newAlignment == 0)
         {
@@ -69,7 +69,7 @@ namespace AZ
         }
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-        pointer_type newPtr = Base::reallocate(ptr, newSize, newAlignment);
+        pointer newPtr = Base::reallocate(ptr, newSize, newAlignment);
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
         AZ_Assert(newPtr || newSize == 0, "OOM - Failed to reallocate %zu bytes from LegacyAllocator", newSize);
         return newPtr;
