@@ -103,13 +103,13 @@ namespace AZ::DocumentPropertyEditor
                 {
                     int64_t domValue = valueFromEditor.GetInt64();
                     m_inEdit = true;
-                    settingsRegistry.Set(keyPath, domValue);
+                    settingsRegistry.Set(keyPath, static_cast<AZ::s64>(domValue));
                     m_inEdit = false;
                     return AZ::Dom::Value(domValue);
                 }
                 return {};
             };
-            m_builder.BeginPropertyEditor<Nodes::IntSpinBox>(Dom::Value(value));
+            m_builder.BeginPropertyEditor<Nodes::IntSpinBox>(Dom::Value(static_cast<int64_t>(value)));
             m_builder.AddMessageHandler(this, Nodes::PropertyEditor::OnChanged);
             SettingsRegistryDomData domData = { path, AZStd::move(UpdateSettingsRegistry) };
             m_fieldCallbackPrefixTree.SetValue(m_builder.GetCurrentPath(), domData);
@@ -131,13 +131,13 @@ namespace AZ::DocumentPropertyEditor
                 {
                     uint64_t domValue = valueFromEditor.GetUint64();
                     m_inEdit = true;
-                    settingsRegistry.Set(keyPath, domValue);
+                    settingsRegistry.Set(keyPath, static_cast<AZ::u64>(domValue));
                     m_inEdit = false;
                     return AZ::Dom::Value(domValue);
                 }
                 return {};
             };
-            m_builder.BeginPropertyEditor<Nodes::UintSpinBox>(Dom::Value(value));
+            m_builder.BeginPropertyEditor<Nodes::UintSpinBox>(Dom::Value(static_cast<uint64_t>(value)));
             m_builder.AddMessageHandler(this, Nodes::PropertyEditor::OnChanged);
             SettingsRegistryDomData domData = { path, AZStd::move(UpdateSettingsRegistry) };
             m_fieldCallbackPrefixTree.SetValue(m_builder.GetCurrentPath(), domData);
