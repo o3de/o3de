@@ -100,15 +100,15 @@ namespace TestImpact
 
     private:
         //! Alias for a target dependency or depender graph.
-        using TargetBuildGraphPointer = TargetBuildGraph<ProductionTarget, TestTarget> BuildGraphVertex<ProductionTarget, TestTarget>::*graph;
+        using TargetBuildGraphPointer = TargetBuildGraph<ProductionTarget, TestTarget> BuildGraphVertex<ProductionTarget, TestTarget>::*;
         
         //! Alias for build or runtime dependency or depender graph.
-        using TargetBuildGraphSetPointer = TargetBuildGraphSet<ProductionTarget, TestTarget> TargetBuildGraph<ProductionTarget, TestTarget>::*set;
+        using TargetBuildGraphSetPointer = TargetBuildGraphSet<ProductionTarget, TestTarget> TargetBuildGraph<ProductionTarget, TestTarget>::*;
 
         //! Generic function for walking the specified target's build graph.
         void WalkTargetBuildGraphSet(
-            TargetBuildGraphPointer<ProductionTarget, TestTarget>::* graph,
-            TargetBuildGraphSetPointer<ProductionTarget, TestTarget>::* set,
+            TargetBuildGraphPointer graph,
+            TargetBuildGraphSetPointer set,
             const BuildTarget<ProductionTarget, TestTarget>& buildTarget,
             const BuildGraphVertexVisitor<ProductionTarget, TestTarget>& visitor) const;
 
@@ -214,8 +214,8 @@ namespace TestImpact
 
     template<typename ProductionTarget, typename TestTarget>
     void BuildGraph<ProductionTarget, TestTarget>::WalkTargetBuildGraphSet(
-        TargetBuildGraphPointer<ProductionTarget, TestTarget>::* graph,
-        TargetBuildGraphSetPointer<ProductionTarget, TestTarget>::* set,
+        TargetBuildGraphPointer graph,
+        TargetBuildGraphSetPointer set,
         const BuildTarget<ProductionTarget, TestTarget>& buildTarget,
         const BuildGraphVertexVisitor<ProductionTarget, TestTarget>& visitor) const
     {
