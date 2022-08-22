@@ -783,6 +783,8 @@ namespace AZ
                 virtual void*   GetElementByKey(void* instance, const ClassElement* classElement, const void* key) = 0;
                 /// Populates element with key (for associative containers). Not used for serialization.
                 virtual void    SetElementKey(void* element, void* key) = 0;
+                /// Get the mapped value's address by its key. If there is no mapped value (like in a set<>) the value returned is the key itself
+                virtual void* GetValueByKey(void* instance, const void* key) = 0;
             };
 
             /// Return default element generic name (used by most containers).
