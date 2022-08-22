@@ -17,6 +17,7 @@
 #include <SettingsInterface.h>
 #include <AddRemoteProjectDialog.h>
 
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
 #include <AzCore/IO/SystemFile.h>
@@ -50,8 +51,9 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectsScreen::ProjectsScreen(QWidget* parent)
+    ProjectsScreen::ProjectsScreen(DownloadController* downloadController, QWidget* parent)
         : ScreenWidget(parent)
+        , m_downloadController(downloadController)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setAlignment(Qt::AlignTop);
@@ -72,6 +74,9 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_stack);
 
         connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
+
+        connect(m_downloadController, &DownloadController::Done, this, &ProjectsScreen::HandleDownloadResult);
+        connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
     }
 
     ProjectsScreen::~ProjectsScreen() = default;
@@ -220,6 +225,26 @@ namespace O3DE::ProjectManager
         {
             QVector<ProjectInfo> projects = projectsResult.GetValue();
 
+            // additional
+            auto remoteProjectsResult = PythonBindingsInterface::Get()->GetProjectsForAllRepos();
+            if (remoteProjectsResult.IsSuccess() && !remoteProjectsResult.GetValue().isEmpty())
+            {
+                const QVector<ProjectInfo>& remoteProjects = remoteProjectsResult.GetValue();
+                for (const ProjectInfo& remoteProject : remoteProjects)
+                {
+                    auto foundProject = AZStd::ranges::find_if(projects,
+                        [&remoteProject](const ProjectInfo& value)
+                        {
+                            return remoteProject.m_id == value.m_id;
+                        });
+                    if (foundProject == projects.end())
+                    {
+                        projects.append(remoteProject);
+                    }
+                }
+                
+            }
+
             // If a project path is in this set then the button for it will be kept
             AZStd::unordered_set<AZ::IO::Path> keepProject;
             for (const ProjectInfo& project : projects)
@@ -318,6 +343,18 @@ namespace O3DE::ProjectManager
                     if (!projectBuiltSuccessfully)
                     {
                         currentButton->SetState(ProjectButtonState::NeedsToBuild);
+                    }
+
+                    if (project.m_remote)
+                    {
+                        currentButton->SetState(ProjectButtonState::NotDownloaded);
+                        currentButton->SetProjectButtonAction(
+                            tr("Download Project"),
+                            [this, currentButton, project]
+                            {
+                                m_downloadController->AddObjectDownload(project.m_projectName, DownloadController::DownloadObjectType::Project);
+                                currentButton->SetState(ProjectButtonState::Downloading);
+                            });
                     }
                 }
             }
@@ -454,7 +491,7 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::HandleAddRemoteProjectButton()
     {
         AddRemoteProjectDialog* addRemoteProjectDialog = new AddRemoteProjectDialog(this);
-
+        connect(addRemoteProjectDialog, &AddRemoteProjectDialog::StartObjectDownload, this, &ProjectsScreen::StartProjectDownload);
         if (addRemoteProjectDialog->exec() == QDialog::DialogCode::Accepted)
         {
             QString repoUri = addRemoteProjectDialog->GetRepoPath();
@@ -639,6 +676,48 @@ namespace O3DE::ProjectManager
     {
         m_buildQueue.removeAll(projectInfo);
         ResetProjectsContent();
+    }
+
+    void ProjectsScreen::StartProjectDownload(const QString& projectName)
+    {
+        m_downloadController->AddObjectDownload(projectName, DownloadController::DownloadObjectType::Project);
+
+        auto foundButton = AZStd::ranges::find_if(m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+            {
+                return (value.second->GetProjectInfo().m_projectName == projectName);
+            });
+
+        if (foundButton != m_projectButtons.end())
+        {
+            (*foundButton).second->SetState(ProjectButtonState::Downloading);
+        }
+    }
+
+    void ProjectsScreen::HandleDownloadResult(const QString& /*projectName*/, bool /*succeeded*/)
+    {
+        ResetProjectsContent();
+    }
+
+    void ProjectsScreen::HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
+    {
+        if (objectType != DownloadController::DownloadObjectType::Project)
+        {
+            return;
+        }
+
+        //Find button for project name
+        auto foundButton = AZStd::ranges::find_if(m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+            {
+                return (value.second->GetProjectInfo().m_projectName == projectName);
+            });
+
+        if (foundButton != m_projectButtons.end())
+        {
+            float percentage = static_cast<float>(bytesDownloaded) / totalBytes;
+            (*foundButton).second->SetProgressBarPercentage(percentage);
+        }
     }
 
     void ProjectsScreen::NotifyCurrentScreen()
