@@ -44,6 +44,7 @@ namespace LandscapeCanvas
     static const QString GRADIENT_GENERATOR_TITLE = QObject::tr("Gradient");
     static const QString GRADIENT_MODIFIER_TITLE = QObject::tr("Gradient Modifier");
     static const QString VEGETATION_AREA_TITLE = QObject::tr("Vegetation Area");
+    static const QString TERRAIN_TITLE = QObject::tr("Terrain");
 
     // Connection slot labels
     static const QString PREVIEW_BOUNDS_SLOT_LABEL = QObject::tr("Preview Bounds");
