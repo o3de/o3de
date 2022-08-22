@@ -8,7 +8,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Debug/StackTracer.h>

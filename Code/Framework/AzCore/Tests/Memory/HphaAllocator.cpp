@@ -7,7 +7,7 @@
  */
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
 class HphaSchema_TestAllocator

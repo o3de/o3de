@@ -10,7 +10,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/Trace.h>

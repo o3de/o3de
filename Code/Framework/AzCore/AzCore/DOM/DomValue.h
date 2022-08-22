@@ -10,7 +10,7 @@
 
 #include <AzCore/DOM/DomBackend.h>
 #include <AzCore/DOM/DomVisitor.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>

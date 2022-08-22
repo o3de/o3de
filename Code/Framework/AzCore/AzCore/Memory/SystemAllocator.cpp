@@ -19,7 +19,7 @@
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
 
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 
 namespace AZ
 {

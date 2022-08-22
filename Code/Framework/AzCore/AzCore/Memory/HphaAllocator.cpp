@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/HphaSchema.h>
+#include <AzCore/Memory/HphaAllocator.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/OSAllocator.h> // required by certain platforms

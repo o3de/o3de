@@ -403,8 +403,8 @@ set(FILES
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl
-    Memory/HphaSchema.cpp
-    Memory/HphaSchema.h
+    Memory/HphaAllocator.cpp
+    Memory/HphaAllocator.h
     Memory/IAllocator.cpp
     Memory/IAllocator.h
     Memory/Memory.cpp
@@ -415,9 +415,8 @@ set(FILES
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
+    Memory/PoolAllocator.cpp
     Memory/PoolAllocator.h
-    Memory/PoolSchema.cpp
-    Memory/PoolSchema.h
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h

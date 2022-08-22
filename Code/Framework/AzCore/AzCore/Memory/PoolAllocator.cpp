@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/Memory/PoolSchema.h>
+#include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/intrusive_slist.h>
