@@ -121,7 +121,9 @@ namespace AzToolsFramework
     {
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
-            HandleMouseEvent(mouseInteraction);
+            MovePaintBrush(
+                mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
             // For move events, always return false so that mouse movements with right clicks can still affect the Editor camera.
             return false;
@@ -134,7 +136,9 @@ namespace AzToolsFramework
                 m_isFirstPaintedPoint = true;
 
                 m_isPainting = true;
-                HandleMouseEvent(mouseInteraction);
+                MovePaintBrush(
+                    mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
                 return true;
             }
         }
@@ -149,18 +153,18 @@ namespace AzToolsFramework
         return false;
     }
 
-    bool PaintBrush::HandleMouseEvent(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void PaintBrush::MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates)
     {
         // Ray cast into the screen to find the closest collision point for the current mouse location.
         auto worldSurfacePosition = AzToolsFramework::FindClosestPickIntersection(
-            mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-            mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates,
+            viewportId,
+            screenCoordinates,
             EditorPickRayLength);
 
         // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location.
         if (!worldSurfacePosition.has_value())
         {
-            return false;
+            return;
         }
 
         // We found a collision point, so move the paintbrush.
@@ -191,8 +195,6 @@ namespace AzToolsFramework
 
             m_previousCenter = m_center;
         }
-
-        return true;
     }
 
     void PaintBrush::GetValue(const AZ::Vector3& point, float& intensity, float& opacity, bool& isValid)

@@ -16,6 +16,20 @@
 
 namespace AzToolsFramework
 {
+    //! PaintBrush contains the core logic for painting functionality.
+    //! It handles the paintbrush settings, the logic for converting mouse events into paintbrush actions,
+    //! and the specific value calculations for what values are painted at each world space location.
+    //!
+    //! The rendering of the paintbrush in the viewport is handled separately by the PaintBrushManipulator,
+    //! the component mode logic is handled separately by the component that is using the paintbrush.
+    //!
+    //! The general flow of painting consists of the following:
+    //! 1. For each mouse movement while painting, the paintbrush sends OnPaint messages with the AABB of the region that has changed.
+    //! 2. The listener calls PaintBrushRequestBus::GetValues() for each position in the region that it cares about.
+    //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
+    //! This back-and-forth is needed so that we can keep a clean separation between the paintbrush and the listener. The paintbrush
+    //! doesn't have knowledge of which points in the world (or at which resolution) the listener needs, and the listener doesn't have
+    //! knowledge of the exact shape, size, and hardness of the paintbrush.
     class PaintBrush : public PaintBrushRequestBus::Handler
     {
     public:
@@ -26,23 +40,27 @@ namespace AzToolsFramework
         void Activate(const AZ::EntityComponentIdPair& entityComponentIdPair);
         void Deactivate();
 
-        // PaintBrushRequestBus overrides...
+        // PaintBrushRequestBus overrides for getting/setting the paintbrush settings...
         float GetRadius() const override;
         float GetIntensity() const override;
         float GetOpacity() const override;
         void SetRadius(float radius) override;
         void SetIntensity(float intensity) override;
         void SetOpacity(float opacity) override;
+
+        // PaintBrushRequestBus overrides for handling mouse events...
+        bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
+
+        // PaintBrushRequestBus overrides for getting specific painted values while painting...
         void GetValue(const AZ::Vector3& point, float& intensity, float& opacity, bool& isValid) override;
         void GetValues(
             AZStd::span<const AZ::Vector3> points,
             AZStd::span<float> intensities,
             AZStd::span<float> opacities,
             AZStd::span<bool> validFlags) override;
-        bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
 
     private:
-        bool HandleMouseEvent(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates);
 
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;

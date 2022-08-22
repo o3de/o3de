@@ -36,7 +36,7 @@ namespace GradientSignal
         // PaintBrushNotificationBus overrides
         void OnRadiusChanged(float radius) override;
         void OnPaint(const AZ::Aabb& dirtyArea) override;
-        void OnWorldSpaceChanged(AZ::Transform result) override;
+        void OnWorldSpaceChanged(const AZ::Transform& result) override;
 
     private:
         AZStd::shared_ptr<AzToolsFramework::BrushManipulator> m_brushManipulator;

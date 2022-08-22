@@ -24,7 +24,9 @@ namespace AzToolsFramework
     {
         SetSpace(worldFromLocal);
 
-        float radius = 2.0f;
+        // The PaintBrush manipulator uses a circle projected into world space to represent the brush.
+
+        float radius = 1.0f;
         PaintBrushRequestBus::EventResult(radius, entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::GetRadius);
 
         const AZ::Color manipulatorColor = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);

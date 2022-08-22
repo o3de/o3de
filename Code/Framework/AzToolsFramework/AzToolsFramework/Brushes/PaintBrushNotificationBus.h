@@ -15,6 +15,7 @@
 
 namespace AzToolsFramework
 {
+    //! PaintBrushNotificationBus is used to send out notifications whenever anything about the paintbrush has changed.
     class PaintBrushNotifications : public AZ::EBusTraits
     {
     public:
@@ -22,11 +23,33 @@ namespace AzToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityComponentIdPair;
 
-        virtual void OnIntensityChanged([[maybe_unused]] float radius) { }
-        virtual void OnOpacityChanged([[maybe_unused]] float radius) { }
-        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea) { }
+        //! OnIntensityChanged notifies listeners that the paintbrush intensity setting has changed.
+        //! @param intensity The new intensity setting for the paintbrush (0=black, 1=white).
+        virtual void OnIntensityChanged([[maybe_unused]] float intensity) { }
+
+        //! OnOpacityChanged notifies listeners that the paintbrush opacity setting has changed.
+        //! @param opacity The new opacity setting for the paintbrush (0=transparent, 1=opaque).
+        virtual void OnOpacityChanged([[maybe_unused]] float opacity) { }
+
+        //! OnRadiusChanged notifies listeners that the paintbrush radius setting has changed.
+        //! @param radius The new radius setting for the paintbrush, in meters.
         virtual void OnRadiusChanged([[maybe_unused]] float radius) { }
-        virtual void OnWorldSpaceChanged([[maybe_unused]] AZ::Transform result) { }
+
+        //! OnWorldSpaceChanged notifies listeners that the paintbrush transform has changed,
+        //! typically due to the brush moving around in world space.
+        //! This will get called in each frame that the brush transform changes.
+        //! @param brushTransform The new transform for the brush position/rotation/scale.
+        virtual void OnWorldSpaceChanged([[maybe_unused]] const AZ::Transform& brushTransform) { }
+
+        //! OnPaint notifies listeners that the paintbrush has painted in a region.
+        //! This will get called in each frame that the paintbrush continues to paint and the brush has moved.
+        //! Since the paintbrush doesn't know how it's being used, and the system using a paintbrush doesn't know the specifics of the
+        //! paintbrush shape and pattern, this works through a back-and-forth handshake.
+        //! 1. The paintbrush sends the OnPaint message with the AABB of the region that has changed.
+        //! 2. The listener calls PaintBrushRequestBus::GetValues() for each position in the region that it cares about.
+        //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
+        //! @param dirtyArea The AABB of the area that has been painted in.
+        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea) { }
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;

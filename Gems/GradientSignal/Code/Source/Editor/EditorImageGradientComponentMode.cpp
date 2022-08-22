@@ -123,9 +123,9 @@ namespace GradientSignal
         m_brushManipulator->SetRadius(radius);
     }
 
-    void EditorImageGradientComponentMode::OnWorldSpaceChanged(AZ::Transform result)
+    void EditorImageGradientComponentMode::OnWorldSpaceChanged(const AZ::Transform& brushTransform)
     {
-        m_brushManipulator->SetSpace(result);
+        m_brushManipulator->SetSpace(brushTransform);
     }
 
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea)
