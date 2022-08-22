@@ -51,11 +51,15 @@ namespace O3DE::ProjectManager
         QString m_origin;
         QString m_summary;
         QString m_iconPath;
+        QString m_requirements;
+        QString m_license;
         QStringList m_userTags;
 
         // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
+
+        bool m_remote = false;
 
         // Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built

@@ -17,6 +17,20 @@ import ly_test_tools.environment.waiter as waiter
 
 logger = logging.getLogger(__name__)
 
+def compile_test_case_name_from_request(request):
+    """
+    Compile a test case name for consumption by the TIAF python coverage listener gem.
+    @param request: The fixture request.
+    """
+    try:
+        test_case_prefix = "::".join(str.split(request.node.nodeid, "::")[:2])
+        test_case_name = "::".join([test_case_prefix, request.node.originalname])
+        callspec = request.node.callspec.id
+        compiled_test_case_name = f"{test_case_name}[{callspec}]"
+    except Exception as e:
+        logging.warning(f"Error reading test case name for TIAF. {e}")
+        compiled_test_case_name = "ERROR"
+    return compiled_test_case_name
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """

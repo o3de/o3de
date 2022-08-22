@@ -113,10 +113,10 @@ def qssim(screenshot, goldenimage, channel_max=255, diff_path='.'):
     offset2[:, :, 0] = C2
 
     # blur each color channel of both images
-    mu1 = ndimage.filters.gaussian_filter1d(mu1, sigma, 0)
-    mu1 = ndimage.filters.gaussian_filter1d(mu1, sigma, 1)
-    mu2 = ndimage.filters.gaussian_filter1d(mu2, sigma, 0)
-    mu2 = ndimage.filters.gaussian_filter1d(mu2, sigma, 1)
+    mu1 = ndimage.gaussian_filter1d(mu1, sigma, 0)
+    mu1 = ndimage.gaussian_filter1d(mu1, sigma, 1)
+    mu2 = ndimage.gaussian_filter1d(mu2, sigma, 0)
+    mu2 = ndimage.gaussian_filter1d(mu2, sigma, 1)
 
     mu1_sq = _quaternion_matrix_mult(mu1, _quaternion_matrix_conj(mu1))
     mu2_sq = _quaternion_matrix_mult(mu2, _quaternion_matrix_conj(mu2))
@@ -125,12 +125,12 @@ def qssim(screenshot, goldenimage, channel_max=255, diff_path='.'):
     hue2_sq = _quaternion_matrix_mult(hue2 - mu2, _quaternion_matrix_conj(hue2 - mu2))
     hue12 = _quaternion_matrix_mult(hue1 - mu1, _quaternion_matrix_conj(hue2 - mu2))
 
-    sigma1 = ndimage.filters.gaussian_filter1d(hue1_sq, sigma, 0)
-    sigma1 = ndimage.filters.gaussian_filter1d(sigma1, sigma, 1)
-    sigma2 = ndimage.filters.gaussian_filter1d(hue2_sq, sigma, 0)
-    sigma2 = ndimage.filters.gaussian_filter1d(sigma2, sigma, 1)
-    sigma12 = ndimage.filters.gaussian_filter1d(hue12, sigma, 0)
-    sigma12 = ndimage.filters.gaussian_filter1d(sigma12, sigma, 1)
+    sigma1 = ndimage.gaussian_filter1d(hue1_sq, sigma, 0)
+    sigma1 = ndimage.gaussian_filter1d(sigma1, sigma, 1)
+    sigma2 = ndimage.gaussian_filter1d(hue2_sq, sigma, 0)
+    sigma2 = ndimage.gaussian_filter1d(sigma2, sigma, 1)
+    sigma12 =ndimage.gaussian_filter1d(hue12, sigma, 0)
+    sigma12 =ndimage.gaussian_filter1d(sigma12, sigma, 1)
     numerator1 = 2 * mu12 + offset1
     numerator2 = 2 * sigma12 + offset2
 
