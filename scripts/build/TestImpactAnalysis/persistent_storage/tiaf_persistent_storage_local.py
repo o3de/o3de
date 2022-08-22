@@ -8,6 +8,7 @@
 
 import pathlib
 import shutil
+from typing_extensions import runtime
 from persistent_storage import PersistentStorage
 from tiaf_logger import get_logger
 
@@ -78,11 +79,13 @@ class PersistentStorageLocal(PersistentStorage):
         @param runtime_artifact_dir: Path to runtime artifacts to copy.
         """
         source_directory = pathlib.Path(runtime_artifact_dir)
-        
-        storage_directory = self._historic_workspace.joinpath(pathlib.Path(self.RUNTIME_ARTIFACT_DIRECTORY))
-        storage_directory.mkdir(exist_ok=True, parents=True)
+        try:
+            storage_directory = self._historic_workspace.joinpath(pathlib.Path(self.RUNTIME_ARTIFACT_DIRECTORY))
+            storage_directory.mkdir(exist_ok=True, parents=True)
 
-        self._copy_files_from_directory_to_destination(source_directory, storage_directory)
+            self._copy_files_from_directory_to_destination(source_directory, storage_directory)
+        except OSError as e:
+            logger.error(f"Error copying runtime artifacts from {runtime_artifact_dir}. Error thrown: {e}")
 
     def _store_coverage_artifacts(self, runtime_coverage_dir : str):
         """
@@ -91,11 +94,13 @@ class PersistentStorageLocal(PersistentStorage):
         @param runtime_coverage_dir: Path to the runtime coverage artifacts to copy.
         """
         source_directory = pathlib.Path(runtime_coverage_dir)
+        try:
+            storage_directory = self._historic_workspace.joinpath(pathlib.Path(self.RUNTIME_COVERAGE_DIRECTORY))
+            storage_directory.mkdir(exist_ok=True, parents=True)
 
-        storage_directory = self._historic_workspace.joinpath(pathlib.Path(self.RUNTIME_COVERAGE_DIRECTORY))
-        storage_directory.mkdir(exist_ok=True, parents=True)
-
-        self._copy_files_from_directory_to_destination(source_directory, storage_directory)
+            self._copy_files_from_directory_to_destination(source_directory, storage_directory)
+        except OSError as e:
+            logger.error(f"Error copying coverage artifacts from {runtime_coverage_dir}. Error thrown: {e}")
 
     def _copy_files_from_directory_to_destination(self, source_directory: pathlib.Path, target_directory : pathlib.Path):
         """
@@ -105,4 +110,8 @@ class PersistentStorageLocal(PersistentStorage):
         @param target_direcotry: pathlib.Path to directory to store files in.
         """
         for artifact_path in source_directory.iterdir():
-            shutil.copy2(artifact_path, target_directory.joinpath(artifact_path.name))
+            try:
+                shutil.copy2(artifact_path, target_directory.joinpath(artifact_path.name))
+            except OSError as e:
+                logger.error(f"Error copying file {artifact_path.name} from {source_directory} to {target_directory}")
+                logger.error(f"Error thrown: {e}")
