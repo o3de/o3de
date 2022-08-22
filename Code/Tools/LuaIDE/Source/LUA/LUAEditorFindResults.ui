@@ -52,12 +52,12 @@
     </widget>
    </item>
    <item>
-    <widget class="AzToolsFramework::PlainTextEdit" name="m_resultsList">
+    <widget class="LUAEditor::LUAEditorPlainTextEdit" name="m_resultsList">
      <property name="undoRedoEnabled">
       <bool>false</bool>
      </property>
      <property name="lineWrapMode">
-      <enum>QPlainTextEdit::NoWrap</enum>
+      <enum>QTextEdit::NoWrap</enum>
      </property>
      <property name="readOnly">
       <bool>true</bool>
@@ -77,9 +77,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>UIFramework::PlainTextEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header>AzToolsFramework/UI/UICore/PlainTextEdit.hxx</header>
+   <class>LUAEditor::LUAEditorPlainTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>Source/LUA/LUAEditorPlainTextEdit.hxx</header>
   </customwidget>
  </customwidgets>
  <resources/>

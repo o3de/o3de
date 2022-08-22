@@ -500,8 +500,6 @@ set(FILES
     UI/UICore/ClickableLabel.cpp
     UI/UICore/IconButton.hxx
     UI/UICore/IconButton.cpp
-    UI/UICore/PlainTextEdit.hxx
-    UI/UICore/PlainTextEdit.cpp
     UI/UICore/ProgressShield.hxx
     UI/UICore/ProgressShield.cpp
     UI/UICore/ProgressShield.ui

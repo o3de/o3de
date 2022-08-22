@@ -70,10 +70,7 @@
       <enum>QFrame::StyledPanel</enum>
      </property>
      <property name="lineWrapMode">
-      <enum>QPlainTextEdit::NoWrap</enum>
-     </property>
-     <property name="backgroundVisible">
-      <bool>false</bool>
+      <enum>QTextEdit::NoWrap</enum>
      </property>
     </widget>
    </item>
@@ -88,7 +85,7 @@
   </customwidget>
   <customwidget>
    <class>LUAEditor::LUAEditorPlainTextEdit</class>
-   <extends>QPlainTextEdit</extends>
+   <extends>QTextEdit</extends>
    <header>Source/LUA/LUAEditorPlainTextEdit.hxx</header>
   </customwidget>
   <customwidget>

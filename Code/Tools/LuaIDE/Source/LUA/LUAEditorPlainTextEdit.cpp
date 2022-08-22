@@ -24,12 +24,15 @@
 #include <QTextDocumentFragment>
 #include <QMimeData>
 #include <QClipboard>
+#include <QAbstractTextDocumentLayout>
 
 namespace LUAEditor
 {
     LUAEditorPlainTextEdit::LUAEditorPlainTextEdit(QWidget* pParent)
-        : AzToolsFramework::PlainTextEdit(pParent)
+        : QTextEdit(pParent)
     {
+        setAcceptRichText(false);
+        
         m_completionModel = aznew CompletionModel(this);
         m_completer = aznew Completer(m_completionModel, this);
         m_completer->setWidget(this);
@@ -45,19 +48,19 @@ namespace LUAEditor
 
     void LUAEditorPlainTextEdit::focusInEvent(QFocusEvent* pEvent)
     {
-        QPlainTextEdit::focusInEvent(pEvent);
+        QTextEdit::focusInEvent(pEvent);
         emit FocusChanged(true);
     }
 
     void LUAEditorPlainTextEdit::focusOutEvent(QFocusEvent* pEvent)
     {
-        QPlainTextEdit::focusOutEvent(pEvent);
+        QTextEdit::focusOutEvent(pEvent);
         emit FocusChanged(false);
     }
 
     void LUAEditorPlainTextEdit::paintEvent(QPaintEvent* event)
     {
-        QPlainTextEdit::paintEvent(event);
+        QTextEdit::paintEvent(event);
 
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
 
@@ -101,7 +104,7 @@ namespace LUAEditor
             auto cursor = textCursor();
             if (cursor.hasSelection())
             {
-                QPlainTextEdit::keyPressEvent(event);
+                QTextEdit::keyPressEvent(event);
             }
             else
             {
@@ -187,7 +190,7 @@ namespace LUAEditor
             }
             else
             {
-                QPlainTextEdit::keyPressEvent(event);
+                QTextEdit::keyPressEvent(event);
 
                 if (0 == (event->modifiers() & (Qt::KeyboardModifier::ControlModifier | Qt::KeyboardModifier::MetaModifier)))
                 {
@@ -527,16 +530,61 @@ namespace LUAEditor
             return;
         }
 
-        QPlainTextEdit::wheelEvent(event);
+        QTextEdit::wheelEvent(event);
+    }
+
+    void LUAEditorPlainTextEdit::ForEachVisibleBlock(AZStd::function<void(QTextBlock& block, const QRectF&)> operation) const
+    {
+        const auto doc =  document();
+        for (auto block = doc->begin(); block != doc->end(); block = block.next())
+        {
+            auto blockRect = doc->documentLayout()->blockBoundingRect(block);
+            if (block.isVisible() && blockRect.bottom() > 0 && blockRect.top() < size().height())
+            {
+                operation(block, blockRect);
+            }
+        }
     }
 
     void LUAEditorPlainTextEdit::UpdateFont(QFont font, int tabSize)
     {
-        setFont(font);
+        QTextCursor currentCursor = textCursor();
         QFontMetrics metrics(font);
+        setCurrentFont(font);
+        QTextCharFormat characterFormat;
+        characterFormat.setFont(font);
+        setCurrentCharFormat(characterFormat);
+        selectAll();
+        setFont(font);
+        setFontPointSize(font.pointSize());
         setTabStopDistance(metrics.horizontalAdvance(' ') * tabSize);
+        setTextCursor(currentCursor);
+    }
 
-        update();
+
+    void LUAEditorPlainTextEdit::mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        auto mousePos = event->localPos();
+
+        QTextBlock blockClicked;
+        //any block could be hidden, so have to loop through to be sure
+        ForEachVisibleBlock([&](const QTextBlock& block, const QRectF& blockRect) {
+            if (mousePos.y() >= blockRect.top() && mousePos.y() <= blockRect.bottom())
+                blockClicked = block;
+            });
+
+        event->ignore();
+
+        if (blockClicked.isValid())
+        {
+            emit BlockDoubleClicked(event, blockClicked);
+        }
+
+        if (!event->isAccepted())
+        {
+            LUAEditorPlainTextEdit::mouseDoubleClickEvent(event);
+        }
+        event->accept();
     }
 
     void LUAEditorPlainTextEdit::CompletionSelected(const QString& text)
@@ -567,7 +615,6 @@ namespace LUAEditor
             for (int idx = 0; idx < urls.count(); ++idx)
             {
                 QString path = urls[idx].toLocalFile();
-                AZ_TracePrintf("Debug", "URL: %s\n", path.toUtf8().data());
 
                 AZStd::string assetId(path.toUtf8().data());
                 EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, true);
@@ -575,7 +622,7 @@ namespace LUAEditor
         }
         else
         {
-            AzToolsFramework::PlainTextEdit::dropEvent(e);
+            QTextEdit::dropEvent(e);
         }
     }
 }

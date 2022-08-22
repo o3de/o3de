@@ -95,9 +95,9 @@ namespace LUAEditor
 
         m_gui->m_foldingWidget->setEnabled(true);
         m_gui->m_foldingWidget->SetTextEdit(m_gui->m_resultsList);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
-        connect(m_gui->m_resultsList, &AzToolsFramework::PlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::BlockDoubleClicked, this, &FindResults::OnBlockDoubleClicked);
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::cursorPositionChanged, this, [&]() { m_gui->m_foldingWidget->update(); });
+        connect(m_gui->m_resultsList, &LUAEditor::LUAEditorPlainTextEdit::Scrolled, this, [&]() { m_gui->m_foldingWidget->update(); });
         connect(m_gui->m_foldingWidget, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_resultsList->update(); });
         connect(m_gui->m_resultsList->document(), &QTextDocument::contentsChange, m_gui->m_foldingWidget, &FoldingWidget::OnContentChanged);
 
@@ -106,14 +106,14 @@ namespace LUAEditor
         m_gui->m_foldingWidget->SetFont(settings->GetFont());
 
         QString styleSheet = QString(R"(
-            QPlainTextEdit[readOnly="true"]:focus
+            QTextEdit[readOnly="true"]:focus
             {
                 background-color: %1;
                 selection-color: %3;
                 selection-background-color: %4;
             }
 
-            QPlainTextEdit[readOnly="true"]:!focus
+            QTextEdit[readOnly="true"]:!focus
             {
                 background-color: %2;
                 selection-color: %3;
@@ -196,6 +196,6 @@ namespace LUAEditor
 
     void FindResults::AppendPlainText(const QString& text)
     {
-        m_gui->m_resultsList->appendPlainText(text);
+        m_gui->m_resultsList->append(text);
     }
 }

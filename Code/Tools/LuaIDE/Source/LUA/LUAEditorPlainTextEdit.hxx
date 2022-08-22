@@ -8,17 +8,17 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
-#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QCompleter>
-#include "AzToolsFramework/UI/UICore/PlainTextEdit.hxx"
+#include <QTextEdit>
 #include <AzCore/std/functional.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #endif
 
 #pragma once
 
 namespace LUAEditor
 {
-    class LUAEditorPlainTextEdit : public AzToolsFramework::PlainTextEdit
+    class LUAEditorPlainTextEdit : public QTextEdit
     {
         Q_OBJECT
 
@@ -32,6 +32,8 @@ namespace LUAEditor
         void SetUseSpaces(bool useSpaces) { m_useSpaces = useSpaces; }
         void UpdateFont(QFont font, int tabSize);
         void SetGetLuaName(AZStd::function<QString(const QTextCursor&)> lambda) { m_getLUAName = lambda; }
+        
+        void ForEachVisibleBlock(AZStd::function<void(QTextBlock& block, const QRectF&)> operation) const;
 
     protected:
         void focusInEvent(QFocusEvent* pEvent) override;
@@ -51,11 +53,15 @@ namespace LUAEditor
         bool HandleIndentKeyPress(QKeyEvent* event);
         bool HandleHomeKeyPress(QKeyEvent* event);
         bool HandleNewline(QKeyEvent* event);
+        void mouseDoubleClickEvent(QMouseEvent* event) override;
 
     signals:
         void FocusChanged(bool focused);
         void ZoomIn();
         void ZoomOut();
+        void Scrolled();
+        //accept the event to avoid default double click behavior
+        void BlockDoubleClicked(QMouseEvent* event, const QTextBlock& block);
 
     public slots:
         void OnScopeNamesUpdated(const QStringList& scopeNames);

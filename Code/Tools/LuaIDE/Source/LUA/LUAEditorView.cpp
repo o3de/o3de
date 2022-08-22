@@ -143,14 +143,14 @@ namespace LUAEditor
 
         UpdateFont();
 
-        connect(m_gui->m_luaTextEdit, SIGNAL(modificationChanged(bool)), this, SLOT(modificationChanged(bool)));
+        connect(m_gui->m_luaTextEdit->document(), SIGNAL(modificationChanged(bool)), this, SLOT(modificationChanged(bool)));
         connect(this, SIGNAL(RegainFocus()), this, SLOT(RegainFocusFinal()), Qt::QueuedConnection);
         connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), this, SLOT(UpdateBraceHighlight()));
         connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), m_gui->m_folding, SLOT(update()));
         connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), m_gui->m_breakpoints, SLOT(update()));
         connect(m_gui->m_luaTextEdit, SIGNAL(Scrolled()), m_gui->m_breakpoints, SLOT(update()));
         connect(m_gui->m_luaTextEdit, SIGNAL(Scrolled()), m_gui->m_folding, SLOT(update()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(blockCountChanged(int)), m_gui->m_breakpoints, SLOT(OnBlockCountChange()));
+        connect(m_gui->m_luaTextEdit->document(), SIGNAL(blockCountChanged(int)), m_gui->m_breakpoints, SLOT(OnBlockCountChange()));
         connect(m_gui->m_luaTextEdit->document(), SIGNAL(contentsChange(int, int, int)), m_gui->m_breakpoints, SLOT(OnCharsRemoved(int, int)));
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::FocusChanged, this, &LUAViewWidget::OnPlainTextFocusChanged);
         connect(m_gui->m_folding, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_breakpoints->update(); });
@@ -192,28 +192,28 @@ namespace LUAEditor
     {
         auto colors = AZ::UserSettings::CreateFind<SyntaxStyleSettings>(AZ_CRC("LUA Editor Text Settings", 0xb6e15565), AZ::UserSettings::CT_GLOBAL);
 
-        auto styleSheet = QString(R"(QPlainTextEdit:focus
+        auto styleSheet = QString(R"(QTextEdit:focus
                                     {
                                         background-color: %1;
                                         selection-background-color:  %6;
                                         selection-color: %5;
                                     }
 
-                                    QPlainTextEdit:!focus
+                                    QTextEdit:!focus
                                     {
                                         background-color: %2;
                                         selection-color: %5;
                                         selection-background-color:  %6;
                                     }
 
-                                    QPlainTextEdit[readOnly="true"]:focus
+                                    QTextEdit[readOnly="true"]:focus
                                     {
                                         background-color: %3;
                                         selection-color: %5;
                                         selection-background-color:  %6;
                                     }
 
-                                    QPlainTextEdit[readOnly="true"]:!focus
+                                    QTextEdit[readOnly="true"]:!focus
                                     {
                                         background-color: %4;
                                         selection-color: %5;
