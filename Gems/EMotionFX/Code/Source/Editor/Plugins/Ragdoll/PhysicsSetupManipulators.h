@@ -80,9 +80,9 @@ namespace EMotionFX
         : public PhysicsSetupManipulatorsBase
     {
     public:
-        void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
-        void Refresh() override;
-        void Teardown() override;
-        void ResetValues() override;
+        void Setup([[maybe_unused]] const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override {};
+        void Refresh() override {};
+        void Teardown() override {};
+        void ResetValues() override {};
     };
 } // namespace EMotionFX

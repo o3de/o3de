@@ -22,7 +22,6 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <Editor/Plugins/Ragdoll/PhysicsPicking.h>
 #include <QHBoxLayout>
 #include <QGuiApplication>
 
@@ -119,7 +118,7 @@ namespace EMStudio
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(g_animManipulatorManagerId);
         SetupManipulators();
 
-        m_picking = AZStd::make_unique<EMotionFX::PhysicsPicking>();
+        m_picking = AZStd::make_unique<EMotionFX::Picking>();
 
         SetupMetrics();
 
@@ -402,7 +401,7 @@ namespace EMStudio
 
     void AtomRenderPlugin::UpdatePickingRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
-        m_picking->UpdateRenderFlags(renderFlags);
+        m_picking->SetRenderFlags(renderFlags);
     }
 
     // Command callbacks

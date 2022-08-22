@@ -17,13 +17,16 @@ namespace AzToolsFramework::ViewportInteraction
 
 namespace EMotionFX
 {
-    //! Base class for modes which support clicking in the viewport to select an item.
+    inline constexpr float PickingMargin = 0.01f;
+
+    //! Supports clicking in the animation editor viewport to select a joint.
     class Picking
     {
     public:
-        virtual ~Picking() = default;
+        bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent);
+        void SetRenderFlags(ActorRenderFlags renderFlags);
 
-        virtual bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteractionEvent) = 0;
-        virtual void UpdateRenderFlags(ActorRenderFlags renderFlags) = 0;
+    private:
+        ActorRenderFlags m_renderFlags;
     };
 } // namespace EMotionFX
