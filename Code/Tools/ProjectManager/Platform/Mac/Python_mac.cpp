@@ -20,10 +20,15 @@ namespace Platform
     {
         bool succeeded = true;
         
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7/lib-dynload");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7");
-        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/3.7/lib/python3.7/site-packages");
+        // PY_VERSION_MAJOR_MINOR must be defined through the build scripts based on the current python package (see cmake/LYPython.cmake)
+        #if !defined(PY_VERSION_MAJOR_MINOR)
+        #error "PY_VERSION_MAJOR_MINOR is not defined"
+        #endif
+
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR "/lib");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR "/lib/python" PY_VERSION_MAJOR_MINOR "/lib-dynload");
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR "/lib/python" PY_VERSION_MAJOR_MINOR);
+        succeeded = succeeded && InsertPythonLibraryPath(paths, pythonPackage, engineRoot, "python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR "/lib/python" PY_VERSION_MAJOR_MINOR "/site-packages");
 
         return succeeded;
     }
@@ -32,7 +37,7 @@ namespace Platform
     {
         // append lib path to Python paths
         AZ::IO::FixedMaxPath libPath = engineRoot;
-        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/Python.framework/Versions/3.7", pythonPackage);
+        libPath /= AZ::IO::FixedMaxPathString::format("python/runtime/%s/Python.framework/Versions/" PY_VERSION_MAJOR_MINOR, pythonPackage);
         libPath = libPath.LexicallyNormal();
         return libPath.String();
     }

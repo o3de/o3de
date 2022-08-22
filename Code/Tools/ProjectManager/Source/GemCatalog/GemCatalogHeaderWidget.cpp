@@ -171,7 +171,7 @@ namespace O3DE::ProjectManager
 
     void GemCartWidget::OnCancelDownloadActivated(const QString& gemName)
     {
-        m_downloadController->CancelGemDownload(gemName);
+        m_downloadController->CancelObjectDownload(gemName, DownloadController::DownloadObjectType::Gem);
     }
 
     void GemCartWidget::CreateDownloadSection()
@@ -219,22 +219,30 @@ namespace O3DE::ProjectManager
         else
         {
             // Setup gem download rows for gems that are already in the queue
-            const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+            const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
 
-            for (const QString& gemName : downloadQueue)
+            for (const DownloadController::DownloadableObject& o3deObject : downloadQueue)
             {
-                GemDownloadAdded(gemName);
+                if (o3deObject.m_objectType == DownloadController::DownloadObjectType::Gem)
+                {
+                    ObjectDownloadAdded(o3deObject.m_objectName, o3deObject.m_objectType);
+                }
             }
         }
 
         // connect to download controller data changed
-        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCartWidget::GemDownloadAdded);
-        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCartWidget::GemDownloadRemoved);
-        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, &GemCartWidget::GemDownloadProgress);
+        connect(m_downloadController, &DownloadController::ObjectDownloadAdded, this, &GemCartWidget::ObjectDownloadAdded);
+        connect(m_downloadController, &DownloadController::ObjectDownloadRemoved, this, &GemCartWidget::ObjectDownloadRemoved);
+        connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &GemCartWidget::ObjectDownloadProgress);
     }
 
-    void GemCartWidget::GemDownloadAdded(const QString& gemName)
+    void GemCartWidget::ObjectDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         // Containing widget for the current download item
         QWidget* newGemDownloadWidget = new QWidget();
         newGemDownloadWidget->setObjectName(gemName);
@@ -263,7 +271,7 @@ namespace O3DE::ProjectManager
 
         m_downloadingListWidget->layout()->addWidget(newGemDownloadWidget);
 
-        const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+        const AZStd::deque<DownloadController::DownloadableObject>& downloadQueue = m_downloadController->GetDownloadQueue();
         QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
         numDownloads->setText(QString("%1 %2")
                                   .arg(downloadQueue.size())
@@ -272,8 +280,13 @@ namespace O3DE::ProjectManager
         m_downloadingListWidget->show();
     }
 
-    void GemCartWidget::GemDownloadRemoved(const QString& gemName)
+    void GemCartWidget::ObjectDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         QWidget* gemToRemove = m_downloadingListWidget->findChild<QWidget*>(gemName);
         if (gemToRemove)
         {
@@ -294,8 +307,13 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCartWidget::GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes)
+    void GemCartWidget::ObjectDownloadProgress(const QString& gemName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         QWidget* gemToUpdate = m_downloadingListWidget->findChild<QWidget*>(gemName);
         if (gemToUpdate)
         {
@@ -513,8 +531,8 @@ namespace O3DE::ProjectManager
         gemMenuButton->setIconSize(QSize(36, 24));
         hLayout->addWidget(gemMenuButton);
 
-        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
-        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
+        connect(m_downloadController, &DownloadController::ObjectDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
+        connect(m_downloadController, &DownloadController::ObjectDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
 
         connect(
             m_cartButton, &CartButton::UpdateGemCart, this,
@@ -528,17 +546,22 @@ namespace O3DE::ProjectManager
             });
     }
 
-    void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/)
+    void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/, DownloadController::DownloadObjectType objectType)
     {
+        if (objectType != DownloadController::DownloadObjectType::Gem)
+        {
+            return;
+        }
+
         m_downloadSpinner->show();
         m_downloadLabel->show();
         m_downloadSpinnerMovie->start();
         m_cartButton->ShowGemCart();
     }
 
-    void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/)
+    void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/, DownloadController::DownloadObjectType objectType)
     {
-        if (m_downloadController->IsDownloadQueueEmpty())
+        if (objectType == DownloadController::DownloadObjectType::Gem && m_downloadController->IsDownloadQueueEmpty())
         {
             m_downloadSpinner->hide();
             m_downloadLabel->hide();
