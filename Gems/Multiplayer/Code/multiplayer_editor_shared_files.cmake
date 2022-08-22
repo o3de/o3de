@@ -11,6 +11,8 @@ set(FILES
     Source/MultiplayerGem.h
     Source/Editor/MultiplayerEditorGem.cpp
     Source/Editor/MultiplayerEditorGem.h
+    Source/Editor/MultiplayerEditorAutomation.cpp
+    Source/Editor/MultiplayerEditorAutomation.h
     Source/Editor/MultiplayerEditorSystemComponent.cpp
     Source/Editor/MultiplayerEditorSystemComponent.h
     Include/Multiplayer/Editor/MultiplayerPythonEditorEventsBus.h
