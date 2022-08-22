@@ -233,7 +233,10 @@ namespace O3DE::ProjectManager
 
     PythonBindings::~PythonBindings()
     {
-        StopPython();
+        if (m_pythonStarted)
+        {
+            StopPython();
+        }
     }
 
     void PythonBindings::OnStdOut(const char* msg)
@@ -343,7 +346,7 @@ namespace O3DE::ProjectManager
             pybind11::finalize_interpreter();
         }
 
-        return !PyErr_Occurred();
+        return Py_IsInitialized() == 0;
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
