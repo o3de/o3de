@@ -10,7 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QString>
 #include <QThread>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/deque.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QProcess)
@@ -24,27 +24,40 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
+        enum DownloadObjectType
+        {
+            Gem = 1 << 0,
+            Project = 1 << 1,
+            Template = 1 << 2
+        };
+
+        struct DownloadableObject
+        {
+            QString m_objectName;
+            DownloadObjectType m_objectType;
+        };
+
         explicit DownloadController(QWidget* parent = nullptr);
         ~DownloadController();
 
-        void AddGemDownload(const QString& gemName);
-        void CancelGemDownload(const QString& gemName);
+        void AddObjectDownload(const QString& objectName, DownloadObjectType objectType);
+        void CancelObjectDownload(const QString& objectName, DownloadObjectType objectType);
 
         bool IsDownloadQueueEmpty()
         {
-            return m_gemNames.empty();
+            return m_objects.empty();
         }
 
-        const AZStd::vector<QString>& GetDownloadQueue() const
+        const AZStd::deque<DownloadableObject>& GetDownloadQueue() const
         {
-            return m_gemNames;
+            return m_objects;
         }
 
         const QString& GetCurrentDownloadingGem() const
         {
-            if (!m_gemNames.empty())
+            if (!m_objects.empty())
             {
-                return m_gemNames[0];
+                return m_objects[0].m_objectName;
             }
             else
             {
@@ -57,16 +70,16 @@ namespace O3DE::ProjectManager
         void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
-        void StartGemDownload(const QString& gemName, bool downloadNow);
-        void Done(const QString& gemName, bool success = true);
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
+        void StartObjectDownload(const QString& objectName, DownloadObjectType objectType, bool downloadNow);
+        void Done(const QString& objectName, bool success = true);
+        void ObjectDownloadAdded(const QString& objectName, DownloadObjectType objectType);
+        void ObjectDownloadRemoved(const QString& objectName, DownloadObjectType objectType);
+        void ObjectDownloadProgress(const QString& objectName, DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     private:
         DownloadWorker* m_worker;
         QThread m_workerThread;
-        QWidget* m_parent;
-        AZStd::vector<QString> m_gemNames;
+        AZStd::deque<DownloadableObject> m_objects;
     };
+
 } // namespace O3DE::ProjectManager

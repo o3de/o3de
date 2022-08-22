@@ -29,6 +29,9 @@ namespace GradientSignal
         virtual void SetImageAssetPath(const AZStd::string& assetPath) = 0;
         virtual void SetImageAssetSourcePath(const AZStd::string& assetPath) = 0;
 
+        virtual uint32_t GetImageHeight() const = 0;
+        virtual uint32_t GetImageWidth() const = 0;
+
         virtual float GetTilingX() const = 0;
         virtual void SetTilingX(float tilingX) = 0;
 

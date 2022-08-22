@@ -96,7 +96,7 @@ namespace AZ
                     if (!heap)
                     {
                         // Return directly if we can't create more heaps
-                        AZ_Error("TileAllocator", false, "Failed to create a heap page");
+                        AZ_Warning("TileAllocator", false, "Failed to create a heap page");
                         return tilesList;
                     }
 

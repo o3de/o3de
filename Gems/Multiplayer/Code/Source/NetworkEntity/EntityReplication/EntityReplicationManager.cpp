@@ -280,12 +280,19 @@ namespace Multiplayer
             }
         }
 
-        const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
-
-        // Update the sent things with the packet id
-        for (EntityReplicator* replicator : replicatorUpdatedList)
+        if (m_replicationWindow)
         {
-            replicator->FinalizeSerialization(sentId);
+            const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
+
+            // Update the sent things with the packet id
+            for (EntityReplicator* replicator : replicatorUpdatedList)
+            {
+                replicator->FinalizeSerialization(sentId);
+            }
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to send entity update message, replication window does not exist");
         }
     }
 
@@ -325,13 +332,23 @@ namespace Multiplayer
                 rpcMessages.pop_front();
             }
 
-            m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            if (m_replicationWindow)
+            {
+                m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            }
+            else
+            {
+                AZ_Assert(false, "Failed to send entity rpc, replication window does not exist");
+            }
         }
     }
 
     void EntityReplicationManager::SendEntityResets()
     {
-        m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        }
         m_replicatorsPendingReset.clear();
     }
 
@@ -573,7 +590,7 @@ namespace Multiplayer
             }
         }
 
-        return true;
+        return shouldDeleteEntity;
     }
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
