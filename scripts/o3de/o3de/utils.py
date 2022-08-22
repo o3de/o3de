@@ -15,7 +15,6 @@ import json
 import os
 import pathlib
 import shutil
-import urllib.parse
 import urllib.request
 import logging
 import zipfile
