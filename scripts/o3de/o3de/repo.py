@@ -77,7 +77,9 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
 
             parsed_uri = urllib.parse.urlparse(manifest_json_uri)
 
-            parsed_uri = utils.get_file_uri_from_git_api(parsed_uri)
+            git_tuple = utils.is_git_provider_uri(parsed_uri)
+            if git_tuple[0]:
+                parsed_uri = git_tuple[1](parsed_uri)
 
             download_file_result = utils.download_file(parsed_uri, cache_file, True)
             if download_file_result != 0:

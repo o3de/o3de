@@ -18,8 +18,9 @@ import shutil
 import urllib.parse
 import urllib.request
 import logging
-import subprocess
 import zipfile
+
+from o3de import github_utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -165,31 +166,15 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def get_file_uri_from_git_api(parsed_uri):
+def is_git_provider_uri(parsed_uri) -> tuple:
     """
-    Uses known git APIs to det a direct link to a file
-    :param parsed_uri: git uri with file appended
-    :return: direct link uri
+    Returns a tuple of whether this is a git provider and functions to get a file uri and sync a repository
+    :param parsed_uri: uniform resource identifier of a possible GitHub repository
+    :return: Tuple 0 - bool, true if parsed_uri is a git provider, 1 - function to get a download link to a specific file, 2 - function to sync repository
     """
-    if 'github.com' in parsed_uri.netloc:
-        components = parsed_uri.path.split('/')
-        components = [ele for ele in components if ele.strip()]
-
-        if len(components) < 3:
-            return parsed_uri
-
-        user = components[0]
-        repository = components[1].replace('.git','')
-        filepath = '/'.join(components[2:len(components)])
-        api_url = f'http://api.github.com/repos/{user}/{repository}/contents/{filepath}'
-
-        with urllib.request.urlopen(api_url) as url:
-            json_data = json.loads(url.read().decode())
-            download_url = json_data['download_url']
-            parsed_uri = urllib.parse.urlparse(download_url)
-        return parsed_uri
-    else:
-        return parsed_uri
+    git_tuple = github_utils.is_github_provider_uri(parsed_uri)
+    if git_tuple[0]:
+        return git_tuple
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
@@ -274,21 +259,6 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
         shutil.copy(origin_file, download_path)
 
     return 0
-
-def clone_git_uri(uri, download_path: pathlib.Path) -> int:
-    """
-    :param uri: uniform resource identifier
-    :param download_path: location path on disk to download file
-    """
-    params = ["git", "clone", uri, download_path.as_posix()]
-    try:
-        with subprocess.Popen(params, stdout=subprocess.PIPE) as proc:
-            print(proc.stdout.read())
-    except Exception as e:
-        logger.error(str(e))
-        return 1
-
-    return proc.returncode
 
 def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """

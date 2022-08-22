@@ -111,16 +111,17 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     origin_uri = downloadable_object_data['origin_uri']
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
+    if not dest_path:
+        dest_path = manifest.get_registered(default_folder=default_folder_name)
+        dest_path = pathlib.Path(dest_path).resolve()
+        dest_path = dest_path / object_name
+    else:
+        dest_path = pathlib.Path(dest_path).resolve()
+
     # If we have a git link then we should clone to the given download path here otherwise download and extract the zip
-    
-    if 'github.com' in parsed_uri.netloc:
-        if not dest_path:
-            dest_path = manifest.get_registered(default_folder=default_folder_name)
-            dest_path = pathlib.Path(dest_path).resolve()
-            dest_path = dest_path / object_name
-        else:
-            dest_path = pathlib.Path(dest_path).resolve()
-        clone_result = utils.clone_git_uri(parsed_uri.geturl(), dest_path)
+    git_tuple = utils.is_git_provider_uri(parsed_uri)
+    if git_tuple[0]:
+        clone_result = git_tuple[2](parsed_uri.geturl(), dest_path)
         if clone_result:
             logger.error(f'Could not clone {parsed_uri.geturl()}')
             return 1
@@ -133,13 +134,6 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
             logger.error(f'Could not validate zip, deleting {download_zip_path}')
             os.unlink(download_zip_path)
             return 1
-
-        if not dest_path:
-            dest_path = manifest.get_registered(default_folder=default_folder_name)
-            dest_path = pathlib.Path(dest_path).resolve()
-            dest_path = dest_path / object_name
-        else:
-            dest_path = pathlib.Path(dest_path).resolve()
 
         if not dest_path:
             logger.error(f'Destination path cannot be empty.')

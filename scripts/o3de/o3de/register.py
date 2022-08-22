@@ -493,7 +493,9 @@ def register_repo(json_data: dict,
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    parsed_uri = utils.get_file_uri_from_git_api(parsed_uri)
+    git_tuple = utils.is_git_provider_uri(parsed_uri)
+    if git_tuple[0]:
+        parsed_uri = git_tuple[1](parsed_uri)
 
     result = utils.download_file(parsed_uri, cache_file, True)
     if result == 0:
