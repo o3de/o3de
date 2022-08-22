@@ -453,7 +453,7 @@ namespace ShaderManagementConsole
         {
             AZ_Error(
                 "ShaderManagementConsoleDocument", false, "Failed to create material instance from asset: %s",
-                materialAsset.ToFixedString().c_str());
+                materialAsset.ToString<AZStd::string>().c_str());
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 
