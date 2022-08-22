@@ -20,8 +20,8 @@
 #include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
-#include "TerrainLayerSpawnerNode.h"
 #include <Editor/Core/GraphContext.h>
+#include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
 
 #include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 

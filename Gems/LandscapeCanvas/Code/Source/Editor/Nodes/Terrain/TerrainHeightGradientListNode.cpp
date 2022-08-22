@@ -18,8 +18,8 @@
 #include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
-#include "TerrainHeightGradientListNode.h"
 #include <Editor/Core/GraphContext.h>
+#include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
 
 namespace LandscapeCanvas
 {
