@@ -799,6 +799,8 @@ namespace GradientSignal
 
     bool ImageGradientComponent::ModificationBufferIsActive() const
     {
+        // We're currently using the modification buffer if the modification buffer has data in it and
+        // our cached imageData pointer is pointing into the modification buffer instead of into an image asset.
         return (m_modifiedImageData.data() != nullptr) &&
             (reinterpret_cast<const void*>(m_imageData.data()) == reinterpret_cast<const void*>(m_modifiedImageData.data()));
     }
