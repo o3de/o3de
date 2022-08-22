@@ -30,11 +30,9 @@ namespace AzToolsFramework
         float GetRadius() const override;
         float GetIntensity() const override;
         float GetOpacity() const override;
-
         void SetRadius(float radius) override;
         void SetIntensity(float intensity) override;
         void SetOpacity(float opacity) override;
-
         void GetValue(const AZ::Vector3& point, float& intensity, float& opacity, bool& isValid) override;
         void GetValues(
             AZStd::span<const AZ::Vector3> points,
@@ -46,19 +44,26 @@ namespace AzToolsFramework
     private:
         bool HandleMouseEvent(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
+        //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
+        //! True if we're currently painting, false if not.
         bool m_isPainting = false;
 
-        // Keep track of the previous location we painted so that we can generate a continuous stroke.
+        //! Tracks the previous location we painted so that we can generate a continuous brush stroke.
         AZ::Vector3 m_previousCenter;
+        //! Determines if we need to generate a brush stroke yet or not.
         bool m_isFirstPaintedPoint = true;
 
+        //! Current center of the paintbrush in world space.
         AZ::Vector3 m_center;
-        float m_radius = 2.0f;
 
+        //! Paintbrush radius
+        float m_radius = 5.0f;
+        //! Paintbrush intensity (black to white)
         float m_intensity = 1.0f;
-        float m_opacity = 1.0f;
+        //! Paintbrush opacity (transparent to opaque)
+        float m_opacity = 0.5f;
 
         AZ::u32 OnIntensityChange();
         AZ::u32 OnOpacityChange();

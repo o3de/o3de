@@ -236,7 +236,6 @@ namespace GradientSignal
         RefreshCreationSelectionChoice();
 
         m_paintBrush.Activate(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
-        AzToolsFramework::PaintBrushComponentNotificationBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
@@ -247,7 +246,6 @@ namespace GradientSignal
     {
         m_componentModeDelegate.Disconnect();
 
-        AzToolsFramework::PaintBrushComponentNotificationBus::Handler::BusDisconnect();
         m_paintBrush.Deactivate();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;

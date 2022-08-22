@@ -14,7 +14,6 @@
 #include <GradientSignal/Editor/GradientPreviewer.h>
 
 #include <AzToolsFramework/Brushes/PaintBrush.h>
-#include <AzToolsFramework/Brushes/PaintBrushComponentNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
@@ -30,7 +29,6 @@ namespace GradientSignal
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
         , private EditorImageGradientRequestBus::Handler
-        , private AzToolsFramework::PaintBrushComponentNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(

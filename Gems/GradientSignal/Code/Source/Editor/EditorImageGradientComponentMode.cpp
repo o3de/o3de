@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/TransformBus.h>
 
-#include <AzToolsFramework/Brushes/PaintBrushComponentNotificationBus.h>
 #include <AzToolsFramework/Brushes/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/BrushManipulator.h>
@@ -29,6 +28,12 @@ namespace GradientSignal
 {
     // Increase / decrease paintbrush radius amount in meters.
     static constexpr float RadiusAdjustAmount = 0.25f;
+
+    // Increase / decrease paintbrush intensity amount.
+    static constexpr float IntensityAdjustAmount = 0.025f;
+
+    // Increase / decrease paintbrush opacity amount.
+    static constexpr float OpacityAdjustAmount = 0.025f;
 
     static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
     static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
@@ -68,21 +73,6 @@ namespace GradientSignal
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()
     {
-        auto AdjustPaintBrushRadius = [](const AZ::EntityComponentIdPair& entityComponentIdPair, float radiusDelta)
-        {
-            float radius = 0.0f;
-            AzToolsFramework::PaintBrushRequestBus::EventResult(
-                radius, entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::GetRadius);
-
-            radius += radiusDelta;
-
-            AzToolsFramework::PaintBrushRequestBus::Event(
-                entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, radius);
-
-            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-        };
-
         return {
             AzToolsFramework::ActionOverride()
                 .SetUri(PaintbrushIncreaseRadius)
@@ -91,9 +81,9 @@ namespace GradientSignal
                 .SetTip(PaintbrushIncreaseRadiusDesc)
                 .SetEntityComponentIdPair(GetEntityComponentIdPair())
                 .SetCallback(
-                    [AdjustPaintBrushRadius, entityComponentIdPair = GetEntityComponentIdPair()]()
+                    [this]()
                     {
-                        AdjustPaintBrushRadius(entityComponentIdPair, RadiusAdjustAmount);
+                        AdjustRadius(RadiusAdjustAmount);
                     }),
             AzToolsFramework::ActionOverride()
                 .SetUri(PaintbrushDecreaseRadius)
@@ -102,9 +92,9 @@ namespace GradientSignal
                 .SetTip(PaintbrushDecreaseRadiusDesc)
                 .SetEntityComponentIdPair(GetEntityComponentIdPair())
                 .SetCallback(
-                    [AdjustPaintBrushRadius, entityComponentIdPair = GetEntityComponentIdPair()]()
+                    [this]()
                     {
-                        AdjustPaintBrushRadius(entityComponentIdPair, -RadiusAdjustAmount);
+                        AdjustRadius(-RadiusAdjustAmount);
                     }),
         };
     }
@@ -191,6 +181,51 @@ namespace GradientSignal
 
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, dirtyArea);
+    }
+
+    void EditorImageGradientComponentMode::AdjustRadius(float radiusDelta)
+    {
+        float radius = 0.0f;
+        AzToolsFramework::PaintBrushRequestBus::EventResult(
+            radius, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetRadius);
+
+        radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, radius);
+
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
+
+    void EditorImageGradientComponentMode::AdjustIntensity(float intensityDelta)
+    {
+        float intensity = 0.0f;
+        AzToolsFramework::PaintBrushRequestBus::EventResult(
+            intensity, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetIntensity);
+
+        intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetIntensity, intensity);
+
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
+
+    void EditorImageGradientComponentMode::AdjustOpacity(float opacityDelta)
+    {
+        float opacity = 0.0f;
+        AzToolsFramework::PaintBrushRequestBus::EventResult(
+            opacity, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetOpacity);
+
+        opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetOpacity, opacity);
+
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
 } // namespace GradientSignal

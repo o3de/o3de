@@ -46,12 +46,12 @@ namespace AzToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrush::m_intensity, "Intensity", "Intensity of the paint brush.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrush::OnIntensityChange)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &PaintBrush::m_opacity, "Opacity", "Opacity of the paint brush.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.025f)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &PaintBrush::OnOpacityChange);
             }
         }
@@ -121,14 +121,19 @@ namespace AzToolsFramework
     {
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
-            return HandleMouseEvent(mouseInteraction);
+            HandleMouseEvent(mouseInteraction);
+
+            // For move events, always return false so that mouse movements with right clicks can still affect the Editor camera.
+            return false;
         }
         else if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Down)
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                m_isPainting = true;
+                // Track when we've started painting so that we can properly handle continuous brush strokes between mouse events.
                 m_isFirstPaintedPoint = true;
+
+                m_isPainting = true;
                 HandleMouseEvent(mouseInteraction);
                 return true;
             }
@@ -152,39 +157,42 @@ namespace AzToolsFramework
             mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates,
             EditorPickRayLength);
 
-        if (worldSurfacePosition.has_value())
+        // If the mouse isn't colliding with anything, don't move the paintbrush, just leave it at its last location.
+        if (!worldSurfacePosition.has_value())
         {
-            m_center = worldSurfacePosition.value();
-            AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
-            PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
-
-            if (m_isPainting)
-            {
-                // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
-                // that covers everything in-between.
-                if (m_isFirstPaintedPoint)
-                {
-                    m_previousCenter = m_center;
-                    m_isFirstPaintedPoint = false;
-                }
-
-                // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
-                // points that fall in-between as well.
-                AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, m_radius);
-                strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, m_radius));
-
-                PaintBrushNotificationBus::Event(
-                    m_ownerEntityComponentId,
-                    &PaintBrushNotificationBus::Events::OnPaint,
-                    strokeRegion);
-
-                m_previousCenter = m_center;
-            }
-
-            return true;
+            return false;
         }
 
-        return false;
+        // We found a collision point, so move the paintbrush.
+        m_center = worldSurfacePosition.value();
+        AZ::Transform space = AZ::Transform::CreateTranslation(m_center);
+        PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnWorldSpaceChanged, space);
+
+        // If we're currently painting, send off a paint notification.
+        if (m_isPainting)
+        {
+            // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
+            // that covers everything in-between.
+            if (m_isFirstPaintedPoint)
+            {
+                m_previousCenter = m_center;
+                m_isFirstPaintedPoint = false;
+            }
+
+            // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke
+            // points that fall in-between as well.
+            AZ::Aabb strokeRegion = AZ::Aabb::CreateCenterRadius(m_center, m_radius);
+            strokeRegion.AddAabb(AZ::Aabb::CreateCenterRadius(m_previousCenter, m_radius));
+
+            PaintBrushNotificationBus::Event(
+                m_ownerEntityComponentId,
+                &PaintBrushNotificationBus::Events::OnPaint,
+                strokeRegion);
+
+            m_previousCenter = m_center;
+        }
+
+        return true;
     }
 
     void PaintBrush::GetValue(const AZ::Vector3& point, float& intensity, float& opacity, bool& isValid)
