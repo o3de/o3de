@@ -6,9 +6,7 @@
 #
 #
 
-from argparse import Action
 from enum import Enum
-from gzip import READ
 from tiaf_logger import get_logger
 from abc import ABC, abstractmethod
 logger = get_logger(__file__)
