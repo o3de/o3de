@@ -21,27 +21,6 @@
 
 namespace
 {
-    class DebugAllocator
-    {
-    public:
-        using pointer = void*;
-        using size_type = AZStd::size_t;
-        using difference_type = AZStd::ptrdiff_t;
-
-        AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
-        {
-            return AZ_OS_MALLOC(byteSize, alignment);
-        }
-        AZ_FORCE_INLINE size_type resize(pointer, size_type)
-        {
-            return 0;
-        }
-        AZ_FORCE_INLINE void deallocate(pointer ptr, size_type, size_type)
-        {
-            AZ_OS_FREE(ptr);
-        }
-    };
-
     #pragma pack(push, 1)
     struct alignas(1) AllocatorOperation
     {

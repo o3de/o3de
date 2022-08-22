@@ -79,35 +79,6 @@ namespace AZ
         };
 
         /**
-         * Memory magic value 16 bit. Used to detect correctness of memory.
-         */
-        struct Magic16
-        {
-            static const u16 m_defValue = 0xfeed;
-            AZ_FORCE_INLINE Magic16()  { m_value = (m_defValue ^ (u16)((size_t) this)); }
-            AZ_FORCE_INLINE ~Magic16() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue^ (u16)((size_t) this)); }
-        private:
-            u16     m_value;
-        };
-
-        /**
-        * Memory magic value 32 bit. Used to detect correctness of memory.
-        */
-        struct Magic32
-        {
-            static const u32 m_defValue = 0xfeedf00d;
-            AZ_FORCE_INLINE Magic32()
-            {
-                m_value = (m_defValue ^ (u32)((size_t) this));
-            }
-            AZ_FORCE_INLINE ~Magic32() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue ^ (u32)((size_t) this)); }
-        private:
-            u32     m_value;
-        };
-
-        /**
         * Container for debug allocation records. This
         * records can be thread safe or not depending on your
         * needs. When you set the thread safe flag all

@@ -8,6 +8,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/HphaAllocator.h>
+#include <AzCore/Memory/AllocatorDebug.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/OSAllocator.h> // required by certain platforms
@@ -544,31 +545,10 @@ namespace AZ
             }
         };
 
-        class DebugAllocator
-        {
-        public:
-            typedef void* pointer;
-            typedef AZStd::size_t size_type;
-            typedef AZStd::ptrdiff_t difference_type;
-
-            AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
-            {
-                return AZ_OS_MALLOC(byteSize, alignment);
-            }
-            AZ_FORCE_INLINE size_type resize(pointer, size_type)
-            {
-                return 0;
-            }
-            AZ_FORCE_INLINE void deallocate(pointer ptr, size_type, size_type)
-            {
-                AZ_OS_FREE(ptr);
-            }
-        };
-
         // record map that keeps all debug records in a set, sorted by memory address of the allocation
-        class debug_record_map : public AZStd::set<debug_record, AZStd::less<debug_record>, DebugAllocator>
+        class debug_record_map : public AZStd::set<debug_record, AZStd::less<debug_record>, Debug::DebugAllocator>
         {
-            typedef AZStd::set<debug_record, AZStd::less<debug_record>, DebugAllocator> base;
+            typedef AZStd::set<debug_record, AZStd::less<debug_record>, Debug::DebugAllocator> base;
 
             static void memory_fill(void* ptr, size_t size);
 
