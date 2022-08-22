@@ -618,6 +618,7 @@ namespace AzToolsFramework
 
     void PropertyAssetCtrl::ClearAssetInternal()
     {
+        ClearErrorButton();
         SetCurrentAssetHint(AZStd::string());
         SetSelectedAssetID(AZ::Data::AssetId());
         // To clear the asset we only need to refresh the values.
@@ -1074,6 +1075,17 @@ namespace AzToolsFramework
                             ClearErrorButton();
                         }
                         break;
+                    }
+                }
+                else
+                {
+                    // If there aren't any jobs and the asset ID is valid, the asset must have been removed.
+                    if (assetID.IsValid())
+                    {
+                        UpdateErrorButtonWithMessage(AZStd::string::format(
+                            "Asset has been removed.\n\nID: %s\nHint:%s",
+                            assetID.ToString<AZStd::string>().c_str(),
+                            GetCurrentAssetHint().c_str()));
                     }
                 }
 

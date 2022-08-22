@@ -472,13 +472,15 @@ def register_restricted_path(json_data: dict,
 def register_repo(json_data: dict,
                   repo_uri: str,
                   remove: bool = False) -> int:
-    if not repo_uri:
-        logger.error(f'Repo URI cannot be empty.')
+    manifest_uri = repo.get_repo_manifest_uri(repo_uri)
+
+    if not manifest_uri:
         return 1
 
-    url = f'{repo_uri}/repo.json'
-    parsed_uri = urllib.parse.urlparse(url)
+    parsed_uri = urllib.parse.urlparse(manifest_uri)
 
+    # We always remove the repo if it is found, if it is a valid repo and remove is not set
+    # then it will be added again by the call to process_add_o3de_repo
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
@@ -490,17 +492,19 @@ def register_repo(json_data: dict,
     if remove:
         logger.warning(f'Removing repo uri {repo_uri}.')
         return 0
-    repo_sha256 = hashlib.sha256(url.encode())
-    cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = utils.download_file(parsed_uri, cache_file, True)
-    if result == 0:
-        json_data.setdefault('repos', []).insert(0, repo_uri)
+    cache_file = repo.download_repo_manifest(manifest_uri)
 
-    repo_set = set()
-    result = repo.process_add_o3de_repo(cache_file, repo_set)
+    if cache_file:
+        repo_set = set()
+        result = repo.process_add_o3de_repo(cache_file, repo_set)
 
-    return result
+        if result == 0:
+            json_data.setdefault('repos', []).insert(0, repo_uri)
+
+        return result
+
+    return 1
 
 
 def register_default_o3de_object_folder(json_data: dict,

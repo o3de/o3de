@@ -246,7 +246,7 @@ namespace TestImpact
         AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
         AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
     {
-        TestEngineJobMap<TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
+        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
         auto [result, runnerJobs] = testRunner->RunTests(
             jobInfos,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,

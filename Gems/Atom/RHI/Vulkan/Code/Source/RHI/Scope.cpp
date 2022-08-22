@@ -23,7 +23,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/Framebuffer.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/BufferView.h>
 
 namespace AZ
@@ -321,17 +321,9 @@ namespace AZ
             for (const auto* scopeAttachment : attachments)
             {
                 const auto& bindingDescriptor = scopeAttachment->GetDescriptor();
-                const bool isClearAction = bindingDescriptor.m_loadStoreAction.m_loadAction == RHI::AttachmentLoadAction::Clear;
-                const bool isClearActionStencil = bindingDescriptor.m_loadStoreAction.m_loadActionStencil == RHI::AttachmentLoadAction::Clear;
-                bool isClear = isClearAction || isClearActionStencil;
-
-                for (const RHI::ScopeAttachmentUsageAndAccess& usageAndAccess : scopeAttachment->GetUsageAndAccess())
+                if (HasExplicitClear(*scopeAttachment, bindingDescriptor))
                 {
-                    if (usageAndAccess.m_usage == RHI::ScopeAttachmentUsage::Shader && isClear)
-                    {
-                        clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
-                        break;
-                    }
+                    clearRequests.push_back({ bindingDescriptor.m_loadStoreAction.m_clearValue, scopeAttachment->GetResourceView() });
                 }
             }
         }

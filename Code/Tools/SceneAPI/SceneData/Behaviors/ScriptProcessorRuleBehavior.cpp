@@ -141,7 +141,7 @@ namespace AZ::SceneAPI::Behaviors
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<ScriptBuildingNotificationBus>("ScriptBuildingNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::Script::Attributes::Module, "scene")
                     ->Handler<ScriptBuildingNotificationBusHandler>(&ScriptBuildingNotificationBusHandler::Create, &ScriptBuildingNotificationBusHandler::Destroy)
