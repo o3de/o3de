@@ -99,6 +99,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto OnChanged = CallbackAttributeDefinition<void(const Dom::Value&, ValueChangeType)>("OnChanged");
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
+        static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead append
         //! to the last column in the layout. Useful for things like the "add container entry" button.
