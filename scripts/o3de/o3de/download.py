@@ -119,9 +119,9 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         dest_path = pathlib.Path(dest_path).resolve()
 
     # If we have a git link then we should clone to the given download path here otherwise download and extract the zip
-    git_tuple = utils.is_git_provider_uri(parsed_uri)
-    if git_tuple[0]:
-        clone_result = git_tuple[2](parsed_uri.geturl(), dest_path)
+    git_provider = utils.get_git_provider(parsed_uri)
+    if git_provider:
+        clone_result = git_provider.clone_from_git(parsed_uri.geturl(), dest_path)
         if clone_result:
             logger.error(f'Could not clone {parsed_uri.geturl()}')
             return 1

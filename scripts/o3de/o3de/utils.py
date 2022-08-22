@@ -20,7 +20,7 @@ import urllib.request
 import logging
 import zipfile
 
-from o3de import github_utils
+from o3de import gitproviderinterface, github_utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -58,7 +58,6 @@ class VerbosityAction(argparse.Action):
             log.setLevel(logging.DEBUG)
         elif count == 1:
             log.setLevel(logging.INFO)
-
 
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
@@ -166,17 +165,17 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def is_git_provider_uri(parsed_uri) -> tuple:
+def get_git_provider(parsed_uri):
     """
-    Returns a tuple of whether this is a git provider and functions to get a file uri and sync a repository
-    :param parsed_uri: uniform resource identifier of a possible GitHub repository
-    :return: Tuple 0 - bool, true if parsed_uri is a git provider, 1 - function to get a download link to a specific file, 2 - function to sync repository
+    Returns a git provider if one exists given the passed uri
+    :param parsed_uri: uniform resource identifier of a possible git repository
+    :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
-    git_tuple = github_utils.is_github_provider_uri(parsed_uri)
-    if git_tuple[0]:
-        return git_tuple
+    git_provider = github_utils.get_github_provider(parsed_uri)
+    if git_provider:
+        return git_provider
 
-    return (False, None, None)
+    return None
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """

@@ -1,0 +1,22 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+"""
+This file contains the interface for the Git providers
+"""
+
+import abc
+import pathlib
+
+class GitProviderInterface(abc.ABC):
+    @abc.abstractmethod
+    def get_specific_file_uri(parsed_uri):
+        pass
+
+    @abc.abstractmethod
+    def clone_from_git(uri, download_path: pathlib.Path) -> int:
+        pass
