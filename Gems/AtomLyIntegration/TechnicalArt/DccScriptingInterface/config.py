@@ -467,6 +467,10 @@ def init_o3de_core(engine_path=_O3DE_DEV,
                         #settings_files=['settings.json',
                                         #'.secrets.json'])
 
+    # for validation of this core config module
+    # as we may layer and fold config's together.
+    os.environ['DYNACONF_DCCSI_CONFIG_CORE'] = "True"
+
     # global settings
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
@@ -519,9 +523,19 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # There are numerous ways to build, e.g. project-centric or engine-centric
 
     # when using the installer with pre-built engine (CMakeCache doesn't exist)
-    _PATH_O3DE_BUILD = Path(azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
-                                                                  'CMakeCache.txt'))
-    os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
+    # conundrum, if not built yet this retrusn None and no fallback
+    # suggestion, we should default to a known good (installer bin)
+    # that should work for majority of end users but maybe not devs
+    # need to trap error for devs ... egine needs to be built
+    try:
+        # if this fails, can't find a build / bin path
+        _PATH_O3DE_BUILD = azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
+                                                                'CMakeCache.txt')
+        _PATH_O3DE_BUILD = Path(_PATH_O3DE_BUILD)
+        os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
+    except EnvironmentError as e:
+        _LOGGER.warning(f'No o3de build path, PATH_O3DE_BUILD is: {_PATH_O3DE_BUILD}')
+        _LOGGER.error(f'error: {e}')
 
     _PATH_O3DE_BIN = Path(STR_PATH_O3DE_BIN.format(_PATH_O3DE_BUILD))
     os.environ["DYNACONF_PATH_O3DE_BIN"] = str(_PATH_O3DE_BIN.as_posix())

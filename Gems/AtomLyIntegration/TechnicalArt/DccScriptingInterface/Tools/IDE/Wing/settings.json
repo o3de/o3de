@@ -1,7 +1,7 @@
 {
 	"LOAD_DOTENV": true,
 	"COMPANY": "Amazon",
-	"DCCSI_TOOLS_IDE_WING_SETTINGS": true,
+	"DCCSI_CONFIG_IDE_WING": true,
 	"DCCSI_GDEBUG": "False",
 	"DCCSI_DEV_MODE": "False",
 	"DCCSI_GDEBUGGER": "WING",

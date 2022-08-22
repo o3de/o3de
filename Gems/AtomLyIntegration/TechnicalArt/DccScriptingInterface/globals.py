@@ -63,6 +63,17 @@ from azpy.env_bool import env_bool
 # this adds additional debug behaviour and inspection, more verbose
 DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 
+# suggestion, it might be an improvement to pack all of these into
+# a single map/dict using a dot-notation Box so that you could do this:
+#
+# from DccScriptingInterface.globals import global_state
+# if global_state.DCCSI_DEV_MODE: print('foo')
+#
+# instead of this:
+#
+# from DccScriptingInterface.globals import *
+# if DCCSI_DEV_MODE: print('foo')
+
 # retreive the dccsi global developer mode flag
 # enables early auto-debugger attachment
 DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
