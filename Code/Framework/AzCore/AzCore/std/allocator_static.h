@@ -32,7 +32,6 @@ namespace AZStd
         using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::true_type;
 
         AZ_FORCE_INLINE static_buffer_allocator(const char* name = "AZStd::static_buffer_allocator")
             : m_name(name)
@@ -168,7 +167,6 @@ namespace AZStd
         using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE static_pool_allocator(const char* name = "AZStd::static_pool_allocator")
             : m_name(name)

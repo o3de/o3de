@@ -27,7 +27,6 @@ namespace
         using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::false_type; ///< Regular allocators should not leak.
 
         AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
         {

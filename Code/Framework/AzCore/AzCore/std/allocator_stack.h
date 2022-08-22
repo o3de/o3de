@@ -48,7 +48,6 @@ namespace AZStd
         using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::true_type;
 
         AZ_FORCE_INLINE stack_allocator(void* data, size_t size, const char* name = "AZStd::stack_allocator")
             : m_name(name)

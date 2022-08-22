@@ -550,7 +550,6 @@ namespace AZ
             typedef void* pointer;
             typedef AZStd::size_t size_type;
             typedef AZStd::ptrdiff_t difference_type;
-            typedef AZStd::false_type allow_memory_leaks; ///< Regular allocators should not leak.
 
             AZ_FORCE_INLINE pointer allocate(size_t byteSize, size_t alignment, int = 0)
             {

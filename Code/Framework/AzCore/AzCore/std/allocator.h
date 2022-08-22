@@ -32,9 +32,6 @@ namespace AZStd
      *  typedef <impl defined>  size_type;
      *  // Pointer difference type, usually AZStd::ptrdiff_t.
      *  typedef <impl defined>  difference_type;
-     *  // Allowing memory leaks will instruct allocator's users to never
-     *  // even bother to call deallocate. This can result in a faster code. Usually is false_type.
-     *  typedef true_type (or false_type) allow_memory_leaks;
      *
      *  allocator(const char* name = "AZSTD Allocator");
      *  allocator(const allocator& rhs);
@@ -58,11 +55,6 @@ namespace AZStd
      * bool operator!=(const allocator& a, const allocator& b);
      * \endcode
      *
-     * \attention allow_memory_leaks is important to be set to true for temporary memory buffers like: stack allocators, etc.
-     * This will allow AZStd containers to have automatic "leak_and_reset" behavior, which will allow fast
-     * destroy without memory deallocation. This is especially important for temporary containers
-     * that make multiple allocations (like hash_maps, lists, etc.).
-     *
      * \li \ref allocator "Default Allocator"
      * \li \ref no_default_allocator "Invalid Default Allocator"
      * \li \ref static_buffer_allocator "Static Buffer Allocator"
@@ -83,7 +75,6 @@ namespace AZStd
         using pointer = void *;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE allocator(const char* name = "AZStd::allocator")
             : m_name(name) {}
@@ -143,7 +134,6 @@ namespace AZStd
         using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
-        using allow_memory_leaks = AZStd::false_type;
 
         AZ_FORCE_INLINE no_default_allocator(const char* name = "Invalid allocator") { (void)name; }
         AZ_FORCE_INLINE no_default_allocator(const allocator&) {}

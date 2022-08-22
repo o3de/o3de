@@ -424,10 +424,9 @@ namespace UnitTest
 
         int_vector10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_VECTOR(int_vector10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
-
-        myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
+        // now we move the allocated size from menager1 to manager2
+        AZ_TEST_ASSERT(myMemoryManager2.get_allocated_size() == 100 * sizeof(int));
+        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == 0); // setting the allocator moved the allocation from manage1 to manager2, freeing manager1
 
         // swap with different allocators
         IntVectorMyAllocator int_vector11(50, 25, allocator1); // create copy in manager1

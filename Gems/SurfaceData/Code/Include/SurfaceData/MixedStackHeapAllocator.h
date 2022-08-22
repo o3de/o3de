@@ -51,7 +51,6 @@ namespace SurfaceData
         typedef void* pointer;
         typedef AZStd::size_t size_type;
         typedef AZStd::ptrdiff_t difference_type;
-        typedef AZStd::false_type allow_memory_leaks;
 
         mixed_stack_heap_allocator(const char* name = "AZStd::mixed_stack_heap_allocator")
             : m_name(name)

@@ -24,7 +24,6 @@ namespace AZStd
         using pointer = typename Allocator::pointer;
         using size_type = typename Allocator::size_type;
         using difference_type = typename Allocator::difference_type;
-        using allow_memory_leaks = typename Allocator::allow_memory_leaks;
         using allocator_pointer = Allocator *;
         using allocator_reference = Allocator &;
 

@@ -214,7 +214,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory if we need to.
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                    deallocate_memory(0);
                 }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 swap_all((this_type&)rhs);
@@ -335,7 +335,7 @@ namespace AZStd
                 // Call destructor if we need to.
                 Internal::destroy<pointer>::range(m_start, m_last);
                 // Free memory if we need to.
-                deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                deallocate_memory(0);
             }
         }
 
@@ -376,7 +376,7 @@ namespace AZStd
                     // Destroy current vector.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory if we need to.
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(expandedSize);
                 }
 
                 // allocate and copy new
@@ -407,7 +407,7 @@ namespace AZStd
                             // Destroy the rest.
                             Internal::destroy<pointer>::range(m_start, m_last);
                             // Free memory if we need to.
-                            deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                            deallocate_memory(expandedSize);
 
                             m_start = 0;
                             m_end = 0;
@@ -461,7 +461,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(expandedSize);
                 }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -738,7 +738,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(expandedSize);
                 }
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
                 orphan_all();
@@ -965,7 +965,7 @@ namespace AZStd
                     // destroy objects
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), 0);
+                    deallocate_memory(0);
 
                     m_start = newStart;
                     m_last  = newLast;
@@ -1089,7 +1089,7 @@ namespace AZStd
                     // Call destructor if we need to.
                     Internal::destroy<pointer>::range(m_start, m_last);
                     // Free memory (if needed).
-                    deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                    deallocate_memory(expandedSize);
                 }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -1105,11 +1105,7 @@ namespace AZStd
     private:
 
         //#pragma region Deallocate memory specializations
-        AZ_FORCE_INLINE void    deallocate_memory(const true_type& /* allocator::allow_memory_leaks */, size_type /*expandedSize*/)
-        {
-        }
-
-        AZ_FORCE_INLINE void    deallocate_memory(const false_type& /* !allocator::allow_memory_leaks */, size_type expandedSize)
+        AZ_FORCE_INLINE void    deallocate_memory(size_type expandedSize)
         {
             size_type byteSize = (expandedSize == 0) ? (sizeof(node_type) * (m_end - m_start)) : expandedSize;
             m_allocator.deallocate(m_start, byteSize, alignof(node_type));
@@ -1210,7 +1206,7 @@ namespace AZStd
                         // Call destructor if we need to.
                         Internal::destroy<pointer>::range(m_start, m_last);
                         // Free memory (if needed).
-                        deallocate_memory(typename allocator_type::allow_memory_leaks(), expandedSize);
+                        deallocate_memory(expandedSize);
                     }
 
 #ifdef AZSTD_HAS_CHECKED_ITERATORS

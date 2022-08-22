@@ -17,8 +17,7 @@
     using difference_type = AZStd::ptrdiff_t; \
     using align_type = AZStd::size_t; \
     using propagate_on_container_copy_assignment = AZStd::true_type; \
-    using propagate_on_container_move_assignment = AZStd::true_type; \
-    using allow_memory_leaks = AZStd::false_type;
+    using propagate_on_container_move_assignment = AZStd::true_type;
 
 #define AZ_ALLOCATOR_DEFAULT_TRAITS AZ_ALLOCATOR_TRAITS(void)
 

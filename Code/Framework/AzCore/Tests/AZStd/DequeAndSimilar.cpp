@@ -233,10 +233,12 @@ namespace UnitTest
         // allocate again from myMemoryManager1
         int_deque10.resize(100, 15);
 
+        const size_t allocator1AllocatedSize = myMemoryManager1.get_allocated_size();
         int_deque10.set_allocator(allocator2);
         AZ_TEST_VALIDATE_DEQUE(int_deque10, 100);
-        // now we move the allocated size from menager1 to manager2 (without freeing menager1)
-        AZ_TEST_ASSERT(myMemoryManager1.get_allocated_size() == myMemoryManager2.get_allocated_size());
+        // now we move the allocated size from manager1 to manager2
+        EXPECT_LE(myMemoryManager1.get_allocated_size(), allocator1AllocatedSize);
+        EXPECT_GE(myMemoryManager2.get_allocated_size(), 100 * sizeof(int));
 
         myMemoryManager1.reset(); // flush manager 1 again (int_vector10 is stored in manager 2)
 

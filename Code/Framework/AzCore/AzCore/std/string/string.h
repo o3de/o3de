@@ -176,7 +176,7 @@ namespace AZStd
         inline ~basic_string()
         {
             // destroy the string
-            deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
+            deallocate_memory(m_storage.first().GetData(), 0);
         }
 
         constexpr operator AZStd::basic_string_view<Element, Traits>() const
@@ -337,7 +337,7 @@ namespace AZStd
         {
             if (this != &rhs)
             {
-                deallocate_memory(m_storage.first().GetData(), 0, typename allocator_type::allow_memory_leaks());
+                deallocate_memory(m_storage.first().GetData(), 0);
 
                 m_storage.first().SetCapacity(rhs.capacity());
 
@@ -1337,7 +1337,7 @@ namespace AZStd
                     Traits::copy(newData, data, size() + 1);  // copy elements and terminator
 
                     // Free memory (if needed).
-                    deallocate_memory(data, 0, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, 0);
                     m_storage.second() = newAllocator;
                 }
                 else
@@ -1463,7 +1463,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, newSize);  // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, expandedSize);
 
                     Traits::assign(newData[newSize], Element());  // terminate
                     m_storage.first().SetCapacity(numElements);
@@ -1708,7 +1708,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, oldLength);    // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize, typename allocator_type::allow_memory_leaks());
+                    deallocate_memory(data, expandedSize);
 
                     Traits::assign(newData[oldLength], Element());  // terminate
                     m_storage.first().SetCapacity(newCapacity);
@@ -1739,10 +1739,7 @@ namespace AZStd
             return newSize <= capacity();
         }
 
-        inline void deallocate_memory(pointer, size_type, const true_type& /* allocator::allow_memory_leaks */)
-        {}
-
-        inline void deallocate_memory(pointer data, size_type expandedSize, const false_type& /* !allocator::allow_memory_leaks */)
+        inline void deallocate_memory(pointer data, size_type expandedSize)
         {
             if (!m_storage.first().ShortStringOptimizationActive())
             {
