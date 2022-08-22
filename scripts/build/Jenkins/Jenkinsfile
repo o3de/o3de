@@ -470,7 +470,7 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                 PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects || ver>nul", "Registering projects in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects")
                 PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems || ver>nul", "Registering gems in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems")
                 PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates || ver>nul", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates")
-                PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted || ver>nul", "Registering templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted")
+                PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted || ver>nul", "Registering restricted in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted")
                 PlatformSh(command, "Running ${platform} ${type}")
             }
         }
