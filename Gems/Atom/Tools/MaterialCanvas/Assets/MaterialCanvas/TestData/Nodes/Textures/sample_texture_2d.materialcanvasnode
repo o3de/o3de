@@ -6,6 +6,57 @@
         "id": "{C0ADB0F0-39DD-48D9-A4D2-58B40C76C285}",
         "category": "Texturing",
         "title": "Sample Texture 2D",
+        "settings": {
+            "materialInputs": [
+                "Texture2D NODEINPUTID_texture;",
+                "Sampler NODEINPUTID_sampler",
+                "{",
+                "    MaxAnisotropy = 16;",
+                "    AddressU = Wrap;",
+                "    AddressV = Wrap;",
+                "    AddressW = Wrap;",
+                "};"
+            ],
+            "instructions": [
+                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID_texture.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypes": [
+                    "string"
+                ]
+            },
+            {
+                "name": "inGroupName",
+                "displayName": "Group Name",
+                "description": "Group Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypes": [
+                    "image"
+                ]
+            }
+        ],
         "inputSlots": [
             {
                 "name": "inUV",
@@ -40,18 +91,8 @@
                 "supportedDataTypes": [
                     "color"
                 ],
-                "defaultValue": {
-                    "$type": "Color",
-                    "Value": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = 1.0;"
                     ]
                 }
             },
@@ -62,13 +103,9 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = 1.0;"
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.r;"
                     ]
                 }
             },
@@ -79,13 +116,9 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = 1.0;"
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.g;"
                     ]
                 }
             },
@@ -96,13 +129,9 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = 1.0;"
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.b;"
                     ]
                 }
             },
@@ -113,13 +142,9 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = 1.0;"
+                        "SLOTTYPE NODEID_SLOTNAME = NODEID_outColor.a;"
                     ]
                 }
             }

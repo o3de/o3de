@@ -8,6 +8,14 @@
         "title": "Image Input",
         "propertySlots": [
             {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypes": [
+                    "string"
+                ]
+            },
+            {
                 "name": "inGroupName",
                 "displayName": "Group Name",
                 "description": "Group Name",
@@ -15,14 +23,6 @@
                     "string"
                 ],
                 "supportsEditingOnNode": false
-            },
-            {
-                "name": "inName",
-                "displayName": "Name",
-                "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
             },
             {
                 "name": "inDescription",
@@ -41,7 +41,7 @@
                     "image"
                 ],
                 "settings": {
-                    "materialInput": {}
+                    "materialInputs": {}
                 }
             }
         ],

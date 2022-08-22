@@ -119,15 +119,15 @@ namespace MaterialCanvas
         // Convert a node name and numeric ID into a prefix for a File name or code symbol name
         AZStd::string GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const;
 
-        // Convert a material input property node name into a variable name that can be included in the material SRG and material type file
-        AZStd::string GetInputPropertyNameFromNode(GraphModel::ConstNodePtr inputNode) const;
+        // Convert a material input node name into a variable name that can be included in the material SRG and material type file
+        AZStd::string GetMaterialInputNameFromNode(GraphModel::ConstNodePtr inputNode) const;
 
-        // Convert a material input property node into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetInputPropertiesFromSlot(
+        // Convert a material input node into AZSL lines of variables that can be injected into the material SRG
+        AZStd::vector<AZStd::string> GetMaterialInputsFromSlot(
             GraphModel::ConstNodePtr node, const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig) const;
 
-        // Convert all material input property nodes into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetInputPropertiesFromNodes() const;
+        // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
+        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes() const;
 
         using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
 

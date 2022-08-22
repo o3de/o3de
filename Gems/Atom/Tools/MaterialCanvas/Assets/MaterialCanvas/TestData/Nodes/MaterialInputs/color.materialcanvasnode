@@ -8,6 +8,14 @@
         "title": "Color Input",
         "propertySlots": [
             {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Name",
+                "supportedDataTypes": [
+                    "string"
+                ]
+            },
+            {
                 "name": "inGroupName",
                 "displayName": "Group Name",
                 "description": "Group Name",
@@ -15,14 +23,6 @@
                     "string"
                 ],
                 "supportsEditingOnNode": false
-            },
-            {
-                "name": "inName",
-                "displayName": "Name",
-                "description": "Name",
-                "supportedDataTypes": [
-                    "string"
-                ]
             },
             {
                 "name": "inDescription",
@@ -41,8 +41,8 @@
                     "color"
                 ],
                 "settings": {
-                    "materialInput": [
-                        "SLOTTYPE PROPERTYNAME;"
+                    "materialInputs": [
+                        "SLOTTYPE NODEINPUTID;"
                     ]
                 }
             }
@@ -57,7 +57,7 @@
                 ],
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::PROPERTYNAME;"
+                        "SLOTTYPE NODEID_SLOTNAME = MaterialSrg::NODEINPUTID;"
                     ]
                 }
             }
