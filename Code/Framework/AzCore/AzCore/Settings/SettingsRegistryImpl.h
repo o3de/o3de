@@ -45,7 +45,7 @@ namespace AZ
         void SetContext(SerializeContext* context);
         void SetContext(JsonRegistrationContext* context);
         
-        Type GetType(AZStd::string_view path) const override;
+        SettingsType GetType(AZStd::string_view path) const override;
         bool Visit(Visitor& visitor, AZStd::string_view path) const override;
         bool Visit(const VisitorCallback& callback, AZStd::string_view path) const override;
         [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback callback) override;
