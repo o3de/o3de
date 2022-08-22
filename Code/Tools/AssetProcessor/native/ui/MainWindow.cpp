@@ -1746,7 +1746,7 @@ void MainWindow::JobStatusChanged([[maybe_unused]] AssetProcessor::JobEntry entr
     }
 
     // ignore the notification if it's not for the selected entry
-    if (cachedJobInfo->m_elementId.GetInputAssetName() != entry.m_databaseSourceName)
+    if (cachedJobInfo->m_elementId.GetSourceAssetReference() != entry.m_sourceAssetReference)
     {
         return;
     }
@@ -1836,21 +1836,7 @@ void MainWindow::ShowJobLogContextMenu(const QPoint& pos)
 
 static QString FindAbsoluteFilePath(const AssetProcessor::CachedJobInfo* cachedJobInfo)
 {
-    using namespace AzToolsFramework;
-
-    bool result = false;
-    AZ::Data::AssetInfo info;
-    AZStd::string watchFolder;
-    QByteArray assetNameUtf8 = cachedJobInfo->m_elementId.GetInputAssetName().toUtf8();
-    AssetSystemRequestBus::BroadcastResult(result, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetNameUtf8.constData(), info, watchFolder);
-    if (!result)
-    {
-        AZ_Error("AssetProvider", false, "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
-    }
-
-    return result
-        ? QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str())
-        : QString();
+    return cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().c_str();
 };
 
 static void SendShowInAssetBrowserResponse(const QString& filePath, ConnectionManager* connectionManager, unsigned int connectionId, QByteArray data)
@@ -1939,7 +1925,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
         ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-        ui->sourceAssetDetailsPanel->GoToSource(AZStd::string(item->m_elementId.GetInputAssetName().toUtf8().constData()));
+        ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetSourceAssetReference().RelativePath().c_str());
     });
 
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
@@ -2226,7 +2212,7 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
     {
         QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
         {
-            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceName, jobEntry.m_platform, jobEntry.m_jobKey);
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(SourceAssetReference(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str(), sourceItemData->m_sourceInfo.m_sourceName.c_str()), jobEntry.m_platform, jobEntry.m_jobKey);
             SelectJobAndMakeVisible(jobIndex);
         });
         jobAction->setToolTip(tr("Show this job in the Jobs tab."));

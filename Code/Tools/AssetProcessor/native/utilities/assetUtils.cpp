@@ -1175,7 +1175,8 @@ namespace AssetUtilities
 
     AZStd::string ComputeJobLogFileName(const AssetProcessor::JobEntry& jobEntry)
     {
-        return AZStd::string::format("%s-%u-%llu.log", jobEntry.m_databaseSourceName.toUtf8().constData(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
+        return AZStd::string::format(
+            "%s-%u-%llu.log", jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), jobEntry.GetHash(), jobEntry.m_jobRunKey);
     }
 
     bool CreateTempRootFolder(QString startFolder, QDir& tempRoot)
@@ -1399,10 +1400,10 @@ namespace AssetUtilities
     }
 
     AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(
-        AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(relativePath).c_str(), sources);
+        db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(sourceAsset.RelativePath()).c_str(), sources);
 
         if (sources.empty())
         {
@@ -1411,7 +1412,7 @@ namespace AssetUtilities
 
         if (sources.size() > 1)
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", relativePath.FixedMaxPathStringAsPosix().c_str());
+            AZ_Error(AssetProcessor::ConsoleChannel, false, "GetTopLevelSourceForProduct found multiple sources for product %s", sourceAsset.AbsolutePath().c_str());
             return {};
         }
 
@@ -1426,22 +1427,32 @@ namespace AssetUtilities
         return source;
     }
 
-    AZStd::vector<AZStd::string> GetAllIntermediateSources(
-        AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
     {
-        AZStd::vector<AZStd::string> sources;
+        AZStd::vector<AssetProcessor::SourceAssetReference> sources;
 
-        auto topLevelSource = GetTopLevelSourceForProduct(relativeSourcePath, db);
+        auto topLevelSource = GetTopLevelSourceForProduct(sourceAsset, db);
 
         if (!topLevelSource)
         {
-            AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
-            db->GetSourceBySourceName(relativeSourcePath.FixedMaxPathStringAsPosix().c_str(), source);
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer source;
+            db->GetSourcesBySourceNameScanFolderId(sourceAsset.RelativePath().c_str(), sourceAsset.ScanfolderId(), source);
 
-            topLevelSource = source;
+            AZ_Assert(
+                source.size() == 1,
+                "Should find exactly 1 source for the given path (%s) and scanfolder (%d).  Found %d",
+                sourceAsset.RelativePath().c_str(),
+                sourceAsset.ScanfolderId(),
+                source.size());
+
+            topLevelSource = source[0];
         }
 
-        sources.emplace_back(topLevelSource->m_sourceName);
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder;
+        db->GetScanFolderByScanFolderID(topLevelSource->m_scanFolderPK, scanFolder);
+
+        sources.emplace_back(scanFolder.m_scanFolder, topLevelSource->m_sourceName);
 
         AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
         db->GetProductsBySourceID(topLevelSource->m_sourceID, products);

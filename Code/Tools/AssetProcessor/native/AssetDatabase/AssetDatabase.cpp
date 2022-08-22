@@ -2599,10 +2599,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetJobInfoBySourceName(QString exactSourceName, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    bool AssetDatabaseConnection::GetJobInfoBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanfolderId, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QueryJobInfoBySourceName(exactSourceName.toUtf8().constData(),
+        bool succeeded = QueryJobInfoBySourceNameScanFolderId(exactSourceName.toUtf8().constData(), scanfolderId,
             [&](JobInfo& jobInfo)
         {
             found = true;

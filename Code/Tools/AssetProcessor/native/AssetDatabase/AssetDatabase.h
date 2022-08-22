@@ -148,7 +148,7 @@ namespace AssetProcessor
         bool GetJobInfoByJobID(AZ::s64 jobID, AzToolsFramework::AssetSystem::JobInfo& jobInfo);
         bool GetJobInfoByJobKey(AZStd::string jobKey, AzToolsFramework::AssetSystem::JobInfoContainer& container);
         bool GetJobInfoByJobRunKey(AZ::u64 jobRunKey, AzToolsFramework::AssetSystem::JobInfoContainer& container);
-        bool GetJobInfoBySourceName(QString exactSourceName, AzToolsFramework::AssetSystem::JobInfoContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
+        bool GetJobInfoBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanfolderId, AzToolsFramework::AssetSystem::JobInfoContainer& container, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), QString jobKey = QString(), QString platform = QString(), AzToolsFramework::AssetSystem::JobStatus status = AzToolsFramework::AssetSystem::JobStatus::Any);
 
         /* --------------------- Source Dependency Table -------------------
         *    For example, this table records when a source file depends on another source file either directly (DEP_SourceToSource)

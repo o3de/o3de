@@ -606,7 +606,8 @@ namespace AzToolsFramework
             bool QueryJobInfoByJobID(AZ::s64 jobID, jobInfoHandler handler);
             bool QueryJobInfoByJobRunKey(AZ::u64 jobRunKey, jobInfoHandler handler);
             bool QueryJobInfoByJobKey(AZStd::string jobKey, jobInfoHandler handler);
-            bool QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+
 
             //SourceDependency
             /// direct query - look up table row by row ID

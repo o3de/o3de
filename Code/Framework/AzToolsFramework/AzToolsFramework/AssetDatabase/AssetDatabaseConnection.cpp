@@ -2120,6 +2120,7 @@ namespace AzToolsFramework
             return s_querySourceBySourceguid.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, sourceGuid);
         }
 
+        // TODO: Remove this?
         bool AssetDatabaseConnection::QuerySourceBySourceName(const char* exactSourceName, sourceHandler handler)
         {
             return s_querySourceBySourcename.BindAndQuery(*m_databaseConnection, handler, &GetSourceResult, exactSourceName);
@@ -2501,12 +2502,13 @@ namespace AzToolsFramework
             return found && succeeded;
         }
 
-        bool AssetDatabaseConnection::QueryJobInfoBySourceName(const char* sourceName, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
+        bool AssetDatabaseConnection::QueryJobInfoBySourceNameScanFolderId(const char* sourceName, AZ::s64 scanfolderId, jobInfoHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
         {
             SourceDatabaseEntry source;
 
             bool found = false;
-            bool succeeded = QuerySourceBySourceName(sourceName,
+            bool succeeded = QuerySourceBySourceNameScanFolderID(
+                sourceName, scanfolderId,
                     [&](SourceDatabaseEntry& entry)
                     {
                         found = true;
