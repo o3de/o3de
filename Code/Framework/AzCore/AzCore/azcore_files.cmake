@@ -396,6 +396,7 @@ set(FILES
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
+    Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
     Memory/AllocatorWrapper.h
