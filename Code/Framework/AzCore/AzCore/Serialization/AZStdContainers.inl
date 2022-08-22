@@ -49,7 +49,7 @@ namespace AZStd
     template<class T>
     class shared_ptr;
 
-    namespace AssociativeInternal
+    inline namespace AssociativeInternal
     {
         // SFINAE expression to determine whether an associative container is an actual map with a corresponding value for each key,
         // or is simply a keyed container, like a set or an unordered_set
