@@ -40,9 +40,9 @@ namespace O3DE::ProjectManager
         ~GemCartWidget();
 
     public slots:
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
+        void ObjectDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void ObjectDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void ObjectDownloadProgress(const QString& gemName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes);
 
     private:
         QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
@@ -102,8 +102,8 @@ namespace O3DE::ProjectManager
         void ReinitForProject();
 
     public slots:
-        void GemDownloadAdded(const QString& gemName);
-        void GemDownloadRemoved(const QString& gemName);
+        void GemDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType);
+        void GemDownloadRemoved(const QString& gemName, DownloadController::DownloadObjectType objectType);
         void GemCartShown(bool state = false);
 
     signals:
