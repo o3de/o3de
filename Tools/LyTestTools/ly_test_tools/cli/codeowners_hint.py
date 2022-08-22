@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Tools for inspecting GitHub CODEOWNERS files, with a commandline interface
+Tools for inspecting GitHub CODEOWNERS files
 """
 
 import argparse
@@ -12,7 +12,6 @@ import logging
 import os
 import pathlib
 import re
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ _DEFAULT_CODEOWNER_ALIAS = "https://www.o3de.org/community/"
 _GITHUB_CODEOWNERS_BYTE_LIMIT = 3 * 1024 * 1024  # 3MB
 
 
-def get_codeowners(target_path: str) -> (str, str, str):
+def get_codeowners(target_path: pathlib.Path) -> (str|None, str|None, pathlib.Path|None):
     """
     Finds ownership information matching the target filesystem path from a CODEOWNERS file found in its GitHub repo
     :param target_path: path to match in a GitHub CODEOWNERS file, which will be discovered inside its repo
@@ -31,32 +30,27 @@ def get_codeowners(target_path: str) -> (str, str, str):
     return matched_path, owner_aliases, codeowners_path
 
 
-def find_github_codeowners(target_path: str) -> str:
+def find_github_codeowners(target_path: pathlib.Path) -> pathlib.Path|None:
     """
     Finds the '.github/CODEOWNERS' file for the git repo containing target_path
-    :param target_path: a path expected to exist in a github repository containing a CODEOWNERS file
-    :return: path to the CODEOWNERS file, or an empty string if no file could be located
+    :param target_path: a path expected to exist in a GitHub repository containing a CODEOWNERS file
+    :return: path to the CODEOWNERS file, or None if no file could be located
     """
-    # remove trailing slash if present
-    if target_path.endswith('/') or target_path.endswith('\\'):
-        current_path = target_path[:-1]
-    else:
-        current_path = target_path
-
+    current_path = target_path
     for _ in range(1000):
         codeowners_path = os.path.join(current_path, ".github", "CODEOWNERS")
         if os.path.exists(codeowners_path):
-            return codeowners_path
+            return pathlib.Path(codeowners_path)
         next_path = os.path.dirname(current_path)
         if next_path == current_path:
             break  # reached filesystem root
         current_path = next_path
 
     logger.warning(f"No GitHub CODEOWNERS file found in a GitHub repo which contains {target_path}")
-    return ""
+    return None
 
 
-def get_codeowners_from(target_path: str, codeowners_path: str) -> (str, str):
+def get_codeowners_from(target_path: pathlib.Path, codeowners_path: pathlib.Path) -> (str, str):
     """
     Fetch ownership information matching the target filesystem path from a CODEOWNERS file
     :param target_path: path to match in the GitHub CODEOWNERS file
@@ -74,14 +68,14 @@ def get_codeowners_from(target_path: str, codeowners_path: str) -> (str, str):
         return "", ""
 
     # operate only on unix-style separators
-    repo_root = pathlib.PurePosixPath(codeowners_path.replace('\\', '/')).parent.parent
-    unix_normalized_target = pathlib.PurePosixPath(target_path.replace('\\', '/'))
-    try:  # is_relative_to introduced in Python 3.9
-        repo_relative_target = unix_normalized_target.relative_to(repo_root)
-        repo_rooted_target = pathlib.PurePosixPath("/" + str(repo_relative_target))  # relative_to removes leading slash
-    except ValueError:
+    repo_root = pathlib.PurePosixPath(codeowners_path).parent.parent
+    unix_normalized_target = pathlib.PurePosixPath(target_path)
+    if not unix_normalized_target.is_relative_to(repo_root):
         logger.warning(f"Path '{target_path}' is not inside the repo of GitHub CODEOWNERS file {codeowners_path}")
         return "", ""
+
+    repo_relative_target = unix_normalized_target.relative_to(repo_root)
+    repo_rooted_target = pathlib.PurePosixPath("/" + str(repo_relative_target))  # relative_to removes leading slash
 
     with open(codeowners_path) as codeowners_file:
         # GitHub syntax only applies the final matching rule ==> parse in reverse order and take first match
@@ -145,17 +139,13 @@ def _codeowners_path_matches(target_path: pathlib.PurePosixPath, owned_path: str
                     break  # exit early on success
     else:  # simple path matching
         if owned_path.startswith("/"):  # ownership of specific directory: verify if A exists inside B
-            try:  # is_relative_to introduced in Python 3.9
-                target_path.relative_to(owned_path)
-                matched = True
-            except ValueError:
-                matched = False
+            matched = target_path.is_relative_to(owned_path)
         else:  # ownership of all relative directories: verify if B is a substring of A
             matched = owned_path in str(target_path)
     return matched
 
 
-def _pretty_print_success(print_fn, found_codeowners_path, matched_path, owner_aliases):
+def _pretty_print_success(print_fn, found_codeowners_path, matched_path, owner_aliases) -> None:
     """
     :param print_fn: function to call when logging strings
     :param found_codeowners_path: verified path to a GitHub CODEOWNERS file
@@ -167,8 +157,9 @@ def _pretty_print_success(print_fn, found_codeowners_path, matched_path, owner_a
 
 
 def _pretty_print_failure(print_fn, found_codeowners_path, matched_path, original_target,
-                          default_alias=_DEFAULT_CODEOWNER_ALIAS):
+                          default_alias=_DEFAULT_CODEOWNER_ALIAS) -> None:
     """
+    Prints a friendly message, instead of the default terse output of owner aliases
     :param print_fn: function to call when logging strings
     :param found_codeowners_path: verified path to a GitHub CODEOWNERS file which, empty when missing
     :param matched_path: entry matched in the CODEOWNERS file, empty when not matched
@@ -187,9 +178,9 @@ def _pretty_print_failure(print_fn, found_codeowners_path, matched_path, origina
 
 def _main() -> int:
     parser = argparse.ArgumentParser(description="Display GitHub CODEOWNERS information for a path to stdout")
-    parser.add_argument('target', metavar='T',
+    parser.add_argument('target', metavar='T', type=pathlib.Path,
                         help="file path to find an owner for")
-    parser.add_argument('-c', '--codeowners',
+    parser.add_argument('-c', '--codeowners', type=pathlib.Path,
                         help="path to a GitHub CODEOWNERS file, when not set it will be searched for in the repo "
                              "containing the target")
     parser.add_argument('-d', '--default_alias', default=_DEFAULT_CODEOWNER_ALIAS,
@@ -226,7 +217,3 @@ def _main() -> int:
 
     logger.error("Unexpected abnormal exit")
     return -1
-
-
-if __name__ == '__main__':
-    sys.exit(_main())
