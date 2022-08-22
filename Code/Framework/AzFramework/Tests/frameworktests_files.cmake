@@ -37,4 +37,5 @@ set(FILES
     DocumentPropertyEditor/AdapterBuilderTests.cpp
     DocumentPropertyEditor/SchemaTests.cpp
     DocumentPropertyEditor/CvarAdapterTests.cpp
+    DocumentPropertyEditor/SettingsRegistryAdapterTests.cpp
 )
