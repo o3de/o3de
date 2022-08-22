@@ -109,10 +109,8 @@ namespace AZ::Reflection
             if (auto& serializer = classData->m_serializer)
             {
                 AZ::IO::MemoryStream memStream(instance, 0, classElement->m_dataSize);
-                AZStd::vector<char> buffer;
-                AZ::IO::ByteContainerStream<AZStd::vector<char>> outStream(&buffer);
+                AZ::IO::ByteContainerStream outStream(&value);
                 serializer->DataToText(memStream, outStream, false);
-                value = AZStd::string(buffer.data(), buffer.size());
                 return !value.empty();
             }
         }
