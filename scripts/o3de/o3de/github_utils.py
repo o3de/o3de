@@ -49,7 +49,7 @@ def is_github_provider_uri(parsed_uri) -> tuple:
                 return 1
 
             return proc.returncode
-        
+
         return (True, get_specific_file_uri, clone_from_git)
-            
-    return (False)
+
+    return (False, 0, 0)

@@ -41,23 +41,29 @@ namespace LmbrCentral
         /// @brief Updates the intersection data cache to reflect the current state of the shape.
         /// @param currentTransform The current Transform of the entity.
         /// @param configuration The specific configuration of a shape.
-        /// @param sharedMutex The shared_mutex for the shape that is expected to be lock_shared on both entry and exit.
+        /// @param sharedMutex Optional pointer to a shared_mutex for the shape that is expected to be lock_shared on both entry and exit.
         ///        It will be promoted to a unique lock temporarily if the cache currently needs to be updated.
         /// @param currentNonUniformScale (Optional) The current non-uniform scale of the entity (if supported by the shape).
         void UpdateIntersectionParams(
             const AZ::Transform& currentTransform, const ShapeConfiguration& configuration,
-            AZStd::shared_mutex& sharedMutex,
+            AZStd::shared_mutex* sharedMutex,
             [[maybe_unused]] const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne())
         {
             // does the cache need updating
             if (m_cacheStatus > ShapeCacheStatus::Current)
             {
-                sharedMutex.unlock_shared();
-                sharedMutex.lock();
+                if (sharedMutex)
+                {
+                    sharedMutex->unlock_shared();
+                    sharedMutex->lock();
+                }
                 UpdateIntersectionParamsImpl(currentTransform, configuration, currentNonUniformScale); // shape specific cache update
                 m_cacheStatus = ShapeCacheStatus::Current; // mark cache as up to date
-                sharedMutex.unlock();
-                sharedMutex.lock_shared();
+                if (sharedMutex)
+                {
+                    sharedMutex->unlock();
+                    sharedMutex->lock_shared();
+                }
             }
         }
 

@@ -176,7 +176,8 @@ namespace Multiplayer
 
     void NetworkTransformComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        m_parentIdChangedHandler.Disconnect();
+        m_transformChangedHandler.Disconnect();
     }
 
     void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm)

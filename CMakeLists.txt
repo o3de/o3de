@@ -53,12 +53,12 @@ add_o3de_manifest_json_external_subdirectories()
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
+# Add external subdirectories listed in the engine.json.
+# LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+# external subdirectories.
+add_engine_json_external_subdirectories()
 
 if(NOT INSTALLED_ENGINE)
-    # Add external subdirectories listed in the engine.json.
-    # LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
-    # external subdirectories.
-    add_engine_json_external_subdirectories()
 
     # Add the rest of the targets
     add_subdirectory(Assets)

@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/EditorToolBar.h>
 
 namespace AzToolsFramework
@@ -32,6 +33,8 @@ namespace AzToolsFramework
     public:
         ToolBarManager(QWidget* defaultParentWidget);
         virtual ~ToolBarManager();
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         // ToolBarManagerInterface overrides ...
@@ -59,6 +62,7 @@ namespace AzToolsFramework
         ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) override;
         ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) override;
         void RefreshToolBars() override;
+        ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) override;
 
         // SystemTickBus overrides ...
         void OnSystemTick() override;

@@ -40,7 +40,7 @@ echo     PYTHONHOME = %PYTHONHOME%
 
 SET PYTHON=%PYTHONHOME%\python.exe
 
-:: location for O3DE python 3.7 location 
+:: location for O3DE python 3.10 location 
 set DCCSI_PY_BASE=%DCCSI_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 

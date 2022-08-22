@@ -27,7 +27,7 @@ namespace UnitTest
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
         MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
-        MOCK_METHOD1(AddEndpointDisonnectedHandler, void(Multiplayer::EndpointDisonnectedEvent::Handler&));
+        MOCK_METHOD1(AddEndpointDisconnectedHandler, void(Multiplayer::EndpointDisconnectedEvent::Handler&));
         MOCK_METHOD1(AddNotifyClientMigrationHandler, void(Multiplayer::NotifyClientMigrationEvent::Handler&));
         MOCK_METHOD1(AddNotifyEntityMigrationEventHandler, void(Multiplayer::NotifyEntityMigrationEvent::Handler&));
         MOCK_METHOD1(AddConnectionAcquiredHandler, void(Multiplayer::ConnectionAcquiredEvent::Handler&));

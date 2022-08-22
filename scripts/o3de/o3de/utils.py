@@ -176,6 +176,8 @@ def is_git_provider_uri(parsed_uri) -> tuple:
     if git_tuple[0]:
         return git_tuple
 
+    return (False, None, None)
+
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file

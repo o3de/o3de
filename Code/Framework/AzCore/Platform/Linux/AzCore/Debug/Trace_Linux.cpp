@@ -7,11 +7,12 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/string/string_view.h>
 #include <iostream>
 
 namespace AZ::Debug::Platform
 {
-    void OutputToDebugger([[maybe_unused]] const char* title, [[maybe_unused]] const char* message)
+    void OutputToDebugger([[maybe_unused]] AZStd::string_view title, [[maybe_unused]] AZStd::string_view message)
     {
         // std::cout << title << ": " << message;
     }

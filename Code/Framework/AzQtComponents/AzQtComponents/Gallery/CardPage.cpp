@@ -70,6 +70,16 @@ header->setHelpURL("https://o3de.org/docs/");
 // Clear the help url
 header->clearHelpURL();
 
+// Set header underline color to make some card visually popping
+header->setUnderlineColor(Qt::cyan);
+
+// Container cards don't have a visually distinct contents area and can
+// be used for grouping other cards and widgets
+AzQtComponents* containerCard;
+AzQtComponents::Card::applyContainerStyle(containerCard);
+auto* nestedCard = new AzQtComponents::Card();
+containerCard->setContentWidget(nestedCard);
+
 // Populate the menu that pops up when the header bar is right clicked or when the user clicks on the menu button
 connect(card, &AzQtComponents::Card::contextMenuRequested, this, [](const QPoint& pos){
     QMenu menu;
@@ -119,6 +129,22 @@ card->mockDisabledState(true);
 
     ui->functionalCard->setTitle("Card With Secondary Section");
     addContentWidget(ui->functionalCard, 60);
+
+    AzQtComponents::Card::applyContainerStyle(ui->containerCard);
+    ui->containerCard->setTitle("Container card");
+    ui->containerCard->header()->setUnderlineColor(QColor("#a675ff"));
+
+    auto* contentWidget = new QWidget;
+    auto* nestedLayout = new QVBoxLayout(contentWidget);
+    ui->containerCard->setContentWidget(contentWidget);
+
+    auto* nestedCard = new AzQtComponents::Card();
+    nestedCard->setTitle("Nested card");
+    addContentWidget(nestedCard, 30);
+    nestedLayout->addWidget(nestedCard);
+
+    auto* button = new QPushButton("Nested button");
+    nestedLayout->addWidget(button);
 
     // put in an example icon
     AzQtComponents::CardHeader* header = ui->functionalCard->header();
