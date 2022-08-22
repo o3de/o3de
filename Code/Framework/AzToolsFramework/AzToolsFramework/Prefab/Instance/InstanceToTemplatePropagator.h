@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
             bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) override;
             bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) override;
-            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) override;
+            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;
             bool PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId) override;

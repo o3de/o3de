@@ -278,6 +278,10 @@ def main(args):
                         action='store_true',
                         help='Enable unity build')
 
+    parser.add_argument('--oculus-project',
+                        action='store_true',
+                        help='Generate android project for Oculus app.')
+
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
 
@@ -417,6 +421,7 @@ def main(args):
                                                         is_test_project=is_test_project,
                                                         overwrite_existing=parsed_args.overwrite_existing,
                                                         unity_build_enabled=parsed_args.enable_unity_build,
+                                                        oculus_project=parsed_args.oculus_project,
                                                         native_build_path=parsed_args.native_build_path,
                                                         vulkan_validation_path=parsed_args.vulkan_validation_path,
                                                         extra_cmake_configure_args=parsed_args.extra_cmake_configure_args)

@@ -9,7 +9,7 @@
 #include <RHI/BufferPool.h>
 #include <RHI/BufferPoolResolver.h>
 #include <RHI/MemoryView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 
 #include <algorithm>
 

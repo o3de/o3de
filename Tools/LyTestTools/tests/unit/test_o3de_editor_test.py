@@ -1055,7 +1055,7 @@ class TestEditorTestClass(unittest.TestCase):
     def setUp(self):
         mock_name = mock.MagicMock()
         mock_collector = mock.MagicMock()
-        self.mock_test_class = ly_test_tools.o3de.editor_test.EditorTestSuite.EditorTestClass(mock_name, mock_collector)
+        self.mock_test_class = ly_test_tools.o3de.editor_test.EditorTestSuite.EditorTestClass.from_parent(mock_collector, name=mock_name)
         self.mock_test_class.obj = mock.MagicMock()
         single_1 = mock.MagicMock()
         single_1.__name__ = 'single_1_name'

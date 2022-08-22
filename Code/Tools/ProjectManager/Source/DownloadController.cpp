@@ -10,15 +10,14 @@
 #include <DownloadWorker.h>
 #include <PythonBindings.h>
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 #include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
     DownloadController::DownloadController(QWidget* parent)
-        : QObject()
-        , m_parent(parent)
+        : QObject(parent)
     {
         m_worker = new DownloadWorker();
         m_worker->moveToThread(&m_workerThread);
@@ -26,7 +25,7 @@ namespace O3DE::ProjectManager
         connect(&m_workerThread, &QThread::started, m_worker, &DownloadWorker::StartDownload);
         connect(m_worker, &DownloadWorker::Done, this, &DownloadController::HandleResults);
         connect(m_worker, &DownloadWorker::UpdateProgress, this, &DownloadController::UpdateUIProgress);
-        connect(this, &DownloadController::StartGemDownload, m_worker, &DownloadWorker::SetGemToDownload);
+        connect(this, &DownloadController::StartObjectDownload, m_worker, &DownloadWorker::SetObjectToDownload);
     }
 
     DownloadController::~DownloadController()
@@ -37,40 +36,48 @@ namespace O3DE::ProjectManager
         m_workerThread.wait();
     }
 
-    void DownloadController::AddGemDownload(const QString& gemName)
+    void DownloadController::AddObjectDownload(const QString& objectName, DownloadObjectType objectType)
     {
-        m_gemNames.push_back(gemName);
-        emit GemDownloadAdded(gemName);
+        m_objects.push_back({ objectName, objectType });
+        emit ObjectDownloadAdded(objectName, objectType);
 
-        if (m_gemNames.size() == 1)
+        if (m_objects.size() == 1)
         {
-            m_worker->SetGemToDownload(m_gemNames.front(), false);
+            m_worker->SetObjectToDownload(m_objects.front().m_objectName, objectType, false);
             m_workerThread.start();
         }
     }
 
-    void DownloadController::CancelGemDownload(const QString& gemName)
+    void DownloadController::CancelObjectDownload(const QString& objectName, DownloadObjectType objectType)
     {
-        auto findResult = AZStd::find(m_gemNames.begin(), m_gemNames.end(), gemName);
-
-        if (findResult != m_gemNames.end())
-        {
-            if (findResult == m_gemNames.begin())
+        auto findResult = AZStd::ranges::find_if(m_objects,
+            [objectName, objectType](const DownloadableObject& object)
             {
-                // HandleResults will remove the gem upon cancelling
+                return (object.m_objectType == objectType && object.m_objectName == objectName);
+            });
+
+        if (findResult != m_objects.end())
+        {
+            if (findResult == m_objects.begin())
+            {
+                // HandleResults will remove the object upon cancelling
                 PythonBindingsInterface::Get()->CancelDownload();
             }
             else
             {
-                m_gemNames.erase(findResult);
-                emit GemDownloadRemoved(gemName);
+                m_objects.erase(findResult);
+                emit ObjectDownloadRemoved(objectName, objectType);
             }
         }
     }
 
     void DownloadController::UpdateUIProgress(int bytesDownloaded, int totalBytes)
     {
-        emit GemDownloadProgress(m_gemNames.front(), bytesDownloaded, totalBytes);
+        if (!m_objects.empty())
+        {
+            const DownloadableObject& downloadableObject = m_objects.front();
+            emit ObjectDownloadProgress(downloadableObject.m_objectName, downloadableObject.m_objectType, bytesDownloaded, totalBytes);
+        }
     }
 
     void DownloadController::HandleResults(const QString& result, const QString& detailedError)
@@ -81,28 +88,32 @@ namespace O3DE::ProjectManager
         {
             if (!detailedError.isEmpty())
             {
-                QMessageBox gemDownloadError;
-                gemDownloadError.setIcon(QMessageBox::Critical);
-                gemDownloadError.setWindowTitle(tr("Gem download"));
-                gemDownloadError.setText(result);
-                gemDownloadError.setDetailedText(detailedError);
-                gemDownloadError.exec();
+                QMessageBox downloadError;
+                downloadError.setIcon(QMessageBox::Critical);
+                downloadError.setWindowTitle(tr("Download failed"));
+                downloadError.setText(result);
+                downloadError.setDetailedText(detailedError);
+                downloadError.exec();
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Gem download"), result);
+                QMessageBox::critical(nullptr, tr("Download failed"), result);
             }
             succeeded = false;
         }
 
-        QString gemName = m_gemNames.front();
-        m_gemNames.erase(m_gemNames.begin());
-        emit Done(gemName, succeeded);
-        emit GemDownloadRemoved(gemName);
-
-        if (!m_gemNames.empty())
+        if (!m_objects.empty())
         {
-            emit StartGemDownload(m_gemNames.front(), true);
+            DownloadableObject downloadableObject = m_objects.front();
+            m_objects.erase(m_objects.begin());
+            emit Done(downloadableObject.m_objectName, succeeded);
+            emit ObjectDownloadRemoved(downloadableObject.m_objectName, downloadableObject.m_objectType);
+        }
+
+        if (!m_objects.empty())
+        {
+            const DownloadableObject& nextObject = m_objects.front();
+            emit StartObjectDownload(nextObject.m_objectName, nextObject.m_objectType, true);
         }
         else
         {
