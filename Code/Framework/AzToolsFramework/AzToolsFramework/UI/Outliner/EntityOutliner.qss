@@ -12,29 +12,6 @@ AzToolsFramework--EntityOutlinerWidget #m_display_options
     qproperty-iconSize: 16px 16px;
 }
 
-#OutlinerModeSwitcherContainer
-{
-    background: #363636;
-    margin: 4px 0;
-    padding: 0;
-}
-
-#OutlinerModeSwitcher
-{
-    margin: 0 0 0 23px;
-    padding: 6px 0;
-}
-
-#OutlinerModeSwitcherHelp
-{
-    margin-right: 6px;
-}
-
-#OutlinerModeSwitcher QAbstractButton:checked
-{
-    background-color: #1D72EA;
-}
-
 AzToolsFramework--EntityOutlinerWidget QTreeView
 {
     selection-background-color: transparent;
