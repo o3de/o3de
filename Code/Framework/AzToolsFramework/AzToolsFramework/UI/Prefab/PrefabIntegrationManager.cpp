@@ -25,6 +25,7 @@
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -313,34 +314,37 @@ namespace AzToolsFramework
                                 );
                             }
 
-                            if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                            if (IsPrefabOverridesUxEnabled())
                             {
-                                // Open Prefab Instance
-                                QAction* overrideAction = menu->addAction(QObject::tr("Override Prefab Instance"));
-                                overrideAction->setToolTip(QObject::tr("Open the prefab instance to apply overrides."));
+                                if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                                {
+                                    // Open Prefab Instance
+                                    QAction* overrideAction = menu->addAction(QObject::tr("Override Prefab Instance"));
+                                    overrideAction->setToolTip(QObject::tr("Open the prefab instance to apply overrides."));
 
-                                QObject::connect(
-                                    overrideAction, &QAction::triggered, overrideAction,
-                                    [this, selectedEntity]
+                                    QObject::connect(
+                                        overrideAction, &QAction::triggered, overrideAction,
+                                        [this, selectedEntity]
                                     {
                                         ContextMenu_OpenPrefabInstance(selectedEntity);
                                     }
-                                );
-                            }
-                            else
-                            {
-                                // Close Prefab
-                                QAction* closeAction = menu->addAction(QObject::tr("Close Prefab Instance"));
-                                closeAction->setToolTip(QObject::tr("Close this prefab instance."));
+                                    );
+                                }
+                                else
+                                {
+                                    // Close Prefab
+                                    QAction* closeAction = menu->addAction(QObject::tr("Close Prefab Instance"));
+                                    closeAction->setToolTip(QObject::tr("Close this prefab instance."));
 
-                                QObject::connect(
-                                    closeAction, &QAction::triggered, closeAction,
-                                    [this, selectedEntity]
+                                    QObject::connect(
+                                        closeAction, &QAction::triggered, closeAction,
+                                        [this, selectedEntity]
                                     {
                                         ContextMenu_ClosePrefabInstance(selectedEntity);
                                     }
-                                );
-                            }
+                                    );
+                                }
+                            }                           
                         }
                         else if (selectedEntity != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
                         {
