@@ -105,6 +105,15 @@ namespace AZ::DocumentPropertyEditor::Nodes
         //! to the last column in the layout. Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
 
+        //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
+        enum class Align : AZ::u8
+        {
+            AlignLeft,
+            AlignRight
+        };
+        //! Specifies that this PropertyEditor should have a specific alignment within its own column.
+        static constexpr auto Alignment = AttributeDefinition<Align>("Alignment");
+
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");
         static constexpr auto EnumUnderlyingType = TypeIdAttributeDefinition("EnumUnderlyingType");
         static constexpr auto EnumValue = AttributeDefinition<Dom::Value>("EnumValue");
