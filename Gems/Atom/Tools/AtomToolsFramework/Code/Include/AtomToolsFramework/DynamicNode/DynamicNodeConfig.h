@@ -48,11 +48,11 @@ namespace AtomToolsFramework
         AZStd::string m_subTitle;
         //! Settings is a container of key value string pairs that can be used for any custom or application specific data
         DynamicNodeSettingsMap m_settings;
+        //! Property slots is a container of DynamicNodeSlotConfig for property widgets that appear directly on the node
+        AZStd::vector<DynamicNodeSlotConfig> m_propertySlots;
         //! Input slots is a container of DynamicNodeSlotConfig for all inputs into a node 
         AZStd::vector<DynamicNodeSlotConfig> m_inputSlots;
         //! Output slots is a container of DynamicNodeSlotConfig for all outputs from a node 
         AZStd::vector<DynamicNodeSlotConfig> m_outputSlots;
-        //! Property slots is a container of DynamicNodeSlotConfig for property widgets that appear directly on the node 
-        AZStd::vector<DynamicNodeSlotConfig> m_propertySlots;
     };
 } // namespace AtomToolsFramework

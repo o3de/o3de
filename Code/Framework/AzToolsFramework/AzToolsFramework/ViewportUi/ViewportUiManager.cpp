@@ -172,6 +172,7 @@ namespace AzToolsFramework::ViewportUi
         {
             auto switcher = switcherIt->second;
             m_viewportUi->RemoveSwitcherButton(switcher->GetViewportUiElementId(), buttonId);
+            m_viewportUi->UpdateSwitcher(switcher->GetViewportUiElementId());
         }
     }
 

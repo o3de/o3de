@@ -6,9 +6,10 @@
 #
 #
 
+get_property(atom_rhi_vulkan_gem_root GLOBAL PROPERTY "@GEMROOT:Atom_RHI_Vulkan@")
 ly_add_external_target(
     NAME glad_vulkan
     VERSION 2.0.0-beta
-    3RDPARTY_ROOT_DIRECTORY ${LY_ROOT_FOLDER}/Gems/Atom/RHI/Vulkan/External/glad
+    3RDPARTY_ROOT_DIRECTORY ${atom_rhi_vulkan_gem_root}/External/glad
     INCLUDE_DIRECTORIES include
 )

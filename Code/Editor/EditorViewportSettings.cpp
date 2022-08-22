@@ -23,7 +23,6 @@ namespace SandboxEditor
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
     constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
-    constexpr AZStd::string_view ManipulatorMouseWrapSetting = "/Amazon/Preferences/Editor/Manipulator/ManipulatorMouseWrapSetting";
     constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
     constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
@@ -60,6 +59,8 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
     constexpr AZStd::string_view CameraDefaultStartingPitch = "/Amazon/Preferences/Editor/Camera/DefaultStartingPitch";
     constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
+    constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
+    constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -70,9 +71,9 @@ namespace SandboxEditor
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
                 m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_angleSnappingChanged.Signal(AngleSnappingEnabled());
                         }
@@ -80,11 +81,31 @@ namespace SandboxEditor
                 );
 
                 m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
+                        }
+                    }
+                );
+
+                m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
+                        }
+                    }
+                );
+
+                m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
                         }
                     }
                 );
@@ -101,10 +122,24 @@ namespace SandboxEditor
             handler.Connect(m_gridSnappingChanged);
         }
 
-        GridSnappingChangedEvent m_angleSnappingChanged;
+        void SetFarPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_farPlaneChanged);
+        }
+
+        void SetNearPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_nearPlaneChanged);
+        }
+
+        AngleSnappingChangedEvent m_angleSnappingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
+        NearFarPlaneChangedEvent m_farPlaneChanged;
+        NearFarPlaneChangedEvent m_nearPlaneChanged;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
     };
 
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
@@ -208,16 +243,6 @@ namespace SandboxEditor
     void SetStickySelectEnabled(const bool enabled)
     {
         AzToolsFramework::SetRegistry(StickySelectSetting, enabled);
-    }
-
-    bool ManipulatorMouseWrap()
-    {
-        return AzToolsFramework::GetRegistry(ManipulatorMouseWrapSetting, false);
-    }
-
-    void SetManipulatorMouseWrap(bool enabled)
-    {
-        AzToolsFramework::SetRegistry(ManipulatorMouseWrapSetting, enabled);
     }
 
     float ManipulatorLineBoundWidth()
@@ -542,5 +567,25 @@ namespace SandboxEditor
     void SetCameraFocusChannelId(AZStd::string_view cameraFocusId)
     {
         AzToolsFramework::SetRegistry(CameraFocusIdSetting, cameraFocusId);
+    }
+
+    float CameraDefaultNearPlaneDistance()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
+    }
+
+    void SetCameraDefaultNearPlaneDistance(float distance)
+    {
+        AzToolsFramework::SetRegistry(CameraNearPlaneDistanceSetting, aznumeric_cast<double>(distance));
+    }
+
+    float CameraDefaultFarPlaneDistance()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
+    }
+
+    void SetCameraDefaultFarPlaneDistance(float distance)
+    {
+        AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
     }
 } // namespace SandboxEditor

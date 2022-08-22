@@ -10,6 +10,7 @@
 from logging import getLogger
 from typing import Counter
 from test_impact import NativeTestImpact, BaseTestImpact, PythonTestImpact
+from tiaf_driver import SUPPORTED_RUNTIMES
 from tiaf_driver import main
 import pytest
 logging = getLogger("tiaf")
@@ -24,7 +25,7 @@ class ConcreteBaseTestImpact(BaseTestImpact):
     Concrete implementation of BaseTestImpact so that we can execute unit tests on the functionality of BaseTestImpact individually.
     """
 
-    _runtime_type = "base"
+    _runtime_type = "native"
     _default_sequence_type = "regular"
 
     @property
@@ -39,13 +40,76 @@ class ConcreteBaseTestImpact(BaseTestImpact):
         return self._runtime_type
 
 
+class TestTiafDriver():
+
+    def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, main_args, mock_runtime, mocker):
+        # given:
+        # Default args + mars_index_prefix being provided,
+        # and transmit_report_to_mars is patched to intercept the call.
+        main_args['mars_index_prefix'] = "test_prefix"
+        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
+        # when:
+        # We run Tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(main_args)
+
+        # then:
+        # Tiaf should call the transmit function.
+        mock_mars.assert_called()
+
+    def test_run_Tiaf_mars_index_prefix_is_not_supplied(self, caplog, main_args, mock_runtime, mocker):
+        # given:
+        # Default_args - mars index is not supplied.
+        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
+
+        # when:
+        # We run tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(main_args)
+
+        # then:
+        # Tiaf should not call the transmit function.
+        mock_mars.assert_not_called()
+
+    @pytest.mark.parametrize("runtime_type,mock_type", [("native", "test_impact.native_test_impact.NativeTestImpact.__init__"), ("python", "test_impact.python_test_impact.PythonTestImpact.__init__")])
+    def test_run_Tiaf_driver_runtime_type_selection(self, caplog, tiaf_args, mock_runtime, mocker, runtime_type, mock_type):
+        # given:
+        # Default args + runtime_type
+        tiaf_args['runtime_type'] = runtime_type
+        runtime_class = SUPPORTED_RUNTIMES[runtime_type]
+        testMock = mocker.patch(mock_type, side_effect=SystemExit)
+        
+        # when
+        # We run tiaf through the driver.
+        with pytest.raises(SystemExit):
+            main(tiaf_args)
+
+        # then:
+        # Tiaf should instantiate a TestImpact object of the correct runtime type
+        testMock.assert_called()
+
+
 class TestTiafInitialiseStorage():
 
-    def test_create_TestImpact_no_s3_bucket_name(self, caplog, tiaf_args, config_data, mocker):
+    @pytest.fixture
+    def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native tests run in this example, as we have hardcoded ConcreteBaseTestImpact to act as a NativeTestImpact object in many cases.
+        """
+        return "native"
+
+    def to_list(self, input):
+        output = []
+        for entry in input:
+            output.append(entry)
+        return output
+        
+    def test_create_TestImpact_no_s3_bucket_name(self, caplog, tiaf_args, config_data, mocker, storage_config):
         # given:
         # Default args.
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
-            'commit']
+            'commit'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file'], storage_config['historic_workspace'], storage_config['historic_data_file']
         mock_local = mocker.patch(
             "persistent_storage.PersistentStorageLocal.__init__", side_effect=SystemError(), return_value=None)
         # when:
@@ -54,11 +118,10 @@ class TestTiafInitialiseStorage():
 
         # then:
         # PersistentStorageLocal should be called with suite, commit and config data as arguments.
-        mock_local.assert_called_with(
-            *expected_storage_args)
+        assert_list_content_equal(self.to_list(mock_local.call_args[0]).pop(), self.to_list(expected_storage_args).pop())
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\base")])
-    def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data, expected_top_level_dir):
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\native")])
+    def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data, expected_top_level_dir, storage_config):
         # given:
         # Default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
         # and we patch PersistentStorageS3 to intercept the constructor call.
@@ -68,7 +131,7 @@ class TestTiafInitialiseStorage():
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
 
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
-            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file']
 
         # when:
         # We create a TestImpact object.
@@ -113,6 +176,13 @@ class TestTiafInitialiseStorage():
 
 class TestTIAFNativeUnitTests():
 
+    @pytest.fixture
+    def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native versions of the tests run in this example, as we are only testing the NativeTestImpact class.
+        """
+        return "native"
+
     @pytest.mark.parametrize("safemode, arg_val", [("on", "on")])
     def test_create_NativeTestImpact_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, safemode, arg_val):
         # given:
@@ -143,7 +213,7 @@ class TestTIAFNativeUnitTests():
             tiaf.runtime_args, cpp_default_runtime_args.values())
 
     @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\native")])
-    def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, mocker, bucket_name, top_level_dir, expected_top_level_dir):
+    def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, mocker, bucket_name, storage_config, top_level_dir, expected_top_level_dir):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
         tiaf_args['s3_bucket'] = bucket_name
@@ -151,7 +221,7 @@ class TestTIAFNativeUnitTests():
         mock_storage = mocker.patch(
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
-            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file']
 
         # when:
         # We create a NativeTestImpact object
@@ -164,8 +234,16 @@ class TestTIAFNativeUnitTests():
 
 class TestTIAFPythonUnitTests():
 
+    @pytest.fixture
+    def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only python versions of the tests run in this example, as we are only testing the PythonTestImpact class.
+        """
+        return "python"
+
+    #@pytest.mark.skip(reason="To fix before PR")
     @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\python")])
-    def test_create_PythonTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir):
+    def test_create_PythonTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir, storage_config):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
         tiaf_args['s3_bucket'] = bucket_name
@@ -173,7 +251,7 @@ class TestTIAFPythonUnitTests():
         mock_storage = mocker.patch(
             "persistent_storage.PersistentStorageS3.__init__", side_effect=SystemError())
         expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
-            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch']
+            'commit'], bucket_name, expected_top_level_dir, tiaf_args['src_branch'], storage_config['active_workspace'], storage_config['unpacked_coverage_data_file'], storage_config['previous_test_run_data_file']
 
         # when:
         # We create a PythonTestImpact object
@@ -185,6 +263,13 @@ class TestTIAFPythonUnitTests():
 
 
 class TestTIAFBaseUnitTests():
+
+    @pytest.fixture
+    def runtime_type(self):
+        """
+        Override the runtime_type fixture so that only native tests run in this example, as we have hardcoded ConcreteBaseTestImpact to act as a NativeTestImpact object in many cases.
+        """
+        return "native"
 
     def test_create_TestImpact_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
         """
@@ -260,36 +345,6 @@ class TestTIAFBaseUnitTests():
         # tiaf.destination_commit should equal our commit parameter.
         assert tiaf.destination_commit == commit
 
-    def test_run_Tiaf_mars_index_prefix_is_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
-        # given:
-        # Default args + mars_index_prefix being provided,
-        # and transmit_report_to_mars is patched to intercept the call.
-        tiaf_args['mars_index_prefix'] = "test_prefix"
-        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
-
-        # when:
-        # We run Tiaf through the driver.
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        # Tiaf should call the transmit function.
-        mock_mars.assert_called()
-
-    def test_run_Tiaf_mars_index_prefix_is_not_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
-        # given:
-        # Default_args - mars index is not supplied.
-        mock_mars = mocker.patch("mars_utils.transmit_report_to_mars")
-
-        # when:
-        # We run tiaf through the driver.
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        # Tiaf should not call the transmit function.
-        mock_mars.assert_not_called()
-
     def test_create_TestImpact_valid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         # Default args
@@ -356,7 +411,7 @@ class TestTIAFBaseUnitTests():
         # given:
         # Default args + exclude_file set.
         tiaf_args['exclude_file'] = "testpath"
-        default_runtime_args['exclude'] = "--exclude=testpath"
+        default_runtime_args['exclude'] = "--excluded=testpath"
 
         # when:
         # We create a TestImpact object.

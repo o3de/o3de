@@ -153,7 +153,7 @@ namespace AZ
             }
 
             // Stop execution since we can't recover from device removal error
-            Debug::Trace::Crash();
+            Debug::Trace::Instance().Crash();
         }
 
         void RPISystemComponent::RegisterXRInterface(XRRenderingInterface* xrSystemInterface)

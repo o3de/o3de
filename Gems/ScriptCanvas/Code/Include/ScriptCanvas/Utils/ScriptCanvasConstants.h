@@ -8,10 +8,11 @@
 #pragma once
 
 #include <AzCore/Name/Name.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace ScriptCanvas
 {
-    static const AZ::Name RemoteToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools");
+    static const AZ::Name RemoteToolsName = AZ::Name::FromStringLiteral("ScriptCanvasRemoteTools", nullptr);
     static constexpr AZ::Crc32 RemoteToolsKey("ScriptCanvasRemoteTools");
     static constexpr uint16_t RemoteToolsPort = 6787;
 }

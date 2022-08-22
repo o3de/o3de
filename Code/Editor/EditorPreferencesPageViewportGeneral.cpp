@@ -23,6 +23,8 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
         ->Version(1)
         ->Field("Sync2DViews", &General::m_sync2DViews)
         ->Field("DefaultFOV", &General::m_defaultFOV)
+        ->Field("DefaultNearPlane", &General::m_defaultNearPlane)
+        ->Field("DefaultFarPlane", &General::m_defaultFarPlane)
         ->Field("DefaultAspectRatio", &General::m_defaultAspectRatio)
         ->Field("EnableContextMenu", &General::m_contextMenuEnabled)
         ->Field("StickySelect", &General::m_stickySelectEnabled);
@@ -85,6 +87,8 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
             ->Attribute("Multiplier", RAD2DEG(1))
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 120.0f)
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultNearPlane, "Perspective Near Plane", "Perspective Near Plane")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &General::m_defaultFarPlane, "Perspective Far Plane", "Perspective Far Plane")
             ->DataElement(
                 AZ::Edit::UIHandlers::SpinBox, &General::m_defaultAspectRatio, "Perspective View Aspect Ratio",
                 "Perspective View Aspect Ratio")
@@ -219,6 +223,9 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     gSettings.viewports.bSync2DViews = m_general.m_sync2DViews;
     SandboxEditor::SetStickySelectEnabled(m_general.m_stickySelectEnabled);
 
+    SandboxEditor::SetCameraDefaultNearPlaneDistance(m_general.m_defaultNearPlane);
+    SandboxEditor::SetCameraDefaultFarPlaneDistance(m_general.m_defaultFarPlane);
+
     gSettings.viewports.bShowSafeFrame = m_display.m_showSafeFrame;
     gSettings.viewports.bHighlightSelectedGeometry = m_display.m_highlightSelGeom;
     gSettings.viewports.bHighlightSelectedVegetation = m_display.m_highlightSelVegetation;
@@ -276,6 +283,8 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
 
     m_general.m_defaultAspectRatio = gSettings.viewports.fDefaultAspectRatio;
     m_general.m_defaultFOV = gSettings.viewports.fDefaultFov;
+    m_general.m_defaultNearPlane = SandboxEditor::CameraDefaultNearPlaneDistance();
+    m_general.m_defaultFarPlane = SandboxEditor::CameraDefaultFarPlaneDistance();
     m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
     m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();

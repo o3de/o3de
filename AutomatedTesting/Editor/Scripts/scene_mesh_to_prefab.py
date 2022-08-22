@@ -227,7 +227,7 @@ sceneJobHandler = None
 def on_update_manifest(args):
     try:
         scene = args[0]
-        return update_manifest(scene)
+        data = update_manifest(scene)
     except RuntimeError as err:
         print(f'ERROR - {err}')
         log_exception_traceback()
@@ -235,7 +235,9 @@ def on_update_manifest(args):
         log_exception_traceback()
 
     global sceneJobHandler
+    sceneJobHandler.disconnect()
     sceneJobHandler = None
+    return data
 
 
 # try to create SceneAPI handler for processing

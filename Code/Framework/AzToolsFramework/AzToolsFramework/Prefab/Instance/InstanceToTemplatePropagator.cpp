@@ -65,8 +65,8 @@ namespace AzToolsFramework
             return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
         }
 
-        bool InstanceToTemplatePropagator::GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState,
-            const PrefabDom& modifiedState)
+        bool InstanceToTemplatePropagator::GeneratePatch(
+            PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState)
         {
             //generate patch using json serialization CreatePatch
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
@@ -140,7 +140,7 @@ namespace AzToolsFramework
             return AZStd::move(entityAliasPath);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId)
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, AZStd::string prefix)
         {
             if (!providedPatch.IsArray())
             {
@@ -148,7 +148,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            AZStd::string prefix = GenerateEntityAliasPath(entityId);
+            prefix += GenerateEntityAliasPath(entityId);
 
             if (prefix.empty())
             {

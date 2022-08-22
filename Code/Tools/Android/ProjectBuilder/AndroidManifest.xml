@@ -49,6 +49,7 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                ${OCULUS_INTENT_FILTER_CATEGORY}
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

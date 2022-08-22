@@ -98,7 +98,11 @@ namespace Multiplayer
 
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
         AzNetworking::ConnectionId GetOwningConnectionId() const;
-        void SetAllowAutonomy(bool value);
+
+        //! Allows a player host to autonomously control their player entity, even though the entity is in an authority role.
+        //! Note: If this entity is already activated this will reactivate all of the multiplayer component controllers in order for them to reactivate under autonomous control.
+        void EnablePlayerHostAutonomy(bool enabled);
+
         MultiplayerComponentInputVector AllocateComponentInputs();
 
         //! Return true if we're currently processing inputs.
@@ -204,13 +208,15 @@ namespace Multiplayer
         bool m_isReprocessingInput  = false; // Set to true when we are reprocessing input (during a correction)
         bool m_isMigrationDataValid = false;
         bool m_needsToBeStopped     = false;
-        bool m_allowAutonomy        = false; // Set to true for the hosts controlled entity
+        bool m_playerHostAutonomyEnabled = false; // Set to true for the host's controlled entity
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;
 
         friend class HierarchyTests;
         friend class HierarchyBenchmarkBase;
+        friend class MultiplayerSystemTests;
+        friend class NetworkEntityTests;
     };
 
     bool NetworkRoleHasController(NetEntityRole networkRole);

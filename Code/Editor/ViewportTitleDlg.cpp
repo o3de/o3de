@@ -39,6 +39,8 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
@@ -112,6 +114,23 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
         SetupHelpersButton();
+    }
+    else
+    {
+        // Temporary Helpers menu setup until this toolbar is refactored.
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        if (menuManagerInterface && menuManagerInternalInterface)
+        {
+            const AZStd::string helpersMenuIdentifier = "o3de.menu.viewport.helpers";
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Helpers State";
+            menuManagerInterface->RegisterMenu(helpersMenuIdentifier, menuProperties);
+
+            QMenu* helpersMenu = menuManagerInternalInterface->GetMenu(helpersMenuIdentifier);
+            m_ui->m_helpers->setMenu(helpersMenu);
+            m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
+        }
     }
 
     SetupOverflowMenu();
@@ -1129,13 +1148,13 @@ void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
     m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
     m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
+    SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
     m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
+    SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
@@ -1150,14 +1169,14 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    const bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = SandboxEditor::GridSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
         m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    const bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = SandboxEditor::AngleSnappingEnabled();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
         m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);

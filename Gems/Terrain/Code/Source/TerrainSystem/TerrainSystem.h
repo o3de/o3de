@@ -233,7 +233,7 @@ namespace Terrain
             bool* terrainExistsPtr) const;
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
-        AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
+        AZ::Vector3 GetNormalSynchronous(const AZ::Vector3& position, Sampler sampler, bool* terrainExistsPtr) const;
 
         typedef AZStd::function<void(
             const AZStd::span<const AZ::Vector3> inPositions,
@@ -249,6 +249,18 @@ namespace Terrain
         void GetNormalsSynchronous(
             const AZStd::span<const AZ::Vector3>& inPositions,
             Sampler sampler, AZStd::span<AZ::Vector3> normals,
+            AZStd::span<bool> terrainExists) const;
+        void GetNormalsSynchronousExact(
+            const AZStd::span<const AZ::Vector3>& inPositions,
+            AZStd::span<AZ::Vector3> normals,
+            AZStd::span<bool> terrainExists) const;
+        void GetNormalsSynchronousClamp(
+            const AZStd::span<const AZ::Vector3>& inPositions,
+            AZStd::span<AZ::Vector3> normals,
+            AZStd::span<bool> terrainExists) const;
+        void GetNormalsSynchronousBilinear(
+            const AZStd::span<const AZ::Vector3>& inPositions,
+            AZStd::span<AZ::Vector3> normals,
             AZStd::span<bool> terrainExists) const;
         void GetOrderedSurfaceWeightsFromList(
             const AZStd::span<const AZ::Vector3>& inPositions, Sampler sampler,
