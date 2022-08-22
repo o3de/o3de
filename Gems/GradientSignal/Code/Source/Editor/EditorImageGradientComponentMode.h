@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
-#include <AzToolsFramework/Manipulators/BrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 
 namespace GradientSignal
 {
@@ -39,6 +39,6 @@ namespace GradientSignal
         void OnWorldSpaceChanged(const AZ::Transform& result) override;
 
     private:
-        AZStd::shared_ptr<AzToolsFramework::BrushManipulator> m_brushManipulator;
+        AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
     };
 } // namespace GradientSignal

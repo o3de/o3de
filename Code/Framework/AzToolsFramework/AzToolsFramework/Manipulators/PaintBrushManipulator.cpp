@@ -8,19 +8,20 @@
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Brushes/PaintBrushRequestBus.h>
-#include <AzToolsFramework/Manipulators/BrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 
 namespace AzToolsFramework
 {
-    AZStd::shared_ptr<BrushManipulator> BrushManipulator::MakeShared(
+    AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
         const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        return AZStd::shared_ptr<BrushManipulator>(aznew BrushManipulator(worldFromLocal, entityComponentIdPair));
+        return AZStd::shared_ptr<PaintBrushManipulator>(aznew PaintBrushManipulator(worldFromLocal, entityComponentIdPair));
     }
 
-    BrushManipulator::BrushManipulator(const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
+    PaintBrushManipulator::PaintBrushManipulator(
+        const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         SetSpace(worldFromLocal);
 
@@ -35,7 +36,7 @@ namespace AzToolsFramework
             AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, radius, manipulatorWidth));
     }
 
-    void BrushManipulator::Draw(
+    void PaintBrushManipulator::Draw(
         const ManipulatorManagerState& managerState, AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
@@ -45,12 +46,12 @@ namespace AzToolsFramework
             mouseInteraction);
     }
 
-    void BrushManipulator::SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view)
+    void PaintBrushManipulator::SetView(AZStd::shared_ptr<ManipulatorViewProjectedCircle> view)
     {
         m_manipulatorView = AZStd::move(view);
     }
 
-    void BrushManipulator::SetRadius(const float radius)
+    void PaintBrushManipulator::SetRadius(const float radius)
     {
         m_manipulatorView->SetRadius(radius);
     }

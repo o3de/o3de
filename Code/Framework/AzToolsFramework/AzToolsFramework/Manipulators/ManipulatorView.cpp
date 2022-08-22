@@ -14,7 +14,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/Manipulators/AngularManipulator.h>
-#include <AzToolsFramework/Manipulators/BrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/LineSegmentSelectionManipulator.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -870,7 +870,7 @@ namespace AzToolsFramework
     }
 
     AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
-        [[maybe_unused]] const BrushManipulator& brushManipulator, const AZ::Color& color, const float radius, const float width)
+        [[maybe_unused]] const PaintBrushManipulator& brushManipulator, const AZ::Color& color, const float radius, const float width)
     {
         AZStd::unique_ptr<ManipulatorViewProjectedCircle> viewCircle = AZStd::make_unique<ManipulatorViewProjectedCircle>();
         viewCircle->m_axis = AZ::Vector3::CreateAxisZ();

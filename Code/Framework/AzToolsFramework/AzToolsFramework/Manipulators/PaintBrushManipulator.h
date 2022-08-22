@@ -18,23 +18,23 @@ namespace AzToolsFramework
 {
     class ManipulatorViewProjectedCircle;
 
-    class BrushManipulator : public BaseManipulator, public ManipulatorSpace
+    class PaintBrushManipulator : public BaseManipulator, public ManipulatorSpace
     {
         //! Private constructor.
-        BrushManipulator(const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
+        PaintBrushManipulator(const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
     public:
-        AZ_RTTI(BrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(BrushManipulator, AZ::SystemAllocator, 0);
+        AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
+        AZ_CLASS_ALLOCATOR(PaintBrushManipulator, AZ::SystemAllocator, 0);
 
-        BrushManipulator() = delete;
-        BrushManipulator(const BrushManipulator&) = delete;
-        BrushManipulator& operator=(const BrushManipulator&) = delete;
+        PaintBrushManipulator() = delete;
+        PaintBrushManipulator(const PaintBrushManipulator&) = delete;
+        PaintBrushManipulator& operator=(const PaintBrushManipulator&) = delete;
 
-        ~BrushManipulator() = default;
+        ~PaintBrushManipulator() = default;
 
         //! A Manipulator must only be created and managed through a shared_ptr.
-        static AZStd::shared_ptr<BrushManipulator> MakeShared(
+        static AZStd::shared_ptr<PaintBrushManipulator> MakeShared(
             const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair);
 
         //! The state of the manipulator at the start of an interaction.

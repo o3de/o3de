@@ -19,7 +19,7 @@ namespace AzToolsFramework
     class PlanarManipulator;
     class LinearManipulator;
     class AngularManipulator;
-    class BrushManipulator;
+    class PaintBrushManipulator;
     class LineSegmentSelectionManipulator;
     class SplineSelectionManipulator;
 
@@ -435,7 +435,7 @@ namespace AzToolsFramework
         const AZ::Color& color, float radius, const DecideColorFn& decideColor, bool enableDepthTest = false);
 
     AZStd::unique_ptr<ManipulatorViewProjectedCircle> CreateManipulatorViewProjectedCircle(
-        const BrushManipulator& brushManipulator, const AZ::Color& color, float radius, float width);
+        const PaintBrushManipulator& brushManipulator, const AZ::Color& color, float radius, float width);
 
     AZStd::unique_ptr<ManipulatorViewCircle> CreateManipulatorViewCircle(
         const AngularManipulator& angularManipulator,

@@ -10,7 +10,7 @@
 
 #include <AzToolsFramework/Brushes/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
-#include <AzToolsFramework/Manipulators/BrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -56,7 +56,7 @@ namespace GradientSignal
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
 
-        m_brushManipulator = AzToolsFramework::BrushManipulator::MakeShared(worldFromLocal, entityComponentIdPair);
+        m_brushManipulator = AzToolsFramework::PaintBrushManipulator::MakeShared(worldFromLocal, entityComponentIdPair);
         Refresh();
 
         m_brushManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
