@@ -113,7 +113,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<Scene>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Constructor<const AZStd::string&>()
                         ->Property("name", BehaviorValueGetter(&Scene::m_name), nullptr)

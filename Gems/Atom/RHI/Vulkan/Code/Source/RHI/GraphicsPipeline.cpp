@@ -8,7 +8,7 @@
 #include <AzCore/std/algorithm.h>
 #include <Atom/RHI.Reflect/RenderStates.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/RenderPass.h>
@@ -30,7 +30,7 @@ namespace AZ
 
             const auto* drawDescriptor = static_cast<const RHI::PipelineStateDescriptorForDraw*>(descriptor.m_pipelineDescritor);
             const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;            
-            auto renderpassDescriptor = ConvertRenderAttachmentLayout(renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
+            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
             renderpassDescriptor.m_device = descriptor.m_device;
             m_renderPass = descriptor.m_device->AcquireRenderPass(renderpassDescriptor);
 

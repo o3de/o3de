@@ -85,6 +85,9 @@ namespace AZ
             //! \return A pointer to the JNIEnv on the current thread.
             JNIEnv* GetJniEnv() const;
 
+            //! Request the global reference to the activity java virtual machine
+            JavaVM* GetActivityJavaVM() const { return m_jvm; }
+
             //! Request the global reference to the activity class
             jclass GetActivityClassRef() const { return m_activityClass; }
 
