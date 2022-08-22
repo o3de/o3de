@@ -3,40 +3,42 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{CE1EF97A-5BFE-4459-8967-53878C7F074F}",
-        "category": "Properties",
-        "title": "Float3 Property",
+        "id": "{E51F2A07-BDD2-45C9-850D-5BCF2DFE07E9}",
+        "category": "Material Inputs",
+        "title": "Float Input",
         "propertySlots": [
+            {
+                "name": "inGroupName",
+                "displayName": "Group Name",
+                "description": "Group Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
                 "supportedDataTypes": [
                     "string"
-                ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                ]
             },
             {
-                "name": "inGroup",
-                "displayName": "Group",
-                "description": "Group",
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
                 "supportedDataTypes": [
                     "string"
                 ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                "supportsEditingOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float3"
+                    "float"
                 ],
                 "settings": {
                     "materialInput": [
@@ -51,7 +53,7 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float3"
+                    "float"
                 ],
                 "settings": {
                     "instructions": [

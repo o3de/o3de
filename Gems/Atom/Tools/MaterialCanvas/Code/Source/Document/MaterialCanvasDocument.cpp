@@ -692,46 +692,37 @@ namespace MaterialCanvas
         for (const auto& inputNode : GetInstructionNodesInExecutionOrder(outputNode, inputSlotNames))
         {
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
-            if (!dynamicNode)
+            if (dynamicNode)
             {
-                continue;
+                const auto& nodeConfig = dynamicNode->GetConfig();
+
+                AZStd::vector<AZStd::string> instructionsForNode;
+                AtomToolsFramework::VisitDynamicNodeSlotConfigs(
+                    nodeConfig,
+                    [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
+                    {
+                        // If this is the output node then only generate instructions for the requested input slots.
+                        if (inputNode == outputNode)
+                        {
+                            auto currentSlot = inputNode->GetSlot(slotConfig.m_name);
+                            if (currentSlot && currentSlot->GetSlotDirection() == GraphModel::SlotDirection::Input &&
+                                AZStd::find(inputSlotNames.begin(), inputSlotNames.end(), slotConfig.m_name) == inputSlotNames.end())
+                            {
+                                return;
+                            }
+                        }
+
+                        const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
+                        instructionsForNode.insert(instructionsForNode.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                    });
+
+                // Gather and insert instructions provided by the node.
+                // We might need separate blocks of instructions that can be processed before or after the slots are processed.
+                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
+                ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), instructionsForNode);
+                ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), instructionsForNode);
+                instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
             }
-
-            const auto& nodeConfig = dynamicNode->GetConfig();
-
-            for (const auto& slotConfig : nodeConfig.m_propertySlots)
-            {
-                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
-            }
-
-            for (const auto& slotConfig : nodeConfig.m_inputSlots)
-            {
-                // If the current node is also the output node, do not generate instructions unless it is for one of the expected input
-                // slots.
-                if (inputNode == outputNode &&
-                    AZStd::find(inputSlotNames.begin(), inputSlotNames.end(), slotConfig.m_name) == inputSlotNames.end())
-                {
-                    continue;
-                }
-
-                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
-            }
-
-            for (const auto& slotConfig : nodeConfig.m_outputSlots)
-            {
-                const auto& instructionsForSlot = GetInstructionsFromSlot(inputNode, slotConfig);
-                instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
-            }
-
-            // Gather and insert instructions provided by the node.
-            // We might need separate blocks of instructions that can be processed before or after the slots are processed.
-            AZStd::vector<AZStd::string> instructionsForNode;
-            AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "instructions", instructionsForNode);
-            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), instructionsForNode);
-            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), instructionsForNode);
-            instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
         }
 
         return instructions;
@@ -788,37 +779,24 @@ namespace MaterialCanvas
             const auto& inputNode = inputNodePair.second;
 
             auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(inputNode.get());
-            if (!dynamicNode)
+            if (dynamicNode)
             {
-                continue;
+                const auto& nodeConfig = dynamicNode->GetConfig();
+
+                AZStd::vector<AZStd::string> inputPropertiesForNode;
+                AtomToolsFramework::VisitDynamicNodeSlotConfigs(
+                    nodeConfig,
+                    [&](const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig)
+                    {
+                        const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
+                        inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
+                    });
+
+                AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "inputProperties", inputPropertiesForNode);
+                ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), inputPropertiesForNode);
+                ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), inputPropertiesForNode);
+                inputProperties.insert(inputProperties.end(), inputPropertiesForNode.begin(), inputPropertiesForNode.end());
             }
-
-            const auto& nodeConfig = dynamicNode->GetConfig();
-
-            AZStd::vector<AZStd::string> inputPropertiesForNode;
-
-            for (const auto& slotConfig : nodeConfig.m_propertySlots)
-            {
-                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
-                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
-            }
-
-            for (const auto& slotConfig : nodeConfig.m_inputSlots)
-            {
-                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
-                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
-            }
-
-            for (const auto& slotConfig : nodeConfig.m_outputSlots)
-            {
-                const auto& inputPropertiesForSlot = GetInputPropertiesFromSlot(inputNode, slotConfig);
-                inputPropertiesForNode.insert(inputPropertiesForNode.end(), inputPropertiesForSlot.begin(), inputPropertiesForSlot.end());
-            }
-
-            AtomToolsFramework::CollectDynamicNodeSettings(nodeConfig.m_settings, "inputProperties", inputPropertiesForNode);
-            ReplaceStringsInContainer("NODEID", GetSymbolNameFromNode(inputNode), inputPropertiesForNode);
-            ReplaceStringsInContainer("PROPERTYNAME", GetInputPropertyNameFromNode(inputNode), inputPropertiesForNode);
-            inputProperties.insert(inputProperties.end(), inputPropertiesForNode.begin(), inputPropertiesForNode.end());
         }
 
         return inputProperties;

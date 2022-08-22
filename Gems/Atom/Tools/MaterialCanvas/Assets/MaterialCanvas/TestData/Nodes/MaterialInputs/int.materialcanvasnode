@@ -3,40 +3,42 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{AAE2C622-F9D7-4B2D-9743-BB7CBC773BA7}",
-        "category": "Properties",
-        "title": "Float4 Property",
+        "id": "{F7C989FD-71DA-4E9D-A1DA-C5E4678BCE12}",
+        "category": "Material Inputs",
+        "title": "Int Input",
         "propertySlots": [
+            {
+                "name": "inGroupName",
+                "displayName": "Group Name",
+                "description": "Group Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
                 "supportedDataTypes": [
                     "string"
-                ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                ]
             },
             {
-                "name": "inGroup",
-                "displayName": "Group",
-                "description": "Group",
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
                 "supportedDataTypes": [
                     "string"
                 ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                "supportsEditingOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float4"
+                    "int"
                 ],
                 "settings": {
                     "materialInput": [
@@ -51,7 +53,7 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float4"
+                    "int"
                 ],
                 "settings": {
                     "instructions": [

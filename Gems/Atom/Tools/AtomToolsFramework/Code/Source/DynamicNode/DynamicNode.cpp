@@ -115,7 +115,13 @@ namespace AtomToolsFramework
             }
 
             RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
-                slotConfig.m_name, slotConfig.m_displayName, dataTypes, defaultValue, slotConfig.m_description));
+                slotConfig.m_name,
+                slotConfig.m_displayName,
+                dataTypes,
+                defaultValue,
+                slotConfig.m_description,
+                nullptr,
+                slotConfig.m_supportsEditingOnNode));
         }
 
         for (const auto& slotConfig : m_config.m_outputSlots)
@@ -143,7 +149,12 @@ namespace AtomToolsFramework
             }
 
             RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
-                slotConfig.m_name, slotConfig.m_displayName, dataType, slotConfig.m_description));
+                slotConfig.m_name,
+                slotConfig.m_displayName,
+                dataType,
+                slotConfig.m_description,
+                nullptr,
+                slotConfig.m_supportsEditingOnNode));
         }
 
         for (const auto& slotConfig : m_config.m_propertySlots)
@@ -184,7 +195,13 @@ namespace AtomToolsFramework
             }
 
             RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
-                slotConfig.m_name, slotConfig.m_displayName, dataType, defaultValue, slotConfig.m_description));
+                slotConfig.m_name,
+                slotConfig.m_displayName,
+                dataType,
+                defaultValue,
+                slotConfig.m_description,
+                nullptr,
+                slotConfig.m_supportsEditingOnNode));
         }
     }
 } // namespace AtomToolsFramework

@@ -3,40 +3,42 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{D0F223FC-24FD-4EFA-85A5-7632463BC84B}",
-        "category": "Properties",
-        "title": "Float2 Property",
+        "id": "{9867FE60-6682-498C-B0FA-58D179F0C3E1}",
+        "category": "Material Inputs",
+        "title": "UInt Input",
         "propertySlots": [
+            {
+                "name": "inGroupName",
+                "displayName": "Group Name",
+                "description": "Group Name",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
             {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
                 "supportedDataTypes": [
                     "string"
-                ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                ]
             },
             {
-                "name": "inGroup",
-                "displayName": "Group",
-                "description": "Group",
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description",
                 "supportedDataTypes": [
                     "string"
                 ],
-                "defaultValue": {
-                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
-                    "Value": ""
-                }
+                "supportsEditingOnNode": false
             },
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float2"
+                    "uint"
                 ],
                 "settings": {
                     "materialInput": [
@@ -51,7 +53,7 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float2"
+                    "uint"
                 ],
                 "settings": {
                     "instructions": [
