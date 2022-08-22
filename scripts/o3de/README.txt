@@ -16,7 +16,7 @@ as querying existing gems and templates
 REQUIREMENTS
 ------------
 
- * Python 3.7.10 (64-bit)
+ * Python 3.10.5 (64-bit)
 
 INSTALL
 -----------

@@ -376,7 +376,7 @@ class AssetProcessor(object):
         :return: List of processes
         """
         my_pid = self.get_pid()
-        if my_pid is -1:
+        if my_pid == -1:
             return []
         return_list = []
         try:

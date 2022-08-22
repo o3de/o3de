@@ -78,7 +78,7 @@ namespace AzToolsFramework
             renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(), &IntersectorBus::Events::RayIntersect, rayRequest);
         TerrainDataRequestBus::BroadcastResult(
             renderGeometryIntersectionResult, &TerrainDataRequestBus::Events::GetClosestIntersection, rayRequest);
-         
+
         if (renderGeometryIntersectionResult.value)
         {
             return renderGeometryIntersectionResult.value.m_worldPosition;
@@ -115,9 +115,7 @@ namespace AzToolsFramework
     }
 
     AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
-        const AzFramework::ViewportId viewportId,
-        const AzFramework::ScreenPoint& screenPoint,
-        const float rayLength)
+        const AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float rayLength)
     {
         AzFramework::RenderGeometry::RayRequest ray;
         ray.m_onlyVisible = true; // only consider visible objects
