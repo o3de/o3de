@@ -65,11 +65,19 @@ namespace AZ
 
         //! Origin Visitor is callback is invoked for each setting key found during the VisitOrigins method
         //! @param settingsRegistryOrigin entry being visited
-        //! @returns True should be returned if the visitation should continue.
+        //! @returns True indicates to iterate to the next file origin at the specified settings key path
+        //! that was updated before the current origin
+        //!
+        //! i.e if there the key "/O3DE" was merged first from `<build-dir>/bin/profile/Registry/a.setreg`
+        //! and then `<engine-root>/Registry/b.setreg`, there will will be two entries in the origin stack
+        //! "/O3DE": ["<engine-root>/Registry/b.setreg", <build-dir>/bin/profile/Registry/a.setreg"]
+        //! The most recently set origin will be visited first.
+        //!
         using OriginVisitorCallback = AZStd::function<bool(const SettingsRegistryOrigin&)>;
 
         //! Visit all settings keys that are at specified key path and any children in the DomPrefixTree
         //! and invoke the supplied callback with the visit key and the SettingsRegistryOriginStack
+        //! Visitation happens from the most recent origin for a setting key to least recent
         void VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback) const;
 
     private:

@@ -384,7 +384,7 @@ namespace AZ
         }
     }
 
-    SettingsRegistryInterface::Type SettingsRegistryImpl::GetType(AZStd::string_view path) const
+    SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetType(AZStd::string_view path) const
     {
         if (path.empty())
         {
@@ -400,11 +400,22 @@ namespace AZ
             AZStd::scoped_lock lock(m_settingMutex);
             if (const rapidjson::Value* value = pointer.Get(m_settings); value != nullptr)
             {
-                return SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(*value);
+                SettingsType type;
+                type.m_type = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(*value);
+                if (value->IsInt64())
+                {
+                    type.m_signedness = Signedness::Signed;
+                }
+                else if (value->IsUint64())
+                {
+                    type.m_signedness = Signedness::Unsigned;
+                }
+                return type;
             }
         }
-        return Type::NoType;
+        return { Type::NoType, Signedness::None };
     }
+
 
     bool SettingsRegistryImpl::Get(bool& result, AZStd::string_view path) const
     {

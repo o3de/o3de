@@ -104,6 +104,7 @@ namespace AZ
             if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
             {
                 srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+                srcAccessFlags = RHI::FilterBits(srcAccessFlags, GetSupportedAccessFlags(srcPipelineStageFlags));
             }
         
             auto subresourceRange = GetSubresourceRange(scopeAttachment);
