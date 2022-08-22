@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import typing
 
 from aws_cdk import (
-    CfnOutput,
-    Stack,
+    core,
     aws_gamelift as gamelift
 )
 
@@ -24,7 +23,7 @@ class MatchmakingResoures:
     For more information about Gamelift FlexMatch, please check
     https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-intro.html
     """
-    def __init__(self, stack: Stack, game_session_queue_arns: typing.List[str]):
+    def __init__(self, stack: core.Stack, game_session_queue_arns: typing.List[str]):
         rule_set = gamelift.CfnMatchmakingRuleSet(
             scope=stack,
             id='MatchmakingRuleSet',
@@ -47,14 +46,13 @@ class MatchmakingResoures:
         matchmaking_configuration.node.add_dependency(rule_set)
 
         # Export the matchmaking rule set and configuration names as stack outputs
-        CfnOutput(
+        core.CfnOutput(
             stack,
             id='MatchmakingRuleSetName',
             description='Name of the matchmaking rule set',
             export_name=f'{stack.stack_name}:MatchmakingRuleSet',
             value=rule_set.name)
-
-        CfnOutput(
+        core.CfnOutput(
             stack,
             id='MatchmakingConfigurationName',
             description='Name of the matchmaking configuration',

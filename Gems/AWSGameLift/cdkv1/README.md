@@ -1,8 +1,7 @@
-# Welcome to O3DE GameLift Sample Project!
-> This is the long term supported CDK v2 version of this template. If you have preexisting versions of this template
-see the CDK guidance about upgrading to CDK v2.
 
-This is an optional CDKv2 application that provides two stacks:
+# Welcome to O3DE GameLift Sample Project!
+
+This is an optional CDK application that provides two stacks:
 
   * A GameLift stack that contains all the GameLift resources required to host game servers
   * An optional support stack which is used to upload local build files and create GameLift builds
@@ -12,18 +11,14 @@ The `cdk.json` file tells the CDK Toolkit how to execute this application.
 This project is set up like a standard Python project.  The initialization
 process also creates a virtualenv within this project, stored under the `.env`
 directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) (Python 3.10+) executable in your path with access to the `venv`
+(or `python` for Windows) (Python 3.7+) executable in your path with access to the `venv`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually.
 
 See https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html about for information about how to set up
 the prerequisites for CDK development.
 
-
->Note: This stack is for CDK v2 (the latest CDK version, if you are working with CDKv1 stacks please use the CDKv1 version of this application).
-
-## Make a virtual environment
-To manually create a virtualenv on macOS and Linux:
+To manually create a virtualenv on MacOS and Linux:
 
 ```
 $ python -m venv .env
@@ -81,7 +76,7 @@ $ cdk deploy -c create_game_session_queue=true
 
 You can also deploy a support stack which is used to upload local build files to S3 and provide GameLift access 
 to the S3 objects when create GameLift builds. The local build path needs to be specified in the
-[sample fleet configurations](aws_gamelift/fleet_configurations.py) if the feature is enabled. Otherwise, an existing
+[sample fleet configurations](aws_gamelift/fleet_configurations.py) if the feature is enabled. Otherwise an existing
 build id is required.
 
 ```
