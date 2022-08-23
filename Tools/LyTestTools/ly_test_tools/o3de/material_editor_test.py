@@ -36,32 +36,33 @@ import _pytest.outcomes
 
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.launchers import launcher_helper
-from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestSuite
+from ly_test_tools.o3de.multi_test_framework import MultiTestSuite, SharedTest, SingleTest
 
 logger = logging.getLogger(__name__)
 
 
-class MaterialEditorSingleTest(AbstractTestBase):
+class MaterialEditorSingleTest(SingleTest):
     """
     Test that will run alone in one MaterialEditor with no parallel MaterialEditors,
     limiting environmental side-effects at the expense of redundant isolated work
     """
 
     def __init__(self):
+        super(MaterialEditorSingleTest, self).__init__()
         # Extra cmdline arguments to supply to the MaterialEditor for the test
         self.extra_cmdline_args = []
         # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
         self.use_null_renderer = None
 
     @staticmethod
-    def setup(instance: MaterialEditorTestSuite.AbstractTestClass,
+    def setup(instance: MaterialEditorTestSuite.MultiTestCollector,
               request: _pytest.fixtures.FixtureRequest,
               workspace: AbstractWorkspaceManager,
-              material_editor_test_results: AbstractTestSuite.TestData,
+              material_editor_test_results: MultiTestSuite.TestData,
               launcher_platform: str) -> None:
         """
         User-overrideable setup function, which will run before the test.
-        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param material_editor_test_results: Currently recorded MaterialEditor test results
@@ -70,16 +71,16 @@ class MaterialEditorSingleTest(AbstractTestBase):
         pass
 
     @staticmethod
-    def wrap_run(instance: MaterialEditorTestSuite.AbstractTestClass,
+    def wrap_run(instance: MaterialEditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: AbstractTestSuite.TestData,
+                 material_editor_test_results: MultiTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
         Setup will run before wrap_run starts. Teardown will run after it completes.
-        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param material_editor_test_results: Currently recorded MaterialEditor test results
@@ -88,14 +89,14 @@ class MaterialEditorSingleTest(AbstractTestBase):
         yield
 
     @staticmethod
-    def teardown(instance: MaterialEditorTestSuite.AbstractTestClass,
+    def teardown(instance: MaterialEditorTestSuite.MultiTestCollector,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor_test_results: AbstractTestSuite.TestData,
+                 material_editor_test_results: MultiTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
         User-overrideable teardown function, which will run after the test
-        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.MultiTestCollector instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param material_editor_test_results: Currently recorded MaterialEditor test results
@@ -104,7 +105,7 @@ class MaterialEditorSingleTest(AbstractTestBase):
         pass
 
 
-class MaterialEditorSharedTest(AbstractTestBase):
+class MaterialEditorSharedTest(SharedTest):
     """
     Test that will run in parallel with tests in different MaterialEditor instances, as well as serially batching
     with other tests in each MaterialEditor instance. Minimizes total test run duration.
@@ -141,7 +142,7 @@ class MaterialEditorBatchedTest(MaterialEditorSharedTest):
     is_parallelizable = False
 
 
-class MaterialEditorTestSuite(AbstractTestSuite):
+class MaterialEditorTestSuite(MultiTestSuite):
     """
     This class defines the values needed in order to execute a batched, parallel, or single MaterialEditor test.
     Any new test cases written that inherit from this class can override these values for their newly created class.
@@ -160,8 +161,6 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     _single_test_class = MaterialEditorSingleTest
     # Test class to use for shared test collection.
     _shared_test_class = MaterialEditorSharedTest
-    # Log attribute value used in python to find the MaterialEditor's log file location.
-    _log_attribute = "material_editor_log"
     # Name of the executable's log file.
     _log_name = "material_editor_test.log"
     # Executable function to call when launching MaterialEditor.
@@ -169,15 +168,15 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
     @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(
-            collector: _pytest.python.Module, name: str, obj: object) -> MaterialEditorTestSuite.AbstractTestClass:
+            collector: _pytest.python.Module, name: str, obj: object) -> MaterialEditorTestSuite.MultiTestCollector:
         """
         Enables ly_test_tools._internal.pytest_plugin.multi_testing.pytest_pycollect_makeitem to collect the tests
         defined by this suite.
-        This is required for any test suite that inherits from the AbstractTestSuite class else the tests won't be
+        This is required for any test suite that inherits from the MultiTestSuite class else the tests won't be
         collected for that suite when using the ly_test_tools.o3de.multi_test_framework module.
         :param collector: Module that serves as the pytest test class collector
         :param name: Name of the parent test class
         :param obj: Module of the test to be run
-        :return: MaterialEditorTestSuite.AbstractTestClass
+        :return: MaterialEditorTestSuite.MultiTestCollector
         """
-        return MaterialEditorTestSuite.AbstractTestClass(name, collector)
+        return MaterialEditorTestSuite.MultiTestCollector.from_parent(parent=collector, name=name)

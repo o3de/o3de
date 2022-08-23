@@ -13,7 +13,7 @@ BatchedTest: Multiple tests that run 1 executable/application with multiple test
 ParallelTest: Multiple tests that run multiple executables/applications with 1 test in each executable/application.
 
 It is recommended that new modules are created with objects that inherit from objects here for new tests.
-Example: creating a new EditorTestSuite(AbstractTestSuite) class for testing the Editor application.
+Example: creating a new EditorTestSuite(MultiTestSuite) class for testing the Editor application.
 """
 
 from __future__ import annotations
@@ -37,12 +37,11 @@ import _pytest.python
 import _pytest.outcomes
 from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
-import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
-from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor
 from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor
 
 logger = logging.getLogger(__name__)
@@ -150,14 +149,13 @@ class Result(object):
             else:
                 return "-- No output --"
 
-        def get_log_attribute_str(self, log_attribute):
+        def get_log_output_str(self):
             # type () -> str
             """
-            Checks if the log_attribute exists and returns it.
-            :param log_attribute: Name of the log attribute to search for.
-            :return: Either the log_attribute string or a no output message.
+            Checks if the log_output attribute exists and returns it.
+            :return: Either the log_output string set by the result or a no output message.
             """
-            log = getattr(self, log_attribute, None)
+            log = getattr(self, "log_output", None)
             if log:
                 return log
             else:
@@ -165,15 +163,13 @@ class Result(object):
 
     class Pass(ResultType):
 
-        def __init__(self, log_attribute: str, test_spec: type(AbstractTestBase), output: str, log_output: str):
+        def __init__(self, test_spec: type(AbstractTestBase), output: str, log_output: str):
             """
             Represents a test success.
-            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
             :param test_spec: The type of test class.
             :param output: The test output.
             :param log_output: The program's log output.
             """
-            self.log_attribute = log_attribute
             self.test_spec = test_spec
             self.output = output
             self.log_output = log_output
@@ -190,15 +186,13 @@ class Result(object):
 
     class Fail(ResultType):
 
-        def __init__(self, log_attribute: str, test_spec: type(AbstractTestBase), output: str, log_output: str):
+        def __init__(self, test_spec: type(AbstractTestBase), output: str, log_output: str):
             """
             Represents a normal test failure.
-            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
             :param test_spec: The type of test class
             :param output: The test output
             :param log_output: The program's log output
             """
-            self.log_attribute = log_attribute
             self.test_spec = test_spec
             self.output = output
             self.log_output = log_output
@@ -210,17 +204,16 @@ class Result(object):
                 "|  Output  |\n"
                 "------------\n"
                 f"{self.get_output_str()}\n"
-                "-------------------------------\n"
-                f"|  {self.log_attribute} log  |\n"
-                "-------------------------------\n"
-                f"{self.get_log_attribute_str(self.log_attribute)}\n"
+                "----------------------------------------------------\n"
+                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                "----------------------------------------------------\n"
+                f"{self.get_log_output_str()}\n"
             )
             return output
 
     class Crash(ResultType):
 
         def __init__(self,
-                     log_attribute: str,
                      test_spec: type(AbstractTestBase),
                      output: str,
                      ret_code: int,
@@ -228,14 +221,12 @@ class Result(object):
                      log_output: str or None) -> None:
             """
             Represents a test which failed with an unexpected crash
-            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
             :param test_spec: The type of test class
             :param output: The test output
             :param ret_code: The test's return code
             :param stacktrace: The test's stacktrace if available
             :param log_output: The program's log output
             """
-            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.ret_code = ret_code
@@ -254,31 +245,28 @@ class Result(object):
                 "|  Output  |\n"
                 "------------\n"
                 f"{self.get_output_str()}\n"
-                "-------------------------------\n"
-                f"|  {self.log_attribute} log  |\n"
-                "------------------------------\n"
-                f"{self.get_log_attribute_str(self.log_attribute)}\n"
+                "----------------------------------------------------\n"
+                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                "----------------------------------------------------\n"
+                f"{self.get_log_output_str()}\n"
             )
             return output
 
     class Timeout(ResultType):
 
         def __init__(self,
-                     log_attribute: str,
                      test_spec: type(AbstractTestBase),
                      output: str,
                      time_secs: float,
                      log_output: str):
             """
             Represents a test which failed due to freezing, hanging, or executing slowly
-            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
             :param test_spec: The type of test class
             :param output: The test output
             :param time_secs: The timeout duration in seconds
             :param log_output: The program's log output
             :return: The Timeout object
             """
-            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.time_secs = time_secs
@@ -291,30 +279,27 @@ class Result(object):
                 "|  Output  |\n"
                 "------------\n"
                 f"{self.get_output_str()}\n"
-                "-------------------------------\n"
-                f"|  {self.log_attribute} log  |\n"
-                "-------------------------------\n"
-                f"{self.get_log_attribute_str(self.log_attribute)}\n"
+                "----------------------------------------------------\n"
+                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                "----------------------------------------------------\n"
+                f"{self.get_log_output_str()}\n"
             )
             return output
 
     class Unknown(ResultType):
 
         def __init__(self,
-                     log_attribute: str,
                      test_spec: type(AbstractTestBase),
                      output: str = None,
                      extra_info: str = None,
                      log_output: str = None):
             """
             Represents a failure that the test framework cannot classify
-            :param log_attribute: The name of the python log attribute to search for to obtain the log file.
             :param test_spec: The type of test class
             :param output: The test output
             :param extra_info: Any extra information as a string
             :param log_output: The program's log output
             """
-            self.log_attribute = log_attribute
             self.output = output
             self.test_spec = test_spec
             self.extra_info = extra_info
@@ -327,18 +312,18 @@ class Result(object):
                 "|  Output  |\n"
                 "------------\n"
                 f"{self.get_output_str()}\n"
-                "-------------------------------\n"
-                f"|  {self.log_attribute} log  |\n"
-                "-------------------------------\n"
-                f"{self.get_log_attribute_str(self.log_attribute)}\n"
+                "----------------------------------------------------\n"
+                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                "----------------------------------------------------\n"
+                f"{self.get_log_output_str()}\n"
             )
             return output
 
 
-class AbstractTestSuite(object):
+class MultiTestSuite(object):
     """
     Main object used to run the tests.
-    The new test suite class you create for your tests should inherit from this base AbstractTestSuite class.
+    The new test suite class you create for your tests should inherit from this base MultiTestSuite class.
     """
     # When this object is inherited, add any custom attributes as needed.
     # Extra cmdline arguments to supply for every executable instance for this test suite
@@ -355,8 +340,6 @@ class AbstractTestSuite(object):
     _single_test_class = SingleTest
     # Test class to use for shared test collection
     _shared_test_class = SharedTest
-    # Log attribute value used in python to find the executable's log file location.
-    _log_attribute = ""
     # Name of the executable's log file.
     _log_name = ""
     # Executable function to call when launching executable.
@@ -377,9 +360,9 @@ class AbstractTestSuite(object):
             self.run_pytestfunc = None
             self.result_pytestfuncs = []
 
-    class AbstractTestClass(pytest.Class):
+    class MultiTestCollector(pytest.Class):
         """
-        Custom pytest collector which programmatically adds test functions based on data in the AbstractTestSuite class
+        Custom pytest collector which programmatically adds test functions based on data in the MultiTestSuite class
         """
 
         def collect(self):
@@ -468,7 +451,7 @@ class AbstractTestSuite(object):
             runners = []
 
             def create_runner(runner_name, function, tests):
-                target_runner = AbstractTestSuite.Runner(runner_name, function, tests)
+                target_runner = MultiTestSuite.Runner(runner_name, function, tests)
 
                 def make_shared_run():
                     @set_marks({"runner": target_runner, "run_type": "run_shared"})
@@ -565,7 +548,7 @@ class AbstractTestSuite(object):
     def _get_number_parallel_executables(self, request: _pytest.fixtures.FixtureRequest) -> int:
         """
         Retrieves the number of parallel executables preference based on cmdline overrides or class overrides.
-        Defaults to self.get_number_parallel_executables() from inherited AbstractTestSuite class.
+        Defaults to self.get_number_parallel_executables() from inherited MultiTestSuite class.
         :request: The Pytest Request object
         :return: The number of parallel executables to use
         """
@@ -601,7 +584,7 @@ class AbstractTestSuite(object):
         items[:] = items + new_items
 
     @pytest.fixture(scope="class")
-    def collected_test_data(self, request: _pytest.fixtures.FixtureRequest) -> AbstractTestSuite.TestData:
+    def collected_test_data(self, request: _pytest.fixtures.FixtureRequest) -> MultiTestSuite.TestData:
         """
         Yields a per-testsuite structure to store the data of each test result and an AssetProcessor object that will be
         re-used on the whole suite
@@ -610,13 +593,13 @@ class AbstractTestSuite(object):
         """
         yield from self._collected_test_data(request)
 
-    def _collected_test_data(self, request: _pytest.fixtures.FixtureRequest) -> AbstractTestSuite.TestData:
+    def _collected_test_data(self, request: _pytest.fixtures.FixtureRequest) -> MultiTestSuite.TestData:
         """
         A wrapped implementation to simplify unit testing pytest fixtures. Users should not call this directly.
         :request: The Pytest request object (unused, but always passed by pytest)
         :yield: The TestData object
         """
-        test_data = AbstractTestSuite.TestData()
+        test_data = MultiTestSuite.TestData()
         yield test_data  # yield to pytest while test-class executes
         # resumed by pytest after each test-class finishes
         if test_data.asset_processor:  # was assigned an AP to manage
@@ -629,9 +612,9 @@ class AbstractTestSuite(object):
     @classmethod
     def get_single_tests(cls) -> list[_single_test_class]:
         """
-        Grabs all of the _single_test_class subclassed tests from the AbstractTestSuite class.
+        Grabs all of the _single_test_class subclassed tests from the MultiTestSuite class.
         Usage example:
-           class MyTestSuite(AbstractTestSuite):
+           class MyTestSuite(MultiTestSuite):
                class MyFirstTest(SingleTest):
                    from . import script_to_be_run_as_single_test as test_module
         :return: The list of single tests
@@ -643,9 +626,9 @@ class AbstractTestSuite(object):
     @classmethod
     def get_shared_tests(cls) -> list[_shared_test_class]:
         """
-        Grabs all of the _shared_test_class from the AbstractTestSuite
+        Grabs all of the _shared_test_class from the MultiTestSuite
         Usage example:
-           class MyTestSuite(AbstractTestSuite):
+           class MyTestSuite(MultiTestSuite):
                class MyFirstTest(SharedTest):
                    from . import test_script_to_be_run_1 as test_module
                class MyFirstTest(SharedTest):
@@ -714,7 +697,7 @@ class AbstractTestSuite(object):
     def _run_single_test(self,
                          request: _pytest.fixtures.FixtureRequest,
                          workspace: AbstractWorkspaceManager,
-                         collected_test_data: AbstractTestSuite.TestData,
+                         collected_test_data: MultiTestSuite.TestData,
                          test_spec: SingleTest) -> None:
         """
         Runs a single test (one executable, one test) with the given specs.
@@ -730,7 +713,7 @@ class AbstractTestSuite(object):
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
-        self._prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         self.executable.configure_settings()
 
@@ -744,7 +727,6 @@ class AbstractTestSuite(object):
             logger.error(f"Unexpectedly found no test run in the {self._log_name} during {test_spec}")
             result = {"Unknown":
                       Result.Unknown(
-                          log_attribute=self._log_attribute,
                           test_spec=test_spec,
                           extra_info=f"Unexpectedly found no test run information on stdout in the {self._log_name}")}
         collected_test_data.results.update(result)
@@ -769,7 +751,7 @@ class AbstractTestSuite(object):
         :param workspace: The LyTestTools Workspace object
         :param executable: The program executable under test
         :param run_id: The unique run id
-        :param log_name: The name of the executabl log to retrieve
+        :param log_name: The name of the executable log to retrieve
         :param test_spec: The type of test class
         :param cmdline_args: Any additional command line args
         :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
@@ -777,7 +759,7 @@ class AbstractTestSuite(object):
         if cmdline_args is None:
             cmdline_args = []
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        if type(executable) is WinEditor:  # Handle Editor CLI args since we need workspace context to populate them.
+        if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
             test_cmdline_args += [
                 "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
                 f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
@@ -802,14 +784,14 @@ class AbstractTestSuite(object):
         # Since there are no default logging features, we default to using Editor logging for any executable.
         log_path_function = editor_utils.retrieve_log_path
         log_content_function = editor_utils.retrieve_editor_log_content
-        if type(executable) is WinEditor:
+        if type(executable) in [WinEditor, LinuxEditor]:
             log_path_function = editor_utils.retrieve_log_path
             log_content_function = editor_utils.retrieve_editor_log_content
             cmdline = ["-runpythontest", test_filename,
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        elif type(executable) is WinMaterialEditor:
+        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
             log_path_function = editor_utils.retrieve_material_editor_log_path
             log_content_function = editor_utils.retrieve_material_editor_log_content
             cmdline = ["-runpythontest", test_filename,
@@ -826,12 +808,12 @@ class AbstractTestSuite(object):
             workspace.artifact_manager.save_artifact(
                 os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
             if return_code == 0:
-                test_result = Result.Pass(self._log_attribute, test_spec, output, executable_log_content)
+                test_result = Result.Pass(test_spec, output, executable_log_content)
             else:
                 has_crashed = return_code != self._test_fail_retcode
                 if has_crashed:
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
-                    test_result = Result.Crash(self._log_attribute, test_spec, output, return_code, crash_output, None)
+                    test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
                     dmp_file_name = os.path.join(log_path_function(run_id, workspace), 'error.dmp')
                     if os.path.exists(dmp_file_name):
@@ -845,16 +827,15 @@ class AbstractTestSuite(object):
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
-                    test_result = Result.Fail(self._log_attribute, test_spec, output, executable_log_content)
+                    test_result = Result.Fail(test_spec, output, executable_log_content)
         except WaitTimeoutError:
             output = executable.get_output()
             executable.stop()
             executable_log_content = log_content_function(run_id, log_name, workspace)
-            test_result = Result.Timeout(
-                self._log_attribute, test_spec, output, test_spec.timeout, executable_log_content)
+            test_result = Result.Timeout(test_spec, output, test_spec.timeout, executable_log_content)
 
         executable_log_content = log_content_function(run_id, log_name, workspace)
-        results = self._get_results_using_output(self._log_attribute, [test_spec], output, executable_log_content)
+        results = self._get_results_using_output([test_spec], output, executable_log_content)
         results[test_spec.__name__] = test_result
         return results
 
@@ -865,7 +846,7 @@ class AbstractTestSuite(object):
     def _run_batched_tests(self,
                            request: _pytest.fixtures.FixtureRequest,
                            workspace: AbstractWorkspaceManager,
-                           collected_test_data: AbstractTestSuite.TestData,
+                           collected_test_data: MultiTestSuite.TestData,
                            test_spec_list: list[BatchedTest],
                            extra_cmdline_args: list[str] = None) -> None:
         """
@@ -883,7 +864,7 @@ class AbstractTestSuite(object):
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
-        self._prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         self.executable.configure_settings()
 
@@ -912,7 +893,7 @@ class AbstractTestSuite(object):
     def _run_parallel_tests(self,
                             request: _pytest.fixtures.FixtureRequest,
                             workspace: AbstractWorkspaceManager,
-                            collected_test_data: AbstractTestSuite.TestData,
+                            collected_test_data: MultiTestSuite.TestData,
                             test_spec_list: list[ParallelTest],
                             extra_cmdline_args: list[str] = None) -> None:
         """
@@ -930,7 +911,7 @@ class AbstractTestSuite(object):
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
-        self._prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         self.executable.configure_settings()
 
@@ -978,7 +959,6 @@ class AbstractTestSuite(object):
                     logger.debug(f"Results from ParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
                               Result.Unknown(
-                                  log_attribute=self._log_attribute,
                                   test_spec=ParallelTest,
                                   extra_info="Unexpectedly found no test run information on stdout in the executable log")}
                 collected_test_data.results.update(result)
@@ -995,7 +975,7 @@ class AbstractTestSuite(object):
     def _run_parallel_batched_tests(self,
                                     request: _pytest.fixtures.FixtureRequest,
                                     workspace: AbstractWorkspaceManager,
-                                    collected_test_data: AbstractTestSuite.TestData,
+                                    collected_test_data: MultiTestSuite.TestData,
                                     test_spec_list: list[SharedTest],
                                     extra_cmdline_args: list[str] = None) -> None:
         """
@@ -1013,7 +993,7 @@ class AbstractTestSuite(object):
         self.executable.workspace = workspace
 
         # Setup AP, kill processes, and configure the executable.
-        self._prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         self.executable.configure_settings()
 
@@ -1036,7 +1016,7 @@ class AbstractTestSuite(object):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
                         results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self._log_attribute,
+                            request, workspace, current_executable, index + 1, self._log_name,
                             test_spec_list_for_executable, extra_cmdline_args)
                         assert results is not None
                     else:
@@ -1062,7 +1042,6 @@ class AbstractTestSuite(object):
                 logger.debug(f"Results from SharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
                           Result.Unknown(
-                              log_attribute=self._log_name,
                               test_spec=SharedTest,
                               extra_info="Unexpectedly found no test run information on stdout in the executable log")}
             collected_test_data.results.update(result)
@@ -1120,7 +1099,7 @@ class AbstractTestSuite(object):
         temp_batched_case_file = None
 
         # Editor
-        if type(executable) is WinEditor:
+        if type(executable) in [WinEditor, LinuxEditor]:
             # We create a file containing a semicolon separated scripts and test cases for the executable to read.
             test_script_list = ""
             test_case_list = ""
@@ -1154,7 +1133,7 @@ class AbstractTestSuite(object):
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
         # MaterialEditor
-        elif type(executable) is WinMaterialEditor:
+        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
             log_path_function = editor_utils.retrieve_material_editor_log_path
             log_content_function = editor_utils.retrieve_material_editor_log_content
             test_filenames_str = ";".join(
@@ -1173,24 +1152,26 @@ class AbstractTestSuite(object):
             executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log
             try:
-                path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
                 full_log_name = f'({run_id}){log_name}'
-                destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
-                editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
+                path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
+                if type(executable) in [WinEditor, LinuxEditor]:
+                    destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                    editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
+                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
+                    workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
             if return_code == 0:
                 # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
-                    results[test_spec.__name__] = Result.Pass(
-                        self._log_attribute, test_spec, output, executable_log_content)
+                    results[test_spec.__name__] = Result.Pass(test_spec, output, executable_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list.
                 # If it didn't then it will have "Unknown" as the type of result.
-                results = self._get_results_using_output(
-                    self._log_attribute, test_spec_list, output, executable_log_content)
+                results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 assert len(results) == len(test_spec_list), (
                     "bug in get_results_using_output(), the number of results don't match the tests ran")
 
@@ -1218,8 +1199,7 @@ class AbstractTestSuite(object):
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                                 results[test_spec_name] = Result.Crash(
-                                    self._log_attribute, result.test_spec, output, return_code, crash_error,
-                                    result.log_output)
+                                    result.test_spec, output, return_code, crash_error, result.log_output)
                                 crashed_result = result
                             else:
                                 # If there are remaining "Unknown" results, these couldn't execute because of the crash,
@@ -1232,15 +1212,14 @@ class AbstractTestSuite(object):
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(
-                            self._log_attribute, crashed_result.test_spec, output, return_code, crash_error,
-                            crashed_result.log_output)
+                            crashed_result.test_spec, output, return_code, crash_error, crashed_result.log_output)
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
             executable_log_content = log_content_function(run_id, log_name, workspace)
 
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
-            results = self._get_results_using_output(self._log_attribute, test_spec_list, output, executable_log_content)
+            results = self._get_results_using_output(test_spec_list, output, executable_log_content)
             assert len(results) == len(test_spec_list), (
                 "bug in _get_results_using_output(), the number of results don't match the tests ran")
 
@@ -1249,11 +1228,10 @@ class AbstractTestSuite(object):
             for test_spec_name, result in results.items():
                 if isinstance(result, Result.Unknown):
                     if not timed_out_result:
-                        results[test_spec_name] = Result.Timeout(self._log_attribute,
-                                                                 result.test_spec,
+                        results[test_spec_name] = Result.Timeout(result.test_spec,
                                                                  result.output,
                                                                  self.timeout_shared_test,
-                                                                 result.log_attribute)
+                                                                 result.log_output)
                         timed_out_result = result
                     else:
                         # If there are remaining "Unknown" results, these couldn't execute because of the timeout,
@@ -1263,8 +1241,7 @@ class AbstractTestSuite(object):
                                                              f"before this test could be executed"
             # If all the tests ran then the last test caused the timeout as it didn't close the executable.
             if not timed_out_result:
-                results[test_spec_name] = Result.Timeout(self._log_attribute,
-                                                         timed_out_result.test_spec,
+                results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
                                                          results[test_spec_name].output,
                                                          self.timeout_shared_test,
                                                          result.log_output)
@@ -1276,14 +1253,12 @@ class AbstractTestSuite(object):
         return results
 
     @staticmethod
-    def _get_results_using_output(log_attribute: str,
-                                  test_spec_list: list[AbstractTestBase],
+    def _get_results_using_output(test_spec_list: list[AbstractTestBase],
                                   output: str,
                                   log_output: str) -> dict[any, [Result.Unknown, Result.Pass, Result.Fail]]:
         """
         Utility function for parsing the output information from the program being tested (i.e. Editor).
         It de-serializes the JSON content printed in the output for every test and returns that information.
-        :param log_attribute: The name of the python log attribute to search for to obtain the log file.
         :param test_spec_list: The list of test classes
         :param output: The test output
         :param log_output: The program's log output
@@ -1317,7 +1292,6 @@ class AbstractTestSuite(object):
             name = editor_utils.get_module_filename(test_spec.test_module)
             if name not in found_jsons.keys():
                 results[test_spec.__name__] = Result.Unknown(
-                    log_attribute,
                     test_spec,
                     output,
                     f"Found no test run information on stdout for {name} in the test output",
@@ -1337,9 +1311,9 @@ class AbstractTestSuite(object):
                 log_start = end
 
                 if json_result["success"]:
-                    result = Result.Pass(log_attribute, test_spec, json_output, cur_log)
+                    result = Result.Pass(test_spec, json_output, cur_log)
                 else:
-                    result = Result.Fail(log_attribute, test_spec, json_output, cur_log)
+                    result = Result.Fail(test_spec, json_output, cur_log)
                 results[test_spec.__name__] = result
 
         return results
@@ -1358,26 +1332,3 @@ class AbstractTestSuite(object):
         else:
             error_str = f"Test {name}:\n{str(result)}"
             pytest.fail(error_str)
-
-    def _prepare_asset_processor(self, workspace: AbstractWorkspaceManager, collected_test_data: TestData) -> None:
-        """
-        Prepares the asset processor for the test depending on whether or not the process is open and if the current
-        test owns it.
-        :param workspace: The workspace object in case an AssetProcessor object needs to be created
-        :param collected_test_data: The test data from calling collected_test_data()
-        :return: None
-        """
-        try:
-            # Start-up an asset processor if we are not already managing one
-            if collected_test_data.asset_processor is None:
-                if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
-                    editor_utils.kill_all_ly_processes(include_asset_processor=True)
-                    collected_test_data.asset_processor = AssetProcessor(workspace)
-                    collected_test_data.asset_processor.start()
-                else:  # If another AP process already exists, do not kill it as we do not manage it
-                    editor_utils.kill_all_ly_processes(include_asset_processor=False)
-            else:  # Make sure existing asset processor wasn't closed by accident
-                collected_test_data.asset_processor.start()
-        except Exception as ex:
-            collected_test_data.asset_processor = None
-            raise ex

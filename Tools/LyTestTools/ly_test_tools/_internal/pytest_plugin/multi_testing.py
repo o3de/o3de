@@ -28,17 +28,17 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     parser.addoption("--no-test-parallel", action="store_true", help="Don't run multiple instances in parallel")
     parser.addoption("--parallel-executables", type=int, action="store",
                      help="Override the number of program executables to run at the same time. Default value is: "
-                     f"{ly_test_tools.o3de.multi_test_framework.AbstractTestSuite.get_number_parallel_executables()}")
+                     f"{ly_test_tools.o3de.multi_test_framework.MultiTestSuite.get_number_parallel_executables()}")
 
 
 def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> _pytest.python.Module:
     """
     Create a custom item collection if the class defines a pytest_multitest_makeitem method. This is used for
     automatically generating test functions with a custom collector.
-    Classes that inherit the AbstractTestSuite class require a "pytest_multitest_makeitem" method to collect tests.
+    Classes that inherit the MultiTestSuite class require a "pytest_multitest_makeitem" method to collect tests.
     :param collector: The Pytest collector
     :param name: Name of the collector
-    :param obj: The custom collector, normally a test class object inside the AbstractTestSuite class
+    :param obj: The custom collector, normally a test class object inside the MultiTestSuite class
     :return: Returns the custom collector
     """
     if inspect.isclass(obj):

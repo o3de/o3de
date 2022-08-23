@@ -14,8 +14,10 @@ import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 logger = logging.getLogger(__name__)
+
 
 def compile_test_case_name_from_request(request):
     """
@@ -31,6 +33,7 @@ def compile_test_case_name_from_request(request):
         logging.warning(f"Error reading test case name for TIAF. {e}")
         compiled_test_case_name = "ERROR"
     return compiled_test_case_name
+
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """
@@ -323,3 +326,27 @@ def _check_log_errors_warnings(log_path: str) -> bool:
     if regex_match is None or int(regex_match.group(1)) != 0 or int(regex_match.group(2)) != 0:
         return True
     return False
+
+
+def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                            collected_test_data: TestData) -> None:
+    """
+    Prepares the asset processor for the test depending on whether the process is open and if the current test owns it.
+    :param workspace: The workspace object in case an AssetProcessor object needs to be created
+    :param collected_test_data: The test data from calling collected_test_data()
+    :return: None
+    """
+    try:
+        # Start-up an asset processor if we are not already managing one
+        if collected_test_data.asset_processor is None:
+            if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+                kill_all_ly_processes(include_asset_processor=True)
+                collected_test_data.asset_processor = AssetProcessor(workspace)
+                collected_test_data.asset_processor.start()
+            else:  # If another AP process already exists, do not kill it as we do not manage it
+                kill_all_ly_processes(include_asset_processor=False)
+        else:  # Make sure existing asset processor wasn't closed by accident
+            collected_test_data.asset_processor.start()
+    except Exception as ex:
+        collected_test_data.asset_processor = None
+        raise ex

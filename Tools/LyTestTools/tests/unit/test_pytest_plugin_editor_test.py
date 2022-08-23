@@ -8,7 +8,7 @@ import pytest
 import unittest.mock as mock
 import unittest
 
-import ly_test_tools._internal.pytest_plugin.multi_testing as editor_test
+import ly_test_tools._internal.pytest_plugin.multi_testing as multi_testing
 
 pytestmark = pytest.mark.SUITE_smoke
 
@@ -23,7 +23,7 @@ class TestEditorTest(unittest.TestCase):
         mock_base = mock.MagicMock()
         mock_obj.__bases__ = [mock_base]
 
-        editor_test.pytest_pycollect_makeitem(mock_collector, mock_name, mock_obj)
+        multi_testing.pytest_pycollect_makeitem(mock_collector, mock_name, mock_obj)
         mock_base.pytest_multitest_makeitem.assert_called_once_with(mock_collector, mock_name, mock_obj)
 
     def test_PytestCollectionModifyitem_OneValidClass_CallsOnce(self):
@@ -35,7 +35,7 @@ class TestEditorTest(unittest.TestCase):
         mock_items = [mock_item, mock.MagicMock()]
         mock_config = mock.MagicMock()
 
-        generator = editor_test.pytest_collection_modifyitems(mock_session, mock_items, mock_config)
+        generator = multi_testing.pytest_collection_modifyitems(mock_session, mock_items, mock_config)
         for x in generator:
             pass
         assert mock_class.pytest_custom_modify_items.call_count == 1
