@@ -248,7 +248,27 @@ def GetExtrasRemoteConfig(remoteConfigs) {
     return extrasRemoteConfigs
 }
 
+def UnInstallGitLFS() {
+    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
+        PlatformSh('git lfs uninstall', 'Git LFS Uninstall')
+    }
+}
+
+def InstallAndPullGitLFS() {
+    if(fileExists('.lfsconfig')) {
+        // Add lfs url to the .lfsconfig file (deleted after run)
+        def lfsURL = sh(script: "git config --get -f .lfsconfig lfs.url", returnStdout: true).toString().trim()
+        withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
+            PlatformSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${lfsURL}", 'Set credentials', false)
+            PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
+            PlatformSh("git lfs pull", "Pulling new LFS objects")
+        }
+    }
+}
+
 def CheckoutEngineBootstrapScripts(String branchName) {
+    UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
@@ -281,8 +301,6 @@ def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules
             PlatformRm(indexLockFile)
         }
     }
-
-    PlatformSh('git lfs uninstall', 'Git LFS Uninstall') // Prevent git from pulling lfs objects during checkout
 
     def random = new Random()
     def retryAttempt = 0
@@ -393,6 +411,8 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 assert false : "repositoryName: ${repositoryName} Unknown"
             }
 
+            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
             //checkout the engine branch
             CheckoutRepo(the_branch, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
@@ -409,11 +429,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
             PlatformSh(command, "Running ${platform} clean")
 
-            //lfs
-            if(fileExists('.lfsconfig')) {
-                PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
-                PlatformSh("git lfs pull", "Pulling new LFS objects")
-            }
+            InstallAndPullGitLFS()
         }
         //pull the extras repo next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the extras repo
         dir(EXTRAS_REPOSITORY_NAME) {
@@ -430,24 +446,12 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 assert false : "repositoryName: ${repositoryName} Unknown"
             }
 
+            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+    
             //checkout the extras branch
             CheckoutRepo(the_branch, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
 
-            //lfs
-            if(fileExists('.lfsconfig')) {
-                // Add lfs url to windows credential manager or directly to the .lfsconfig file (deleted after run)
-                def lfsURL = sh(script: "git config --get -f .lfsconfig lfs.url", returnStdout: true).toString().trim()
-                withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-                    if(env.IS_UNIX) {
-                    //    PlatformSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${lfsURL}", 'Set credentials', false)
-                    }
-                    else {
-                    //    bat(script: "cmdkey /generic:LegacyGeneric:target=git:${lfsURL} /user:${username} /pass:${accesstoken}")
-                    }
-                }
-                //PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
-                //PlatformSh("git lfs pull", "Pulling new LFS objects")
-            }
+            InstallAndPullGitLFS()
         }
     }
 }
