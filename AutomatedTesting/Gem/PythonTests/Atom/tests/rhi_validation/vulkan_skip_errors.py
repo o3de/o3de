@@ -9,11 +9,15 @@ class VulkanValidationErrors:
     identifiers = ["vkDebugMessage"]
 
     # List to add vulkan validation errors that will be ignored.
+    # For example, to ignore the following error
+    #
+    # [vkDebugMessage] [ERROR][Validation] Validation Error: [ VUID-VkMemoryAllocateInfo-flags-03331 ] Object 0: handle = 0x24c6516baa0, 
+    # type = VK_OBJECT_TYPE_DEVICE; | MessageID = 0xf972dfbf | If VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT is set, bufferDeviceAddress must be enabled. 
+    # The Vulkan spec states: If VkMemoryAllocateFlagsInfo::flags includes VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT, the bufferDeviceAddress feature
+    # must be enabled (https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VUID-VkMemoryAllocateInfo-flags-03331)
+    #
+    # The entry "VUID-VkMemoryAllocateInfo-flags-03331" can be added to the list.
     errors_to_skip = [
-        #"VUID-VkDescriptorImageInfo-imageLayout-00344", # GHI-xxx
-        #"VUID-vkCmdDraw-None-02699", # GHI-xxx
-        #"VUID-VkMemoryAllocateInfo-flags-03331", # GHI-xxx
-        #"UNASSIGNED-CoreValidation-Shader-InconsistentSpirv"  # GHI-xxx
         ]
 
     def CheckError(error_id, error_msg):

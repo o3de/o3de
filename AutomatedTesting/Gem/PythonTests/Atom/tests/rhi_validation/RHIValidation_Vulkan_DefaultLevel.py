@@ -10,7 +10,7 @@ class Checks:
     no_rhi_validation_errors_found = ("No RHI validation errors found", "Found RHI validation errors")
     exit_game_mode                 = ("Exited game mode",               "Failed to exit game mode")
 
-def RHIValidation_DefaultLevel():
+def RHIValidation_Vulkan_DefaultLevel():
     
     import azlmbr.legacy.general as general
     
@@ -49,4 +49,4 @@ def RHIValidation_DefaultLevel():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(RHIValidation_DefaultLevel)
+    Report.start_test(RHIValidation_Vulkan_DefaultLevel)
