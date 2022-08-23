@@ -247,7 +247,7 @@ namespace GraphModel
         //! Type template type T must match the slot's data type.
         //! Valid for Input Data and Property slots.
         template<typename T>
-        const T& GetValue() const;
+        T GetValue() const;
 
         //! Sets the slot's value, which will be used if there are no input connections.
         //! Type template type T must match the slot's data type.
@@ -304,18 +304,15 @@ namespace GraphModel
         
 
     template<typename T>
-    const T& Slot::GetValue() const
+    T Slot::GetValue() const
     {
-        const T* pValue = AZStd::any_cast<T>(&m_value);
-
-        #if defined(AZ_ENABLE_TRACING)
-            DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
-            AssertWithTypeInfo(SupportsValues(), dataTypeUsed, "This slot type does not support values");
-            AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
-            AssertWithTypeInfo(nullptr != pValue, dataTypeUsed, "m_value does not hold data of the appropriate type");
-        #endif
-
-        return *pValue;
+#if defined(AZ_ENABLE_TRACING)
+        DataTypePtr dataTypeUsed = GetDataTypeForTypeId(azrtti_typeid<T>());
+        AssertWithTypeInfo(SupportsValues(), dataTypeUsed, "This slot type does not support values");
+        AssertWithTypeInfo(IsSupportedDataType(dataTypeUsed), dataTypeUsed, "Slot::GetValue used with the wrong type");
+        AssertWithTypeInfo(m_value.is<T>(), dataTypeUsed, "m_value does not hold data of the appropriate type");
+#endif
+        return m_value.is<T>() ? AZStd::any_cast<T>(m_value) : T{};
     }
 
 
