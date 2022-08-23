@@ -56,6 +56,34 @@ void FileWatcher::PlatformImplementation::Finalize()
     m_inotifyHandle = -1;
 }
 
+bool FileWatcher::PlatformImplementation::TryToWatch(const QString &pathStr, int* errnoPtr)
+{
+    const char* path = pathStr.toUtf8().constData();
+    int watchHandle = inotify_add_watch(
+        m_inotifyHandle, path, IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+    const auto err = errno; // Only contains relevant information if we actually failed
+
+    if (watchHandle < 0)
+    {
+        [[maybe_unused]] const char* extraStr = (err == ENOSPC ? " (try increasing fs.inotify.max_user_watches with sysctl)" : "");
+        [[maybe_unused]] AZStd::fixed_string<255> errorString;
+        AZ_Warning(
+            "FileWatcher", false,
+            "inotify_add_watch failed for path %s with error %d: %s%s",
+            path, err, strerror_r(err, errorString.data(), errorString.capacity()), extraStr);
+        if (errnoPtr)
+        {
+            *errnoPtr = err;
+        }
+        return false;
+    }
+    {
+        QMutexLocker lock{&m_handleToFolderMapLock};
+        m_handleToFolderMap[watchHandle] = pathStr;
+    }
+    return true;
+}
+
 void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool recursive)
 {
     if (m_inotifyHandle < 0)
@@ -63,33 +91,10 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
         return;
     }
 
-    auto tryToWatch = [&](const QString& pathStr) -> bool {
-        const char* path = pathStr.toUtf8().constData();
-        int watchHandle = inotify_add_watch(
-            m_inotifyHandle, path, IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
-
-        if (watchHandle < 0)
-        {
-            const auto err = errno;
-            [[maybe_unused]] const char* extraStr = (err == ENOSPC ? " (try increasing fs.inotify.max_user_watches with sysctl)" : "");
-            [[maybe_unused]] AZStd::fixed_string<255> errorString;
-            AZ_Warning(
-                "FileWatcher", false,
-                "inotify_add_watch failed for path %s: %s%s",
-                path, strerror_r(err, errorString.data(), errorString.capacity()), extraStr);
-            return false;
-        }
-        {
-            QMutexLocker lock{&m_handleToFolderMapLock};
-            m_handleToFolderMap[watchHandle] = pathStr;
-        }
-        return true;
-    };
-
     // Clean up the path before accepting it as a watch folder
     QString cleanPath = QDir::cleanPath(folder);
 
-    if (!tryToWatch(cleanPath))
+    if (!TryToWatch(cleanPath))
     {
         return;
     }
@@ -102,9 +107,10 @@ void FileWatcher::PlatformImplementation::AddWatchFolder(QString folder, bool re
     while (dirIter.hasNext())
     {
         QString dirName = dirIter.next();
-        if (!tryToWatch(dirName))
+        int theErrno;
+        if (!TryToWatch(dirName, &theErrno))
         {
-            switch (errno)
+            switch (theErrno)
             {
             case EACCES:
             case EBADF:
