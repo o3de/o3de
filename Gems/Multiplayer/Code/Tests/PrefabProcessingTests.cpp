@@ -353,6 +353,5 @@ namespace UnitTest
 
         // Verify that the nested network entity was discovered and 2 processed objects (spawnable and network.spawnable) were created
         EXPECT_EQ(processedObjects.size(), 2);
-
     }
 } // namespace UnitTest

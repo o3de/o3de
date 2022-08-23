@@ -208,7 +208,6 @@ namespace Multiplayer
             networkSpawnableAssetId,
             networkEntityCount);
 
-        
         if (networkEntityCount == 0)
         {
             return false;
