@@ -532,11 +532,14 @@ namespace LUAEditor
 
     void LUAEditorPlainTextEdit::UpdateFont(QFont font, int tabSize)
     {
-        setFont(font);
+        QTextCursor currentCursor = textCursor();
         QFontMetrics metrics(font);
+        QTextCharFormat characterFormat;
+        characterFormat.setFont(font);
+        selectAll();
+        setCurrentCharFormat(characterFormat);
         setTabStopDistance(metrics.horizontalAdvance(' ') * tabSize);
-
-        update();
+        setTextCursor(currentCursor);
     }
 
     void LUAEditorPlainTextEdit::CompletionSelected(const QString& text)

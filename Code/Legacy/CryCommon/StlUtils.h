@@ -24,6 +24,7 @@
 
 #define STATIC_ASSERT(condition, errMessage) static_assert(condition, errMessage)
 
+#include <cctype>
 #include <map>
 #include <set>
 #include <algorithm>

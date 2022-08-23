@@ -10,6 +10,11 @@
 
 #include <AzCore/EBus/EBus.h>
 
+namespace AzNetworking
+{
+    class IConnection;
+}
+
 namespace Multiplayer
 {
     class MultiplayerEditorServerRequests : public AZ::EBusTraits
