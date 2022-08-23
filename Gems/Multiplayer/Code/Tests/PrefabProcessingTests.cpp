@@ -8,7 +8,6 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -30,7 +29,7 @@ namespace UnitTest
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext);
 
         explicit TestPrefabProcessorContext(const AZ::Uuid& sourceUuid)
-            : PrefabProcessorContext(sourceUuid)
+            : AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext(sourceUuid)
         {
         }
 
@@ -40,29 +39,21 @@ namespace UnitTest
         }
     };
 
-    class PrefabProcessingTestFixture
-        : public AllocatorsTestFixture
+    class PrefabProcessingTestFixture : public ::testing::Test
     {
+
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-
-            AZ::ComponentApplication::Descriptor componentApplicationDescriptor;
-            componentApplicationDescriptor.m_useExistingAllocator = true;
-            m_app = AZStd::make_unique<PrefabProcessingTestApplication>();
-            m_app->Start(componentApplicationDescriptor);
-            m_app->RegisterComponentDescriptor(Multiplayer::NetBindComponent::CreateDescriptor());
-
-            m_networkPrefabDom = AZStd::make_unique<AzToolsFramework::Prefab::PrefabDom>();
-            m_nonNetworkPrefabDom = AZStd::make_unique<AzToolsFramework::Prefab::PrefabDom>();
+            using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
 
             // Create test entities: 1 networked and 1 static
-            // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
             AZStd::vector<AZ::Entity*> entities;
             entities.emplace_back(CreateSourceEntity(m_staticEntityName.c_str(), false, AZ::Transform::CreateIdentity()));
             entities.emplace_back(CreateSourceEntity(m_netEntityName.c_str(), true, AZ::Transform::CreateIdentity()));
-            ConvertEntitiesToPrefab(entities, m_networkPrefabDom, "test/path_networked");
+
+            // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
+            ConvertEntitiesToPrefab(entities, m_networkPrefabDom, "test/path");
 
             // Create a non-networked prefab
             AZStd::vector<AZ::Entity*> nonNetworkEntities;
@@ -73,21 +64,17 @@ namespace UnitTest
 
         void TearDown() override
         {
-            m_networkPrefabDom.reset();
-            m_nonNetworkPrefabDom.reset();
             AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
-            m_app.reset();
-            AllocatorsTestFixture::TearDown();
         }
 
-        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AZStd::unique_ptr<AzToolsFramework::Prefab::PrefabDom>& prefabDom, AZ::IO::PathView filePath)
+        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AzToolsFramework::Prefab::PrefabDom& prefabDom, AZ::IO::PathView filePath)
         {
             auto* prefabSystem = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
             AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystem->CreatePrefab(entities, {}, filePath));
             ASSERT_TRUE(sourceInstance);
 
             auto& prefabTemplateDom = prefabSystem->FindTemplateDom(sourceInstance->GetTemplateId());
-            prefabDom->CopyFrom(prefabTemplateDom, prefabDom->GetAllocator());
+            prefabDom.CopyFrom(prefabTemplateDom, prefabDom.GetAllocator());
         }
 
         static AZ::Entity* CreateSourceEntity(const char* name, bool networked, const AZ::Transform& tm, AZ::Entity* parent = nullptr)
@@ -137,24 +124,8 @@ namespace UnitTest
         const AZStd::string m_staticEntityName = "static_floor";
         const AZStd::string m_netEntityName = "networked_entity";
 
-        AZStd::unique_ptr<AzToolsFramework::Prefab::PrefabDom> m_networkPrefabDom;
-        AZStd::unique_ptr<AzToolsFramework::Prefab::PrefabDom> m_nonNetworkPrefabDom;
-
-        AZStd::unique_ptr<AzFramework::Application> m_app;
-
-    private:
-        class PrefabProcessingTestApplication
-            : public AzToolsFramework::ToolsApplication
-        {
-        public:
-            AZ::ComponentTypeList GetRequiredSystemComponents() const override
-            {
-                AZ::ComponentTypeList defaultRequiredComponents = AzFramework::Application::GetRequiredSystemComponents();
-                defaultRequiredComponents.emplace_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
-
-                return defaultRequiredComponents;
-            }
-        };
+        AzToolsFramework::Prefab::PrefabDom m_networkPrefabDom;
+        AzToolsFramework::Prefab::PrefabDom m_nonNetworkPrefabDom;
     };
 
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NetEntityGoesToNetSpawnable)
@@ -163,7 +134,7 @@ namespace UnitTest
         const AZStd::string prefabName = "testPrefab";
         TestPrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument document(prefabName);
-        ASSERT_TRUE(document.SetPrefabDom(*m_networkPrefabDom));
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_networkPrefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
@@ -198,7 +169,7 @@ namespace UnitTest
         EXPECT_EQ(0, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_staticEntityName)));
         EXPECT_EQ(1, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_netEntityName)));
     }
-    
+
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NonNetEntityDoesNotProduceNetSpawnable)
     {
         // Add the prefab into the Prefab Processor Context
@@ -206,7 +177,7 @@ namespace UnitTest
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument document(prefabName);
 
-        ASSERT_TRUE(document.SetPrefabDom(*m_nonNetworkPrefabDom));
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_nonNetworkPrefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
@@ -236,7 +207,7 @@ namespace UnitTest
         // Add the prefab into the Prefab Processor Context
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         PrefabDocument prefabDocument("testPrefab");
-        prefabDocument.SetPrefabDom(*m_networkPrefabDom);
+        prefabDocument.SetPrefabDom(AZStd::move(m_networkPrefabDom));
 
         prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
 
@@ -273,14 +244,14 @@ namespace UnitTest
         entities.emplace_back(CreateSourceEntity(childOfChildName.c_str(), true, AZ::Transform::CreateIdentity(), child));
 
         // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
-        auto prefabDom = AZStd::make_unique<AzToolsFramework::Prefab::PrefabDom>();
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
         ConvertEntitiesToPrefab(entities, prefabDom, "test_entities_sorted/path");
 
         // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefabDocument(prefabName);
-        ASSERT_TRUE(prefabDocument.SetPrefabDom(*prefabDom));
+        ASSERT_TRUE(prefabDocument.SetPrefabDom(AZStd::move(prefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
 
         // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
@@ -331,14 +302,14 @@ namespace UnitTest
         entities.emplace_back(CreateSourceEntity(childOfChildName.c_str(), true, AZ::Transform::CreateIdentity(), child));
 
         // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
-        auto prefabDom = AZStd::make_unique<AzToolsFramework::Prefab::PrefabDom>();
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
         ConvertEntitiesToPrefab(entities, prefabDom, "test_entities_sorted/path");
 
         // Add the prefab into the Prefab Processor Context
         const AZStd::string prefabName = "testPrefab";
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefabDocument(prefabName);
-        ASSERT_TRUE(prefabDocument.SetPrefabDom(*prefabDom));
+        ASSERT_TRUE(prefabDocument.SetPrefabDom(AZStd::move(prefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
 
         // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
