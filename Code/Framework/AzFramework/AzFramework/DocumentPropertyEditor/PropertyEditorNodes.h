@@ -100,8 +100,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
 
-        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead append
-        //! to the last column in the layout. Useful for things like the "add container entry" button.
+        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
+        //! to the previous column in the layout. Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
 
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.

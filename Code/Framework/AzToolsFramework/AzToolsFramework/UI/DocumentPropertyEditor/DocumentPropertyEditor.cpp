@@ -153,7 +153,8 @@ namespace AzToolsFramework
 
         // todo: implement QSplitter-like functionality to allow the user to resize columns within a DPE
 
-        const int itemCount = count();
+        // shared widgets are appended to the previous column, so treat all items in a shared column as one item.
+        const int itemCount = count() - SharedWidgetCount() + (int)m_sharePriorColumn.size();
         if (itemCount > 0)
         {
             // divide evenly, unless there are 2 columns, in which case follow the 2/5ths rule here:
@@ -182,11 +183,36 @@ namespace AzToolsFramework
             itemAt(0)->setGeometry(itemGeometry);
 
             // iterate over the remaining items, laying them left to right
-            for (int layoutIndex = 1; layoutIndex < itemCount; ++layoutIndex)
+            int layoutIndex = 1;
+            int sharedColumnIndex = 0;
+            const int itemCountActual = count();
+            while (layoutIndex  < itemCountActual)
             {
-                itemGeometry.setLeft(itemGeometry.right() + 1);
-                itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                itemAt(layoutIndex)->setGeometry(itemGeometry);
+                //! If the current item is the first element of a shared column,
+                //! lay the appropriate number of remaining items in that shared column, evenly spaced.
+                if (sharedColumnIndex < m_sharePriorColumn.size() &&
+                    itemAt(layoutIndex)->widget() == m_sharePriorColumn[sharedColumnIndex].first)
+                {
+                    int numItems = m_sharePriorColumn[sharedColumnIndex].second;
+                    int sharedColumnLayout = 0;
+                    while (sharedColumnLayout < numItems)
+                    {
+                        itemGeometry.setLeft(itemGeometry.right() + 1);
+                        itemGeometry.setRight(itemGeometry.left() + perItemWidth / numItems);
+                        itemAt(layoutIndex + sharedColumnLayout++)->setGeometry(itemGeometry);
+                    }
+                    // Increase the shared column index to find the first widget of the next shared column layout
+                    sharedColumnIndex++;
+                    // Increase the layout index so we do not iterate over the same element twice
+                    layoutIndex = layoutIndex + sharedColumnLayout;
+                }
+                else
+                {
+                    itemGeometry.setLeft(itemGeometry.right() + 1);
+                    itemGeometry.setRight(itemGeometry.left() + perItemWidth);
+                    itemAt(layoutIndex)->setGeometry(itemGeometry);
+                    layoutIndex++;
+                }
             }
         }
     }
@@ -219,6 +245,43 @@ namespace AzToolsFramework
         m_expanderWidget->setCheckState(m_expanded ? Qt::Checked : Qt::Unchecked);
         AzQtComponents::CheckBox::applyExpanderStyle(m_expanderWidget);
         connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
+    }
+
+    //! If we are currently adding to an existing shared column group, increase the number of elements in the pair by 1,
+    //! otherwise create a new pair of the first widget in the shared column, with size of 2 elements.
+    void DPELayout::SharePriorColumn(QWidget* headWidget)
+    {
+        if (ShouldSharePrior())
+        {
+            int newWidgetCount = m_sharePriorColumn.back().second + 1;
+            m_sharePriorColumn[m_sharePriorColumn.size() - 1].second = newWidgetCount;
+        }
+        else
+        {
+            auto widgetColumnPair = AZStd::pair<QWidget*, int>(headWidget, 2);
+            m_sharePriorColumn.push_back(widgetColumnPair);
+        }
+    }
+
+    void DPELayout::SetSharePrior(bool sharePrior)
+    {
+        m_shouldSharePrior = sharePrior;
+    }
+
+    bool DPELayout::ShouldSharePrior()
+    {
+        return m_shouldSharePrior;
+    }
+
+    // Returns the total number of widgets in shared columns.
+    int DPELayout::SharedWidgetCount()
+    {
+        int numWidgets = 0;
+        for (int index = 0; index < m_sharePriorColumn.size(); index++)
+        {
+            numWidgets = numWidgets + m_sharePriorColumn[index].second;
+        }
+        return numWidgets;
     }
 
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
@@ -384,13 +447,26 @@ namespace AzToolsFramework
 
                     m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, widgetAlignment);
                 }
-
-                // insert after the found index; even if nothing were found and priorIndex is still -1,
-                // still insert one after it, at position 0
                 else
                 {
                     m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
                 }
+
+                //! If the sharePrior attribute is present and this propertyEditor is not next to a label,
+                //! add the previous widget to the column layout.
+                //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
+                auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(childValue);
+                if (sharePrior.has_value() && priorColumnIndex != 0)
+                {
+                    m_columnLayout->SharePriorColumn(m_columnLayout->itemAt(priorColumnIndex)->widget());
+                    m_columnLayout->SetSharePrior(true);
+                }
+                else
+                {
+                    m_columnLayout->SetSharePrior(false);
+                }
+                // insert after the found index; even if nothing were found and priorIndex is still -1,
+                // still insert one after it, at position 0
             }
             AddDomChildWidget(domIndex, addedWidget);
         }
