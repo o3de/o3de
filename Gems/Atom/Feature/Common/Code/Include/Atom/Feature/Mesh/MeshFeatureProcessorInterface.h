@@ -120,6 +120,9 @@ namespace AZ
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
+            //! Returns the visibility state of the mesh.
+            //! This only refers to whether or not the mesh has been explicitly hidden, and is not related to view frustum visibility.
+            virtual bool GetVisible(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
         };
