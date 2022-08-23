@@ -2,7 +2,7 @@
     "O3DE": {
         "Atom": {
             "Shaders": {
-                "BuildVariants": false,
+                "BuildVariants": true,
                 "Build": {
                     "ConfigPath": "@gemroot:AtomShader@/Config"
                 }
