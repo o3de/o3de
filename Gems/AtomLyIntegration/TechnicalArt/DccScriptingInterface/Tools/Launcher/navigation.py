@@ -26,7 +26,7 @@ class Navigation(QtWidgets.QWidget):
         self.logo_container = QtWidgets.QHBoxLayout()
         self.main_container.addLayout(self.logo_container)
         self.logo_container.setAlignment(QtCore.Qt.AlignLeft)
-        logo_path = settings.get('PATH_DCCSI_TOOLS_DEV') / 'Launcher/images/o3de_banner_logo.png'
+        logo_path = settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/o3de_banner_logo.png'
         logo_pixmap = QtGui.QPixmap(logo_path.as_posix())
         self.o3de_logo = QtWidgets.QLabel()
         self.o3de_logo.setPixmap(logo_pixmap)

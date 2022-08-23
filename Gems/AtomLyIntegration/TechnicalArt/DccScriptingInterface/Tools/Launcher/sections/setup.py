@@ -1,6 +1,8 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 from pathlib import Path
 from azpy.shared.qt_process import QtProcess
+from Tools.Launcher.sections import section_utilities as utilities
+from Tools.Launcher.data import project_constants as constants
 import psutil
 import logging
 import config
@@ -24,7 +26,7 @@ class Setup(QtWidgets.QWidget):
         self.content_layout = QtWidgets.QHBoxLayout(self)
         self.content_layout.setContentsMargins(10, 3, 0, 0)
         self.content_frame = QtWidgets.QFrame(self)
-        self.bold_font = QtGui.QFont("Helvetica", 7, QtGui.QFont.Bold)
+
 
         self.dcc_paths = {}
         self.dynaconf_environment_values = {}
@@ -36,11 +38,6 @@ class Setup(QtWidgets.QWidget):
 
         self.add_button_group = QtWidgets.QButtonGroup()
         self.add_button_group.idClicked.connect(self.add_button_clicked)
-
-        # Left Margin Gutter
-        # self.left_margin_gutter_widget = QtWidgets.QWidget()
-        # self.left_margin_gutter_widget.setFixedWidth(3)
-        # self.content_layout.addWidget(self.left_margin_gutter_widget)
 
         self.page_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.page_splitter.setSizes([200, 540, 540])
@@ -70,11 +67,12 @@ class Setup(QtWidgets.QWidget):
 
         # --> Startup Environment Title Bar
         self.startup_title_layout = QtWidgets.QHBoxLayout()
-        self.startup_widget = self.get_title_bar_widget(self.startup_title_layout, 'Startup Environment', 300)
+
+        self.startup_widget = utilities.get_title_bar_widget(self.startup_title_layout, 'Startup Environment', 300)
         self.startup_panel_layout.addWidget(self.startup_widget)
         self.add_startup_button = QtWidgets.QPushButton('+')
         self.add_button_group.addButton(self.add_startup_button, 0)
-        self.add_startup_button.setFont(self.bold_font)
+        self.add_startup_button.setFont(constants.BOLD_FONT)
         self.add_startup_button.setFixedSize(22, 22)
         self.add_startup_button.setObjectName('Primary')
         self.startup_title_layout.addWidget(self.add_startup_button)
@@ -143,7 +141,6 @@ class Setup(QtWidgets.QWidget):
         self.open_environments_button.setObjectName('Primary')
         self.open_environments_button.clicked.connect(self.set_startup_environment_clicked)
         self.startup_environment_container.addWidget(self.open_environments_button)
-        # self.left_column_container.addSpacing(3)
 
         # Logging Profile Panel ###########################################
         self.logging_panel_layout = QtWidgets.QVBoxLayout()
@@ -158,7 +155,7 @@ class Setup(QtWidgets.QWidget):
 
         # --> Logging Profile Title Bar
         self.logging_title_layout = QtWidgets.QHBoxLayout()
-        self.logging_widget = self.get_title_bar_widget(self.logging_title_layout, 'Logging', 300)
+        self.logging_widget = utilities.get_title_bar_widget(self.logging_title_layout, 'Logging', 300)
         self.logging_panel_layout.addWidget(self.logging_widget)
 
         # --> Logging Profile Content
@@ -263,12 +260,13 @@ class Setup(QtWidgets.QWidget):
 
         # --> Path Settings Title Bar
         self.path_settings_title_layout = QtWidgets.QHBoxLayout()
-        self.path_settings_widget = self.get_title_bar_widget(self.path_settings_title_layout,
-                                                              'Dynaconf Environment Values')
+
+        self.path_settings_widget = utilities.get_title_bar_widget(self.path_settings_title_layout,
+                                                                   'Dynaconf Environment Values')
         self.dynaconf_settings_layout.addWidget(self.path_settings_widget)
         self.add_startup_button = QtWidgets.QPushButton('+')
         self.add_button_group.addButton(self.add_startup_button, 1)
-        self.add_startup_button.setFont(self.bold_font)
+        self.add_startup_button.setFont(constants.BOLD_FONT)
         self.add_startup_button.setFixedSize(22, 22)
         self.add_startup_button.setObjectName('Primary')
         self.path_settings_title_layout.addWidget(self.add_startup_button)
@@ -310,7 +308,7 @@ class Setup(QtWidgets.QWidget):
 
         # --> System Paths Title Bar
         self.system_paths_title_layout = QtWidgets.QHBoxLayout()
-        self.system_paths_widget = self.get_title_bar_widget(self.system_paths_title_layout, 'Windows System Paths')
+        self.system_paths_widget = utilities.get_title_bar_widget(self.system_paths_title_layout, 'Windows System Paths')
         self.system_paths_layout.addWidget(self.system_paths_widget)
 
         # --> System Paths Content
@@ -339,8 +337,8 @@ class Setup(QtWidgets.QWidget):
 
         # --> DCC Applications Title Bar
         self.dcc_application_title_layout = QtWidgets.QHBoxLayout()
-        self.dcc_application_widget = self.get_title_bar_widget(self.dcc_application_title_layout,
-                                                                'DCC Applications Paths')
+        self.dcc_application_widget = utilities.get_title_bar_widget(self.dcc_application_title_layout,
+                                                                     'DCC Applications Paths')
         self.dcc_paths_layout.addWidget(self.dcc_application_widget)
 
         # --> DCC Applications Content
@@ -421,7 +419,7 @@ class Setup(QtWidgets.QWidget):
         title_bar_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
         title_bar_frame.setGeometry(0, 0, 5000, 30)
         title_bar_label = QtWidgets.QLabel(title)
-        title_bar_label.setFont(self.bold_font)
+        title_bar_label.setFont(constants.BOLD_FONT)
         target_layout.addWidget(title_bar_label)
         if width:
             title_bar_widget.setFixedSize(width, 30)
@@ -437,7 +435,6 @@ class Setup(QtWidgets.QWidget):
         self.line.setLineWidth(1)
         self.separator_layout.addWidget(self.line)
         return self.separator_layout
-
 
     def get_logging_profiles(self):
         self.logging_profiles = ['default']

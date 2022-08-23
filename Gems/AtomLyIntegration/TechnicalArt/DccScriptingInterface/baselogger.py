@@ -44,6 +44,7 @@ class BaseLogger:
         self.dccsi_base_directory = dccsi_base_directory
         self.log_file = Path(self.dccsi_base_directory, '.temp\logs\dccsi.log')
         self.settings_file = Path(self.dccsi_base_directory) / 'settings.json'
+        self.color_formatting = True
         self.log_configuration_directory = None
         self.file_handler = None
         self.stream_handler = None
@@ -71,11 +72,12 @@ class BaseLogger:
                 os.makedirs(os.path.dirname(self.log_file), exist_ok=True)
                 self.log_level = self.log_level if not isinstance(log_level, int) else log_level
                 self.file_log_level = self.file_log_level if not isinstance(file_log_level, int) else file_log_level
+                formatter = ColorFormatter() if self.color_formatting else FRMT_LOG_LONG
                 self.stream_handler = logging.StreamHandler(sys.stdout)
+                self.stream_handler.setFormatter(formatter)
                 self.file_handler = logging.FileHandler(filename=self.log_file)
                 handlers = [self.file_handler, self.stream_handler]
                 logging.basicConfig(level=self.log_level,
-                                    format=FRMT_LOG_LONG,
                                     datefmt='%m-%d %H:%M',
                                     handlers=handlers)
             except AttributeError as e:
@@ -91,3 +93,24 @@ class BaseLogger:
         _LOGGER = logging.getLogger('DCCsi.baselogger')
         _LOGGER.info(f'Logging config file loaded: {config_file}')
 
+
+class ColorFormatter(logging.Formatter):
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format = FRMT_LOG_LONG
+
+    FORMATS = {
+        logging.DEBUG:    grey + format + reset,
+        logging.INFO:     grey + format + reset,
+        logging.WARNING:  yellow + format + reset,
+        logging.ERROR:    red + format + reset,
+        logging.CRITICAL: bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)

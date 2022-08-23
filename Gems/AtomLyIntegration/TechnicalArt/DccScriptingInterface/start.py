@@ -26,7 +26,7 @@ class Launcher(QtWidgets.QMainWindow):
         self.setGeometry(50, 50, 1280, 720)
         self.setObjectName('DCCsiLauncher')
         self.setWindowTitle('DCCsi Launcher')
-        self.icon_path = (settings.get('PATH_DCCSI_TOOLS_DEV') / 'images/o3de_icon.png').as_posix()
+        self.icon_path = (settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/o3de_icon.png').as_posix()
         self.setWindowIcon(QtGui.QIcon(self.icon_path))
         self.isTopLevel()
         self.model = LauncherModel()

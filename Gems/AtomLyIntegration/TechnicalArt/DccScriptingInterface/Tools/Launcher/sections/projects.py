@@ -1,4 +1,4 @@
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Signal, Slot
 import logging
 
@@ -18,6 +18,7 @@ class Projects(QtWidgets.QWidget):
         self.content_frame = QtWidgets.QFrame(self)
         self.content_frame.setGeometry(0, 0, 5000, 5000)
         self.content_frame.setStyleSheet('background-color:rgb(0, 0, 0);')
+
         self.info = QtWidgets.QTextEdit()
         self.content_layout.addWidget(self.info)
         self.get_info()

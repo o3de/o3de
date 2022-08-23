@@ -77,7 +77,7 @@ class QtProcess(QtCore.QObject):
 
     def handle_stderr(self):
         pass
-        # Keep this enabled unless you need to register all events while debugging
+        # Keep this disabled unless you need to register all events while debugging
         # data = str(self.p.readAllStandardError(), 'utf-8')
         # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
