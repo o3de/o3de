@@ -589,6 +589,21 @@ namespace O3DE::ProjectManager
         return AZ::Failure<ErrorPair>(GetErrorPair());
     }
 
+    bool PythonBindings::ValidateRepository(const QString& repoUri)
+    {
+        bool validateResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRepoUri = QString_To_Py_String(repoUri);
+                auto pythonValidationResult = m_repo.attr("validate_remote_repo")(pythonRepoUri, true);
+
+                validateResult = pythonValidationResult.cast<bool>();
+            });
+
+        return result && validateResult;
+    }
+
     AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path, const QString& projectPath)
     {
         GemInfo gemInfo = GemInfoFromPath(QString_To_Py_String(path), QString_To_Py_Path(projectPath));

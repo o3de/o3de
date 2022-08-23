@@ -18,58 +18,62 @@
 #include <GraphModel/Model/Slot.h>
 
 // Landscape Canvas
-#include "AssetWeightSelectorNode.h"
 #include <Editor/Core/GraphContext.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
 
 namespace LandscapeCanvas
 {
-    void AssetWeightSelectorNode::Reflect(AZ::ReflectContext* context)
+    void TerrainSurfaceGradientListNode::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<AssetWeightSelectorNode, BaseNode>()
+            serializeContext->Class<TerrainSurfaceGradientListNode, BaseNode>()
                 ->Version(0)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<AssetWeightSelectorNode>("AssetWeightSelectorNode", "")->
+                editContext->Class<TerrainSurfaceGradientListNode>("TerrainSurfaceGradientListNode", "")->
                     ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                    Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "VegetationAreaNodeTitlePalette")
+                    Attribute(GraphModelIntegration::Attributes::TitlePaletteOverride, "TerrainNodeTitlePalette")
                     ;
             }
         }
     }
 
-    const QString AssetWeightSelectorNode::TITLE = QObject::tr("Vegetation Asset Weight Selector");
+    const QString TerrainSurfaceGradientListNode::TITLE = QObject::tr("Terrain Surface Gradient List");
 
-    AssetWeightSelectorNode::AssetWeightSelectorNode(GraphModel::GraphPtr graph)
+    TerrainSurfaceGradientListNode::TerrainSurfaceGradientListNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
     {
         RegisterSlots();
         CreateSlotData();
     }
 
-    const BaseNode::BaseNodeType AssetWeightSelectorNode::GetBaseNodeType() const
+    const BaseNode::BaseNodeType TerrainSurfaceGradientListNode::GetBaseNodeType() const
     {
-        return BaseNode::VegetationAreaSelector;
+        return BaseNode::TerrainExtender;
     }
 
-    const char* AssetWeightSelectorNode::GetTitle() const
+    const char* TerrainSurfaceGradientListNode::GetTitle() const
     {
         return TITLE.toUtf8().constData();
     }
 
-    void AssetWeightSelectorNode::RegisterSlots()
+    void TerrainSurfaceGradientListNode::RegisterSlots()
     {
         GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
+        GraphModel::ExtendableSlotConfiguration slotConfig;
+        slotConfig.m_addButtonLabel = "Add Gradient";
+        slotConfig.m_addButtonTooltip = "Add a gradient surface provider";
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
             { gradientDataType },
             AZStd::any(AZ::EntityId()),
-            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            &slotConfig));
     }
 } // namespace LandscapeCanvas

@@ -88,6 +88,15 @@ namespace O3DE::ProjectManager
         virtual DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) = 0;
 
 
+        // Remote source
+
+        /**
+         * Validates a repository without adding it.
+         * @param repoUri the absolute filesystem path or url to the repo.
+         * @return bool, true if the repository is valid
+         */
+        virtual bool ValidateRepository(const QString& repoUri) = 0;
+
         // Gems
 
         /**
