@@ -11,7 +11,6 @@ This file contains utility functions
 import argparse
 import sys
 import uuid
-import json
 import os
 import pathlib
 import shutil
