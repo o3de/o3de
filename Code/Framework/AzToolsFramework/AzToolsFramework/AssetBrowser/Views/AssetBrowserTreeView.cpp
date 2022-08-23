@@ -13,6 +13,8 @@
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Network/AssetProcessorConnection.h>
 
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
@@ -534,6 +536,7 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets();
+
             for (auto entry : entries)
             {
                 using namespace AZ::IO;
@@ -562,9 +565,10 @@ namespace AzToolsFramework
                 QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
-
+#pragma optimize("", off)
         void AssetBrowserTreeView::MoveEntries()
         {
+            using namespace AzFramework::AssetSystem;
             EntryTypeFilter* foldersFilter = new EntryTypeFilter();
             foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
 
@@ -572,8 +576,8 @@ namespace AzToolsFramework
             selection.SetTitle("Pick folder to move to");
             selection.SetMultiselect(false);
             selection.SetDisplayFilter(FilterConstType(foldersFilter));
-            AssetBrowserTreeViewDialog * dialog = new  AssetBrowserTreeViewDialog(selection, this);
-            dialog->exec();
+            AssetBrowserTreeViewDialog dialog(selection, this);
+            dialog.exec();
 
             const AZStd::vector<AZStd::string> folderPaths = selection.GetSelectedFilePaths();
 
@@ -581,8 +585,37 @@ namespace AzToolsFramework
             {
                 AZStd::string folderPath = folderPaths[0];
                 AZ_TracePrintf("JJS", "FolderPath = %s\n", folderPath.c_str());
+                bool connectedToAssetProcessor = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                if (connectedToAssetProcessor)
+                {
+                    auto entries = GetSelectedAssets();
+
+                    for (auto entry : entries)
+                    {
+                        using namespace AZ::IO;
+                        AZStd::string originalFname;
+                        AssetBrowserEntry* item = entry;
+                        Path fromPath = item->GetFullPath();
+                        PathView filename = fromPath.Filename();
+                        Path toPath(folderPath);
+                        toPath /= filename;
+                        AssetChangeReportRequest request(
+                            AZ::OSString(fromPath.c_str()), AZ::OSString(toPath.c_str()), AssetChangeReportRequest::ChangeType::Move);
+                        AssetChangeReportResponse response;
+
+                        if (!SendRequest(request, response))
+                        {
+                            AZ_Assert(false, "AssetChangeReportRequest failed ");
+                        }
+                        AZ_TracePrintf("JJS", "response = %d\n", response.m_resultCode);
+                    }
+                }
             }
         }
+#pragma optimize("", on)
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

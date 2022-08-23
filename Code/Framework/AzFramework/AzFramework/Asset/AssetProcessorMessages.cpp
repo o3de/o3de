@@ -1514,8 +1514,50 @@ namespace AzFramework
             }
         }
 
+        AssetChangeReportRequest::AssetChangeReportRequest(
+            const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType)
+            : m_fromPath(fromPath)
+            , m_toPath(toPath)
+            , m_type(changeType)
+        {
+        }
 
 
+        unsigned int AssetChangeReportRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void AssetChangeReportRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<AssetChangeReportRequest, BaseAssetProcessorMessage>()
+                    ->Version(1);
+            }
+        }
+
+        AssetChangeReportResponse::AssetChangeReportResponse(AZ::u32 resultCode)
+            : m_resultCode(resultCode)
+        {
+        }
+
+        unsigned int AssetChangeReportResponse::GetMessageType() const
+        {
+            return AssetChangeReportRequest::MessageType;
+        }
+
+        void AssetChangeReportResponse::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<AssetChangeReportResponse, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("ResultCode", &AssetChangeReportResponse::m_resultCode);
+            }
+        }
 
         //---------------------------------------------------------------------------
         AssetNotificationMessage::AssetNotificationMessage(const AZ::OSString& data, NotificationType type, const AZ::Data::AssetType& assetType, const AZ::OSString& platform)
