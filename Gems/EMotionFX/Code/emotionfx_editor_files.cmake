@@ -48,6 +48,8 @@ set(FILES
     Source/Editor/ObjectEditorCard.cpp
     Source/Editor/ObjectEditorCardPool.h
     Source/Editor/ObjectEditorCardPool.cpp
+    Source/Editor/Picking.h
+    Source/Editor/Picking.cpp
     Source/Editor/QtMetaTypes.h
     Source/Editor/ReselectingTreeView.cpp
     Source/Editor/ReselectingTreeView.h
