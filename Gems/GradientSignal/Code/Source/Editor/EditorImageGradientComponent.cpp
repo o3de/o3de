@@ -31,6 +31,9 @@ namespace GradientSignal
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
                 ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
+                // For now, we need to serialize the paint brush settings so that they can be displayed via the EditContext
+                // while in the component mode. This can eventually be removed if we add support for paint brush settting
+                // modifications in-viewport.
                 ->Field("PaintBrush", &EditorImageGradientComponent::m_paintBrush)
                 ;
 
@@ -154,7 +157,10 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
+                    // For now, we need to display the paint brush settings here to make them editable while we're in component mode.
+                    // If we ever provide in-viewport editing for the properties, this can be removed.
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
                         "Paint Brush", "Paint Brush Properties")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::PaintBrushSettingsChanged)
@@ -236,17 +242,20 @@ namespace GradientSignal
         RefreshCreationSelectionChoice();
 
         auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
-        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
-
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
             entityComponentIdPair, nullptr);
+
+        // The PaintBrushNotificationBus is needed so that we can keep our viewable / editable paint brush settings in sync
+        // with the ones on the brush manipulator itself.
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
-        m_componentModeDelegate.Disconnect();
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
+
+        m_componentModeDelegate.Disconnect();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         m_currentImageJobsPending = false;
@@ -482,21 +491,27 @@ namespace GradientSignal
 
     void EditorImageGradientComponent::OnIntensityChanged(float intensity)
     {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
         m_paintBrush.m_intensity = intensity;
     }
 
     void EditorImageGradientComponent::OnOpacityChanged(float opacity)
     {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
         m_paintBrush.m_opacity = opacity;
     }
 
     void EditorImageGradientComponent::OnRadiusChanged(float radius)
     {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
         m_paintBrush.m_radius = radius;
     }
 
     AZ::u32 EditorImageGradientComponent::PaintBrushSettingsChanged()
     {
+        // Any time a paint brush setting is edited via the component UX, broadcast it out so that the paint brush manipulator
+        // stays in sync with it.
+
         auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
 
         AzToolsFramework::PaintBrushRequestBus::Event(

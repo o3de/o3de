@@ -57,20 +57,26 @@ namespace AzToolsFramework
 
     AZ::u32 PaintBrushConfig::OnIntensityChange()
     {
+        // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
+        // with the visible editable one stored on the Editor component.
         PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnIntensityChanged, m_intensity);
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
     AZ::u32 PaintBrushConfig::OnOpacityChange()
     {
+        // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
+        // with the visible editable one stored on the Editor component.
         PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnOpacityChanged, m_opacity);
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
     AZ::u32 PaintBrushConfig::OnRadiusChange()
     {
+        // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
+        // with the visible editable one stored on the Editor component.
         PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnRadiusChanged, m_radius);
-        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
 
@@ -96,8 +102,8 @@ namespace AzToolsFramework
         SetView(
             AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, m_config.m_radius, manipulatorWidth));
 
-        // Notify any listeners of our initial paintbrush settings. This is used to keep the edit context version of the properties
-        // in sync with the paintbrush.
+        // Notify listeners that the configuration changed. This is used to synchronize the internal manipulator configuration
+        // with the visible editable one stored on the Editor component.
         PaintBrushNotificationBus::Event(
             m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnIntensityChanged, m_config.m_intensity);
         PaintBrushNotificationBus::Event(
@@ -125,7 +131,6 @@ namespace AzToolsFramework
     {
         m_manipulatorView = AZStd::move(view);
     }
-
 
     float PaintBrushManipulator::GetRadius() const
     {

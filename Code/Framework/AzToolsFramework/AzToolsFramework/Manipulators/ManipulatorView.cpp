@@ -639,12 +639,12 @@ namespace AzToolsFramework
 
     void ManipulatorViewProjectedCircle::Draw(
         const ManipulatorManagerId managerId,
-        const ManipulatorManagerState& /*managerState*/,
+        [[maybe_unused]] const ManipulatorManagerState& managerState,
         const ManipulatorId manipulatorId,
         const ManipulatorState& manipulatorState,
         AzFramework::DebugDisplayRequests& debugDisplay,
         [[maybe_unused]] const AzFramework::CameraState& cameraState,
-        const ViewportInteraction::MouseInteraction& /*mouseInteraction*/)
+        [[maybe_unused]] const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         const Picking::BoundShapeTorus torusBound =
             CalculateTorusBound(manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_axis, m_radius, m_width);

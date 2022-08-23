@@ -116,9 +116,14 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea)
     {
+        // The OnPaint notification means that we should paint new values into our image gradient.
+        // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
+        // then ask the paint brush for each position what value we should set that pixel to. Finally, we use those modified
+        // values to change the image gradient.
+
+        // Get the spacing to map individual pixels to world space positions.
         AZ::Vector2 imagePixelsPerMeter(0.0f);
         ImageGradientRequestBus::EventResult(imagePixelsPerMeter, GetEntityId(), &ImageGradientRequestBus::Events::GetImagePixelsPerMeter);
-
         if ((imagePixelsPerMeter.GetX() <= 0.0f) || (imagePixelsPerMeter.GetY() <= 0.0f))
         {
             return;
@@ -130,8 +135,8 @@ namespace GradientSignal
         const AZ::Vector3 minDistances = dirtyArea.GetMin();
         const AZ::Vector3 maxDistances = dirtyArea.GetMax();
 
+        // Calculate the minimum set of world space points that map to those pixels.
         AZStd::vector<AZ::Vector3> points;
-
         for (float y = minDistances.GetY(); y <= maxDistances.GetY(); y += yStep)
         {
             for (float x = minDistances.GetX(); x <= maxDistances.GetX(); x += xStep)
@@ -140,6 +145,7 @@ namespace GradientSignal
             }
         }
 
+        // Get the painted value settings for each of those world space points.
         AZStd::vector<float> intensities(points.size());
         AZStd::vector<float> opacities(points.size());
         AZStd::vector<bool> validFlags(points.size());
@@ -152,9 +158,11 @@ namespace GradientSignal
             opacities,
             validFlags);
 
+        // Get the previous gradient image values
         AZStd::vector<float> oldValues(points.size());
         GradientRequestBus::Event(GetEntityId(), &GradientRequestBus::Events::GetValues, points, oldValues);
 
+        // For each value, blend it with the painted value and set the gradient image to the new value.
         for (size_t index = 0; index < points.size(); index++)
         {
             if (validFlags[index])
@@ -165,6 +173,7 @@ namespace GradientSignal
             }
         }
 
+        // Notify anything listening to the image gradient that the modified region has changed.
         LmbrCentral::DependencyNotificationBus::Event(
             GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, dirtyArea);
     }

@@ -305,7 +305,7 @@ namespace AzToolsFramework
         bool m_depthTest = false;
     };
 
-    /// Displays a full, projected circle.
+    //! Displays a wire circle that's projected and rotated into world space (useful for paint brush manipulators).
     class ManipulatorViewProjectedCircle : public ManipulatorView
     {
     public:
