@@ -25,7 +25,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
     // O3DE_GENERATED_MATERIAL_SRG_BEGIN
     // O3DE_GENERATED_MATERIAL_SRG_END
-}
+};
  
 struct VSInput
 {
@@ -98,7 +98,7 @@ ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-    lightingData.emissiveLighting = inEmissive;
+    lightingData.emissiveLighting = inEmissive.rgb;
 
     // ------- Lighting Calculation -------
 

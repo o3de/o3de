@@ -15,6 +15,7 @@
 #include <AtomToolsFramework/DynamicNode/DynamicNode.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -956,13 +957,13 @@ namespace MaterialCanvas
                     {
                         const auto& inputNode = inputNodePair.second;
                         const auto materialInputNameSlot = inputNode->GetSlot("inName");
-                        const auto materialInputGroupNameSlot = inputNode->GetSlot("inGroupName");
+                        const auto materialInputGroupSlot = inputNode->GetSlot("inGroup");
                         const auto materialInputDescriptionSlot = inputNode->GetSlot("inDescription");
                         const auto materialInputValueSlot = inputNode->GetSlot("inValue");
-                        if (materialInputGroupNameSlot && materialInputNameSlot && materialInputDescriptionSlot && materialInputValueSlot)
+                        if (materialInputGroupSlot && materialInputNameSlot && materialInputDescriptionSlot && materialInputValueSlot)
                         {
                             AZStd::string propertyGroupName =
-                                AZ::RPI::AssetUtils::SanitizeFileName(materialInputGroupNameSlot->GetValue<AZStd::string>());
+                                AZ::RPI::AssetUtils::SanitizeFileName(materialInputGroupSlot->GetValue<AZStd::string>());
                             AZ::StringFunc::Replace(propertyGroupName, "-", "_");
                             if (propertyGroupName.empty())
                             {
@@ -1027,8 +1028,12 @@ namespace MaterialCanvas
                             }
                             else if (property->m_value.Is<AZStd::string>())
                             {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Image;
+                                property->m_dataType = property->m_enumValues.empty() ? AZ::RPI::MaterialPropertyDataType::Image
+                                                                                      : AZ::RPI::MaterialPropertyDataType::Enum;
                             }
+
+                            AtomToolsFramework::ConvertToExportFormat(
+                                templateOutputPath, AZ::Name(propertyGroupName + "." + propertyName), *property, property->m_value);
                         }
                     }
 

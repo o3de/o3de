@@ -23,21 +23,21 @@
         },
         "propertySlots": [
             {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Group",
+                "supportedDataTypes": [
+                    "string"
+                ],
+                "supportsEditingOnNode": false
+            },
+            {
                 "name": "inName",
                 "displayName": "Name",
                 "description": "Name",
                 "supportedDataTypes": [
                     "string"
                 ]
-            },
-            {
-                "name": "inGroupName",
-                "displayName": "Group Name",
-                "description": "Group Name",
-                "supportedDataTypes": [
-                    "string"
-                ],
-                "supportsEditingOnNode": false
             },
             {
                 "name": "inDescription",
