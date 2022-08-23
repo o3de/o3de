@@ -11,7 +11,7 @@
 """! A module to discover installed versions of wing pro for selection
 
 :file: < DCCsi >/Tools/IDE/Wing/discovery.py
-:Status: Prototype, very barebones
+:Status: Prototype, very bare bones
 :Version: 0.0.1
 Future: provide a variety of ways to discover wing, i.e. use winreg
 """
@@ -61,7 +61,7 @@ def find_all_installs() -> list:
 # then during configuration (from cli or otherwise), present the installs
 # to the user and allow them to select which install to use
 # this would potentially end up in a couple of places:
-# <dccsi>\Tools\IDE\Wing\settings.local.josn for a developer
+# <dccsi>\Tools\IDE\Wing\settings.local.json for a developer
 # <project>\registry\dccsi_config_wing.json for a project configuration
 # --- END -----------------------------------------------------------------
 

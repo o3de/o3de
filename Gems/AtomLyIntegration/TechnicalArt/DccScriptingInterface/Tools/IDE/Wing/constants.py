@@ -8,7 +8,7 @@
 #
 #
 # -------------------------------------------------------------------------
-"""Common sconstants for the dccsi wing pro ide integration
+"""Common constants for the dccsi wing pro ide integration
 
 :file: < DCCsi >/Tools/IDE/Wing/constants.py
 :Status: Prototype
@@ -37,7 +37,7 @@ ENVAR_DCCSI_WING_VERSION_MAJOR = 'DCCSI_WING_VERSION_MAJOR'
 # the default supported version of wing pro is 8
 SLUG_DCCSI_WING_VERSION_MAJOR = int(8)
 
-# str slug for the deault wing type
+# str slug for the default wing type
 # in the future, add support for wing personal and maybe wing 101 versions
 SLUG_DCCSI_WING_TYPE = 'Wing Pro'
 
@@ -63,7 +63,7 @@ PATH_WINGHOME_BIN_EXE = f'{PATH_WINGHOME_BIN}\\wing.exe'
 # path string constructor, dccsi wing sub-dir
 # PATH_DCCSI_TOOLS_IDE_WING = f'{PATH_DCCSIG.as_posix()}\\Tools\\IDE\\Wing'
 
-# enavr to get/set the solution project file for wing
+# envar to get/set the solution project file for wing
 ENVAR_WING_PROJ = 'WING_PROJ'
 
 # path string constructor, the dccsi wing solution file

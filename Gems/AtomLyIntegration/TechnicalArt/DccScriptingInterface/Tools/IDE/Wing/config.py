@@ -122,7 +122,7 @@ wing_config.add_setting(ENVAR_WINGHOME_BIN,
                         PATH_WINGHOME_BIN.as_posix(),
                         set_sys_path=True)
 
-# a managed envat to the wing exe
+# a managed envar to the wing exe
 from Tools.IDE.Wing.constants import ENVAR_WING_EXE
 from Tools.IDE.Wing.constants import PATH_WINGHOME_BIN_EXE
 PATH_WINGHOME_BIN_EXE = Path(PATH_WINGHOME_BIN_EXE).resolve()

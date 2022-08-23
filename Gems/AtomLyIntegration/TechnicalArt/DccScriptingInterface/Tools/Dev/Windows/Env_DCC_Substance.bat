@@ -79,7 +79,7 @@ echo     DCCSI_SUBSTANCE_PYTHON = %DCCSI_SUBSTANCE_PYTHON%
 IF "%DCCSI_SUBSTANCE_PY_EXE%"=="" (set "DCCSI_SUBSTANCE_PY_EXE=%DCCSI_SUBSTANCE_PYTHON%\python.exe")
 echo     DCCSI_SUBSTANCE_PY_EXE = %DCCSI_SUBSTANCE_PY_EXE%
 
-:: set as a interpretter hook for wing ide
+:: set as a interpreter hook for wing ide
 set "DCCSI_PY_SUBSTANCE=%DCCSI_SUBSTANCE_PY_EXE%"
 echo     DCCSI_PY_SUBSTANCE = %DCCSI_PY_SUBSTANCE%
 

@@ -34,13 +34,13 @@ The reason I like Wing IDE as a TA is that getting it working with DCC
 tools like Maya is relatively straightforward and well documented.
 
 Also the DCCsi works with many DCC apps, each with their own Python
-interpretter, and sometimes these python interpretters are managed, such
+interpreter, and sometimes these python interpreters are managed, such
 as mayapy.exe
 
-This integration allows each DCC py interpretter, to be specified in a
+This integration allows each DCC py interpreter, to be specified in a
 data-driven manner as a dev/launch environment; and since the DCCsi
 has portions of API that are shared py3 code, you may want to test the
-code against several different interpretters in a similar environment as
+code against several different interpreters in a similar environment as
 the code would operate normally outside of the IDE and within the DCC app.
 
 So for instance,
@@ -50,7 +50,7 @@ The Wing IDE launch environment, may specify the following:
 set "DCCSI_PY_MAYA=%MAYA_BIN_PATH%\mayapy.exe"
 
 Then within Wing IDE, there will be a set of Python Shell environments,
-each can start a defined interpretter.
+each can start a defined interpreter.
 
 DCCSI_PY_O3DE = ${DCCSI_PY_O3DE}
 DCCSI_PY_MAYA = ${DCCSI_PY_MAYA}
@@ -58,9 +58,9 @@ DCCSI_PY_MAYA = ${DCCSI_PY_MAYA}
 
 And there are times special considerations to be made, for instance
 intellisense auto-complete with mayapy.exe doesn't work unless mayapy.exe
-is that actual interpretter specified.
+is that actual interpreter specified.
 
-In Wing you can switch the interpretter via:
+In Wing you can switch the interpreter via:
 Console (panel) > Python Shell (tab) > Options > Use Environment ...
 
 This integration also hooks into bootstrapping code, which can auto-start
@@ -72,12 +72,12 @@ This is a python script driven replacement for files found here:
 
 Notes:
 - The old .bat launchers and some DCCsi code supported py2.7+, but we are
-depricating support because of end-of-life
+deprecating support because of end-of-life
 
 - The old .bat launchers supported Wing 7.x, however that version of Wing
-also shipped with py2.7 as it's own managed interpretter, so we do not
+also shipped with py2.7 as it's own managed interpreter, so we do not
 intend to implement support for older versions of wing < 8. However, wing
-can support py3 interpretters and debugging so it's possible it will
+can support py3 interpreters and debugging so it's possible it will
 continue to work.
 
 - I am a paid developer, so I am using Wing Pro. I need a fully featured IDE
@@ -86,7 +86,7 @@ Community edition, I consider that future work.
 
 - The old .bat files are a great fallback to avoid a catch22; I am using
 Wing to develop the framework for a managed environment, launching and
-boostrapping of tools like Wing. So the .bat files will be updated to
+bootstrapping of tools like Wing. So the .bat files will be updated to
 Wing 8.x support and stick around to start Wing on windows if and when the
 framework is broken and inoperable.
 
@@ -149,7 +149,7 @@ from azpy import test_imports
 # suggestion would be to turn this into a method to reduce boilerplate
 # but where to put it that makes sense?
 if DCCSI_DEV_MODE:
-    # if dev mode, this will attemp to auto-attach the debugger
+    # if dev mode, this will attempt to auto-attach the debugger
     # at the earliest possible point in this module
     attach_debugger(debugger_type=DCCSI_GDEBUGGER)
 
