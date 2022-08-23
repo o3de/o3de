@@ -157,8 +157,6 @@ class EditorTestSuite(MultiTestSuite):
     _single_test_class = EditorSingleTest
     # Test class to use for shared test collection.
     _shared_test_class = EditorSharedTest
-    # Log attribute value used in python to find the Editor's log file location.
-    _log_attribute = "editor_log"
     # Name of the executable's log file.
     _log_name = "editor_test.log"
     # Executable function to call when launching Editor.
