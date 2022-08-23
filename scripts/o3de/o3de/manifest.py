@@ -13,8 +13,6 @@ import json
 import logging
 import os
 import pathlib
-import hashlib
-import urllib.parse
 
 from o3de import validation, utils, repo
 
@@ -592,9 +590,6 @@ def get_repo_json_data(repo_uri: str) -> dict or None:
 
 
 def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pathlib.Path:
-    if not cache_folder:
-        cache_folder = get_o3de_cache_folder()
-
     repo_manifest = f'{repo_uri}/repo.json'
     cache_file, _ = repo.get_cache_file_uri(repo_manifest)
     return cache_file
