@@ -21,6 +21,12 @@
 // O3DE_GENERATED_INCLUDES_BEGIN
 // O3DE_GENERATED_INCLUDES_END
 
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
+    // O3DE_GENERATED_MATERIAL_SRG_END
+}
+ 
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -43,12 +49,6 @@ struct VSOutput
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
-ShaderResourceGroup MaterialSrg : SRG_PerMaterial
-{
-    // O3DE_GENERATED_MATERIAL_SRG_BEGIN
-    // O3DE_GENERATED_MATERIAL_SRG_END
-}
- 
 // O3DE_GENERATED_CLASSES_BEGIN
 // O3DE_GENERATED_CLASSES_END
  
