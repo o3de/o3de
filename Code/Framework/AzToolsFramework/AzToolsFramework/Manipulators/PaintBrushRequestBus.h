@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
