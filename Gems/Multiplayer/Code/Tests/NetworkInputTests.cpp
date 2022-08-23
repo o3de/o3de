@@ -33,6 +33,7 @@ namespace Multiplayer
         {
             HierarchyTests::SetUp();
 
+            m_console->PerformCommand("net_useInputDeltaSerialization true");
             m_root = AZStd::make_unique<EntityInfo>(1, "root", NetEntityId{ 1 }, EntityInfo::Role::Root);
 
             PopulateNetworkEntity(*m_root);
@@ -97,6 +98,7 @@ namespace Multiplayer
             EXPECT_EQ(inArray[i].GetClientInputId(), cid);
             EXPECT_EQ(inArray[i].GetHostFrameId(), hid);
             EXPECT_EQ(inArray[i].GetHostTimeMs(), time);
+            EXPECT_EQ(inArray[i].GetComponentInputDeltaLogs().size(), 0);
         }
     }
 
@@ -147,6 +149,7 @@ namespace Multiplayer
             inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
 
             inHistory.PushBack(inArray[i]);
+            EXPECT_EQ(inArray[i].GetClientInputId(), inHistory[i].GetClientInputId());
         }
 
         EXPECT_EQ(inHistory.Size(), NetworkInputArray::MaxElements);
@@ -164,6 +167,34 @@ namespace Multiplayer
         EXPECT_EQ(inHistory.Size(), 0);
     }
 
+    TEST_F(NetworkInputTests, ConstNetworkInputHistory)
+    {
+        const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
+        NetworkInputArray inArray = NetworkInputArray(handle);
+        NetworkInputHistory inHistory = NetworkInputHistory();
+
+        for (uint32_t i = 0; i < NetworkInputArray::MaxElements; ++i)
+        {
+            inArray[i].SetClientInputId(ClientInputId(i));
+            inArray[i].SetHostFrameId(HostFrameId(i));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
+
+            inHistory.PushBack(inArray[i]);
+        }
+
+        const NetworkInputArray constInArray = NetworkInputArray(inArray);
+        const NetworkInputHistory constInHistory = NetworkInputHistory(inHistory);
+        for (uint32_t i = 0; i < NetworkInputArray::MaxElements; ++i)
+        {
+            const NetworkInput input = constInHistory[i];
+            EXPECT_EQ(constInHistory[i].GetClientInputId(), constInArray[i].GetClientInputId());
+            EXPECT_EQ(constInHistory[i].GetHostFrameId(), constInArray[i].GetHostFrameId());
+            EXPECT_NEAR(constInHistory[i].GetHostBlendFactor(), constInArray[i].GetHostBlendFactor(), 0.001f);
+            EXPECT_EQ(constInHistory[i].GetHostTimeMs(), constInArray[i].GetHostTimeMs());
+        }
+
+    }
     TEST_F(NetworkInputTests, NetworkInputMigrationVector)
     {
         const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
@@ -209,5 +240,23 @@ namespace Multiplayer
         const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
         NetworkInputArray inArray = NetworkInputArray(handle);
         EXPECT_EQ("root", inArray[0].GetOwnerName());
+    }
+
+    TEST_F(NetworkInputTests, NetworkInputAssignConst)
+    {
+        const NetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityTracker.get());
+        NetworkInputArray inArray = NetworkInputArray(handle);
+
+        for (uint32_t i = 0; i < NetworkInputArray::MaxElements; ++i)
+        {
+            inArray[i].SetClientInputId(ClientInputId(i));
+            inArray[i].SetHostFrameId(HostFrameId(i));
+            inArray[i].SetHostBlendFactor(i * BLEND_FACTOR_SCALE);
+            inArray[i].SetHostTimeMs(AZ::TimeMs(i * TIME_SCALE));
+        }
+        const NetworkInput constInput(inArray[0]);
+        NetworkInput input(inArray[1]);
+        input = constInput;
+        EXPECT_EQ(input.GetClientInputId(), constInput.GetClientInputId());
     }
 } // namespace Multiplayer

@@ -67,9 +67,9 @@ def GradientPreviewSettings_ClearingPinnedEntitySetsPreviewToOrigin():
 
     def clear_entityid_check_position(entity_name, components_to_add, check_preview_size=False):
         entity = create_entity(entity_name, components_to_add)
-        hydra.get_set_test(entity, 0, "Preview Settings|Pin Preview to Shape", EntityId.EntityId())
+        hydra.get_set_test(entity, 0, "Previewer|Preview Settings|Pin Preview to Shape", EntityId.EntityId())
         preview_position = hydra.get_component_property_value(
-            entity.components[0], "Preview Settings|Preview Position"
+            entity.components[0], "Previewer|Preview Settings|Preview Position"
         )
         preview_set_to_origin = (
             f"{entity_name}: Preview Position set to world origin",
@@ -77,7 +77,7 @@ def GradientPreviewSettings_ClearingPinnedEntitySetsPreviewToOrigin():
         )
         Report.result(preview_set_to_origin, preview_position.IsClose(WORLD_ORIGIN, CLOSE_THRESHOLD))
         if check_preview_size:
-            preview_size = hydra.get_component_property_value(entity.components[0], "Preview Settings|Preview Size")
+            preview_size = hydra.get_component_property_value(entity.components[0], "Previewer|Preview Settings|Preview Size")
             preview_size_default_set = (
                 f"{entity_name}: Preview Size set as expected",
                 f"{entity_name}: Preview Size set to unexpected value. Expected {EXPECTED_SIZE}, Found {preview_size}"

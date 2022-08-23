@@ -113,10 +113,7 @@ def ImageGradient_BilinearFiltering():
 
     # 6) Validate the expected number of vegetation instances when sampling via "Bilinear". Instances should fill
     # exactly 25% more of the spawner's Box Size on X than when sampling via Point
-    image_gradient_entity.components[0].set_component_property_value("Configuration|Advanced", True)
-    image_gradient_entity.components[0].set_component_property_value("Configuration|Advanced|Sampling Type", 1)
-    # Re-assign the image gradient asset due to https://github.com/o3de/o3de/issues/9602
-    vegetation.ImageGradientRequestBus(bus.Event, "SetImageAssetPath", image_gradient_entity.id, test_img_gradient_path)
+    image_gradient_entity.components[0].set_component_property_value("Configuration|Sampling Type", 1)
     num_expected_instances_bilinear = 48
     success = helper.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(
         spawner_entity.id, num_expected_instances_bilinear), 5.0)
