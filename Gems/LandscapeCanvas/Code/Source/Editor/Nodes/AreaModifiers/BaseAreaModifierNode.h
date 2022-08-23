@@ -49,12 +49,5 @@ namespace LandscapeCanvas
         {
             return BaseNode::VegetationAreaModifier;
         }
-
-        const bool ShouldShowEntityName() const override
-        {
-            // Don't show the entity name for Area Modifiers since they will
-            // be wrapped on a Vegetation Area it would be redundant
-            return false;
-        }
     };
 }

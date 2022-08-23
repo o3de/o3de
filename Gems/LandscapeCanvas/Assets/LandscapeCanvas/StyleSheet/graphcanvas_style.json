@@ -1755,6 +1755,13 @@
     "color": "#ffffff"
   },
   {
+    "selectors": [ "TerrainNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#8B572A",
+    "background-color": "#8B572A",
+    "color": "#ffffff"
+  },
+  {
     "selectors": [ "UtilityNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#FFFFFF",
