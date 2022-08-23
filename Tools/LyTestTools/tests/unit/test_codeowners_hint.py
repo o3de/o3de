@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Unit tests for ly_test_tools.cli.codeowners_hint
 """
+import pathlib
+
 import pytest
 
 import ly_test_tools.cli.codeowners_hint as hint
@@ -51,7 +53,8 @@ def _assert_owners_from(target_relative_path, mock_ownership_data, expected_path
     :param expected_alias_match: expected line's alias-value to match
     """
     with mock.patch('builtins.open', mock.mock_open(read_data=mock_ownership_data)):
-        path, alias = hint.get_codeowners_from(_DUMMY_REPO_PATH + target_relative_path, _DUMMY_CODEOWNERS_PATH)
+        path, alias = hint.get_codeowners_from(pathlib.Path(_DUMMY_REPO_PATH + target_relative_path),
+                                               pathlib.Path(_DUMMY_CODEOWNERS_PATH))
     assert path == expected_path_match
     assert alias == expected_alias_match
 
@@ -59,11 +62,22 @@ def _assert_owners_from(target_relative_path, mock_ownership_data, expected_path
 @mock.patch("os.path.isfile", mock.MagicMock(return_value=True))
 @mock.patch("os.path.getsize", mock.MagicMock(return_value=1))
 class TestGetOwnersFrom:
-
     def test_ExactMatch_OneExactMatch_Matched(self):
         target = "/some/path/to/my/file"
         ownership_data = target + "  @alias\n"
         _assert_owners_from(target, ownership_data, target, "@alias")
+
+    @pytest.mark.parametrize("target_path,codeowners_path", [
+        (pathlib.PurePosixPath("/some/owned/unix/path"), pathlib.PurePosixPath("/some/.github/CODEOWNERS")),
+        (pathlib.PurePosixPath("/some/owned/unix/.dot/path"), pathlib.PurePosixPath("/some/.github/CODEOWNERS")),
+        (pathlib.PureWindowsPath("\\some\\owned\\windows\\path"), pathlib.PureWindowsPath("\\some\\.github\\CODEOWNERS")),
+        (pathlib.PureWindowsPath("\\some\\owned\\windows\\.dot\\path"), pathlib.PureWindowsPath("\\some\\.github\\CODEOWNERS")),
+    ])
+    def test_ExactMatch_VariantSystemPaths_Matched(self, target_path, codeowners_path):
+        with mock.patch('builtins.open', mock.mock_open(read_data=f"/owned @alias")):
+            path, alias = hint.get_codeowners_from(target_path, codeowners_path)
+        assert path, "unexpectedly None or empty"
+        assert alias, "unexpectedly None or empty"
 
     def test_NoMatches_MultipleMismatched_Negative(self):
         target = _DUMMY_REPO_PATH + "/does/not/exist"

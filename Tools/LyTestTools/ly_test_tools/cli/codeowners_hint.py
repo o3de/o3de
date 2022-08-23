@@ -19,7 +19,7 @@ _DEFAULT_CODEOWNER_ALIAS = "https://www.o3de.org/community/"
 _GITHUB_CODEOWNERS_BYTE_LIMIT = 3 * 1024 * 1024  # 3MB
 
 
-def get_codeowners(target_path: pathlib.Path) -> (str|None, str|None, pathlib.Path|None):
+def get_codeowners(target_path: pathlib.PurePath) -> (str|None, str|None, pathlib.PurePath|None):
     """
     Finds ownership information matching the target filesystem path from a CODEOWNERS file found in its GitHub repo
     :param target_path: path to match in a GitHub CODEOWNERS file, which will be discovered inside its repo
@@ -30,7 +30,7 @@ def get_codeowners(target_path: pathlib.Path) -> (str|None, str|None, pathlib.Pa
     return matched_path, owner_aliases, codeowners_path
 
 
-def find_github_codeowners(target_path: pathlib.Path) -> pathlib.Path|None:
+def find_github_codeowners(target_path: pathlib.PurePath) -> pathlib.Path|None:
     """
     Finds the '.github/CODEOWNERS' file for the git repo containing target_path
     :param target_path: a path expected to exist in a GitHub repository containing a CODEOWNERS file
@@ -50,7 +50,7 @@ def find_github_codeowners(target_path: pathlib.Path) -> pathlib.Path|None:
     return None
 
 
-def get_codeowners_from(target_path: pathlib.Path, codeowners_path: pathlib.Path) -> (str, str):
+def get_codeowners_from(target_path: pathlib.PurePath, codeowners_path: pathlib.PurePath) -> (str, str):
     """
     Fetch ownership information matching the target filesystem path from a CODEOWNERS file
     :param target_path: path to match in the GitHub CODEOWNERS file
@@ -68,7 +68,7 @@ def get_codeowners_from(target_path: pathlib.Path, codeowners_path: pathlib.Path
         return "", ""
 
     # operate only on unix-style separators
-    repo_root = pathlib.PurePosixPath(codeowners_path).parent.parent
+    repo_root = pathlib.PurePosixPath(codeowners_path.parent.parent)
     unix_normalized_target = pathlib.PurePosixPath(target_path)
     if not unix_normalized_target.is_relative_to(repo_root):
         logger.warning(f"Path '{target_path}' is not inside the repo of GitHub CODEOWNERS file {codeowners_path}")

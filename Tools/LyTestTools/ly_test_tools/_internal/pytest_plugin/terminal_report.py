@@ -83,7 +83,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that failed locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands):\n",
                 test_path, nodeids, build_dir)
-            _add_ownership(terminalreporter, test_path)
 
             # Check for unknown test failures
             have_printed_header = False
@@ -105,4 +104,5 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                 "Use the following commands to re-run each test that had errors locally\n"
                 "(NOTE: The 'PYTHON' or 'PYTHONPATH' environment variables need values for accurate commands): ",
                 test_path, nodeids, build_dir)
-            _add_ownership(terminalreporter, test_path)
+
+        _add_ownership(terminalreporter, test_path)
