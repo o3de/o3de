@@ -8,9 +8,9 @@
 
 #include <AzCore/Component/TransformBus.h>
 
-#include <AzToolsFramework/Brushes/PaintBrushRequestBus.h>
-#include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/Manipulators/PaintBrushRequestBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -107,25 +107,11 @@ namespace GradientSignal
     bool EditorImageGradientComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        bool result = false;
-
-        AzToolsFramework::PaintBrushRequestBus::EventResult(
-            result, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::HandleMouseInteraction, mouseInteraction);
-        return result;
+        return m_brushManipulator->HandleMouseInteraction(mouseInteraction);
     }
 
     void EditorImageGradientComponentMode::Refresh()
     {
-    }
-
-    void EditorImageGradientComponentMode::OnRadiusChanged(float radius)
-    {
-        m_brushManipulator->SetRadius(radius);
-    }
-
-    void EditorImageGradientComponentMode::OnWorldSpaceChanged(const AZ::Transform& brushTransform)
-    {
-        m_brushManipulator->SetSpace(brushTransform);
     }
 
     void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea)
@@ -185,14 +171,9 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::AdjustRadius(float radiusDelta)
     {
-        float radius = 0.0f;
-        AzToolsFramework::PaintBrushRequestBus::EventResult(
-            radius, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetRadius);
-
+        float radius = m_brushManipulator->GetRadius();
         radius = AZStd::clamp(radius + radiusDelta, 0.01f, 1024.0f);
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, radius);
+        m_brushManipulator->SetRadius(radius);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
@@ -200,14 +181,9 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::AdjustIntensity(float intensityDelta)
     {
-        float intensity = 0.0f;
-        AzToolsFramework::PaintBrushRequestBus::EventResult(
-            intensity, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetIntensity);
-
+        float intensity = m_brushManipulator->GetIntensity();
         intensity = AZStd::clamp(intensity + intensityDelta, 0.0f, 1.0f);
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetIntensity, intensity);
+        m_brushManipulator->SetIntensity(intensity);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
@@ -215,14 +191,9 @@ namespace GradientSignal
 
     void EditorImageGradientComponentMode::AdjustOpacity(float opacityDelta)
     {
-        float opacity = 0.0f;
-        AzToolsFramework::PaintBrushRequestBus::EventResult(
-            opacity, GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::GetOpacity);
-
+        float opacity = m_brushManipulator->GetOpacity();
         opacity = AZStd::clamp(opacity + opacityDelta, 0.0f, 1.0f);
-
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            GetEntityComponentIdPair(), &AzToolsFramework::PaintBrushRequestBus::Events::SetOpacity, opacity);
+        m_brushManipulator->SetOpacity(opacity);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);

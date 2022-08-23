@@ -48,11 +48,6 @@ namespace AzToolsFramework
         //! @param opacity The new opacity, in 0-1 range (0=transparent, 1=opaque).
         virtual void SetOpacity(float opacity) = 0;
 
-        //! HandleMouseInteraction provides mouse interaction event data to the paintbrush so that it can handle the painting activity.
-        //! @param mouseInteraction The mouse event data.
-        //! @return True if the event has been handled and shouldn't propagate, false if the event should propagate to other handlers.
-        virtual bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction) = 0;
-
         //! GetValue returns the current painted values at the requested position.
         //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion) event to get
         //! the specific painted values at every position the listener cares about within the dirtyRegion.

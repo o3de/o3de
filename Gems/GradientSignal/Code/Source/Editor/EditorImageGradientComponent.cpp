@@ -157,8 +157,8 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
                         "Paint Brush", "Paint Brush Properties")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::InComponentMode)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::PaintBrushSettingsChanged)
                     ;
-
             }
         }
     }
@@ -235,18 +235,18 @@ namespace GradientSignal
         RefreshImageAssetStatus();
         RefreshCreationSelectionChoice();
 
-        m_paintBrush.Activate(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
-            AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
+            entityComponentIdPair, nullptr);
 
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
         m_componentModeDelegate.Disconnect();
-
-        m_paintBrush.Deactivate();
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
         m_currentImageJobsPending = false;
@@ -479,6 +479,38 @@ namespace GradientSignal
     {
         return m_componentModeDelegate.AddedToComponentMode();
     }
+
+    void EditorImageGradientComponent::OnIntensityChanged(float intensity)
+    {
+        m_paintBrush.m_intensity = intensity;
+    }
+
+    void EditorImageGradientComponent::OnOpacityChanged(float opacity)
+    {
+        m_paintBrush.m_opacity = opacity;
+    }
+
+    void EditorImageGradientComponent::OnRadiusChanged(float radius)
+    {
+        m_paintBrush.m_radius = radius;
+    }
+
+    AZ::u32 EditorImageGradientComponent::PaintBrushSettingsChanged()
+    {
+        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, m_paintBrush.m_radius);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetIntensity, m_paintBrush.m_intensity);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetOpacity, m_paintBrush.m_opacity);
+
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
 
     bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
     {

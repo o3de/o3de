@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzToolsFramework/Brushes/PaintBrushNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 
 namespace GradientSignal
 {
@@ -34,9 +34,7 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnRadiusChanged(float radius) override;
         void OnPaint(const AZ::Aabb& dirtyArea) override;
-        void OnWorldSpaceChanged(const AZ::Transform& result) override;
 
     private:
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
