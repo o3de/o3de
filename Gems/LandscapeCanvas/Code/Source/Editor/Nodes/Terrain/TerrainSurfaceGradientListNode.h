@@ -22,17 +22,17 @@ namespace AZ
 
 namespace LandscapeCanvas
 {
-    class AssetWeightSelectorNode
+    class TerrainSurfaceGradientListNode
         : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetWeightSelectorNode, AZ::SystemAllocator, 0);
-        AZ_RTTI(AssetWeightSelectorNode, "{083CA722-638B-4E14-836B-2614451C2A91}", BaseNode);
+        AZ_CLASS_ALLOCATOR(TerrainSurfaceGradientListNode, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainSurfaceGradientListNode, "{9414099F-A3BB-432E-86B8-3FB2C44D2529}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AssetWeightSelectorNode() = default;
-        explicit AssetWeightSelectorNode(GraphModel::GraphPtr graph);
+        TerrainSurfaceGradientListNode() = default;
+        explicit TerrainSurfaceGradientListNode(GraphModel::GraphPtr graph);
 
         const BaseNodeType GetBaseNodeType() const override;
 

@@ -8,9 +8,6 @@
 
 #pragma once
 
-// Qt
-#include <QString>
-
 // Landscape Canvas
 #include <Editor/Core/Core.h>
 #include <Editor/Nodes/BaseNode.h>
@@ -22,22 +19,22 @@ namespace AZ
 
 namespace LandscapeCanvas
 {
-    class AssetWeightSelectorNode
-        : public BaseNode
+    class TerrainLayerSpawnerNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetWeightSelectorNode, AZ::SystemAllocator, 0);
-        AZ_RTTI(AssetWeightSelectorNode, "{083CA722-638B-4E14-836B-2614451C2A91}", BaseNode);
+        AZ_CLASS_ALLOCATOR(TerrainLayerSpawnerNode, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainLayerSpawnerNode, "{C901635B-4EC8-40A1-8D67-4138C7567C3E}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AssetWeightSelectorNode() = default;
-        explicit AssetWeightSelectorNode(GraphModel::GraphPtr graph);
-
-        const BaseNodeType GetBaseNodeType() const override;
+        TerrainLayerSpawnerNode() = default;
+        explicit TerrainLayerSpawnerNode(GraphModel::GraphPtr graph);
 
         static const QString TITLE;
         const char* GetTitle() const override;
+        const char* GetSubTitle() const override;
+        GraphModel::NodeType GetNodeType() const override;
+        const BaseNodeType GetBaseNodeType() const override;
 
     protected:
         void RegisterSlots() override;
