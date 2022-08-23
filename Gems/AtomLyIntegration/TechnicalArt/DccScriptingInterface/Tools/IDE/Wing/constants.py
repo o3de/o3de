@@ -28,7 +28,10 @@ from DccScriptingInterface.constants import PATH_PROGRAMFILES_X86
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
 # -------------------------------------------------------------------------
 # wing pro ide constants here
-#enavr to get/set the wing pro version
+# a setting to know the wing config exists
+ENVAR_DCCSI_CONFIG_IDE_WING = 'DCCSI_CONFIG_IDE_WING'
+
+# enavr to get/set the wing pro version
 ENVAR_DCCSI_WING_VERSION_MAJOR = 'DCCSI_WING_VERSION_MAJOR'
 
 # the default supported version of wing pro is 8
@@ -43,7 +46,9 @@ PATH_WINGHOME = (f'{PATH_PROGRAMFILES_X86}' +
                 f'\\{SLUG_DCCSI_WING_TYPE} {SLUG_DCCSI_WING_VERSION_MAJOR}')
 
 # wing native hook for it's home location, used in wingstub.py
-ENVAR_WINGHOM = 'WINGHOME'
+ENVAR_WINGHOME = 'WINGHOME'
+
+ENVAR_WINGHOME_BIN = 'WINGHOME_BIN'
 
 # path string constructor, wing home bin folder
 PATH_WINGHOME_BIN = f'{PATH_WINGHOME}\\bin'
@@ -62,7 +67,7 @@ PATH_WINGHOME_BIN_EXE = f'{PATH_WINGHOME_BIN}\\wing.exe'
 ENVAR_WING_PROJ = 'WING_PROJ'
 
 # path string constructor, the dccsi wing solution file
-PATH_DCCSI_TOOLS_IDE_WING_PROJ = (f'\\{PATH_DCCSI_TOOLS_IDE_WING}' +
+PATH_DCCSI_TOOLS_IDE_WING_PROJ = (f'{PATH_DCCSI_TOOLS_IDE_WING}' +
                                   f'\\.solutions' +
-                                  f'\\{SLUG_DCCSI_WING_VERSION_MAJOR}_{SLUG_DCCSI_WING_VERSION_MAJOR}x.wpr')
+                                  f'\\DCCsi_{SLUG_DCCSI_WING_VERSION_MAJOR}x.wpr')
 # --- END -----------------------------------------------------------------

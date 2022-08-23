@@ -35,12 +35,11 @@ _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
 _MODULE_PATH = Path(__file__)
 
-# ensure code access to the DCCsi
-from DccScriptingInterface.Tools import PATH_DCCSIG
+# This should automatically execute the Wing\config.py and retreive settings
+from dynaconf import settings
 
-# initialize the wing config and settings
-import DccScriptingInterface.Tools.IDE.Wing.config as wing_config
-_SETTINGS = wing_config.get_config_settings()
+# we can also grab the WingConfig class object to further augment
+from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
 # --- END -----------------------------------------------------------------
 
 
@@ -65,37 +64,25 @@ if __name__ == '__main__':
 
     _LOGGER = _logging.getLogger(_MODULENAME)
 
-    _LOGGER.info(STR_CROSSBAR)
+    # log global state to cli
+    _LOGGER.debug(STR_CROSSBAR)
     _LOGGER.debug(f'_MODULENAME: {_MODULENAME}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {DCCSI_LOGLEVEL}')
-    _LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {settings.DCCSI_GDEBUG}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {settings.DCCSI_DEV_MODE}')
+    _LOGGER.debug(f'{ENVAR_DCCSI_LOGLEVEL}: {settings.DCCSI_LOGLEVEL}')
 
     # commandline interface
     import argparse
     parser = argparse.ArgumentParser(
         description=f'O3DE {_MODULENAME}',
-        epilog="Attempts to start Wing Pro 8+ with the DCCsi and O3DE bootstrapping")
+        epilog=(f"Attempts to start Wing Pro {settings.DCCSI_WING_VERSION_MAJOR}"
+                "with the DCCsi and O3DE bootstrapping"))
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
                         default=False,
                         help='Enables global debug flag.')
-
-    parser.add_argument('-dm', '--developer-mode',
-                        type=bool,
-                        required=False,
-                        default=False,
-                        help='Enables dev mode for early auto attaching debugger.')
-
-    parser.add_argument('-sd', '--set-debugger',
-                        type=str,
-                        required=False,
-                        default='WING',
-                        help='Default debugger: WING, (not implemented) others: PYCHARM and VSCODE.')
 
     parser.add_argument('-ex', '--exit',
                         type=bool,
@@ -107,20 +94,14 @@ if __name__ == '__main__':
 
     # easy overrides
     if args.global_debug:
-        _DCCSI_GDEBUG = True
-        os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+        wing_config.add_setting(ENVAR_DCCSI_GDEBUG, True)
 
-    if args.developer_mode:
-        from azpy.config_utils import attach_debugger
-        _DCCSI_DEV_MODE = True
-        attach_debugger()  # attempts to start debugger
-
-    if args.set_debugger:
-        _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
-        # To Do: implement debugger plugin pattern
+    # fetch modified settings and set the env
+    settings = wing_config.get_settings(set_env=True)
 
     try:
-        subprocess.Popen(f'{_SETTINGS.DCCSI_SUBSTANCE_EXE}',
+        subprocess.Popen([f'{settings.WING_EXE}',
+                          settings.WING_PROJ],
                          env=os.environ.copy(),
                          shell=True)
     except Exception as e:

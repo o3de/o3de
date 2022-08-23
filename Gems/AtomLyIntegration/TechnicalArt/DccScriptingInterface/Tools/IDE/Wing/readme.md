@@ -11,7 +11,36 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 ###### Version: 0.0.1
 
-###### Support: Wing Pro 8+, currently Windows only
+###### Support: <u>Wing Pro 8+</u>, currently Windows only (other not tested but may work)
+
+- Not yet tested in Installer builds (I am a developer building from source), more robust support for end users is being worked on for next release (2210)
+
+- Supports O3DE Python as Launch Configuration
+
+- Supports Blender Python as a Launch Configuration
+
+- Others (like Maya) WIP
+
+## TL/DR
+
+To get started, you can launch Wing from a Win CMD prompt, first make sure you are
+
+```shell
+# First, ensure that your engine build has O3DE Python setup!
+> cd C:\path\to\o3de\
+> get_python.bat
+
+# change to the dccsi root
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+# python.cmd in this folder, wraps o3de python
+> python.cmd Tools\IDE\Wing\start,py
+```
+
+### Coming Soon
+
+- Start from O3DE Editor menu
+
+## Overview
 
 This document contains instructions and other information related to using Wing IDE with Open 3D Engine (O3DE). [ [WingIDE Link](https://wingware.com/?gclid=Cj0KCQjwxIOXBhCrARIsAL1QFCb2FuL_fHPRqkrN-4voBg0q7VMuNaFPWxAbnTxjv4diNm5kMBPwVhQaAv4yEALw_wcB) ] [ [Wing Docs Link](https://wingware.com/doc/TOC) ]
 
@@ -53,7 +82,7 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
   
   - These will have different install locations (and these locations have changed over time as the engine matures.)
     
-    - Nightly: `C:\O3DE\0.0.0.0`
+    - Nightly:  `C:\O3DE\0.0.0.0`
     
     - Release: `C:\O3DE\22.05.0`
     
@@ -69,9 +98,9 @@ There are many ways to work with O3DE, especially as a developer. Here are some 
   
   - `C:\depot\o3de-dev\build\bin\profile\editor.exe`
 
-- This is not a guide for actually developing python code and tools for the O3DE editor (that does exist however); this guide is focused on Wing IDE.
+- This is not a guide for actually developing python code and tools for the O3DE editor (that does exist however); this guide is focused on how Wing IDE is setup.
 
-- This guide likewise isn't focus very much on DCC tools or their configuration, however it does touch on these topics as they are concerned with Wing, like picking MayaPy.exe as your IDE interpreter.
+- This guide likewise isn't focus very much on DCC tools or their configuration, however it does touch on these topics as they are concerned with Wing, like picking Blender, or MayaPy.exe as your IDE interpreter (aka Launch Configuration)
 
 - This is not an O3DE build guide, it assumes you either have built from source (and know where that is!), or that you have a pre-built install (and likewise know where that is located.)
 
@@ -89,21 +118,31 @@ The actual interpreter that runs is somewhere like
 
     `o3de\python\runtime\python-3.7.12-rev2-windows\python\python.exe`
 
-The folder for Wing developer is here:
+The folder for Wing developers is here:
 
-    `DccScriptingInterface\Tools\IDE\WingIDE`
+    `DccScriptingInterface\Tools\IDE\Wing`
+
+It's this last location we will be most concerned with.
 
 There is also a windows .bat launcher for Wing in this location:
 
-    `DccScriptingInterface\Tools\IDE\WingIDE\win_launch_wingide.bat`
+    `DccScriptingInterface\Tools\IDE\Wing\win_launch_wingide.bat`
 
-It's this last location we will be most concerned with.
+This is an alternative to launching from the editor menu, or using the scripted approach of starting wing from the dccsi cmd:
+
+    `dccsi > python.cmd Tools\IDE\Wing\start.py`
+
+Development is a catch-22, sometimes the script framework is buggy and broken (or simply a change is wip), and you need a reliable fallback for your dev environment.
 
 # Setup
 
 Here are some set up instructions that hopefully get you up and running.
 
-## Configure O3DE .bat Env
+## Configure O3DE .bat Env:
+
+This section is for developers who desire to configure and start via the .bat file
+
+    `DccScriptingInterface\Tools\IDE\Wing\win_launch_wingide.bat`
 
 To make sure we can alter the Wing environment, to work with your set up, you will want to locate this file:
 
@@ -115,9 +154,9 @@ Then you will want to copy it, and rename the copy:
 
 What this file provides, is the ability and opportunity to make envar settings and overrides prior to starting WingIDE from the .bat file launcher.  If you have already found that the launcher didn't work for you, this is a section you will want to pay attention to.
 
-to do: ... describe overrides
+You may find the following ENVARs useful to set
 
-to do: ... use .bat launcher for Wing
+to do: document the envars
 
 ## Configure O3DE dynamic Env
 
@@ -125,11 +164,11 @@ There is a python driven approach to configuration, settings, bootstrapping and 
 
 The primary settings file, which is distributed.  This has default settings defined.
 
-    `DccScriptingInterface\Tools\IDE\WingIDE\settings.json`
+    `DccScriptingInterface\Tools\IDE\Wing\settings.json`
 
 This is a secondary settings file that can be manually made, or generated, for developers.  This file allows a developer to make local overrides to envars and settings.  These overrides take precedence.
 
-   ` DccScriptingInterface\Tools\IDE\WingIDE\settings.local.json`
+   ` DccScriptingInterface\Tools\IDE\Wing\settings.local.json`
 
 to do: ... describe how to generate the settings.local.json
 
@@ -163,12 +202,6 @@ Notes:
 
 - For debugging to work, on windows you likely will need to add the wing executable to **Windows Defender Firewall**. When you start wing for the first time it may prompt you to do this, otherwise may need to do it manually (see **HELP** below)
 
-## Starting Wing
-
-1. foo
-
-2. fooey
-
 ## HELP
 
 Trouble attaching debugger?  Open your firewall and add an exception for wing.
@@ -187,7 +220,7 @@ Trouble attaching debugger?  Open your firewall and add an exception for wing.
 
 # Revision Info:
 
-- This is the second working Proof of Concept. The first was a windows only .bat file based env and launchers. This new integration replaces that with data-driven configuration and settings, with python scripting to bootstrap and launch.
+- This is the second working Proof of Concept. The first was a windows only .bat file based env and launchers. This new integration replaces that with data-driven configuration and settings, with python scripting to bootstrap and launch. (this provides a path to starting from within the main o3de Editor via a PySide2 menu)
 
 - This iteration is developer focused, such as a Technical Artist. It does not have some of the end-user functionality or creature comforts that you might want or expect, yet.
 

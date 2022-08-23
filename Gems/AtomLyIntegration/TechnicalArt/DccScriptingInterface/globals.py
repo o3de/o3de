@@ -26,7 +26,7 @@ import logging as _logging
 _MODULENAME = 'DCCsi.globals'
 
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
 # -------------------------------------------------------------------------
 # global state to be shared
@@ -52,6 +52,9 @@ from DccScriptingInterface.constants import ENVAR_DCCSI_LOGLEVEL
 from DccScriptingInterface.constants import ENVAR_DCCSI_TESTS
 from DccScriptingInterface.constants import DCCSI_SETTINGS_LOCAL_FILENAME
 from DccScriptingInterface.constants import PATH_DCCSI_LOG_PATH
+
+from DccScriptingInterface.constants import STR_CROSSBAR
+from DccScriptingInterface.constants import FRMT_LOG_LONG
 
 # sub pkg dccsi imports
 # in next iteration these should be refactored to:
@@ -94,6 +97,14 @@ if DCCSI_GDEBUG and DCCSI_DEV_MODE:
     DCCSI_LOGLEVEL = _logging.DEBUG
     _LOGGER.setLevel(DCCSI_LOGLEVEL) # throttle up help
 
+# configure basic logger
+# note: not using a common logger to reduce cyclical imports
+_logging.basicConfig(level=DCCSI_LOGLEVEL,
+                     format=FRMT_LOG_LONG,
+                     datefmt='%m-%d %H:%M')
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+
 # resolve the O3DE root
 # a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
 # dev is a legacy Lumberyard concept, as the engine snadbox was /dev
@@ -105,7 +116,7 @@ DCCSI_SETTIBGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
 # default / temp log path
 DCCSI_O3DE_USER_HOM_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
 
-# putting thwese here, allows us to pull them from globals
+# putting these here, allows us to pull them from globals
 # and reduce boilerplate in other modules
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
 _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')

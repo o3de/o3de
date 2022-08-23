@@ -48,7 +48,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _MODULE_PATH = Path(__file__)
 _DCCSI_TOOLS_SUBSTANCE_PATH = Path(_MODULE_PATH.parent)
 
-from Tools import _PATH_DCCSIG
+from Tools import PATH_DCCSIG
 
 # now we have access to the DCCsi code and azpy
 from azpy.env_bool import env_bool
@@ -60,12 +60,12 @@ from azpy.constants import FRMT_LOG_LONG
 from azpy.config_utils import attach_debugger
 
 from Tools import PATH_DCCSI_TOOLS
-from Tools.DCC import _PATH_DCCSI_TOOLS_DCC
+from Tools.DCC import PATH_DCCSI_TOOLS_DCC
 
 _DCCSI_TOOLS_SUBSTANCE = Path(_MODULE_PATH.parent)
 _DCCSI_TOOLS_SUBSTANCE = Path(os.getenv('DCCSI_TOOLS_SUBSTANCE',
                                         _DCCSI_TOOLS_SUBSTANCE.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+site.addsitedir(PATH_DCCSI_TOOLS_DCC.as_posix())
 # -------------------------------------------------------------------------
 
 

@@ -42,7 +42,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 # set up access to this DCC folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 
-from Tools import _PATH_DCCSIG
+from Tools import PATH_DCCSIG
 
 # suggest to remove a lot of this boilerplate imports and debug config
 # from __init__'s in the future, there were put in an earlier version when
@@ -61,10 +61,10 @@ from azpy.config_utils import attach_debugger
 
 from Tools import PATH_DCCSI_TOOLS
 
-_PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC',
-                                       _PATH_DCCSI_TOOLS_DCC.as_posix()))
-site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
+PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC',
+                                       PATH_DCCSI_TOOLS_DCC.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS_DCC.as_posix())
 # -------------------------------------------------------------------------
 
 
@@ -90,9 +90,9 @@ if _DCCSI_GDEBUG:
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
+_LOGGER.debug(f'PATH_DCCSIG: {PATH_DCCSIG}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {PATH_DCCSI_TOOLS_DCC}')
 # -------------------------------------------------------------------------
 
 

@@ -34,7 +34,7 @@ from typing import Union
 
 
 # -------------------------------------------------------------------------
-import DccScriptingInterface as dccsi
+import DccScriptingInterface
 
 # global scope
 # we should update pkg, module and logging names to start with dccsi
@@ -53,8 +53,7 @@ from azpy.env_bool import env_bool
 
 # -------------------------------------------------------------------------
 # global constants here
-import DccScriptingInterface as dccsi
-from dccsi.constants import DCCSI_DYNAMIC_PREFIX
+from DccScriptingInterface.constants import DCCSI_DYNAMIC_PREFIX
 
 from azpy.constants import ENVAR_PATH_DCCSIG
 from azpy.constants import ENVAR_DCCSI_SYS_PATH
@@ -229,6 +228,13 @@ class ConfigClass(object):
     # ---------------------------------------------------------------------
 
     # --method-set---------------------------------------------------------
+    @classmethod
+    def get_classname(cls):
+        '''! gets the name of the class type
+        @ return: cls.__name__
+        '''
+        return cls.__name__
+
     def add_code_path(self,
                       path: Path,
                       path_list: list,

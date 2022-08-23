@@ -209,6 +209,9 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
     @param envar: add paths to this ENVAR
     """
 
+    # this method is called a lot and has become verbose,
+    # it's suggested to clean this up when the config is next refactored
+
     _LOGGER.info('checking envar: {}'.format(envar))
 
     # get or default to empty
@@ -251,6 +254,9 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
     @param path_list: a list() of paths
     @param envar: add paths to this ENVAR (and site.addsitedir)
     """
+
+    # this method is called a lot and has become verbose,
+    # it's suggested to clean this up when the config is next refactored
 
     _LOGGER.info('checking envar: {}'.format(envar))
 
@@ -404,7 +410,7 @@ def validate_o3de_pyside2():
 
 
 # -------------------------------------------------------------------------
-def test_pyside2():
+def test_pyside2(exit=True):
     """Convenience method to test Qt / PySide2 access"""
     # now test
     _LOGGER.info('~   Testing Qt / PySide2')
@@ -420,7 +426,9 @@ def test_pyside2():
         raise(e)
 
     _LOGGER.info('~   SUCCESS: .test_pyside2()')
-    sys.exit(app.exec_())
+
+    if exit:
+        sys.exit(app.exec_())
 # -------------------------------------------------------------------------
 
 
