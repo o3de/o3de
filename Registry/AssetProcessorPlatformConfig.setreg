@@ -39,7 +39,7 @@
                     "StartupTimeoutSeconds" : 900
                 },
                 "Platform pc": {
-                    "tags": "tools,renderer,dx12"
+                    "tags": "tools,renderer,dx12,vulkan,null"
                 },
                 "Platform linux": {
                     "tags": "tools,renderer,vulkan,null"
