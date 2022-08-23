@@ -876,6 +876,97 @@ namespace MaterialCanvas
         }
     }
 
+    bool MaterialCanvasDocument::BuildMaterialTypeFromTemplate(
+        const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const
+    {
+        // Load the material type template file, which is the same format as MaterialTypeSourceData with a different extension
+        auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(templateInputPath);
+        if (!materialTypeOutcome.IsSuccess())
+        {
+            AZ_Error("MaterialCanvasDocument", false, "Material type template could not be loaded: '%s'.", templateInputPath.c_str());
+            return false;
+        }
+
+        AZ::RPI::MaterialTypeSourceData materialTypeSourceData = materialTypeOutcome.TakeValue();
+
+        // Search the graph for nodes defining material input properties that should be added to the material type and material SRG
+        for (const auto& inputNodePair : m_graph->GetNodes())
+        {
+            // Each node contains property and input slots corresponding to MaterialTypeSourceData::PropertyDefinition members
+            const auto& inputNode = inputNodePair.second;
+            const auto materialInputNameSlot = inputNode->GetSlot("inName");
+            const auto materialInputGroupSlot = inputNode->GetSlot("inGroup");
+            const auto materialInputDescriptionSlot = inputNode->GetSlot("inDescription");
+            const auto materialInputValueSlot = inputNode->GetSlot("inValue");
+            if (materialInputGroupSlot && materialInputNameSlot && materialInputDescriptionSlot && materialInputValueSlot)
+            {
+                // Because users can specify any value for property and group names, and attempt will be made to convert them into valid,
+                // usable names by sanitizing, removing unsupported characters, and changing case
+                AZStd::string propertyGroupName = AZ::RPI::AssetUtils::SanitizeFileName(materialInputGroupSlot->GetValue<AZStd::string>());
+                AZ::StringFunc::Replace(propertyGroupName, "-", "_");
+                if (propertyGroupName.empty())
+                {
+                    // If no group name was specified, general will be used by default
+                    propertyGroupName = "general";
+                }
+
+                // Find or create a property group with the specified name
+                auto propertyGroup = materialTypeSourceData.FindPropertyGroup(propertyGroupName);
+                if (!propertyGroup)
+                {
+                    // Add the property group to the material type if it was not already registered
+                    propertyGroup = materialTypeSourceData.AddPropertyGroup(propertyGroupName);
+
+                    // The unmodified text value will be used as the display name and description for now
+                    propertyGroup->SetDisplayName(materialInputGroupSlot->GetValue<AZStd::string>());
+                    propertyGroup->SetDescription(materialInputGroupSlot->GetValue<AZStd::string>());
+                }
+
+                // Get the symbol for the material input based on the node and the property name. This will be used as both the
+                // variable name and material type property name.
+                AZStd::string propertyName = GetMaterialInputNameFromNode(inputNode);
+                auto property = propertyGroup->AddProperty(propertyName);
+                property->m_displayName = materialInputNameSlot->GetValue<AZStd::string>();
+                property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
+                property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
+
+                // The property definition requires an explicit type enumeration that needs to be converted from the actual data type.
+                property->m_dataType =
+                    AtomToolsFramework::GetMaterialPropertyDataTypeFromValue(property->m_value, !property->m_enumValues.empty());
+
+                // Images and enums need additional conversion prior to being saved.
+                AtomToolsFramework::ConvertToExportFormat(
+                    templateOutputPath, AZ::Name(propertyGroupName + "." + propertyName), *property, property->m_value);
+
+                // This property must be connected to the material SRG variable with the same name. Shader options are not currently
+                // supported.
+                property->m_outputConnections.push_back(AZ::RPI::MaterialTypeSourceData::PropertyConnection(
+                    AZ::RPI::MaterialPropertyOutputType::ShaderInput, propertyName, -1));
+            }
+        }
+
+        // The file is written to an in memory buffer before saving to facilitate string substitutions.
+        AZStd::string templateOutputText;
+        if (!AZ::RPI::JsonUtils::SaveObjectToString(templateOutputText, materialTypeSourceData))
+        {
+            AZ_Error("MaterialCanvasDocument", false, "Material type template could not be saved: '%s'.", templateOutputPath.c_str());
+            return false;
+        }
+
+        // Substitute the material graph name and any other material canvas specific tokens
+        AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", GetGraphName().c_str());
+
+        // The material type is complete and can be saved to disk.
+        const auto writeOutcome = AZ::Utils::WriteFile(templateOutputText, templateOutputPath);
+        if (!writeOutcome)
+        {
+            AZ_Error("MaterialCanvasDocument", false, "Material type template could not be saved: '%s'.", templateOutputPath.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
     bool MaterialCanvasDocument::CompileGraph() const
     {
         m_compileGraphQueued = false;
@@ -941,108 +1032,14 @@ namespace MaterialCanvas
                 // Remove any aliases to resolve the absolute path to the template file
                 const AZStd::string templateInputPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
                 const AZStd::string templateOutputPath = GetOutputPathFromTemplatePath(templateInputPath);
+
                 if (AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
                 {
-                    auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(templateInputPath);
-                    if (!materialTypeOutcome.IsSuccess())
+                    if (!BuildMaterialTypeFromTemplate(templateInputPath, templateOutputPath))
                     {
-                        AZ_Error("MaterialCanvasDocument", false, "Material type template could not be loaded: '%s'.", templateInputPath.c_str());
-                        continue;
-
+                        m_generatedFiles.clear();
+                        return false;
                     }
-
-                    AZ::RPI::MaterialTypeSourceData materialTypeSourceData = materialTypeOutcome.TakeValue();
-
-                    for (const auto& inputNodePair : m_graph->GetNodes())
-                    {
-                        const auto& inputNode = inputNodePair.second;
-                        const auto materialInputNameSlot = inputNode->GetSlot("inName");
-                        const auto materialInputGroupSlot = inputNode->GetSlot("inGroup");
-                        const auto materialInputDescriptionSlot = inputNode->GetSlot("inDescription");
-                        const auto materialInputValueSlot = inputNode->GetSlot("inValue");
-                        if (materialInputGroupSlot && materialInputNameSlot && materialInputDescriptionSlot && materialInputValueSlot)
-                        {
-                            AZStd::string propertyGroupName =
-                                AZ::RPI::AssetUtils::SanitizeFileName(materialInputGroupSlot->GetValue<AZStd::string>());
-                            AZ::StringFunc::Replace(propertyGroupName, "-", "_");
-                            if (propertyGroupName.empty())
-                            {
-                                propertyGroupName = "general";
-                            }
-
-                            auto propertyGroup = materialTypeSourceData.FindPropertyGroup(propertyGroupName);
-                            if (!propertyGroup)
-                            {
-                                propertyGroup = materialTypeSourceData.AddPropertyGroup(propertyGroupName);
-                                propertyGroup->SetDisplayName(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
-                                propertyGroup->SetDescription(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
-                            }
-
-                            AZStd::string propertyName = GetMaterialInputNameFromNode(inputNode);
-                            auto property = propertyGroup->AddProperty(propertyName);
-                            property->m_displayName = AtomToolsFramework::GetDisplayNameFromPath(propertyName);
-                            property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
-                            property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
-                            property->m_outputConnections.push_back(AZ::RPI::MaterialTypeSourceData::PropertyConnection(
-                                AZ::RPI::MaterialPropertyOutputType::ShaderInput, propertyName, -1));
-
-                            if (property->m_value.Is<bool>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Bool;
-                            }
-                            else if (property->m_value.Is<AZ::s32>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Int;
-                            }
-                            else if (property->m_value.Is<AZ::u32>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::UInt;
-                            }
-                            else if (property->m_value.Is<float>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
-                            }
-                            else if (property->m_value.Is<AZ::Vector2>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Vector2;
-                            }
-                            else if (property->m_value.Is<AZ::Vector3>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Vector3;
-                            }
-                            else if (property->m_value.Is<AZ::Vector4>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Vector4;
-                            }
-                            else if (property->m_value.Is<AZ::Color>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Color;
-                            }
-                            else if (property->m_value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Image;
-                            }
-                            else if (property->m_value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
-                            {
-                                property->m_dataType = AZ::RPI::MaterialPropertyDataType::Image;
-                            }
-                            else if (property->m_value.Is<AZStd::string>())
-                            {
-                                property->m_dataType = property->m_enumValues.empty() ? AZ::RPI::MaterialPropertyDataType::Image
-                                                                                      : AZ::RPI::MaterialPropertyDataType::Enum;
-                            }
-
-                            AtomToolsFramework::ConvertToExportFormat(
-                                templateOutputPath, AZ::Name(propertyGroupName + "." + propertyName), *property, property->m_value);
-                        }
-                    }
-
-                    AZStd::string templateOutputText;
-                    AZ::RPI::JsonUtils::SaveObjectToString(templateOutputText, materialTypeSourceData);
-                    AZ::StringFunc::Replace(templateOutputText, "MaterialGraphName", GetGraphName().c_str());
-
-                    // Save the file generated from the template to the same folder as the graph.
-                    AZ::Utils::WriteFile(templateOutputText, templateOutputPath);
                     m_generatedFiles.push_back(templateOutputPath);
                     continue;
                 }

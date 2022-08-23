@@ -138,6 +138,10 @@ namespace MaterialCanvas
             const LineGenerationFn& lineGenerationFn,
             AZStd::vector<AZStd::string>& templateLines) const;
 
+        // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
+        // properties defined in material input nodes
+        bool BuildMaterialTypeFromTemplate(const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const;
+
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
