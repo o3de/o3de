@@ -256,7 +256,7 @@ namespace O3DE::ProjectManager
                                     .arg(createShortcutResult.GetError()));
             }
 
-            return AZ::Success(QObject::tr("Desktop shortcut created at<br><a href=\"%1\">%2</a>").arg(desktopPath).arg(shortcutPath));
+            return AZ::Success(QObject::tr("A desktop shortcut has been successfully created.<br>You can view the file <a href=\"%1\">here</a>.").arg(desktopPath));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -113,17 +113,13 @@ namespace O3DE::ProjectManager
             addProjectButton->setObjectName("addProjectButton");
             buttonLayout->addWidget(addProjectButton);
 
-#ifdef ADD_REMOTE_PROJECT_ENABLED
             QPushButton* addRemoteProjectButton = new QPushButton(tr("Add a remote project\n"), this);
             addRemoteProjectButton->setObjectName("addRemoteProjectButton");
             buttonLayout->addWidget(addRemoteProjectButton);
-#endif
 
             connect(createProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleNewProjectButton);
             connect(addProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleAddProjectButton);
-#ifdef ADD_REMOTE_PROJECT_ENABLED
             connect(addRemoteProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleAddRemoteProjectButton);
-#endif
 
             layout->addLayout(buttonLayout);
         }
@@ -151,15 +147,11 @@ namespace O3DE::ProjectManager
                 QMenu* newProjectMenu = new QMenu(this);
                 m_createNewProjectAction = newProjectMenu->addAction("Create New Project");
                 m_addExistingProjectAction = newProjectMenu->addAction("Open Existing Project");
-#ifdef ADD_REMOTE_PROJECT_ENABLED
                 m_addRemoteProjectAction = newProjectMenu->addAction("Add Remote Project");
-#endif
 
                 connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
                 connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
-#ifdef ADD_REMOTE_PROJECT_ENABLED
                 connect(m_addRemoteProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddRemoteProjectButton);
-#endif
 
                 QPushButton* newProjectMenuButton = new QPushButton(tr("New Project..."), this);
                 newProjectMenuButton->setObjectName("newProjectButton");

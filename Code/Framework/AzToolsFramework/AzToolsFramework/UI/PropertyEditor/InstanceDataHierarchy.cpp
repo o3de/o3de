@@ -669,36 +669,6 @@ namespace AzToolsFramework
 
     namespace InstanceDataHierarchyHelper
     {
-        template <class T>
-        bool GetEnumStringRepresentation(AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
-        {
-            if (storageTypeId == azrtti_typeid<T>())
-            {
-                for (const AZ::AttributePair& attributePair : data->m_attributes)
-                {
-                    PropertyAttributeReader reader(instance, attributePair.second);
-                    AZ::Edit::EnumConstant<T> enumPair;
-                    if (reader.Read<AZ::Edit::EnumConstant<T>>(enumPair))
-                    {
-                        T* enumValue = reinterpret_cast<T*>(instance);
-                        if (enumPair.m_value == *enumValue)
-                        {
-                            value = enumPair.m_description;
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        // Try GetEnumStringRepresentation<Type> on all of the specified types 
-        template <class T1, class T2, class... TRest>
-        bool GetEnumStringRepresentation(AZStd::string& value, const AZ::Edit::ElementData* data, void* instance, const AZ::Uuid& storageTypeId)
-        {
-            return GetEnumStringRepresentation<T1>(value, data, instance, storageTypeId) || GetEnumStringRepresentation<T2, TRest...>(value, data, instance, storageTypeId);
-        }
-
         bool GetValueStringRepresentation(const InstanceDataNode* node, AZStd::string& value)
         {
             const AZ::SerializeContext::ClassData* classData = node->GetClassMetadata();
@@ -728,7 +698,7 @@ namespace AzToolsFramework
                     if (data)
                     {
                         // Check all underlying enum storage types
-                        if (GetEnumStringRepresentation<
+                        if (AZ::Utils::GetEnumStringRepresentation<
                             AZ::u8, AZ::u16, AZ::u32, AZ::u64,
                             AZ::s8, AZ::s16, AZ::s32, AZ::s64>(value, data, node->FirstInstance(), node->GetClassMetadata()->m_typeId))
                         {
