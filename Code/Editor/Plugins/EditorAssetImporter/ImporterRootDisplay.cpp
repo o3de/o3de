@@ -74,7 +74,7 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
     
     ui->m_showInExplorer->setEnabled(true);
     ui->m_showInExplorer->disconnect();
-    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [=]()
+    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [fullPath]()
     {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
     });
