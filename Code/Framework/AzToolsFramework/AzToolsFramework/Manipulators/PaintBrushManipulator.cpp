@@ -169,9 +169,10 @@ namespace AzToolsFramework
     {
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Move)
         {
+            const bool isFirstPaintedPoint = false;
             MovePaintBrush(
                 mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+                mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
 
             // For move events, always return false so that mouse movements with right clicks can still affect the Editor camera.
             return false;
@@ -180,13 +181,11 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                // Track when we've started painting so that we can properly handle continuous brush strokes between mouse events.
-                m_isFirstPaintedPoint = true;
-
+                const bool isFirstPaintedPoint = true;
                 m_isPainting = true;
                 MovePaintBrush(
                     mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
-                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+                    mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
                 return true;
             }
         }
@@ -201,7 +200,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void PaintBrushManipulator::MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates)
+    void PaintBrushManipulator::MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint)
     {
         // Ray cast into the screen to find the closest collision point for the current mouse location.
         auto worldSurfacePosition =
@@ -224,10 +223,9 @@ namespace AzToolsFramework
         {
             // Keep track of the previous painted point and the current one. We'll use that to create a brush stroke
             // that covers everything in-between.
-            if (m_isFirstPaintedPoint)
+            if (isFirstPaintedPoint)
             {
                 m_previousCenter = m_center;
-                m_isFirstPaintedPoint = false;
             }
 
             // Create an AABB that contains both endpoints. By definition, it will contain all of the brush stroke

@@ -109,28 +109,9 @@ namespace AzToolsFramework
         void SetOpacity(float opacity) override;
 
     private:
-        struct StartInternal
-        {
-            AZ::Transform m_worldFromLocal;
-            AZ::Transform m_localTransform;
-        };
-
-        struct CurrentInternal
-        {
-        };
-
-        struct ActionInternal
-        {
-            StartInternal m_start;
-            CurrentInternal m_current;
-        };
-
-        ActionInternal m_actionInternal;
+        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates, bool isFirstPaintedPoint);
 
         AZStd::shared_ptr<ManipulatorViewProjectedCircle> m_manipulatorView;
-
-    private:
-        void MovePaintBrush(int viewportId, const AzFramework::ScreenPoint& screenCoordinates);
 
         //! The entity/component that owns this paintbrush.
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
@@ -140,8 +121,6 @@ namespace AzToolsFramework
 
         //! Tracks the previous location we painted so that we can generate a continuous brush stroke.
         AZ::Vector3 m_previousCenter;
-        //! Determines if we need to generate a brush stroke yet or not.
-        bool m_isFirstPaintedPoint = true;
 
         //! Current center of the paintbrush in world space.
         AZ::Vector3 m_center;
