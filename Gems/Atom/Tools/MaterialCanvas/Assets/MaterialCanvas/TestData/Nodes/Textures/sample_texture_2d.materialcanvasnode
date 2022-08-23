@@ -8,7 +8,7 @@
         "title": "Sample Texture 2D",
         "settings": {
             "materialInputs": [
-                "Texture2D NODEINPUTID_texture;",
+                "Texture2D NODEINPUTID;",
                 "Sampler NODEINPUTID_sampler",
                 "{",
                 "    MaxAnisotropy = 16;",
@@ -18,7 +18,7 @@
                 "};"
             ],
             "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID_texture.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
+                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
             ]
         },
         "propertySlots": [
