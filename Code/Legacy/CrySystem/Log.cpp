@@ -1283,6 +1283,10 @@ void CLog::LogStringToFile(AZStd::string_view message, ELogType logType, bool ap
             AZ::Debug::Platform::OutputToDebugger({}, timeStr);
         }
         AZ::Debug::Platform::OutputToDebugger({}, message);
+        if (!message.ends_with('\n'))
+        {
+            AZ::Debug::Platform::OutputToDebugger({}, "\n");
+        }
     }
 
     if (!bIsMainThread)
