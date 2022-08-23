@@ -326,7 +326,7 @@ namespace AzToolsFramework
         AZ::Vector3 m_axis = AZ::Vector3::CreateAxisZ();
         float m_width = 0.5f;
         float m_radius = 2.0f;
-        AZ::Color m_color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+        AZ::Color m_color = AZ::Colors::Red;
     };
 
     //! Displays a wire circle. DrawCircleFunc can be used to either draw a full
@@ -352,7 +352,7 @@ namespace AzToolsFramework
         AZ::Vector3 m_axis;
         float m_width = 0.0f;
         float m_radius = 0.0f;
-        AZ::Color m_color = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+        AZ::Color m_color = AZ::Colors::Red;
         DrawCircleFunc m_drawCircleFunc = nullptr;
     };
 

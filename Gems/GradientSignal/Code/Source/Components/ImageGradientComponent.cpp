@@ -1015,7 +1015,7 @@ namespace GradientSignal
             return imagePixelsInBounds / boundsMeters;
         }
 
-        return AZ::Vector2(0.0f, 0.0f);
+        return AZ::Vector2::CreateZero();
     }
 
     float ImageGradientComponent::GetTilingX() const

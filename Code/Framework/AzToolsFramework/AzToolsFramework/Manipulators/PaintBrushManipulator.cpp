@@ -79,8 +79,6 @@ namespace AzToolsFramework
         return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
     }
 
-
-
     AZStd::shared_ptr<PaintBrushManipulator> PaintBrushManipulator::MakeShared(
         const AZ::Transform& worldFromLocal, const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
@@ -97,7 +95,7 @@ namespace AzToolsFramework
         SetSpace(worldFromLocal);
 
         // The PaintBrush manipulator uses a circle projected into world space to represent the brush.
-        const AZ::Color manipulatorColor = AZ::Color(1.0f, 0.0f, 0.0f, 1.0f);
+        const AZ::Color manipulatorColor = AZ::Colors::Red;
         const float manipulatorWidth = 0.05f;
         SetView(
             AzToolsFramework::CreateManipulatorViewProjectedCircle(*this, manipulatorColor, m_config.m_radius, manipulatorWidth));
