@@ -8,7 +8,6 @@
 
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/TickBus.h>
 #include "LUAEditorFindDialog.hxx"
 #include "LUAEditorMainWindow.hxx"
@@ -103,11 +102,11 @@ namespace LUAEditor
         m_bCancelReplaceSignal = false;
         m_bReplaceThreadRunning = false;
 
-        connect(m_gui->searchWhereComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnSearchWhereChanged(int)));
+        connect(m_gui->searchWhereComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &LUAEditorFindDialog::OnSearchWhereChanged);
 
-        connect(this, SIGNAL(triggerFindInFilesNext(int)), this, SLOT(FindInFilesNext(int)), Qt::QueuedConnection);
-        connect(this, SIGNAL(triggerReplaceInFilesNext()), this, SLOT(ReplaceInFilesNext()), Qt::QueuedConnection);
-        connect(this, SIGNAL(triggerFindNextInView(LUAViewWidget::FindOperation*, LUAViewWidget*, QListWidget*)), this, SLOT(FindNextInView(LUAViewWidget::FindOperation*, LUAViewWidget*, QListWidget*)), Qt::QueuedConnection);
+        connect(this, &LUAEditorFindDialog::triggerFindInFilesNext, this, &LUAEditorFindDialog::FindInFilesNext, Qt::QueuedConnection);
+        connect(this, &LUAEditorFindDialog::triggerReplaceInFilesNext, this, &LUAEditorFindDialog::ReplaceInFilesNext, Qt::QueuedConnection);
+        connect(this, &LUAEditorFindDialog::triggerFindNextInView, this, &LUAEditorFindDialog::FindNextInView, Qt::QueuedConnection);
 
         QString stylesheet(R"(QLabel[LUAEditorFindDialogLabel="true"],QGroupBox,QCheckBox,QRadioButton,QPushButton
                          {
@@ -220,13 +219,13 @@ namespace LUAEditor
             else
             {
                 // TODO: When the asset database is in use,  this test may want to default to AllLUAAssets instead
-                m_gui->searchWhereComboBox->setCurrentIndex(findInAny ? AllOpenDocs : CurrentDoc);
+                m_gui->searchWhereComboBox->setCurrentIndex(findInAny ? Mode::AllOpenDocs : Mode::CurrentDoc);
                 m_gui->findNextButton->setEnabled(m_gui->searchWhereComboBox->currentIndex() == 0);
             }
         }
         else
         {
-            m_gui->searchWhereComboBox->setCurrentIndex(CurrentDoc); // theres only one option, no files are open
+            m_gui->searchWhereComboBox->setCurrentIndex(Mode::CurrentDoc); // theres only one option, no files are open
             m_gui->findNextButton->setEnabled(false);
         }
         m_gui->findNextButton->setDefault(m_gui->findNextButton->isEnabled());
@@ -450,7 +449,7 @@ namespace LUAEditor
 
         if (!m_gui->txtFind->text().isEmpty())
         {
-            int theMode = m_gui->searchWhereComboBox->currentIndex();
+            Mode theMode = static_cast<Mode>(m_gui->searchWhereComboBox->currentIndex());
             if (!m_bAnyDocumentsOpen)
             {
                 // TODO: Enable when the asset database is used.
@@ -458,26 +457,25 @@ namespace LUAEditor
             }
             else
             {
-                theMode = AllOpenDocs;
+                theMode = Mode::AllOpenDocs;
             }
 
             BusyOn();
 
             m_lastSearchWhere = theMode;
-            if (theMode == CurrentDoc)
-            {
-                FindInFilesSetUp(theMode, resultsWidget);
-                emit triggerFindInFilesNext(theMode);
-            }
-            else if (theMode == AllOpenDocs)
-            {
-                FindInFilesSetUp(theMode, resultsWidget);
-                emit triggerFindInFilesNext(theMode);
-            }
-            else if (theMode == AllLUAAssets)
-            {
-                FindInFilesSetUp(theMode, resultsWidget);
-                emit triggerFindInFilesNext(theMode);
+            switch(theMode) {
+                case Mode::CurrentDoc:
+                    FindInFilesSetUp(theMode, resultsWidget);
+                    emit triggerFindInFilesNext(theMode);
+                    break;
+                case Mode::AllOpenDocs:
+                    FindInFilesSetUp(theMode, resultsWidget);
+                    emit triggerFindInFilesNext(theMode);
+                    break;
+                case Mode::AllLUAAssets:
+                    FindInFilesSetUp(theMode, resultsWidget);
+                    emit triggerFindInFilesNext(theMode);
+                    break;
             }
         }
         else
@@ -486,13 +484,13 @@ namespace LUAEditor
         }
     }
 
-    void LUAEditorFindDialog::FindInFilesSetUp(int theMode, FindResults* resultsWidget)
+    void LUAEditorFindDialog::FindInFilesSetUp(LUAEditorFindDialog::Mode theMode, FindResults* resultsWidget)
     {
         m_FIFData.m_TotalMatchesFound = 0;
 
         m_FIFData.m_OpenView = pLUAEditorMainWindow->GetAllViews();
 
-        if (theMode == CurrentDoc)
+        if (theMode == Mode::CurrentDoc)
         {
             m_FIFData.m_openViewIter = m_FIFData.m_OpenView.begin();
             while (*m_FIFData.m_openViewIter != pLUAEditorMainWindow->GetCurrentView() && m_FIFData.m_openViewIter != m_FIFData.m_OpenView.end())
@@ -642,11 +640,8 @@ namespace LUAEditor
                 azfree(pBuf);
             }
 
-            /************************************************************************/
-            /*                                                                      */
-            /************************************************************************/
 
-            if (theMode == CurrentDoc)
+            if (theMode == Mode::CurrentDoc)
             {
                 m_FIFData.m_dOpenView.push_back((*m_FIFData.m_openViewIter)->m_Info.m_assetName + ".lua");
                 m_FIFData.m_openViewIter = m_FIFData.m_OpenView.end();
@@ -916,7 +911,6 @@ namespace LUAEditor
     {
         m_bCancelFindSignal = true;
         m_bCancelReplaceSignal = true;
-        //this->close();
     }
 
     void LUAEditorFindDialog::OnReplace()
@@ -982,10 +976,6 @@ namespace LUAEditor
         m_RIFData.m_dReplaceAllLUAAssetsInfo.clear();
 
         AZ_Assert(false, "Fix assets!");
-
-        //AZ::u32 platformFeatureFlags = PLATFORM_FEATURE_FLAGS_ALL;
-        //EBUS_EVENT_RESULT(platformFeatureFlags, EditorFramework::EditorAssetCatalogMessages::Bus, GetCurrentPlatformFeatureFlags);
-        //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByType, m_RIFData.m_dReplaceAllLUAAssetsInfo, AZ::ScriptAsset::StaticAssetType(), platformFeatureFlags);
 
         m_RIFData.m_OpenView = pLUAEditorMainWindow->GetAllViews();
 
@@ -1113,7 +1103,7 @@ namespace LUAEditor
                 if (!m_RIFData.m_dReplaceProcessList.empty())
                 {
                     PostReplaceOn();
-                    QTimer::singleShot(0, this, SLOT(ProcessReplaceItems()));
+                    QTimer::singleShot(0, this, &LUAEditorFindDialog::ProcessReplaceItems);
                 }
                 else
                 {
@@ -1125,7 +1115,7 @@ namespace LUAEditor
                 return;
             }
 
-            QTimer::singleShot(1, this, SLOT(ReplaceInFilesNext()));
+            QTimer::singleShot(1, this, &LUAEditorFindDialog::ReplaceInFilesNext);
         }
     }
 
@@ -1153,20 +1143,7 @@ namespace LUAEditor
                 return;
             }
 
-            //find it in the database
-            //AZStd::vector<EditorFramework::EditorAsset> dAssetInfo;
-            //EBUS_EVENT(EditorFramework::EditorAssetCatalogMessages::Bus, FindEditorAssetsByName, dAssetInfo, databaseRoot.c_str(), databasePath.c_str(), databaseFile.c_str(), fileExtension.c_str());
-            //if (dAssetInfo.empty())
-            //  return;
-
-            //request it be opened
-            //EBUS_EVENT_ID(    LUAEditor::ContextID,
-            //EditorFramework::AssetManagementMessages::Bus,
-            // AssetOpenRequested,
-            // dAssetInfo[0].m_databaseAsset.m_assetId,
-            // AZ::ScriptAsset::StaticAssetType());
-
-            QTimer::singleShot(0, this, SLOT(ProcessReplaceItems()));
+            QTimer::singleShot(0, this, &LUAEditorFindDialog::ProcessReplaceItems);
         }
         else
         {
@@ -1192,7 +1169,7 @@ namespace LUAEditor
             // only start iterating the first time:
             if (wasEmpty)
             {
-                QTimer::singleShot(0, this, SLOT(OnReplaceInViewIterate()));
+                QTimer::singleShot(0, this, &LUAEditorFindDialog::OnReplaceInViewIterate);
             }
         }
     }
@@ -1226,7 +1203,7 @@ namespace LUAEditor
 
         if (!m_PendingReplaceInViewOperations.empty())
         {
-            QTimer::singleShot(0, this, SLOT(OnReplaceInViewIterate()));
+            QTimer::singleShot(0, this, &LUAEditorFindDialog::OnReplaceInViewIterate);
         }
 
         if ((m_PendingReplaceInViewOperations.empty()) && (m_RIFData.m_waitingForOpenToComplete.empty()))
@@ -1321,43 +1298,43 @@ namespace LUAEditor
             return;
         }
 
-        if (!m_gui->txtFind->text().isEmpty())
+        if(m_gui->txtFind->text().isEmpty())
         {
-            int theMode = m_gui->searchWhereComboBox->currentIndex();
-            if (!m_bAnyDocumentsOpen)
-            {
-                theMode = AllLUAAssets;
-            }
+            QMessageBox::warning(this, "Error!", "You may not replace an empty string!");
+            return;
+        }
 
-            m_lastSearchWhere = theMode;
+        Mode theMode = static_cast<Mode>(m_gui->searchWhereComboBox->currentIndex());
+        if (!m_bAnyDocumentsOpen)
+        {
+            theMode = Mode::AllLUAAssets;
+        }
 
-            if (theMode == CurrentDoc)
-            {
-                BusyOn();
-                m_PendingReplaceInViewOperations.push_back(pLUAEditorMainWindow->GetCurrentView());
-                QTimer::singleShot(0, this, SLOT(OnReplaceInViewIterate()));
-            }
-            else if (theMode == AllOpenDocs || theMode == AllLUAAssets)
+        m_lastSearchWhere = theMode;
+
+        switch (theMode)
+        {
+        case Mode::CurrentDoc:
+            BusyOn();
+            m_PendingReplaceInViewOperations.push_back(pLUAEditorMainWindow->GetCurrentView());
+            QTimer::singleShot(0, this, &LUAEditorFindDialog::OnReplaceInViewIterate);
+            break;
+        case Mode::AllOpenDocs:
             {
                 BusyOn();
 
                 AZStd::vector<LUAViewWidget*> dOpenView = pLUAEditorMainWindow->GetAllViews();
-                for (AZStd::vector<LUAViewWidget*>::iterator openViewIter = dOpenView.begin(); openViewIter != dOpenView.end(); ++openViewIter)
-                {
-                    m_PendingReplaceInViewOperations.push_back(*openViewIter);
+                for(auto& it: dOpenView) {
+                    m_PendingReplaceInViewOperations.push_back(it);
                 }
-                QTimer::singleShot(0, this, SLOT(OnReplaceInViewIterate()));
-
-                if (theMode == AllLUAAssets)
-                {
-                    ReplaceInFilesSetUp();
-                    emit triggerReplaceInFilesNext();
-                }
+                QTimer::singleShot(0, this, &LUAEditorFindDialog::OnReplaceInViewIterate);
             }
-        }
-        else
-        {
-            QMessageBox::warning(this, "Error!", "You may not replace an empty string!");
+        case Mode::AllLUAAssets:
+            {
+                ReplaceInFilesSetUp();
+                emit triggerReplaceInFilesNext();
+                break;
+            }
         }
     }
 
