@@ -20,26 +20,42 @@ namespace O3DE::ProjectManager
 
     void DownloadWorker::StartDownload()
     {
-        auto gemDownloadProgress = [=](int bytesDownloaded, int totalBytes)
+        auto objectDownloadProgress = [=](int bytesDownloaded, int totalBytes)
         {
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };
-        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> gemInfoResult =
-            PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
+        IPythonBindings::DetailedOutcome objectInfoResult;
+        if (m_downloadType == DownloadController::DownloadObjectType::Gem)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else if (m_downloadType == DownloadController::DownloadObjectType::Project)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadProject(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else if (m_downloadType == DownloadController::DownloadObjectType::Template)
+        {
+            objectInfoResult = PythonBindingsInterface::Get()->DownloadTemplate(m_objectName, objectDownloadProgress, /*force*/ true);
+        }
+        else
+        {
+            AZ_Error("DownloadWorker", false, "Unknown download object type %d", m_downloadType);
+        }
 
-        if (gemInfoResult.IsSuccess())
+        if (objectInfoResult.IsSuccess())
         {
             emit Done("", "");
         }
         else
         {
-            emit Done(gemInfoResult.GetError().first.c_str(), gemInfoResult.GetError().second.c_str());
+            emit Done(objectInfoResult.GetError().first.c_str(), objectInfoResult.GetError().second.c_str());
         }
     }
 
-    void DownloadWorker::SetGemToDownload(const QString& gemName, bool downloadNow)
+    void DownloadWorker::SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow)
     {
-        m_gemName = gemName;
+        m_objectName = objectName;
+        m_downloadType = objectType;
         if (downloadNow)
         {
             StartDownload();
