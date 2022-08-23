@@ -51,7 +51,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
 
-def get_github_provider(parsed_uri) -> tuple:
+def get_github_provider(parsed_uri) -> GitHubProvider or None:
     if 'github.com' in parsed_uri.netloc:
         return GitHubProvider
 

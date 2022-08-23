@@ -169,11 +169,7 @@ def get_git_provider(parsed_uri):
     :param parsed_uri: uniform resource identifier of a possible git repository
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
-    git_provider = github_utils.get_github_provider(parsed_uri)
-    if git_provider:
-        return git_provider
-
-    return None
+    return github_utils.get_github_provider(parsed_uri)
 
 def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
