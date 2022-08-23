@@ -114,7 +114,7 @@ namespace GradientSignal
     {
     }
 
-    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea)
+    void EditorImageGradientComponentMode::OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn)
     {
         // The OnPaint notification means that we should paint new values into our image gradient.
         // To do this, we need to calculate the set of world space positions that map to individual pixels in the image,
@@ -150,13 +150,7 @@ namespace GradientSignal
         AZStd::vector<float> opacities(points.size());
         AZStd::vector<bool> validFlags(points.size());
 
-        AzToolsFramework::PaintBrushRequestBus::Event(
-            GetEntityComponentIdPair(),
-            &AzToolsFramework::PaintBrushRequestBus::Events::GetValues,
-            points,
-            intensities,
-            opacities,
-            validFlags);
+        valueLookupFn(points, intensities, opacities, validFlags);
 
         // Get the previous gradient image values
         AZStd::vector<float> oldValues(points.size());

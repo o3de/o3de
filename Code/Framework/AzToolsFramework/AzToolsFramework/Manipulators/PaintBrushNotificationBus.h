@@ -11,6 +11,8 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/Component/ComponentBus.h>
 
 namespace AzToolsFramework
@@ -22,6 +24,19 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityComponentIdPair;
+
+        //! ValueLookupFn returns the set of current painted values at the requested positions.
+        //! This should get called in response to receiving a PaintBrushNotificationBus::OnPaint(dirtyRegion, valueLookupFn) event
+        //! to get the specific painted values at every position the listener cares about within the dirtyRegion.
+        //! @points The input world space positions to query.
+        //! @intensities [out] The output intensities of the paintbrush that have been painted at this position.
+        //! @opacity [out] The output opacities of the paintbrush that have been painted at this position.
+        //! @validFlags [out] For each position, true if this point has been painted by the paintbrush, false if not.
+        using ValueLookupFn = AZStd::function<void(
+            AZStd::span<const AZ::Vector3> points,
+            AZStd::span<float> intensities,
+            AZStd::span<float> opacities,
+            AZStd::span<bool> validFlags)>;
 
         //! OnIntensityChanged notifies listeners that the paintbrush intensity setting has changed.
         //! @param intensity The new intensity setting for the paintbrush (0=black, 1=white).
@@ -45,11 +60,12 @@ namespace AzToolsFramework
         //! This will get called in each frame that the paintbrush continues to paint and the brush has moved.
         //! Since the paintbrush doesn't know how it's being used, and the system using a paintbrush doesn't know the specifics of the
         //! paintbrush shape and pattern, this works through a back-and-forth handshake.
-        //! 1. The paintbrush sends the OnPaint message with the AABB of the region that has changed.
-        //! 2. The listener calls PaintBrushRequestBus::GetValues() for each position in the region that it cares about.
+        //! 1. The paintbrush sends the OnPaint message with the AABB of the region that has changed and a paintbrush value callback.
+        //! 2. The listener calls the paintbrush value callback for each position in the region that it cares about.
         //! 3. The paintbrush responds with the specific painted values for each of those positions based on the brush shape and settings.
         //! @param dirtyArea The AABB of the area that has been painted in.
-        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea) { }
+        //! @param valueLookupFn The paintbrush value callback to use to get the intensities / opacities / valid flags for specific positions.
+        virtual void OnPaint([[maybe_unused]] const AZ::Aabb& dirtyArea, [[maybe_unused]] ValueLookupFn& valueLookupFn) { }
     };
 
     using PaintBrushNotificationBus = AZ::EBus<PaintBrushNotifications>;

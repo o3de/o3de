@@ -34,7 +34,7 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
-        void OnPaint(const AZ::Aabb& dirtyArea) override;
+        void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
 
     private:
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
