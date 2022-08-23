@@ -8,13 +8,19 @@
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
         "periodic-clean-weekly": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
         "periodic-clean-weekly-internal": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
+        },
+        "periodic-incremental-daily-internal": {
+            "DISCARD_VOLUME": true
         }
     }
 }
