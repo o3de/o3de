@@ -312,4 +312,47 @@ namespace UnitTest
             EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
         }
     }
+
+    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabEntityHierarchy_NestedNetworkEntityIsFound)
+    {
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
+
+        const AZStd::string parentName = "static_parent";
+        const AZStd::string childName = "static_child";
+        const AZStd::string childOfChildName = "networked_childOfChild";
+
+        // Create test entities with the following hierarchy:
+        // static parent
+        // + static child
+        //   + networked child
+        AZStd::vector<AZ::Entity*> entities;
+        AZ::Entity* parent = entities.emplace_back(CreateSourceEntity(parentName.c_str(), false, AZ::Transform::CreateIdentity()));
+        AZ::Entity* child = entities.emplace_back(CreateSourceEntity(childName.c_str(), false, AZ::Transform::CreateIdentity(), parent));
+        entities.emplace_back(CreateSourceEntity(childOfChildName.c_str(), true, AZ::Transform::CreateIdentity(), child));
+
+        // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
+        auto prefabDom = AZStd::make_unique<AzToolsFramework::Prefab::PrefabDom>();
+        ConvertEntitiesToPrefab(entities, prefabDom, "test_entities_sorted/path");
+
+        // Add the prefab into the Prefab Processor Context
+        const AZStd::string prefabName = "testPrefab";
+        TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefabDocument(prefabName);
+        ASSERT_TRUE(prefabDocument.SetPrefabDom(*prefabDom));
+        prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
+
+        // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
+        Multiplayer::NetworkPrefabProcessor processor;
+        processor.Process(prefabProcessorContext);
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor prefabCatchmentProcessor;
+        prefabCatchmentProcessor.Process(prefabProcessorContext);
+        EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
+
+        // Verify entities are ordered by parent/child hierarchy
+        const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
+
+        // Verify that the nested network entity was discovered and 2 processed objects (spawnable and network.spawnable) were created
+        EXPECT_EQ(processedObjects.size(), 2);
+
+    }
 } // namespace UnitTest
