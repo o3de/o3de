@@ -35,7 +35,7 @@
 // Gradient Signal
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 
 // Qt
 #include <QApplication>
@@ -1219,7 +1219,7 @@ namespace LandscapeCanvasEditor
     QString MainWindow::GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex)
     {
         static const char* ConfigurationPropertyPrefix = "Configuration|";
-        static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
+        static const char* PreviewEntityIdPropertyPath = "Previewer|Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
         static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
@@ -1568,8 +1568,8 @@ namespace LandscapeCanvasEditor
         // So we need to use the corresponding request bus APIs to update the image asset path on
         // the Image Gradient
         AZ::IO::Path outputImagePath;
-        GradientSignal::GradientBakerRequestBus::EventResult(
-            outputImagePath, sourceEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+        GradientSignal::GradientImageCreatorRequestBus::EventResult(
+            outputImagePath, sourceEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
         if (!outputImagePath.empty())
         {
@@ -3357,8 +3357,8 @@ namespace LandscapeCanvasEditor
                 }
 
                 AZ::IO::Path outputImagePath;
-                GradientSignal::GradientBakerRequestBus::EventResult(
-                    outputImagePath, nodeEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+                GradientSignal::GradientImageCreatorRequestBus::EventResult(
+                    outputImagePath, nodeEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
                 if (imageSourceAssetPath == outputImagePath)
                 {

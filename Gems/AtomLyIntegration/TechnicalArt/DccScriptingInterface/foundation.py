@@ -116,7 +116,7 @@ def check_pip(python_exe=_PYTHON_EXE):
 def ensurepip(python_exe=_PYTHON_EXE, upgrade=False):
     """Will use ensurepip method to ensure pip is installed"""
 
-    # note: this doesn't work with python 3.7 which is the version o3de is on
+    # note: this doesn't work with python 3.10 which is the version o3de is on
     # luckily o3de comes with working pip
     # if this errors out with an exception and "ValueError: bad marshal data (unknown type code)"
     # you should try to install pip using dfoundation.install_pip() method
