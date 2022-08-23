@@ -38,7 +38,7 @@ CALL %~dp0\Env_O3DE_Python.bat
 :: This can now only be added late, in the launcher
 :: it conflicts with other Qt apps like Wing Pro 8+
 ::CALL %~dp0\Env_O3DE_Qt.bat
-:: this could interfer with standalone python apps/tools/utils that use O3DE Qt
+:: this could interfere with standalone python apps/tools/utils that use O3DE Qt
 :: and trying to run them from the IDE
 :: We may have to find a work around in the next iteration?
 
