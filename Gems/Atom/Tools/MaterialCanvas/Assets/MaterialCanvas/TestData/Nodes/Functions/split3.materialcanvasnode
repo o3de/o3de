@@ -3,33 +3,30 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "id": "{E641D9D2-66B6-4E54-BA11-AAAA53E6AC8D}",
+        "id": "{1F53AECF-F416-4AD1-9777-A7E6049383A8}",
         "category": "Math Functions",
-        "title": "split",
+        "title": "Split 3",
         "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "float",
-                    "float2",
                     "float3",
                     "float4",
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
+                    "$type": "Vector3",
                     "Value": [
                         0.0,
                         0.0,
-                        0.0,
-                        1.0
+                        0.0
                     ]
                 },
                 "settings": {
                     "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
+                        "float3 NODEID_SLOTNAME = SLOTVALUE.xyz;"
                     ]
                 }
             }
@@ -42,10 +39,6 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.x;"
@@ -59,10 +52,6 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.y;"
@@ -76,30 +65,9 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 0.0
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.z;"
-                    ]
-                }
-            },
-            {
-                "name": "outW",
-                "displayName": "W",
-                "description": "W",
-                "supportedDataTypes": [
-                    "float"
-                ],
-                "defaultValue": {
-                    "$type": "float",
-                    "Value": 1.0
-                },
-                "settings": {
-                    "instructions": [
-                        "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue.w;"
                     ]
                 }
             }

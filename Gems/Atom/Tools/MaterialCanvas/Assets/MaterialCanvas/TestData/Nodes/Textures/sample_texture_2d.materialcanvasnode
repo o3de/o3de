@@ -7,6 +7,9 @@
         "category": "Texturing",
         "title": "Sample Texture 2D",
         "settings": {
+            "instructions": [
+                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
+            ],
             "materialInputs": [
                 "Texture2D NODEINPUTID;",
                 "Sampler NODEINPUTID_sampler",
@@ -16,9 +19,6 @@
                 "    AddressV = Wrap;",
                 "    AddressW = Wrap;",
                 "};"
-            ],
-            "instructions": [
-                "float4 NODEID_outColor = MaterialSrg::NODEINPUTID.Sample(MaterialSrg::NODEINPUTID_sampler, NODEID_inUV);"
             ]
         },
         "propertySlots": [
@@ -92,8 +92,7 @@
                     "color"
                 ],
                 "settings": {
-                    "instructions": [
-                    ]
+                    "instructions": {}
                 }
             },
             {
