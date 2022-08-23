@@ -29,12 +29,6 @@ namespace GradientSignal
     // Increase / decrease paintbrush radius amount in meters.
     static constexpr float RadiusAdjustAmount = 0.25f;
 
-    // Increase / decrease paintbrush intensity amount.
-    static constexpr float IntensityAdjustAmount = 0.025f;
-
-    // Increase / decrease paintbrush opacity amount.
-    static constexpr float OpacityAdjustAmount = 0.025f;
-
     static constexpr AZ::Crc32 PaintbrushIncreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.increase_radius");
     static constexpr AZ::Crc32 PaintbrushDecreaseRadius = AZ_CRC_CE("org.o3de.action.paintbrush.decrease_radius");
 
