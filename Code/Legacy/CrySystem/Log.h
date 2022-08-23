@@ -104,7 +104,11 @@ private: // -------------------------------------------------------------------
             Console,
             File
         };
-        AZStd::fixed_string<512> msg;
+        // Use a fixed_string buffer that can hold 512 characters + NUL terminating character
+        // If a string is greater than the fixed string size, then the message is stored
+        // in AZStd::string allocated from the heap
+        using MessageString  = AZStd::variant<AZStd::fixed_string<512>, AZStd::string>;
+        MessageString msg;
         ELogType logType;
         bool m_appendToPreviousLine;
         Destination destination;
