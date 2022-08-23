@@ -117,7 +117,7 @@ namespace Multiplayer
             }
 
             ++networkEntityCount;
-            AZ::Entity* entity = sourceEntity.get();
+            const AZ::Entity* entity = sourceEntity.get();
             AZ::Entity* netEntity = SpawnableUtils::CreateEntityAlias(
                 prefabName,
                 *rootSourceInstance,
@@ -131,8 +131,9 @@ namespace Multiplayer
                 context);
 
             AZ_Assert(
-                netEntity, "Unable to create alias for entity %s [%zu] from the source prefab instance", entity->GetName().c_str(),
-                aznumeric_cast<AZ::u64>(entity->GetId()));
+                netEntity, "Unable to create alias for network entity %s [%zu] from the source prefab instance %s", entity->GetName().c_str(),
+                aznumeric_cast<AZ::u64>(entity->GetId()),
+                prefabName.c_str());
 
             netEntity->InvalidateDependencies();
             netEntity->EvaluateDependencies();
