@@ -25,6 +25,7 @@
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
@@ -312,6 +313,38 @@ namespace AzToolsFramework
                                     }
                                 );
                             }
+
+                            if (IsPrefabOverridesUxEnabled())
+                            {
+                                if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                                {
+                                    // Open Prefab Instance
+                                    QAction* overrideAction = menu->addAction(QObject::tr("Override Prefab Instance"));
+                                    overrideAction->setToolTip(QObject::tr("Open the prefab instance to apply overrides."));
+
+                                    QObject::connect(
+                                        overrideAction, &QAction::triggered, overrideAction,
+                                        [this, selectedEntity]
+                                    {
+                                        ContextMenu_OpenPrefabInstance(selectedEntity);
+                                    }
+                                    );
+                                }
+                                else
+                                {
+                                    // Close Prefab
+                                    QAction* closeAction = menu->addAction(QObject::tr("Close Prefab Instance"));
+                                    closeAction->setToolTip(QObject::tr("Close this prefab instance."));
+
+                                    QObject::connect(
+                                        closeAction, &QAction::triggered, closeAction,
+                                        [this, selectedEntity]
+                                    {
+                                        ContextMenu_ClosePrefabInstance(selectedEntity);
+                                    }
+                                    );
+                                }
+                            }                           
                         }
                         else if (selectedEntity != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
                         {
@@ -711,6 +744,16 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
         {
             m_prefabSaveHandler.ExecuteSavePrefabDialog(containerEntity);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_prefabFocusPublicInterface->SetOwningPrefabInstanceOpenState(containerEntity, false);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_prefabFocusPublicInterface->SetOwningPrefabInstanceOpenState(containerEntity, true);
         }
 
         void PrefabIntegrationManager::ContextMenu_Duplicate()

@@ -5,3 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(LY_COMPILE_DEFINITIONS 
+    PRIVATE 
+        PY_VERSION_MAJOR_MINOR="${LY_PYTHON_VERSION_MAJOR_MINOR}"
+)

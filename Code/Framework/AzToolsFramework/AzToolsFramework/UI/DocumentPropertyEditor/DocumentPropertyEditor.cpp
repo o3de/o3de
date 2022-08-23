@@ -326,6 +326,7 @@ namespace AzToolsFramework
                 auto dpeSystem = AZ::Interface<AzToolsFramework::PropertyEditorToolsSystemInterface>::Get();
                 auto handlerId = dpeSystem->GetPropertyHandlerForNode(childValue);
                 auto descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(childValue).value_or("");
+                auto shouldDisable = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(childValue).value_or(false);
 
                 // if this row doesn't already have a tooltip, use the first valid
                 // tooltip from a child PropertyEditor (like the RPE)
@@ -341,6 +342,7 @@ namespace AzToolsFramework
                     auto handler = dpeSystem->CreateHandlerInstance(handlerId);
                     handler->SetValueFromDom(childValue);
                     addedWidget = handler->GetWidget();
+                    addedWidget->setEnabled(!shouldDisable);
 
                     // only set the widget's tooltip if it doesn't already have its own
                     if (!descriptionString.empty() && addedWidget->toolTip().isEmpty())
@@ -366,9 +368,31 @@ namespace AzToolsFramework
                 {
                     priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
                 }
+
+                // if the alignment attribute is present, insert the widget with the appropriate alignment
+                auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(childValue);
+                if (alignment.has_value())
+                {
+                    Qt::Alignment widgetAlignment;
+                    switch (alignment.value())
+                    {
+                    case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                        widgetAlignment = Qt::AlignLeft;
+                        break;
+                    case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                        widgetAlignment = Qt::AlignRight;
+                        break;
+                    }
+
+                    m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, widgetAlignment);
+                }
+
                 // insert after the found index; even if nothing were found and priorIndex is still -1,
                 // still insert one after it, at position 0
-                m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
+                else
+                {
+                    m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
+                }
             }
             AddDomChildWidget(domIndex, addedWidget);
         }
