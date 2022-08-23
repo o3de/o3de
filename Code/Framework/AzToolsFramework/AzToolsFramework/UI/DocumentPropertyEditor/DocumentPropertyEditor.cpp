@@ -154,7 +154,11 @@ namespace AzToolsFramework
         // todo: implement QSplitter-like functionality to allow the user to resize columns within a DPE
 
         // shared widgets are appended to the previous column, so treat all items in a shared column as one item.
-        const int itemCount = count() - SharedWidgetCount() + (int)m_sharePriorColumn.size();
+        int itemCount = count() - SharedWidgetCount() + (int)m_sharePriorColumn.size();
+        if (itemCount == 1)
+        {
+            itemCount = count();
+        }
         if (itemCount > 0)
         {
             // divide evenly, unless there are 2 columns, in which case follow the 2/5ths rule here:
@@ -458,7 +462,7 @@ namespace AzToolsFramework
                 //! add the previous widget to the column layout.
                 //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
                 auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(childValue);
-                if (sharePrior.has_value() && priorColumnIndex != 0)
+                if (sharePrior.has_value())
                 {
                     m_columnLayout->SharePriorColumn(m_columnLayout->itemAt(priorColumnIndex)->widget());
                     m_columnLayout->SetSharePrior(true);
