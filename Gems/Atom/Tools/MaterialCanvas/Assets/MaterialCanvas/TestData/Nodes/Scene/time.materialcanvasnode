@@ -4,7 +4,7 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "id": "{5559A2B1-331C-4E52-8F3E-916CD114F41D}",
-        "category": "Math Functions",
+        "category": "Scene",
         "title": "time",
         "outputSlots": [
             {

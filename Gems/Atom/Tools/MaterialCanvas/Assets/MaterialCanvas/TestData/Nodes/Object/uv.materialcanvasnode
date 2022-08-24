@@ -14,6 +14,10 @@
                 "supportedDataTypes": [
                     "uint"
                 ],
+                "defaultValue": {
+                    "$type": "unsigned int",
+                    "Value": 1
+                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;"
