@@ -1,5 +1,5 @@
 {
-    "Shader" : "StandardPBR_ForwardPass_EDS.shader",
+    "Shader" : "Materials/Types/StandardPBR_ForwardPass_EDS.shader",
 
     // There are many possible permutations, so we explicitly compile only the most common variants. Other variants will use runtime branching
     "Variants": [

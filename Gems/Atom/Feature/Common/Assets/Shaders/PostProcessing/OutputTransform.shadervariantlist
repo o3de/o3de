@@ -1,5 +1,5 @@
 { 
-    "Shader" : "OutputTransform.shader",
+    "Shader" : "Shaders/PostProcessing/OutputTransform.shader",
 	"Variants" : [ 
         {   "StableId": 1, "Options" : { "o_tonemapperType": "ToneMapperType::None", "o_transferFunctionType": "TransferFunctionType::None" } },
         {   "StableId": 2, "Options" : { "o_tonemapperType": "ToneMapperType::Reinhard", "o_transferFunctionType": "TransferFunctionType::None" } },

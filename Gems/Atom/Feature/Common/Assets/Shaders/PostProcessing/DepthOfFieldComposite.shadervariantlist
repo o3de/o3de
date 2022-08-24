@@ -1,5 +1,5 @@
 {
-    "Shader" : "DepthOfFieldComposite.shader",
+    "Shader" : "Shaders/PostProcessing/DepthOfFieldComposite.shader",
     "Variants" : [
         {
             "StableId": 1,

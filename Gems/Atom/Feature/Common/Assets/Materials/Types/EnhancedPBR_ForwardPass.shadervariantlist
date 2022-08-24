@@ -1,5 +1,5 @@
 {
-    "Shader": "EnhancedPBR_ForwardPass.shader",
+    "Shader": "Materials/Types/EnhancedPBR_ForwardPass.shader",
     "Variants": [
         {
             "StableId": 1,

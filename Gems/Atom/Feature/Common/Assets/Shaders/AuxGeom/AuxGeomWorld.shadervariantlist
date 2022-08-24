@@ -1,5 +1,5 @@
 {
-    "Shader" : "AuxGeomWorld.shader",
+    "Shader" : "Shaders/AuxGeom/AuxGeomWorld.shader",
     "Variants" :
     [
         {

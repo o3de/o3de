@@ -1,5 +1,5 @@
 {
-    "Shader" : "DepthOfFieldBlurBokeh.shader",
+    "Shader" : "Shaders/PostProcessing/DepthOfFieldBlurBokeh.shader",
     "Variants" : [
         {
             "StableId": 1,
