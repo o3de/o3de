@@ -102,21 +102,8 @@ namespace AtomToolsFramework
         AZStd::unordered_map<AZStd::string, GraphCanvas::GraphCanvasTreeItem*> categoryMap;
         categoryMap[""] = rootItem;
 
-        // Create a container of all of the node configs, sorted by category and title to generate the node palette
-        AZStd::vector<AZStd::pair<AZ::Uuid, DynamicNodeConfig>> sortedConfigVec(
-            m_nodeConfigMap.begin(), m_nodeConfigMap.end());
-
-        AZStd::sort(
-            sortedConfigVec.begin(), sortedConfigVec.end(),
-            [](const auto& config1, const auto& config2)
-            {
-                return
-                    AZStd::make_pair(config1.second.m_category, config1.second.m_title) <
-                    AZStd::make_pair(config2.second.m_category, config2.second.m_title);
-            });
-
-        // Create the node palette tree by traversing this sorted configuration container, registering any unique categories and child items
-        for (const auto& configPair : sortedConfigVec)
+        // Create the node palette tree by traversing the configuration container, registering any unique categories and child items
+        for (const auto& configPair : m_nodeConfigMap)
         {
             const auto& config = configPair.second;
             auto categoryItr = categoryMap.find(config.m_category);
