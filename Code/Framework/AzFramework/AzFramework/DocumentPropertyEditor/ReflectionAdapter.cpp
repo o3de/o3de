@@ -295,6 +295,16 @@ namespace AZ::DocumentPropertyEditor
             {
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(parentContainerAttribute);
                 auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentContainerInstanceAttribute);
+
+                // check if this element is actually standing in for a direct child of a container. This is used in scenarios like
+                // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an editable item
+                // who pretends that they can be removed directly from the container
+                auto containerElementOverrideAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
+                if (!containerElementOverrideAttribute.IsNull())
+                {
+                    instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(containerElementOverrideAttribute);
+                }
+
                 m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ parentContainer, parentContainerInstance, instance });
 
                 if (!parentContainer->IsFixedSize())
