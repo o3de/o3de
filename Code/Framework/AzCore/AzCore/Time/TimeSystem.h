@@ -33,6 +33,8 @@ namespace AZ
         TimeUs GetElapsedTimeUs() const override;
         TimeMs GetRealElapsedTimeMs() const override;
         TimeUs GetRealElapsedTimeUs() const override;
+        void SetElapsedTimeMs(TimeMs time) override;
+        void SetElapsedTimeUs(TimeUs time) override;
         TimeUs GetSimulationTickDeltaTimeUs() const override;
         TimeUs GetRealTickDeltaTimeUs() const override;
         TimeUs GetLastSimulationTickTime() const override;
