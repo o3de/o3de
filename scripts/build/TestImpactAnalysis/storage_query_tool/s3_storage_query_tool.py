@@ -125,19 +125,44 @@ class S3StorageQueryTool(StorageQueryTool):
                     Bucket=bucket_name, Key=file)['Body']
             except botocore.exceptions.ClientError as e:
                 logger.error(f"Failed to download file, error: {e}")
-            try:
-                decoded_data = zlib.decompress(
-                    file_stream.read()).decode('UTF-8')
-                logger.info(f"Decoding complete.")
-                json_obj = json.loads(decoded_data)
-                with open(f"{destination}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
-                    json.dump(json_obj, raw_output_file,
-                              ensure_ascii=False, indent=4)
+                raise e
+            if self._file_type == self.FileType.JSON:
+                self._save_as_json_file(file_stream, destination)
+            if self._file_type == self.FileType.ZIP:
+                self._save_as_zip_file(file_stream, destination)
 
-                logger.info(
-                    f"Data sucessfully saved in: {destination}historic_data.json")
-            except json.JSONDecodeError:
-                logger.error("The historic data does not contain valid JSON.")
+    def _save_as_zip_file(self, file_stream, destination: str):
+        """
+        Saves the provided file_stream as a zip file named zippedartifacts.zip in the destination folder.
+
+        @param file_stream: File stream retrieved from S3 object, to be written out as a zip file.
+        @param destination: Directory to write zip file to.
+        """
+        try:
+            with open(f"{destination}zippedartifacts.zip", "wb") as output_file:
+                output_file.writelines(file_stream.iter_lines())
+        except OSError as e:
+            logger.error("Error occurred when writing artifacts to file.")
+
+    def _save_as_json_file(self, file_stream, destination: str):
+        """
+        Saves the provided file_stream as a json file named historic_data.json in the destination folder.
+
+        @param file_stream: File stream retrieved from S3 object, to be written out as a json file.
+        @param destination: Directory to write json file to.
+        """
+        try:
+            decoded_data = zlib.decompress(
+                file_stream.read()).decode('UTF-8')
+            logger.info(f"Decoding complete.")
+            json_obj = json.loads(decoded_data)
+            with open(f"{destination}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
+                json.dump(json_obj, raw_output_file,
+                          ensure_ascii=False, indent=4)
+            logger.info(
+                f"Data sucessfully saved in: {destination}historic_data.json")
+        except json.JSONDecodeError:
+            logger.error("The historic data does not contain valid JSON.")
 
     def _put(self, bucket_name: str, file: str, storage_location: str):
         """
@@ -148,7 +173,10 @@ class S3StorageQueryTool(StorageQueryTool):
         @param storage_location: Location to store the file.
         """
         if not self._check_object_exists(bucket_name, storage_location):
-            data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            if self._file_type == self.FileType.JSON:
+                data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            if self._file_type == self.FileType.ZIP:
+                data = file
             logger.info(
                 f"Uploading data to: {storage_location} in bucket: {bucket_name}")
             self._s3_client.put_object(
@@ -166,7 +194,10 @@ class S3StorageQueryTool(StorageQueryTool):
         @param storage_location: Location to store the file.
         """
         if self._check_object_exists(bucket_name, storage_location):
-            data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            if self._file_type == self.FileType.JSON:
+                data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            if self._file_type == self.FileType.ZIP:
+                data = file
             logger.info(
                 f"Uploading data to: {storage_location} in bucket: {bucket_name}")
             self._s3_client.put_object(
