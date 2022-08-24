@@ -63,6 +63,12 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
+# Path to the directory that the result of native runs will be stored in.
+set(LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR "${GTEST_XML_OUTPUT_DIR}")
+
+# Path to the directory that the result of python runs will be stored in.
+set(LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR "${PYTEST_XML_OUTPUT_DIR}")
+
 # If we are not provided a path to the Instrumentation bin,
 # set LY_TEST_IMPACT to false so that our tests don't get added
 # and TIAF doesn't get built.
@@ -586,18 +592,37 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
 endfunction()
 
+#! ly_test_impact_clean_directories: Removes the artifact directory, test output directory, temp directory
+#! and the persistent directories containing TIAF configs for each build configuration.
+function(ly_test_impact_clean_directories)
+
+    # Clean the output folders of native and python tests to ensure only the most current run is in there.
+    file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
+    message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
+    file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
+    message("${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}")
+
+    # For each build configuration type, delete the persistent and temp folders
+    foreach(config_type ${LY_CONFIGURATION_TYPES})
+        file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}")
+        file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
+    endforeach()
+    
+    # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
+    file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
+endfunction()
+
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
     if(NOT LY_TEST_IMPACT_ACTIVE)
         return()
     endif()
 
+    # Clean temporary and persistent directories
+    ly_test_impact_clean_directories()
+
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
-
-    # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
 
     # Export the soruce to target mapping files
     ly_test_impact_export_source_target_mappings(
