@@ -31,6 +31,10 @@ def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
     repo_sha256 = hashlib.sha256(manifest_uri.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
+    git_provider = utils.get_git_provider(parsed_uri)
+    if git_provider:
+        parsed_uri = git_provider.get_specific_file_uri(parsed_uri)
+
     result = utils.download_file(parsed_uri, cache_file, True)
 
     return cache_file if result == 0 else None
@@ -65,8 +69,12 @@ def download_object_manifests(repo_data):
             manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
             manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
             cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-
             parsed_uri = urllib.parse.urlparse(manifest_json_uri)
+
+            git_provider = utils.get_git_provider(parsed_uri)
+            if git_provider:
+                parsed_uri = git_provider.get_specific_file_uri(parsed_uri)
+
             download_file_result = utils.download_file(parsed_uri, cache_file, True)
             if download_file_result != 0:
                 return download_file_result
