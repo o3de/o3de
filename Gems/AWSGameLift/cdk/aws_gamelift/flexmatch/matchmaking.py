@@ -18,7 +18,7 @@ from . import flexmatch_configurations
 FLEX_MATCH_MODE = 'WITH_QUEUE'
 
 
-class MatchmakingResoures:
+class MatchmakingResources:
     """
     Create a matchmaking rule set and matchmaking configuration for Gamelift FlexMatch.
     For more information about Gamelift FlexMatch, please check

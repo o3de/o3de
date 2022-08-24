@@ -73,7 +73,7 @@ class GameLiftStack(Stack):
             game_session_queue_arns.append(queue.game_session_queue_arn)
 
         if flex_match:
-            matchmaking.MatchmakingResoures(self, game_session_queue_arns)
+            matchmaking.MatchmakingResources(self, game_session_queue_arns)
 
     def _create_fleet(self, fleet_configuration: dict, identifier: int) -> gamelift.CfnFleet:
         """
