@@ -22,6 +22,9 @@
         "periodic-incremental-daily": {
             "DISCARD_VOLUME": true
         },
+        "periodic-incremental-daily-internal": {
+            "DISCARD_VOLUME": true
+        },
         "snapshot": {
             "CLEAN_WORKSPACE": true,
             "CREATE_SNAPSHOT": true,
