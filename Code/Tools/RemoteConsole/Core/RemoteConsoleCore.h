@@ -106,7 +106,7 @@ template <EConsoleEventType T>
 struct SStringEvent
     : public IRemoteEvent
 {
-    SStringEvent(const char* data)
+    SStringEvent(AZStd::string_view data)
         : IRemoteEvent(T)
         , m_data(data) {};
     IRemoteEvent* Clone() override { return new SStringEvent<T>(GetData()); }

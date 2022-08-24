@@ -10,7 +10,7 @@
 #include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Scope.h>
 #include <RHI/Semaphore.h>
 
@@ -104,6 +104,7 @@ namespace AZ
             if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
             {
                 srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
+                srcAccessFlags = RHI::FilterBits(srcAccessFlags, GetSupportedAccessFlags(srcPipelineStageFlags));
             }
         
             auto subresourceRange = GetSubresourceRange(scopeAttachment);

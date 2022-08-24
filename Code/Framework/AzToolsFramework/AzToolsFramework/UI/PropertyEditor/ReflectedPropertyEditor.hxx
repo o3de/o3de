@@ -175,8 +175,8 @@ namespace AzToolsFramework
 
         virtual void paintEvent(QPaintEvent* event) override;
         int m_updateDepth = 0;
-        bool m_releasePrompt = false;
-
+    signals:
+        void releasePrompt();
     private slots:
         void OnPropertyRowExpandedOrContracted(PropertyRowWidget* widget, InstanceDataNode* node, bool expanded, bool fromUserInteraction);
         void DoRefresh();

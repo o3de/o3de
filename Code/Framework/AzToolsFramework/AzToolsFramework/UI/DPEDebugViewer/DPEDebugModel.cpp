@@ -326,6 +326,13 @@ namespace AzToolsFramework
     void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
         m_adapter = theAdapter;
+        if (m_adapter == nullptr)
+        {
+            // Clear out the event handlers when a nullptr DocumentAdapter is suppleid
+            m_resetHandler = {};
+            m_changedHandler = {};
+            return;
+        };
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
             [this]()
             {

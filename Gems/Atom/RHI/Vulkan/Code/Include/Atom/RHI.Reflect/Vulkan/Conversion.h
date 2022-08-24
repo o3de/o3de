@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
@@ -17,22 +18,21 @@
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
-#include <Atom/RHI.Reflect/MultisampleState.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
-#include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI.Reflect/RenderStates.h>
 #include <Atom/RHI.Reflect/SamplerState.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/Query.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
-#include <RHI/RenderPass.h>
 
 namespace AZ
 {
     namespace RHI
     {
+        class ScopeAttachment;
         class ImageScopeAttachment;
     }
 
@@ -68,7 +68,6 @@ namespace AZ
         VkQueryPipelineStatisticFlags ConvertQueryPipelineStatisticMask(RHI::PipelineStatisticsFlags mask);
         VkShaderStageFlagBits ConvertShaderStage(RHI::ShaderStage stage, uint32_t subStage = 0);
         VkShaderStageFlags ConvertShaderStageMask(uint32_t shaderStageMask);
-        RenderPass::Descriptor ConvertRenderAttachmentLayout(const RHI::RenderAttachmentLayout& layout, const RHI::MultisampleState& multisampleState);
         VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::ScopeAttachment& scopeAttachment);
         VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::BufferBindFlags& bindFlags);
         VkPipelineStageFlags GetResourcePipelineStateFlags(const RHI::ImageBindFlags& bindFlags);

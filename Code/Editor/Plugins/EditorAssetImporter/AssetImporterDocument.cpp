@@ -7,7 +7,6 @@
  */
 
 #include <AssetImporterDocument.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <Util/PathUtil.h>
 #include <GFxFramework/MaterialIO/IMaterial.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
