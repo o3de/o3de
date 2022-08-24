@@ -246,7 +246,10 @@ namespace AzToolsFramework::ComponentModeFramework
         {
             componentData = componentDataIt;
         }
-     
+
+        // the transform button does not have an associated component mode,
+        // if the user clicks the transform button they must already be in component mode
+        // so when they click it, leave component mode
         if (buttonId == m_transformButtonId)
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
@@ -255,7 +258,7 @@ namespace AzToolsFramework::ComponentModeFramework
             return;
         }
 
-        bool inComponentMode;
+        bool inComponentMode = false;
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
             inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
