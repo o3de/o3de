@@ -71,7 +71,7 @@ class TestTerminalReport(object):
         terminal_report.pytest_terminal_summary(mock_report, 0, mock_config)
 
         assert len(mock_add_commands.mock_calls) == 2
-        assert len(mock_add_ownership.mock_calls) == 2
+        mock_add_ownership.assert_called()
         mock_report.config.getoption.assert_called()
         mock_report.section.assert_called_once()
 
