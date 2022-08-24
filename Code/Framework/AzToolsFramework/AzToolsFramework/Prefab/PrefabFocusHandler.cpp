@@ -370,16 +370,18 @@ namespace AzToolsFramework::Prefab
 
         // Grab the owning instance.
         InstanceOptionalConstReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-        AZ_Assert(owningInstance != AZStd::nullopt, "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
+        AZ_Assert(owningInstance.has_value(), "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
             "The owning instance of the given entity id is null.");
 
         // Retrieve the path from the focused prefab instance to the owningInstance of the given entity id.
         InstanceOptionalConstReference focusedInstance = GetInstanceReference(m_rootAliasFocusPath);
+        AZ_Assert(focusedInstance.has_value(), "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
+            "The focused instance is null.");
+        const Instance* focusedInstancePtr = &(focusedInstance->get());
         
         // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
-        InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(
-            owningInstance->get(), focusedInstance->get());
-        if (climbUpResult.m_reachedInstance != &(focusedInstance->get()))
+        InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(owningInstance->get(), focusedInstancePtr);
+        if (climbUpResult.m_reachedInstance != focusedInstancePtr)
         {
             AZ_Error("Prefab", false, "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
                 "Entity id is not owned by a descendant of the focused prefab instance.");
@@ -392,7 +394,7 @@ namespace AzToolsFramework::Prefab
         {
             AZStd::string prefix = "";
 
-            // Skips the instance closest to the focused instance.
+            // Skip the instance closest to the focused instance.
             auto startInstanceIter = ++climbUpResult.m_climbedInstances.rbegin();
             for (auto instanceIter = startInstanceIter; instanceIter != climbUpResult.m_climbedInstances.rend(); ++instanceIter)
             {

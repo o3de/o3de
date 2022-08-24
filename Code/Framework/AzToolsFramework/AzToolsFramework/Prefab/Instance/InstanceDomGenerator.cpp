@@ -49,7 +49,7 @@ namespace AzToolsFramework
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (!prefabFocusInterface)
             {
-                AZ_Assert(prefabFocusInterface, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
                     "Prefab Focus Interface couldn not be found.");
                 return false;
             }
@@ -61,9 +61,10 @@ namespace AzToolsFramework
                     "Could not get the focused instance. It should not be null.");
                 return false;
             }
+            const Instance* focusedInstancePtr = &(focusedInstance->get());
 
             // Climbs up from the given instance to root instance, but stops at the focused instance if they can meet.
-            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, focusedInstance);
+            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, focusedInstancePtr);
             const Instance* focusedOrRootInstancePtr = climbUpResult.m_reachedInstance;
             if (!focusedOrRootInstancePtr) 
             {
@@ -129,7 +130,7 @@ namespace AzToolsFramework
         {
             // TODO: Modifies the function so it updates the transform only.
 
-            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance);
+            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, nullptr);
             const Instance* rootInstancePtr = climbUpResult.m_reachedInstance;
             AZStd::string relativePathFromRoot = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
 

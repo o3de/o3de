@@ -16,17 +16,29 @@ namespace AzToolsFramework
     {
         namespace PrefabInstanceUtils
         {
-            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, InstanceOptionalConstReference targetInstance)
+            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance)
             {
                 InstanceClimbUpResult result;
                 
                 // Climbs up the instance hierarchy from the start instance until it hits the target or the root instance.
                 const Instance* instancePtr = &startInstance;
 
-                while (instancePtr != &(targetInstance->get()) && instancePtr->HasParentInstance())
+                if (targetInstance)
                 {
-                    result.m_climbedInstances.emplace_back(*instancePtr);
-                    instancePtr = &(instancePtr->GetParentInstance()->get());
+                    while (instancePtr != targetInstance && instancePtr->HasParentInstance())
+                    {
+                        result.m_climbedInstances.emplace_back(*instancePtr);
+                        instancePtr = &(instancePtr->GetParentInstance()->get());
+                    }
+                }
+                else
+                {
+                    // Returns the root.
+                    while (instancePtr->HasParentInstance())
+                    {
+                        result.m_climbedInstances.emplace_back(*instancePtr);
+                        instancePtr = &(instancePtr->GetParentInstance()->get());
+                    }
                 }
 
                 result.m_reachedInstance = instancePtr;

@@ -34,8 +34,7 @@ namespace AzToolsFramework
             //! @param startInstance The instance as the starting point in an instance hierarchy tree.
             //! @param targetInstance The instance to climb up to. If not provided, root instance will be hit.
             //! @return InstanceClimbUpResult that shows the climb-up info.
-            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance,
-                InstanceOptionalConstReference targetInstance = AZStd::nullopt);
+            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance);
 
             //! Generates a relative path from a parent instance to its child instance.
             //! @param parentInstance The parent instance that the path points from.
