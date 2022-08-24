@@ -19,7 +19,8 @@ namespace GraphCanvas
     // NodePaletteAutoCompleteModel
     /////////////////////////////////
 
-    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel()
+    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel(QObject* parent)
+        : QAbstractItemModel(parent)
     {
     }
 
@@ -112,8 +113,8 @@ namespace GraphCanvas
 
     NodePaletteSortFilterProxyModel::NodePaletteSortFilterProxyModel(QObject* parent)
         : QSortFilterProxyModel(parent)
-        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
-        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
+        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
+        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
         , m_hasSourceSlotFilter(false)
     {
         m_unfilteredCompleter.setModel(m_unfilteredAutoCompleteModel);

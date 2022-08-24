@@ -19,13 +19,12 @@
 
 namespace AzToolsFramework
 {
-    const QColor LevelRootUiHandler::m_levelRootBorderColor = QColor("#656565");
-    const QString LevelRootUiHandler::m_levelRootIconPath = QString(":/Level/level.svg");
+    const QColor LevelRootUiHandler::s_levelRootBorderColor = QColor("#656565");
+    const QString LevelRootUiHandler::s_levelRootIconPath = QString(":/Level/level.svg");
 
     LevelRootUiHandler::LevelRootUiHandler()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-
         if (m_prefabPublicInterface == nullptr)
         {
             AZ_Assert(false, "LevelRootUiHandler - could not get PrefabPublicInterface on LevelRootUiHandler construction.");
@@ -35,7 +34,7 @@ namespace AzToolsFramework
 
     QIcon LevelRootUiHandler::GenerateItemIcon([[maybe_unused]] AZ::EntityId entityId) const
     {
-        return QIcon(m_levelRootIconPath);
+        return QIcon(s_levelRootIconPath);
     }
 
     QString LevelRootUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -72,8 +71,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void LevelRootUiHandler::PaintItemBackground(
-        QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void LevelRootUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
     {
         if (!painter)
         {
@@ -81,18 +79,25 @@ namespace AzToolsFramework
             return;
         }
 
-        QPen borderLinePen(m_levelRootBorderColor, m_levelRootBorderThickness);
-
+        QPen borderLinePen(s_levelRootBorderColor, s_levelRootBorderThickness);
         QRect rect = option.rect;
-        rect.setLeft(rect.left() + (m_levelRootBorderThickness / 2));
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
-        painter->setPen(borderLinePen);
-        
+
         // Draw border at the bottom
+        painter->setPen(borderLinePen);
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+
         painter->restore();
+    }
+
+    bool LevelRootUiHandler::OnOutlinerItemClick(
+        [[maybe_unused]] const QPoint& position,
+        [[maybe_unused]] const QStyleOptionViewItem& option,
+        [[maybe_unused]] const QModelIndex& index) const
+    {
+        return false;
     }
 
     bool LevelRootUiHandler::OnOutlinerItemDoubleClick(const QModelIndex& index) const

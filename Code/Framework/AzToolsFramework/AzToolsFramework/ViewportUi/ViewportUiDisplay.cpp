@@ -142,17 +142,17 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
     {
-        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            viewportUiSwitcher->AddButton(button);
+            switcher->AddButton(button);
         }
     }
 
     void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
+        if (auto switcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
-            cluster->RemoveButton(buttonId);
+            switcher->RemoveButton(buttonId);
         }
     }
 

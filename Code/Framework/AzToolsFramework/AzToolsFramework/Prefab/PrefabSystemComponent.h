@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -51,6 +52,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
+            , private AzToolsFramework::AssetSystemBus::Handler
         {
         public:
 
@@ -176,8 +178,9 @@ namespace AzToolsFramework
             /**
             * Remove the Link associated with the given id from Prefab System Component.
             * @param linkId A unique id of a Link.
+            * @return whether link was successfully removed or not.
             */
-            void RemoveLink(const LinkId& linkId) override;
+            bool RemoveLink(const LinkId& linkId) override;
 
             /**
              * Get id of Template on given file path if it has already been loaded into Prefab System Component.
@@ -378,6 +381,12 @@ namespace AzToolsFramework
 
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
+
+            //! Called by the AssetProcessor when the source file has been changed.
+            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+
+            //! Called by the AssetProcessor when the source file has been removed.
+            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;

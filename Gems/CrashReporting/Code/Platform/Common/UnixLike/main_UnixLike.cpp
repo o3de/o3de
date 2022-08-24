@@ -8,11 +8,13 @@
 
 // LY Game Gem Crashpad Upload Handler - Posix
 
+#include <AzCore/Debug/Trace.h>
 #include <handler/handler_main.h>
 #include <Uploader/CrashUploader.h>
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     LOG(ERROR) << "Initializing non-windows crash uploader logging";
     return crashpad::HandlerMain(argc, argv, Lumberyard::CrashUploader::GetCrashUploader()->GetUserStreamSources());
 }
