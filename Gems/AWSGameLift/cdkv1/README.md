@@ -1,5 +1,7 @@
-
 # Welcome to O3DE GameLift Sample Project!
+
+> This is the CDK v1 version of the sample project and is no longer receiving updates, please migrate to the CDKv2 version. 
+CDK v1 entered maintenance on June 1, 2022 and will now receive only critical bug fixes and security patches. New features will be developed for CDK v2 exclusively.
 
 This is an optional CDK application that provides two stacks:
 

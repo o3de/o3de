@@ -1,6 +1,6 @@
 # Welcome to O3DE GameLift Sample Project!
 > This is the long term supported CDK v2 version of this template. If you have preexisting versions of this template
-see the CDK guidance about upgrading to CDK v2.
+see the [CDK guidance](https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html) about upgrading to CDK v2.
 
 This is an optional CDKv2 application that provides two stacks:
 
@@ -19,8 +19,7 @@ you can create the virtualenv manually.
 See https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html about for information about how to set up
 the prerequisites for CDK development.
 
-
->Note: This stack is for CDK v2 (the latest CDK version, if you are working with CDKv1 stacks please use the CDKv1 version of this application).
+> Note: This stack is for CDK v2 (the latest CDK version, if you are working with CDKv1 stacks please use the CDKv1 version of this application).
 
 ## Make a virtual environment
 To manually create a virtualenv on macOS and Linux:
