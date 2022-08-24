@@ -9,15 +9,20 @@
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
-
+#include <AzQtComponents/Utilities/ScreenUtilities.h>
+#include <AzQtComponents/Utilities/TextUtilities.h>
 #include <QAbstractItemModel>
+#include <QApplication>
+#include <QFont>
+#include <QFontMetrics>
 #include <QPainter>
 #include <QPainterPath>
 #include <QTreeView>
+#include <QtGui/private/qhighdpiscaling_p.h>
 
 namespace AzToolsFramework
 {
@@ -25,6 +30,13 @@ namespace AzToolsFramework
 
     PrefabUiHandler::PrefabUiHandler()
     {
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        if (m_containerEntityInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get ContainerEntityInterface on PrefabUiHandler construction.");
+            return;
+        }
+
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         if (m_prefabPublicInterface == nullptr)
         {
@@ -59,9 +71,10 @@ namespace AzToolsFramework
                 saveFlag = "*";
             }
 
-            infoString = QObject::tr("<span style=\"font-style: italic; font-weight: 400;\">(%1%2)</span>")
+            infoString = QObject::tr("<table style=\"font-size: 10px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
                 .arg(path.Filename().Native().data())
-                .arg(saveFlag);
+                .arg(saveFlag)
+                .arg(m_prefabFileNameFontSize);
         }
 
         return infoString;
@@ -88,7 +101,17 @@ namespace AzToolsFramework
             return QIcon(m_prefabEditIconPath);
         }
 
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        {
+            return QIcon(m_prefabEditIconPath);
+        }
+
         return QIcon(m_prefabIconPath);
+    }
+
+    bool PrefabUiHandler::CanToggleLockVisibility(AZ::EntityId entityId) const
+    {
+        return !m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
     }
 
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -312,12 +335,13 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
         const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
+        const int editIconSize = 10;
         const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
@@ -325,48 +349,48 @@ namespace AzToolsFramework
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
 
-        if (!isFirstColumn || !(option.state & QStyle::State_Enabled))
-        {
-            return;
-        }
+        bool isContainerOpen = m_containerEntityInterface->IsContainerOpen(entityId);
 
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            // Only show the close icon if the prefab is expanded.
-            // This allows the prefab container to be opened if it was collapsed during propagation.
-            if (isExpanded)
+            if (isFirstColumn && (option.state & QStyle::State_Enabled))
             {
-                // Use the same color as the background.
-                QColor backgroundColor = m_backgroundColor;
-                if (isSelected)
+                // Only show the close icon if the prefab is expanded.
+                // This allows the prefab container to be opened if it was collapsed during propagation.
+                if (isExpanded)
                 {
-                    backgroundColor = m_backgroundSelectedColor;
-                }
-                else if (isHovered)
-                {
-                    backgroundColor = m_backgroundHoverColor;
-                }
+                    // Use the same color as the background.
+                    QColor editIconBackgroundColor = m_backgroundColor;
+                    if (isSelected)
+                    {
+                        editIconBackgroundColor = m_backgroundSelectedColor;
+                    }
+                    else if (isHovered)
+                    {
+                        editIconBackgroundColor = m_backgroundHoverColor;
+                    }
 
-                // Paint a rect to cover up the expander.
-                QRect rect = QRect(0, 0, 16, 16);
-                rect.translate(option.rect.topLeft() + offset);
-                painter->fillRect(rect, backgroundColor);
+                    // Paint a rect to cover up the expander.
+                    QRect rect = QRect(0, 0, 16, 16);
+                    rect.translate(option.rect.topLeft() + offset);
+                    painter->fillRect(rect, editIconBackgroundColor);
 
-                // Paint the icon.
-                QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                    // Paint the icon.
+                    QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
+                    painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                }
             }
         }
         else
         {
             // Only show the edit icon on hover.
-            if (isHovered)
+            if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
+                painter->drawPixmap(option.rect.topRight() + QPoint(-13, 7), openIcon.pixmap(editIconSize));
             }
         }
 
@@ -417,24 +441,20 @@ namespace AzToolsFramework
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
-        const QPoint offset = QPoint(-18, 3);
+        const QPoint textOffset = QPoint(0, 3);
 
-        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        QRect filenameRect = QRect(0, 0, 12, 10);
+        filenameRect.translate(option.rect.topRight() + QPoint(-13, 7) + textOffset);
+        if (filenameRect.contains(position))
         {
-            QRect iconRect = QRect(0, 0, 16, 16);
-            iconRect.translate(option.rect.topLeft() + offset);
-
-            if (iconRect.contains(position))
+            if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
             {
-                if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
-                {
-                    // Focus on this prefab.
-                    m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-                }
-
-                // Don't propagate event.
-                return true;
+                // Focus on this prefab.
+                m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
             }
+
+            // Don't propagate event.
+            return true;
         }
 
         return false;
