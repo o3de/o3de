@@ -262,7 +262,7 @@ def InstallAndPullGitLFS() {
         PlatformRm('.lfsconfig')
         withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
             PlatformSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${lfsURL}", 'Set credentials', false)
-            PlatformSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
+            PlatformSh("git lfs install --force", "LFS config exists. Installing LFS hooks to local repo")
             PlatformSh("git lfs pull", "Pulling new LFS objects")
         }
     }
