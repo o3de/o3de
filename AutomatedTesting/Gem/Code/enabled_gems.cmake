@@ -65,6 +65,4 @@ set(ENABLED_GEMS
     RecastNavigation
     ScriptAutomation
     DiffuseProbeGrid
-    XR
-    OpenXRVk
 )
