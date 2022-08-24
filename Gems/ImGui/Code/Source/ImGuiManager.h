@@ -104,6 +104,9 @@ namespace ImGui
         bool m_useLastPrimaryTouchPosition = false;
         bool m_simulateBackspaceKeyPressed = false;
 
+        bool m_activationBroadcasted = false;
+        bool m_deactivationBroadcasted = false;
+
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)

@@ -135,9 +135,11 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
+        viewportUiSwitcher->setObjectName("viewportUiSwitcher");
         auto id = AddViewportUiElement(viewportUiSwitcher);
         buttonGroup->SetViewportUiElementId(id);
         PositionViewportUiElementAnchored(id, GetQtAlignment(alignment));
+        //viewportUiSwitcher->setStyleSheet(viewportUiSwitcher->styleSheet() + QString("margin-top: 50px;"));
     }
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
@@ -313,13 +315,23 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_uiOverlayLayout.setContentsMargins(
             HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
+
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
+        m_viewportBorderText.setAlignment(Qt::AlignCenter);
+
         m_viewportBorderText.show();
         m_viewportBorderText.setText(borderTitle.c_str());
-        UpdateUiOverlayGeometry();
 
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
+    }
+
+    void ViewportUiDisplay::ChangeViewportBorderText(
+        const AZStd::string& borderTitle)
+    {
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
+        m_viewportBorderText.setText(borderTitle.c_str());
     }
 
     void ViewportUiDisplay::RemoveViewportBorder()
@@ -415,7 +427,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
         widget->setParent(&m_uiOverlay);
-        widget->setStyleSheet("border: none;");
+        //widget->setStyleSheet("border: none;");
     }
 
     void ViewportUiDisplay::SetUiOverlayContents(QPointer<QWidget> widget)
@@ -450,6 +462,12 @@ namespace AzToolsFramework::ViewportUi::Internal
             region -= QRect(
                 QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
                 QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
+
+            if (m_viewportBorderText.width() != m_renderOverlay->width())
+            {
+                m_viewportBorderText.setMinimumWidth(0);
+                m_viewportBorderText.setMaximumWidth(m_renderOverlay->width());
+            }
         }
 
         // add all children widget regions

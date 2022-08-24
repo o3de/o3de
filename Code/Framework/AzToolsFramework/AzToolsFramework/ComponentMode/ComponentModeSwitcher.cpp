@@ -246,23 +246,28 @@ namespace AzToolsFramework::ComponentModeFramework
         {
             componentData = componentDataIt;
         }
+     
+        if (buttonId == m_transformButtonId)
+        {
+            AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+                &ComponentModeSystemRequests::EndComponentMode);
+
+            return;
+        }
 
         bool inComponentMode;
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
             inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
-        // if already in component mode, end current mode and switch active button to the selected component
         if (inComponentMode)
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
-                &ComponentModeSystemRequests::EndComponentMode);
+                &ComponentModeSystemRequests::ChangeComponentMode, componentData->m_component->GetUnderlyingComponentType());
 
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton, m_switcherId, buttonId);
         }
-
-        // if the newly active button is not the transform button (no component mode associated), emter component mode
-        if (buttonId != m_transformButtonId)
+        else
         {
             AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
                 &ComponentModeSystemRequests::AddSelectedComponentModesOfType, componentData->m_component->GetUnderlyingComponentType());

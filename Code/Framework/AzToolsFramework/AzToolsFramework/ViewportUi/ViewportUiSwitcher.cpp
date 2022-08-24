@@ -8,20 +8,28 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <QBitmap>
+#include <QTimer>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : m_buttonGroup(buttonGroup)
     {
+        AzFramework::ViewportBorderNotificationBus::Handler::BusConnect();
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId()); 
+
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-        setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
-                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
-                              "border-width: 2px; padding: 7px; color: white;}"));
+        setStyleSheet("border: none;");
+        m_styleSheet = styleSheet();
 
-        // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -41,6 +49,8 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ViewportUiSwitcher::~ViewportUiSwitcher()
     {
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        AzFramework::ViewportBorderNotificationBus::Handler::BusDisconnect();
         delete m_activeButton;
     }
 
@@ -172,4 +182,67 @@ namespace AzToolsFramework::ViewportUi::Internal
             action->setToolTip(QString((tooltip).c_str()));
         }
     }
+
+    void ViewportUiSwitcher::ImGuiActive(bool active)
+    {
+        if (active)
+        {
+            m_imGuiActive = true;
+
+            bool borderVisible;
+            ViewportUi::ViewportUiRequestBus::EventResult(
+                borderVisible, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ViewportBorderVisible);
+            if (borderVisible)
+            {
+                setStyleSheet(QString("QToolBar#viewportUiSwitcher { margin-top: 50px; border: none; }"));
+                
+            }
+        }
+        else
+        {
+            m_imGuiActive = false;
+            //setStyleSheet(m_styleSheet + tr("margin-top: 0px;"));
+            AZ_Printf("debugging", "%s", m_styleSheet.toStdString().c_str());
+        }
+    };
+
+    void ViewportUiSwitcher::OnEditorModeDeactivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        if (mode == ViewportEditorMode::Component)
+        {
+            if (m_imGuiActive)
+            {
+                // wait one frame for the undo stack to actually be updated
+                m_test = false;
+                QTimer::singleShot(
+                    0,
+                    nullptr,
+                    [this]()
+                    {
+                        if (m_test == false)
+                        {
+                        setStyleSheet(m_styleSheet + tr("margin-top: 0px;"));
+                        }
+                    });
+            }
+        }
+    }
+
+    void ViewportUiSwitcher::OnEditorModeActivated(
+        [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode)
+    {
+        // if the user enters component mode not using the switcher, the switcher should still switch buttons
+        if (mode == ViewportEditorMode::Component)
+        {
+            if (m_imGuiActive)
+            {
+                ViewportUiSwitcher::setStyleSheet(styleSheet() + tr("margin-top: 25px;"));
+                m_test = true;
+            }
+
+        }
+    }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()

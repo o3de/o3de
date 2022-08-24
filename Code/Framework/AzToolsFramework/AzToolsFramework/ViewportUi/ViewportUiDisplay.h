@@ -92,7 +92,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
+        void ChangeViewportBorderText(const AZStd::string& borderTitle);
         void RemoveViewportBorder();
+        const bool ViewportBorderVisible()
+        {
+            return m_viewportBorderText.isVisible();
+        }
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
