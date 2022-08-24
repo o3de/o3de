@@ -17,22 +17,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/array.h>
 
-namespace AZ::Internal
-{
-    struct AMStringHasher
-    {
-        using is_transparent = void;
-        template<typename ConvertibleToStringView>
-        size_t operator()(const ConvertibleToStringView& key)
-        {
-            return AZStd::hash<AZStd::string_view>{}(key);
-        }
-    };
-    using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
-    using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-    using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-}
-
 namespace AZ
 {
 
