@@ -1534,7 +1534,11 @@ namespace AzFramework
             if (serialize)
             {
                 serialize->Class<AssetChangeReportRequest, BaseAssetProcessorMessage>()
-                    ->Version(1);
+                    ->Version(1)
+                    ->Field("FromPath", &AssetChangeReportRequest::m_fromPath)
+                    ->Field("ToPath", &AssetChangeReportRequest::m_toPath)
+                    ->Field("ChangeType", &AssetChangeReportRequest::m_type);
+
             }
         }
 
