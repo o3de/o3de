@@ -445,7 +445,7 @@ namespace AZ::Render
                 continue;
             }
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(parentIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }
@@ -501,7 +501,7 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(parentIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }

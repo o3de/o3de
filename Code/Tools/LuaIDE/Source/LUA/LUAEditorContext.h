@@ -8,6 +8,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/UserSettings/UserSettings.h>
@@ -240,6 +242,10 @@ namespace LUAEditor
         static void Reflect(AZ::ReflectContext* reflection);
 
     private:
+        using DocumentInfoMap =  AZStd::unordered_map<AZStd::string, DocumentInfo> ;
+        
+        AZStd::optional<const DocumentInfoMap::iterator> FindDocumentInfo(const AZStd::string_view assetId);
+        
         //////////////////////////////////////////////////////////////////////////
         // AssetManagementMessages
         //Our callback that tell us when the asset read request finishes
@@ -274,7 +280,6 @@ namespace LUAEditor
 
         bool IsLuaAsset(const AZStd::string& assetPath);
 
-        typedef AZStd::unordered_map<AZStd::string, DocumentInfo> DocumentInfoMap;
         DocumentInfoMap m_documentInfoMap;
 
         LUAEditorMainWindow* m_pLUAEditorMainWindow;

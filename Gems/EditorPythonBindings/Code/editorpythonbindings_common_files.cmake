@@ -16,6 +16,7 @@ set(FILES
     Source/ActionManager/PythonActionManagerHandler.h
     Source/ActionManager/PythonEditorAction.cpp
     Source/ActionManager/PythonEditorAction.h
+    Source/ActionManager/ToolBarManagerBus.h
     Source/PythonCommon.h
     Source/PythonLogSymbolsComponent.cpp
     Source/PythonLogSymbolsComponent.h

@@ -17,8 +17,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 
+#include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
+#include <QUrl>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)
     : QWidget(parent)
@@ -47,6 +49,8 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     connect(ui->m_updateButton, &QPushButton::clicked, this, &ImporterRootDisplay::UpdateClicked);
 
+    ui->m_showInExplorer->setEnabled(false);
+
     BusConnect();
 }
 
@@ -65,7 +69,15 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
 {
     QFileInfo fileInfo(headerText);
     ui->m_filePathText->setText(fileInfo.fileName());
-    ui->m_fullPathText->setText(QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator()));
+    QString fullPath = QString("%1%2").arg(QDir::toNativeSeparators(fileInfo.path())).arg(QDir::separator());
+    ui->m_fullPathText->setText(fullPath);
+    
+    ui->m_showInExplorer->setEnabled(true);
+    ui->m_showInExplorer->disconnect();
+    connect(ui->m_showInExplorer, &QPushButton::clicked, this, [fullPath]()
+    {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
+    });
 }
 
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)

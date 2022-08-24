@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
 #include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
@@ -105,6 +106,11 @@ namespace AzToolsFramework::Prefab
             "Prefab - PrefabFocusHandler - "
             "ReadOnly Entity Query Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        if (IsPrefabOverridesUxEnabled())
+        {
+            m_prefabEditScope = PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT;
+        }
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnOwningPrefab(AZ::EntityId entityId)
@@ -379,7 +385,7 @@ namespace AzToolsFramework::Prefab
 
         {
             // Climb up the instance hierarchy from this instance until you hit the focused prefab instance.
-            InstanceOptionalConstReference instance = owningInstance;
+            InstanceOptionalReference instance = owningInstance;
             AZStd::vector<InstanceOptionalConstReference> instancePath;
 
             auto climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(&instance->get(), &focusedPrefabInstance->get());

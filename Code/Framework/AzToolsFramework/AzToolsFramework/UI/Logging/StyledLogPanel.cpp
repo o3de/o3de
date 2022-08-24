@@ -31,6 +31,8 @@ namespace AzToolsFramework
             setTabsClosable(true);
             setMovable(true);
 
+            AzQtComponents::TabWidget::applySecondaryStyle(this);
+
             QAction* pCopyAllAction = new QAction(QIcon(QStringLiteral(":/stylesheet/img/logging/copy.svg")), tr("Copy all"), this);
             addAction(pCopyAllAction);
 
