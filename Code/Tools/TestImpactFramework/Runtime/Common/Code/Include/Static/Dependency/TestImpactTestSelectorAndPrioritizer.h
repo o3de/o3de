@@ -358,7 +358,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> selectedTestTargets;
         selectedTestTargets.reserve(selectedTestTargetAndDependerMap.size());
 
-        const auto fillSelectedTestTargets = [&](const auto& containerOfPairs)
+        const auto fillSelectedTestTargets = [&selectedTestTargets](const auto& containerOfPairs)
         {
             AZStd::transform(
                 containerOfPairs.begin(),
@@ -372,14 +372,14 @@ namespace TestImpact
 
         if (testSelectionStrategy == Policy::TestPrioritization::DependencyLocality)
         {
-            const auto& buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
-            const auto& buildGraph = buildTargetList->GetBuildGraph();
+            const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
+            const BuildGraph<ProductionTarget, TestTarget>& buildGraph = buildTargetList->GetBuildGraph();
 
             AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<size_t>>> testTargetDistancePairs;
             testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
 
             // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the
-            // prroduction targets in productionTargets
+            // production targets in productionTargets
             for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
             {
                 AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
@@ -415,7 +415,7 @@ namespace TestImpact
                 }
             }
 
-            // Sort our pairs by distance and put our test targets into the vector in order of distance(closest first)
+            // Sort our pairs by distance and put our test targets into the vector in order of distance (closest first)
             AZStd::sort(
                 testTargetDistancePairs.begin(),
                 testTargetDistancePairs.end(),
