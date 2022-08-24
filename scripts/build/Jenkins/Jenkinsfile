@@ -257,7 +257,8 @@ def UnInstallGitLFS() {
 def InstallAndPullGitLFS() {
     if(fileExists('.lfsconfig')) {
         // Add lfs url to the .lfsconfig file (deleted after run)
-        def lfsURL = sh(script: "git config --get -f .lfsconfig lfs.url", returnStdout: true).toString().trim()
+        def lfsURL = sh(script: "git config --get -f .lfsconfig lfs.url", returnStdout: true).toString().trim().replaceAll('https://','')
+        echo "${lfsURL}"
         PlatformRm('.lfsconfig')
         withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
             PlatformSh("git config -f .lfsconfig lfs.url https://${username}:${accesstoken}@${lfsURL}", 'Set credentials', false)
