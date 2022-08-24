@@ -17,6 +17,7 @@
 
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 
 namespace AZ
 {
@@ -258,9 +259,9 @@ namespace AzPhysics
         //! The shape on the body that was hit.
         //! Valid if SceneQuery::ResultFlags::Shape is set.
         Physics::Shape* m_shape = nullptr;
-        //! The material on the shape (or face) that was hit.
+        //! The physics material id on the shape (or face) that was hit.
         //! Valid if SceneQuery::ResultFlags::Material is set.
-        Physics::Material* m_material = nullptr;
+        Physics::MaterialId m_physicsMaterialId;
         //! The position of the hit in world space.
         //! Valid if SceneQuery::ResultFlags::Position is set.
         AZ::Vector3 m_position = AZ::Vector3::CreateZero();

@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
@@ -23,6 +24,7 @@
 
 #include "ExecutionInterpretedClassAPI.h"
 #include "ExecutionInterpretedCloningAPI.h"
+#include "ExecutionInterpretedComponentAPI.h"
 #include "ExecutionInterpretedDebugAPI.h"
 #include "ExecutionInterpretedEBusAPI.h"
 #include "ExecutionInterpretedOut.h"
@@ -48,7 +50,7 @@ namespace ExecutionInterpretedAPICpp
     [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
-    T* GetAs(AZ::BehaviorValueParameter& argument)
+    T* GetAs(AZ::BehaviorArgument& argument)
     {
         return argument.m_typeId == azrtti_typeid<T>()
             ? reinterpret_cast<T*>(argument.GetValueAddress())
@@ -150,7 +152,7 @@ namespace ExecutionInterpretedAPICpp
             // Lua: 
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
-            AZ::BehaviorValueParameter parameter;
+            AZ::BehaviorArgument parameter;
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
@@ -276,9 +278,9 @@ namespace ScriptCanvas
             return bcClassIter != behaviorContext.m_typeToClassMap.end() ? bcClassIter->second->m_azRtti : nullptr;
         }
 
-        AZ::BehaviorValueParameter BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
+        AZ::BehaviorArgument BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
         {
-            AZ::BehaviorValueParameter bvp;
+            AZ::BehaviorArgument bvp;
             bvp.m_typeId = CreateIdFromStringFast(aztypeidStr);
             bvp.m_azRtti = GetRttiHelper(bvp.m_typeId, behaviorContext);
             return bvp;
@@ -337,7 +339,7 @@ namespace ScriptCanvas
             return id;
         }
 
-        void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments)
+        void PushActivationArgs(lua_State* lua, AZ::BehaviorArgument* arguments, size_t numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
@@ -380,6 +382,7 @@ namespace ScriptCanvas
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
             RegisterTypeSafeEBusResultFunctions(lua);
+            RegisterComponentAPI(lua);
             RegisterCloningAPI(lua);
             RegisterDebugAPI(lua);
             RegisterEBusHandlerAPI(lua);
@@ -395,15 +398,22 @@ namespace ScriptCanvas
                 , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
         }
 
+        int ReportError(lua_State* lua, AZStd::string_view message)
+        {
+            using namespace ExecutionInterpretedAPICpp;
+            lua_pushlstring(lua, message.data(), message.length());
+            return ErrorHandler(lua);
+        }
+
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+            AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");
             {
-                runtimeData.m_areStaticsInitialized = true;
+                runtimeData.m_areScriptLocalStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areScriptLocalStaticsInitialized)
                     {
                         InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
@@ -416,7 +426,6 @@ namespace ScriptCanvas
                 {
                     AZ::ScriptLoadResult result{};
                     AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
                     AZ_Assert(result.lua, "Must have a default script context and a lua_State");
                     AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
 
@@ -474,8 +483,7 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
-
+            
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
@@ -497,7 +505,6 @@ namespace ScriptCanvas
         int SetExecutionOutResult(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
@@ -520,7 +527,7 @@ namespace ScriptCanvas
         //////////////////////////////////////////////////////////////////////////
         // \todo ScriptCanvas will probably need its own version of all of these functions
         //////////////////////////////////////////////////////////////////////////
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& argument)
         {
             using namespace ExecutionInterpretedAPICpp;
 
@@ -544,19 +551,14 @@ namespace ScriptCanvas
             }
         }
 
-        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             return AZ::StackRead(lua, index, context, param, allocator);
         }
 
-        void InterpretedUnloadData(RuntimeData& runtimeData)
-        {
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
-        }
-
         struct DependencyConstructionPack
         {
-            ExecutionStateInterpreted* executionState;
+            ExecutionState* executionState;
             AZStd::vector<RuntimeDataOverrides>* dependencies;
             const size_t dependenciesIndex;
             RuntimeDataOverrides& runtimeOverrides;
@@ -564,7 +566,7 @@ namespace ScriptCanvas
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
         {
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
@@ -577,7 +579,7 @@ namespace ScriptCanvas
         {
             ActivationInputArray storage;
             ActivationData data(args.runtimeOverrides, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return static_cast<int>(range.totalCount);
         }

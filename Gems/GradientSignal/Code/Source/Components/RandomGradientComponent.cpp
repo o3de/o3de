@@ -108,13 +108,17 @@ namespace GradientSignal
         // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
         GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
 
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         RandomGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void RandomGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         RandomGradientRequestBus::Handler::BusDisconnect();
         GradientTransformNotificationBus::Handler::BusDisconnect();
     }
@@ -141,7 +145,7 @@ namespace GradientSignal
 
     void RandomGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
     {
-        AZStd::unique_lock<decltype(m_transformMutex)> lock(m_transformMutex);
+        AZStd::unique_lock lock(m_queryMutex);
         m_gradientTransform = newTransform;
     }
 
@@ -163,14 +167,12 @@ namespace GradientSignal
 
     float RandomGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
 
         AZ::Vector3 uvw = sampleParams.m_position;
         bool wasPointRejected = false;
 
-        {
-            AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
-            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
-        }
+        m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
 
         if (!wasPointRejected)
         {
@@ -191,12 +193,12 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         AZ::Vector3 uvw;
         bool wasPointRejected = false;
         const AZStd::size_t seed = m_configuration.m_randomSeed +
             AZStd::size_t(2); // Add 2 to avoid seeds 0 and 1, which can create strange patterns with this particular algorithm
-
-        AZStd::shared_lock<decltype(m_transformMutex)> lock(m_transformMutex);
 
         for (size_t index = 0; index < positions.size(); index++)
         {
@@ -221,7 +223,13 @@ namespace GradientSignal
 
     void RandomGradientComponent::SetRandomSeed(int seed)
     {
-        m_configuration.m_randomSeed = seed;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_randomSeed = seed;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

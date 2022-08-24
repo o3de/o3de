@@ -9,7 +9,6 @@
 #ifdef HAVE_BENCHMARK
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
-#include <Material.h>
 #include <PhysXTestUtil.h>
 #include <PhysXTestCommon.h>
 
@@ -66,8 +65,6 @@ namespace PhysX::Benchmarks
 
     void PhysXBaseBenchmarkFixture::TearDownInternal()
     {
-        //cleanup materials in case some where created
-        PhysX::MaterialManagerRequestsBus::Broadcast(&PhysX::MaterialManagerRequestsBus::Events::ReleaseAllMaterials);
         Physics::DefaultWorldBus::Handler::BusDisconnect();
 
         //Clean up the test scene

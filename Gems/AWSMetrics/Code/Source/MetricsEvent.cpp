@@ -8,6 +8,7 @@
 
 #include <MetricsEvent.h>
 #include <AWSMetricsConstant.h>
+#include <Framework/JsonWriter.h>
 
 #include <AzCore/JSON/schema.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>

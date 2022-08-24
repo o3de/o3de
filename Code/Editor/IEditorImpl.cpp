@@ -140,9 +140,6 @@ CEditorImpl::CEditorImpl()
     m_pErrorReport = new CErrorReport;
     m_pClassFactory = CClassFactory::Instance();
     m_pCommandManager = new CEditorCommandManager;
-    CRegistrationContext regCtx;
-    regCtx.pCommandManager = m_pCommandManager;
-    regCtx.pClassFactory = m_pClassFactory;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
     m_pDisplaySettings = new CDisplaySettings;
     m_pDisplaySettings->LoadRegistry();
@@ -342,10 +339,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
 
 void CEditorImpl::RegisterTools()
 {
-    CRegistrationContext rc;
-
-    rc.pCommandManager = m_pCommandManager;
-    rc.pClassFactory = m_pClassFactory;
 }
 
 void CEditorImpl::ExecuteCommand(const char* sCommand, ...)
@@ -866,18 +859,14 @@ bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
 
 void CEditorImpl::SetInGameMode(bool inGame)
 {
-    static bool bWasInSimulationMode(false);
-
-    if (inGame)
+    if (IsInSimulationMode())
     {
-        bWasInSimulationMode = GetIEditor()->GetGameEngine()->GetSimulationMode();
-        GetIEditor()->GetGameEngine()->SetSimulationMode(false);
-        GetIEditor()->GetGameEngine()->RequestSetGameMode(true);
+        return;
     }
-    else
+
+    if (m_pGameEngine)
     {
-        GetIEditor()->GetGameEngine()->RequestSetGameMode(false);
-        GetIEditor()->GetGameEngine()->SetSimulationMode(bWasInSimulationMode);
+        m_pGameEngine->RequestSetGameMode(inGame);
     }
 }
 

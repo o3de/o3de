@@ -19,7 +19,6 @@ namespace O3DE::ProjectManager
         QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
 
         return AZ::Success(QStringList{ ProjectCMakeCommand,
-                                        "-G", "Visual Studio 16 2019",
                                         "-B", targetBuildPath,
                                         "-S", m_projectInfo.m_path,
                                         QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath) } );
@@ -27,13 +26,14 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
     {
-        QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
-        QString launcherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+        const QString targetBuildPath = QDir(m_projectInfo.m_path).filePath(ProjectBuildPathPostfix);
+        const QString gameLauncherTargetName = m_projectInfo.m_projectName + ".GameLauncher";
+        const QString serverLauncherTargetName = m_projectInfo.m_projectName + ".ServerLauncher";
 
         return AZ::Success(QStringList{ ProjectCMakeCommand,
                                         "--build", targetBuildPath,
                                         "--config", "profile",
-                                        "--target", launcherTargetName, ProjectCMakeBuildTargetEditor });
+                                        "--target", gameLauncherTargetName, serverLauncherTargetName, ProjectCMakeBuildTargetEditor });
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructKillProcessCommandArguments(const QString& pidToKill) const

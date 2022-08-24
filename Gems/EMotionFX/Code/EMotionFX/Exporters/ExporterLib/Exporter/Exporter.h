@@ -29,7 +29,6 @@ namespace EMotionFX
     class Actor;
     class Node;
     class NodeGroup;
-    class Material;
     class MorphTarget;
     class AnimGraph;
     class MotionEventTable;

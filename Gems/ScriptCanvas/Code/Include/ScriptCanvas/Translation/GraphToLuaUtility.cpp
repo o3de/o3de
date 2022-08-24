@@ -6,7 +6,6 @@
  *
  */
 
-#include "GraphToLuaUtility.h"
 
 #include <clocale>
 
@@ -17,11 +16,13 @@
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/ScopedDataConnectionEvent.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/GraphTranslationValidation/GraphTranslationValidations.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-#include <ScriptCanvas/Grammar/Primitives.h>
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
+#include <ScriptCanvas/Grammar/Primitives.h>
+#include <ScriptCanvas/Translation/GraphToLua.h>
 
-#include "GraphToLua.h"
+#include <ScriptCanvas/Translation/GraphToLuaUtility.h>
 
 namespace GraphToLuaUtilityCpp
 {
@@ -42,41 +43,13 @@ namespace GraphToLuaUtilityCpp
         char* m_previousLocale = nullptr;
     };
 
-    AZStd::string EqualSigns(size_t numEqualSignsRequired)
-    {
-        AZStd::string equalSigns = "";
-        while (numEqualSignsRequired--)
-        {
-            equalSigns += "=";
-        }
-
-        return equalSigns;
-    }
-
-    AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
-    {
-        size_t numEqualSignsRequired = 0;
-
-        for (;;)
-        {
-            auto candidate = AZStd::string::format("]%s]", EqualSigns(numEqualSignsRequired).c_str());
-
-            if (formattedString.find(candidate) == AZStd::string::npos)
-            {
-                break;
-            }
-
-            ++numEqualSignsRequired;
-        }
-
-        return EqualSigns(numEqualSignsRequired);
-    }
 }
 
 namespace ScriptCanvas
 {
     namespace Translation
     {
+
         void CheckConversionStringPost(Writer& writer, Grammar::VariableConstPtr source, const Grammar::ConversionByIndex& conversions, size_t index)
         {
             auto iter = conversions.find(index);
@@ -222,7 +195,14 @@ namespace ScriptCanvas
 
             case Data::eType::BehaviorContextObject:
             {
-                return "nil";
+                if (datum.GetType().GetAZType() != azrtti_typeid<ExecutionState>())
+                {
+                    return "nil";
+                }
+                else
+                {
+                    return config.m_executionStateName;
+                }
             }
 
             case Data::eType::Boolean:
@@ -403,7 +383,7 @@ namespace ScriptCanvas
             case Data::eType::String:
             {
                 const AZStd::string& formattedString = *datum.GetAs<Data::StringType>();
-                const AZStd::string bracketString = GraphToLuaUtilityCpp::MakeLongBracketString(formattedString);
+                const AZStd::string bracketString = MakeLongBracketString(formattedString);
                 return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
             }
 
@@ -418,6 +398,42 @@ namespace ScriptCanvas
                 AZ_Error("ScriptCanvas", false, "Invalid type found in GraphToLua::ToValueString()!");
                 return "";
             }
+        }
+
+        AZStd::string EqualSigns(size_t numEqualSignsRequired)
+        {
+            AZStd::string equalSigns = "";
+            while (numEqualSignsRequired--)
+            {
+                equalSigns += "=";
+            }
+
+            return equalSigns;
+        }
+
+        AZStd::string MakeLongBracketString(const AZStd::string& formattedString)
+        {
+            size_t numEqualSignsRequired = 0;
+
+            for (;;)
+            {
+                auto candidate = AZStd::string::format("]%s", EqualSigns(numEqualSignsRequired).c_str());
+
+                if (formattedString.find(candidate) == AZStd::string::npos)
+                {
+                    break;
+                }
+
+                ++numEqualSignsRequired;
+            }
+
+            return EqualSigns(numEqualSignsRequired);
+        }
+
+        AZStd::string MakeRuntimeSafeStringLiteral(const AZStd::string& formattedString)
+        {
+            const AZStd::string bracketString = MakeLongBracketString(formattedString);
+            return AZStd::string::format("[%s[%s]%s]", bracketString.c_str(), formattedString.c_str(), bracketString.c_str());
         }
 
     } 

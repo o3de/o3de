@@ -13,14 +13,14 @@
         "CullMode" : "None"
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true, 
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse", 
         "BlendOp" : "Add"
     },
 
-    "DrawList" : "2dpass",
+    "DrawList" : "lyshinepass",
 
     "ProgramSettings":
     {

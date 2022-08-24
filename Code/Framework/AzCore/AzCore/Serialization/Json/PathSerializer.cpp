@@ -43,11 +43,10 @@ namespace AZ::JsonPathSerializerInternal
                 *pathValue = PathType(AZStd::string_view(inputValue.GetString(), pathLength)).LexicallyNormal();
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success, "Successfully read path.");
             }
-            using UuidString = AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>;
             using ErrorString = AZStd::fixed_string<256>;
             return context.Report(JsonSerializationResult::Tasks::ReadField, JSR::Outcomes::Invalid,
                 ErrorString::format("Json string value is too large to fit within path type %s. It needs to be less than %zu code points",
-                    azrtti_typeid<PathType>().template ToString<UuidString>().c_str(), pathValue->Native().max_size()));
+                    azrtti_typeid<PathType>().ToFixedString().c_str(), pathValue->Native().max_size()));
         }
         default:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unknown, "Unknown json type encountered for string value.");
@@ -88,8 +87,7 @@ namespace AZ
                 context);
         }
 
-        using UuidString = AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>;
-        auto errorTypeIdString = outputValueTypeId.ToString<UuidString>();
+        auto errorTypeIdString = outputValueTypeId.ToFixedString();
         AZ_Assert(false, "Unable to serialize json string"
             " to a path of type %s", errorTypeIdString.c_str());
 
@@ -114,14 +112,10 @@ namespace AZ
                 reinterpret_cast<const AZ::IO::FixedMaxPath*>(defaultValue), context);
         }
 
-        using UuidString = AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>;
-        auto errorTypeIdString = valueTypeId.ToString<UuidString>();
-        AZ_Assert(false, "Unable to serialize path type %s to a json string",
-            errorTypeIdString.c_str());
-
+        AZ_Assert(false, "Unable to serialize path type %s to a json string", valueTypeId.ToFixedString().c_str());
         using ErrorString = AZStd::fixed_string<256>;
         return context.Report(JsonSerializationResult::Tasks::WriteValue, JsonSerializationResult::Outcomes::TypeMismatch,
-            ErrorString::format("Input value type ID %s is not a valid Path type", errorTypeIdString.c_str()));
+            ErrorString::format("Input value type ID %s is not a valid Path type", valueTypeId.ToFixedString().c_str()));
     }
 
 } // namespace AZ

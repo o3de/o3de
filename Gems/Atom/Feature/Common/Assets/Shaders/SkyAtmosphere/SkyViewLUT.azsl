@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+ // Based on https://github.com/sebh/UnrealEngineSkyAtmosphere by Sébastien Hillaire
+
+// SkyViewLUT does not support shadows currently because it does not bind or sample the depth buffer
+#define ENABLE_ATMOSPHERE_SHADOWS 0
+
+#include <viewsrg.srgi>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <SkyAtmosphereCommon.azsli>
+
+struct SkyViewLutPSOutput
+{
+    float4 m_skyViewLut : SV_Target0;
+};
+
+SkyViewLutPSOutput SkyViewLutPS(VSOutput Input)
+{
+    SkyViewLutPSOutput OUT = (SkyViewLutPSOutput)0;
+
+    AtmosphereParameters Atmosphere = GetAtmosphereParameters();
+
+    const float worldScale = 0.001f;
+    const float depth = 0.0f;
+
+    float2 ndcPos = float2(Input.m_texCoord.x, 1.0f - Input.m_texCoord.y) * 2.0f - 1.0f;
+    float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(ndcPos, depth, 1.0f));
+    positionWS /= positionWS.w;
+
+    float3 worldDir = normalize(positionWS.xyz / positionWS.w - ViewSrg::m_worldPosition);
+    const float worldDepthKm = length(worldDir);
+    float3 worldPosKm = ViewSrg::m_worldPosition * worldScale - Atmosphere.PlanetOrigin;
+    float viewHeight = length(worldPosKm);
+
+    float viewZenithCosAngle;
+    float lightViewCosAngle;
+    UvToSkyViewLutParams(Atmosphere, viewZenithCosAngle, lightViewCosAngle, viewHeight, Input.m_texCoord.xy);
+
+    float3 upVector = worldPosKm / viewHeight;
+    float sunZenithCosAngle = dot(upVector, PassSrg::m_constants.m_sunDirection);
+    float3 sunDir = normalize(float3(sqrt(1.0 - sunZenithCosAngle * sunZenithCosAngle), 0.0, sunZenithCosAngle));
+
+    worldPosKm = float3(0.0f, 0.0f, viewHeight);
+
+    float viewZenithSinAngle = sqrt(1 - viewZenithCosAngle * viewZenithCosAngle);
+    worldDir = float3(
+        viewZenithSinAngle * lightViewCosAngle,
+        viewZenithSinAngle * sqrt(1.0 - lightViewCosAngle * lightViewCosAngle),
+        viewZenithCosAngle);
+
+    float distanceToTop = 0.f;
+    if (!MoveToTopAtmosphere(worldPosKm, distanceToTop, worldDir, Atmosphere.TopRadius, worldDepthKm))
+    {
+        // ray does not intersect the atmosphere
+        OUT.m_skyViewLut = float4(0, 0, 0, 1);
+        return OUT;
+    }
+
+    const bool ground = true;
+    const float sampleCountIni = 30;
+    const float depthBufferValue = -1.0;
+    const bool variablesampleCount = true;
+    const bool mieRayPhase = true;
+    const float2 pixPos = Input.m_position.xy;
+    const float2 uv = Input.m_texCoord;
+    SingleScatteringResult ss = IntegrateScatteredLuminance(pixPos, uv, worldPosKm, worldDir, sunDir, Atmosphere, ground, sampleCountIni, depthBufferValue, variablesampleCount, mieRayPhase);
+
+    OUT.m_skyViewLut = float4(ss.L, 1);
+    return OUT;
+}

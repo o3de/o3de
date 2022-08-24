@@ -8,7 +8,7 @@
     }
   },
   "profile_pipe": {
-    "TAGS": [
+    "TAGS":[
       "default",
       "snapshot"
     ],
@@ -28,8 +28,8 @@
   },
   "debug": {
     "TAGS":[
-        "nightly-incremental",
-        "nightly-clean",
+        "periodic-incremental-daily",
+        "periodic-clean-weekly-internal",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -59,8 +59,8 @@
   },
   "profile_nounity": {
     "TAGS":[
-        "nightly-incremental",
-        "nightly-clean",
+        "periodic-incremental-daily",
+        "periodic-clean-weekly-internal",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -77,15 +77,13 @@
     "TAGS":[
         "default",
         "weekly-build-metrics",
-        "nightly-incremental",
-        "nightly-clean",
         "snapshot"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION":"profile",
         "OUTPUT_DIRECTORY":"build\\windows",
-        "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
+        "CMAKE_OPTIONS":"-DCMAKE_SYSTEM_VERSION=10.0",
         "CMAKE_LY_PROJECTS":"AutomatedTesting",
         "CMAKE_TARGET":"AssetProcessorBatch",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -96,8 +94,8 @@
   },
   "release": {
     "TAGS":[
-        "nightly-incremental",
-        "nightly-clean",
+        "periodic-incremental-daily",
+        "periodic-clean-weekly-internal",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -112,8 +110,8 @@
   },
   "monolithic_release": {
     "TAGS":[
-        "nightly-incremental",
-        "nightly-clean",
+        "periodic-incremental-daily",
+        "periodic-clean-weekly-internal",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",

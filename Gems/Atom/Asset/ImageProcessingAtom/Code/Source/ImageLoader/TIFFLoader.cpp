@@ -25,11 +25,13 @@ namespace ImageProcessingAtom
         static constexpr int TiffMaxMessageSize = 1024;
 
 #ifdef AZ_ENABLE_TRACING
+        // Note: the fatal errors are processed in LoadImageFromTIFF function.
+        // We only report the errors as warning here. 
         static void ImageProcessingTiffErrorHandler(const char* module, const char* format, va_list argList)
         {
             char buffer[TiffMaxMessageSize];
             azvsnprintf(buffer, TiffMaxMessageSize, format, argList);
-            AZ_Error(module, false, buffer);
+            AZ_Warning(module, false, buffer);
         }
 #endif
 
@@ -366,25 +368,20 @@ namespace ImageProcessingAtom
                 }
             };
 
-            bool readError = false;
-
             // Loop across the image height, one tile at a time
-            for (uint32_t imageY = 0; (imageY < inputImageHeight) && (!readError); imageY += tileHeight)
+            for (uint32_t imageY = 0; imageY < inputImageHeight; imageY += tileHeight)
             {
                 // Loop across the image width, one tile at a time
                 for (uint32 imageX = 0; imageX < inputImageWidth; imageX += tileWidth)
                 {
                     // Either read in a tile or a scanline
-                    auto readResult = isTiled ?
-                        TIFFReadTile(tif, buf.data(), imageX, imageY, 0, 0) :
+                    [[maybe_unused]] auto result = isTiled?
+                        TIFFReadTile(tif, buf.data(), imageX, imageY, 0, 0):
                         TIFFReadScanline(tif, buf.data(), imageY);
 
-                    // Stop processing if there was an error reading the input data.
-                    if (readResult == -1)
-                    {
-                        readError = true;
-                        break;
-                    }
+                    // non-fatal error, only print the warning
+                    // For details: https://github.com/o3de/o3de/pull/8929
+                    AZ_Warning("TIFFLoader", !(result == -1), "Read tiff image data from %s error at row %d", TIFFFileName(tif), imageY);
 
                     // Convert each pixel in the scanline / tile buffer.
                     // The image might not be evenly divisible by tile height/width, so don't process any pixels outside those bounds.
@@ -467,110 +464,6 @@ namespace ImageProcessingAtom
             }
 
             return pRet;
-        }
-
-        const AZStd::string LoadSettingFromTIFF(const AZStd::string& filename)
-        {
-            AZStd::string setting = "";
-
-            TiffFileRead tiffRead(filename);
-            TIFF* tif = tiffRead.GetTiff();
-
-            if (tif == nullptr)
-            {
-                return setting;
-            }
-
-            // get image metadata
-            const unsigned char* buffer = nullptr;
-            unsigned int bufferLength = 0;
-
-            if (!TIFFGetField(tif, TIFFTAG_PHOTOSHOP, &bufferLength, &buffer))  // 34377 IPTC TAG
-            {
-                return setting;
-            }
-
-            const unsigned char* const bufferEnd = buffer + bufferLength;
-
-            // detailed structure here:
-            // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/#50577409_pgfId-1037504
-            while (buffer < bufferEnd)
-            {
-                const unsigned char* const bufferStart = buffer;
-
-                // sanity check
-                if (buffer[0] != '8' || buffer[1] != 'B' || buffer[2] != 'I' || buffer[3] != 'M')
-                {
-                    AZ_Warning("Image Processing", false, "Invalid Photoshop TIFF file [%s]!", filename.c_str());
-                    return setting;
-                }
-                buffer += 4;
-
-                // get image resource id
-                const unsigned short resourceId = (((unsigned short)buffer[0]) << 8) | (unsigned short)buffer[1];
-                buffer += 2;
-
-                // get size of pascal string
-                const unsigned int dwNameSize = (unsigned int)buffer[0];
-                ++buffer;
-
-                // get pascal string
-                AZStd::string szName(buffer, buffer + dwNameSize);
-                buffer += dwNameSize;
-
-                // align 2 bytes
-                if ((buffer - bufferStart) & 1)
-                {
-                    ++buffer;
-                }
-
-                // get size of resource data
-                const unsigned int dwSize =
-                    (((unsigned int)buffer[0]) << 24) |
-                    (((unsigned int)buffer[1]) << 16) |
-                    (((unsigned int)buffer[2]) << 8) |
-                    (unsigned int)buffer[3];
-                buffer += 4;
-
-                // IPTC-NAA record. Contains the [File Info...] information. Old RC use this section to store the setting string.
-                if (resourceId == 0x0404)
-                {
-                    const unsigned char* const iptcBufferStart = buffer;
-
-                    // Old RC uses IPTC ApplicationRecord tags SpecialInstructions to store the setting string
-                    // IPTC Details: https://iptc.org/std/photometadata/specification/mapping/iptc-pmd-newsmlg2.html
-                    unsigned int iptcPos = 0;
-                    while (iptcPos + 5 < dwSize)
-                    {
-                        int marker = iptcBufferStart[iptcPos++];
-                        int recordNumber = iptcBufferStart[iptcPos++];
-                        int dataSetNumber = iptcBufferStart[iptcPos++];
-                        int fieldLength = (iptcBufferStart[iptcPos++] << 8);
-                        fieldLength += iptcBufferStart[iptcPos++];
-
-                        // Ignore fields other than SpecialInstructions
-                        if (marker != 0x1C || recordNumber != 0x02 || dataSetNumber != 0x28)
-                        {
-                            iptcPos += fieldLength;
-                            continue;
-                        }
-
-                        //save the setting string before close file
-                        setting = AZStd::string(iptcBufferStart + iptcPos, iptcBufferStart + iptcPos + fieldLength);
-                        return setting;
-                    }
-                }
-
-                buffer += dwSize;
-
-                // align 2 bytes
-                if ((buffer - bufferStart) & 1)
-                {
-                    ++buffer;
-                }
-            }
-
-            return setting;
         }
     }// namespace ImageTIFF
 } //namespace ImageProcessingAtom

@@ -28,10 +28,10 @@ namespace ScriptEvents
             struct BindingParameters
             {
                 AZStd::string_view m_eventName;
-                AZ::BehaviorValueParameter* m_address;
-                AZ::BehaviorValueParameter* m_parameters;
+                AZ::BehaviorArgument* m_address;
+                AZ::BehaviorArgument* m_parameters;
                 AZ::u32 m_parameterCount;
-                AZ::BehaviorValueParameter* m_returnValue;
+                AZ::BehaviorArgument* m_returnValue;
 
                 BindingParameters()
                     : m_address(nullptr)
@@ -49,8 +49,8 @@ namespace ScriptEvents
             //! Request a bound event to be invoked given the parameters specified
             virtual void Bind(const BindingParameters&) = 0;
 
-            virtual void Connect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler) = 0;
-            virtual void Disconnect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler) = 0;
+            virtual void Connect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler) = 0;
+            virtual void Disconnect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler) = 0;
 
             virtual void RemoveHandler(ScriptEventsHandler*) = 0;
         };

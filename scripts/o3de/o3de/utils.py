@@ -18,6 +18,8 @@ import urllib.request
 import logging
 import zipfile
 
+from o3de import gitproviderinterface, github_utils
+
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
 logger = logging.getLogger('o3de.utils')
@@ -54,7 +56,6 @@ class VerbosityAction(argparse.Action):
             log.setLevel(logging.DEBUG)
         elif count == 1:
             log.setLevel(logging.INFO)
-
 
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
@@ -162,8 +163,15 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+def get_git_provider(parsed_uri):
+    """
+    Returns a git provider if one exists given the passed uri
+    :param parsed_uri: uniform resource identifier of a possible git repository
+    :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
+    """
+    return github_utils.get_github_provider(parsed_uri)
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name = str, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -172,10 +180,10 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
+    file_exists = False
     if download_path.is_file():
         if not force_overwrite:
-            logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
-            return 1
+            file_exists = True
         else:
             try:
                 os.unlink(download_path)
@@ -185,12 +193,31 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         try:
-            with urllib.request.urlopen(parsed_uri.geturl()) as s:
+            current_request = urllib.request.Request(parsed_uri.geturl())
+            resume_position = 0
+            if not force_overwrite:
+                if file_exists:
+                    resume_position = os.path.getsize(download_path)
+                    current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+            with urllib.request.urlopen(current_request) as s:
                 download_file_size = 0
                 try:
                     download_file_size = s.headers['content-length']
                 except KeyError:
                     pass
+
+                # if the server does not return a content length we also have to assume we would be replacing a complete file
+                if file_exists and (resume_position == int(download_file_size) or int(download_file_size) == 0) and not force_overwrite:
+                    logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
+                    return 1
+
+                if s.getcode() == 206: # partial content
+                    file_mode = 'ab'
+                elif s.getcode() == 200:
+                    file_mode = 'wb'
+                else:
+                    logger.error(f'HTTP status {e.code} opening {parsed_uri.geturl()}')
+                    return 1
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
@@ -209,7 +236,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                         return download_progress_callback(int(downloaded_bytes), int(download_file_size))
                     return False
 
-                with download_path.open('wb') as f:
+                with download_path.open(file_mode) as f:
                     download_cancelled = copyfileobj(s, f, download_progress)
                     if download_cancelled:
                         logger.info(f'Download of file to {download_path} cancelled.')
@@ -228,8 +255,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     return 0
 
-
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name = str, download_progress_callback = None) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file

@@ -6,7 +6,8 @@
  */
 
 #include <ProjectUtils.h>
-#include <ProjectManagerDefs.h>
+#include <PythonBindingsInterface.h>
+
 #include <QProcessEnvironment>
 #include <QDir>
 
@@ -19,39 +20,76 @@ namespace O3DE::ProjectManager
     namespace ProjectUtils
     {
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
-        const QStringList SupportedClangVersions = {"13", "12", "11", "10", "9", "8", "7", "6.0"};
+        // Only Ubuntu has clang++-<version> symlinks, other linux distros do not,
+        // so a empty string entry is added to the end
+        const QStringList SupportedClangVersions = {"-13", "-12", "-11", "-10", "-9", "-8", "-7", "-6.0", ""};
 
         AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             return AZ::Success();
         }
 
-        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        AZ::Outcome<QString, QString> FindSupportedCMake()
         {
             // Validate that cmake is installed and is in the command line
-            auto whichCMakeResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ProjectCMakeCommand});
+            auto whichCMakeResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ ProjectCMakeCommand });
             if (!whichCMakeResult.IsSuccess())
             {
-                return AZ::Failure(QObject::tr("CMake not found. <br><br>"
-                    "Make sure that the minimum version of CMake is installed and available from the command prompt. "
-                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
+                return AZ::Failure(
+                    QObject::tr("CMake not found. <br><br>"
+                                "Make sure that the minimum version of CMake is installed and available from the command prompt. "
+                                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                "requirements</a> page for more information."));
             }
 
-            // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested for O3DE.
-            for (const QString& supportClangVersion : SupportedClangVersions)
+            QString cmakeInstalledPath = whichCMakeResult.GetValue().split("\n")[0];
+
+            // Query the version of the installed cmake
+            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{ "--version" });
+            if (queryCmakeVersionQuery.IsSuccess())
             {
-                auto whichClangResult = ProjectUtils::ExecuteCommandResult("which", QStringList{QString("clang-%1").arg(supportClangVersion)});
-                auto whichClangPPResult = ProjectUtils::ExecuteCommandResult("which", QStringList{QString("clang++-%1").arg(supportClangVersion)});
-                if (whichClangResult.IsSuccess() && whichClangPPResult.IsSuccess())
-                {
-                    return AZ::Success(QString("clang-%1").arg(supportClangVersion));
-                }
+                AZ_TracePrintf(
+                    "Project Manager", "\"%s\" detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
             }
-            return AZ::Failure(QObject::tr("Clang not found. <br><br>"
-                "Make sure that the clang is installed and available from the command prompt. "
-                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> page for more information."));
+
+            return AZ::Success(QString{ cmakeInstalledPath });
         }
 
+        AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
+        {
+            // Query the version of cmake that is installed
+            if (auto queryCmakeVersionQuery = FindSupportedCMake(); !queryCmakeVersionQuery.IsSuccess())
+            {
+                return queryCmakeVersionQuery;
+            }
+
+            // Look for the first compatible version of clang. The list below will contain the known clang compilers that have been tested
+            // for O3DE.
+            for (const QString& supportClangVersion : SupportedClangVersions)
+            {
+                auto whichClangResult =
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang%1").arg(supportClangVersion) });
+                auto whichClangPPResult =
+                    ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("clang++%1").arg(supportClangVersion) });
+                if (whichClangResult.IsSuccess() && whichClangPPResult.IsSuccess())
+                {
+                    return AZ::Success(QString("clang%1").arg(supportClangVersion));
+                }
+            }
+
+            // Finally fallback to trying to detect gcc executables without a compiler version
+            auto whichGccNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("gcc") });
+            auto whichGPlusPlusNoVersionResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ QString("g++") });
+            if (whichGccNoVersionResult.IsSuccess() && whichGPlusPlusNoVersionResult.IsSuccess())
+            {
+                return AZ::Success(QString("gcc"));
+            }
+
+            return AZ::Failure(QObject::tr("Neither clang nor gcc not found. <br><br>"
+                                           "Make sure that the clang or gcc is installed and available from the command prompt. "
+                                           "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                           "requirements</a> page for more information."));
+        }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
         {
@@ -114,19 +152,45 @@ namespace O3DE::ProjectManager
                     // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
                     // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
                     buildConfigurationPath /= "bin";
-                    if (editorPath = (buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
+                    AZStd::fixed_vector<AZ::IO::FixedMaxPath, 4> paths = {
+                        buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor",
+                        buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE / "Editor"
+                    };
+
+                    // always try profile config because that is the default
+                    if (strcmp(AZ_BUILD_CONFIGURATION_TYPE, "profile") != 0)
+                    {
+                        paths.emplace_back(buildConfigurationPath / "profile" / "Editor");
+                        paths.emplace_back(buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Editor");
+                    }
+
+                    for (auto& path : paths)
+                    {
+                        if(AZ::IO::SystemFile::Exists(path.ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION).c_str()))
+                        {
+                            return path;
+                        }
+                    }
+                }
+            }
+
+            // No Editor executable was found in the project build folder so if this project uses a
+            // different engine we must find the Editor executable for that engine
+            if(auto engineResult = PythonBindingsInterface::Get()->GetProjectEngine(projectPath.Native().data()); engineResult)
+            {
+                auto engineInfo = engineResult.GetValue<EngineInfo>();
+                if (!engineInfo.m_thisEngine)
+                {
+                    AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toUtf8().constData() };
+                    // try the default sdk path
+                    // in the future we may be able to use additional .setreg entries to locate an alternate binary path
+                    if (editorPath = (fixedEnginePath / "bin" / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Default" / "Editor").
                         ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                         AZ::IO::SystemFile::Exists(editorPath.c_str()))
                     {
                         return editorPath;
                     }
-                    else if (editorPath = (buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME
-                    / AZ_BUILD_CONFIGURATION_TYPE / "Editor").
-                        ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-                        AZ::IO::SystemFile::Exists(editorPath.c_str()))
-                    {
-                        return editorPath;
-                    }
+                    return {};
                 }
             }
 

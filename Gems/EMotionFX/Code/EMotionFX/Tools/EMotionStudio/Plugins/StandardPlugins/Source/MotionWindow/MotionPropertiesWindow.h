@@ -8,42 +8,44 @@
 
 #pragma once
 
-// include MCore
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <MCore/Source/StandardHeaders.h>
-#include <EMotionFX/Source/PlayBackInfo.h>
 #include <QWidget>
-#include <QLabel>
 #endif
-
-
-QT_FORWARD_DECLARE_CLASS(QPushButton)
-
 
 namespace EMStudio
 {
-    // forward declarations
-    class MotionWindowPlugin;
+    class MotionExtractionWindow;
 
-    class MotionPropertiesWindow
-        : public QWidget
+    class MotionPropertiesWindow : public QWidget
     {
-        Q_OBJECT
-        MCORE_MEMORYOBJECTCATEGORY(MotionPropertiesWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        Q_OBJECT // AUTOMOC
 
     public:
-        enum
-        {
-            CLASS_ID = 0x00000005
-        };
-
-        MotionPropertiesWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin);
+        MotionPropertiesWindow(QWidget* parent);
         ~MotionPropertiesWindow();
 
-        void Init();
+        void UpdateInterface();
 
         void AddSubProperties(QWidget* widget);
         void FinalizeSubProperties();
+
+    private:
+        class CommandSelectCallback : public MCore::Command::Callback
+        {
+        public:
+            CommandSelectCallback(MotionPropertiesWindow* window, bool executePreUndo, bool executePreCommand = false);
+            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine);
+            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine);
+
+        private:
+            MotionPropertiesWindow* m_window = nullptr;
+        };
+        AZStd::vector<MCore::Command::Callback*> m_callbacks;
+
+        MotionExtractionWindow* m_motionExtractionWindow = nullptr;
+
+        static constexpr const char* s_headerIcon = ":/EMotionFX/ActorComponent.svg";
     };
 } // namespace EMStudio

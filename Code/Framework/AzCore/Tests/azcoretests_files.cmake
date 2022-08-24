@@ -17,8 +17,10 @@ set(FILES
     Asset/MockLoadAssetCatalogAndHandler.h
     Asset/TestAssetTypes.h
     AssetJsonSerializerTests.cpp
+    EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
     AssetManager.cpp
+    AttributeDomInteropTests.cpp
     TestCatalog.h
     TestCatalog.cpp
     AssetSerializerTests.cpp
@@ -83,6 +85,7 @@ set(FILES
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
+    Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
@@ -96,6 +99,7 @@ set(FILES
     Streamer/StreamStackEntryMock.h
     Streamer/StreamStackEntryTests.cpp
     Serialization/Json/ArraySerializerTests.cpp
+    Serialization/Json/AnySerializerTests.cpp
     Serialization/Json/BaseJsonSerializerFixture.h
     Serialization/Json/BaseJsonSerializerTests.cpp
     Serialization/Json/BasicContainerSerializerTests.cpp
@@ -137,13 +141,18 @@ set(FILES
     Serialization/Json/UuidSerializerTests.cpp
     Time/TimeTests.cpp
     Math/AabbTests.cpp
+    Math/CapsuleTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/IntersectionPerformanceTests.cpp
+    Math/IntersectionTestHelpers.cpp
+    Math/IntersectionTestHelpers.h
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/IntersectPointTest.cpp
     Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
@@ -167,6 +176,8 @@ set(FILES
     Math/SfmtTests.cpp
     Math/SimdMathTests.cpp
     Math/SphereTests.cpp
+    Math/RayTests.cpp
+    Math/LineSegmentTests.cpp
     Math/SplineTests.cpp
     Math/TransformPerformanceTests.cpp
     Math/TransformTests.cpp
@@ -213,6 +224,7 @@ set(FILES
     AZStd/Parallel.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesUtilityTests.cpp
     AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
@@ -241,6 +253,7 @@ set(FILES
 
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    EnumTests.cpp
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
 )

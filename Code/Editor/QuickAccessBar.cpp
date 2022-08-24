@@ -137,19 +137,22 @@ void CQuickAccessBar::AddMRUFileItems()
         return;
     }
 
-    for (int i = 0; i < pMRUList->GetSize(); ++i)
+    if (auto* actionManager = MainWindow::instance()->GetActionManager())
     {
-        QString mruText;
-        pMRUList->GetDisplayName(mruText, i, "");
-        if (mruText.isEmpty() || !(*pMRUList)[i].endsWith(m_levelExtension))
+        for (int i = 0; i < pMRUList->GetSize(); ++i)
         {
-            continue;
+            QString mruText;
+            pMRUList->GetDisplayName(mruText, i, "");
+            if (mruText.isEmpty() || !(*pMRUList)[i].endsWith(m_levelExtension))
+            {
+                continue;
+            }
+            m_model->setStringList(m_model->stringList() += mruText);
+            m_menuActionTable[mruText] = actionManager->GetAction(ID_FILE_MRU_FILE1 + i);
         }
-        m_model->setStringList(m_model->stringList() += mruText);
-        m_menuActionTable[mruText] = MainWindow::instance()->GetActionManager()->GetAction(ID_FILE_MRU_FILE1 + i);
-    }
 
-    m_model->sort(0);
+        m_model->sort(0);
+    }
 }
 
 void CQuickAccessBar::CollectMenuItems(QMenuBar* menuBar)

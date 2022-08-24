@@ -1721,6 +1721,12 @@
     "background-color": "#8BDD16"
   },
   {
+    "selectors": [ "PathDataColorPalette" ],
+    "palette-style": "solid",
+    "line-color": "#2BF1F8",
+    "background-color": "#2BF1F8"
+  },
+  {
     "selectors": [ "ShapeNodeTitlePalette" ],
     "palette-style": "solid",
     "line-color": "#5A69A1",
@@ -1746,6 +1752,13 @@
     "palette-style": "solid",
     "line-color": "#8BDD16",
     "background-color": "#8BDD16",
+    "color": "#ffffff"
+  },
+  {
+    "selectors": [ "TerrainNodeTitlePalette" ],
+    "palette-style": "solid",
+    "line-color": "#8B572A",
+    "background-color": "#8B572A",
     "color": "#ffffff"
   },
   {

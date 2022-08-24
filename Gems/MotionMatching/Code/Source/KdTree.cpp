@@ -6,15 +6,17 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
+#include <AzCore/Debug/Timer.h>
+
 #include <KdTree.h>
 #include <Feature.h>
 #include <Allocators.h>
 
-#include <AzCore/Debug/Timer.h>
-
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(KdTree, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(KdTree, MotionMatchAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(KdTree::Node, MotionMatchAllocator, 0);
 
     KdTree::~KdTree()
     {
@@ -42,6 +44,8 @@ namespace EMotionFX::MotionMatching
         size_t maxDepth,
         size_t minFramesPerLeaf)
     {
+        AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::InitKdTree");
+
 #if !defined(_RELEASE)
         AZ::Debug::Timer timer;
         timer.Stamp();
@@ -62,7 +66,7 @@ namespace EMotionFX::MotionMatching
 
         if (minFramesPerLeaf > 100000)
         {
-            AZ_Error("Motion Matching", false, "KdTree minFramesPerLeaf (%d) cannot be smaller than 100000.", minFramesPerLeaf);
+            AZ_Error("Motion Matching", false, "KdTree minFramesPerLeaf (%d) cannot be bigger than 100000.", minFramesPerLeaf);
             return false;
         }
 
@@ -72,26 +76,57 @@ namespace EMotionFX::MotionMatching
             return false;
         }
 
+        if (frameDatabase.GetNumFrames() == 0)
+        {
+            AZ_Error("Motion Matching", false, "Skipping to initialize KD-tree. No frames in the motion database.");
+            return true;
+        }
+
         m_maxDepth = maxDepth;
         m_minFramesPerLeaf = minFramesPerLeaf;
 
+        // Not all features are present in the KD-tree, thus we need to remap KD-tree local feature columns to the
+        // feature schema global feature columns.
+        const AZStd::vector<size_t> localToSchemaFeatureColumns = CalcLocalToSchemaFeatureColumns(features);
+
         // Build the tree.
-        m_featureValues.resize(m_numDimensions);
-        BuildTreeNodes(frameDatabase, featureMatrix, features, new Node(), nullptr, 0);
+        BuildTreeNodes(frameDatabase, featureMatrix, localToSchemaFeatureColumns, aznew Node(), nullptr, 0);
         MergeSmallLeafNodesToParents();
         ClearFramesForNonEssentialNodes();
         RemoveZeroFrameLeafNodes();
 
 #if !defined(_RELEASE)
         const float initTime = timer.GetDeltaTimeInSeconds();
-        AZ_TracePrintf("EMotionFX", "KdTree initialized in %f seconds (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
-            initTime, m_nodes.size(),
+        AZ_TracePrintf("Motion Matching", "KD-Tree initialized in %.2f ms (numNodes = %d  numDims = %d  Memory used = %.2f MB).",
+            initTime * 1000.0f,
+            m_nodes.size(),
             m_numDimensions,
             static_cast<float>(CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f);
 
         PrintStats();
 #endif
         return true;
+    }
+
+    AZStd::vector<size_t> KdTree::CalcLocalToSchemaFeatureColumns(const AZStd::vector<Feature*>& features) const
+    {
+        AZStd::vector<size_t> localToSchemaFeatureColumns;
+        localToSchemaFeatureColumns.resize(m_numDimensions);
+
+        size_t currentColumn = 0;
+        for (const Feature* feature : features)
+        {
+            const size_t numDimensions = feature->GetNumDimensions();
+            const size_t featureColumnOffset = feature->GetColumnOffset();
+            for (size_t i = 0; i < numDimensions; ++i)
+            {
+                localToSchemaFeatureColumns[currentColumn] = featureColumnOffset + i;
+                currentColumn++;
+            }
+        }
+
+        AZ_Assert(m_numDimensions == currentColumn, "There should be a column index mapping for each of the available dimensions.");
+        return localToSchemaFeatureColumns;
     }
 
     void KdTree::Clear()
@@ -103,7 +138,6 @@ namespace EMotionFX::MotionMatching
         }
 
         m_nodes.clear();
-        m_featureValues.clear();
         m_numDimensions = 0;
     }
 
@@ -117,7 +151,6 @@ namespace EMotionFX::MotionMatching
             totalBytes += node->m_frames.capacity() * sizeof(size_t);
         }
 
-        totalBytes += m_featureValues.capacity() * sizeof(float);
         totalBytes += sizeof(KdTree);
         return totalBytes;
     }
@@ -139,7 +172,7 @@ namespace EMotionFX::MotionMatching
 
     void KdTree::BuildTreeNodes(const FrameDatabase& frameDatabase,
         const FeatureMatrix& featureMatrix,
-        const AZStd::vector<Feature*>& features,
+        const AZStd::vector<size_t>& localToSchemaFeatureColumns,
         Node* node,
         Node* parent,
         size_t dimension,
@@ -150,7 +183,8 @@ namespace EMotionFX::MotionMatching
         m_nodes.emplace_back(node);
 
         // Fill the frames array and calculate the median.
-        FillFramesForNode(node, frameDatabase, featureMatrix, features, parent, leftSide);
+        AZStd::vector<float> frameFeatureValues;
+        FillFramesForNode(node, frameDatabase, featureMatrix, localToSchemaFeatureColumns, frameFeatureValues, parent, leftSide);
 
         // Prevent splitting further when we don't want to.
         const size_t maxDimensions = AZ::GetMin(m_numDimensions, m_maxDepth);
@@ -161,16 +195,16 @@ namespace EMotionFX::MotionMatching
         }
 
         // Create the left node.
-        Node* leftNode = new Node();
+        Node* leftNode = aznew Node();
         AZ_Assert(!node->m_leftNode, "Expected the parent left node to be a nullptr");
         node->m_leftNode = leftNode;
-        BuildTreeNodes(frameDatabase, featureMatrix, features, leftNode, node, dimension + 1, true);
+        BuildTreeNodes(frameDatabase, featureMatrix, localToSchemaFeatureColumns, leftNode, node, dimension + 1, true);
 
         // Create the right node.
-        Node* rightNode = new Node();
+        Node* rightNode = aznew Node();
         AZ_Assert(!node->m_rightNode, "Expected the parent right node to be a nullptr");
         node->m_rightNode = rightNode;
-        BuildTreeNodes(frameDatabase, featureMatrix, features, rightNode, node, dimension + 1, false);
+        BuildTreeNodes(frameDatabase, featureMatrix, localToSchemaFeatureColumns, rightNode, node, dimension + 1, false);
     }
 
     void KdTree::ClearFramesForNonEssentialNodes()
@@ -258,38 +292,41 @@ namespace EMotionFX::MotionMatching
     void KdTree::FillFramesForNode(Node* node,
         const FrameDatabase& frameDatabase,
         const FeatureMatrix& featureMatrix,
-        const AZStd::vector<Feature*>& features,
+        const AZStd::vector<size_t>& localToSchemaFeatureColumns,
+        AZStd::vector<float>& frameFeatureValues,
         Node* parent,
         bool leftSide)
     {
-        float median = 0.0f;
+        frameFeatureValues.clear();
+
         if (parent)
         {
             // Assume half of the parent frames are in this node.
-            node->m_frames.reserve((parent->m_frames.size() / 2) + 1);
+            const size_t numExpectedFrames = (parent->m_frames.size() / 2) + 1;
+            frameFeatureValues.reserve(numExpectedFrames);
+            node->m_frames.reserve(numExpectedFrames);
 
             // Add parent frames to this node, but only ones that should be on this side.
             for (const size_t frameIndex : parent->m_frames)
             {
-                FillFeatureValues(featureMatrix, features, frameIndex);
+                // Remap local to the KD-tree feature column to the feature schema global column and read the value directly from the feature matrix.
+                const float featureValue = featureMatrix(frameIndex, localToSchemaFeatureColumns[parent->m_dimension]);
+                frameFeatureValues.push_back(featureValue);
 
-                const float value = m_featureValues[parent->m_dimension];
                 if (leftSide)
                 {
-                    if (value <= parent->m_median)
+                    if (featureValue <= parent->m_median)
                     {
                         node->m_frames.emplace_back(frameIndex);
                     }
                 }
                 else
                 {
-                    if (value > parent->m_median)
+                    if (featureValue > parent->m_median)
                     {
                         node->m_frames.emplace_back(frameIndex);
                     }
                 }
-
-                median += value;
             }
         }
         else // We're the root node.
@@ -299,35 +336,20 @@ namespace EMotionFX::MotionMatching
             {
                 const size_t frameIndex = frame.GetFrameIndex();
                 node->m_frames.emplace_back(frameIndex);
-                FillFeatureValues(featureMatrix, features, frameIndex);
-                median += m_featureValues[node->m_dimension];
+
+                // Remap local to the KD-tree feature column to the feature schema global column and read the value directly from the feature matrix.
+                const float featureValue = featureMatrix(frameIndex, localToSchemaFeatureColumns[node->m_dimension]);
+                frameFeatureValues.push_back(featureValue);
             }
         }
 
-        if (!node->m_frames.empty())
+        // Calculate the median in O(n).
+        node->m_median = 0.0f;
+        if (!frameFeatureValues.empty())
         {
-            median /= static_cast<float>(node->m_frames.size());
-        }
-        node->m_median = median;
-    }
-
-    void KdTree::FillFeatureValues(const FeatureMatrix& featureMatrix, const Feature* feature, size_t frameIndex, size_t startIndex)
-    {
-        const size_t numDimensions = feature->GetNumDimensions();
-        const size_t featureColumnOffset = feature->GetColumnOffset();
-        for (size_t i = 0; i < numDimensions; ++i)
-        {
-            m_featureValues[startIndex + i] = featureMatrix(frameIndex, featureColumnOffset + i);
-        }
-    }
-
-    void KdTree::FillFeatureValues(const FeatureMatrix& featureMatrix, const AZStd::vector<Feature*>& features, size_t frameIndex)
-    {
-        size_t startDimension = 0;
-        for (const Feature* feature : features)
-        {
-            FillFeatureValues(featureMatrix, feature, frameIndex, startDimension);
-            startDimension += feature->GetNumDimensions();
+            auto medianIterator = frameFeatureValues.begin() + frameFeatureValues.size() / 2;
+            AZStd::nth_element(frameFeatureValues.begin(), medianIterator, frameFeatureValues.end());
+            node->m_median = frameFeatureValues[frameFeatureValues.size() / 2];
         }
     }
 
@@ -370,12 +392,13 @@ namespace EMotionFX::MotionMatching
             maxDepth = AZ::GetMax(maxDepth, node->m_dimension);
         }
 
-        AZ_TracePrintf("EMotionFX", "KdTree Balance Info: leftSide=%d rightSide=%d score=%.2f totalFrames=%d maxDepth=%d", leftNumFrames, rightNumFrames, balanceScore, leftNumFrames + rightNumFrames, maxDepth);
+        AZ_TracePrintf("Motion Matching", "    KdTree Balance Info: leftSide=%d rightSide=%d score=%.2f totalFrames=%d maxDepth=%d", leftNumFrames, rightNumFrames, balanceScore, leftNumFrames + rightNumFrames, maxDepth);
 
         size_t numLeafNodes = 0;
         size_t numZeroNodes = 0;
         size_t minFrames = 1000000000;
         size_t maxFrames = 0;
+        AZStd::string framesString;
         for (const Node* node : m_nodes)
         {
             if (node->m_leftNode || node->m_rightNode)
@@ -390,14 +413,19 @@ namespace EMotionFX::MotionMatching
                 numZeroNodes++;
             }
 
-            AZ_TracePrintf("EMotionFX", "Frames = %d", node->m_frames.size());
+            if (!framesString.empty())
+            {
+                framesString += ", ";
+            }
+            framesString += AZStd::to_string(node->m_frames.size());
 
             minFrames = AZ::GetMin(minFrames, node->m_frames.size());
             maxFrames = AZ::GetMax(maxFrames, node->m_frames.size());
         }
+        AZ_TracePrintf("Motion Matching", "    Frames = (%s)", framesString.c_str());
 
         const size_t avgFrames = (leftNumFrames + rightNumFrames) / numLeafNodes;
-        AZ_TracePrintf("EMotionFX", "KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
+        AZ_TracePrintf("Motion Matching", "    KdTree Node Info: leafs=%d avgFrames=%d zeroFrames=%d minFrames=%d maxFrames=%d", numLeafNodes, avgFrames, numZeroNodes, minFrames, maxFrames);
 #endif
     }
 

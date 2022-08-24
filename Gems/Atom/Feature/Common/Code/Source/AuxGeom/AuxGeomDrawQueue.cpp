@@ -689,8 +689,6 @@ namespace AZ
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCountTotal);
-            primBuffer.m_indexBuffer.reserve(vertexCountTotal);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -710,8 +708,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;
@@ -763,7 +760,6 @@ namespace AZ
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCountTotal);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -774,7 +770,6 @@ namespace AZ
             }
             center /= aznumeric_cast<float>(vertexCount);
 
-            primBuffer.m_indexBuffer.reserve(indexCount + indexOffset);
             for (uint32_t index = 0; index < indexCount; ++index)
             {
                 primBuffer.m_indexBuffer.push_back(vertexOffset + indexFunction(index));
@@ -788,8 +783,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;

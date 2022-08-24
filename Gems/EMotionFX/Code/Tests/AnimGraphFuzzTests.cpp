@@ -20,7 +20,7 @@
 namespace EMotionFX
 {
     // Control the load for the AnimGraphFuzzTest
-    static constexpr int s_AnimGraphFuzzTestLoad = 100;
+    static constexpr int s_AnimGraphFuzzTestLoad = 1;
     
     // Make it clear that the AnimGraphFuzzTest fixture is parameterized on a
     // seed value for a Random object
@@ -101,7 +101,7 @@ namespace EMotionFX
 
         const size_t bufSize = charBuffer.size();
 
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 1000; ++i)
         {
             const unsigned int positionToEdit = random.GetRandom() % bufSize;
             const char newValue = random.GetRandom() % 256;

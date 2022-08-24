@@ -45,12 +45,12 @@ namespace AZ
         };
 
         //! DecalFeatureProcessorInterface provides an interface to acquire, release, and update a decal. This is necessary for code outside of
-        //! the Atom features gem to communicate with the DecalFeatureProcessor.
+        //! the Atom features gem to communicate with the DecalTextureArrayFeatureProcessor.
         class DecalFeatureProcessorInterface
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", AZ::RPI::FeatureProcessor);
 
             using DecalHandle = RHI::Handle<uint16_t, class Decal>;
 

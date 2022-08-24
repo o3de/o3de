@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/span.h>
@@ -25,10 +26,11 @@ namespace GradientSignal
     };
 
     /**
-    * Handles gradient sampling requests based on up to 3 data points such as X,Y,Z
-    */
-    class GradientRequests
-        : public AZ::EBusTraits
+     * Handles gradient sampling requests based on up to 3 data points such as X,Y,Z.
+     * This bus uses shared dispatches, which means that all requests on the bus can run in parallel, but will NOT run in parallel
+     * with bus connections / disconnections.
+     */
+    class GradientRequests : public AZ::EBusSharedDispatchTraits<GradientRequests>
     {
     public:
         ////////////////////////////////////////////////////////////////////////
@@ -36,8 +38,6 @@ namespace GradientSignal
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
-        using MutexType = AZStd::recursive_mutex;
-
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~GradientRequests() = default;

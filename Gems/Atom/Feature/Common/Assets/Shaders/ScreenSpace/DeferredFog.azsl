@@ -87,7 +87,7 @@ PSOutput MainPS(VSOutput IN)
     
     float linearDepth = PassSrg::m_linearDepthTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
     float zDepth = PassSrg::m_depthStencilTexture.Sample(PassSrg::DepthSampler, IN.m_texCoord).r;
-    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::DepthSampler, PassSrg::m_depthStencilTexture, zDepth, IN.m_position.xy).xyz;
+    float3 surfacePosWS = WorldPositionFromDepthBuffer(PassSrg::m_depthStencilTexture, zDepth, IN.m_position.xy).xyz;
 
     // Fog layer deltas
     const float layerThickness = PassSrg::m_fogMaxHeight - PassSrg::m_fogMinHeight;

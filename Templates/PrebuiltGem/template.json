@@ -1,0 +1,619 @@
+{
+    "template_name": "PrebuiltGem",
+    "origin": "The primary repo for PrebuiltGem goes here: i.e. http://www.mydomain.com",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Prebuilt Gem Tenokate",
+    "summary": "Gem Template that can be used to create a Gem that where pre-built libraries can be hooked into",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "PrebuiltGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Interface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/PAL.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Android/Default/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Default/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Default/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Default/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Default/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Monolithic/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Monolithic/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Monolithic/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Monolithic/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/Monolithic/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/PAL.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Linux/Default/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Default/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Default/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Default/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Default/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Monolithic/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Monolithic/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Monolithic/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Monolithic/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/Monolithic/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Mac/Default/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Default/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Default/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Default/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Default/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Monolithic/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Monolithic/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Monolithic/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Monolithic/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/Monolithic/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/Windows/Default/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Default/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Default/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Default/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Default/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Monolithic/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Monolithic/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Monolithic/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Monolithic/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/Monolithic/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/PAL.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_builders_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_tools_api_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Platform/iOS/Default/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Default/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Default/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Default/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Default/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Monolithic/${NameLower}.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Monolithic/${NameLower}_builders.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Monolithic/${NameLower}_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Monolithic/${NameLower}_tools.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/Monolithic/${NameLower}_tools_tests.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Registry/assetprocessor_settings.setreg",
+            "isTemplated": false
+        },
+        {
+            "file": "README.md",
+            "isTemplated": true
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Android"
+        },
+        {
+            "dir": "Code/Platform/Android/Default"
+        },
+        {
+            "dir": "Code/Platform/Android/Monolithic"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Linux/Default"
+        },
+        {
+            "dir": "Code/Platform/Linux/Monolithic"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Mac/Default"
+        },
+        {
+            "dir": "Code/Platform/Mac/Monolithic"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Platform/Windows/Default"
+        },
+        {
+            "dir": "Code/Platform/Windows/Monolithic"
+        },
+        {
+            "dir": "Code/Platform/iOS"
+        },
+        {
+            "dir": "Code/Platform/iOS/Default"
+        },
+        {
+            "dir": "Code/Platform/iOS/Monolithic"
+        },
+        {
+            "dir": "Registry"
+        },
+        {
+            "dir": "bin"
+        },
+        {
+            "dir": "bin/Android"
+        },
+        {
+            "dir": "bin/Android/debug"
+        },
+        {
+            "dir": "bin/Android/debug/Default"
+        },
+        {
+            "dir": "bin/Android/debug/Monolithic"
+        },
+        {
+            "dir": "bin/Android/release"
+        },
+        {
+            "dir": "bin/Android/release/Default"
+        },
+        {
+            "dir": "bin/Android/release/Monolithic"
+        },
+        {
+            "dir": "bin/Linux"
+        },
+        {
+            "dir": "bin/Linux/debug"
+        },
+        {
+            "dir": "bin/Linux/debug/Default"
+        },
+        {
+            "dir": "bin/Linux/debug/Monolithic"
+        },
+        {
+            "dir": "bin/Linux/release"
+        },
+        {
+            "dir": "bin/Linux/release/Default"
+        },
+        {
+            "dir": "bin/Linux/release/Monolithic"
+        },
+        {
+            "dir": "bin/Mac"
+        },
+        {
+            "dir": "bin/Mac/debug"
+        },
+        {
+            "dir": "bin/Mac/debug/Default"
+        },
+        {
+            "dir": "bin/Mac/debug/Monolithic"
+        },
+        {
+            "dir": "bin/Mac/release"
+        },
+        {
+            "dir": "bin/Mac/release/Default"
+        },
+        {
+            "dir": "bin/Mac/release/Monolithic"
+        },
+        {
+            "dir": "bin/Windows"
+        },
+        {
+            "dir": "bin/Windows/debug"
+        },
+        {
+            "dir": "bin/Windows/debug/Default"
+        },
+        {
+            "dir": "bin/Windows/debug/Monolithic"
+        },
+        {
+            "dir": "bin/Windows/release"
+        },
+        {
+            "dir": "bin/Windows/release/Default"
+        },
+        {
+            "dir": "bin/Windows/release/Monolithic"
+        },
+        {
+            "dir": "bin/iOS"
+        },
+        {
+            "dir": "bin/iOS/debug"
+        },
+        {
+            "dir": "bin/iOS/debug/Default"
+        },
+        {
+            "dir": "bin/iOS/debug/Monolithic"
+        },
+        {
+            "dir": "bin/iOS/release"
+        },
+        {
+            "dir": "bin/iOS/release/Default"
+        },
+        {
+            "dir": "bin/iOS/release/Monolithic"
+        },
+        {
+            "dir": "lib"
+        },
+        {
+            "dir": "lib/Android"
+        },
+        {
+            "dir": "lib/Android/debug"
+        },
+        {
+            "dir": "lib/Android/debug/Default"
+        },
+        {
+            "dir": "lib/Android/debug/Monolithic"
+        },
+        {
+            "dir": "lib/Android/release"
+        },
+        {
+            "dir": "lib/Android/release/Default"
+        },
+        {
+            "dir": "lib/Android/release/Monolithic"
+        },
+        {
+            "dir": "lib/Linux"
+        },
+        {
+            "dir": "lib/Linux/debug"
+        },
+        {
+            "dir": "lib/Linux/debug/Default"
+        },
+        {
+            "dir": "lib/Linux/debug/Monolithic"
+        },
+        {
+            "dir": "lib/Linux/release"
+        },
+        {
+            "dir": "lib/Linux/release/Default"
+        },
+        {
+            "dir": "lib/Linux/release/Monolithic"
+        },
+        {
+            "dir": "lib/Mac"
+        },
+        {
+            "dir": "lib/Mac/debug"
+        },
+        {
+            "dir": "lib/Mac/debug/Default"
+        },
+        {
+            "dir": "lib/Mac/debug/Monolithic"
+        },
+        {
+            "dir": "lib/Mac/release"
+        },
+        {
+            "dir": "lib/Mac/release/Default"
+        },
+        {
+            "dir": "lib/Mac/release/Monolithic"
+        },
+        {
+            "dir": "lib/Windows"
+        },
+        {
+            "dir": "lib/Windows/debug"
+        },
+        {
+            "dir": "lib/Windows/debug/Default"
+        },
+        {
+            "dir": "lib/Windows/debug/Monolithic"
+        },
+        {
+            "dir": "lib/Windows/release"
+        },
+        {
+            "dir": "lib/Windows/release/Default"
+        },
+        {
+            "dir": "lib/Windows/release/Monolithic"
+        },
+        {
+            "dir": "lib/iOS"
+        },
+        {
+            "dir": "lib/iOS/debug"
+        },
+        {
+            "dir": "lib/iOS/debug/Default"
+        },
+        {
+            "dir": "lib/iOS/debug/Monolithic"
+        },
+        {
+            "dir": "lib/iOS/release"
+        },
+        {
+            "dir": "lib/iOS/release/Default"
+        },
+        {
+            "dir": "lib/iOS/release/Monolithic"
+        }
+    ]
+}

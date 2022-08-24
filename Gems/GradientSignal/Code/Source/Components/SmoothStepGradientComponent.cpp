@@ -133,15 +133,19 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SmoothStepGradientRequestBus::Handler::BusConnect(GetEntityId());
         SmoothStepRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SmoothStepGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         SmoothStepGradientRequestBus::Handler::BusDisconnect();
         SmoothStepRequestBus::Handler::BusDisconnect();
     }
@@ -168,6 +172,8 @@ namespace GradientSignal
 
     float SmoothStepGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const float value = m_configuration.m_gradientSampler.GetValue(sampleParams);
         return m_configuration.m_smoothStep.GetSmoothedValue(value);
     }
@@ -179,6 +185,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         m_configuration.m_gradientSampler.GetValues(positions, outValues);
         m_configuration.m_smoothStep.GetSmoothedValues(outValues);
@@ -196,7 +204,13 @@ namespace GradientSignal
 
     void SmoothStepGradientComponent::SetFallOffRange(float range)
     {
-        m_configuration.m_smoothStep.m_falloffRange = range;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffRange = range;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -207,7 +221,13 @@ namespace GradientSignal
 
     void SmoothStepGradientComponent::SetFallOffStrength(float strength)
     {
-        m_configuration.m_smoothStep.m_falloffStrength = strength;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffStrength = strength;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -218,7 +238,13 @@ namespace GradientSignal
 
     void SmoothStepGradientComponent::SetFallOffMidpoint(float midpoint)
     {
-        m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_smoothStep.m_falloffMidpoint = midpoint;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

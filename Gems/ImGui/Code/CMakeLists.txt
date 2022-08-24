@@ -8,7 +8,7 @@
 
 set(config_base_defines $<IF:$<CONFIG:release>,IMGUI_DISABLED,IMGUI_ENABLED>)
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # This library is the 3rdParty imgui that is in the Gem's External
 ly_add_target(

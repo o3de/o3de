@@ -33,13 +33,13 @@ namespace ScriptEvents
 
         // Internal::BindingRequestBus
         void Bind(const BindingParameters&) override;
-        void Connect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler) override;
-        void Disconnect(const AZ::BehaviorValueParameter* address, ScriptEventsHandler* handler) override;
+        void Connect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler) override;
+        void Disconnect(const AZ::BehaviorArgument* address, ScriptEventsHandler* handler) override;
         void RemoveHandler(ScriptEventsHandler* handler) override;
         ////
 
         // Behavior classes have a hash identifier that we will use to bind script events
-        size_t GetAddressHash(const AZ::BehaviorValueParameter* address);
+        size_t GetAddressHash(const AZ::BehaviorArgument* address);
 
         // The equality operator method for the script event's address type (type must provide this operator to be used as script event address)
         AZ::BehaviorMethod* m_equalityOperatorMethod;

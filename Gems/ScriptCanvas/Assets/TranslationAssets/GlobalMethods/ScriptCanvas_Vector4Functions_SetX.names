@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector4Functions_SetX",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "SetX",
+                "category": "Math/Vector4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector4Functions_SetX",
+                    "details": {
+                        "name": "SetX",
+                        "tooltip": "Returns a vector (X, Source.Y, Source.Z, Source.W)."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "X"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

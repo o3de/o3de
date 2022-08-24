@@ -34,7 +34,7 @@ namespace PhysX
                     "A dynamic joint constraint that constrains a rigid body to the joint with no free translation or rotation on any axis.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/fixed-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorFixedJointComponent::m_componentModeDelegate, "Component Mode", "Fixed Joint Component Mode.")
@@ -46,14 +46,14 @@ namespace PhysX
 
     void EditorFixedJointComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXJointService", 0x0d2f906f));
+        provided.push_back(AZ_CRC_CE("PhysicsJointService"));
     }
 
     void EditorFixedJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        required.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     void EditorFixedJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

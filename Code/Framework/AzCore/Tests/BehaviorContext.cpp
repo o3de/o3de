@@ -280,26 +280,26 @@ namespace UnitTest
 
             // Insert
             {
-                AZStd::array<AZ::BehaviorValueParameter, MaxParameterCount> params;
+                AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorValueParameter* paramFirst(params.begin());
-                AZ::BehaviorValueParameter* paramIter = paramFirst;
+                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramIter = paramFirst;
 
                 AZ::Outcome<void,void> insertOutcome;
-                AZ::BehaviorValueParameter result(&insertOutcome);
+                AZ::BehaviorArgument result(&insertOutcome);
 
                 paramIter->Set(&container);
                 ++paramIter;
 
                 // Index
-                AZ::BehaviorValueParameter indexParameter;
+                AZ::BehaviorArgument indexParameter;
                 AZ::u64 index = 0;
                 indexParameter.Set<AZ::u64>(&index);
                 paramIter->Set(indexParameter);
                 ++paramIter;
 
                 // Value to insert
-                AZ::BehaviorValueParameter strParameter;
+                AZ::BehaviorArgument strParameter;
                 AZStd::string str = "Hello";
                 strParameter.Set<AZStd::string>(&str);
                 paramIter->Set(strParameter);
@@ -313,16 +313,16 @@ namespace UnitTest
 
             // Size
             {
-                AZStd::array<AZ::BehaviorValueParameter, MaxParameterCount> params;
+                AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorValueParameter* paramFirst(params.begin());
-                AZ::BehaviorValueParameter* paramIter = paramFirst;
+                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);
                 ++paramIter;
 
                 int containerSize = 0;
-                AZ::BehaviorValueParameter result(&containerSize);
+                AZ::BehaviorArgument result(&containerSize);
 
                 sizeMethod->Call(paramFirst, static_cast<unsigned int>(params.size()), &result);
 
@@ -334,23 +334,23 @@ namespace UnitTest
 
             // AssignAt
             {
-                AZStd::array<AZ::BehaviorValueParameter, MaxParameterCount> params;
+                AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorValueParameter* paramFirst(params.begin());
-                AZ::BehaviorValueParameter* paramIter = paramFirst;
+                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);
                 ++paramIter;
 
                 // Index
-                AZ::BehaviorValueParameter indexParameter;
+                AZ::BehaviorArgument indexParameter;
                 AZ::u64 index = 4;
                 indexParameter.Set<AZ::u64>(&index);
                 paramIter->Set(indexParameter);
                 ++paramIter;
 
                 // Value to insert
-                AZ::BehaviorValueParameter strParameter;
+                AZ::BehaviorArgument strParameter;
                 AZStd::string str = "Hello";
                 strParameter.Set<AZStd::string>(&str);
                 paramIter->Set(strParameter);
@@ -362,16 +362,16 @@ namespace UnitTest
 
             // Size
             {
-                AZStd::array<AZ::BehaviorValueParameter, MaxParameterCount> params;
+                AZStd::array<AZ::BehaviorArgument, MaxParameterCount> params;
 
-                AZ::BehaviorValueParameter* paramFirst(params.begin());
-                AZ::BehaviorValueParameter* paramIter = paramFirst;
+                AZ::BehaviorArgument* paramFirst(params.begin());
+                AZ::BehaviorArgument* paramIter = paramFirst;
 
                 paramIter->Set(&container);
                 ++paramIter;
 
                 int containerSize = 0;
-                AZ::BehaviorValueParameter result(&containerSize);
+                AZ::BehaviorArgument result(&containerSize);
 
                 sizeMethod->Call(paramFirst, static_cast<unsigned int>(params.size()), &result);
 
@@ -646,4 +646,68 @@ namespace UnitTest
 
         behaviorClass->Destroy(instance);
     }
-}
+
+    class BroadcastEBusWithLambda : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        int AddValues(int a, int b)
+        {
+            return a + b;
+        }
+    };
+    using BroadcastEBusWithLambdaBus = AZ::EBus<BroadcastEBusWithLambda>;
+
+    TEST_F(BehaviorContextTestFixture, BehaviorContext_BindLambdaToBroadcastEBus_Compiles)
+    {
+        AZ::BehaviorContext bc;
+        bc.EBus<BroadcastEBusWithLambdaBus>("BroadcastEBusWithLambdaBus")
+            ->Event(
+                "TestBroadcast",
+                [](BroadcastEBusWithLambda* handler, int a, int b)
+                {
+                    handler->AddValues(a, b);
+                })
+            ->Event(
+                "TestBroadcastWithReturn",
+                [](BroadcastEBusWithLambda* handler, int a, int b) -> int
+                {
+                    return handler->AddValues(a, b);
+                })
+            ;
+    }
+
+    class EventEBusWithLambda : public AZ::EBusTraits
+    {
+    public:
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef int BusIdType;
+        int AddValues(int a, int b)
+        {
+            return a + b;
+        }
+    };
+    using EventEBusWithLambdaBus = AZ::EBus<EventEBusWithLambda>;
+
+    TEST_F(BehaviorContextTestFixture, BehaviorContext_BindLambdaToEventEBus_Compiles)
+    {
+        AZ::BehaviorContext bc;
+        bc.EBus<EventEBusWithLambdaBus>("EventEBusWithLambdaBus")
+            ->Event(
+                "TestEvent",
+                [](EventEBusWithLambda* handler, int a, int b)
+                {
+                    handler->AddValues(a, b);
+                })
+            ->Event(
+                "TestEventWithReturn",
+                [](EventEBusWithLambda* handler, int a, int b) -> int
+                {
+                    return handler->AddValues(a, b);
+                })
+            ;
+    }
+
+} // namespace UnitTest

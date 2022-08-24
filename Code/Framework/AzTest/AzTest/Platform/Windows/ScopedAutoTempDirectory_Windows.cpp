@@ -18,7 +18,6 @@ namespace AZ::Test
 {
     ScopedAutoTempDirectory::ScopedAutoTempDirectory()
     {
-        using UuidString = AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>;
         constexpr DWORD bufferSize = static_cast<DWORD>(AZ::IO::MaxPathLength);
 
         wchar_t tempDirW[AZ::IO::MaxPathLength]{};
@@ -32,7 +31,7 @@ namespace AZ::Test
         {
             AZ::IO::FixedMaxPath testPath = tempDirectoryRoot /
                 AZ::IO::FixedMaxPathString::format("UnitTest-%s",
-                    AZ::Uuid::CreateRandom().ToString<UuidString>().c_str());
+                    AZ::Uuid::CreateRandom().ToFixedString().c_str());
             // Try to create the temp directory if it doesn't exist
             if (!AZ::IO::SystemFile::Exists(testPath.c_str()) && AZ::IO::SystemFile::CreateDir(testPath.c_str()))
             {

@@ -21,7 +21,7 @@ namespace AzNetworking
     static const bool net_TcpUseEncryption = false;
 #endif
 
-    TcpNetworkInterface::TcpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
+    TcpNetworkInterface::TcpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread)
         : m_name(name)
         , m_trustZone(trustZone)
         , m_connectionListener(connectionListener)
@@ -33,7 +33,7 @@ namespace AzNetworking
     TcpNetworkInterface::~TcpNetworkInterface()
     {
         FlushQueuedRemoves();
-        m_listenThread.StopListening(*this);
+        StopListening();
     }
 
     AZ::Name TcpNetworkInterface::GetName() const
@@ -72,12 +72,12 @@ namespace AzNetworking
         return m_listenThread.Listen(*this);
     }
 
-    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress)
+    ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress, uint16_t localPort)
     {
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
         AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, m_trustZone, net_TcpUseEncryption);
         AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Invalid role for connection");
-        connection->Connect();
+        connection->Connect(localPort);
 
         TcpSocket* tcpSocket = connection->GetTcpSocket();
         if (tcpSocket == nullptr)
@@ -85,7 +85,13 @@ namespace AzNetworking
             return InvalidConnectionId;
         }
 
-        if (!(tcpSocket->IsOpen() && m_tcpSocketManager.AddSocket(tcpSocket->GetSocketFd())))
+        if (!tcpSocket->IsOpen())
+        {
+            AZLOG(NET_TcpTraffic, "Failed to bind new incoming connection to socket manager, socket already closed.");
+            return InvalidConnectionId;
+        }
+
+        if (!m_tcpSocketManager.AddSocket(tcpSocket->GetSocketFd()))
         {
             tcpSocket->Close();
             AZLOG_ERROR("Failed to bind new incoming connection to socket manager, failed fd: %d", static_cast<int32_t>(tcpSocket->GetSocketFd()));
@@ -99,7 +105,7 @@ namespace AzNetworking
         return connectionId;
     }
 
-    void TcpNetworkInterface::Update([[maybe_unused]] AZ::TimeMs deltaTimeMs)
+    void TcpNetworkInterface::Update()
     {
         const AZ::TimeMs startTimeMs = AZ::GetElapsedTimeMs();
 
@@ -172,6 +178,16 @@ namespace AzNetworking
         return m_timeoutMs;
     }
 
+    bool TcpNetworkInterface::IsEncrypted() const
+    {
+        return net_TcpUseEncryption;
+    }
+
+    bool TcpNetworkInterface::IsOpen() const
+    {
+        return m_listenThread.GetSocketCount() > 0;
+    }
+
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)
     {
         m_pendingConnections.PushBackItem(pendingConnection);
@@ -238,7 +254,13 @@ namespace AzNetworking
 
     void TcpNetworkInterface::AddConnectionHelper(ConnectionId connectionId, const IpAddress& remoteAddress, TcpSocket& tcpSocket)
     {
-        if (!(tcpSocket.IsOpen() && m_tcpSocketManager.AddSocket(tcpSocket.GetSocketFd())))
+        if (!tcpSocket.IsOpen())
+        {
+            AZLOG(NET_TcpTraffic, "Failed to bind new incoming connection to socket manager, socket already closed.");
+            return;
+        }
+
+        if(!m_tcpSocketManager.AddSocket(tcpSocket.GetSocketFd()))
         {
             tcpSocket.Close();
             AZLOG_ERROR("Failed to bind new incoming connection to socket manager, failed fd: %d", static_cast<int32_t>(tcpSocket.GetSocketFd()));

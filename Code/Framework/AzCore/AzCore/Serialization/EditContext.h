@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/typetraits/is_function.h>
 
@@ -236,6 +237,9 @@ namespace AZ
              */
             ClassBuilder*  ClassElement(Crc32 elementIdCrc, const char* description);
 
+            //! Helper method to end the current group (if any). This is shorthand for:
+            //!     ->ClassElement(AZ::Edit::ClassElements::Group, "")
+            ClassBuilder* EndGroup();
 
              /**
              * Declare element with attributes that belong to the class SerializeContext::Class, this is a logical structure, you can have one or more GroupElementToggles.
@@ -408,6 +412,41 @@ namespace AZ
             EnumBuilder* Value(const char* name, E value);
         };
 
+        /// Analog to SerializeContext::EnumerateInstanceCallContext for enumerating an EditContext
+        struct EnumerateInstanceCallContext
+        {
+            AZ_TYPE_INFO(EnumerateInstanceCallContext, "{FCC1DB4B-72BD-4D78-9C23-C84B91589D33}");
+            EnumerateInstanceCallContext(
+                const SerializeContext::BeginElemEnumCB& beginElemCB,
+                const SerializeContext::EndElemEnumCB& endElemCB,
+                const EditContext* context,
+                unsigned int accessflags,
+                SerializeContext::ErrorHandler* errorHandler);
+
+            SerializeContext::BeginElemEnumCB m_beginElemCB; ///< Optional callback when entering an element's hierarchy.
+            SerializeContext::EndElemEnumCB m_endElemCB; ///< Optional callback when exiting an element's hierarchy.
+            unsigned int m_accessFlags; ///< Data access flags for the enumeration, see \ref EnumerationAccessFlags.
+            SerializeContext::ErrorHandler* m_errorHandler; ///< Optional user error handler.
+
+            SerializeContext::IDataContainer::ElementCB
+                m_elementCallback; ///< Pre-bound functor computed internally to avoid allocating closures during traversal.
+            SerializeContext::ErrorHandler m_defaultErrorHandler; ///< If no custom error handler is provided, the context provides one.
+        };
+
+        /**
+         * Call this function to traverse an instance's hierarchy by providing address and classId, if you have the typed pointer you can just call \ref EnumerateObject
+         * \param ptr pointer to the object for traversal
+         * \param classId classId of object for traversal
+         * \param beginElemCB callback when we begin/open a child element
+         * \param endElemCB callback when we end/close a child element
+         * \param accessFlags \ref EnumerationAccessFlags
+         * \param classData pointer to the class data for the traversed object to avoid calling FindClassData(classId) (can be null)
+         * \param classElement pointer to class element (null for root elements)
+         * \param errorHandler optional pointer to the error handler.
+         */
+        bool EnumerateInstanceConst(EnumerateInstanceCallContext* callContext, const void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) const;
+        bool EnumerateInstance(EnumerateInstanceCallContext* callContext, void* ptr, const Uuid& classId, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement) const;
+
     private:
         typedef AZStd::list<Edit::ClassData> ClassDataListType;
         typedef AZStd::unordered_map<AZ::Uuid, Edit::ElementData> EnumDataMapType;
@@ -468,8 +507,7 @@ namespace AZ
             }
             AZ_Assert(serializeClassData, "Class %s is not reflected in the serializer yet! Edit context can be set after the class is reflected!", AzTypeInfo<T>::Name());
 
-            m_classData.push_back();
-            Edit::ClassData& editClassData = m_classData.back();
+            Edit::ClassData& editClassData = m_classData.emplace_back();
             editClassData.m_name = displayName;
             editClassData.m_description = description;
             editClassData.m_editDataProvider = nullptr;
@@ -517,8 +555,7 @@ namespace AZ
     {
         if (IsValid())
         {
-            m_classElement->m_elements.push_back();
-            Edit::ElementData& ed = m_classElement->m_elements.back();
+            Edit::ElementData& ed = m_classElement->m_elements.emplace_back();
             ed.m_elementId = elementIdCrc;
             ed.m_description = description;
             m_editElement = &ed;
@@ -533,6 +570,13 @@ namespace AZ
     inline EditContext::ClassBuilder* EditContext::ClassBuilder::GroupElementToggle(const char* name, T memberVariable)
     {
         return DataElement(AZ::Edit::ClassElements::Group, memberVariable, name, name, "");
+    }
+
+    inline EditContext::ClassBuilder*
+    EditContext::ClassBuilder::EndGroup()
+    {
+        // Starting a new group with no description ends the current group
+        return ClassElement(AZ::Edit::ClassElements::Group, "");
     }
 
     //=========================================================================
@@ -628,8 +672,7 @@ namespace AZ
         // We cannot continue past this point, we must alert the user to fix their serialization config and crash
         AZ_Assert(classElement, "Class element for editor data element reflection '%s' was NOT found in the serialize context! This member MUST be serializable to be editable!", name);
 
-        m_classElement->m_elements.push_back();
-        Edit::ElementData* ed = &m_classElement->m_elements.back();
+        Edit::ElementData* ed = &m_classElement->m_elements.emplace_back();
         
         classElement->m_editData = ed;
         m_editElement = ed;
@@ -788,6 +831,18 @@ namespace AZ
             UnderlyingType m_value;
             AZStd::string m_description;
         };
+
+        // Automatically generate a list of EnumConstant from AzEnumTraits
+        template<typename EnumType, typename UnderlyingType = AZStd::underlying_type_t<EnumType>>
+        AZStd::vector<EnumConstant<UnderlyingType>> GetEnumConstantsFromTraits()
+        {
+            AZStd::vector<EnumConstant<UnderlyingType>> enumValues;
+            for (const auto& member : AZ::AzEnumTraits<EnumType>::Members)
+            {
+                enumValues.emplace_back(aznumeric_cast<UnderlyingType>(member.m_value), member.m_string.data());
+            }
+            return enumValues;
+        }
     } // namespace Edit
 
     //=========================================================================

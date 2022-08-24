@@ -210,17 +210,11 @@ namespace UnitTest
     public:
         void SetupEnvironment() override
         {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-            AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-            AZ::Environment::Attach(inst);
-            m_createdAllocator = false;
-#else
             if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
             {
                 AZ::AllocatorInstance<AZ::OSAllocator>::Create(); // used by the bus
                 m_createdAllocator = true;
             }
-#endif
             BusConnect();
 
             m_environmentSetup = true;

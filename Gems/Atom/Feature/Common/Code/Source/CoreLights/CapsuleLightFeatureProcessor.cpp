@@ -173,6 +173,22 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void CapsuleLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAffectsGI().");
+
+            m_capsuleLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void CapsuleLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_capsuleLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void CapsuleLightFeatureProcessor::SetCapsuleData(LightHandle handle, const CapsuleLightData& data)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetCapsuleData().");

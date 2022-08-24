@@ -52,7 +52,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
             ],
@@ -63,19 +63,12 @@
                         "Pass": "DiffuseSpecularMergePass",
                         "Attachment": "Output"
                     }
-                },
-                {
-                    "LocalSlot": "DiffuseProbeGridVisualization",
-                    "AttachmentRef": {
-                        "Pass": "DiffuseGlobalIlluminationPass",
-                        "Attachment":  "VisualizationOutput"
-                    }
                 }
             ],
             "PassRequests": [
                 {
-                    "Name": "ForwardMSAAPass",
-                    "TemplateName": "ForwardMSAAPassTemplate",
+                    "Name": "Forward",
+                    "TemplateName": "ForwardPassTemplate",
                     "Connections": [
                         // Inputs...
                         {
@@ -139,8 +132,8 @@
                     }
                 },
                 {
-                    "Name": "ForwardSubsurfaceMSAAPass",
-                    "TemplateName": "ForwardSubsurfaceMSAAPassTemplate",
+                    "Name": "ForwardSubsurface",
+                    "TemplateName": "ForwardSubsurfacePassTemplate",
                     "Connections": [
                         // Inputs...
                         {
@@ -196,35 +189,35 @@
                         {
                             "LocalSlot": "DiffuseOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DiffuseOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularOutput"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularF0Output",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularF0Output"
                             }
                         },
                         {
                             "LocalSlot": "NormalOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
                             }
                         }
@@ -239,34 +232,41 @@
                     }
                 },
                 {
-                    "Name": "DiffuseGlobalIlluminationPass",
-                    "TemplateName": "DiffuseGlobalIlluminationPassTemplate",
+                    "Name": "DiffuseGlobalFullscreenPass",
+                    "TemplateName": "DiffuseGlobalFullscreenPassTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "DiffuseInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DiffuseOutput"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "NormalInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthStencilTextureInput",
+                            "AttachmentRef": {
+                                "Pass": "Forward",
+                                "Attachment": "DepthStencilInputOutput"
                             }
                         },
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DepthStencilInputOutput"
                             }
                         }
@@ -280,35 +280,35 @@
                         {
                             "LocalSlot": "NormalInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularF0Input",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularF0Output"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DepthStencilInputOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularOutput"
                             }
                         }
@@ -343,20 +343,62 @@
                     ]
                 },
                 {
-                    "Name": "ReflectionCompositePass",
-                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Name": "SkyAtmosphereParentPass",
+                    "TemplateName": "SkyAtmosphereParentTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "ReflectionInput",
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyBoxPass",
+                                "Attachment": "SpecularInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ReflectionInputOutput",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
                                 "Attachment": "ReflectionInputOutput"
                             }
                         },
                         {
-                            "LocalSlot": "SpecularInputOutput",
+                            "LocalSlot": "SkyBoxDepth",
                             "AttachmentRef": {
                                 "Pass": "SkyBoxPass",
+                                "Attachment": "SkyBoxDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ReflectionCompositePass",
+                    "TemplateName": "ReflectionCompositePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "ReflectionInput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
+                                "Attachment": "ReflectionInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SpecularInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "SkyAtmosphereParentPass",
                                 "Attachment": "SpecularInputOutput"
                             }
                         },
@@ -384,7 +426,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DiffuseGlobalIlluminationPass",
+                                "Pass": "DiffuseGlobalFullscreenPass",
                                 "Attachment": "DiffuseInputOutput"
                             }
                         }
@@ -431,7 +473,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "ForwardSubsurfaceMSAAPass",
+                                "Pass": "ForwardSubsurface",
                                 "Attachment": "ScatterDistanceOutput"
                             }
                         }

@@ -19,24 +19,24 @@ namespace AWSClientAuth
     }
 
     AuthenticationTokens::AuthenticationTokens(const AuthenticationTokens& other)
+        : m_accessToken(other.m_accessToken)
+        , m_refreshToken(other.m_refreshToken)
+        , m_openIdToken(other.m_openIdToken)
+        , m_providerName(other.m_providerName)
+        , m_tokensExpireTimeSeconds(other.m_tokensExpireTimeSeconds)
+        , m_tokensExpireTimeStamp(other.m_tokensExpireTimeStamp)
     {
-        m_accessToken = other.m_accessToken;
-        m_refreshToken = other.m_refreshToken;
-        m_openIdToken = other.m_openIdToken;
-        m_providerName = other.m_providerName;
-        m_tokensExpireTimeSeconds = other.m_tokensExpireTimeSeconds;
-        m_tokensExpireTimeStamp = other.m_tokensExpireTimeStamp;
     }
 
     AuthenticationTokens::AuthenticationTokens(
-        const AZStd::string& accessToken, const AZStd::string& refreshToken, const AZStd::string& openidToken, const ProviderNameEnum& providerName, int tokensExpireTimeSeconds)
+        const AZStd::string& accessToken, const AZStd::string& refreshToken, const AZStd::string& openIdToken, const ProviderNameEnum& providerName, int tokensExpireTimeSeconds)
+        : m_accessToken(accessToken)
+        , m_refreshToken(refreshToken)
+        , m_openIdToken(openIdToken)
+        , m_providerName(providerName)
+        , m_tokensExpireTimeSeconds(tokensExpireTimeSeconds)
+        , m_tokensExpireTimeStamp(AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(tokensExpireTimeSeconds))
     {
-        m_accessToken = accessToken;
-        m_refreshToken = refreshToken;
-        m_openIdToken = openidToken;
-        m_providerName = providerName;
-        m_tokensExpireTimeSeconds = tokensExpireTimeSeconds;
-        m_tokensExpireTimeStamp =  AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(tokensExpireTimeSeconds);
     }
 
     //! Compares current time stamp to expired time stamp.

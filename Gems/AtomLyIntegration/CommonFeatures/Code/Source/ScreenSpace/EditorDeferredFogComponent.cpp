@@ -129,8 +129,8 @@ namespace AZ
                             "Octaves Blend Factor", "The blend factor between the noise octaves")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.2f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 0.8f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 1.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ;
                 }

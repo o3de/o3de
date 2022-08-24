@@ -14,6 +14,10 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <QTemporaryDir>
+#include <QDir>
+#include <QString>
+
 // the simple stats capture system has a trivial interface and only writes to printf.
 // So the simplest tests we can do is make sure it only asserts when it should
 // and doesn't assert in cases when it shouldn't, and that the stats are reasonable
@@ -46,12 +50,42 @@ TEST_F(AssetProcessorTest, StatsCaptureTest_DoubleInitializeIsAnAssert)
     AssetProcessor::StatsCapture::Shutdown();
 }
 
+class StatsCaptureMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
+{
+public:
+    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
+};
+
 class StatsCaptureOutputTest : public AssetProcessorTest, public AZ::Debug::TraceMessageBus::Handler
 {
+private:
+    //! These private members establish the connection to a temporary asset database, which StatsCapture may persist stat entries to.
+    QTemporaryDir m_temporaryDir;
+    AZStd::string m_temporaryDatabasePath;
+    testing::NiceMock<StatsCaptureMockDatabaseLocationListener> m_databaseLocationListener;
+    AssetDatabaseConnection m_dbConnection;
+    friend class GTEST_TEST_CLASS_NAME_(StatsCaptureOutputTest, StatsCaptureTest_PersistToDb);
+
 public:
     void SetUp() override
     {
         AssetProcessorTest::SetUp();
+
+        //! Create a temporary directory to save temporary asset database.
+        //! Setup listener so AseetDatabaseConnection will connect to that temporary database.
+        {
+            using namespace testing;
+
+            QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(QDir(m_temporaryDir.path()).canonicalPath());
+            m_temporaryDatabasePath = QDir(canonicalTempDirPath).absoluteFilePath("test_database.sqlite").toUtf8().data();
+
+            m_databaseLocationListener.BusConnect();
+            ON_CALL(m_databaseLocationListener, GetAssetDatabaseLocation(_))
+                .WillByDefault(DoAll(SetArgReferee<0>(m_temporaryDatabasePath.c_str()), Return(true)));
+
+        }
+
+        m_dbConnection.OpenDatabase();
         AssetProcessor::StatsCapture::Initialize();
     }
     
@@ -75,6 +109,7 @@ public:
         m_gatheredMessages = {};
         
         AssetProcessor::StatsCapture::Shutdown();
+        m_databaseLocationListener.BusDisconnect();
         AssetProcessorTest::TearDown();
     }
     
@@ -196,5 +231,62 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_Sanity)
     EXPECT_TRUE(foundFoo2) << "The expected CreateJobs.foo2.mybuilder2 did not appear in the output";
 }
 
+// If BeginCaptureStat was called for a certain statName, EndCaptureStat returns with a AZStd::optional containing just-measured duration as
+// its value. If BeginCaptureStat was not called for a certain statName, EndCaptureStat returns with a AZStd::optional without a value.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_ReturnsLastDuration)
+{
+    AssetProcessor::StatsCapture::BeginCaptureStat("O3");
+    auto o3Result = AssetProcessor::StatsCapture::EndCaptureStat("O3");
+    auto deResult = AssetProcessor::StatsCapture::EndCaptureStat("DE");
+    EXPECT_TRUE(o3Result.has_value());
+    EXPECT_FALSE(deResult.has_value());
 }
+
+// Stat does not exist in asset database if EndCaptureStat's persistToDb argument is not specified or is false, and exist in asset database if
+// persistToDb is true.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_PersistToDb)
+{
+    AZ::u32 statEntryCount{ 0 };
+    auto countQueriedStatEntry = [&statEntryCount]([[maybe_unused]] AzToolsFramework::AssetDatabase::StatDatabaseEntry& entry)
+    {
+        ++statEntryCount;
+        return true;
+    };
+
+    AZStd::vector<AzToolsFramework::AssetDatabase::StatDatabaseEntry> statEntryContainer;
+    auto getQueriedStatEntry = [&statEntryContainer]([[maybe_unused]] AzToolsFramework::AssetDatabase::StatDatabaseEntry& entry)
+    {
+        statEntryContainer.emplace_back() = AZStd::move(entry);
+        return true;
+    };
+
+    // persistToDb argument is not specified
+    AssetProcessor::StatsCapture::BeginCaptureStat("Open");
+    AssetProcessor::StatsCapture::EndCaptureStat("Open");
+
+    statEntryCount = 0;
+    m_dbConnection.QueryStatsTable(countQueriedStatEntry);
+    EXPECT_EQ(statEntryCount, 0);
+
+    // persistToDb argument is false
+    AssetProcessor::StatsCapture::BeginCaptureStat("3D");
+    AssetProcessor::StatsCapture::EndCaptureStat("3D", false);
+    statEntryCount = 0;
+
+    m_dbConnection.QueryStatsTable(countQueriedStatEntry);
+    EXPECT_EQ(statEntryCount, 0);
+
+    // persistToDb argument is true
+    AssetProcessor::StatsCapture::BeginCaptureStat("Engine");
+    auto statResult = AssetProcessor::StatsCapture::EndCaptureStat("Engine", true);
+    ASSERT_TRUE(statResult.has_value());
+
+    statEntryContainer.clear();
+    m_dbConnection.QueryStatsTable(getQueriedStatEntry);
+    ASSERT_EQ(statEntryContainer.size(), 1);
+
+    EXPECT_EQ(statEntryContainer.at(0).m_statValue, aznumeric_cast<AZ::s64>(statResult.value()));
+}
+
+} // namespace AssetProcessor
 

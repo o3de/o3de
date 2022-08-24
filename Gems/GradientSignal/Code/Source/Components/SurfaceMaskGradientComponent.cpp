@@ -127,15 +127,24 @@ namespace GradientSignal
     void SurfaceMaskGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         SurfaceMaskGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void SurfaceMaskGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         SurfaceMaskGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -181,15 +190,16 @@ namespace GradientSignal
             return;
         }
 
+        AZStd::shared_lock lock(m_queryMutex);
+
         // Initialize all our output values to 0.
         AZStd::fill(outValues.begin(), outValues.end(), 0.0f);
 
         if (!m_configuration.m_surfaceTagList.empty())
         {
             SurfaceData::SurfacePointList points;
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, positions, m_configuration.m_surfaceTagList,
-                points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(
+                positions, m_configuration.m_surfaceTagList, points);
 
             // For each position, get the max surface weight that matches our filter and that appears at that position.
             points.EnumeratePoints(
@@ -225,13 +235,58 @@ namespace GradientSignal
 
     void SurfaceMaskGradientComponent::RemoveTag(int tagIndex)
     {
-        m_configuration.RemoveTag(tagIndex);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.RemoveTag(tagIndex);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
     void SurfaceMaskGradientComponent::AddTag(AZStd::string tag)
     {
-        m_configuration.AddTag(tag);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.AddTag(tag);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
+
+    void SurfaceMaskGradientComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds,
+        const SurfaceData::SurfaceTagSet& changedSurfaceTags)
+    {
+        bool changedTagAffectsGradient = false;
+
+        // Only hold the lock while we're comparing the surface tags. Don't hold onto it during the OnCompositionChanged call,
+        // because that can execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::shared_lock lock(m_queryMutex);
+            for (auto& tag : m_configuration.m_surfaceTagList)
+            {
+                if (changedSurfaceTags.contains(tag))
+                {
+                    changedTagAffectsGradient = true;
+                    break;
+                }
+            }
+        }
+
+        if (changedTagAffectsGradient)
+        {
+            AZ::Aabb expandedBounds(oldBounds);
+            expandedBounds.AddAabb(newBounds);
+
+            LmbrCentral::DependencyNotificationBus::Event(
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedBounds);
+        }
+    }
+
 }

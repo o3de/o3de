@@ -1,0 +1,18 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TerrainMacroClipmapGenerationPassTemplate",
+            "PassClass": "TerrainMacroClipmapGenerationPass",
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Terrain/TerrainMacroClipmapGenerationPass.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

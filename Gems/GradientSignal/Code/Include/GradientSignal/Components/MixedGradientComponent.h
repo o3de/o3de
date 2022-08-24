@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/MixedGradientRequestBus.h>
 #include <GradientSignal/GradientSampler.h>
@@ -141,5 +141,6 @@ namespace GradientSignal
 
         MixedGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

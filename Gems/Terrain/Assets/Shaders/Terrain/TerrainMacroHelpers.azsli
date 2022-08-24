@@ -1,0 +1,88 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+static const uint InvalidMacroMaterialRef = 0x0000FFFF;
+
+void SampleMacroTexture(float2 worldPosition, float2 positionDdx, float2 positionDdy, out float3 macroColor, inout float3 macroNormal, out bool hasNormal)
+{
+    macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    hasNormal = false;
+
+    // ------- Macro Data -------
+    int macroGridResolution = TerrainSrg::m_macroMaterialGridInfo.m_tileCount1D;
+    float macroTileSize = TerrainSrg::m_macroMaterialGridInfo.m_tileSize;
+    int2 macroTileWorldCoord = int2(floor(worldPosition / macroTileSize));
+    uint2 macroLocalCoord = ((macroTileWorldCoord % macroGridResolution) + macroGridResolution) % macroGridResolution;
+
+    uint macroTileIndex = macroGridResolution * macroLocalCoord.y + macroLocalCoord.x;
+    static const uint NumMacroMaterialsPerTile = 4;
+
+    TerrainSrg::MacroMaterialRefs refs = TerrainSrg::m_macroMaterialGridRefs[macroTileIndex];
+    uint materialIndices[4] = 
+    {
+        refs.m_index01 & 0x0000FFFF,
+        refs.m_index01 >> 16,
+        refs.m_index23 & 0x0000FFFF,
+        refs.m_index23 >> 16,
+    };
+    
+    for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
+    {
+        uint ref = materialIndices[i];
+        if (ref == InvalidMacroMaterialRef)
+        {
+            break; // No more macro materials for this tile
+        }
+
+        TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[ref];
+        if (any(worldPosition < macroMaterialData.m_boundsMin) || any (worldPosition > macroMaterialData.m_boundsMax))
+        {
+            continue; // Macro material exists for this tile but is out of the bounds of this particular position
+        }
+
+        float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
+        macroUvSize.x = -macroUvSize.x;
+        float2 macroUv = (macroMaterialData.m_boundsMin - worldPosition) / macroUvSize;
+
+        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
+        // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
+        float2 macroUvScale = worldPosition / macroUvSize;
+        float2 ddx_macroUv = positionDdx / macroUvSize;
+        float2 ddy_macroUv = positionDdx / macroUvSize;
+
+        if (macroMaterialData.m_colorMapId != 0xFFFF)
+        {
+            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
+            macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+        }
+
+        hasNormal = macroMaterialData.m_normalMapId != 0xFFFF;
+        if (hasNormal)
+        {
+            bool flipX = macroMaterialData.m_flags & 1;
+            bool flipY = macroMaterialData.m_flags & 2;
+            float factor = macroMaterialData.m_normalFactor;
+
+            // Because of lacking derivatives in compute shader, manually sample and convert
+            // Equivalent to SampleNormalXY in <../Materials/Types/MaterialInputs/NormalInput.azsli>
+            float2 sampledValue = TerrainSrg::m_textures[macroMaterialData.m_normalMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).xy;
+#if AZ_TRAIT_ASTC_COMPRESSION
+            //Astc compression is unorm (0 to 1) so we need to accomodate for that. We are using BC5_SNORM (-1 - +1)for other platforms like pc
+            //[GFX TODO][ATOM-13435] - Look into moving this offline as part of image processing.
+            sampledValue =  (sampledValue * 2) - 1;
+#endif
+            sampledValue.x *= flipY ? -1.0 : 1.0;
+            sampledValue.y *= flipX ? -1.0 : 1.0;
+            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
+        }
+        break;
+    }
+}

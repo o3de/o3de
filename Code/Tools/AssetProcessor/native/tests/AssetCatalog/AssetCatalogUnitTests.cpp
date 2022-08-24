@@ -14,7 +14,7 @@
 #include <QCoreApplication>
 
 #include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
-#include <native/resourcecompiler/RCBuilder.h> // for defines like BUILDER_ID_RC
+#include <native/resourcecompiler/RCBuilder.h>
 
 #include "AssetManager/FileStateCache.h"
 
@@ -247,38 +247,27 @@ namespace AssetProcessor
 
             config.AddMetaDataType("exportsettings", QString());
 
-            AZ::Uuid buildIDRcLegacy;
-            BUILDER_ID_RC.GetUuid(buildIDRcLegacy);
-
             AssetRecognizer rec;
-            AssetPlatformSpec specpc;
-            AssetPlatformSpec specandroid;
 
-            specandroid.m_extraRCParams = "somerandomparam";
             rec.m_name = "random files";
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", specpc);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
             config.AddRecognizer(rec);
-
-            specpc.m_extraRCParams = ""; // blank must work
-            specandroid.m_extraRCParams = "testextraparams";
 
             const char* builderTxt1Name = "txt files";
             rec.m_name = builderTxt1Name;
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", specpc);
-            rec.m_platformSpecs.insert("android", specandroid);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
 
             config.AddRecognizer(rec);
 
             // Ignore recognizer
-            AssetPlatformSpec ignore_spec;
-            ignore_spec.m_extraRCParams = "skip";
             AssetRecognizer ignore_rec;
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            ignore_rec.m_platformSpecs.insert("pc", specpc);
-            ignore_rec.m_platformSpecs.insert("android", ignore_spec);
+            ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;

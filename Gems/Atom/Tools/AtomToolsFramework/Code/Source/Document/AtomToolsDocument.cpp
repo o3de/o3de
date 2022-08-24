@@ -93,7 +93,7 @@ namespace AtomToolsFramework
         m_absolutePath = loadPath;
         if (!ValidateDocumentPath(m_absolutePath))
         {
-            AZ_Error("AtomToolsDocument", false, "Document path is not valid: '%s'.", m_absolutePath.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document path is invalid, not in a supported project or gem folder, or marked as non-editable: '%s'.", m_absolutePath.c_str());
             return OpenFailed();
         }
 
@@ -147,7 +147,7 @@ namespace AtomToolsFramework
         m_savePathNormalized = m_absolutePath;
         if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document path is invalid, not in a supported project or gem folder, or marked as non-editable: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -177,7 +177,7 @@ namespace AtomToolsFramework
         m_savePathNormalized = savePath;
         if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document path is invalid, not in a supported project or gem folder, or marked as non-editable: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 
@@ -201,7 +201,7 @@ namespace AtomToolsFramework
         m_savePathNormalized = savePath;
         if (!ValidateDocumentPath(m_savePathNormalized))
         {
-            AZ_Error("AtomToolsDocument", false, "Document save path is not valid: '%s'.", m_savePathNormalized.c_str());
+            AZ_Error("AtomToolsDocument", false, "Document path is invalid, not in a supported project or gem folder, or marked as non-editable: '%s'.", m_savePathNormalized.c_str());
             return SaveFailed();
         }
 

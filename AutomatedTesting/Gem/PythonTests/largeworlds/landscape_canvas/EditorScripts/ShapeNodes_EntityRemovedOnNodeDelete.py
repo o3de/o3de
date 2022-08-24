@@ -102,7 +102,9 @@ def ShapeNodes_EntityRemovedOnNodeDelete():
         'PolygonPrismShapeNode',
         'SphereShapeNode',
         'TubeShapeNode',
-        'DiskShapeNode'
+        'DiskShapeNode',
+        'AxisAlignedBoxShapeNode',
+        'ReferenceShapeNode'
     ]
 
     # Create nodes for all the shapes we support and check if the Entity is created

@@ -24,7 +24,7 @@ namespace AWSClientAuth
         AZ_TYPE_INFO(AuthenticationTokens, "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}");
         AuthenticationTokens();
         AuthenticationTokens(const AuthenticationTokens& other);
-        AuthenticationTokens(const AZStd::string& accessToken, const AZStd::string& refreshToken, const AZStd::string& openidToken
+        AuthenticationTokens(const AZStd::string& accessToken, const AZStd::string& refreshToken, const AZStd::string& openIdToken
             , const ProviderNameEnum& providerName, int tokensExpireTimeSeconds);
 
         //! Compares current time stamp to expired time stamp.

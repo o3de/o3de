@@ -13,170 +13,99 @@
 namespace Audio
 {
 #if !defined(AUDIO_RELEASE)
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CATLDebugNameStore::CATLDebugNameStore()
-        : m_bATLObjectsChanged(false)
-        , m_bATLTriggersChanged(false)
-        , m_bATLRtpcsChanged(false)
-        , m_bATLSwitchesChanged(false)
-        , m_bATLPreloadsChanged(false)
-        , m_bATLEnvironmentsChanged(false)
+    bool CATLDebugNameStore::AddAudioObject(const TAudioObjectID nObjectID, const char* const sName)
     {
+        return (m_cATLObjectNames.insert(AZStd::make_pair(nObjectID, sName)).second);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CATLDebugNameStore::~CATLDebugNameStore()
+    bool CATLDebugNameStore::AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName)
     {
-        // the containers only hold numbers and strings, no ATL specific objects,
-        // so there is no need to call the implementation to do the cleanup
+        return (m_cATLTriggerNames.insert(AZStd::make_pair(nTriggerID, sName)).second);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::SyncChanges(const CATLDebugNameStore& rOtherNameStore)
+    bool CATLDebugNameStore::AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName)
     {
-        if (rOtherNameStore.m_bATLObjectsChanged)
+        return (m_cATLRtpcNames.insert(AZStd::make_pair(nRtpcID, sName)).second);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    bool CATLDebugNameStore::AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName)
+    {
+        return (m_cATLSwitchNames.insert(AZStd::make_pair(nSwitchID, AZStd::make_pair(sName, TAudioSwitchStateMap()))).second);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    bool CATLDebugNameStore::AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName)
+    {
+        auto iter = m_cATLSwitchNames.find(nSwitchID);
+        if (iter != m_cATLSwitchNames.end())
         {
-            m_cATLObjectNames.clear();
-            m_cATLObjectNames.insert(rOtherNameStore.m_cATLObjectNames.begin(), rOtherNameStore.m_cATLObjectNames.end());
-            rOtherNameStore.m_bATLObjectsChanged = false;
+            return (iter->second.second.insert(AZStd::make_pair(nStateID, sName)).second);
         }
-
-        if (rOtherNameStore.m_bATLTriggersChanged)
-        {
-            m_cATLTriggerNames.clear();
-            m_cATLTriggerNames.insert(rOtherNameStore.m_cATLTriggerNames.begin(), rOtherNameStore.m_cATLTriggerNames.end());
-            rOtherNameStore.m_bATLTriggersChanged = false;
-        }
-
-        if (rOtherNameStore.m_bATLRtpcsChanged)
-        {
-            m_cATLRtpcNames.clear();
-            m_cATLRtpcNames.insert(rOtherNameStore.m_cATLRtpcNames.begin(), rOtherNameStore.m_cATLRtpcNames.end());
-            rOtherNameStore.m_bATLRtpcsChanged = false;
-        }
-
-        if (rOtherNameStore.m_bATLSwitchesChanged)
-        {
-            m_cATLSwitchNames.clear();
-            m_cATLSwitchNames.insert(rOtherNameStore.m_cATLSwitchNames.begin(), rOtherNameStore.m_cATLSwitchNames.end());
-            rOtherNameStore.m_bATLSwitchesChanged = false;
-        }
-
-        if (rOtherNameStore.m_bATLPreloadsChanged)
-        {
-            m_cATLPreloadRequestNames.clear();
-            m_cATLPreloadRequestNames.insert(rOtherNameStore.m_cATLPreloadRequestNames.begin(), rOtherNameStore.m_cATLPreloadRequestNames.end());
-            rOtherNameStore.m_bATLPreloadsChanged = false;
-        }
-
-        if (rOtherNameStore.m_bATLEnvironmentsChanged)
-        {
-            m_cATLEnvironmentNames.clear();
-            m_cATLEnvironmentNames.insert(rOtherNameStore.m_cATLEnvironmentNames.begin(), rOtherNameStore.m_cATLEnvironmentNames.end());
-            rOtherNameStore.m_bATLEnvironmentsChanged = false;
-        }
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioObject(const TAudioObjectID nObjectID, const char* const sName)
+    bool CATLDebugNameStore::AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName)
     {
-        m_cATLObjectNames[nObjectID] = sName;
-        m_bATLObjectsChanged = true;
+        return (m_cATLPreloadRequestNames.insert({ nRequestID, sName }).second);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName)
+    bool CATLDebugNameStore::AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName)
     {
-        m_cATLTriggerNames[nTriggerID] = sName;
-        m_bATLTriggersChanged = true;
+        return (m_cATLEnvironmentNames.insert({ nEnvironmentID, sName }).second);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName)
+    bool CATLDebugNameStore::RemoveAudioObject(const TAudioObjectID nObjectID)
     {
-        m_cATLRtpcNames[nRtpcID] = sName;
-        m_bATLRtpcsChanged = true;
+        return (m_cATLObjectNames.erase(nObjectID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName)
+    bool CATLDebugNameStore::RemoveAudioTrigger(const TAudioControlID nTriggerID)
     {
-        m_cATLSwitchNames[nSwitchID] = AZStd::make_pair(sName, TAudioSwitchStateMap());
-        m_bATLSwitchesChanged = true;
+        return (m_cATLTriggerNames.erase(nTriggerID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName)
+    bool CATLDebugNameStore::RemoveAudioRtpc(const TAudioControlID nRtpcID)
     {
-        m_cATLSwitchNames[nSwitchID].second[nStateID] = sName;
-        m_bATLSwitchesChanged = true;
+        return (m_cATLRtpcNames.erase(nRtpcID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName)
+    bool CATLDebugNameStore::RemoveAudioSwitch(const TAudioControlID nSwitchID)
     {
-        m_cATLPreloadRequestNames[nRequestID] = sName;
-        m_bATLPreloadsChanged = true;
+        return (m_cATLSwitchNames.erase(nSwitchID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName)
-    {
-        m_cATLEnvironmentNames[nEnvironmentID] = sName;
-        m_bATLEnvironmentsChanged = true;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioObject(const TAudioObjectID nObjectID)
-    {
-        auto num = m_cATLObjectNames.erase(nObjectID);
-        m_bATLObjectsChanged |= (num > 0);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioTrigger(const TAudioControlID nTriggerID)
-    {
-        auto num = m_cATLTriggerNames.erase(nTriggerID);
-        m_bATLTriggersChanged |= (num > 0);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioRtpc(const TAudioControlID nRtpcID)
-    {
-        auto num = m_cATLRtpcNames.erase(nRtpcID);
-        m_bATLRtpcsChanged |= (num > 0);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioSwitch(const TAudioControlID nSwitchID)
-    {
-        auto num = m_cATLSwitchNames.erase(nSwitchID);
-        m_bATLSwitchesChanged |= (num > 0);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID)
+    bool CATLDebugNameStore::RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID)
     {
         TAudioSwitchMap::iterator iPlace = m_cATLSwitchNames.begin();
         if (FindPlace(m_cATLSwitchNames, nSwitchID, iPlace))
         {
-            auto num = iPlace->second.second.erase(nStateID);
-            m_bATLSwitchesChanged |= (num > 0);
+            return (iPlace->second.second.erase(nStateID) > 0);
         }
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID)
+    bool CATLDebugNameStore::RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID)
     {
-        auto num = m_cATLPreloadRequestNames.erase(nRequestID);
-        m_bATLPreloadsChanged |= (num > 0);
+        return (m_cATLPreloadRequestNames.erase(nRequestID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CATLDebugNameStore::RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID)
+    bool CATLDebugNameStore::RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID)
     {
-        auto num = m_cATLEnvironmentNames.erase(nEnvironmentID);
-        m_bATLEnvironmentsChanged |= (num > 0);
+        return (m_cATLEnvironmentNames.erase(nEnvironmentID) > 0);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,12 +217,13 @@ namespace Audio
     }
 
 #endif // !AUDIO_RELEASE
+
     CATLAudioFileEntry::CATLAudioFileEntry(const char* const filePath, IATLAudioFileEntryData* const implData)
         : m_filePath(filePath)
         , m_fileSize(0)
         , m_useCount(0)
         , m_memoryBlockAlignment(AUDIO_MEMORY_ALIGNMENT)
-        , m_flags(eAFF_NOTFOUND)
+        , m_flags(0)
         , m_dataScope(eADS_ALL)
         , m_memoryBlock(nullptr)
         , m_implData(implData)

@@ -9,6 +9,7 @@
 
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/BlendUtility.azsli>
+#include <Atom/RPI/TangentSpace.azsli>
 
 enum DetailTextureFlags
 {
@@ -246,7 +247,7 @@ float GetDetailHeight(in MaterialContext materialContext)
     return height;
 }
 
-MaterialContext GetMaterialContext(in uint materialId, in float2 uv)
+MaterialContext GetMaterialContext(in uint materialId, in float2 uv, in float2 uvDdx, in float2 uvDdy)
 {
     MaterialContext materialContext = (MaterialContext)0;
     materialContext.m_materialId = materialId;
@@ -261,10 +262,8 @@ MaterialContext GetMaterialContext(in uint materialId, in float2 uv)
     // With different materials in the quad, we can't rely on ddx/ddy of the transformed uv because
     // the materials may have different uv transforms. This would create visible seams where the wrong
     // mip was being used. Instead, manually calculate the transformed ddx/ddy using the ddx/ddy of the
-    // original uv.
-
-    float2 uvDdx = ddx(uv);
-    float2 uvDdy = ddy(uv);
+    // original uv. Original derivatives are precalculated and passed in as parameters due to both pixel
+    // and compute shader access.
 
     float2 uvX = uv + uvDdx;
     float2 uvY = uv + uvDdy;
@@ -383,7 +382,7 @@ instance, if detailMaterialIdUv falls perfectly in-between all 4 samples, then e
 Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
 The detailUv is used for sampling the textures of each detail material.
 */
-bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv, float3 macroColor)
+bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord, float2 detailUv, float2 detailUvDdx, float2 detailUvDdy, float3 macroColor)
 {
     float2 textureSize;
     TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
@@ -442,7 +441,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
     if (all(material1.x == material1.yzw) && all(material2.x == material2.yzw))
     {
         // Fast path for same material ids
-        GetDetailSurfaceForMaterial(surface, GetMaterialContext(material1.x, detailUv), macroColor);
+        GetDetailSurfaceForMaterial(surface, GetMaterialContext(material1.x, detailUv, detailUvDdx, detailUvDdy), macroColor);
         if (material2.x != 0xFF)
         {
             DetailSurface tempSurface;
@@ -456,8 +455,8 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
             {
                 MaterialContext materialContexts[2] =
                 {
-                    GetMaterialContext(material1.x, detailUv),
-                    GetMaterialContext(material2.x, detailUv)
+                    GetMaterialContext(material1.x, detailUv, detailUvDdx, detailUvDdy),
+                    GetMaterialContext(material2.x, detailUv, detailUvDdx, detailUvDdy)
                 };
 
                 materialContexts[0].m_weight = 1.0 - mat2Weight;
@@ -489,7 +488,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
             }
 
             WeightDetailSurface(surface, 1.0 - mat2Weight);
-            GetDetailSurfaceForMaterial(tempSurface, GetMaterialContext(material2.x, detailUv), macroColor);
+            GetDetailSurfaceForMaterial(tempSurface, GetMaterialContext(material2.x, detailUv, detailUvDdx, detailUvDdy), macroColor);
             WeightDetailSurface(tempSurface, mat2Weight);
             AddDetailSurface(surface, tempSurface);
         }
@@ -497,14 +496,14 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdCoord,
     else
     {
         MaterialContext materialContexts[8] = {
-            GetMaterialContext(material1.x, detailUv),
-            GetMaterialContext(material2.x, detailUv),
-            GetMaterialContext(material1.y, detailUv),
-            GetMaterialContext(material2.y, detailUv),
-            GetMaterialContext(material1.z, detailUv),
-            GetMaterialContext(material2.z, detailUv),
-            GetMaterialContext(material1.w, detailUv),
-            GetMaterialContext(material2.w, detailUv)
+            GetMaterialContext(material1.x, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material2.x, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material1.y, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material2.y, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material1.z, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material2.z, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material1.w, detailUv, detailUvDdx, detailUvDdy),
+            GetMaterialContext(material2.w, detailUv, detailUvDdx, detailUvDdy)
         };
 
         if (o_terrainUseHeightBasedBlending)

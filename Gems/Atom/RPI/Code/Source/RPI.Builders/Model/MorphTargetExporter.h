@@ -24,8 +24,11 @@ namespace AZ
         public:
             AZ_RTTI(MorphTargetExporter, "{A684EBE7-03A2-4877-B6F7-83FC0029CC38}");
 
-            void ProduceMorphTargets(const AZ::SceneAPI::Containers::Scene& scene,
-                uint32_t vertexOffset,
+            void ProduceMorphTargets(
+                uint32_t productMeshIndex,
+                uint32_t startVertex,
+                const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
+                const AZ::SceneAPI::Containers::Scene& scene,
                 const ModelAssetBuilderComponent::SourceMeshContent& sourceMesh,
                 ModelAssetBuilderComponent::ProductMeshContent& productMesh,
                 MorphTargetMetaAssetCreator& metaAssetCreator,
@@ -50,7 +53,10 @@ namespace AZ
             static StorageType Compress(float value, float minValue, float maxValue);
 
             // Extract the morph target vertex and meta data and save it into the product mesh content.
-            void BuildMorphTargetMesh(uint32_t vertexOffset,
+            void BuildMorphTargetMesh(
+                uint32_t productMeshIndex,
+                uint32_t startVertex,
+                const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
                 const ModelAssetBuilderComponent::SourceMeshContent& sourceMesh,
                 ModelAssetBuilderComponent::ProductMeshContent& productMesh,
                 MorphTargetMetaAssetCreator& metaAssetCreator,

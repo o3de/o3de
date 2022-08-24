@@ -1,6 +1,5 @@
 <ObjectStream version="3">
-	<Class name="BlastGlobalConfiguration" version="1" type="{0B9DB6DD-0008-4EF6-9D75-141061144353}">
-		<Class name="Asset" field="BlastMaterialLibrary" value="id={251AC171-6B9C-562D-A235-4EF5E1AE6871}:0,type={55F38C86-0767-4E7F-830A-A4BF624BE4DA},hint={assets/destruction/automated_testing.blastmaterial},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+	<Class name="BlastGlobalConfiguration" version="2" type="{0B9DB6DD-0008-4EF6-9D75-141061144353}">
 		<Class name="unsigned int" field="StressSolverIterations" value="180" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 	</Class>
 </ObjectStream>

@@ -7,7 +7,7 @@
  */
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupPoolDescriptor.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
 #include <RHI/MergedShaderResourceGroup.h>
@@ -181,7 +181,7 @@ namespace AZ
             if (m_nativePipelineLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, nullptr);
+                device.GetContext().DestroyPipelineLayout(device.GetNativeDevice(), m_nativePipelineLayout, nullptr);
                 m_nativePipelineLayout = VK_NULL_HANDLE;
             }
             m_layoutDescriptor = nullptr;
@@ -242,7 +242,8 @@ namespace AZ
             createInfo.pPushConstantRanges = m_pushConstantRanges.empty() ? nullptr : m_pushConstantRanges.data();
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result = vkCreatePipelineLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineLayout);
+            const VkResult result =
+                device.GetContext().CreatePipelineLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativePipelineLayout);
 
             return ConvertResult(result);
         }

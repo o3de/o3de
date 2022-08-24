@@ -27,7 +27,7 @@ struct ForwardPassOutput
     float4 m_specularColor : SV_Target1;     //!< RGB = Specular Lighting, A = Unused
     float4 m_albedo : SV_Target2;            //!< RGB = Surface albedo pre-multiplied by other factors that will be multiplied later by diffuse GI, A = specularOcclusion
     float4 m_specularF0 : SV_Target3;        //!< RGB = Specular F0, A = roughness
-    float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = multiScatterCompensationEnabled
+    float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = Flags (IBL/Multiscatter enabled)
 };
 
 struct ForwardPassOutputWithDepth

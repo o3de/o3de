@@ -1,0 +1,140 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#include <Atom/Features/SrgSemantics.azsli>
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <TerrainSrg.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{}
+
+struct VSInput
+{
+    uint m_vertexIndex : SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : UV0;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+float3 UnpackNormal(float2 packedNormal)
+{
+    float z = sqrt(1.0 - packedNormal.x * packedNormal.x - packedNormal.y * packedNormal.y);
+    return float3(packedNormal.xy, z);
+}
+
+// This VS is a slightly modified version of fullscreen pass shader.
+// It uses a single triangle but only covers a fixed area (unrelated to the viewport size)
+// at the bottom-right corner.
+// see also <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+
+    float baseScale = TerrainSrg::m_clipmapData.m_clipmapSizeFloat * TerrainSrg::m_clipmapData.m_debugScale;
+    float scaleX = baseScale / TerrainSrg::m_clipmapData.m_viewportSize.x;
+    float scaleY = baseScale / TerrainSrg::m_clipmapData.m_viewportSize.y;
+
+    float u = float(vsInput.m_vertexIndex & 2);
+    float v = float((vsInput.m_vertexIndex << 1) & 2);
+    float x = u * scaleX + (1.0 - scaleX);
+    float y = -v * scaleY - (1.0 - scaleY);
+    OUT.m_position = float4(x, y, 0, 1);
+    OUT.m_uv = float2(u, v);
+    return OUT;
+}
+
+PSOutput MainPS(VSOutput psInput)
+{
+    PSOutput OUT;
+    float3 sampleCoord = float3(psInput.m_uv, TerrainSrg::m_clipmapData.m_debugClipmapLevel);
+    switch (TerrainSrg::m_clipmapData.m_debugClipmapId)
+    {
+        case 0:
+        {
+            float4 color = TerrainSrg::m_macroColorClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * TerrainSrg::m_clipmapData.m_debugBrightness, 1.0);
+            break;
+        }
+        case 1:
+        {
+            float2 packedNormal = TerrainSrg::m_macroNormalClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            float3 normal = UnpackNormal(packedNormal);
+            normal = (normal + 1.0) / 2.0; // transform to [0, 1] to be displayed on the screen.
+            OUT.m_color = float4(normal.xyz * TerrainSrg::m_clipmapData.m_debugBrightness, 1.0);
+            break;
+        }
+        case 2:
+        {
+            float4 color = TerrainSrg::m_detailColorClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * TerrainSrg::m_clipmapData.m_debugBrightness, 1.0);
+            break;
+        }
+        case 3:
+        {
+            float2 packedNormal = TerrainSrg::m_detailNormalClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            float3 normal = UnpackNormal(packedNormal);
+            normal = (normal + 1.0) / 2.0; // transform to [0, 1] to be displayed on the screen.
+            OUT.m_color = float4(normal.xyz * TerrainSrg::m_clipmapData.m_debugBrightness, 1.0);
+            break;
+        }
+        case 4:
+        {
+            float height = TerrainSrg::m_detailHeightClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            // Using a default scale for heights going above 1.
+            float3 splat = float3(height, height, height) * 0.01 * TerrainSrg::m_clipmapData.m_debugBrightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 5:
+        {
+            float roughness = TerrainSrg::m_detailRoughnessClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            float3 splat = float3(roughness, roughness, roughness) * TerrainSrg::m_clipmapData.m_debugBrightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 6:
+        {
+            float specularF0 = TerrainSrg::m_detailSpecularF0Clipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            float3 splat = float3(specularF0, specularF0, specularF0) * TerrainSrg::m_clipmapData.m_debugBrightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 7:
+        {
+            float metalness = TerrainSrg::m_detailMetalnessClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            float3 splat = float3(metalness, metalness, metalness) * TerrainSrg::m_clipmapData.m_debugBrightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        case 8:
+        {
+            float occlusion = TerrainSrg::m_detailOcclusionClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            // Using a default scale for occlusion going above 1.
+            float3 splat = float3(occlusion, occlusion, occlusion) * 0.1 * TerrainSrg::m_clipmapData.m_debugBrightness;
+            OUT.m_color = float4(splat, 1.0);
+            break;
+        }
+        default: // default to detail color
+        {
+            float4 color = TerrainSrg::m_detailColorClipmaps.Sample(TerrainSrg::m_clipmapSampler, sampleCoord);
+            OUT.m_color = float4(color.rgb * TerrainSrg::m_clipmapData.m_debugBrightness, 1.0);
+            break;
+        }
+    }
+    return OUT;
+}
+

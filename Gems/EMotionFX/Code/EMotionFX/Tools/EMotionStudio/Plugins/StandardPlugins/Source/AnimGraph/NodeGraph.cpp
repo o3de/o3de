@@ -90,7 +90,7 @@ namespace EMStudio
 
         // Group nodes
         m_groupFont.setPixelSize(18);
-        m_groupFontMetrics = new QFontMetrics(m_font);
+        m_groupFontMetrics.reset(new QFontMetrics(m_font));
     }
 
 

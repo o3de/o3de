@@ -33,10 +33,13 @@ namespace Ui
     class UpgradeHelper;
 }
 
+namespace ScriptCanvas
+{
+    class SourceHandle;
+}
+
 namespace ScriptCanvasEditor
 {
-    // class SourceHandle;
-
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
     class UpgradeHelper
         : public AzQtComponents::StyledDialog

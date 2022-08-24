@@ -14,8 +14,8 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <Editor/SkeletonModelJointWidget.h>
 #include <QWidget>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h>
 #endif
-
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 
@@ -76,17 +76,19 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* GetRagdollNodeConfig() const;
 
         // Ragdoll node
-        AzQtComponents::Card*       m_ragdollNodeCard;
-        EMotionFX::ObjectEditor*    m_ragdollNodeEditor;
-        QPushButton*                m_addRemoveButton;
+        AzQtComponents::Card*         m_ragdollNodeCard;
+        EMotionFX::ObjectEditor*      m_ragdollNodeEditor;
+        QPushButton*                  m_addRemoveButton;
 
         // Joint limit
-        RagdollJointLimitWidget*    m_jointLimitWidget;
+        RagdollJointLimitWidget*      m_jointLimitWidget;
 
         // Colliders
-        AddColliderButton*          m_addColliderButton;
-        ColliderContainerWidget*    m_collidersWidget;
+        AddColliderButton*            m_addColliderButton;
+        ColliderContainerWidget*      m_collidersWidget;
 
-        AZStd::string               m_copiedJointLimit;
+        AZStd::string                 m_copiedJointLimit;
+
+        PhysicsSetupViewportUiCluster m_physicsSetupViewportUiCluster;
     };
 } // namespace EMotionFX

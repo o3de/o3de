@@ -38,12 +38,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(key), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view key, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view key, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(key), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view key, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view key, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(key), value);
     }
@@ -68,12 +68,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, uint64_t index, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
@@ -93,12 +93,12 @@ namespace AzFramework
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, uint64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::u64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
 
-    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, int64_t& value) const
+    bool SpawnableMetaData::Get(AZStd::string_view arrayKey, SpawnableMetaDataArrayIndex index, AZ::s64& value) const
     {
         return GetGeneric(GetKeyHash(arrayKey, index), value);
     }
@@ -193,8 +193,8 @@ namespace AzFramework
             {
                 using Key = AZStd::decay_t<decltype(args)>;
                      if constexpr (AZStd::is_same_v<Key, bool>)         { return ValueType::Boolean; }
-                else if constexpr (AZStd::is_same_v<Key, uint64_t>)     { return ValueType::UnsignedInteger; }
-                else if constexpr (AZStd::is_same_v<Key, int64_t>)      { return ValueType::SignedInteger; }
+                else if constexpr (AZStd::is_same_v<Key, AZ::u64>)     { return ValueType::UnsignedInteger; }
+                else if constexpr (AZStd::is_same_v<Key, AZ::s64>)      { return ValueType::SignedInteger; }
                 else if constexpr (AZStd::is_same_v<Key, double>)       { return ValueType::FloatingPoint; }
                 else if constexpr (AZStd::is_same_v<Key, AZStd::string>){ return ValueType::String; }
                 else if constexpr (AZStd::is_same_v<Key, SpawnableMetaDataArraySize>)

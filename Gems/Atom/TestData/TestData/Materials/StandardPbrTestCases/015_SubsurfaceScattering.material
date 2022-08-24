@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 6,
     "propertyValues": {
         "subsurfaceScattering.enableSubsurfaceScattering": true,
         "subsurfaceScattering.influenceMap": "TestData/Textures/checker8x8_512.png",

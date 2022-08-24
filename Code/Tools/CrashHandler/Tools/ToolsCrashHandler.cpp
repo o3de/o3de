@@ -32,7 +32,7 @@ namespace CrashHandler
 #if defined(CRASH_HANDLER_URL)
         return MAKE_DEFINE_STRING(CRASH_HANDLER_URL);
 #else
-        return "https://lumberyard.sp.backtrace.io:8443/";
+        return "";
 #endif
     }
 
@@ -46,7 +46,7 @@ namespace CrashHandler
 #if defined(CRASH_HANDLER_TOKEN)
         return MAKE_DEFINE_STRING(CRASH_HANDLER_TOKEN);
 #else
-        return "8f562f6bf0ecb674e5f64344d76e6afeccb3244b4a9ea191ee61dc4e3528c5bd";
+        return "";
 #endif
     }
 

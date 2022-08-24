@@ -15,7 +15,7 @@
 #include <GraphModel/Model/Module/ModuleNode.h>
 #include <GraphModel/Model/Module/ModuleGraphManager.h>
 #include <GraphModel/Model/Module/InputOutputNodes.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 
 namespace GraphModel
 {

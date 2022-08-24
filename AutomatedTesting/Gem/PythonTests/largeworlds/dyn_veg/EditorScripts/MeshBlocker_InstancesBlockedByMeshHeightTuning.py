@@ -80,7 +80,7 @@ def MeshBlocker_InstancesBlockedByMeshHeightTuning():
     sphere_id = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
         False)
-    blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", sphere_id)
+    blocker_entity.get_set_test(1, "Controller|Configuration|Model Asset", sphere_id)
     components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 5.0)
     components.TransformBus(bus.Event, "SetLocalRotation", blocker_entity.id, math.Vector3(0.0, y_rotation, 0.0))
 

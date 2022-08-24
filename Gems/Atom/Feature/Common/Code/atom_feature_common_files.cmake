@@ -122,49 +122,11 @@ set(FILES
     Source/Debug/RenderDebugFeatureProcessor.cpp
     Source/Debug/RenderDebugSettings.h
     Source/Debug/RenderDebugSettings.cpp
-    Source/Decals/DecalFeatureProcessor.h
-    Source/Decals/DecalFeatureProcessor.cpp
     Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h
     Source/Decals/DecalTextureArrayFeatureProcessor.h
     Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp
@@ -217,6 +179,8 @@ set(FILES
     Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
@@ -237,18 +201,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/EditorModeFeedbackParentPass.cpp
-    Source/PostProcessing/EditorModeFeedbackParentPass.h
-    Source/PostProcessing/EditorModeFeedbackPassBase.cpp
-    Source/PostProcessing/EditorModeFeedbackPassBase.h
-    Source/PostProcessing/EditorModeDesaturationPass.cpp
-    Source/PostProcessing/EditorModeDesaturationPass.h
-    Source/PostProcessing/EditorModeTintPass.cpp
-    Source/PostProcessing/EditorModeTintPass.h
-    Source/PostProcessing/EditorModeBlurPass.cpp
-    Source/PostProcessing/EditorModeBlurPass.h
-    Source/PostProcessing/EditorModeOutlinePass.cpp
-    Source/PostProcessing/EditorModeOutlinePass.h
+    Source/PostProcessing/ChromaticAberrationPass.h
+    Source/PostProcessing/ChromaticAberrationPass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -302,6 +256,8 @@ set(FILES
     Source/PostProcessing/TaaPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingResourceList.h
+    Source/RayTracing/RayTracingIndexList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
     Source/RayTracing/RayTracingPass.cpp
@@ -325,6 +281,8 @@ set(FILES
     Source/ScreenSpace/DeferredFogSettings.h
     Source/ScreenSpace/DeferredFogPass.cpp
     Source/ScreenSpace/DeferredFogPass.h
+    Source/Shadows/FullscreenShadowPass.h
+    Source/Shadows/FullscreenShadowPass.cpp
     Source/Shadows/ProjectedShadowFeatureProcessor.h
     Source/Shadows/ProjectedShadowFeatureProcessor.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.cpp
@@ -349,6 +307,12 @@ set(FILES
     Source/SkyBox/SkyBoxFeatureProcessor.h
     Source/SkyBox/SkyBoxFogSettings.h
     Source/SkyBox/SkyBoxFogSettings.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.cpp
+    Source/SkyAtmosphere/SkyAtmosphereFeatureProcessor.h
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.cpp
+    Source/SkyAtmosphere/SkyAtmosphereParentPass.h
+    Source/SkyAtmosphere/SkyAtmospherePass.cpp
+    Source/SkyAtmosphere/SkyAtmospherePass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )

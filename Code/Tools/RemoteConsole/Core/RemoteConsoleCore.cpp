@@ -131,7 +131,10 @@ void SRemoteServer::StartServer()
 void SRemoteServer::StopServer()
 {
     m_bAcceptClients = false;
-    AZ::AzSock::CloseSocket(m_socket);
+    if (AZ::AzSock::IsAzSocketValid(m_socket))
+    {
+        AZ::AzSock::CloseSocket(m_socket);
+    }
     m_socket = SOCKET_ERROR;
 
     AZStd::unique_lock<AZStd::recursive_mutex> lock(m_mutex);
@@ -495,7 +498,7 @@ void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
         for (int i = 0, end = gEnv->pSystem->GetILevelSystem()->GetLevelCount(); i < end; ++i)
         {
             ILevelInfo* pLevel = gEnv->pSystem->GetILevelSystem()->GetLevelInfo(i);
-            AZStd::string item = "map ";
+            AZStd::string item = "LoadLevel ";
             const char* levelName = pLevel->GetName();
             int start = 0;
             for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)

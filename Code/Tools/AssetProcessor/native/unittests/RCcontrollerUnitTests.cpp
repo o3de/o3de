@@ -539,12 +539,11 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     rcJob.SetCheckExclusiveLock(true);
     rcJob.Start();
 
-
 #if defined(AZ_PLATFORM_WINDOWS)
     // on windows, opening a file for reading locks it
     // but on other platforms, this is not the case.
     // we only expect work to begin when we can gain an exclusive lock on this file.
-    UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 5000));
+    UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 500));
 
     // Once we release the file, it should process normally
     lockFileTest.close();
@@ -553,7 +552,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 #endif
 
     //Once we release the lock we should see jobStarted and jobFinished
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(jobFinished, 5000));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(jobFinished, 500));
     UNIT_TEST_EXPECT_TRUE(beginWork);
     UNIT_TEST_EXPECT_TRUE(rcJob.m_DoWorkCalled);
 
@@ -691,7 +690,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     m_rcController.SetDispatchPaused(false);
 
     m_rcController.DispatchJobs();
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 5000));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 500));
     UNIT_TEST_EXPECT_TRUE(jobFinishedB);
 
     // Now test the use case where we have a cyclic dependency,
@@ -746,7 +745,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     m_rcController.SetDispatchPaused(false);
     m_rcController.DispatchJobs();
-    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 5000));
+    UNIT_TEST_EXPECT_TRUE(UnitTestUtils::BlockUntil(allJobsCompleted, 500));
 
     // Test case when source file is deleted before it started processing
     {

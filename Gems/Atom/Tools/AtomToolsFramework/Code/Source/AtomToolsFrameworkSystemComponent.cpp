@@ -12,12 +12,13 @@
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystem.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManager.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
 #include <AtomToolsFrameworkSystemComponent.h>
-
-#include <PropertyEditor/PropertyImageAssetCtrl.h>
 
 namespace AtomToolsFramework
 {
@@ -25,6 +26,8 @@ namespace AtomToolsFramework
     {
         AtomToolsDocument::Reflect(context);
         AtomToolsDocumentSystem::Reflect(context);
+        CreateDynamicNodeMimeEvent::Reflect(context);
+        DynamicNode::Reflect(context);
         DynamicProperty::Reflect(context);
         DynamicPropertyGroup::Reflect(context);
         EntityPreviewViewportSettingsSystem::Reflect(context);
@@ -32,6 +35,8 @@ namespace AtomToolsFramework
 
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serialize->RegisterGenericType<AZStd::unordered_map<AZStd::string, bool>>();
+
             serialize->Class<AtomToolsFrameworkSystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
@@ -73,7 +78,6 @@ namespace AtomToolsFramework
 
     void AtomToolsFrameworkSystemComponent::Activate()
     {
-        ImageAssetPropertyHandler::Register();
     }
 
     void AtomToolsFrameworkSystemComponent::Deactivate()

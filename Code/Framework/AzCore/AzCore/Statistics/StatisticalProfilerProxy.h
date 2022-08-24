@@ -172,6 +172,14 @@ namespace AZ::Statistics
                 iter.second.m_profiler.GetStatsManager().GetAllStatisticsOfUnits(stats, units);
             }
         }
+        
+        void ResetAllStatistics()
+        {
+            for (auto& iter : m_profilers)
+            {
+                iter.second.m_profiler.GetStatsManager().ResetAllStatistics();
+            }
+        }
 
     private:
         struct ProfilerInfo

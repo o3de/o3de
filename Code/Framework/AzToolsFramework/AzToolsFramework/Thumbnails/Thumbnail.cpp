@@ -69,9 +69,20 @@ namespace AzToolsFramework
                     }
                     Q_EMIT Updated();
                 });
+
+            connect(&m_watcher, &QFutureWatcher<void>::canceled, this, [this]()
+                {
+                    m_state = State::Unloaded;
+                    Q_EMIT Updated();
+                });
         }
 
-        Thumbnail::~Thumbnail() = default;
+        Thumbnail::~Thumbnail()
+        {
+            m_watcher.disconnect();
+            m_watcher.cancel();
+            m_watcher.waitForFinished();
+        }
 
         bool Thumbnail::operator==(const Thumbnail& other) const
         {
@@ -83,11 +94,12 @@ namespace AzToolsFramework
             if (m_state == State::Unloaded)
             {
                 m_state = State::Loading;
-                QThreadPool* threadPool = {};
-                ThumbnailerRequestBus::BroadcastResult(threadPool, &ThumbnailerRequestBus::Handler::GetThreadPool);
-                QFuture<void> future = QtConcurrent::run(threadPool, [this](){ LoadThread(); });
-                m_watcher.setFuture(future);
+                m_watcher.setFuture(QtConcurrent::run([this](){ LoadThread(); }));
             }
+        }
+
+        void Thumbnail::UpdateTime([[maybe_unused]] float deltaTime)
+        {
         }
 
         const QPixmap& Thumbnail::GetPixmap() const

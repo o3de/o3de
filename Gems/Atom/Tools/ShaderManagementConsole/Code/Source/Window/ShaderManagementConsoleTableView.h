@@ -10,15 +10,16 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 #include <QStandardItemModel>
-#include <QTableView>
+#include <QTableWidget>
 #endif
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleTableView
-        : public QTableView
+        : public QTableWidget
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
@@ -32,9 +33,14 @@ namespace ShaderManagementConsole
         void OnDocumentModified(const AZ::Uuid& documentId) override;
 
         void RebuildTable();
+        void OnCellSelected(int row, int column, int previousRow, int previousColumn);
+        void OnCellChanged(int row, int column);
 
         const AZ::Crc32 m_toolId = {};
         const AZ::Uuid m_documentId = AZ::Uuid::CreateNull();
-        QStandardItemModel* m_model = {};
+        AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
+        AZStd::vector<AZ::RPI::ShaderOptionDescriptor> m_shaderOptionDescriptors;
+        size_t m_shaderVariantCount = {};
+        size_t m_shaderOptionCount = {};
     };
 } // namespace ShaderManagementConsole

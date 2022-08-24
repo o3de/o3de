@@ -17,11 +17,19 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_editor_files.cmake",
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -33,7 +41,11 @@
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_files.cmake",
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -53,11 +65,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Android/${NameLower}_android_files.cmake",
+            "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
+            "file": "Code/Platform/Android/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
@@ -65,11 +81,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -77,11 +101,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -89,11 +121,19 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -101,11 +141,15 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
+            "file": "Code/Platform/iOS/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
@@ -113,80 +157,40 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}EditorModule.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}EditorSystemComponent.h",
-            "isTemplated": true
-        },
-        {
-            "file": "Code/Source/${Name}Module.cpp",
-            "isTemplated": true
-        },
-        {
             "file": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}SystemComponent.cpp",
+            "file": "Code/Source/Clients/${Name}Module.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}SystemComponent.h",
+            "file": "Code/Source/Clients/${Name}SystemComponent.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "file": "Code/Source/Clients/${Name}SystemComponent.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Tests/${Name}Test.cpp",
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
             "isTemplated": true
         },
         {
-            "file": "Platform/Android/android_gem.cmake",
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
             "isTemplated": true
         },
         {
-            "file": "Platform/Android/android_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Linux/linux_gem.cmake",
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
             "isTemplated": true
         },
         {
-            "file": "Platform/Linux/linux_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Mac/mac_gem.cmake",
+            "file": "Code/Tests/Clients/${Name}Test.cpp",
             "isTemplated": true
         },
         {
-            "file": "Platform/Mac/mac_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/Windows/windows_gem.cmake",
+            "file": "Code/Tests/Tools/${Name}EditorTest.cpp",
             "isTemplated": true
-        },
-        {
-            "file": "Platform/Windows/windows_gem.json",
-            "isTemplated": false
-        },
-        {
-            "file": "Platform/iOS/ios_gem.cmake",
-            "isTemplated": true
-        },
-        {
-            "file": "Platform/iOS/ios_gem.json",
-            "isTemplated": false
         },
         {
             "file": "Registry/assetprocessor_settings.setreg",
@@ -236,25 +240,19 @@
             "dir": "Code/Source"
         },
         {
+            "dir": "Code/Source/Clients"
+        },
+        {
+            "dir": "Code/Source/Tools"
+        },
+        {
             "dir": "Code/Tests"
         },
         {
-            "dir": "Platform"
+            "dir": "Code/Tests/Clients"
         },
         {
-            "dir": "Platform/Android"
-        },
-        {
-            "dir": "Platform/Linux"
-        },
-        {
-            "dir": "Platform/Mac"
-        },
-        {
-            "dir": "Platform/Windows"
-        },
-        {
-            "dir": "Platform/iOS"
+            "dir": "Code/Tests/Tools"
         },
         {
             "dir": "Registry"

@@ -11,7 +11,6 @@ set(FILES
     Include/Vegetation/Descriptor.h
     Include/Vegetation/InstanceData.h
     Include/Vegetation/InstanceSpawner.h
-    Include/Vegetation/DynamicSliceInstanceSpawner.h
     Include/Vegetation/EmptyInstanceSpawner.h
     Include/Vegetation/PrefabInstanceSpawner.h
     Include/Vegetation/AreaComponentBase.h
@@ -93,7 +92,6 @@ set(FILES
     Source/Debugger/DebugComponent.h
     Source/DescriptorListAsset.cpp
     Source/Descriptor.cpp
-    Source/DynamicSliceInstanceSpawner.cpp
     Source/EmptyInstanceSpawner.cpp
     Source/PrefabInstanceSpawner.cpp
     Source/VegetationSystemComponent.cpp

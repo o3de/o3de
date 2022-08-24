@@ -40,11 +40,11 @@ namespace GraphModelIntegration
 
             if (trimValue != slot->GetValue<AZStd::string>())
             {
-                slot->SetValue(trimValue);
-
                 GraphCanvas::GraphId graphCanvasSceneId;
                 IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, graphCanvasSceneId);
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                slot->SetValue(trimValue);
             }
         }
     }

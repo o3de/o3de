@@ -6,11 +6,14 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <EditorCoreAPI.h>
 #include <IEditor.h>
 
 #include <Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h>
+
+#include <ScriptCanvas/Utils/ScriptCanvasConstants.h>
 
 namespace ScriptCanvasEditor
 {
@@ -20,10 +23,8 @@ namespace ScriptCanvasEditor
 
     TargetManagerModel::TargetManagerModel()
     {
-        AzFramework::TargetInfo editorTargetInfo(0, "Editor");
+        AzFramework::RemoteToolsEndpointInfo editorTargetInfo("Editor");
         m_targetInfo.push_back(editorTargetInfo);
-
-        AzFramework::TargetManager::Bus::BroadcastResult(m_selfInfo, &AzFramework::TargetManager::GetMyTargetInfo);
 
         ScrapeTargetInfo();
     }
@@ -44,7 +45,7 @@ namespace ScriptCanvasEditor
         {
         case Qt::DisplayRole:
         {
-            const AzFramework::TargetInfo& targetInfo = m_targetInfo[index.row()];
+            const AzFramework::RemoteToolsEndpointInfo& targetInfo = m_targetInfo[index.row()];
             if (index.row() > 0)
             {
                 return QString("%1 (%2)").arg(targetInfo.GetDisplayName(), QString::number(targetInfo.GetPersistentId(), 16));
@@ -62,9 +63,9 @@ namespace ScriptCanvasEditor
         return QVariant();
     }
 
-    void TargetManagerModel::TargetJoinedNetwork(AzFramework::TargetInfo info)
+    void TargetManagerModel::TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
-        if (!info.IsIdentityEqualTo(m_selfInfo))
+        if (!info.IsSelf())
         {
             int element = GetRowForTarget(info.GetPersistentId());
 
@@ -81,7 +82,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void TargetManagerModel::TargetLeftNetwork(AzFramework::TargetInfo info)
+    void TargetManagerModel::TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         int element = GetRowForTarget(info.GetPersistentId());
 
@@ -95,11 +96,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AzFramework::TargetInfo TargetManagerModel::FindTargetInfoForRow(int row)
+    AzFramework::RemoteToolsEndpointInfo TargetManagerModel::FindTargetInfoForRow(int row)
     {
         if (row < 0 && row >= m_targetInfo.size())
         {
-            return AzFramework::TargetInfo();
+            return AzFramework::RemoteToolsEndpointInfo();
         }
 
         return m_targetInfo[row];
@@ -120,12 +121,16 @@ namespace ScriptCanvasEditor
 
     void TargetManagerModel::ScrapeTargetInfo()
     {
-        AzFramework::TargetContainer targets;
-        AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::EnumTargetInfos, targets);
+        AzFramework::IRemoteTools* remoteTools = AzFramework::RemoteToolsInterface::Get();
+        AzFramework::RemoteToolsEndpointContainer targets;
+        if (remoteTools)
+        {
+            remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+        }
 
         for (const auto& targetPair : targets)
         {
-            if (!targetPair.second.IsIdentityEqualTo(m_selfInfo))
+            if (!targetPair.second.IsSelf())
             {
                 m_targetInfo.push_back(targetPair.second);
             }
@@ -185,8 +190,6 @@ namespace ScriptCanvasEditor
         , m_encodeStaticEntities(false)
         , m_isCapturing(false)
     {
-        AzFramework::TargetManagerClient::Bus::Handler::BusConnect();
-
         m_targetManagerModel = aznew TargetManagerModel();
 
         {
@@ -223,7 +226,6 @@ namespace ScriptCanvasEditor
 
     LiveLoggingWindowSession::~LiveLoggingWindowSession()
     {
-        AzFramework::TargetManagerClient::Bus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         ScriptCanvas::Debugger::ServiceNotificationsBus::Handler::BusDisconnect();
     }
@@ -257,8 +259,8 @@ namespace ScriptCanvasEditor
             {
                 AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
 
-                AzFramework::TargetInfo desiredInfo;
-                AzFramework::TargetManager::Bus::BroadcastResult(desiredInfo, &AzFramework::TargetManager::GetDesiredTarget);
+                const AzFramework::RemoteToolsEndpointInfo& desiredInfo =
+                    AzFramework::RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
 
                 if (desiredInfo.IsValid() && !desiredInfo.IsSelf())
                 {
@@ -291,7 +293,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LiveLoggingWindowSession::TargetJoinedNetwork(AzFramework::TargetInfo info)
+    void LiveLoggingWindowSession::TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         {
             QSignalBlocker signalBlocker(m_ui->targetSelector);
@@ -300,7 +302,7 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void LiveLoggingWindowSession::TargetLeftNetwork(AzFramework::TargetInfo info)
+    void LiveLoggingWindowSession::TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info)
     {
         {
             QSignalBlocker signalBlocker(m_ui->targetSelector);
@@ -410,15 +412,15 @@ namespace ScriptCanvasEditor
         // Special case out the editor
         if (index == 0)
         {
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, 0);
+            AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, 0);
         }
         else
         {
-            AzFramework::TargetInfo info = m_targetManagerModel->FindTargetInfoForRow(index);
+            AzFramework::RemoteToolsEndpointInfo info = m_targetManagerModel->FindTargetInfoForRow(index);
 
             if (info.IsValid())
             {
-                AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SetDesiredTarget, info.GetNetworkId());
+                AzFramework::RemoteToolsInterface::Get()->SetDesiredEndpoint(ScriptCanvas::RemoteToolsKey, info.GetPersistentId());
             }
         }
     }

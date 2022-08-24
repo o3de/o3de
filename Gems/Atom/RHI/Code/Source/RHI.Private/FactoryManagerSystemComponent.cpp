@@ -14,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/sort.h>
 
@@ -149,6 +150,18 @@ namespace AZ
             // If there's more that one factory registered then we need to decide which one to use.
             if (m_registeredFactories.size() > 1)
             {
+                // Load factories priority list from the settings registry
+                if (auto* registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+                {
+                    m_factoriesPriority.clear();
+                    if (registry->GetObject(m_factoriesPriority, "/O3DE/Atom/RHI/FactoryManager/factoriesPriority"))
+                    {
+                        AZ_Printf(
+                            "FactoryManagerSystemComponent",
+                            "User has provided a list of factories priority. This will override the default priorities");
+                    }
+                }
+
                 // Build a hash table to quickly check the user defined priority for a factory.
                 AZStd::unordered_map<RHI::APIType, size_t> factoryToPriorityMap;
                 for (size_t i = 0; i < m_factoriesPriority.size(); ++i)

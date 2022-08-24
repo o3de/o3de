@@ -23,6 +23,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/algorithm.h>
 
+
 namespace AZ
 {
     namespace RPI
@@ -43,6 +44,11 @@ namespace AZ
         FullscreenTrianglePass::~FullscreenTrianglePass()
         {
             ShaderReloadNotificationBus::Handler::BusDisconnect();
+        }
+
+        Data::Instance<Shader> FullscreenTrianglePass::GetShader() const
+        {
+            return m_shader;
         }
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)

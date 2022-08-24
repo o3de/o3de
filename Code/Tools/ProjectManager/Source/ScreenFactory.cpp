@@ -12,36 +12,45 @@
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsScreen.h>
+#include <ProjectGemCatalogScreen.h>
 #include <UpdateProjectSettingsScreen.h>
+#include <GemsGemRepoScreen.h>
 #include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <DownloadController.h>
 
 namespace O3DE::ProjectManager
 {
-    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen)
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen, DownloadController* downloadController)
     {
         ScreenWidget* newScreen;
 
         switch(screen)
         {
         case (ProjectManagerScreen::CreateProject):
-            newScreen = new CreateProjectCtrl(parent);
+            newScreen = new CreateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);
             break;
         case (ProjectManagerScreen::GemCatalog):
-            newScreen = new GemCatalogScreen(parent);
+            newScreen = new GemCatalogScreen(downloadController, true, parent);
+            break;
+        case (ProjectManagerScreen::ProjectGemCatalog):
+            newScreen = new ProjectGemCatalogScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::Projects):
-            newScreen = new ProjectsScreen(parent);
+            newScreen = new ProjectsScreen(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProject):
-            newScreen = new UpdateProjectCtrl(parent);
+            newScreen = new UpdateProjectCtrl(downloadController, parent);
             break;
         case (ProjectManagerScreen::UpdateProjectSettings):
             newScreen = new UpdateProjectSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::GemsGemRepos):
+            newScreen = new GemsGemRepoScreen(parent);
             break;
         case (ProjectManagerScreen::Engine):
             newScreen = new EngineScreenCtrl(parent);

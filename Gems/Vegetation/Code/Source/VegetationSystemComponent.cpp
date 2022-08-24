@@ -8,6 +8,7 @@
 #include "VegetationSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 #include <Vegetation/DescriptorListAsset.h>
 #include <Vegetation/AreaComponentBase.h>
@@ -17,7 +18,6 @@
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/InstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
-#include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/PrefabInstanceSpawner.h>
 
 namespace Vegetation
@@ -69,7 +69,6 @@ namespace Vegetation
     {
         InstanceSpawner::Reflect(context);
         EmptyInstanceSpawner::Reflect(context);
-        DynamicSliceInstanceSpawner::Reflect(context);
         PrefabInstanceSpawner::Reflect(context);
         Descriptor::Reflect(context);
         AreaConfig::Reflect(context);

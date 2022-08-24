@@ -44,6 +44,10 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the inner and outer cone angles in radians.
             virtual void SetConeAngles(LightHandle handle, float innerRadians, float outerRadians) = 0;
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
         };
     } // namespace Render
 } // namespace AZ

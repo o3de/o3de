@@ -25,11 +25,22 @@ namespace AzToolsFramework
         ThumbnailerComponent::ThumbnailerComponent()
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
-            , m_threadPool(this)
+            , m_currentJobsCount(0)
         {
+            // Increase the maximum number of QThreads to support the number of
+            // concurrent jobs needed here.
+            int currentMaxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
+            int newMaxThreadCount = AZStd::max<int>(currentMaxThreadCount, m_maxThumbnailJobs + 1);
+            QThreadPool::globalInstance()->setMaxThreadCount(newMaxThreadCount);
         }
 
-        ThumbnailerComponent::~ThumbnailerComponent() = default;
+        ThumbnailerComponent::~ThumbnailerComponent()
+        {
+            ThumbnailerRequestBus::Handler::BusDisconnect();
+            m_providers.clear();
+            m_missingThumbnail.reset();
+            m_loadingThumbnail.reset();
+        }
 
         void ThumbnailerComponent::Activate()
         {
@@ -40,6 +51,8 @@ namespace AzToolsFramework
         {
             ThumbnailerRequestBus::Handler::BusDisconnect();
             m_providers.clear();
+            m_missingThumbnail.reset();
+            m_loadingThumbnail.reset();
         }
 
         void ThumbnailerComponent::Reflect(AZ::ReflectContext* context)
@@ -102,26 +115,35 @@ namespace AzToolsFramework
                         return thumbnail;
                     }
 
+                    // if we already have the maximum number of concurrent jobs running
+                    // return the loading thumbnail.
+                    if (m_currentJobsCount > m_maxThumbnailJobs)
+                    {
+                        return m_loadingThumbnail;
+                    }
+
                     // if thumbnail is not loaded, start loading it, meanwhile return loading thumbnail
                     if (thumbnail->GetState() == Thumbnail::State::Unloaded)
                     {
+                        ++m_currentJobsCount;
                         // listen to the loading signal, so the anyone using it will update loading animation
-                        AzQtComponents::StyledBusyLabel* busyLabel;
+                        AzQtComponents::StyledBusyLabel* busyLabel = {};
                         AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
-                        QObject::connect(m_loadingThumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
-                        QObject::connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RedrawThumbnail);
+                        connect(m_loadingThumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
+                        connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RedrawThumbnail);
 
                         // once the thumbnail is loaded, disconnect it from loading thumbnail
-                        QObject::connect(thumbnail.data(), &Thumbnail::Updated, this , [this, key, thumbnail, busyLabel]()
+                        connect(thumbnail.data(), &Thumbnail::Updated, this, [this, key, thumbnail, busyLabel]()
                             {
-                                QObject::disconnect(m_loadingThumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
-                                QObject::disconnect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RedrawThumbnail);
+                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
+                                disconnect(busyLabel, nullptr, this, nullptr);
+                                disconnect(thumbnail.data(), nullptr, nullptr, nullptr);
 
-                                thumbnail->disconnect();
-                                QObject::connect(thumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
-                                QObject::connect(key.data(), &ThumbnailKey::UpdateThumbnailSignal, thumbnail.data(), &Thumbnail::Update);
+                                connect(thumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
+                                connect(key.data(), &ThumbnailKey::UpdateThumbnailSignal, thumbnail.data(), &Thumbnail::Update);
 
                                 key->SetReady(true);
+                                m_currentJobsCount--;
                                 Q_EMIT key->ThumbnailUpdatedSignal();
                             });
 
@@ -150,11 +172,6 @@ namespace AzToolsFramework
                 }
             }
             return false;
-        }
-
-        QThreadPool* ThumbnailerComponent::GetThreadPool()
-        {
-            return &m_threadPool;
         }
 
         void ThumbnailerComponent::RedrawThumbnail()

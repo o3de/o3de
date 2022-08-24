@@ -10,20 +10,145 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/JSON/stringbuffer.h>
+#include <AzCore/JSON/pointer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <Application.h>
 #include <Utilities.h>
 
+
 namespace AZ::SerializeContextTools
 {
+    inline namespace Streams
+    {
+        // Using an inline namespace for the Function Object Stream
+
+        /*
+        * Implementation of the GenericStream interface
+        * that uses a function object for writing
+        */
+        class FunctorStream
+            : public AZ::IO::GenericStream
+        {
+        public:
+            using WriteCallback = AZStd::function<AZ::IO::SizeType(AZStd::span<AZStd::byte const>)>;
+            FunctorStream() = default;
+            FunctorStream(WriteCallback writeCallback);
+
+            bool IsOpen() const override;
+            bool CanSeek() const override;
+            bool CanRead() const override;
+            bool CanWrite() const override;
+            void Seek(AZ::IO::OffsetType, SeekMode) override;
+            AZ::IO::SizeType Read(AZ::IO::SizeType, void*) override;
+            AZ::IO::SizeType Write(AZ::IO::SizeType bytes, const void* iBuffer) override;
+            AZ::IO::SizeType GetCurPos() const override;
+            AZ::IO::SizeType GetLength() const override;
+            AZ::IO::OpenMode GetModeFlags() const override;
+            const char* GetFilename() const override;
+        private:
+            WriteCallback m_streamWriter;
+        };
+
+        FunctorStream::FunctorStream(WriteCallback writeCallback)
+            : m_streamWriter { AZStd::move(writeCallback)}
+        {}
+
+        bool FunctorStream::IsOpen() const
+        {
+            return static_cast<bool>(m_streamWriter);
+        }
+        bool FunctorStream::CanSeek() const
+        {
+            return false;
+        }
+        bool FunctorStream::CanRead() const
+        {
+            return false;
+        }
+
+        bool FunctorStream::CanWrite() const
+        {
+            return true;
+        }
+
+        void FunctorStream::Seek(AZ::IO::OffsetType, SeekMode)
+        {
+            AZ_Assert(false, "Cannot seek in stdout stream");
+        }
+
+        AZ::IO::SizeType FunctorStream::Read(AZ::IO::SizeType, void*)
+        {
+            AZ_Assert(false, "The stdout file handle cannot be read from");
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::Write(AZ::IO::SizeType bytes, const void* iBuffer)
+        {
+            if (m_streamWriter)
+            {
+                return m_streamWriter(AZStd::span(reinterpret_cast<const AZStd::byte*>(iBuffer), bytes));
+            }
+
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::GetCurPos() const
+        {
+            return 0;
+        }
+
+        AZ::IO::SizeType FunctorStream::GetLength() const
+        {
+            return 0;
+        }
+
+        AZ::IO::OpenMode FunctorStream::GetModeFlags() const
+        {
+            return AZ::IO::OpenMode::ModeWrite;
+        }
+
+        const char* FunctorStream::GetFilename() const
+        {
+            return "<function object>";
+        }
+    }
+} // namespace AZ::SerializeContextTools::inline Stream
+
+
+namespace AZ::SerializeContextTools
+{
+    static auto GetWriteBypassStdoutCapturerFunctor(Application& application)
+    {
+        return [&application](AZStd::span<AZStd::byte const> outputBytes)
+        {
+            // If the application is currently capturing stdout, use stdout capturer to write
+            // directly to the file descriptor of stdout
+            if (AZ::IO::FileDescriptorCapturer* stdoutCapturer = application.GetStdoutCapturer();
+                stdoutCapturer != nullptr)
+            {
+                return stdoutCapturer->WriteBypassingCapture(outputBytes.data(), aznumeric_caster(outputBytes.size()));
+            }
+            else
+            {
+                constexpr int StdoutDescriptor = 1;
+                return AZ::IO::PosixInternal::Write(StdoutDescriptor, outputBytes.data(), aznumeric_caster(outputBytes.size()));
+            }
+        };
+    }
+
     bool Dumper::DumpFiles(Application& application)
     {
         SerializeContext* sc = application.GetSerializeContext();
@@ -142,6 +267,335 @@ namespace AZ::SerializeContextTools
         return result;
     }
 
+    bool Dumper::DumpTypes(Application& application)
+    {
+        // outputStream defaults to writing to stdout
+        AZ::IO::SystemFile systemFile;
+        AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
+            GetWriteBypassStdoutCapturerFunctor(application));
+
+        AZ::CommandLine& commandLine = *application.GetAzCommandLine();
+        // If the output-file parameter has been supplied open the file path using FileIOStream
+        if (size_t optionCount = commandLine.GetNumSwitchValues("output-file"); optionCount > 0)
+        {
+            AZ::IO::FixedMaxPath outputPath;
+            if (AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
+                outputPathView.IsRelative())
+            {
+                AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
+            }
+            else
+            {
+                outputPath = outputPathView.LexicallyNormal();
+            }
+
+            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
+            if (!fileStream.Open(outputPath.c_str(), openMode))
+            {
+                AZ_Printf(
+                    "dumptypes",
+                    R"(Unable to open specified output-file "%s". Object will not be dumped)"
+                    "\n",
+                    outputPath.c_str());
+                return false;
+            }
+        }
+
+        AZ::SerializeContext* context = application.GetSerializeContext();
+
+        struct TypeNameIdPair
+        {
+            AZStd::string m_name;
+            AZ::TypeId m_id;
+
+            bool operator==(const TypeNameIdPair& other) const
+            {
+                return m_name == other.m_name && m_id == other.m_id;
+            }
+            bool operator!=(const TypeNameIdPair& other) const
+            {
+                return !operator==(other);
+            }
+
+            struct Hash
+            {
+                size_t operator()(const TypeNameIdPair& key) const
+                {
+                    size_t hashValue{};
+                    AZStd::hash_combine(hashValue, key.m_name);
+                    AZStd::hash_combine(hashValue, key.m_id);
+                    return hashValue;
+                }
+            };
+        };
+
+
+        // Append the Type names and type ids to a unordered_set to filter out duplicates
+        AZStd::unordered_set<TypeNameIdPair, TypeNameIdPair::Hash> typeNameIdPairsSet;
+        auto AppendTypeInfo = [&typeNameIdPairsSet](const SerializeContext::ClassData* classData, const Uuid&) -> bool
+        {
+            typeNameIdPairsSet.emplace(TypeNameIdPair{ classData->m_name, classData->m_typeId });
+            return true;
+        };
+        context->EnumerateAll(AppendTypeInfo, true);
+
+        // Move over the unordered set over to an array for later
+        // The array is potentially sorted depending on the sort option
+        AZStd::vector<TypeNameIdPair> typeNameIdPairs(
+            AZStd::make_move_iterator(typeNameIdPairsSet.begin()),
+            AZStd::make_move_iterator(typeNameIdPairsSet.end())
+        );
+        // Clear out the Unordered set container
+        typeNameIdPairsSet = {};
+
+        // Sort the TypeNameIdPair based on the --sort option value or by type name if not supplied
+        enum class SortOptions
+        {
+            Name,
+            TypeId,
+            None
+        };
+        SortOptions sortOption{ SortOptions::Name };
+
+        if (size_t sortOptionCount = commandLine.GetNumSwitchValues("sort"); sortOptionCount > 0)
+        {
+            AZStd::string sortOptionString = commandLine.GetSwitchValue("sort", sortOptionCount - 1);
+            if (sortOptionString == "name")
+            {
+                sortOption = SortOptions::Name;
+            }
+            if (sortOptionString == "typeid")
+            {
+                sortOption = SortOptions::TypeId;
+            }
+            else if (sortOptionString == "none")
+            {
+                sortOption = SortOptions::None;
+            }
+            else
+            {
+                AZ_Error(
+                    "dumptypes", false,
+                    R"(Invalid --sort option supplied "%s".)"
+                    " Sorting by type name will be used. See --help for valid values)",
+                    sortOptionString.c_str());
+            }
+        }
+
+        switch (sortOption)
+        {
+        case SortOptions::Name:
+        {
+            auto SortByName = [](const TypeNameIdPair& lhs, const TypeNameIdPair& rhs)
+            {
+                return azstricmp(lhs.m_name.c_str(), rhs.m_name.c_str()) < 0;
+            };
+            AZStd::sort(typeNameIdPairs.begin(), typeNameIdPairs.end(), SortByName);
+            break;
+        }
+        case SortOptions::TypeId:
+        {
+            auto SortByTypeId = [](const TypeNameIdPair& lhs, const TypeNameIdPair& rhs)
+            {
+                return lhs.m_id < rhs.m_id;
+            };
+            AZStd::sort(typeNameIdPairs.begin(), typeNameIdPairs.end(), SortByTypeId);
+            break;
+        }
+        case SortOptions::None:
+            [[fallthrough]];
+        default:
+            break;
+        }
+
+        auto GetOutputPathString = [](auto&& stream) -> const char*
+        {
+            return stream.GetFilename();
+        };
+
+        AZ_Printf(
+            "dumptypes",
+            R"(Writing reflected types to "%s".)"
+            "\n",
+            AZStd::visit(GetOutputPathString, outputStream));
+
+        auto WriteReflectedTypes = [&typeNameIdPairs](auto&& stream) -> bool
+        {
+            AZStd::string typeListContents;
+            for (auto&& [typeName, typeId] : typeNameIdPairs)
+            {
+                typeListContents += AZStd::string::format("%s %s\n", typeName.c_str(), typeId.ToFixedString().c_str());
+            }
+
+            stream.Write(typeListContents.size(), typeListContents.data());
+            stream.Close();
+            return true;
+        };
+        const bool result = AZStd::visit(WriteReflectedTypes, outputStream);
+
+        return result;
+    }
+
+    bool Dumper::CreateType(Application& application)
+    {
+        // outputStream defaults to writing to stdout
+        AZ::IO::SystemFile systemFile;
+        AZStd::variant<FunctorStream, AZ::IO::SystemFileStream> outputStream(AZStd::in_place_type<FunctorStream>,
+            GetWriteBypassStdoutCapturerFunctor(application));
+
+        AZ::CommandLine& commandLine = *application.GetAzCommandLine();
+        // If the output-file parameter has been supplied open the file path using FileIOStream
+        if (size_t optionCount = commandLine.GetNumSwitchValues("output-file"); optionCount > 0)
+        {
+            AZ::IO::FixedMaxPath outputPath;
+            if (AZ::IO::PathView outputPathView(commandLine.GetSwitchValue("output-file", optionCount - 1));
+                outputPathView.IsRelative())
+            {
+                AZ::Utils::ConvertToAbsolutePath(outputPath, outputPathView.Native());
+            }
+            else
+            {
+                outputPath = outputPathView.LexicallyNormal();
+            }
+
+            constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
+            auto& fileStream = outputStream.emplace<AZ::IO::SystemFileStream>(&systemFile, true);
+            if (!fileStream.Open(outputPath.c_str(), openMode))
+            {
+                AZ_Printf(
+                    "createtype",
+                    R"(Unable to specified output-file "%s". Object will not be dumped)"
+                    "\n",
+                    outputPath.c_str());
+                return false;
+            }
+        }
+
+        size_t typeIdOptionCount = commandLine.GetNumSwitchValues("type-id");
+        size_t typeNameOptionCount = commandLine.GetNumSwitchValues("type-name");
+        if (typeIdOptionCount == 0 && typeNameOptionCount == 0)
+        {
+            AZ_Error("createtype", false, "One of the following options must be supplied: --type-id or --type-name");
+            return false;
+        }
+        if (typeIdOptionCount > 0 && typeNameOptionCount > 0)
+        {
+            AZ_Error("createtype", false, "The --type-id and --type-name options are mutally exclusive. Only one can be specified");
+            return false;
+        }
+
+        AZ::SerializeContext* context = application.GetSerializeContext();
+        const AZ::SerializeContext::ClassData* classData = nullptr;
+        if (typeIdOptionCount > 0)
+        {
+            AZStd::string typeIdValue = commandLine.GetSwitchValue("type-id", typeIdOptionCount - 1);
+            classData = context->FindClassData(AZ::TypeId(typeIdValue.c_str(), typeIdValue.size()));
+            if (classData == nullptr)
+            {
+                AZ_Error("createtype", false, "Type with ID %s is not registered with the SerializeContext", typeIdValue.c_str());
+                return false;
+            }
+        }
+        else
+        {
+            AZStd::string typeNameValue = commandLine.GetSwitchValue("type-name", typeNameOptionCount - 1);
+            AZStd::vector<AZ::TypeId> classIds = context->FindClassId(AZ::Crc32{ AZStd::string_view{ typeNameValue } });
+            if (classIds.size() != 1)
+            {
+                if (classIds.empty())
+                {
+                    AZ_Error("createtype", false, "Type with name %s is not registered with the SerializeContext", typeNameValue.c_str());
+                }
+                else
+                {
+                    const char* prependComma = "";
+                    AZStd::string classIdString;
+                    for (const AZ::TypeId& classId : classIds)
+                    {
+                        classIdString += prependComma + classId.ToString<AZStd::string>();
+                        prependComma = ", ";
+                    }
+                    AZ_Error(
+                        "createtype", classIds.size() < 2,
+                        "Multiple types with name %s have been registered with the SerializeContext,\n"
+                        "In order to disambiguate which type to use, the --type-id argument must be supplied with one of the following "
+                        "Uuids:\n",
+                        "%s", typeNameValue.c_str(), classIdString.c_str());
+                }
+                return false;
+            }
+
+            // Only one class with this typename has been registered with the serialize context, so look up its ClassData
+            classData = context->FindClassData(classIds.front());
+        }
+
+        // Create a rapidjson document to store the default constructed object
+        const AZStd::any typeInst = context->CreateAny(classData->m_typeId);
+        rapidjson::Document document;
+        rapidjson::Value& root = document.SetObject();
+
+        AZ::JsonSerializerSettings serializerSettings;
+        serializerSettings.m_serializeContext = context;
+        serializerSettings.m_registrationContext = application.GetJsonRegistrationContext();
+        serializerSettings.m_keepDefaults = true;
+
+        using JsonResultCode = AZ::JsonSerializationResult::ResultCode;
+        const JsonResultCode parseResult = AZ::JsonSerialization::Store(
+            root, document.GetAllocator(), AZStd::any_cast<void>(&typeInst), nullptr, typeInst.type(), serializerSettings);
+        if (parseResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Printf("createtype", "  Failed to store type %s in JSON format.\n", classData->m_name);
+            return false;
+        }
+
+        auto GetOutputPathString = [](auto&& stream)
+        {
+            using StreamType = AZStd::remove_cvref_t<decltype(stream)>;
+            if constexpr (AZStd::is_same_v<StreamType, AZ::IO::StdoutStream>)
+            {
+                return AZ::IO::FixedMaxPath{ "<stdout>" };
+            }
+            else if (AZStd::is_same_v<StreamType, AZ::IO::FileIOStream>)
+            {
+                return AZ::IO::FixedMaxPath{ stream.GetFilename() };
+            }
+            else
+            {
+                AZ_Assert(false, "OutputStream has invalid stream type. It must be StdoutStream or FileIOStream");
+                return AZ::IO::FixedMaxPath{};
+            }
+        };
+
+        AZ_Printf(
+            "createtype",
+            R"(Writing Type "%s" to "%s" using Json Serialization.)"
+            "\n",
+            classData->m_name, AZStd::visit(GetOutputPathString, outputStream).c_str());
+
+        AZStd::string jsonDocumentRootPrefix;
+        if (commandLine.HasSwitch("json-prefix"))
+        {
+            jsonDocumentRootPrefix = commandLine.GetSwitchValue("json-prefix", 0);
+        }
+
+        auto VisitStream = [&document, &jsonDocumentRootPrefix](auto&& stream) -> bool
+        {
+            if (WriteDocumentToStream(stream, document, jsonDocumentRootPrefix))
+            {
+                // Write out a newline to the end of the stream
+                constexpr AZStd::string_view newline = "\n";
+                stream.Write(newline.size(), newline.data());
+                return true;
+            }
+
+            return false;
+        };
+        const bool result = AZStd::visit(VisitStream, outputStream);
+
+        return result;
+    }
+
     AZStd::vector<Uuid> Dumper::CreateFilterListByNames(SerializeContext* context, AZStd::string_view name)
     {
         AZStd::vector<AZStd::string_view> names;
@@ -227,8 +681,10 @@ namespace AZ::SerializeContextTools
             rapidjson::Value(rapidjson::StringRef("Deprecated")) : rapidjson::Value(classData->m_version), document.GetAllocator());
 
         auto systemComponentIt = AZStd::lower_bound(systemComponents.begin(), systemComponents.end(), classData->m_typeId);
-        bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
+        const bool isSystemComponent = systemComponentIt != systemComponents.end() && *systemComponentIt == classData->m_typeId;
         classNode.AddMember("IsSystemComponent", isSystemComponent, document.GetAllocator());
+        const bool isComponent = isSystemComponent || (classData->m_azRtti != nullptr && classData->m_azRtti->IsTypeOf<AZ::Component>());
+        classNode.AddMember("IsComponent", isComponent, document.GetAllocator());
         classNode.AddMember("IsPrimitive", Utilities::IsSerializationPrimitive(genericClassInfo ? genericClassInfo->GetGenericTypeId() : classData->m_typeId), document.GetAllocator());
         classNode.AddMember("IsContainer", classData->m_container != nullptr, document.GetAllocator());
         if (genericClassInfo)
@@ -576,6 +1032,27 @@ namespace AZ::SerializeContextTools
         {
             output += classId.ToString<AZStd::string>();
         }
+    }
+
+    bool Dumper::WriteDocumentToStream(AZ::IO::GenericStream& outputStream, const rapidjson::Document& document,
+        AZStd::string_view pointerRoot)
+    {
+        rapidjson::StringBuffer scratchBuffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(scratchBuffer);
+
+        // rapidjson::Pointer constructor attempts to dereference the const char* index 0 even if the size is 0
+        // so make sure the string_view isn't referencing a nullptr
+        rapidjson::Pointer jsonPointerAnchor(pointerRoot.data() ? pointerRoot.data() : "", pointerRoot.size());
+
+        // Anchor the content in the Json Document under the Json Pointer root path
+        rapidjson::Document rootDocument;
+        rapidjson::SetValueByPointer(rootDocument, jsonPointerAnchor, document);
+        rootDocument.Accept(writer);
+
+        outputStream.Write(scratchBuffer.GetSize(), scratchBuffer.GetString());
+
+        scratchBuffer.Clear();
+        return true;
     }
     // namespace AZ::SerializeContextTools
 }

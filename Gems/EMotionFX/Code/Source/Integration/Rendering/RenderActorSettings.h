@@ -41,6 +41,7 @@ namespace AZ::Render
         AZ::Color m_selectedHitDetectionColliderColor{ 0.3f, 0.56f, 0.88f, 1.0f };
         AZ::Color m_ragdollColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
         AZ::Color m_selectedRagdollColliderColor{ 0.96f, 0.65f, 0.14f, 1.0f };
+        AZ::Color m_violatedRagdollColliderColor{ 1.0f, 0.0f, 0.0f, 1.0f };
         AZ::Color m_violatedJointLimitColor{ 1.0f, 0.0f, 0.0f, 1.0f };
         AZ::Color m_clothColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
         AZ::Color m_selectedClothColliderColor{ 0.6f, 0.46f, 1.0f, 1.0f };

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_PlaneFunctions_FromNormalAndDistance",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Normal And Distance",
+                "category": "Math/Plane"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_PlaneFunctions_FromNormalAndDistance",
+                    "details": {
+                        "name": "From Normal And Distance",
+                        "tooltip": "Returns the plane with the specified Normal and Distance from the origin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Normal"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Distance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Plane"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

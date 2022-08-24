@@ -54,7 +54,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 132; // Job Dependency subIds
+            materialBuilderDescriptor.m_version = 133; // Preload material dependencies
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -85,7 +85,10 @@ namespace AZ
 
         bool MaterialBuilder::ShouldOutputAllPropertiesMaterial() const
         {
-            bool value = true;
+            // Enable this setting to generate a default source material file containing an explicit list of all properties and their
+            // default values. This is primarily used by artists and developers scraping data from the materials and should only be enabled
+            // as needed by those users.
+            bool value = false;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
                 settingsRegistry->Get(value, "/O3DE/Atom/RPI/MaterialTypeBuilder/CreateAllPropertiesMaterial");
@@ -145,7 +148,7 @@ namespace AZ
                         // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
                         // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
                         // This can significantly reduce AP processing time when a material type or its shaders are edited.
-                        if (forceOrderOnce || currentFileIsMaterial && referencedFileIsMaterialType && !shouldFinalizeMaterialAssets)
+                        if (forceOrderOnce || (currentFileIsMaterial && referencedFileIsMaterialType && !shouldFinalizeMaterialAssets))
                         {
                             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnce;
                         }

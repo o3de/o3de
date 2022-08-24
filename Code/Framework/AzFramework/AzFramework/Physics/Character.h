@@ -68,7 +68,8 @@ namespace Physics
 
         AzPhysics::CollisionGroups::Id m_collisionGroupId; //!< Which layers does this character collide with.
         AzPhysics::CollisionLayer m_collisionLayer; //!< Which collision layer is this character on.
-        MaterialSelection m_materialSelection; //!< Material selected from library for the body associated with the character.
+        MaterialSlots m_materialSlots; //!< Material slots for the character.
+        PhysicsLegacy::MaterialSelection m_legacyMaterialSelection; //!< Kept to convert old physics material assets.
         AZ::Vector3 m_upDirection = AZ::Vector3::CreateAxisZ(); //!< Up direction for character orientation and step behavior.
         float m_maximumSlopeAngle = 30.0f; //!< The maximum slope on which the character can move, in degrees.
         float m_stepHeight = 0.5f; //!< Affects what size steps the character can climb.
@@ -111,23 +112,59 @@ namespace Physics
         virtual AzPhysics::CollisionGroup GetCollisionGroup() const = 0;
         virtual AZ::Crc32 GetColliderTag() const = 0;
 
-        /// Queues up a request to apply a velocity to the character.
-        /// All requests received during a tick are accumulated (so for example, the effects of animation and gravity
-        /// can be applied in two separate requests), and a movement with the accumulated velocity is performed once
-        /// per tick, prior to the physics update.
-        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
-        /// @param velocity The velocity to be added to the accumulated requests.
-        virtual void AddVelocity(const AZ::Vector3& velocity) = 0;
+        // O3DE_DEPRECATION_NOTICE(GHI-10883)
+        // Please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.
+        virtual void AddVelocity(const AZ::Vector3& velocity)
+        {
+            AZ_WarningOnce(
+                "Physics::Character",
+                false,
+                "AddVelocity is deprecated, please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.");
+            AddVelocityForTick(velocity);
+        };
 
-        /// Applies the queued velocity requests and zeros the accumulated requested velocity.
-        /// The expected usage is for this function to be called internally by the physics system once per tick,
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the tick.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the tick.
+        /// Obstacles and the maximum speed setting may prevent the actual movement from exactly matching the requested movement.
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of the tick.
+        virtual void AddVelocityForTick(const AZ::Vector3& velocity) = 0;
+
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the physics timestep.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the physics timestep.
+        /// Obstacles and the maximum speed setting may prevent the actual movement from exactly matching the requested movement.
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of a physics timestep.
+        virtual void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) = 0;
+
+        /// Applies the queued velocity requests.
+        /// The expected usage is for this function to be called internally by the physics system,
         /// so that the cumulative result of multiple movement effects (e.g. animation, gravity, pseudo-impulses etc)
-        /// can be combined from separate calls to AddVelocity. Accumulating the requests avoids performing
-        /// multiple expensive character updates, and avoids any effects from the order of requests within a tick.
-        /// Users who wish to add a new movement effect should generally just be able to use AddVelocity, and
-        /// rely on the existing physics system call to ApplyRequestedVelocity.
+        /// can be combined from separate calls to AddVelocityForTick or AddVelocityForPhysicsTimestep.
+        /// Accumulating the requests avoids performing multiple expensive character updates, and avoids any effects from the order of
+        /// requests within a tick. Users who wish to add a new movement effect should generally just be able to use AddVelocityForTick or
+        /// AddVelocityForPhysicsTimestep, and rely on the existing physics system call to ApplyRequestedVelocity.
         /// @param deltaTime The duration over which to apply the accumulated requested velocity.
         virtual void ApplyRequestedVelocity(float deltaTime) = 0;
+
+        /// Sets the accumulated velocity requests which last for the duration of a tick to zero.
+        /// The expected usage is for this funciton to be called internally by the physics system, to flush per tick
+        /// velocity requests once per tick. Velocity requests with duration of the physics timestep are not affected.
+        virtual void ResetRequestedVelocityForTick() = 0;
+
+        /// Sets the accumulated velocity requests which last for the duration of a physics timestep to zero.
+        /// The expected usage is for this funciton to be called internally by the physics system, to flush per timestep
+        /// velocity requests once per timestep. Velocity requests with duration of the tick are not affected.
+        virtual void ResetRequestedVelocityForPhysicsTimestep() = 0;
+
+        /// Directly requests the character to move.
+        /// Used for making an immediate, displacement-based movement request, as opposed to a queued, velocity-based request.
+        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
+        /// @ param requestedMovement The desired displacement relative to the character's current position.
+        /// @ param deltaTime The duration over which to apply the requested movement.
+        virtual void Move(const AZ::Vector3& requestedMovement, float deltaTime) = 0;
 
         virtual void AttachShape(AZStd::shared_ptr<Physics::Shape> shape) = 0;
     };

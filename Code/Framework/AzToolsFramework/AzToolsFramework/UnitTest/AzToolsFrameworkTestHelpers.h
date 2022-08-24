@@ -116,6 +116,7 @@ namespace UnitTest
         float ManipulatorCircleBoundWidth() const override;
         bool StickySelectEnabled() const override;
         AZ::Vector3 DefaultEditorCameraPosition() const override;
+        AZ::Vector2 DefaultEditorCameraOrientation() const override;
         bool IconsVisible() const override;
         bool HelpersVisible() const override;
 
@@ -207,7 +208,6 @@ namespace UnitTest
     public:
         ToolsApplicationMessageHandler();
     private:
-        AZStd::unique_ptr<ErrorHandler> m_gridMateMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_enginePathMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_skippingDriveMessageHandler;
         AZStd::unique_ptr<ErrorHandler> m_storageDriveMessageHandler;

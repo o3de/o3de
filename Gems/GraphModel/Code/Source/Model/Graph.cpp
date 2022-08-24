@@ -14,7 +14,7 @@
 
 // Graph Model
 #include <GraphModel/Model/Graph.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Slot.h>
 #include <GraphModel/Model/Connection.h>
@@ -42,13 +42,13 @@ namespace GraphModel
         }
     }
 
-    Graph::Graph(IGraphContextPtr graphContext)
+    Graph::Graph(GraphContextPtr graphContext)
         : m_graphContext(graphContext)
     {
 
     }
 
-    void Graph::PostLoadSetup(IGraphContextPtr graphContext)
+    void Graph::PostLoadSetup(GraphContextPtr graphContext)
     {
         AZ_Assert(m_nextNodeId == 1, "This graph has been set up before");
 
@@ -94,7 +94,7 @@ namespace GraphModel
         return nodeId;
     }
 
-    IGraphContextPtr Graph::GetContext() const
+    GraphContextPtr Graph::GetContext() const
     {
         AZ_Assert(m_graphContext, "Graph::m_graphContext is not set");
         return m_graphContext;

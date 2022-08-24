@@ -37,8 +37,5 @@ namespace AtomToolsFramework
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
         QAction* m_toggleAlternateSkybox = {};
-
-        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> m_operationNames;
-        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QAction*> m_operationActions;
     };
 } // namespace AtomToolsFramework

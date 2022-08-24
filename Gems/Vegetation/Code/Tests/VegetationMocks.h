@@ -319,12 +319,12 @@ namespace UnitTest
 
         MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusConnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Register(this);
         }
 
         ~MockSurfaceHandler()
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Unregister(this);
         }
 
         AZ::Vector3 m_outPosition = {};
@@ -383,7 +383,8 @@ namespace UnitTest
             ++m_count;
         }
 
-        void RefreshSurfaceData([[maybe_unused]] const AZ::Aabb& dirtyBounds) override
+        void RefreshSurfaceData(
+            [[maybe_unused]] const SurfaceData::SurfaceDataRegistryHandle& handle, [[maybe_unused]] const AZ::Aabb& dirtyBounds) override
         {
             ++m_count;
         }

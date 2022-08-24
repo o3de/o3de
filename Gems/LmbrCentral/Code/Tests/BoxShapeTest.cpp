@@ -17,6 +17,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
@@ -652,4 +653,33 @@ namespace UnitTest
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(shapeAabb.GetMin()));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(shapeAabb.GetMax()));
     }
+
+    TEST_F(BoxShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our box centered at 0 with our height and starting XY dimensions.
+        AZ::Entity entity;
+        CreateBox(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()),
+            AZ::Vector3(ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::ShapeHeight), entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, float height)
+        {
+            float x = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            float y = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+
+            LmbrCentral::BoxShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::BoxShapeComponentRequestsBus::Events::SetBoxDimensions, AZ::Vector3(x, y, height));
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+
 }

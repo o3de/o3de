@@ -12,7 +12,6 @@
 #include <QTimer>
 
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/TickBus.h>
 
 #include <GraphCanvas/Components/Nodes/NodeUIBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -30,7 +29,6 @@ namespace GraphCanvas
         , public RootGraphicsItemNotificationBus::Handler
         , public NodePropertiesRequestBus::Handler
         , public NodePropertyRequestBus::Handler
-        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(NodePropertyDisplayWidget, AZ::SystemAllocator, 0);
@@ -39,10 +37,6 @@ namespace GraphCanvas
         ~NodePropertyDisplayWidget() override;
 
         void RefreshStyle();
-
-        // AZ::SystemTickBus
-        void OnSystemTick() override;
-        ////
 
         // RootGraphicsItemNotificationBus
         void OnDisplayStateChanged(RootGraphicsItemDisplayState oldState, RootGraphicsItemDisplayState newState) override;

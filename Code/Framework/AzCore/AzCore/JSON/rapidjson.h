@@ -50,6 +50,11 @@ namespace rapidjson_ly_internal
 #pragma clang diagnostic ignored "-Wunknown-warning-option"
 #endif
 
+#if defined(AZ_COMPILER_MSVC)
+// windows defines may or may not be present for unity builds, so ensure StrCmp resolves to StrCmpW to avoid conflicts
+#define StrCmp StrCmpW
+#endif
+
 // Make you have available rapidjson/include folder. Currently 3rdParty\rapidjson\rapidjson-1.1.0\include
 #include <rapidjson/rapidjson.h>
 

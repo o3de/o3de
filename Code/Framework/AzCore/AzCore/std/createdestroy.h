@@ -128,7 +128,10 @@ namespace AZStd::Internal
         bool = is_trivially_constructible_v<ValueType>>
         struct construct
     {
-        static constexpr void range(InputIterator first, InputIterator last) { (void)first; (void)last; }
+        static constexpr void range(InputIterator first, InputIterator last)
+        {
+            range(first, last, ValueType());
+        }
         static constexpr void range(InputIterator first, InputIterator last, const ValueType& value)
         {
             for (; first != last; ++first)
@@ -136,7 +139,10 @@ namespace AZStd::Internal
                 *first = value;
             }
         }
-        static constexpr void single(InputIterator iter) { (void)iter; }
+        static constexpr void single(InputIterator iter)
+        {
+            single(iter, ValueType());
+        }
         static constexpr void single(InputIterator iter, const ValueType& value)
         {
             *iter = value;
@@ -166,11 +172,6 @@ namespace AZStd::Internal
             {
                 ::new (&*first) ValueType(value);
             }
-        }
-
-        static void single(InputIterator iter)
-        {
-            ::new (&*iter) ValueType();
         }
 
         template<class ... InputArguments>
@@ -416,9 +417,9 @@ namespace AZStd::Internal
             size_t numElements = last - first;
             if (numElements > 0)
             {
-#if az_has_builtin_memcpy
+#if az_has_builtin_memmove
                 static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
+                __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
 #else
                 if (az_builtin_is_constant_evaluated())
                 {
@@ -434,7 +435,7 @@ namespace AZStd::Internal
                     AZ_Assert((static_cast<const void*>(&*result) < static_cast<const void*>(&*first))
                         || (static_cast<const void*>(&*result) >= static_cast<const void*>(&*first + numElements)),
                         "AZStd::move memory overlaps use AZStd::move_backward!");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
+                    ::memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
                 }
 #endif
             }

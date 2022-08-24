@@ -11,6 +11,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
@@ -24,6 +28,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+#ifdef AZ_RELEASE_BUILD
+    // Disable serializer type validation in release
+    using InputSerializer = AzNetworking::NetworkInputSerializer;
+    using OutputSerializer = AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>;
+    using RpcInputSerializer = AzNetworking::NetworkInputSerializer;
+    using RpcOutputSerializer = AzNetworking::NetworkOutputSerializer;
+#else
+    using InputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using OutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>>;
+    using RpcInputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using RpcOutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkOutputSerializer>;
+#endif
+
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
@@ -44,7 +61,7 @@ namespace Multiplayer
 
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
-    using ClientDisconnectedEvent = AZ::Event<>;
+    using EndpointDisconnectedEvent = AZ::Event<MultiplayerAgentType>;
     using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
@@ -107,9 +124,9 @@ namespace Multiplayer
         //! @param handler The ClientMigrationEndEvent Handler to add
         virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
 
-        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
-        //! @param handler The ClientDisconnectedEvent Handler to add
-        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+        //! Adds a EndpointDisconnectedEvent Handler which is invoked on the client when a disconnection occurs.
+        //! @param handler The EndpointDisconnectedEvent Handler to add
+        virtual void AddEndpointDisconnectedHandler(EndpointDisconnectedEvent::Handler& handler) = 0;
 
         //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
         //! @param handler The NotifyClientMigrationEvent Handler to add

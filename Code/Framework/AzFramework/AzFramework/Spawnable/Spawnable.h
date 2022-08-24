@@ -173,6 +173,7 @@ namespace AzFramework
             const EntityAliasList* m_entityAliasList;
         };
 
+        inline static constexpr const char* DefaultMainSpawnableName = "Root";
         inline static constexpr const char* FileExtension = "spawnable";
         inline static constexpr const char* DotFileExtension = ".spawnable";
 
@@ -208,4 +209,7 @@ namespace AzFramework
 
         mutable AZStd::atomic<int32_t> m_shareState{ ShareState::NotShared };
     };
+
+    using SpawnableAsset = AZ::Data::Asset<AzFramework::Spawnable>;
+    using SpawnableAssetVector = AZStd::vector<AZ::Data::Asset<AzFramework::Spawnable>>;
 } // namespace AzFramework

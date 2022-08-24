@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME AWSCore.Static STATIC
@@ -175,7 +175,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TARGETS
             AWSCore.Tests
         FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/resource_mapping_schema.json
         OUTPUT_SUBDIRECTORY
             Gems/AWSCore
     )
@@ -216,7 +216,7 @@ ly_add_target_files(
     TARGETS
         AWSCore
     FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/../Assets/resource_mapping_schema.json
     OUTPUT_SUBDIRECTORY
         Gems/AWSCore
 )
