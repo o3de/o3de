@@ -12,6 +12,9 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+
+#include <AzFramework/Viewport/ViewportBus.h>
 
 #include <QPointer>
 #include <QToolBar>
@@ -22,7 +25,10 @@ namespace AzToolsFramework::ViewportUi::Internal
     class ButtonGroup;
 
     //! Helper class to make switchers (toolbars) for display in Viewport UI.
-    class ViewportUiSwitcher : public QToolBar
+    class ViewportUiSwitcher :
+        public QToolBar,
+        private AzFramework::ViewportBorderNotificationBus::Handler,
+        private ViewportEditorModeNotificationsBus::Handler
     {
         Q_OBJECT
 
@@ -39,11 +45,23 @@ namespace AzToolsFramework::ViewportUi::Internal
         //! Updates the button's tooltip to the passed string.
         void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
 
+        // ViewportBorderNotificationBus overrides ...
+        void ImGuiActive(bool active) override;
+
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
     private:
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.
         ButtonId m_activeButtonId = ButtonId(0); //!< ButtonId corresponding to the active button in the buttonActionMap.
         AZStd::shared_ptr<ButtonGroup> m_buttonGroup; //!< Data structure which the cluster will be displaying to the Viewport UI.
         AZStd::unordered_map<ButtonId, QPointer<QAction>> m_buttonActionMap; //!< Map for buttons to their corresponding actions.
         ViewportUiWidgetCallbacks m_widgetCallbacks; //!< Registers actions and manages updates.
+        QString m_styleSheet;
+
+        bool m_imGuiActive = false;
+        bool m_test = false;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

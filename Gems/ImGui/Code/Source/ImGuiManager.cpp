@@ -23,6 +23,7 @@
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
@@ -246,6 +247,12 @@ void ImGuiManager::Render()
 {
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
     {
+        if (!m_deactivationBroadcasted)
+        {
+            AzFramework::ViewportBorderNotificationBus::Broadcast(&AzFramework::ViewportBorderNotificationBus::Events::ImGuiActive, false);
+            m_deactivationBroadcasted = true;
+            m_activationBroadcasted = false;
+        } 
         return;
     }
 
@@ -383,6 +390,13 @@ void ImGuiManager::Render()
 
     // Render!
     RenderImGuiBuffers(scaleRects);
+
+    if (!m_activationBroadcasted)
+    {
+        AzFramework::ViewportBorderNotificationBus::Broadcast(&AzFramework::ViewportBorderNotificationBus::Events::ImGuiActive, true);
+        m_activationBroadcasted = true;
+        m_deactivationBroadcasted = false;
+    }
 
     // Clear the simulated backspace key
     if (m_simulateBackspaceKeyPressed)

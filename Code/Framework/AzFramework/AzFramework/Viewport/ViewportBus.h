@@ -77,4 +77,17 @@ namespace AzFramework
     };
 
     using ViewportBorderRequestBus = AZ::EBus<ViewportBorderRequests>;
+
+    class ViewportBorderNotifications : public AZ::EBusTraits
+    {
+    public:
+        /*!
+         * Notification that the specified entities are about to have their composition changed due to user interaction in the editor
+         *
+         * \param entityIds Entities about to be changed
+         */
+        virtual void ImGuiActive(const bool /*active*/){};
+    };
+
+    using ViewportBorderNotificationBus = AZ::EBus<ViewportBorderNotifications>;
 } // namespace AzFramework

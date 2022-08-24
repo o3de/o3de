@@ -113,6 +113,19 @@ namespace ImGui
             viewportBorderPaddingOpt, &AzFramework::ViewportBorderRequestBus::Events::GetViewportBorderPadding);
 
         AzFramework::ViewportBorderPadding viewportBorderPadding = viewportBorderPaddingOpt.value_or(AzFramework::ViewportBorderPadding{});
+
+        //if (viewportBorderPadding.m_top > 0.0f && !m_borderActiveForImGui)
+        //{
+        //    AzFramework::ViewportBorderNotificationBus::Broadcast(&AzFramework::ViewportBorderNotificationBus::Events::ImGuiActive, true);
+        //    m_borderActiveForImGui = true;
+        //}
+        //else if (viewportBorderPadding.m_top == 0.0f && m_borderActiveForImGui)
+        //{
+
+        //    m_borderActiveForImGui = false;
+        //}
+
+        //AZ_Printf("DEBugging", "top %f", viewportBorderPadding.m_top);
         // Utility function to return the current offset (scaled by DPI) if a viewport border
         // is active (otherwise 0.0)
         auto dpiAwareBorderOffsetFn = [&viewportBorderPaddingOpt, &dpiAwareSizeFn](float size)
