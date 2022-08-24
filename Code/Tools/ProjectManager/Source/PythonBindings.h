@@ -40,6 +40,9 @@ namespace O3DE::ProjectManager
         AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) override;
         DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) override;
 
+        // Remote sources
+        bool ValidateRepository(const QString& repoUri) override;
+
         // Gem
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
@@ -52,6 +55,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) override;
         AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
+        AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) override;
+        AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() override;
         bool AddProject(const QString& path) override;
         bool RemoveProject(const QString& path) override;
         AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
@@ -72,6 +77,10 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
         DetailedOutcome DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+        DetailedOutcome DownloadProject(
+            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
+        DetailedOutcome DownloadTemplate(
+            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 

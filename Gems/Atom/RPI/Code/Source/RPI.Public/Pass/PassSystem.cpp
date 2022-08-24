@@ -354,7 +354,7 @@ namespace AZ
 
             if (!pass->GetName().IsEmpty() && pass->GetName() == GetTargetedPassDebuggingName())
             {
-                AZ::Debug::Trace::Break();
+                AZ::Debug::Trace::Instance().Break();
             }
         }
 
