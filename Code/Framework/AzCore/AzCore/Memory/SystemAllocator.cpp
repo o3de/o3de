@@ -237,26 +237,12 @@ namespace AZ
     }
 
     //=========================================================================
-    // Resize
-    // [8/12/2011]
-    //=========================================================================
-    SystemAllocator::size_type SystemAllocator::Resize(pointer ptr, size_type newSize)
-    {
-        newSize = MemorySizeAdjustedUp(newSize);
-        size_type resizedSize = m_schema->Resize(ptr, newSize);
-
-        AZ_MEMORY_PROFILE(ProfileResize(ptr, resizedSize));
-
-        return MemorySizeAdjustedDown(resizedSize);
-    }
-
-    //=========================================================================
     //
     // [8/12/2011]
     //=========================================================================
-    SystemAllocator::size_type SystemAllocator::AllocationSize(pointer ptr)
+    SystemAllocator::size_type SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        size_type allocSize = MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
+        size_type allocSize = MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
 
         return allocSize;
     }

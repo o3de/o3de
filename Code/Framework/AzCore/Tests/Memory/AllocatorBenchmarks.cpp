@@ -64,11 +64,6 @@ namespace Benchmark
             return AZ::AllocatorInstance<TAllocator>::Get().ReAllocate(ptr, newSize, newAlignment);
         }
 
-        static size_t Resize(void* ptr, size_t newSize)
-        {
-            return AZ::AllocatorInstance<TAllocator>::Get().Resize(ptr, newSize);
-        }
-
         static void GarbageCollect()
         {
             AZ::AllocatorInstance<TAllocator>::Get().GarbageCollect();
@@ -451,7 +446,7 @@ namespace Benchmark
                                     // Doing a resize, dont account for this memory change, this operation is rare and we dont have
                                     // the size of the previous allocation
                                     state.ResumeTiming();
-                                    TestAllocatorType::Resize(it.first->second, operation.m_size);
+                                    TestAllocatorType::ReAllocate(it.first->second, operation.m_size, operation.m_alignment);
                                     state.PauseTiming();
                                 }
                             }

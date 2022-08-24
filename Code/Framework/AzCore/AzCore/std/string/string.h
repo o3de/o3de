@@ -1439,21 +1439,6 @@ namespace AZStd
                 }
                 else
                 {
-                    size_type expandedSize = 0;
-                    if (!m_storage.first().ShortStringOptimizationActive())
-                    {
-                        expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (numElements + 1));
-                        // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
-                        // we need to take care when we compute the size on deallocate.
-                        AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiply of node type. This should not happen");
-                        size_type expandedCapacity = expandedSize / sizeof(node_type);
-                        if (expandedCapacity > numElements)
-                        {
-                            m_storage.first().SetCapacity(expandedCapacity - 1);
-                            return;
-                        }
-                    }
-
                     pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (numElements + 1), alignof(node_type)));
                     AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
 
@@ -1463,7 +1448,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, newSize);  // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize);
+                    deallocate_memory(data, 0);
 
                     Traits::assign(newData[newSize], Element());  // terminate
                     m_storage.first().SetCapacity(numElements);
@@ -1684,21 +1669,6 @@ namespace AZStd
             }
             if (newCapacity >= ShortStringData::Capacity)
             {
-                size_type expandedSize = 0;
-                if (!m_storage.first().ShortStringOptimizationActive())
-                {
-                    expandedSize = m_storage.second().resize(m_storage.first().GetData(), sizeof(node_type) * (newCapacity + 1));
-                    // our memory managers allocate on 8+ bytes boundary and our node type should be less than that in general, otherwise
-                    // we need to take care when we compute the size on deallocate.
-                    AZ_Assert(expandedSize % sizeof(node_type) == 0, "Expanded size not a multiple of node type. This should not happen");
-                    size_type expandedCapacity = expandedSize / sizeof(node_type);
-                    if (expandedCapacity > newCapacity)
-                    {
-                        m_storage.first().SetCapacity(expandedCapacity - 1);
-                        return;
-                    }
-                }
-
                 pointer newData = reinterpret_cast<pointer>(m_storage.second().allocate(sizeof(node_type) * (newCapacity + 1), alignof(node_type)));
                 AZSTD_CONTAINER_ASSERT(newData != nullptr, "AZStd::string allocation failed!");
                 if (newData)
@@ -1708,7 +1678,7 @@ namespace AZStd
                     {
                         Traits::copy(newData, data, oldLength);    // copy existing elements
                     }
-                    deallocate_memory(data, expandedSize);
+                    deallocate_memory(data, 0);
 
                     Traits::assign(newData[oldLength], Element());  // terminate
                     m_storage.first().SetCapacity(newCapacity);

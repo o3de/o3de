@@ -284,16 +284,16 @@ AZ_POP_DISABLE_WARNING
         delete someObject;
     }
 
-    TEST_F(HphaSchemaErrorDetectionTest, Resize)
+    TEST_F(HphaSchemaErrorDetectionTest, Reallocate)
     {
         // Make an allocation
         TestClass<1>* someObject = (TestClass<1>*)AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().Allocate(sizeof(TestClass<1>), AZStd::alignment_of<TestClass<1>>::value);
 
         // Make a reallocation, this usually is don internally in a container. Allocators do not support new[]
-        const size_t newSize = AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().Resize(someObject, 2 * sizeof(TestClass<1>));
-        EXPECT_EQ(8, newSize); // it will extend to 8
+        const auto newPointer = AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().reallocate(someObject, 2 * sizeof(TestClass<1>));
+        EXPECT_EQ(AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().get_allocated_size(newPointer), 8); // it will extend to 8
 
-        AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().DeAllocate(someObject, newSize);
+        AZ::AllocatorInstance<HphaSchemaErrorDetection_TestAllocator>::Get().DeAllocate(newPointer, 8);
     }
 
     TEST_F(HphaSchemaErrorDetectionTest, Reallocation)

@@ -48,9 +48,7 @@ namespace SurfaceData
     public:
         AZ_TYPE_INFO(mixed_stack_heap_allocator, "{49B6706B-716F-42F2-92CB-7FD1A57BE2F9}");
 
-        typedef void* pointer;
-        typedef AZStd::size_t size_type;
-        typedef AZStd::ptrdiff_t difference_type;
+        AZ_ALLOCATOR_DEFAULT_TRAITS
 
         mixed_stack_heap_allocator(const char* name = "AZStd::mixed_stack_heap_allocator")
             : m_name(name)
@@ -114,24 +112,21 @@ namespace SurfaceData
             AZ::AllocatorInstance<AZ::SystemAllocator>::Get().DeAllocate(ptr, byteSize, alignment);
         }
 
-        auto resize(pointer ptr, size_type newSize) -> size_type
+        auto reallocate(pointer ptr, size_type newSize, align_type newAlignment = 1) -> pointer
         {
-            // If we're trying to resize our static buffer, allow it to succeed as long as the new size is within the total size of the
-            // static buffer. Otherwise, return 0 to fail the resize request.
+            // If we're trying to reallocate our static buffer, allow it to succeed as long as the new size is within the total size of the
+            // static buffer. Otherwise, return 0 to fail the reallocate request.
             if (ptr == m_lastStaticAllocation)
             {
                 if (newSize <= (sizeof(Node) * NumNodes))
                 {
-                    return newSize;
+                    return ptr;
                 }
-                else
-                {
-                    return 0;
-                }
+                return nullptr;
             }
 
             // Resize from the heap.
-            return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Resize(ptr, newSize);
+            return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().reallocate(ptr, newSize, newAlignment);
         }
 
         auto max_size() const -> size_type
@@ -140,7 +135,7 @@ namespace SurfaceData
             return AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetMaxContiguousAllocationSize();
         }
 
-        auto get_allocated_size() const -> size_type
+        auto NumAllocatedBytes() const -> size_type
         {
             // Always return the full size of our stack allocation, plus the total amount of heap allocations.
             // While this doesn't seem like an accurate result, it's consistent with how AZStd::allocator behaves.

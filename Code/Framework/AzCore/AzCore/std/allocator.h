@@ -69,38 +69,50 @@ namespace AZStd
     class allocator
     {
     public:
-
         AZ_TYPE_INFO(allocator, "{E9F5A3BE-2B3D-4C62-9E6B-4E00A13AB452}");
 
-        using pointer = void *;
+        using value_type = void;
+        using pointer = void*;
         using size_type = AZStd::size_t;
         using difference_type = AZStd::ptrdiff_t;
+        using align_type = AZStd::size_t;
+        using propagate_on_container_copy_assignment = AZStd::true_type;
+        using propagate_on_container_move_assignment = AZStd::true_type;
 
-        AZ_FORCE_INLINE allocator(const char* name = "AZStd::allocator")
-            : m_name(name) {}
-        AZ_FORCE_INLINE allocator(const allocator& rhs)
-            : m_name(rhs.m_name)    {}
-        AZ_FORCE_INLINE allocator(const allocator& rhs, const char* name)
-            : m_name(name) { (void)rhs; }
+        AZ_FORCE_INLINE allocator() = default;
+        AZ_FORCE_INLINE allocator(const char*) {};
+        AZ_FORCE_INLINE allocator(const allocator& rhs) = default;
+        AZ_FORCE_INLINE allocator([[maybe_unused]] const allocator& rhs, [[maybe_unused]] const char* name) {}
+        AZ_FORCE_INLINE allocator& operator=(const allocator& rhs) = default;
 
-        AZ_FORCE_INLINE allocator& operator=(const allocator& rhs)      { m_name = rhs.m_name; return *this; }
+        pointer allocate(size_type byteSize, size_type alignment);
+        void deallocate(pointer ptr, size_type byteSize, size_type alignment);
+        pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1);
 
-        AZ_FORCE_INLINE const char*  get_name() const                   { return m_name; }
-        AZ_FORCE_INLINE void         set_name(const char* name)         { m_name = name; }
+        size_type max_size() const
+        {
+            return AZ_TRAIT_OS_MEMORY_MAX_ALLOCATOR_SIZE;
+        }
 
-        pointer    allocate(size_type byteSize, size_type alignment);
-        void            deallocate(pointer ptr, size_type byteSize, size_type alignment);
-        size_type       resize(pointer ptr, size_type newSize);
-        // max_size actually returns the true maximum size of a single allocation
-        size_type       max_size() const;
-        size_type       get_allocated_size() const;
+        size_type get_allocated_size() const
+        {
+            return 0;
+        }
 
-        AZ_FORCE_INLINE bool is_lock_free()                             { return false; }
-        AZ_FORCE_INLINE bool is_stale_read_allowed()                    { return false; }
-        AZ_FORCE_INLINE bool is_delayed_recycling()                     { return false; }
+        AZ_FORCE_INLINE bool is_lock_free()
+        {
+            return false;
+        }
 
-    private:
-        const char* m_name;
+        AZ_FORCE_INLINE bool is_stale_read_allowed()
+        {
+            return false;
+        }
+
+        AZ_FORCE_INLINE bool is_delayed_recycling()
+        {
+            return false;
+        }
     };
 
     AZ_FORCE_INLINE bool operator==(const AZStd::allocator& a, const AZStd::allocator& b)

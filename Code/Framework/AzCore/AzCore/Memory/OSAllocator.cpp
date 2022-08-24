@@ -105,4 +105,17 @@ namespace AZ
         m_numAllocatedBytes -= byteSize;
     }
 
+    OSAllocator::pointer OSAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
+    {
+        // Realloc in most platforms doesnt support allocating from a nulltpr
+        const pointer newPtr = m_custom ? m_custom->reallocate(ptr, newSize, alignment)
+            : ptr                       ? AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment))
+                                        : AZ_OS_MALLOC(newSize, static_cast<AZStd::size_t>(alignment));
+        return newPtr;
+    }
+
+    OSAllocator::size_type OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const
+    {
+        return m_custom ? m_custom->get_allocated_size(ptr, alignment) : ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
+    }
 }

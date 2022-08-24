@@ -66,16 +66,13 @@ namespace AZ
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
-        size_type Resize(pointer ptr, size_type newSize) override;
         pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
-        size_type AllocationSize(pointer ptr) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override;
 
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
-        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
-        size_type Capacity() const override;
 
     protected:
         PoolSchema(const PoolSchema&);
@@ -112,15 +109,12 @@ namespace AZ
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
-        size_type Resize(pointer ptr, size_type newSize) override;
         pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
-        size_type AllocationSize(pointer ptr) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
-        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
-        size_type Capacity() const override;
 
     protected:
         ThreadPoolSchema(const ThreadPoolSchema&);
@@ -264,14 +258,6 @@ namespace AZ
                 (void)newAlignment;
                 AZ_Assert(false, "Not supported!");
                 return nullptr;
-            }
-
-            size_type Resize(pointer ptr, size_type newSize) override
-            {
-                (void)ptr;
-                (void)newSize;
-                // \todo return the node size
-                return 0;
             }
 
             //////////////////////////////////////////////////////////////////////////

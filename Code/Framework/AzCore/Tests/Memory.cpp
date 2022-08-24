@@ -1055,18 +1055,16 @@ namespace UnitTest
                 AZ_Assert(false, "Not supported!");
                 return NULL;
             }
-            /// Resize an allocated memory block. Returns the new expanded size (up to newSize) or AllocationSize(ptr) or 0 (if you don't support resize at all)
-            size_type               Resize(pointer ptr, size_type newSize) override  { (void)ptr; (void)newSize; return 0; }
             /// Returns allocation size for given address. 0 if the address doesn't belong to the allocator.
-            size_type               AllocationSize(pointer ptr) override             { (void)ptr; return 0; }
+            size_type get_allocated_size(pointer, align_type) const override
+            {
+                return 0;
+            }
 
-            size_type               NumAllocatedBytes() const override                    { return 0; }
-            /// Returns the capacity of the Allocator in bytes. If the return value is 0 the Capacity is undefined (usually depends on another allocator)
-            size_type               Capacity() const override                             { return 1 * 1024 * 1024 * 1024; }
-            /// Returns max allocation size if possible. If not returned value is 0
-            size_type               GetMaxAllocationSize() const override                 { return 1 * 1024 * 1024 * 1024; }
-            /// Returns max allocation size of a single contiguous allocation
-            size_type               GetMaxContiguousAllocationSize() const override       { return 1 * 1024 * 1024 * 1024; }
+            size_type NumAllocatedBytes() const override
+            {
+                return 0;
+            }
         };
     public:
         void SetUp() override

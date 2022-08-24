@@ -101,21 +101,6 @@ namespace AZ
             m_schema->deallocate(ptr, byteSize, alignment);
         }
 
-        size_type Resize(pointer ptr, size_type newSize) override
-        {
-            newSize = MemorySizeAdjustedUp(newSize);
-            size_t result = m_schema->Resize(ptr, newSize);
-
-            if (ProfileAllocations)
-            {
-                AZ_MEMORY_PROFILE(ProfileResize(ptr, result));
-            }
-
-            // Failure to resize an existing pointer does not indicate out-of-memory, so we do not check for it here
-
-            return result;
-        }
-
         pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
             if (ProfileAllocations)
@@ -148,9 +133,9 @@ namespace AZ
             return newPtr;
         }
                 
-        size_type AllocationSize(pointer ptr) override
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override
         {
-            return MemorySizeAdjustedDown(m_schema->AllocationSize(ptr));
+            return MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
         }
         
         void GarbageCollect() override
@@ -161,26 +146,6 @@ namespace AZ
         size_type NumAllocatedBytes() const override
         {
             return m_schema->NumAllocatedBytes();
-        }
-
-        size_type Capacity() const override
-        {
-            return m_schema->Capacity();
-        }
-        
-        size_type GetMaxAllocationSize() const override
-        { 
-            return m_schema->GetMaxAllocationSize();
-        }
-
-        size_type GetMaxContiguousAllocationSize() const override
-        {
-            return m_schema->GetMaxContiguousAllocationSize();
-        }
-
-        size_type GetUnAllocatedMemory(bool isPrint = false) const override
-        { 
-            return m_schema->GetUnAllocatedMemory(isPrint);
         }
 
     private:

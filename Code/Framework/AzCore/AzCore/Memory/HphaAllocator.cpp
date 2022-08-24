@@ -68,6 +68,7 @@ namespace AZ
 
     template<bool DebugAllocatorEnable>
     class HphaSchemaBase<DebugAllocatorEnable>::HpAllocator
+        : public IAllocatorSchema
     {
     public:
         // the guard size controls how many extra bytes are stored after
@@ -598,7 +599,12 @@ namespace AZ
         size_t mTotalCapacitySizeTree = 0;
     public:
         HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc);
-        ~HpAllocator();
+        ~HpAllocator() override;
+
+        pointer allocate(size_type byteSize, align_type alignment = 1) override;
+        void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) override;
+        pointer reallocate(pointer ptr, size_type newSize, align_type alignment = 1) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
         // allocate memory using DEFAULT_ALIGNMENT
         // size == 0 returns NULL
@@ -2215,6 +2221,57 @@ namespace AZ
         }
     }
 
+    template<bool DebugAllocatorEnable>
+    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::pointer HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::allocate(size_type byteSize, align_type alignment)
+    {
+        pointer address = alloc(byteSize, static_cast<size_t>(alignment));
+        if (address == nullptr)
+        {
+            purge();
+            address = alloc(byteSize, static_cast<size_t>(alignment));
+        }
+        return address;
+    }
+
+    template<bool DebugAllocatorEnable>
+    void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::deallocate(pointer ptr, size_type byteSize, align_type alignment)
+    {
+        if (ptr == nullptr)
+        {
+            return;
+        }
+        if (byteSize == 0)
+        {
+            free(ptr);
+        }
+        else if (alignment == 0)
+        {
+            free(ptr, byteSize);
+        }
+        else
+        {
+            free(ptr, byteSize, alignment);
+        }
+    }
+
+    template<bool DebugAllocatorEnable>
+    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::pointer HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
+    {
+        pointer address = realloc(ptr, newSize, static_cast<size_t>(alignment));
+        if (address == nullptr && newSize > 0)
+        {
+            purge();
+            address = realloc(ptr, newSize, static_cast<size_t>(alignment));
+        }
+        return address;
+    }
+
+    template<bool DebugAllocatorEnable>
+    typename HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::size_type HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::get_allocated_size(pointer ptr, [[maybe_unused]] align_type alignment) const
+    {
+        return size(ptr);
+    }
+
     //=========================================================================
     // allocationSize
     // [2/22/2011]
@@ -2646,23 +2703,13 @@ namespace AZ
     }
 
     //=========================================================================
-    // Resize
-    // [2/22/2011]
-    //=========================================================================
-    template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::Resize(pointer ptr, size_type newSize) -> size_type
-    {
-        return m_allocator->resize(ptr, newSize);
-    }
-
-    //=========================================================================
     // AllocationSize
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::AllocationSize(pointer ptr) -> size_type
+    auto HphaSchemaBase<DebugAllocator>::get_allocated_size(pointer ptr, align_type alignment) const -> size_type
     {
-        return m_allocator->AllocationSize(ptr);
+        return m_allocator->get_allocated_size(ptr, alignment);
     }
 
     //=========================================================================
@@ -2675,33 +2722,6 @@ namespace AZ
         return m_allocator->allocated();
     }
 
-
-    //=========================================================================
-    // GetMaxAllocationSize
-    // [2/22/2011]
-    //=========================================================================
-    template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::GetMaxAllocationSize() const -> size_type
-    {
-        return m_allocator->GetMaxAllocationSize();
-    }
-
-    template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::HphaSchemaBase::GetMaxContiguousAllocationSize() const -> size_type
-    {
-        return m_allocator->GetMaxContiguousAllocationSize();
-    }
-
-    //=========================================================================
-    // GetUnAllocatedMemory
-    // [9/30/2013]
-    //=========================================================================
-    template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::GetUnAllocatedMemory(bool isPrint) const -> size_type
-    {
-        return m_allocator->GetUnAllocatedMemory(isPrint);
-    }
-
     //=========================================================================
     // GarbageCollect
     // [2/22/2011]
@@ -2710,17 +2730,6 @@ namespace AZ
     void HphaSchemaBase<DebugAllocator>::GarbageCollect()
     {
         m_allocator->purge();
-    }
-
-    template<bool DebugAllocator>
-    auto HphaSchemaBase<DebugAllocator>::Capacity() const -> size_type
-    {
-        // Do not return m_capacity if it was never initialized.  Instead return raw tracked numbers of how much the tree and buckets have grown
-        if (m_capacity == AZ_CORE_MAX_ALLOCATOR_SIZE)
-        {
-            return m_allocator->mTotalCapacitySizeBuckets + m_allocator->mTotalCapacitySizeTree;
-        }
-        return m_capacity;
     }
 
     template<bool DebugAllocator>

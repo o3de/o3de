@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Memory/AllocatorDebug.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -43,7 +44,7 @@ namespace AZ
 
         void* Allocate(size_t byteSize, size_t alignment);
         void DeAllocate(void* ptr);
-        size_t AllocationSize(void* ptr);
+        size_t get_allocated_size(void* ptr) const;
         // if isForceFreeAllPages is true we will free all pages even if they have allocations in them.
         void GarbageCollect(bool isForceFreeAllPages = false);
 
@@ -70,7 +71,7 @@ namespace AZ
 
         PoolSchema::pointer Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
         void DeAllocate(PoolSchema::pointer ptr);
-        PoolSchema::size_type AllocationSize(PoolSchema::pointer ptr);
+        PoolSchema::size_type get_allocated_size(PoolSchema::pointer ptr, PoolSchema::align_type alignment) const;
 
         /**
          * We allocate memory for pools in pages. Page is a information struct
@@ -229,7 +230,7 @@ namespace AZ
 
         ThreadPoolSchema::pointer Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
         void DeAllocate(ThreadPoolSchema::pointer ptr);
-        ThreadPoolSchema::size_type AllocationSize(ThreadPoolSchema::pointer ptr);
+        ThreadPoolSchema::size_type get_allocated_size(ThreadPoolSchema::pointer ptr, ThreadPoolSchema::align_type alignment) const;
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect();
         //////////////////////////////////////////////////////////////////////////
@@ -277,7 +278,7 @@ namespace AZ
             m_pageAllocator->deallocate(memBlock);
         }
 
-        inline Page* PageFromAddress(void* address)
+        inline Page* PageFromAddress(void* address) const
         {
             char* memBlock = reinterpret_cast<char*>(reinterpret_cast<size_t>(address) & ~static_cast<size_t>(m_pageSize - 1));
             memBlock += m_pageSize - sizeof(Page);
@@ -537,20 +538,10 @@ namespace AZ
     // [11/22/2010]
     //=========================================================================
     template<class Allocator>
-    AZ_INLINE size_t PoolAllocation<Allocator>::AllocationSize(void* ptr)
+    AZ_INLINE size_t PoolAllocation<Allocator>::get_allocated_size(void* ptr) const
     {
-        PageType* page = m_allocator->PageFromAddress(ptr);
-        size_t elementSize;
-        if (page)
-        {
-            elementSize = page->m_elementSize;
-        }
-        else
-        {
-            elementSize = 0;
-        }
-
-        return elementSize;
+        const PageType* page = m_allocator->PageFromAddress(ptr);
+        return page ? page->m_elementSize : 0;
     }
 
     //=========================================================================
@@ -660,17 +651,6 @@ namespace AZ
     }
 
     //=========================================================================
-    // Resize
-    // [10/14/2018]
-    //=========================================================================
-    PoolSchema::size_type PoolSchema::Resize(pointer ptr, size_type newSize)
-    {
-        (void)ptr;
-        (void)newSize;
-        return 0; // unsupported
-    }
-
-    //=========================================================================
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
@@ -688,9 +668,9 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchema::AllocationSize(pointer ptr)
+    PoolSchema::size_type PoolSchema::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        return m_impl->AllocationSize(ptr);
+        return m_impl->get_allocated_size(ptr, alignment);
     }
 
     //=========================================================================
@@ -711,11 +691,6 @@ namespace AZ
         // m_impl->GarbageCollect();
     }
 
-    auto PoolSchema::GetMaxContiguousAllocationSize() const -> size_type
-    {
-        return m_impl->m_allocator.m_maxAllocationSize;
-    }
-
     //=========================================================================
     // NumAllocatedBytes
     // [11/1/2010]
@@ -723,15 +698,6 @@ namespace AZ
     PoolSchema::size_type PoolSchema::NumAllocatedBytes() const
     {
         return m_impl->m_allocator.m_numBytesAllocated;
-    }
-
-    //=========================================================================
-    // Capacity
-    // [11/1/2010]
-    //=========================================================================
-    PoolSchema::size_type PoolSchema::Capacity() const
-    {
-        return m_impl->m_numStaticPages * m_impl->m_pageSize;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -832,11 +798,11 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    PoolSchema::size_type PoolSchemaImpl::AllocationSize(PoolSchema::pointer ptr)
+    PoolSchema::size_type PoolSchemaImpl::get_allocated_size(PoolSchema::pointer ptr, [[maybe_unused]] PoolSchema::align_type alignment) const
     {
         // AZ_Warning("Memory",m_ownerThread==AZStd::this_thread::get_id(),"You can't use PoolAllocator from a different context/thread, use
         // ThreadPoolAllocator!");
-        return m_allocator.AllocationSize(ptr);
+        return m_allocator.get_allocated_size(ptr);
     }
 
     //=========================================================================
@@ -992,17 +958,6 @@ namespace AZ
     }
 
     //=========================================================================
-    // Resize
-    // [10/14/2018]
-    //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchema::Resize(pointer ptr, size_type newSize)
-    {
-        (void)ptr;
-        (void)newSize;
-        return 0; // unsupported
-    }
-
-    //=========================================================================
     // ReAllocate
     // [10/14/2018]
     //=========================================================================
@@ -1017,12 +972,12 @@ namespace AZ
     }
 
     //=========================================================================
-    // AllocationSize
+    // get_allocated_size
     // [11/22/2010]
     //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchema::AllocationSize(pointer ptr)
+    ThreadPoolSchema::size_type ThreadPoolSchema::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        return m_impl->AllocationSize(ptr);
+        return m_impl->get_allocated_size(ptr, alignment);
     }
 
     //=========================================================================
@@ -1032,11 +987,6 @@ namespace AZ
     void ThreadPoolSchema::GarbageCollect()
     {
         m_impl->GarbageCollect();
-    }
-
-    auto ThreadPoolSchema::GetMaxContiguousAllocationSize() const -> size_type
-    {
-        return m_impl->m_maxAllocationSize;
     }
 
     //=========================================================================
@@ -1054,15 +1004,6 @@ namespace AZ
             }
         }
         return bytesAllocated;
-    }
-
-    //=========================================================================
-    // Capacity
-    // [11/1/2010]
-    //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchema::Capacity() const
-    {
-        return m_impl->m_numStaticPages * m_impl->m_pageSize;
     }
 
     //=========================================================================
@@ -1233,15 +1174,15 @@ namespace AZ
     // AllocationSize
     // [11/22/2010]
     //=========================================================================
-    ThreadPoolSchema::size_type ThreadPoolSchemaImpl::AllocationSize(ThreadPoolSchema::pointer ptr)
+    ThreadPoolSchema::size_type ThreadPoolSchemaImpl::get_allocated_size(ThreadPoolSchema::pointer ptr, [[maybe_unused]] ThreadPoolSchema::align_type alignment) const
     {
-        Page* page = PageFromAddress(ptr);
+        const Page* page = PageFromAddress(ptr);
         if (page == nullptr)
         {
             return 0;
         }
         AZ_Assert(page->m_threadData != nullptr, ("We must have valid page thread data for the page!"));
-        return page->m_threadData->m_allocator.AllocationSize(ptr);
+        return page->m_threadData->m_allocator.get_allocated_size(ptr);
     }
 
     //=========================================================================

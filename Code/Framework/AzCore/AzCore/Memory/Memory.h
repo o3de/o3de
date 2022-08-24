@@ -397,9 +397,7 @@ namespace AZ
     class AZStdAlloc
     {
     public:
-        using pointer = void*;
-        using size_type = AZStd::size_t;
-        using difference_type = AZStd::ptrdiff_t;
+        AZ_ALLOCATOR_DEFAULT_TRAITS
 
         AZ_FORCE_INLINE AZStdAlloc()
         {
@@ -423,9 +421,9 @@ namespace AZ
         {
             return AllocatorInstance<Allocator>::Get().allocate(byteSize, alignment);
         }
-        AZ_FORCE_INLINE size_type resize(pointer ptr, size_type newSize)
+        AZ_FORCE_INLINE pointer reallocate(pointer ptr, size_type newSize, align_type newAlignment)
         {
-            return AllocatorInstance<Allocator>::Get().Resize(ptr, newSize);
+            return AllocatorInstance<Allocator>::Get().Resize(ptr, newSize, newAlignment);
         }
         AZ_FORCE_INLINE void deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
@@ -433,8 +431,8 @@ namespace AZ
         }
         AZ_FORCE_INLINE const char* get_name() const            { return m_name; }
         AZ_FORCE_INLINE void        set_name(const char* name)  { m_name = name; }
-        size_type                   max_size() const            { return AllocatorInstance<Allocator>::Get().GetMaxContiguousAllocationSize(); }
-        size_type                   get_allocated_size() const  { return AllocatorInstance<Allocator>::Get().NumAllocatedBytes(); }
+        size_type                   max_size() const            { return AllocatorInstance<Allocator>::Get().max_size(); }
+        size_type                   get_allocated_size() const  { return AllocatorInstance<Allocator>::Get().get_allocated_size(); }
 
         AZ_FORCE_INLINE bool is_lock_free()                     { return AllocatorInstance<Allocator>::Get().is_lock_free(); }
         AZ_FORCE_INLINE bool is_stale_read_allowed()            { return AllocatorInstance<Allocator>::Get().is_stale_read_allowed(); }
@@ -459,9 +457,7 @@ namespace AZ
     class AZStdIAllocator
     {
     public:
-        using pointer = void*;
-        using size_type = AZStd::size_t;
-        using difference_type = AZStd::ptrdiff_t;
+        AZ_ALLOCATOR_DEFAULT_TRAITS
 
         AZ_FORCE_INLINE AZStdIAllocator(IAllocator* allocator, const char* name = "AZ::AZStdIAllocator")
             : m_allocator(allocator)
@@ -480,9 +476,9 @@ namespace AZ
         {
             return m_allocator->allocate(byteSize, alignment);
         }
-        AZ_FORCE_INLINE size_type resize(pointer ptr, size_t newSize)
+        AZ_FORCE_INLINE pointer reallocate(pointer ptr, size_t newSize, align_type newAlignment = 1)
         {
-            return m_allocator->Resize(ptr, newSize);
+            return m_allocator->reallocate(ptr, newSize, newAlignment);
         }
         AZ_FORCE_INLINE void deallocate(pointer ptr, size_t byteSize, size_t alignment)
         {
@@ -531,9 +527,9 @@ namespace AZ
         {
             return m_allocatorFunctor().allocate(byteSize, alignment);
         }
-        size_type resize(pointer ptr, size_t newSize)
+        pointer reallocate(pointer ptr, size_t newSize, size_t newAlignment = 1)
         {
-            return m_allocatorFunctor().Resize(ptr, newSize);
+            return m_allocatorFunctor().reallocate(ptr, newSize, newAlignment);
         }
         void deallocate(pointer ptr, size_t byteSize, size_t alignment)
         {

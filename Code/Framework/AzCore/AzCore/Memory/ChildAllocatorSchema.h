@@ -41,19 +41,14 @@ namespace AZ
             AZ::AllocatorInstance<Parent>::Get().deallocate(ptr, byteSize, alignment);
         }
 
-        size_type Resize(pointer ptr, size_type newSize) override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().Resize(ptr, newSize);
-        }
-
         pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
         {
             return AZ::AllocatorInstance<Parent>::Get().reallocate(ptr, newSize, newAlignment);
         }
 
-        size_type AllocationSize(pointer ptr) override
+        size_type get_allocated_size(pointer ptr, align_type alignment) const override
         {
-            return AZ::AllocatorInstance<Parent>::Get().AllocationSize(ptr);
+            return AZ::AllocatorInstance<Parent>::Get().get_allocated_size(ptr, alignment);
         }
 
         void GarbageCollect() override
@@ -64,26 +59,6 @@ namespace AZ
         size_type NumAllocatedBytes() const override
         {
             return AZ::AllocatorInstance<Parent>::Get().NumAllocatedBytes();
-        }
-
-        size_type Capacity() const override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().Capacity();
-        }
-
-        size_type GetMaxAllocationSize() const override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().GetMaxAllocationSize();
-        }
-
-        size_type GetMaxContiguousAllocationSize() const override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().GetMaxContiguousAllocationSize();
-        }
-
-        size_type               GetUnAllocatedMemory(bool isPrint = false) const override
-        {
-            return AZ::AllocatorInstance<Parent>::Get().GetUnAllocatedMemory(isPrint);
         }
     };
 }

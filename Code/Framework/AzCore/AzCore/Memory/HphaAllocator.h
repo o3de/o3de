@@ -60,15 +60,9 @@ namespace AZ
         pointer         allocate(size_type byteSize, size_type alignment) override;
         void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
         pointer         reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
-        /// Resizes allocated memory block to the size possible and returns that size.
-        size_type       Resize(pointer ptr, size_type newSize) override;
-        size_type       AllocationSize(pointer ptr) override;
+        size_type get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
         size_type       NumAllocatedBytes() const override;
-        size_type       Capacity() const override;
-        size_type       GetMaxAllocationSize() const override;
-        size_type       GetMaxContiguousAllocationSize() const override;
-        size_type       GetUnAllocatedMemory(bool isPrint = false) const override;
 
         /// Return unused memory to the OS (if we don't use fixed block). Don't call this unless you really need free memory, it is slow.
         void            GarbageCollect() override;

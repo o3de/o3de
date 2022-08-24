@@ -91,16 +91,10 @@ namespace AZ
         pointer         allocate(size_type byteSize, size_type alignment) override;
         void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
         pointer         reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
-        size_type       Resize(pointer ptr, size_type newSize) override;
-        size_type       AllocationSize(pointer ptr) override;
+        size_type get_allocated_size(pointer ptr, size_type alignment) const override;
         void            GarbageCollect() override                 { GetSchema()->GarbageCollect(); }
 
         size_type       NumAllocatedBytes() const override       { return GetSchema()->NumAllocatedBytes(); }
-        size_type       Capacity() const override                { return GetSchema()->Capacity(); }
-        /// Keep in mind this operation will execute GarbageCollect to make sure it returns, max allocation. This function WILL be slow.
-        size_type       GetMaxAllocationSize() const override    { return GetSchema()->GetMaxAllocationSize(); }
-        size_type       GetMaxContiguousAllocationSize() const override { return GetSchema()->GetMaxContiguousAllocationSize(); }
-        size_type       GetUnAllocatedMemory(bool isPrint = false) const override    { return GetSchema()->GetUnAllocatedMemory(isPrint); }
 
         //////////////////////////////////////////////////////////////////////////
 
