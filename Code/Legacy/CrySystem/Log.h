@@ -61,30 +61,24 @@ public:
     virtual void LogAlways(const char* command, ...) PRINTF_PARAMS(2, 3);
     virtual void LogWarning(const char* command, ...) PRINTF_PARAMS(2, 3);
     virtual void LogError(const char* command, ...) PRINTF_PARAMS(2, 3);
-    virtual void LogPlus(const char* command, ...) PRINTF_PARAMS(2, 3);
+    // Append the log output with the previous logged line
+    void LogAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3);
     virtual void LogToFile  (const char* command, ...) PRINTF_PARAMS(2, 3);
-    virtual void LogToFilePlus(const char* command, ...) PRINTF_PARAMS(2, 3);
+    // Append the log output to the file with the previous logged line
+    void LogToFileAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3);
     virtual void LogToConsole(const char* command, ...) PRINTF_PARAMS(2, 3);
-    virtual void LogToConsolePlus(const char* command, ...) PRINTF_PARAMS(2, 3);
+    // Append the log output to the console with the previous logged line
+    void LogToConsoleAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3);
 #else
-    virtual void Log(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogAlways(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogWarning(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogError(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogPlus(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogToFile  (const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogToFilePlus(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogToConsole(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
-    virtual void LogToConsolePlus(const char* command, ...) PRINTF_PARAMS(2, 3) {
-    };
+    virtual void Log(const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    virtual void LogAlways(const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    virtual void LogWarning(const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    virtual void LogError(const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    void LogAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3) {}
+    virtual void LogToFile  (const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    void LogToFileAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3) {}
+    virtual void LogToConsole(const char* command, ...) PRINTF_PARAMS(2, 3) {}
+    void LogToConsoleAppendWithPrevLine(const char* command, ...) override PRINTF_PARAMS(2, 3) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
     virtual void UpdateLoadingScreen(const char* command, ...) PRINTF_PARAMS(2, 3);
     virtual void SetVerbosity(int verbosity);
@@ -95,6 +89,7 @@ public:
     virtual void RemoveCallback(ILogCallback* pCallback);
     virtual void LogV(ELogType ineType, int flags, const char* szFormat, va_list args);
     virtual void LogV(ELogType ineType, const char* szFormat, va_list args);
+    void LogWithCallback(ELogType logType, const LogWriteCallback& messageCallback) override;
     virtual void Update();
     virtual const char* GetModuleFilter();
     virtual void FlushAndClose();
@@ -109,9 +104,13 @@ private: // -------------------------------------------------------------------
             Console,
             File
         };
-        char msg[512];
+        // Use a fixed_string buffer that can hold 512 characters + NUL terminating character
+        // If a string is greater than the fixed string size, then the message is stored
+        // in AZStd::string allocated from the heap
+        using MessageString  = AZStd::variant<AZStd::fixed_string<512>, AZStd::string>;
+        MessageString msg;
         ELogType logType;
-        bool bAdd;
+        bool m_appendToPreviousLine;
         Destination destination;
     };
 
@@ -120,7 +119,7 @@ private: // -------------------------------------------------------------------
     bool IsError(ELogType logType) const { return logType == ELogType::eError || logType == ELogType::eErrorAlways || logType == ELogType::eWarning || logType == ELogType::eWarningAlways; }
 
     //helper function to pass calls to LogString... to the main thread, returns false if you are on the main thread already, in which case just process the work.
-    bool LogToMainThread(const char* szString, ELogType logType, bool bAdd, SLogMsg::Destination destination);
+    bool LogToMainThread(AZStd::string_view szString, ELogType logType, bool m_appendToPreviousLine, SLogMsg::Destination destination);
 
     enum class MessageQueueState
     {
@@ -129,13 +128,13 @@ private: // -------------------------------------------------------------------
     };
 
 #if !defined(EXCLUDE_NORMAL_LOG)
-    void LogString(const char* szString, ELogType logType);
-    void LogStringToFile(const char* szString, ELogType logType, bool bAdd, MessageQueueState queueState);
-    void LogStringToConsole(const char* szString, ELogType logType, bool bAdd);
+    void LogString(AZStd::string_view szString, ELogType logType);
+    void LogStringToFile(AZStd::string_view szString, ELogType logType, bool m_appendToPreviousLine, MessageQueueState queueState);
+    void LogStringToConsole(AZStd::string_view szString, ELogType logType, bool m_appendToPreviousLine);
 #else
-    void LogString(const char* szString, ELogType logType) {}
-    void LogStringToFile(const char* szString, ELogType logType, bool bAdd, MessageQueueState queueState) {}
-    void LogStringToConsole(const char* szString, ELogType logType, bool bAdd) {}
+    void LogString(AZStd::string_view szString, ELogType logType) {}
+    void LogStringToFile(AZStd::string_view szString, ELogType logType, bool m_appendToPreviousLine, MessageQueueState queueState) {}
+    void LogStringToConsole(AZStd::string_view szString, ELogType logType, bool m_appendToPreviousLine) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
     bool OpenLogFile(const char* filename, AZ::IO::OpenMode mode);

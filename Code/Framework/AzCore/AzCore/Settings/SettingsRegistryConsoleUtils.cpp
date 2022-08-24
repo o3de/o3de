@@ -126,16 +126,20 @@ namespace AZ::SettingsRegistryConsoleUtils
     static void ConsoleDumpSettingsFileOriginValue(SettingsRegistryOriginTracker& settingsRegistryOriginTracker, const ConsoleCommandContainer& commandArgs)
     {
         AZStd::string outputString;
+        auto JoinLastOrigin = [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
+        {
+            outputString += AZStd::string::format("Key: \"%s\" Origin: \"%s\" Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
+                settingsRegistryOrigin.m_originFilePath.c_str(),
+                settingsRegistryOrigin.m_settingsValue.has_value() ? settingsRegistryOrigin.m_settingsValue.value().c_str()
+                : "<removed>");
+            // Only visit the last file origin for each setting keys
+            return false;
+        };
+
         for (AZStd::string_view settingsKeyToDump : (commandArgs.empty() ? ConsoleCommandContainer{""} : commandArgs))
         {
-            settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
-            {
-                outputString += AZStd::string::format("Key: \"%s\" Origin: \"%s\" Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
-                        settingsRegistryOrigin.m_originFilePath.c_str(),
-                        settingsRegistryOrigin.m_settingsValue.has_value() ? settingsRegistryOrigin.m_settingsValue.value().c_str()
-                                                                           : "<removed>");
-                    return true;
-            });
+
+            settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, AZStd::move(JoinLastOrigin));
         }
 
         AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
