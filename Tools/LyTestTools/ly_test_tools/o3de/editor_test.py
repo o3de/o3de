@@ -16,7 +16,7 @@ Usage example:
        class MyFirstTest(EditorSingleTest):
            from . import script_to_be_run_by_editor as test_module
 
-       class MyTestInParallel_1(EditorBatchedTest):
+       class MyTestInParallel_1(EditorParallelTest):
            from . import another_script_to_be_run_by_editor as test_module
 
        class MyTestInParallel_2(EditorParallelTest):
