@@ -1191,8 +1191,17 @@ bool CLog::LogToMainThread(AZStd::string_view szString, ELogType logType, bool a
     if (CryGetCurrentThreadId() != m_nMainThreadId)
     {
         // When logging from other thread then main, push all log strings to queue.
+        constexpr size_t fixedBufferMaxSize = AZStd::variant_alternative_t<0, SLogMsg::MessageString>{}.max_size();
         SLogMsg msg;
-        msg.msg = szString;
+        if (szString.size() <= fixedBufferMaxSize)
+        {
+            // Store string in fixed buffer if less than the fixed_string::max_size
+            msg.msg.emplace<0>(szString);
+        }
+        else
+        {
+            msg.msg.emplace<AZStd::string>(szString);
+        }
         msg.m_appendToPreviousLine = appendToPrevLine;
         msg.destination = destination;
         msg.logType = logType;
@@ -1687,20 +1696,25 @@ void CLog::Update()
         {
             AZStd::scoped_lock lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
             // Must be called from main thread
+            constexpr auto GetMessageView = [](auto&& messageView) constexpr -> AZStd::string_view
+            {
+                return messageView;
+            };
             SLogMsg msg;
             while (m_threadSafeMsgQueue.try_pop(msg))
             {
+                AZStd::string_view messageView = AZStd::visit(GetMessageView, msg.msg);
                 if (msg.destination == SLogMsg::Destination::Console)
                 {
-                    LogStringToConsole(msg.msg, msg.logType, msg.m_appendToPreviousLine);
+                    LogStringToConsole(messageView, msg.logType, msg.m_appendToPreviousLine);
                 }
                 else if (msg.destination == SLogMsg::Destination::File)
                 {
-                    LogStringToFile(msg.msg, msg.logType, msg.m_appendToPreviousLine, MessageQueueState::Queued);
+                    LogStringToFile(messageView, msg.logType, msg.m_appendToPreviousLine, MessageQueueState::Queued);
                 }
                 else
                 {
-                    LogString(msg.msg, msg.logType);
+                    LogString(messageView, msg.logType);
                 }
             }
             stl::free_container(m_threadSafeMsgQueue);
