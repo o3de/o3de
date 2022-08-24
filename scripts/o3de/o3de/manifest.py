@@ -537,7 +537,6 @@ def get_project_json_data(project_name: str = None,
 
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
-
     if pathlib.Path(project_path).is_file():
         return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
     else:
