@@ -101,16 +101,16 @@ namespace EditorPythonBindings
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Action")
                 ->Attribute(AZ::Script::Attributes::Module, "action")
-                ->Event("RegisterToolBar", &ToolBarManagerRequests::RegisterToolBar)
-                ->Event("AddActionToToolBar", &ToolBarManagerRequests::AddActionToToolBar)
-                ->Event("AddActionWithSubMenuToToolBar", &ToolBarManagerRequests::AddActionWithSubMenuToToolBar)
-                ->Event("AddActionsToToolBar", &ToolBarManagerRequests::AddActionsToToolBar)
-                ->Event("RemoveActionFromToolBar", &ToolBarManagerRequests::RemoveActionFromToolBar)
-                ->Event("RemoveActionsFromToolBar", &ToolBarManagerRequests::RemoveActionsFromToolBar)
-                ->Event("AddSeparatorToToolBar", &ToolBarManagerRequests::AddSeparatorToToolBar)
-                ->Event("AddWidgetToToolBar", &ToolBarManagerRequests::AddWidgetToToolBar)
-                ->Event("GetSortKeyOfActionInToolBar", &ToolBarManagerRequests::GetSortKeyOfActionInToolBar)
-                ->Event("GetSortKeyOfWidgetInToolBar", &ToolBarManagerRequests::GetSortKeyOfWidgetInToolBar)
+                ->Event("RegisterToolBar", &ToolBarManagerRequestBus::Handler::RegisterToolBar)
+                ->Event("AddActionToToolBar", &ToolBarManagerRequestBus::Handler::AddActionToToolBar)
+                ->Event("AddActionWithSubMenuToToolBar", &ToolBarManagerRequestBus::Handler::AddActionWithSubMenuToToolBar)
+                ->Event("AddActionsToToolBar", &ToolBarManagerRequestBus::Handler::AddActionsToToolBar)
+                ->Event("RemoveActionFromToolBar", &ToolBarManagerRequestBus::Handler::RemoveActionFromToolBar)
+                ->Event("RemoveActionsFromToolBar", &ToolBarManagerRequestBus::Handler::RemoveActionsFromToolBar)
+                ->Event("AddSeparatorToToolBar", &ToolBarManagerRequestBus::Handler::AddSeparatorToToolBar)
+                ->Event("AddWidgetToToolBar", &ToolBarManagerRequestBus::Handler::AddWidgetToToolBar)
+                ->Event("GetSortKeyOfActionInToolBar", &ToolBarManagerRequestBus::Handler::GetSortKeyOfActionInToolBar)
+                ->Event("GetSortKeyOfWidgetInToolBar", &ToolBarManagerRequestBus::Handler::GetSortKeyOfWidgetInToolBar)
                 ;
         }
     }
@@ -257,6 +257,11 @@ namespace EditorPythonBindings
         const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
     {
         return m_toolBarManagerInterface->AddWidgetToToolBar(toolBarIdentifier, widgetActionIdentifier, sortIndex);
+    }
+
+    QToolBar* PythonActionManagerHandler::GetToolBar(const AZStd::string& toolBarIdentifier)
+    {
+        return m_toolBarManagerInterface->GetToolBar(toolBarIdentifier);
     }
 
     AzToolsFramework::ToolBarManagerIntegerResult PythonActionManagerHandler::GetSortKeyOfActionInToolBar(

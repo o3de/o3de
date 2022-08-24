@@ -84,6 +84,7 @@ namespace EditorPythonBindings
             const AZStd::string& toolBarIdentifier, int sortIndex) override;
         AzToolsFramework::ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
+        QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
         AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
         AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(
