@@ -38,9 +38,6 @@ namespace O3DE::ProjectManager
     signals:
         void StartObjectDownload(const QString& objectName);
 
-    private slots:
-        void DownloadObject();
-
     private:
         FormLineEditWidget* m_installPath = nullptr;
 

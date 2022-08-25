@@ -116,26 +116,6 @@ namespace O3DE::ProjectManager
         connect(m_applyButton, &QPushButton::clicked, this, &QDialog::accept);
     }
 
-
-    void DownloadRemoteTemplateDialog::DownloadObject()
-    {
-        // Add Repo:
-        /* const QString repoUri = m_repoPath->lineEdit()->text();
-        auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
-        if (addGemRepoResult.IsSuccess())
-        {
-            // Send download to project screen to initiate download
-            emit StartObjectDownload(m_currentProject.m_projectName);
-            emit QDialog::accept();
-        }
-        else
-        {
-            QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
-            ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
-            AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
-        }*/
-    }
-
     QString DownloadRemoteTemplateDialog::GetInstallPath()
     {
         return m_installPath->lineEdit()->text();

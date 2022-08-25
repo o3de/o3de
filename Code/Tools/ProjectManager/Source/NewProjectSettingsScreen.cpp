@@ -103,12 +103,8 @@ namespace O3DE::ProjectManager
                     }
                     if (button && button->property(k_addRemoteTemplateProperty).isValid())
                     {
-                        // Open add remote template source
                         AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
-                        if (addRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
-                        {
-                            // Refresh template list
-                        }
+                        addRemoteTemplateDialog->exec();
                     }
                 });
 
