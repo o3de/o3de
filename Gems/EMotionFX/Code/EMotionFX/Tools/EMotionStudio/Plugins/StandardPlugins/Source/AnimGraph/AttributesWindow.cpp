@@ -33,6 +33,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <Editor/InspectorBus.h>
 #include <Source/Editor/ObjectEditor.h>
 
 
@@ -157,7 +158,10 @@ namespace EMStudio
             }
         }
 
-        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &AttributesWindow::OnSelectionChanged);
+        connect(&plugin->GetAnimGraphModel().GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [=]([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+            {
+                UpdateAndShowInInspector();
+            });
         connect(&plugin->GetAnimGraphModel(), &AnimGraphModel::dataChanged, this, &AttributesWindow::OnDataChanged);
 
         Init(QModelIndex(), true);
@@ -167,6 +171,9 @@ namespace EMStudio
 
     AttributesWindow::~AttributesWindow()
     {
+        // Clear the inspector in case this window is currently shown.
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::ClearIfShown, this);
+
         AttributesWindowRequestBus::Handler::BusDisconnect();
 
         if (m_mainReflectedWidget)
@@ -509,7 +516,6 @@ namespace EMStudio
 
         QMenu contextMenu(this);
 
-
         QAction* deleteAction = contextMenu.addAction("Delete action");
         deleteAction->setProperty("actionIndex", actionIndex);
         if (itemType == AnimGraphModel::ModelItemType::TRANSITION)
@@ -521,18 +527,14 @@ namespace EMStudio
             connect(deleteAction, &QAction::triggered, this, &AttributesWindow::OnRemoveStateAction);
         }
 
-
         if (!contextMenu.isEmpty())
         {
             contextMenu.exec(position);
         }
     }
 
-    void AttributesWindow::OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    void AttributesWindow::UpdateAndShowInInspector()
     {
-        AZ_UNUSED(selected);
-        AZ_UNUSED(deselected);
-
         const QModelIndexList modelIndexes = m_plugin->GetAnimGraphModel().GetSelectionModel().selectedRows();
         if (!modelIndexes.empty())
         {
@@ -542,6 +544,8 @@ namespace EMStudio
         {
             Init();
         }
+
+        EMStudio::InspectorRequestBus::Broadcast(&EMStudio::InspectorRequestBus::Events::Update, this);
     }
 
     void AttributesWindow::OnDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)

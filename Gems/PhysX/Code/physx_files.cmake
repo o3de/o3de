@@ -27,6 +27,8 @@ set(FILES
     Include/PhysX/PhysXLocks.h
     Include/PhysX/CharacterControllerBus.h
     Include/PhysX/CharacterGameplayBus.h
+    Include/PhysX/Material/PhysXMaterial.h
+    Include/PhysX/Material/PhysXMaterialConfiguration.h
     Source/RigidBodyComponent.cpp
     Source/RigidBodyComponent.h
     Source/BaseColliderComponent.cpp
@@ -35,6 +37,8 @@ set(FILES
     Source/MeshColliderComponent.h
     Source/BoxColliderComponent.h
     Source/BoxColliderComponent.cpp
+    Source/HeightfieldCollider.h
+    Source/HeightfieldCollider.cpp
     Source/HeightfieldColliderComponent.h
     Source/HeightfieldColliderComponent.cpp
     Source/SphereColliderComponent.h
@@ -71,8 +75,6 @@ set(FILES
     Source/Collision.h
     Source/Shape.h
     Source/Shape.cpp
-    Source/Material.cpp
-    Source/Material.h
     Source/ForceRegionForces.cpp
     Source/ForceRegionForces.h
     Source/ForceRegion.cpp
@@ -114,6 +116,10 @@ set(FILES
     Source/Joint/PhysXJointUtils.h
     Source/Joint/PhysXJointUtils.cpp
     Source/Joint/Configuration/PhysXJointConfiguration.cpp
+    Source/Material/PhysXMaterial.cpp
+    Source/Material/PhysXMaterialConfiguration.cpp
+    Source/Material/PhysXMaterialManager.h
+    Source/Material/PhysXMaterialManager.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
     Source/Scene/PhysXSceneInterface.h

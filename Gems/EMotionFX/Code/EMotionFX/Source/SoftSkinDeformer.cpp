@@ -202,11 +202,12 @@ namespace EMotionFX
 
 
     // initialize the mesh deformer
-    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
+    void SoftSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
         MCORE_UNUSED(lodLevel);
+        MCORE_UNUSED(highestJointIndex);
 
         // clear the bone information array
         m_boneMatrices.clear();
@@ -222,6 +223,9 @@ namespace EMotionFX
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         MCORE_ASSERT(skinningLayer);
 
+        constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
+        AZStd::vector<uint16> localBoneMap(highestJointIndex + 1, invalidBoneIndex);
+
         // find out what bones this mesh uses
         const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();
         for (uint32 i = 0; i < numOrgVerts; i++)
@@ -235,21 +239,22 @@ namespace EMotionFX
             for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
+                const uint16 nodeIndex = influence->GetNodeNr();
 
                 // get the bone index in the array
-                size_t boneIndex = FindLocalBoneIndex(influence->GetNodeNr());
-
+                uint16 boneIndex = localBoneMap[nodeIndex];
                 // if the bone is not found in our array
-                if (boneIndex == InvalidIndex)
+                if (boneIndex == invalidBoneIndex)
                 {
                     // add the bone to the array of bones in this deformer
-                    m_nodeNumbers.emplace_back(influence->GetNodeNr());
+                    m_nodeNumbers.emplace_back(nodeIndex);
                     m_boneMatrices.emplace_back(mat);
-                    boneIndex = m_boneMatrices.size() - 1;
+                    boneIndex = aznumeric_cast<uint16>(m_boneMatrices.size() - 1);
+                    localBoneMap[nodeIndex] = boneIndex;
                 }
-
+                
                 // set the bone number in the influence
-                influence->SetBoneNr(static_cast<uint16>(boneIndex));
+                influence->SetBoneNr(boneIndex);
             }
         }
     }

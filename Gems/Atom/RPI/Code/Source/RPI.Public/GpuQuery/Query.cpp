@@ -115,7 +115,10 @@ namespace AZ
             }
 
             // Validate that the queries are recorded for the same scope.
-            if (m_cachedScopeId != context.GetScopeId())
+            // Note: the timestamp query skips this check because its start and end may be added in randome order since they are added in different FrameGraphExecuteContext.
+            // The order doesn't matter because timestamp's begin or end are just inserting a timestamp to the command list.
+            // Also, the command list's execution order will still follow the order of start query and end query.
+            if (m_cachedScopeId != context.GetScopeId() && GetQueryType() != RHI::QueryType::Timestamp)
             {
                 AZ_Warning("RPI::Query", false,
                     "The FrameGraphExecuteContext's Scope that is used for RPI::Query::BeginQuery is not the same for RPI::Query::EndQuery.");

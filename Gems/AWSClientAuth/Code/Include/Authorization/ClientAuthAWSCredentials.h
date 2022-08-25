@@ -34,10 +34,10 @@ namespace AWSClientAuth
         }
 
         ClientAuthAWSCredentials(const AZStd::string& accessKeyId, const AZStd::string& secretKey, const AZStd::string& sessionToken)
+            : m_accessKeyId(accessKeyId)
+            , m_secretKey(secretKey)
+            , m_sessionToken(sessionToken)
         {
-            m_accessKeyId = accessKeyId;
-            m_secretKey = secretKey;
-            m_sessionToken = sessionToken;
         }
 
         //! Gets the access key

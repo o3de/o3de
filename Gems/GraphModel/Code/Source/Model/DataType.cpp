@@ -29,34 +29,33 @@ namespace GraphModel
         }
     }
 
-    DataType::DataType()
-        : m_typeEnum(ENUM_INVALID)
-        , m_displayName("INVALID")
-        , m_cppName("INVALID")
-    {}
-
-    DataType::DataType(Enum typeEnum, AZ::Uuid typeUuid, AZStd::any defaultValue, AZStd::string_view typeDisplayName, AZStd::string_view cppTypeName)
+    DataType::DataType(
+        Enum typeEnum,
+        const AZ::Uuid& typeUuid,
+        const AZStd::any& defaultValue,
+        AZStd::string_view typeDisplayName,
+        AZStd::string_view cppTypeName,
+        const AZStd::function<bool(const AZStd::any&)>& valueValidator)
         : m_typeEnum(typeEnum)
         , m_typeUuid(typeUuid)
         , m_defaultValue(defaultValue)
         , m_displayName(typeDisplayName)
         , m_cppName(cppTypeName)
-    {}
-
-    DataType::DataType(const DataType& other)
-        : m_typeEnum(other.m_typeEnum)
-        , m_typeUuid(other.m_typeUuid)
-        , m_defaultValue(other.m_defaultValue)
-        , m_displayName(other.m_displayName)
-        , m_cppName(other.m_cppName)
-    {}
+        , m_valueValidator(valueValidator)
+    {
+    }
 
     bool DataType::IsValid() const
     {
         return ENUM_INVALID != m_typeEnum && !m_typeUuid.IsNull();
     }
 
-    AZ::Uuid DataType::GetTypeUuid() const
+    DataType::Enum DataType::GetTypeEnum() const
+    {
+        return m_typeEnum;
+    }
+
+    const AZ::Uuid& DataType::GetTypeUuid() const
     {
         return m_typeUuid;
     }
@@ -68,29 +67,41 @@ namespace GraphModel
 
     bool DataType::operator==(const DataType& other) const
     {
-        return  m_typeEnum != ENUM_INVALID &&
-                other.m_typeEnum != ENUM_INVALID &&
-                m_typeEnum == other.m_typeEnum;
+        return m_typeEnum != ENUM_INVALID && other.m_typeEnum != ENUM_INVALID && m_typeEnum == other.m_typeEnum;
     }
 
     bool DataType::operator!=(const DataType& other) const
     {
-        return  !(*this == other);
+        return !(*this == other);
     }
 
-    AZStd::any DataType::GetDefaultValue() const
+    const AZStd::any& DataType::GetDefaultValue() const
     {
         return m_defaultValue;
     }
 
-    AZStd::string DataType::GetDisplayName() const
+    const AZStd::string& DataType::GetDisplayName() const
     {
         return m_displayName;
     }
 
-    AZStd::string DataType::GetCppName() const
+    const AZStd::string& DataType::GetCppName() const
     {
         return m_cppName;
     }
 
+    bool DataType::IsSupportedType(const AZ::Uuid& typeUuid) const
+    {
+        return typeUuid == m_typeUuid || typeUuid == m_defaultValue.type();
+    }
+
+    bool DataType::IsSupportedValue(const AZStd::any& value) const
+    {
+        if (m_valueValidator)
+        {
+            return m_valueValidator(value);
+        }
+
+        return IsSupportedType(value.type());
+    }
 } // namespace GraphModel

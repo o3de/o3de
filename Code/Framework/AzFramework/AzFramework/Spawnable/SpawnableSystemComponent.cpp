@@ -9,10 +9,13 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Spawnable/Script/SpawnableScriptMediator.h>
 
 namespace AzFramework
 {
@@ -20,6 +23,8 @@ namespace AzFramework
     {
         Spawnable::Reflect(context);
         SpawnableMetaData::Reflect(context);
+        EntitySpawnTicket::Reflect(context);
+        Scripts::SpawnableScriptMediator::Reflect(context);
 
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
@@ -160,7 +165,7 @@ namespace AzFramework
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ_Assert(settingsRegistry, "Unable to change root spawnable callback because Settings Registry is not available.");
 
-        auto LifecycleCallback = [this](AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        auto LifecycleCallback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
         {
             LoadRootSpawnableFromSettingsRegistry();
         };
@@ -171,9 +176,9 @@ namespace AzFramework
         RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
+        m_registryChangeHandler = settingsRegistry->RegisterNotifier([this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
-                if (path.starts_with(RootSpawnableRegistryKey))
+                if (notifyEventArgs.m_jsonKeyPath.starts_with(RootSpawnableRegistryKey))
                 {
                     LoadRootSpawnableFromSettingsRegistry();
                 }
@@ -188,6 +193,7 @@ namespace AzFramework
 
         AZ::TickBus::Handler::BusDisconnect();
         RootSpawnableNotificationBus::Handler::BusDisconnect();
+
         // Unregister Lifecycle event handler
         m_criticalAssetsHandler = {};
 

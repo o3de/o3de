@@ -15,8 +15,6 @@
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/ColliderContainerWidget.h>
@@ -41,12 +39,6 @@ namespace EMotionFX
     RagdollNodeInspectorPlugin::~RagdollNodeInspectorPlugin()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
-    }
-
-    EMStudio::EMStudioPlugin* RagdollNodeInspectorPlugin::Clone()
-    {
-        RagdollNodeInspectorPlugin* newPlugin = new RagdollNodeInspectorPlugin();
-        return newPlugin;
     }
 
     bool RagdollNodeInspectorPlugin::IsPhysXGemAvailable() const
@@ -409,136 +401,5 @@ namespace EMotionFX
         {
             AZ_Error("EMotionFX", false, result.c_str());
         }
-    }
-
-    void RagdollNodeInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_RAGDOLL_COLLIDERS);
-        const bool renderJointLimits = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_RAGDOLL_JOINTLIMITS);
-        if (!renderColliders && !renderJointLimits)
-        {
-            return;
-        }
-
-        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
-        const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
-        renderUtil->EnableLighting(false);
-
-        const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
-        for (size_t i = 0; i < actorInstanceCount; ++i)
-        {
-            ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
-            LegacyRenderRagdoll(actorInstance, renderColliders, renderJointLimits, renderPlugin, renderInfo);
-        }
-
-        renderUtil->RenderLines();
-        renderUtil->EnableLighting(oldLightingEnabled);
-    }
-
-    void RagdollNodeInspectorPlugin::LegacyRenderRagdoll(
-        ActorInstance* actorInstance,
-        bool renderColliders,
-        bool renderJointLimits,
-        EMStudio::RenderPlugin* renderPlugin,
-        RenderInfo* renderInfo)
-    {
-        const Actor* actor = actorInstance->GetActor();
-        const Skeleton* skeleton = actor->GetSkeleton();
-        const size_t numNodes = skeleton->GetNumNodes();
-        const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-        const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
-        const AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
-        const Physics::CharacterColliderConfiguration& colliderConfig = ragdollConfig.m_colliders;
-        const RagdollInstance* ragdollInstance = actorInstance->GetRagdollInstance();
-
-        EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-        const MCore::RGBAColor defaultColor = renderOptions->GetRagdollColliderColor();
-        const MCore::RGBAColor selectedColor = renderOptions->GetSelectedRagdollColliderColor();
-
-        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-
-        for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
-        {
-            const Node* joint = skeleton->GetNode(nodeIndex);
-            const size_t jointIndex = joint->GetNodeIndex();
-
-            AZ::Outcome<size_t> ragdollNodeIndex = AZ::Failure();
-            if (ragdollInstance)
-            {
-                ragdollNodeIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);
-            }
-            else
-            {
-                ragdollNodeIndex = ragdollConfig.FindNodeConfigIndexByName(joint->GetNameString());
-            }
-
-            if (!ragdollNodeIndex.IsSuccess())
-            {
-                continue;
-            }
-
-            const bool jointSelected = selectedJointIndices.empty() || selectedJointIndices.find(jointIndex) != selectedJointIndices.end();
-
-            MCore::RGBAColor finalColor;
-            if (jointSelected)
-            {
-                finalColor = selectedColor;
-            }
-            else
-            {
-                finalColor = defaultColor;
-            }
-
-            const Physics::RagdollNodeConfiguration& ragdollNode = ragdollNodes[ragdollNodeIndex.GetValue()];
-
-            if (renderColliders)
-            {
-                const Physics::CharacterColliderNodeConfiguration* colliderNodeConfig =
-                    colliderConfig.FindNodeConfigByName(joint->GetNameString());
-                if (colliderNodeConfig)
-                {
-                    const AzPhysics::ShapeColliderPairList& colliders = colliderNodeConfig->m_shapes;
-                    ColliderContainerWidget::LegacyRenderColliders(colliders, actorInstance, joint, renderInfo, finalColor);
-                }
-            }
-
-            if (renderJointLimits && jointSelected)
-            {
-                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
-                if (jointLimitConfig)
-                {
-                    const Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
-                    if (ragdollParentNode)
-                    {
-                        LegacyRenderJointFrame(*jointLimitConfig, actorInstance, joint, ragdollParentNode, renderInfo, finalColor);
-                    }
-                }
-            }
-        }
-    }
-
-    void RagdollNodeInspectorPlugin::LegacyRenderJointFrame(
-        const AzPhysics::JointConfiguration& configuration,
-        const ActorInstance* actorInstance,
-        const Node* node,
-        const Node* parentNode,
-        EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-        const MCore::RGBAColor& color)
-    {
-        AZ_UNUSED(parentNode);
-
-        const Transform& actorInstanceWorldSpaceTransform = actorInstance->GetWorldSpaceTransform();
-        const Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const Transform childJointLocalSpaceTransform(AZ::Vector3::CreateZero(), configuration.m_childLocalRotation);
-        const Transform childModelSpaceTransform = childJointLocalSpaceTransform * currentPose->GetModelSpaceTransform(node->GetNodeIndex());
-        const Transform jointChildWorldSpaceTransformNoScale = (childModelSpaceTransform * actorInstanceWorldSpaceTransform);
-
-        renderInfo->m_renderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.m_position, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
     }
 } // namespace EMotionFX

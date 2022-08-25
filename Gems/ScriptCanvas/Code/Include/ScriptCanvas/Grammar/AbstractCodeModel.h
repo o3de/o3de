@@ -37,6 +37,7 @@ namespace ScriptCanvas
         namespace Core
         {
             class Start;
+            class FunctionCallNode;
             class FunctionDefinitionNode;
         }
     }
@@ -299,6 +300,8 @@ namespace ScriptCanvas
 
             void ParseAutoConnectedEBusHandlerVariables();
 
+            void ParseComponentExtension();
+
             enum class FirstNode
             {
                 Self,
@@ -318,6 +321,7 @@ namespace ScriptCanvas
 
             void ParseDependenciesAssetIndicies();
 
+            // #scriptcanvas_component_extension
             void ParseEntityIdInput(ExecutionTreePtr execution);
 
             void ParseExecutionBreak(ExecutionTreePtr execution);
@@ -379,6 +383,8 @@ namespace ScriptCanvas
 
             bool ParseInputThisPointer(ExecutionTreePtr execution);
 
+            void ParseLocallyDefinedFunctionCalls();
+
             void ParseMetaData(ExecutionTreePtr execution);
 
             void ParseMultiExecutionPost(ExecutionTreePtr execution);
@@ -404,6 +410,8 @@ namespace ScriptCanvas
             void ParseReturnValue(ExecutionTreePtr execution, const Slot& returnValueSlot);
 
             void ParseReturnValue(ExecutionTreePtr execution, VariableConstPtr variable, const Slot* returnValueSlot);
+
+            void ParseSubgraphInterface(const Node& node);
 
             void ParseUserFunctionTopology();
 
@@ -476,7 +484,7 @@ namespace ScriptCanvas
             }
 
             void AddExecutionMapIn
-            (UserInParseTopologyResult result
+                ( UserInParseTopologyResult result
                 , ExecutionTreeConstPtr root
                 , const AZStd::vector<ExecutionTreeConstPtr>& outCalls
                 , AZStd::string_view defaultOutName
@@ -490,8 +498,6 @@ namespace ScriptCanvas
             void AddPreviouslyExecutedScopeVariableToOutputAssignments(VariableConstPtr newInputVariable, const ConnectionsInPreviouslyExecutedScope& connectedInputInPreviouslyExecutedScope);
 
             void ConvertNamesToIdentifiers();
-
-            AZStd::vector<AZStd::pair<ExecutionTreePtr, const Nodes::Core::FunctionDefinitionNode*>> FindAllNodelingOuts(ExecutionTreePtr root) const;
 
             VariableConstPtr FindBoundVariable(GraphScopedVariableId variableId) const;
 
@@ -564,6 +570,8 @@ namespace ScriptCanvas
             AZStd::unordered_map<const Datum*, const GraphVariable*> m_sourceVariableByDatum;
             AZStd::unordered_set<const Node*> m_subgraphStartCalls;
             AZStd::unordered_set<const Node*> m_activeDefaultObject;
+
+            AZStd::vector<const Nodes::Core::FunctionCallNode*> m_locallyDefinedFunctionCallNodes;
 
             SubgraphInterface m_subgraphInterface;
 

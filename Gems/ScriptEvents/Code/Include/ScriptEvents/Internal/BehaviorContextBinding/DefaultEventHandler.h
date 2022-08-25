@@ -23,14 +23,14 @@ namespace ScriptEvents
 
         AZ_RTTI(ScriptEventsHandler, "{4272AECB-F1A7-4B22-8537-2EE6492EC132}", AZ::BehaviorEBusHandler);
         AZ_CLASS_ALLOCATOR(ScriptEventsHandler, AZ::SystemAllocator, 0);
-        virtual AZ::BehaviorValueParameter* GetBusId() = 0;
+        virtual AZ::BehaviorArgument* GetBusId() = 0;
 
         bool IsConnected() override
         {
             return false;
         }
 
-        bool IsConnectedId(AZ::BehaviorValueParameter*) override
+        bool IsConnectedId(AZ::BehaviorArgument*) override
         {
             return false;
         }
@@ -49,16 +49,16 @@ namespace ScriptEvents
 
         //////////////////////////////////////////////////////////////////////////
         // EventsHandler
-        AZ::BehaviorValueParameter* GetBusId() override { return &m_address; }
+        AZ::BehaviorArgument* GetBusId() override { return &m_address; }
 
         //////////////////////////////////////////////////////////////////////////
         /// AZ::BehaviorEBusHandler
         int GetFunctionIndex(const char* name) const override;
-        bool Connect(AZ::BehaviorValueParameter* address = nullptr) override;
+        bool Connect(AZ::BehaviorArgument* address = nullptr) override;
         void Disconnect() override;
 
     private:
-        AZ::BehaviorValueParameter m_address;
+        AZ::BehaviorArgument m_address;
 
         AZ::Uuid m_busNameId;
         AZ::BehaviorEBus* m_ebus;

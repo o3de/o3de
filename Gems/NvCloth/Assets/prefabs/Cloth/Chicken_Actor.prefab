@@ -84,10 +84,8 @@
                 "Component_[14919455666821657531]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 14919455666821657531,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[303451468511700]"
-                        }
+                    "Child Entity Order": [
+                        "Entity_[303451468511700]"
                     ]
                 },
                 "Component_[16643225638363527013]": {
@@ -179,7 +177,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 7236637452394054627,
                     "Configuration": {
-                        "Mesh Node": "chicken_mohawk_1",
+                        "Mesh Node": "chicken_mohawk",
                         "Mass": 4.0,
                         "Remove Static Triangles": false
                     }
@@ -247,112 +245,7 @@
                                 }
                             ]
                         }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialSlotStableId": 668669130
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{FB34D8F7-E8CA-542D-92A3-F0E04F3A3EC3}"
-                                },
-                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_body_mat.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                    "subId": 668669130
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_body_mat_4404500000782619850.azmaterial"
-                            }
-                        },
-                        {
-                            "id": {
-                                "materialSlotStableId": 1541321207
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{6114C408-26EE-51DC-8733-A07800BF4991}"
-                                },
-                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_eye_mat.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                    "subId": 1541321207
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/chicken/actor/chicken_chicken_eye_mat_10184937185004663287.azmaterial"
-                            }
-                        },
-                        {
-                            "id": {
-                                "materialSlotStableId": 2608524672
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{80F92051-203E-52CE-B4D6-E3AED21795C9}"
-                                },
-                                "assetHint": "objects/cloth/chicken/actor/chicken_mohawkmat.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                    "subId": 2608524672
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/chicken/actor/chicken_mohawkmat_13891540077583723904.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 668669130
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                        "subId": 668669130
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/chicken/actor/chicken_chicken_body_mat_4404500000782619850.azmaterial"
-                                }
-                            },
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 1541321207
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                        "subId": 1541321207
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/chicken/actor/chicken_chicken_eye_mat_10184937185004663287.azmaterial"
-                                }
-                            },
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 2608524672
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{3E4C6A29-92A4-523E-8739-F3E64957569E}",
-                                        "subId": 2608524672
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/chicken/actor/chicken_mohawkmat_13891540077583723904.azmaterial"
-                                }
-                            }
-                        ]
-                    ]
+                    }
                 },
                 "Component_[9979479216337101498]": {
                     "$type": "EditorInspectorComponent",

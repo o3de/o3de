@@ -99,12 +99,7 @@ namespace Multiplayer
     void NetworkCharacterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkCharacterComponentBase::GetRequiredServices(required);
-        required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
-    }
-
-    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()
@@ -218,8 +213,7 @@ namespace Multiplayer
         {
             return GetEntity()->GetTransform()->GetWorldTranslation();
         }
-        GetParent().m_physicsCharacter->AddVelocity(velocity);
-        GetParent().m_physicsCharacter->ApplyRequestedVelocity(deltaTime);
+        GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
         GetEntity()->GetTransform()->SetWorldTranslation(GetParent().m_physicsCharacter->GetBasePosition());
         AZLOG
         (

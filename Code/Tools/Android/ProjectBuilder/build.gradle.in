@@ -30,6 +30,7 @@ ${NATIVE_CMAKE_SECTION_DEBUG_CONFIG}
             ${SIGNING_DEBUG_CONFIG}
         }
         profile {
+            getIsDefault().set(true)
             debuggable true
 ${NATIVE_CMAKE_SECTION_PROFILE_CONFIG}
             ${SIGNING_PROFILE_CONFIG}

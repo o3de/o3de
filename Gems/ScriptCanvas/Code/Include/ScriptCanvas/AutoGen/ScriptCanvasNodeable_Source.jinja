@@ -45,14 +45,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
 {%- set attribute_Deprecated = Class.attrib['Deprecated'] %}
 
-
-{%- set attribute_Base = Class.attrib['Base']  %}
-{% if not Class.attrib['Base'] is defined %}
-{%    set attribute_Base = "ScriptCanvas::Nodeable" %}
+{%- set attribute_Base = "ScriptCanvas::Nodeable" %}
+{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
+{%    set attribute_Base = Class.attrib['Base'] %}
 {% endif %}
 
-{% set attribute_Namespace = undefined %}
-{%- if Class.attrib['Namespace'] is defined %}
+{%- set attribute_Namespace = undefined %}
+{% if Class.attrib['Namespace'] is defined %}
 {%      if Class.attrib['Namespace'] != "None" %}
 {%          set attribute_Namespace = Class.attrib['Namespace'] %}
 {%      endif %}
@@ -159,7 +158,7 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-{% if ExtendReflectionSerialize is defined %}   auto {{preSerialize}} = {% else %}   {% endif %}serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>(){{postSerialize}}
+{% if ExtendReflectionSerialize is defined %}   auto {{preSerialize}} = {% else %}   {% endif %}serializeContext->Class<{{ attribute_Name }}, {{ attribute_Base }}>(){{postSerialize}}
 {% if attribute_EventHandler is defined %}
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             {{preSerialize}}->EventHandler<{{ attribute_EventHandler }}>(){{postSerialize}}

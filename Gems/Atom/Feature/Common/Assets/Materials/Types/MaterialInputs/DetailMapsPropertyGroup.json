@@ -180,7 +180,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
+                "file": "Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua"
             }
         }
     ]

@@ -72,7 +72,15 @@ namespace UnitTest
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override
         {
             const auto& pos = sampleParams.m_position;
-            const int index = azlossy_caster<float>(pos.GetY() * float(m_rowSize) + pos.GetX());
+
+            // Because gradients repeat infinitely by default, we mod by rowSize to bring the position into the correct range.
+            // The extra "+ rowSize) % rowSize" piece is so that negative values come into the correct range as well.
+            // If we just took the absolute value first, the mod would cause us to reverse the lookup on the negative side instead
+            // of continuing it.
+            int posX = ((static_cast<int>(pos.GetX()) % m_rowSize) + m_rowSize) % m_rowSize;
+            int posY = ((static_cast<int>(pos.GetY()) % m_rowSize) + m_rowSize) % m_rowSize;
+
+            const int index = (posY * m_rowSize) + posX;
 
             m_positionsRequested.push_back(sampleParams.m_position);
 
@@ -143,15 +151,13 @@ namespace UnitTest
                 }
             }
 
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                m_providerHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, providerRegistryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(providerRegistryEntry);
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusConnect(m_providerHandle);
         }
 
         void Deactivate() override
         {
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
             SurfaceData::SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         }

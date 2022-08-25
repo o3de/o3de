@@ -13,6 +13,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AWSClientAuthGemMock.h>
+#include <AWSClientAuthResourceMappingConstants.h>
 
 namespace AWSClientAuthUnitTest
 {
@@ -49,7 +50,7 @@ namespace AWSClientAuthUnitTest
         MOCK_METHOD0(Activate, void());
         MOCK_METHOD0(Deactivate, void());
 
-        AZStd::vector<AWSClientAuth::ProviderNameEnum> m_enabledProviderNames;        
+        using AWSClientAuth::AWSClientAuthSystemComponent::m_enabledProviderNames;        
     };
 
     class AWSCoreSystemComponentMock
@@ -87,10 +88,12 @@ namespace AWSClientAuthUnitTest
         {
             AZ_UNUSED(incompatible);
         }
+
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             AZ_UNUSED(required);
         }
+
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
             AZ_UNUSED(dependent);
@@ -119,10 +122,11 @@ class AWSClientAuthSystemComponentTest
 {
 public:
     AWSClientAuthSystemComponentTest()
-        : AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture(false)
+        : AWSClientAuthUnitTest::AWSClientAuthGemAllocatorFixture(false), m_awsClientAuthSystemsComponent(nullptr),
+          m_awsCoreSystemsComponent(nullptr)
     {
-
     }
+
 protected:
     AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
     AZStd::unique_ptr<AZ::ComponentDescriptor> m_awsCoreComponentDescriptor;
@@ -202,6 +206,32 @@ TEST_F(AWSClientAuthSystemComponentTest, GetCognitoClients_Success)
     m_entity->Init();
     m_entity->Activate();
 
+    EXPECT_TRUE(AZ::Interface<IAWSClientAuthRequests>::Get()->HasCognitoControllers());
+    EXPECT_TRUE(AZ::Interface<IAWSClientAuthRequests>::Get()->GetCognitoIdentityClient() != nullptr);
+    EXPECT_TRUE(AZ::Interface<IAWSClientAuthRequests>::Get()->GetCognitoIDPClient() != nullptr);
+
+    // deactivate component
+    m_entity->Deactivate();
+}
+
+TEST_F(AWSClientAuthSystemComponentTest, SkipCognitoControllers_Success)
+{
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(AZStd::string(CognitoUserPoolIdResourceMappingKey)))
+        .Times(1)
+        .WillOnce(testing::Return(""));
+
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetResourceNameId(AZStd::string(CognitoIdentityPoolIdResourceMappingKey)))
+        .Times(1)
+        .WillOnce(testing::Return(""));
+
+    // activate component
+    m_entity->Init();
+    m_entity->Activate();
+
+    // Expect controllers are not configured
+    EXPECT_FALSE(AZ::Interface<IAWSClientAuthRequests>::Get()->HasCognitoControllers());
+
+    // These should still be available
     EXPECT_TRUE(AZ::Interface<IAWSClientAuthRequests>::Get()->GetCognitoIdentityClient() != nullptr);
     EXPECT_TRUE(AZ::Interface<IAWSClientAuthRequests>::Get()->GetCognitoIDPClient() != nullptr);
 

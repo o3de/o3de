@@ -51,6 +51,7 @@ class DllModule
 {
 public:
     AZ_RTTI(DllModule, "{99C6BF95-847F-4EEE-BB60-9B26D02FF577}", AZ::Module);
+    AZ_CLASS_ALLOCATOR(DllModule, AZ::SystemAllocator, 0);
 
     DllModule()
     {
@@ -104,10 +105,8 @@ extern "C" AZ_DLL_EXPORT void DestroyDLLTestVirtualClass()
 //////////////////////////////////////////////////////////////////////////
 
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* azEnvironmentInstance)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(azEnvironmentInstance));
-    AZ_Assert(AZ::Environment::GetInstance() == azEnvironmentInstance, "Invalid!");
     AZ_Printf("DLL", "InitializeDynamicModule called");
 }
 
@@ -126,6 +125,4 @@ extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module)
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
     AZ_Printf("DLL", "UninitializeDynamicModule called");
-
-    AZ::Environment::Detach();
 }

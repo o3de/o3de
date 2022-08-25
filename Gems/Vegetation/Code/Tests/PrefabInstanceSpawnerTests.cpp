@@ -174,8 +174,8 @@ namespace UnitTest
         int m_numOnLoadedCalls = 0;
     };
 
-    // To test Dynamic Slice spawning, we need to mock up enough of the asset management system and the dynamic slice
-   // asset handling to pretend like we're loading/unloading dynamic slices successfully.
+    // To test Prefab/Spawnable spawning, we need to mock up enough of the asset management system and the Spawnable
+   // asset handling to pretend like we're loading/unloading Spawnables successfully.
     class PrefabInstanceSpawnerTests
         : public VegetationComponentTests
     {
@@ -191,7 +191,7 @@ namespace UnitTest
         {
             VegetationComponentTests::SetUp();
 
-            // Create a real Asset Mananger, and point to ourselves as the handler for DynamicSliceAsset.
+            // Create a real Asset Mananger, and point to ourselves as the handler for Spawnable assets.
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
@@ -208,8 +208,6 @@ namespace UnitTest
             m_testHandler = AZStd::make_unique<PrefabInstanceHandlerAndCatalog>();
             AZ::Data::AssetManager::Instance().RegisterHandler(m_testHandler.get(), AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
             AZ::Data::AssetManager::Instance().RegisterCatalog(m_testHandler.get(), AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid());
-
-            m_app.RegisterComponentDescriptor(AZ::SliceComponent::CreateDescriptor());
         }
 
         void TearDown() override
@@ -344,10 +342,17 @@ namespace UnitTest
         MockPrefabInstanceVegetationSystemComponent* component = nullptr;
         auto entity = CreateEntity(&component);
 
-        // We expect the Descriptor to start off with something other than Prefab spawner, but then should correctly get an
-        // PrefabInstanceSpawner after we change spawnerType.
+        // We expect the Descriptor to start off with a Prefab spawner
         Vegetation::Descriptor descriptor;
-        EXPECT_NE(azrtti_typeid(*(descriptor.GetInstanceSpawner())),Vegetation::PrefabInstanceSpawner::RTTI_Type());
+        EXPECT_EQ(azrtti_typeid(*(descriptor.GetInstanceSpawner())),Vegetation::PrefabInstanceSpawner::RTTI_Type());
+
+        // Change it to something other than a Prefab spawner and verify it changes
+        descriptor.m_spawnerType = Vegetation::EmptyInstanceSpawner::RTTI_Type();
+        descriptor.RefreshSpawnerTypeList();
+        descriptor.SpawnerTypeChanged();
+        EXPECT_NE(azrtti_typeid(*(descriptor.GetInstanceSpawner())), Vegetation::PrefabInstanceSpawner::RTTI_Type());
+
+        // Change it back to a Prefab spawner and verify that we have the correct spawner type
         descriptor.m_spawnerType = Vegetation::PrefabInstanceSpawner::RTTI_Type();
         descriptor.RefreshSpawnerTypeList();
         descriptor.SpawnerTypeChanged();

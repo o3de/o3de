@@ -114,6 +114,9 @@ namespace AZ
 
         bool IsZero(float tolerance = Constants::FloatEpsilon) const;
 
+        //! Checks whether all components are finite.
+        bool IsFinite() const;
+
         bool operator==(const Color& rhs) const;
         bool operator!=(const Color& rhs) const;
 

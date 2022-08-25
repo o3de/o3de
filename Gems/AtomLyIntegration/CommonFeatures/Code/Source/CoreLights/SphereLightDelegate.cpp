@@ -116,4 +116,20 @@ namespace AZ::Render
         }
     }
 
+    void SphereLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+        }
+    }
+
+    void SphereLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+        }
+    }
+
 } // namespace AZ::Render

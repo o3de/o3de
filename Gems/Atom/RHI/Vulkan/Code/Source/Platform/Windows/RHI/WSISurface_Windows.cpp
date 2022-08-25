@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Instance.h>
 #include <RHI/WSISurface.h>
 #include <vulkan/vulkan.h>
@@ -25,7 +25,7 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.hinstance = hinstance;
             createInfo.hwnd = reinterpret_cast<HWND>(m_descriptor.m_windowHandle.GetIndex());
-            const VkResult result = vkCreateWin32SurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
+            const VkResult result = instance.GetContext().CreateWin32SurfaceKHR(instance.GetNativeInstance(), &createInfo, nullptr, &m_nativeSurface);
             AssertSuccess(result);
 
             return ConvertResult(result);

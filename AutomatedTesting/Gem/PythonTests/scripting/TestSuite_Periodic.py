@@ -15,16 +15,25 @@ imports.init()
 
 import hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 from ly_test_tools import LAUNCHERS
 from base import TestAutomationBase
 
 TEST_DIRECTORY = os.path.dirname(__file__)
 
+#Bat
+@pytest.mark.SUITE_periodic
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestScriptCanvas(EditorTestSuite):
+    class test_NodePalette_HappyPath_CanSelectNode(EditorBatchedTest):
+        import NodePalette_HappyPath_CanSelectNode as test_module
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
+
     def test_Pane_HappyPath_OpenCloseSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_HappyPath_OpenCloseSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -37,44 +46,10 @@ class TestAutomation(TestAutomationBase):
         from . import Pane_HappyPath_ResizesProperly as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvas_ChangingAssets_ComponentStable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Graph_HappyPath_ZoomInZoomOut(self, request, workspace, editor, launcher_platform):
         from . import Graph_HappyPath_ZoomInZoomOut as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_NodePalette_HappyPath_CanSelectNode(self, request, workspace, editor, launcher_platform):
-        from . import NodePalette_HappyPath_CanSelectNode as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     def test_NodePalette_HappyPath_ClearSelection(self, request, workspace, editor, launcher_platform, project):
         from . import NodePalette_HappyPath_ClearSelection as test_module
@@ -124,11 +99,6 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleEntities as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    def test_EditMenu_Default_UndoRedo(self, request, workspace, editor, launcher_platform, project):
-        from . import EditMenu_Default_UndoRedo as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Pane_Undocked_ClosesSuccessfully(self, request, workspace, editor, launcher_platform):
         from . import Pane_Undocked_ClosesSuccessfully as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -146,67 +116,6 @@ class TestAutomation(TestAutomationBase):
         from . import Pane_Default_RetainOnSCRestart as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_HappyPath_SendReceiveAcrossMultiple as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_ReturnSetType_Successfully(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_ReturnSetType_Successfully as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_NodeCategory_ExpandOnClick(self, request, workspace, editor, launcher_platform):
-        from . import NodeCategory_ExpandOnClick as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_NodePalette_SearchText_Deletion(self, request, workspace, editor, launcher_platform):
-        from . import NodePalette_SearchText_Deletion as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    def test_VariableManager_UnpinVariableType_Works(self, request, workspace, editor, launcher_platform):
-        from . import VariableManager_UnpinVariableType_Works as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
-        from . import Node_HappyPath_DuplicateNode as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
-    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
-        def teardown():
-            file_system.delete(
-                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-            )
-        request.addfinalizer(teardown)
-        file_system.delete(
-            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
-        )
-        from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
-        self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
 # fails because of pyside_utils import
@@ -217,12 +126,128 @@ class TestScriptCanvasTests(object):
     """
     The following tests use hydra_test_utils.py to launch the editor and validate the results.
     """
+    def test_EditMenu_Default_UndoRedo(self, request, editor, launcher_platform):
+        expected_lines = [
+            "New variable created",
+            "Undo action working",
+            "Redo action working",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "EditMenu_Default_UndoRedo.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
+    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
+
+        expected_lines = [
+            "Successfully created test entity",
+            "Successfully entered game mode",
+            "Successfully found expected message",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_Default_SendReceiveSuccessfully.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+    def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
+
+        expected_lines = [
+            "Successfully created test entity",
+            "Successfully entered game mode",
+            "Successfully found expected message",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_ReturnSetType_Successfully.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_NodeCategory_ExpandOnClick(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Script Canvas pane successfully opened",
+            "Category expanded on left click",
+            "Category collapsed on left click",
+            "Category expanded on double click",
+            "Category collapsed on double click",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "NodeCategory_ExpandOnClick.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_VariableManager_UnpinVariableType_Works(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Success: VariableManager is opened successfully",
+            "Success: Variable is pinned",
+            "Success: Variable is unpinned",
+            "Success: Variable is unpinned after reopening create variable menu",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "VariableManager_UnpinVariableType_Works.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_Node_HappyPath_DuplicateNode(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Successfully duplicated node",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "Node_HappyPath_DuplicateNode.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
+        expected_lines = [
+            "Success: New Script Event created",
+            "Success: Child Event created",
+            "Success: Successfully saved event asset",
+            "Success: Successfully added parameter",
+            "Success: Successfully removed parameter",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvent_AddRemoveParameter_ActionsSuccessful.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
     def test_FileMenu_Default_NewAndOpen(self, request, editor, launcher_platform):
         expected_lines = [
-            "File->New action working as expected: True",
-            "File->Open action working as expected: True",
+            "Verified no tabs open: True",
+            "New tab opened successfully: True",
+            "Open file window triggered successfully: True"
         ]
         hydra.launch_and_validate_results(
             request, 
@@ -234,7 +259,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_NewScriptEventButton_HappyPath_ContainsSCCategory(self, request, editor, launcher_platform):
         expected_lines = [
             "New Script event action found: True",
@@ -268,11 +292,10 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails on nightly build builds, it needs to be fixed.")
     def test_VariableManager_Default_CreateDeleteVars(self, request, editor, launcher_platform):
-        var_types = ["Boolean", "Color", "EntityID", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
-        expected_lines = [f"Success: {var_type} variable is created" for var_type in var_types]
-        expected_lines.extend([f"Success: {var_type} variable is deleted" for var_type in var_types])
+        var_types = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+        expected_lines = [f"{var_type} variable is created: True" for var_type in var_types]
+        expected_lines.extend([f"{var_type} variable is deleted: True" for var_type in var_types])
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
@@ -318,7 +341,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
@@ -346,7 +368,6 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
         def teardown():
             file_system.delete(
@@ -372,4 +393,73 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
-        
+    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Successfully created Entity",
+            "Successfully entered game mode",
+            "Successfully found expected message",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_HappyPath_SendReceiveAcrossMultiple.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "New entity created",
+            "Game Mode successfully entered",
+            "Game Mode successfully exited",
+            "Expected log lines were found",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvas_TwoComponents_InteractSuccessfully.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+    def test_ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Successfully found controller entity",
+            "Successfully found activated entity",
+            "Successfully found deactivated entity",
+            "Start states set up successfully",
+            "Successfully entered game mode",
+            "Successfully found expected prints",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_ScriptCanvas_ChangingAssets_ComponentStable(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Test Entity created",
+            "Game Mode successfully entered",
+            "Game Mode successfully exited",
+            "Script Canvas File Updated",
+            "Expected log lines were found",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvas_ChangingAssets_ComponentStable.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )

@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 
+
 namespace LmbrCentral
 {
-
-    /*!
+    /**!
      * EditorAudioListenerComponent
      */
     class EditorAudioListenerComponent

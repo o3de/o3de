@@ -40,7 +40,7 @@ namespace AZ
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
-            const uint32_t SwapBufferCount = RHI::Limits::Device::FrameCountMax;
+            const uint32_t SwapBufferCount = AZStd::max(RHI::Limits::Device::MinSwapChainImages, RHI::Limits::Device::FrameCountMax);
 
             DXGI_SWAP_CHAIN_DESCX swapChainDesc = {};
             swapChainDesc.SampleDesc.Quality = 0;

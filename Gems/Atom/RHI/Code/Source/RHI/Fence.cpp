@@ -47,6 +47,10 @@ namespace AZ
             {
                 DeviceObject::Init(device);
             }
+            else
+            {
+                AZ_Assert(false, "Failed to create a fence");
+            }
 
             return resultCode;
         }

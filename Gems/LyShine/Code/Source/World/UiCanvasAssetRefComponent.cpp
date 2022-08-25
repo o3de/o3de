@@ -240,7 +240,7 @@ void UiCanvasAssetRefComponent::Activate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Deactivate()
 {
-    if (!gEnv->IsDedicated())
+    if (gEnv && !gEnv->IsDedicated())
     {
         if (m_canvasEntityId.IsValid())
         {

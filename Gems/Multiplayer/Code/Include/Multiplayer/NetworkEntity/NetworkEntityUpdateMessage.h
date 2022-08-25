@@ -15,9 +15,6 @@
 
 namespace Multiplayer
 {
-    // The maximum number of entity updates we can stuff into a single update packet
-    static const uint32_t MaxAggregateEntityMessages = 2048;
-
     //! @class NetworkEntityUpdateMessage
     //! @brief Property replication packet.
     class NetworkEntityUpdateMessage
@@ -58,8 +55,8 @@ namespace Multiplayer
         //! @return the current value of NetworkRole
         NetEntityRole GetNetworkRole() const;
 
-        //! Gets the entities networkId.
-        //! @return the entities networkId
+        //! Gets the entity's networkId.
+        //! @return the entity's networkId
         NetEntityId GetEntityId() const;
 
         //! Gets the current value of IsDelete (true if this represents a DeleteProxy message).

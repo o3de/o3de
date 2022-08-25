@@ -37,6 +37,8 @@ namespace AZ
             ImageSystemDescriptor m_imageSystemDescriptor;
             GpuQuerySystemDescriptor m_gpuQuerySystemDescriptor;
             DynamicDrawSystemDescriptor m_dynamicDrawSystemDescriptor;
+
+            bool m_isNullRenderer = false;
         };
     } // namespace RPI
 } // namespace AZ

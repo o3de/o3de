@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
@@ -81,7 +82,8 @@ namespace AtomToolsFramework
         // Use customized property handler (ImageAssetPropertyHandler) for image asset
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
         {
-            propertyConfig.m_customHandler = AZ_CRC_CE("ImageAsset");
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::AttachmentImageAsset>());
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::StreamingImageAsset>());
         }
 
         // Update the description for material properties to include script name assuming id is set beforehand
@@ -205,13 +207,62 @@ namespace AtomToolsFramework
                 AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
-            else
-            {
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
-            }
+
+            propertyValue = GetPathToExteralReference(exportPath, imagePath);
+            return true;
         }
 
         return true;
+    }
+
+    AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(
+        AZ::RPI::MaterialPropertyValue& propertyValue, bool hasEnumValues)
+    {
+        if (propertyValue.Is<bool>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Bool;
+        }
+        if (propertyValue.Is<AZ::s32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Int;
+        }
+        if (propertyValue.Is<AZ::u32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::UInt;
+        }
+        if (propertyValue.Is<float>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Float;
+        }
+        if (propertyValue.Is<AZ::Vector2>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector2;
+        }
+        if (propertyValue.Is<AZ::Vector3>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector3;
+        }
+        if (propertyValue.Is<AZ::Vector4>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector4;
+        }
+        if (propertyValue.Is<AZ::Color>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Color;
+        }
+        if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZStd::string>())
+        {
+            return hasEnumValues ? AZ::RPI::MaterialPropertyDataType::Enum : AZ::RPI::MaterialPropertyDataType::Image;
+        }
+
+        return AZ::RPI::MaterialPropertyDataType::Invalid;
     }
 } // namespace AtomToolsFramework

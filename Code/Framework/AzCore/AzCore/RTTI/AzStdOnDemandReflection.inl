@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 
 #ifndef AZ_USE_CUSTOM_SCRIPT_BIND
 struct lua_State;
@@ -57,7 +58,7 @@ namespace AZ
 
     namespace OnDemandLuaFunctions
     {
-        inline void AnyToLua(lua_State* lua, BehaviorValueParameter& param);
+        inline void AnyToLua(lua_State* lua, BehaviorArgument& param);
     }
     namespace ScriptCanvasOnDemandReflection
     {
@@ -256,10 +257,10 @@ namespace AZ
         auto behaviorForwardingFunction = [function](T... args)
         {
             AZStd::tuple<decay_array<T>...> lvalueWrapper(AZStd::forward<T>(args)...);
-            using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
+            using BVPReserveArray = AZStd::array<AZ::BehaviorArgument, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
-                return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
+                return BVPReserveArray{ {AZ::BehaviorArgument{&element}...} };
             };
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
             function(nullptr, argsBVPs.data(), sizeof...(T));
@@ -739,12 +740,15 @@ namespace AZ
 
                 BehaviorContext::ClassBuilder<ContainerType> builder = behaviorContext->Class<ContainerType>();
                 builder->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AttributeIsValid::IfPresent)
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::ScriptCanvasAttributes::ReturnValueTypesFunction, unpackFunctionHolder)
                     ->Attribute(AZ::ScriptCanvasAttributes::TupleConstructorFunction, constructorHolder)
-                    ;
+                    ->template Constructor<T...>()
+                ;
 
                 ReflectUnpackMethods<T...>(builder, AZStd::make_index_sequence<sizeof...(T)>{});
 
@@ -1094,7 +1098,7 @@ namespace AZ
                     AZ_Assert(false, "Optional does not have a value, a default constructed value will be returned instead");
                     return typename OptionalType::value_type{};
                 };
-                auto valueOrFunc = [](OptionalType* optionalInst, const typename OptionalType::value_type& defaultValue) -> const typename OptionalType::value_type&
+                auto valueOrFunc = [](OptionalType* optionalInst, const typename OptionalType::value_type& defaultValue) -> typename OptionalType::value_type
                 {
                     return optionalInst->has_value() ? optionalInst->value() : defaultValue;
                 };

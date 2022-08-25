@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/std/numeric.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Algorithms.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -1203,6 +1204,94 @@ namespace EMotionFX
         return !m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
     }
 #endif
+
+    void NonUniformMotionData::ExtractRootMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, const RootMotionExtractionData& data)
+    {
+        MotionData::ExtractRootMotion(sampleJointDataIndex, rootJointDataIndex, data);
+
+        if (sampleJointDataIndex == rootJointDataIndex)
+        {
+            return;
+        }
+
+        if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
+        {
+            m_jointData[rootJointDataIndex].m_positionTrack = m_jointData[sampleJointDataIndex].m_positionTrack;
+            if (data.m_extractRotation)
+            {
+                m_jointData[rootJointDataIndex].m_rotationTrack = m_jointData[sampleJointDataIndex].m_rotationTrack;
+            }
+
+            for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
+            {
+                // Zero out transition movement based on settings.
+                if (data.m_transitionZeroXAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetX(0);
+                }
+                if (data.m_transitionZeroYAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetY(0);
+                }
+                m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetZ(0);
+
+                // Compensation in samples.
+                const float x = data.m_transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
+                const float y = data.m_transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
+                const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
+                m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
+
+                if (data.m_extractRotation)
+                {
+                    const AZ::Quaternion sampleJointRotation = m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].ToQuaternion();
+
+                    // Final root rotation only keeps the rotation around Z-axis
+                    const AZ::Vector3 rootRotEuler = AZ::ConvertQuaternionToEulerRadians(sampleJointRotation);
+                    const AZ::Quaternion finalRootRotation = AZ::ConvertEulerRadiansToQuaternion(AZ::Vector3(0, 0, rootRotEuler.GetZ()));
+
+                    // Calculate the final sample rotation
+                    const AZ::Quaternion finalSampleRotation = finalRootRotation.GetInverseFull() * sampleJointRotation;
+
+                    m_jointData[rootJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalRootRotation);
+                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(finalSampleRotation);
+                }
+            }
+        }
+
+        if (m_morphData.size() > sampleJointDataIndex && m_morphData.size() > rootJointDataIndex)
+        {
+            m_morphData[rootJointDataIndex] = m_morphData[sampleJointDataIndex];
+        }
+
+        if (m_floatData.size() > sampleJointDataIndex && m_floatData.size() > rootJointDataIndex)
+        {
+            m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
+        }
+
+        if (data.m_smoothingMethod == RootMotionExtractionData::SmoothingMethod::MovingAverage)
+        {
+            SmoothData(data);
+        }
+    }
+
+    void NonUniformMotionData::SmoothData(const RootMotionExtractionData& data)
+    {
+        if (data.m_smoothPosition)
+        {
+            for (size_t i = 0; i < m_jointData.size(); ++i)
+            {
+                MCore::MovingAverageSmooth(m_jointData[i].m_positionTrack.m_values, data.m_smoothFrameNum);
+            }
+        }
+
+        if (data.m_smoothRotation)
+        {
+            for (size_t i = 0; i < m_jointData.size(); ++i)
+            {
+                MCore::MovingAverageSmooth(m_jointData[i].m_rotationTrack.m_values, data.m_smoothFrameNum);
+            }
+        }
+    }
 
     Transform NonUniformMotionData::SampleJointTransform(float sampleTime, size_t jointDataIndex) const
     {

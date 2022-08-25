@@ -9,6 +9,7 @@
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
@@ -18,16 +19,20 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QProcess>
 AZ_POP_DISABLE_WARNING
 
@@ -161,6 +166,8 @@ namespace AtomToolsFramework
             return false;
         }
 
+        path = GetPathWithoutAlias(path);
+
         if (!AzFramework::StringFunc::Path::Normalize(path))
         {
             return false;
@@ -171,7 +178,12 @@ namespace AtomToolsFramework
             return false;
         }
 
-        if (!IsValidSourceDocumentPath(path))
+        if (!IsDocumentPathInSupportedFolder(path))
+        {
+            return false;
+        }
+
+        if (!IsDocumentPathEditable(path))
         {
             return false;
         }
@@ -179,14 +191,14 @@ namespace AtomToolsFramework
         return true;
     }
 
-    bool IsValidSourceDocumentPath(const AZStd::string& path)
+    bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
     {
         bool assetFoldersRetrieved = false;
         AZStd::vector<AZStd::string> assetFolders;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
             assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
 
-        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(path).LexicallyNormal();
+        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(GetPathWithoutAlias(path)).LexicallyNormal();
         for (const auto& assetFolder : assetFolders)
         {
             // Check if the path is relative to the asset folder
@@ -197,6 +209,36 @@ namespace AtomToolsFramework
         }
 
         return false;
+    }
+
+    bool IsDocumentPathEditable(const AZStd::string& path)
+    {
+        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
+
+        for (const auto& [storedPath, flag] :
+             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/EditablePathSettings"))
+        {
+            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
+            {
+                return flag;
+            }
+        }
+        return true;
+    }
+
+    bool IsDocumentPathPreviewable(const AZStd::string& path)
+    {
+        const AZStd::string pathWithoutAlias = GetPathWithoutAlias(path);
+
+        for (const auto& [storedPath, flag] :
+             GetSettingsObject<AZStd::unordered_map<AZStd::string, bool>>("/O3DE/Atom/Tools/PreviewablePathSettings"))
+        {
+            if (pathWithoutAlias == GetPathWithoutAlias(storedPath))
+            {
+                return flag;
+            }
+        }
+        return true;
     }
 
     bool LaunchTool(const QString& baseName, const QStringList& arguments)
@@ -210,7 +252,7 @@ namespace AtomToolsFramework
         return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 
-    AZStd::string GetExteralReferencePath(
+    AZStd::string GetPathToExteralReference(
         const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
     {
         if (referencePath.empty())
@@ -218,23 +260,32 @@ namespace AtomToolsFramework
             return {};
         }
 
+        const AZStd::string exportPathWithoutAlias = GetPathWithoutAlias(exportPath);
+        const AZStd::string referencePathWithoutAlias = GetPathWithoutAlias(referencePath);
+
         if (!relativeToExportPath)
         {
+            AZStd::string relativePath;
             AZStd::string watchFolder;
             AZ::Data::AssetInfo assetInfo;
-            bool sourceInfoFound = false;
+            bool relativePathFound = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
-                assetInfo, watchFolder);
-            if (sourceInfoFound)
+                relativePathFound,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                referencePathWithoutAlias.c_str(),
+                relativePath,
+                watchFolder);
+
+            if (relativePathFound)
             {
-                return assetInfo.m_relativePath;
+                return relativePath;
             }
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPathWithoutAlias);
         exportFolder.RemoveFilename();
-        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
+
+        return AZ::IO::PathView(referencePathWithoutAlias).LexicallyRelative(exportFolder).StringAsPosix();
     }
 
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters)
@@ -283,5 +334,92 @@ namespace AtomToolsFramework
 
         AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
         return saved;
+    }
+
+    AZStd::string GetPathWithoutAlias(const AZStd::string& path)
+    {
+        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(AZ::IO::PathView{ path });
+        return convertedPath ? convertedPath->StringAsPosix() : path;
+    }
+
+    AZStd::string GetPathWithAlias(const AZStd::string& path)
+    {
+        auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(AZ::IO::PathView{ path });
+        return convertedPath ? convertedPath->StringAsPosix() : path;
+    }
+
+    AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData)
+    {
+        AZStd::set<AZStd::string> paths;
+        if (!mimeData)
+        {
+            return paths;
+        }
+
+        if (mimeData->hasFormat(AzToolsFramework::EditorAssetMimeDataContainer::GetMimeType()))
+        {
+            AzToolsFramework::EditorAssetMimeDataContainer container;
+            if (container.FromMimeData(mimeData))
+            {
+                for (const auto& asset : container.m_assets)
+                {
+                    AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(asset.m_assetId);
+                    if (ValidateDocumentPath(path))
+                    {
+                        paths.insert(path);
+                    }
+                }
+            }
+        }
+
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
+        {
+            for (const auto entry : entries)
+            {
+                AZStd::string path = entry->GetFullPath();
+                if (ValidateDocumentPath(path))
+                {
+                    paths.insert(path);
+                }
+            }
+        }
+
+        for (const auto& url : mimeData->urls())
+        {
+            if (url.isLocalFile())
+            {
+                AZStd::string path = url.toLocalFile().toUtf8().constData();
+                if (ValidateDocumentPath(path))
+                {
+                    paths.insert(path);
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    {
+        AZStd::set<AZStd::string> results;
+        AZStd::vector<AZStd::string> scanFolders;
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        for (const AZStd::string& scanFolder : scanFolders)
+        {
+            if (const auto& findFilesResult = AzFramework::FileFunc::FindFileList(scanFolder, wildcard.c_str(), true))
+            {
+                for (AZStd::string path : findFilesResult.GetValue())
+                {
+                    if (ValidateDocumentPath(path))
+                    {
+                        results.insert(path);
+                    }
+                }
+            }
+        }
+        return results;
     }
 } // namespace AtomToolsFramework

@@ -6,11 +6,9 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITORCORE_UNDO_UNDO_H
-#define CRYINCLUDE_EDITORCORE_UNDO_UNDO_H
 #pragma once
 
+#include "EditorCoreAPI.h"
 #include "IUndoManagerListener.h"
 #include "IUndoObject.h"
 #include <AzCore/Asset/AssetManager.h>
@@ -265,12 +263,9 @@ private: // ---------------------------------------------------------------
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
-
 class CScopedSuspendUndo
 {
 public:
-    CScopedSuspendUndo() { GetIEditor()->SuspendUndo(); }
-    ~CScopedSuspendUndo() { GetIEditor()->ResumeUndo(); }
+    EDITOR_CORE_API CScopedSuspendUndo();
+    EDITOR_CORE_API ~CScopedSuspendUndo();
 };
-
-#endif // CRYINCLUDE_EDITORCORE_UNDO_UNDO_H

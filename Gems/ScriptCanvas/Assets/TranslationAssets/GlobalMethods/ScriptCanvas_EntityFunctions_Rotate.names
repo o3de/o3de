@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_EntityFunctions_Rotate",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Rotate",
+                "category": "Entity/Entity"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_EntityFunctions_Rotate",
+                    "details": {
+                        "name": "Rotate",
+                        "tooltip": "Rotate entity with given euler angles in world space."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "The entity to apply rotation."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Euler Angles",
+                                "tooltip": "Euler angles, Pitch/Yaw/Roll."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

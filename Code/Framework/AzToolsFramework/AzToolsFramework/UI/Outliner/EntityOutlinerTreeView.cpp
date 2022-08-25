@@ -281,6 +281,7 @@ namespace AzToolsFramework
         // We can assume that if topIndex is still invalid, it was below the last item in the hierarchy, hence no selection is made.
         if (!topIndex.isValid())
         {
+            selectionModel()->clear();
             return;
         }
 

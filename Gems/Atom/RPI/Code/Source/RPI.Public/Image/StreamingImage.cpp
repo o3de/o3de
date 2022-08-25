@@ -253,6 +253,11 @@ namespace AZ
             return static_cast<uint16_t>(m_image->GetResidentMipLevel());
         }
 
+        Color StreamingImage::GetAverageColor() const
+        {
+            return m_imageAsset->GetAverageColor();
+        }
+
         RHI::ResultCode StreamingImage::TrimToMipChainLevel(size_t mipChainIndex)
         {
             AZ_Assert(mipChainIndex < m_mipChains.size(), "Exceeded number of mip chains.");

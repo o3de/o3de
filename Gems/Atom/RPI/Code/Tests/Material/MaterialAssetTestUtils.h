@@ -19,7 +19,22 @@ namespace UnitTest
     void CheckPropertyValue(const AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>& asset, const AZ::Name& propertyName, T expectedValue)
     {
         const AZ::RPI::MaterialPropertyIndex propertyIndex = asset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName);
+
+        EXPECT_TRUE(propertyIndex.IsValid());
+
         AZ::RPI::MaterialPropertyValue value = asset->GetDefaultPropertyValues()[propertyIndex.GetIndex()];
+
+        EXPECT_TRUE(value == expectedValue);
+    }
+
+    template<typename T>
+    void CheckMaterialPropertyValue(const AZ::Data::Asset<AZ::RPI::MaterialAsset>& asset, const AZ::Name& propertyName, T expectedValue)
+    {
+        const AZ::RPI::MaterialPropertyIndex propertyIndex = asset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName);
+
+        EXPECT_TRUE(propertyIndex.IsValid());
+
+        AZ::RPI::MaterialPropertyValue value = asset->GetPropertyValues()[propertyIndex.GetIndex()];
 
         EXPECT_TRUE(value == expectedValue);
     }

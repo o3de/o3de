@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         TearDown();
     }
 
-    bool Application::Init(bool interactive)
+    bool Application::Init(bool interactive, AZStd::unique_ptr<PythonBindings> pythonBindings)
     {
         constexpr const char* applicationName { "O3DE" };
 
@@ -73,7 +73,8 @@ namespace O3DE::ProjectManager
         // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
         QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
 
-        m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
+        // unit tests may provide custom python bindings 
+        m_pythonBindings = pythonBindings ? AZStd::move(pythonBindings) : AZStd::make_unique<PythonBindings>(GetEngineRoot());
 
         if (!m_pythonBindings->PythonStarted())
         {

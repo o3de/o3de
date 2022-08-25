@@ -1,6 +1,15 @@
 {
     "description": "Material Type with properties used to define Base PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
-    "version": 0,
+    "version": 1,
+    "versionUpdates": [
+        {
+            "toVersion": 1,
+            "actions": [
+                {"op": "rename", "from": "irradiance.color", "to": "irradiance.manualColor"},
+                {"op": "setValue", "name": "irradiance.irradianceColorSource", "value": "Manual"}
+            ]
+        }
+    ],
     "propertyLayout": {
         "propertyGroups": [
             { 

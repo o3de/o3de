@@ -13,6 +13,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ
 {
@@ -40,6 +41,10 @@ namespace AZ
             //! Invokes the frame scheduler. The provided callback is invoked prior to compilation of the graph.
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
+            // Register/Unregister xr system
+            void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
+            void UnregisterXRSystem();
+
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
             RHI::Device* GetDevice() override;
@@ -54,6 +59,7 @@ namespace AZ
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
             const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() override;
+            XRRenderingInterface* GetXRSystem() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -67,7 +73,7 @@ namespace AZ
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
             PhysicalDeviceDescriptor m_physicalDeviceDescriptor;
-            
+            XRRenderingInterface* m_xrSystem = nullptr;
         };
     } // namespace RPI
 } // namespace AZ

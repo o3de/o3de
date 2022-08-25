@@ -24,6 +24,7 @@
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 #include <RigidBodyStatic.h>
 #include <SphereColliderComponent.h>
@@ -32,6 +33,7 @@
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysX
@@ -1226,6 +1228,11 @@ namespace PhysX
 
         void TearDown() override
         {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+
             //Clean up the Test scene
             if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
             {
@@ -1249,13 +1256,15 @@ namespace PhysX
             rigidBody = azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, simBodyHandle));
         }
 
-        // Create materials for each density
-        Physics::MaterialConfiguration materialProperties;
-        materialProperties.m_density = AZStd::get<0>(GetParam());
-        AZStd::shared_ptr<Physics::Material> boxMaterial = physics->CreateMaterial(materialProperties);
+        const PhysX::MaterialConfiguration defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset = defaultMaterialConfiguration.CreateMaterialAsset();
 
-        materialProperties.m_density = AZStd::get<1>(GetParam());
-        AZStd::shared_ptr<Physics::Material> sphereMaterial = physics->CreateMaterial(materialProperties);
+        // Create materials for each density
+        AZStd::shared_ptr<PhysX::Material> boxMaterial = PhysX::Material::CreateMaterialWithRandomId(defaultMaterialAsset);
+        boxMaterial->SetDensity(AZStd::get<0>(GetParam()));
+
+        AZStd::shared_ptr<PhysX::Material> sphereMaterial = PhysX::Material::CreateMaterialWithRandomId(defaultMaterialAsset);
+        sphereMaterial->SetDensity(AZStd::get<1>(GetParam()));
 
         // Create the shapes with their corresponding materials
         Physics::ColliderConfiguration colliderConfig;
@@ -1298,21 +1307,43 @@ namespace PhysX
     class DensityBoundariesTestFixture
         : public ::testing::TestWithParam<float>
     {
+    public:
+        void TearDown() override
+        {
+            if (auto* materialManager = AZ::Interface<Physics::MaterialManager>::Get())
+            {
+                materialManager->DeleteAllMaterials();
+            }
+        }
     };
 
     TEST_P(DensityBoundariesTestFixture, Material_ExtremeDensityValues_ResultingDensityClampedToValidRange)
     {
-        Physics::System* physics = AZ::Interface<Physics::System>::Get();
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_density = GetParam();
 
-        Physics::MaterialConfiguration materialProperties;
-        materialProperties.m_density = GetParam();
+        AZ::Data::Asset<Physics::MaterialAsset> materialAsset = materialConfiguration.CreateMaterialAsset();
 
-        AZStd::shared_ptr<Physics::Material> material = physics->CreateMaterial(materialProperties);
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::CreateMaterialWithRandomId(materialAsset);
 
         // Resulting density should be in the valid range
         float resultingDensity = material->GetDensity();
-        EXPECT_TRUE(resultingDensity >= Physics::MaterialConfiguration::MinDensityLimit
-            && resultingDensity <= Physics::MaterialConfiguration::MaxDensityLimit);
+        EXPECT_TRUE(resultingDensity >= PhysX::MaterialConstants::MinDensityLimit
+            && resultingDensity <= PhysX::MaterialConstants::MaxDensityLimit);
+    }
+
+    TEST_P(DensityBoundariesTestFixture, MaterialInstance_ExtremeDensityValues_ResultingDensityClampedToValidRange)
+    {
+        const PhysX::MaterialConfiguration defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialAsset> defaultMaterialAsset = defaultMaterialConfiguration.CreateMaterialAsset();
+
+        AZStd::shared_ptr<PhysX::Material> material = PhysX::Material::CreateMaterialWithRandomId(defaultMaterialAsset);
+        material->SetDensity(GetParam());
+
+        // Resulting density should be in the valid range
+        float resultingDensity = material->GetDensity();
+        EXPECT_TRUE(resultingDensity >= PhysX::MaterialConstants::MinDensityLimit
+            && resultingDensity <= PhysX::MaterialConstants::MaxDensityLimit);
     }
 
     // Valid material density values: [0.01f, 1e5f]
@@ -1456,7 +1487,7 @@ namespace PhysX
 
         // Save initial values
         const AZ::Vector3 comBefore = m_rigidBody->GetCenterOfMassWorld();
-        const AZ::Matrix3x3 inertiaBefore = m_rigidBody->GetInverseInertiaWorld();
+        const AZ::Matrix3x3 inertiaBefore = m_rigidBody->GetInertiaWorld();
         const float massBefore = m_rigidBody->GetMass();
 
         // Shape will be simulated for ALL and MIXED shape modes
@@ -1484,7 +1515,7 @@ namespace PhysX
 
         const float massAfter = m_rigidBody->GetMass();
         const AZ::Vector3 comAfter = m_rigidBody->GetCenterOfMassWorld();
-        const AZ::Matrix3x3 inertiaAfter = m_rigidBody->GetInverseInertiaWorld();
+        const AZ::Matrix3x3 inertiaAfter = m_rigidBody->GetInertiaWorld();
 
         using ::testing::Not;
         using ::testing::FloatNear;
@@ -1609,5 +1640,86 @@ namespace PhysX
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassPropertiesWithTriangleMesh,
         ::testing::ValuesIn(PossibleMassComputeFlags)); // Values for GetMassComputeFlags()
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithBoxGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const AZ::Vector3 dimensions = AZ::Vector3::CreateOne();
+        EntityPtr entity = TestUtils::CreateBoxEntity(m_testSceneHandle, position, dimensions);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithSphereGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const float radius = 1.0f;
+        EntityPtr entity = TestUtils::CreateSphereEntity(m_testSceneHandle, position, radius);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithCapsuleGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const float radius = 0.5f;
+        const float height = 2.0f;
+        EntityPtr entity = TestUtils::CreateCapsuleEntity(m_testSceneHandle, position, height, radius);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithConvexMeshGeometryCanSwitchFromKinematicToDynamic)
+    {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        rigidBodyConfiguration.m_kinematic = true;
+
+        AzPhysics::SimulatedBodyHandle rigidBodyhandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+        auto convexShape = PhysX::TestUtils::CreatePyramidShape(1.0f);
+        auto* rigidBody =
+            azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyhandle));
+        rigidBody->AddShape(convexShape);
+        EXPECT_TRUE(rigidBody->IsKinematic());
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        rigidBody->SetKinematic(false);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(rigidBody->IsKinematic());
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithTriangleMeshGeometryCannotSwitchFromKinematicToDynamic)
+    {
+        AzPhysics::SimulatedBodyHandle rigidBodyhandle =
+            TestUtils::AddKinematicTriangleMeshCubeToScene(m_testSceneHandle, 3.0f, AzPhysics::MassComputeFlags::NONE);
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        auto* rigidBody =
+            azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyhandle));
+        EXPECT_TRUE(rigidBody->IsKinematic());
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        rigidBody->SetKinematic(false);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 1);
+        EXPECT_TRUE(rigidBody->IsKinematic());
+    }
 } // namespace PhysX
 

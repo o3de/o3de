@@ -9,10 +9,13 @@
 #include "EditorWhiteBoxComponentMode.h"
 #include "SubComponentModes/EditorWhiteBoxDefaultMode.h"
 #include "SubComponentModes/EditorWhiteBoxEdgeRestoreMode.h"
+#include "SubComponentModes/EditorWhiteBoxTransformMode.h"
 #include "Viewport/WhiteBoxViewportConstants.h"
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/sort.h>
+
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
@@ -23,7 +26,20 @@
 
 namespace WhiteBox
 {
+    constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
+
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
+
+    static void SetViewportUiClusterActiveButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
+    }
 
     // helper function to return what modifier keys move us to restore mode
     static bool RestoreModifier(AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers)
@@ -48,7 +64,7 @@ namespace WhiteBox
         EditorWhiteBoxComponentNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
         // default behavior for querying modifier keys (ask the QApplication)
-        m_keyboardMofifierQueryFn = []()
+        m_keyboardModifierQueryFn = []()
         {
             return AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         };
@@ -68,6 +84,7 @@ namespace WhiteBox
         EditorWhiteBoxComponentModeRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     }
+
 
     void EditorWhiteBoxComponentMode::Refresh()
     {
@@ -261,6 +278,11 @@ namespace WhiteBox
         return interactionHandled;
     }
 
+    AZStd::string EditorWhiteBoxComponentMode::GetComponentModeName() const
+    {
+        return "White Box Edit Mode";
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
     {
         return AZStd::visit(
@@ -269,14 +291,6 @@ namespace WhiteBox
                 return mode->PopulateActions(entityComponentIdPair);
             },
             m_modes);
-    }
-
-    static void SetViewportUiClusterActiveButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
-    {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
     }
 
     void EditorWhiteBoxComponentMode::EnterDefaultMode()
@@ -295,12 +309,20 @@ namespace WhiteBox
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_edgeRestoreModeButtonId);
     }
 
+    void EditorWhiteBoxComponentMode::EnterTransformMode()
+    {
+        m_modes = AZStd::make_unique<TransformMode>(GetEntityComponentIdPair());
+        m_intersectionAndRenderData = {};
+        m_currentSubMode = SubMode::Transform;
+        SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_transformModeButtonId);
+    }
+
     void EditorWhiteBoxComponentMode::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        const auto modifiers = m_keyboardMofifierQueryFn();
+        const auto modifiers = m_keyboardModifierQueryFn();
 
         // handle mode switch
         {
@@ -446,7 +468,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::OverrideKeyboardModifierQuery(
         const KeyboardModifierQueryFn& keyboardModifierQueryFn)
     {
-        m_keyboardMofifierQueryFn = keyboardModifierQueryFn;
+        m_keyboardModifierQueryFn = keyboardModifierQueryFn;
     }
 
     static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
@@ -464,12 +486,13 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::RemoveSubModeSelectionCluster()
     {
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster, m_modeSelectionClusterId);
+            AzToolsFramework::ViewportUi::DefaultViewportId, &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
+            m_modeSelectionClusterId);
     }
 
     void EditorWhiteBoxComponentMode::CreateSubModeSelectionCluster()
     {
+
         // create the cluster for changing transform mode
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_modeSelectionClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -479,22 +502,51 @@ namespace WhiteBox
         m_defaultModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "SketchMode");
         m_edgeRestoreModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "RestoreMode");
 
-        auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+        // temporary setting to disable this feature
+        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
         {
-            if (buttonId == m_defaultModeButtonId)
+            bool hasTransformMode = false;
+            settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
+            if (hasTransformMode)
             {
-                EnterDefaultMode();
+                //TODO: this is a temporary icon
+                m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Align_to_Object");
+                AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+                    m_transformModeButtonId, WhiteboxModeClusterManipulatorTooltip);
             }
-            else if (buttonId == m_edgeRestoreModeButtonId)
-            {
-                EnterEdgeRestoreMode();
-            }
-        };
+        }
 
-        m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
+        // set button tooltips
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_modeSelectionClusterId, m_modeSelectionHandler);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+            m_defaultModeButtonId, WhiteboxModeClusterDefaultTooltip);
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,
+            m_edgeRestoreModeButtonId, WhiteboxModeClusterEdgeRestoreTooltip);
+
+        m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+            [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
+            {
+                if (buttonId == m_defaultModeButtonId)
+                {
+                    EnterDefaultMode();
+                }
+                else if (buttonId == m_edgeRestoreModeButtonId)
+                {
+                    EnterEdgeRestoreMode();
+                }
+                else if (buttonId == m_transformModeButtonId)
+                {
+                    EnterTransformMode();
+                }
+            });
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler, m_modeSelectionClusterId,
+            m_modeSelectionHandler);
     }
 } // namespace WhiteBox

@@ -11,12 +11,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Script/ScriptContextDebug.h>
-#include <GridMate/Serialize/Buffer.h>
 
 /*
  * Remote script debugging is accomplished through the ScriptDebugAgent, which
  * sits on the target running the VM and communicates with the remote debugger
- * through the target manager.
+ * through the IRemoteTools interface.
  *
  * To communicate with the agent, send TM messages to AZ_CRC("ScriptDebugAgent").
  * The agent will respond by sending TM messages to AZ_CRC("ScriptDebugger").

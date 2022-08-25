@@ -1,9 +1,9 @@
 {
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "propertyValues": {
+        "general.doubleSided": true,
         "opacity.alphaSource": "Split",
-        "opacity.doubleSided": true,
         "opacity.mode": "Cutout",
         "opacity.textureMap": "TestData/Textures/checker8x8_512.png"
     }

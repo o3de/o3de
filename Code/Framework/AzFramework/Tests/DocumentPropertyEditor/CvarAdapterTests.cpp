@@ -51,7 +51,7 @@ namespace AZ::DocumentPropertyEditor::Tests
             Dom::Value rows = m_adapter->GetContents();
             for (auto it = rows.ArrayBegin(); it != rows.ArrayEnd(); ++it)
             {
-                Dom::Value label = (*it)[0].GetNodeValue();
+                Dom::Value label = (*it)[0][Nodes::Label::Value.GetName()];
                 if (label.GetString() == cvarName)
                 {
                     return *it;
@@ -64,16 +64,28 @@ namespace AZ::DocumentPropertyEditor::Tests
         {
             Dom::Value row = GetEntryRow(cvarName);
             EXPECT_FALSE(row.IsNull());
-            return row[1].GetNodeValue();
+            return row[1][Nodes::PropertyEditor::Value.GetName()];
+        }
+
+        template <typename T>
+        T GetTypedEntryValue(AZStd::string_view cvarName)
+        {
+            return Dom::Utils::ValueToType<T>(GetEntryValue(cvarName)).value();
         }
 
         void SetEntryValue(AZStd::string_view cvarName, Dom::Value value)
         {
             Dom::Value row = GetEntryRow(cvarName);
             ASSERT_FALSE(row.IsNull());
-            auto result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value);
+            auto result = Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(row[1], value, Nodes::ValueChangeType::FinishedEdit);
             EXPECT_TRUE(result.IsSuccess());
             AZ_Error("CvarAdapterDpeTests", result.IsSuccess(), "%s", result.GetError().c_str());
+        }
+
+        template <typename T>
+        void SetTypedEntryValue(AZStd::string_view cvarName, const T& value)
+        {
+            SetEntryValue(cvarName, Dom::Utils::ValueFromType(value));
         }
 
         AZStd::unique_ptr<AZ::Console> m_console;
@@ -122,46 +134,34 @@ namespace AZ::DocumentPropertyEditor::Tests
 
     TEST_F(CvarAdapterDpeTests, Vec2Cvar)
     {
-        Dom::Value value = GetEntryValue("dpe_TestVec2");
-        EXPECT_EQ(static_cast<AZ::Vector2>(dpe_TestVec2), AZ::Vector2((float)value[0].GetDouble(), (float)value[1].GetDouble()));
-        value[0].SetDouble(2.0);
-        value[1].SetDouble(4.5);
-        SetEntryValue("dpe_TestVec2", value);
-        value = GetEntryValue("dpe_TestVec2");
-        EXPECT_EQ(2.0, GetEntryValue("dpe_TestVec2")[0].GetDouble());
-        EXPECT_EQ(4.5, GetEntryValue("dpe_TestVec2")[1].GetDouble());
-        EXPECT_EQ(AZ::Vector2(2.0f, 4.5f), static_cast<AZ::Vector2>(dpe_TestVec2));
+        AZ::Vector2 value = GetTypedEntryValue<AZ::Vector2>("dpe_TestVec2");
+        EXPECT_EQ(static_cast<AZ::Vector2>(dpe_TestVec2), value);
+        const AZ::Vector2 newValue(2.0, 4.5);
+        SetTypedEntryValue("dpe_TestVec2", newValue);
+        value = GetTypedEntryValue<AZ::Vector2>("dpe_TestVec2");
+        EXPECT_EQ(newValue, value);
+        EXPECT_EQ(newValue, static_cast<AZ::Vector2>(dpe_TestVec2));
     }
 
     TEST_F(CvarAdapterDpeTests, Vec3Cvar)
     {
-        Dom::Value value = GetEntryValue("dpe_TestVec3");
-        EXPECT_EQ(
-            static_cast<AZ::Vector3>(dpe_TestVec3),
-            AZ::Vector3((float)value[0].GetDouble(), (float)value[1].GetDouble(), (float)value[2].GetDouble()));
-        value[1].SetDouble(5.0);
-        SetEntryValue("dpe_TestVec3", value);
-        value = GetEntryValue("dpe_TestVec3");
-        EXPECT_EQ(5.0, GetEntryValue("dpe_TestVec3")[1].GetDouble());
-        EXPECT_EQ(5.f, static_cast<AZ::Vector3>(dpe_TestVec3).GetY());
+        AZ::Vector3 value = GetTypedEntryValue<AZ::Vector3>("dpe_TestVec3");
+        EXPECT_EQ(static_cast<AZ::Vector3>(dpe_TestVec3), value);
+        const AZ::Vector3 newValue(1.0, 0.0, 2.25);
+        SetTypedEntryValue("dpe_TestVec3", newValue);
+        value = GetTypedEntryValue<AZ::Vector3>("dpe_TestVec3");
+        EXPECT_EQ(newValue, value);
+        EXPECT_EQ(newValue, static_cast<AZ::Vector3>(dpe_TestVec3));
     }
 
     TEST_F(CvarAdapterDpeTests, ColorCvar)
     {
-        Dom::Value value = GetEntryValue("dpe_TestColor");
-        EXPECT_EQ(
-            static_cast<AZ::Color>(dpe_TestColor),
-            AZ::Color((float)value[0].GetDouble(), (float)value[1].GetDouble(), (float)value[2].GetDouble(), (float)value[3].GetDouble()));
-        value[0].SetDouble(0.0);
-        value[1].SetDouble(1.0);
-        value[2].SetDouble(0.5);
-        value[3].SetDouble(0.25);
-        SetEntryValue("dpe_TestColor", value);
-        value = GetEntryValue("dpe_TestColor");
-        EXPECT_EQ(0.0, GetEntryValue("dpe_TestColor")[0].GetDouble());
-        EXPECT_EQ(1.0, GetEntryValue("dpe_TestColor")[1].GetDouble());
-        EXPECT_EQ(0.5, GetEntryValue("dpe_TestColor")[2].GetDouble());
-        EXPECT_EQ(0.25, GetEntryValue("dpe_TestColor")[3].GetDouble());
-        EXPECT_EQ(AZ::Color(0.f, 1.f, 0.5f, 0.25f), static_cast<AZ::Color>(dpe_TestColor));
+        AZ::Color value = GetTypedEntryValue<AZ::Color>("dpe_TestColor");
+        EXPECT_EQ(static_cast<AZ::Color>(dpe_TestColor), value);
+        const AZ::Color newValue(0.0f, 1.0f, 0.5f, 0.25f);
+        SetTypedEntryValue("dpe_TestColor", newValue);
+        value = GetTypedEntryValue<AZ::Color>("dpe_TestColor");
+        EXPECT_EQ(newValue, value);
+        EXPECT_EQ(newValue, static_cast<AZ::Color>(dpe_TestColor));
     }
 } // namespace AZ::DocumentPropertyEditor::Tests

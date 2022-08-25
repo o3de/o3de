@@ -110,19 +110,19 @@ namespace GraphModel
         virtual const char* GetTitle() const = 0;
 
         //! Returns the name that will be displayed as the sub-title of the Node in the UI
-        virtual const char* GetSubTitle() const
-        {
-            return "";
-        };
+        virtual const char* GetSubTitle() const;
 
         //! Returns node type (general by default) which can be overriden for
         //! other types, such as wrapper nodes
-        virtual NodeType GetNodeType() const
-        {
-            return NodeType::GeneralNode;
-        }
+        virtual NodeType GetNodeType() const;
 
         NodeId GetId() const;
+
+        bool HasConnections() const;
+        bool HasInputConnections() const;
+        bool HasOutputConnections() const;
+        bool HasInputConnectionFromNode(ConstNodePtr node) const;
+        bool HasOutputConnectionToNode(ConstNodePtr node) const;
 
         bool Contains(ConstSlotPtr slot) const;
 
@@ -152,9 +152,6 @@ namespace GraphModel
         //! Returns the number of extendable slots for a given SlotName.
         //! Will return -1 if the specified slot is not extendable.
         int GetExtendableSlotCount(const SlotName& name);
-
-        //! Returns the DataType for the given slot, which can be overriden for individual nodes to extend
-        virtual DataTypePtr GetDataType(ConstSlotPtr slot) const;
 
         //! Delete the specified slot, which is only allowed on extendable slots.
         //! This method does nothing if the slot is not extendable.

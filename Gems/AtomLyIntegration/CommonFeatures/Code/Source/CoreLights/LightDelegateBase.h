@@ -59,7 +59,10 @@ namespace AZ
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
             void SetNormalShadowBias([[maybe_unused]] float bias) override{};
-            
+
+            void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
+            void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
+
         protected:
             void InitBase(EntityId entityId);
 

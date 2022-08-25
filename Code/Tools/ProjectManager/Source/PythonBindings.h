@@ -34,9 +34,14 @@ namespace O3DE::ProjectManager
         bool StartPython() override;
 
         // Engine
+        AZ::Outcome<QVector<EngineInfo>> GetAllEngineInfos() override;
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
         AZ::Outcome<EngineInfo> GetEngineInfo(const QString& engineName) override;
+        AZ::Outcome<EngineInfo> GetProjectEngine(const QString& projectPath) override;
         DetailedOutcome SetEngineInfo(const EngineInfo& engineInfo, bool force = false) override;
+
+        // Remote sources
+        bool ValidateRepository(const QString& repoUri) override;
 
         // Gem
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
@@ -47,9 +52,11 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
         // Project
-        AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
+        AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) override;
         AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
+        AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) override;
+        AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() override;
         bool AddProject(const QString& path) override;
         bool RemoveProject(const QString& path) override;
         AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
@@ -70,11 +77,19 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
         DetailedOutcome DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+        DetailedOutcome DownloadProject(
+            const QString& projectName, std::function<void(int, int)> projectProgressCallback, bool force = false) override;
+        DetailedOutcome DownloadTemplate(
+            const QString& templateName, std::function<void(int, int)> templateProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
         void AddErrorString(AZStd::string errorString) override;
         void ClearErrorStrings() override;
+
+    protected:
+        static void OnStdOut(const char* msg); 
+        static void OnStdError(const char* msg); 
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
@@ -89,7 +104,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();
-
 
         bool m_pythonStarted = false;
 
@@ -111,4 +125,4 @@ namespace O3DE::ProjectManager
         bool m_requestCancelDownload = false;
         AZStd::vector<AZStd::string> m_pythonErrorStrings;
     };
-}
+} // namespace O3DE::ProjectManager

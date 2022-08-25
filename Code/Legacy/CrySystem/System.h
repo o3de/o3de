@@ -82,12 +82,6 @@ using WIN_HMODULE = void*;
 typedef void* WIN_HMODULE;
 #endif
 
-//forward declarations
-namespace Audio
-{
-    struct IAudioSystem;
-    struct IMusicSystem;
-} // namespace Audio
 
 #define PHSYICS_OBJECT_ENTITY 0
 
@@ -105,8 +99,7 @@ struct SSystemCVars
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
-    int sys_report_files_not_found_in_paks = 0;
-
+    
     int sys_asserts;
     int sys_error_debugbreak;
 
@@ -135,7 +128,7 @@ class CSystem
     , public CrySystemRequestBus::Handler
 {
 public:
-    CSystem(SharedEnvironmentInstance* pSharedEnvironment);
+    CSystem();
     ~CSystem();
 
     static void OnLanguageCVarChanged(ICVar* language);

@@ -13,6 +13,7 @@
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
@@ -22,6 +23,9 @@ namespace AZ
     namespace Render
     {
         class ModelDataInstance;
+        
+        using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
+        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
 
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
@@ -39,7 +43,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", FeatureProcessor);
+            AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", AZ::RPI::FeatureProcessor);
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
@@ -65,6 +69,9 @@ namespace AZ
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
             //! Gets the underlying RPI::ModelAsset for a meshHandle.
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
+            //! This function is primarily intended for debug output and testing, by providing insight into what
+            //! materials, shaders, etc. are actively being used to render the model.
+            virtual const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,
@@ -113,6 +120,9 @@ namespace AZ
             virtual bool GetRayTracingEnabled(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh as visible or hidden.  When the mesh is hidden it will not be rendered by the feature processor.
             virtual void SetVisible(const MeshHandle& meshHandle, bool visible) = 0;
+            //! Returns the visibility state of the mesh.
+            //! This only refers to whether or not the mesh has been explicitly hidden, and is not related to view frustum visibility.
+            virtual bool GetVisible(const MeshHandle& meshHandle) const = 0;
             //! Sets the mesh to render IBL specular in the forward pass.
             virtual void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) = 0;
         };

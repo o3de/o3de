@@ -14,6 +14,7 @@
 #include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 
 namespace ScriptCanvasBuilderCpp
@@ -31,7 +32,9 @@ namespace ScriptCanvasBuilderCpp
         ( AZ::SerializeContext& serializeContext
         , AZ::SerializeContext::DataElementNode& rootElement)
     {
-        if (rootElement.GetVersion() < ScriptCanvasBuilderCpp::Version::EditorAssetRedux)
+        using namespace ScriptCanvas;
+
+        if (rootElement.GetVersion() < Version::EditorAssetRedux)
         {
             auto sourceIndex = rootElement.FindElement(AZ_CRC_CE("source"));
             if (sourceIndex == -1)
@@ -48,7 +51,7 @@ namespace ScriptCanvasBuilderCpp
                 return false;
             }
 
-            ScriptCanvasEditor::SourceHandle sourceHandle(nullptr, asset.GetId().m_guid, {});
+            SourceHandle sourceHandle(nullptr, asset.GetId().m_guid);
             if (!rootElement.AddElementWithData(serializeContext, "source", sourceHandle))
             {
                 AZ_Error("ScriptCanvas", false, "BuildVariableOverrides coversion failed: could not add updated 'source' data");
@@ -293,6 +296,8 @@ namespace ScriptCanvasBuilder
                 overrideValue.SetAllowSignalOnChange(false);
             }
         }
+
+        m_isComponentScript = abstractCodeModel->GetInterface().RefersToSelfEntityId();
     }
 
     void BuildVariableOverrides::SetHandlesToDescription()
@@ -310,7 +315,9 @@ namespace ScriptCanvasBuilder
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
 
         runtimeOverrides.m_runtimeAsset = AZ::Data::Asset<ScriptCanvas::RuntimeAsset>
-            (AZ::Data::AssetId(buildOverrides.m_source.Id(), AZ_CRC("RuntimeData", 0x163310ae)), azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            ({ buildOverrides.m_source.Id(), ScriptCanvas::RuntimeDataSubId }
+            , azrtti_typeid<ScriptCanvas::RuntimeAsset>()
+            , {});
         runtimeOverrides.m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         runtimeOverrides.m_variableIndices.resize(buildOverrides.m_variables.size());
 
@@ -373,9 +380,9 @@ namespace ScriptCanvasBuilder
         return runtimeOverrides;
     }
 
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvasEditor::EditorAssetTree& editorAssetTree)
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvas::SourceTree& editorAssetTree)
     {
-        auto buildEntity = editorAssetTree.m_asset.Get()->GetEntity();
+        auto buildEntity = editorAssetTree.m_source.Get()->GetEntity();
         if (!buildEntity)
         {
             return AZ::Failure(AZStd::string("No entity from source asset"));
@@ -400,7 +407,7 @@ namespace ScriptCanvasBuilder
         }
 
         BuildVariableOverrides result;
-        result.m_source = editorAssetTree.m_asset;
+        result.m_source = editorAssetTree.m_source;
         result.PopulateFromParsedResults(parseOutcome.GetValue(), *variableData);
 
         // recurse...
@@ -412,7 +419,7 @@ namespace ScriptCanvasBuilder
             {
                 return AZ::Failure(AZStd::string::format
                     ( "ParseEditorAssetTree failed to parse dependent graph from %s: %s"
-                    , dependentAsset.m_asset.ToString().c_str()
+                    , dependentAsset.m_source.ToString().c_str()
                     , parseDependentOutcome.GetError().c_str()));
             }
 
@@ -420,6 +427,34 @@ namespace ScriptCanvasBuilder
         }
 
         return AZ::Success(result);
+    }
+
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset)
+    {
+        if (!asset.Get())
+        {
+            return false;
+        }
+
+        overrides.m_runtimeAsset = asset;
+        auto dependencyCount = overrides.m_dependencies.size();
+
+        if (dependencyCount == asset->m_runtimeData.m_requiredAssets.size())
+        {
+            for (size_t index = 0; index < dependencyCount; ++index)
+            {
+                if (!ReplaceAsset(overrides.m_dependencies[index], asset->m_runtimeData.m_requiredAssets[index]))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
     }
 }
 

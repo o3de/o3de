@@ -12,6 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -46,33 +47,34 @@
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/Archive/Archive.h>
 #include <AzFramework/Archive/ArchiveFileIO.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
+#include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/SurfaceData/SurfaceData.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
-#include <GridMate/Memory.h>
 #include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
+#include <AzNetworking/AzNetworkingModule.h>
 #include <AzFramework/AzFrameworkModule.h>
 #include <cctype>
 #include <stdio.h>
@@ -226,6 +228,14 @@ namespace AzFramework
                 using AssetCatalogBus = AZ::Data::AssetCatalogRequestBus;
                 AssetCatalogBus::Broadcast(AZStd::move(StartMonitoringAssetsAndLoadCatalog));
             }
+#if defined(ENABLE_REMOTE_TOOLS)
+            IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                remoteTools->RegisterToolingServiceClient(
+                    AzFramework::LuaToolsKey, AzFramework::LuaToolsName, AzFramework::LuaToolsPort);
+            }
+#endif
         }
     }
 
@@ -279,9 +289,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::SceneSystemComponent>(),
             azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>(),
             azrtti_typeid<AzFramework::GameEntityContextComponent>(),
-#if !defined(_RELEASE)
-            azrtti_typeid<AzFramework::TargetManagementComponent>(),
-#endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
 
@@ -352,6 +359,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::InputSystemComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
+            azrtti_typeid<Physics::MaterialSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
             });
 
@@ -391,6 +399,7 @@ namespace AzFramework
     {
         AZ::ComponentApplication::CreateStaticModules(outModules);
 
+        outModules.emplace_back(aznew AzNetworking::AzNetworkingModule());
         outModules.emplace_back(aznew AzFrameworkModule());
     }
 

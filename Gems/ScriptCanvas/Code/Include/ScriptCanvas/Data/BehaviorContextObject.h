@@ -221,7 +221,7 @@ namespace ScriptCanvas
             {
                 resultObj.m_address = behaviorClass.Allocate();
             }
-            AZStd::array<AZ::BehaviorValueParameter, 1 + sizeof...(Args)> params{ {&resultObj} };
+            AZStd::array<AZ::BehaviorArgument, 1 + sizeof...(Args)> params{ {&resultObj} };
             UnpackParameterAtIndex<1>(params, AZStd::make_index_sequence<sizeof...(Args)>(), AZStd::forward<Args>(args)...);
             invokableMethod->Call(params.data(), static_cast<AZ::u32>(params.size()));
             return resultObj;

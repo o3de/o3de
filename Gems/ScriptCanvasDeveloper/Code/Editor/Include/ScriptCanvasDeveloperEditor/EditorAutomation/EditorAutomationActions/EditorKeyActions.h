@@ -15,7 +15,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationAction.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationAction that will simulate a key action(press or release) for the specified key

@@ -122,6 +122,8 @@ namespace AZ
                 Data::AssetId m_shaderAssetId;
                 Data::Asset<ShaderVariantTreeAsset> m_shaderVariantTree;
                 //! The key is the AssetId of the ShaderVariantAsset
+                //! We need to preserve a reference to shaderVariantAsset, otherwise the asset load will be canceled
+                //! or the asset could be removed from the asset database before it is passed back to the shader system.
                 AZStd::unordered_map<Data::AssetId, Data::Asset<ShaderVariantAsset>> m_shaderVariantsMap;
             };
 

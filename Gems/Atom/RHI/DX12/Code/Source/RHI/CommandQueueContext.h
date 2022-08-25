@@ -57,6 +57,7 @@ namespace AZ
             FenceSet m_compiledFences;
             AZStd::vector<FenceSet> m_frameFences;
             uint32_t m_currentFrameIndex = 0;
+            Device* m_device = nullptr;
         };
     }
 }

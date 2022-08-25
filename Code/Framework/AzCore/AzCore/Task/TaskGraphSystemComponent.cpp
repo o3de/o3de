@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Threading/ThreadUtils.h>
 
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
@@ -19,6 +20,7 @@ AZ_CVAR(bool, cl_activateTaskGraph, true, nullptr, AZ::ConsoleFunctorFlags::Null
 AZ_CVAR(float, cl_taskGraphThreadsConcurrencyRatio, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph calculate the number of worker threads to spawn by scaling the number of hw threads, value is clamped between 0.0f and 1.0f");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph number of hardware threads that are reserved for O3DE system threads. Value is clamped between 0 and the number of logical cores in the system");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph minimum number of worker threads to create after scaling the number of hw threads");
+AZ_CVAR(uint32_t, cl_taskGraphThreadsMaxNumber, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph maximum number of worker threads to create after scaling the number of hw threads (0 indicates uncapped)");
 
 static constexpr uint32_t TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
 
@@ -28,12 +30,23 @@ namespace AZ
     {
         AZ_Assert(m_taskExecutor == nullptr, "Error multiple activation of the TaskGraphSystemComponent");
 
+        AZ::ApplicationTypeQuery appType;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
+        if (!appType.IsValid() || (appType.IsTool() && !appType.IsEditor()))
+        {
+            // Tools generally do not rely on the task graph or high degrees of concurrency. For now, limit concurrency
+            // for non-editor tools to conserve memory and thread-spawn overhead.
+            cl_taskGraphThreadsMaxNumber = 1;
+        }
+
         if (Interface<TaskGraphActiveInterface>::Get() == nullptr)
         {
         #if (AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS)
             const uint32_t numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS;
         #else
-            const uint32_t numberOfWorkerThreads = Threading::CalcNumWorkerThreads(cl_taskGraphThreadsConcurrencyRatio, cl_taskGraphThreadsMinNumber, cl_taskGraphThreadsNumReserved);
+            const uint32_t numberOfWorkerThreads = Threading::CalcNumWorkerThreads(
+                cl_taskGraphThreadsConcurrencyRatio, cl_taskGraphThreadsMinNumber, cl_taskGraphThreadsMaxNumber,
+                cl_taskGraphThreadsNumReserved);
         #endif // (AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS)
             Interface<TaskGraphActiveInterface>::Register(this); // small window that another thread can try to use taskgraph between this line and the set instance.
             m_taskExecutor = aznew TaskExecutor(numberOfWorkerThreads);

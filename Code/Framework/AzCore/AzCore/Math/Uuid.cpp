@@ -18,19 +18,6 @@
 
 namespace AZ
 {
-    //=========================================================================
-    // CreateNull
-    // [4/10/2012]
-    //=========================================================================
-    Uuid Uuid::CreateNull()
-    {
-        Uuid id;
-        u64* value64 = reinterpret_cast<u64*>(id.data);
-        value64[0] = 0;
-        value64[1] = 0;
-        return id;
-    }
-
     static const char* const s_uuid_digits = "0123456789ABCDEFabcdef";
     static const unsigned char s_uuid_values[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 10, 11, 12, 13, 14, 15, static_cast<unsigned char>(-1) };
 
@@ -417,6 +404,11 @@ namespace AZ
         memcpy(mergedData, data, sizeof(data));
         memcpy(mergedData + sizeof(data), rhs.data, sizeof(data));
         return CreateData(&mergedData, AZ_ARRAY_SIZE(mergedData));
+    }
+
+    Uuid::FixedString Uuid::ToFixedString(bool isBrackets, bool isDashes) const
+    {
+        return ToString<FixedString>(isBrackets, isDashes);
     }
 
 #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION

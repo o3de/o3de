@@ -122,8 +122,12 @@ namespace AWSClientAuth
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
                     UpdateTokens(jsonView);
+
                     AuthenticationProviderNotificationBus::Broadcast(
-                        &AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInSuccess, m_authenticationTokens);
+                        &AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInSuccess,
+                        AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthIdTokenResponseKey).c_str(),
+                            ProviderNameEnum::Google, jsonView.GetInteger(OAuthExpiresInResponseKey)));
                 }
                 else
                 {
@@ -153,8 +157,11 @@ namespace AWSClientAuth
             if (responseCode == Aws::Http::HttpResponseCode::OK)
             {
                 UpdateTokens(jsonView);
-                AuthenticationProviderNotificationBus::Broadcast(
-                    &AuthenticationProviderNotifications::OnRefreshTokensSuccess, m_authenticationTokens);
+
+                AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess,
+                    AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                        jsonView.GetString(OAuthRefreshTokenResponseKey).c_str() ,jsonView.GetString(OAuthIdTokenResponseKey).c_str(),
+                        ProviderNameEnum::Google, jsonView.GetInteger(OAuthExpiresInResponseKey)));
             }
             else
             {
@@ -167,8 +174,10 @@ namespace AWSClientAuth
 
     void GoogleAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
-        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
-            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str() ,jsonView.GetString(OAuthIdTokenResponseKey).c_str(), ProviderNameEnum::Google
+        // Storing authentication tokens in memory can be a security concern. The access token and id token are not actually in use by
+        // the authentication provider and shouldn't be stored in the member variable.
+        m_authenticationTokens = AuthenticationTokens("",
+            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str() ,"", ProviderNameEnum::Google
             , jsonView.GetInteger(OAuthExpiresInResponseKey));
     }
 

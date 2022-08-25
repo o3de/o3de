@@ -242,7 +242,7 @@ namespace UnitTest
     {
         Uuid left = Uuid::CreateNull();
 
-        // The below check should just give an empty uuid due to the g
+        // The below check should just give an empty uuid due to the 'g' 
         const char permissiveStr1[] = "{CCF8AB1E- gA04A-43D1-AD8A-70725BC3392E}";
         Uuid right = Uuid::CreateStringPermissive(permissiveStr1);
         EXPECT_EQ(left, right);
@@ -269,5 +269,43 @@ namespace UnitTest
         "the beginning of the string then we should succeed";
         Uuid right = Uuid::CreateStringPermissive(permissiveStr);
         EXPECT_EQ(left, right);
+    }
+
+    TEST_F(UuidTests, ToFixedString_ResultIsAccurate_Succeeds)
+    {
+        {
+            const char uuidStr[] = "{34D44249-E599-4B30-811F-4215C2DEA269}";
+            const Uuid source = Uuid::CreateString(uuidStr);
+            const AZStd::string dynamic = source.ToString<AZStd::string>();
+            const Uuid::FixedString fixed = source.ToFixedString();
+            EXPECT_STREQ(dynamic.c_str(), fixed.c_str());
+        }
+
+        {
+            const char uuidStr[] = "{678EFGBA-E599-4B30-811F-77775555AAFF}";
+            const Uuid source = Uuid::CreateString(uuidStr);
+            const AZStd::string dynamic = source.ToString<AZStd::string>();
+            const Uuid::FixedString fixed = source.ToFixedString();
+            EXPECT_STREQ(dynamic.c_str(), fixed.c_str());
+        }
+    }
+
+    TEST_F(UuidTests, ToFixedString_FormatSpecifier_Succeeds)
+    {
+        {
+            const char uuidStr[] = "{34D44249-E599-4B30-811F-4215C2DEA269}";
+            const Uuid source = Uuid::CreateString(uuidStr);
+            const AZStd::string dynamic = AZStd::string::format("%s", source.ToString<AZStd::string>().c_str());
+            const AZStd::string fixed = AZStd::string::format("%s", source.ToFixedString().c_str());
+            EXPECT_EQ(dynamic, fixed);
+        }
+
+        {
+            const char uuidStr[] = "{678EFGBA-E599-4B30-811F-77775555AAFF}";
+            const Uuid source = Uuid::CreateString(uuidStr);
+            const AZStd::string dynamic = AZStd::string::format("%s", source.ToString<AZStd::string>().c_str());
+            const AZStd::string fixed = AZStd::string::format("%s", source.ToFixedString().c_str());
+            EXPECT_EQ(dynamic, fixed);
+        }
     }
 }

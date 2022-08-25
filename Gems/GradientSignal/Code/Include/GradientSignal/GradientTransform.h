@@ -108,6 +108,12 @@ namespace GradientSignal
         */
         static constexpr float UvEpsilon = 0.001f;
 
+        //! Return the WrappingType for this GradientTransform
+        WrappingType GetWrappingType() const;
+
+        //! Return the AABB bounds for this GradientTransform
+        AZ::Aabb GetBounds() const;
+
     private:
 
         //! These are the various transformations that will be performed, based on wrapping type.

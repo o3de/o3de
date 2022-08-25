@@ -6,9 +6,9 @@
  *
  */
 #include <Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h>
-#include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <Atom/RHI/Factory.h>
 
@@ -16,6 +16,9 @@ namespace AZ
 {
     namespace RPI
     {
+        AZ_CVAR(uint32_t, r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms, 0, nullptr, ConsoleFunctorFlags::Null,
+            "Override the delay between iterations of checking for shader variant assets. 0 means use the default value (1000ms).");
+
         void ShaderVariantAsyncLoader::Init()
         {
             m_isServiceShutdown.store(false);
@@ -102,9 +105,6 @@ namespace AZ
                             continue;
                         }
 
-                        // Record the request for metrics.
-                        ShaderMetricsSystem::Get()->RequestShaderVariant(tupleItor->m_shaderAsset.Get(),  tupleItor->m_shaderVariantId, searchResult);
-
                         uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(
                             RHI::Factory::Get().GetAPIUniqueIndex(), tupleItor->m_supervariantIndex.GetIndex(), searchResult.GetStableId());
                         Data::AssetId shaderVariantAssetId(shaderVariantTreeAsset.GetId().m_guid, shaderVariantProductSubId);
@@ -145,7 +145,12 @@ namespace AZ
                     }
                 }
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
+                AZStd::chrono::milliseconds delay{1000};
+                if (r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms)
+                {
+                    delay = AZStd::chrono::milliseconds{r_ShaderVariantAsyncLoader_ServiceLoopDelayOverride_ms};
+                }
+                AZStd::this_thread::sleep_for(delay);
             }
         }
 
@@ -242,11 +247,8 @@ namespace AZ
                 shaderVariantTreeAsset->FindVariantStableId(shaderAsset->GetShaderOptionGroupLayout(), shaderVariantId);
             if (searchResult.IsRoot())
             {
-                return shaderAsset->GetRootVariant();
+                return shaderAsset->GetRootVariantAsset();
             }
-
-            // Record the request for metrics.
-            ShaderMetricsSystem::Get()->RequestShaderVariant(shaderAsset.Get(), shaderVariantId, searchResult);
 
             return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), searchResult.GetStableId(), supervariantIndex);
         }
@@ -312,6 +314,18 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = variantFindIt->second;
             if (shaderVariantAsset.IsReady())
             {
+                Data::Asset<ShaderVariantAsset> registeredShaderVariantAsset =
+                    AZ::Data::AssetManager::Instance().FindAsset<ShaderVariantAsset>(shaderVariantAssetId, AZ::Data::AssetLoadBehavior::NoLoad);
+                if (!registeredShaderVariantAsset.GetId().IsValid())
+                {
+                    // The shader variant was removed from the asset database, this would normally happen when the source .shadervariantlist file
+                    // is changed to remove a particular variant. Since it should no longer be available for use, remove it from the local map.
+                    // Note that if we don't handle this special case, the AssetManager will fail to report OnAssetReady if/when this asset appears
+                    // again, which might be a bug in the asset system.
+                    shaderVariantsMap.erase(variantFindIt);
+                    return {};
+                }
+
                 return shaderVariantAsset;
             }
             return {};

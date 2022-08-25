@@ -296,7 +296,7 @@ namespace AMD
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 100)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_ShadowLODStartDistance, "Shadow LOD Start Distance ",
+                        AZ::Edit::UIHandlers::Default, &TressFXRenderingSettings::m_ShadowLODStartDistance, "Shadow LOD Start Distance",
                         "(Shadow)Distance to begin LOD.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(
@@ -328,7 +328,7 @@ namespace AMD
                         "Turn on Level of Detail usage for the hair.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &TressFXRenderingSettings::m_EnableShadowLOD, "Enable Hair LOD(Shadow)",
-                        "Turn on Level of Detail usage for the shadow fo the hair.")
+                        "Turn on Level of Detail usage for the shadow of the hair.")
                     ;
             }
         }

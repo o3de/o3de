@@ -96,18 +96,39 @@ namespace AZ::Debug
             TerminateProcess(GetCurrentProcess(), exitCode);
         }
 
-        void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
+        void OutputToDebugger(AZStd::string_view window, AZStd::string_view message)
         {
             AZStd::fixed_wstring<g_maxMessageLength> tmpW;
-            if(window)
+            if(!window.empty())
             {
-                AZStd::to_wstring(tmpW, window);
-                tmpW += L": ";
-                OutputDebugStringW(tmpW.c_str());
+                while (window.size() > tmpW.max_size())
+                {
+                    AZStd::to_wstring(tmpW, window.substr(0, tmpW.max_size()));
+                    window = window.substr(tmpW.max_size());
+                    OutputDebugStringW(tmpW.c_str());
+                }
+
+                if (!window.empty())
+                {
+                    AZStd::to_wstring(tmpW, window);
+                    OutputDebugStringW(tmpW.c_str());
+                }
+                OutputDebugStringW(L": ");
                 tmpW.clear();
             }
-            AZStd::to_wstring(tmpW, message);
-            OutputDebugStringW(tmpW.c_str());
+
+            while (message.size() > tmpW.max_size())
+            {
+                AZStd::to_wstring(tmpW, message.substr(0, tmpW.max_size()));
+                message = message.substr(tmpW.max_size());
+                OutputDebugStringW(tmpW.c_str());
+            }
+
+            if (!message.empty())
+            {
+                AZStd::to_wstring(tmpW, message);
+                OutputDebugStringW(tmpW.c_str());
+            }
         }
     } // namespace Platform
 

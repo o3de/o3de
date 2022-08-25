@@ -23,10 +23,14 @@ set(FILES
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
+    Source/FormComboBoxWidget.h
+    Source/FormComboBoxWidget.cpp
     Source/FormFolderBrowseEditWidget.h
     Source/FormFolderBrowseEditWidget.cpp
     Source/FormImageBrowseEditWidget.h
     Source/FormImageBrowseEditWidget.cpp
+    Source/GemsGemRepoScreen.h
+    Source/GemsGemRepoScreen.cpp
     Source/GemsSubWidget.h
     Source/GemsSubWidget.cpp
     Source/DownloadController.h
@@ -39,6 +43,8 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
+    Source/ProjectGemCatalogScreen.h
+    Source/ProjectGemCatalogScreen.cpp
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
@@ -83,6 +89,10 @@ set(FILES
     Source/ExternalLinkDialog.cpp
     Source/AdjustableHeaderWidget.h
     Source/AdjustableHeaderWidget.cpp
+    Source/AddRemoteProjectDialog.h
+    Source/AddRemoteProjectDialog.cpp
+    Source/TextOverflowWidget.h
+    Source/TextOverflowWidget.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

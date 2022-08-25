@@ -25,37 +25,9 @@ namespace ScriptCanvas
         AZ_RTTI(ExecutionStateInterpreted, "{824E3CF1-5403-4AF7-AC5F-B69699FFF669}", ExecutionState);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpreted, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        ExecutionStateInterpreted(const ExecutionStateConfig& config);
-
-        void ClearLuaRegistryIndex();
-
-        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index) const;
-
-        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const;
-
-        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index) const;
-
-        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const;
+        ExecutionStateInterpreted(ExecutionStateConfig& config);
 
         ExecutionMode GetExecutionMode() const override;
-
-        int GetLuaRegistryIndex() const;
-
-        void ReferenceExecutionState();
-
-        void ReleaseExecutionState();
-
-        void ReleaseExecutionStateUnchecked();
 
     protected:
         lua_State* m_luaState;
@@ -63,7 +35,6 @@ namespace ScriptCanvas
         lua_State* LoadLuaScript();
         
     private:
-        AZ::Data::Asset<AZ::ScriptAsset> m_interpretedAsset;
-        int m_luaRegistryIndex = LUA_NOREF;
+        const AZ::Data::Asset<AZ::ScriptAsset>& m_interpretedAsset;
     };
 } 

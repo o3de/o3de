@@ -66,22 +66,17 @@ namespace AZ
                     {
                         if (assetInfo.m_assetType == typeId)
                         {
+                            const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                            if (!AtomToolsFramework::IsDocumentPathPreviewable(path))
+                            {
+                                continue;
+                            }
+
                             // Reject any assets that don't match supported source file extensions
                             if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type())
                             {
-                                const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
                                 if (!AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset") &&
                                     !AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
-                                {
-                                    continue;
-                                }
-                            }
-
-                            // Temporarily reject terrain related material types because of errors when rendering previews
-                            if (assetInfo.m_assetType == RPI::MaterialTypeAsset::RTTI_Type())
-                            {
-                                const auto& path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                                if (AZ::StringFunc::Contains(path.c_str(), "Terrain"))
                                 {
                                     continue;
                                 }

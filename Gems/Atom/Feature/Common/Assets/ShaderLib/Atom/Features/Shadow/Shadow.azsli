@@ -10,11 +10,6 @@
 
 static const float EsmExponentialShift = 87.; // slightly smaller value of log(FLT_MAX)
 
-// Slope-scale depth bias doesn't work with depth writes. Apply a small bias with this value so that bicubic filtering 
-// won't have shadow acne
-// Longer-term, we should probably try and implement Normal Offset biasing [GFX TODO][ATOM-15846]
-static const float PdoShadowMapBias = 0.001; 
-
 // Must match the equivalent enumeration in ShadowConstants.h
 enum PcfFilterMethod { PcfFilterMethod_BoundarySearch = 0, PcfFilterMethod_Bicubic = 1 };
 

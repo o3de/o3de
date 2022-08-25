@@ -19,6 +19,9 @@ namespace AZ
         class ShadowmapPass final
             : public RPI::RasterPass
         {
+            friend class CascadedShadowmapsPass;
+            friend class ProjectedShadowmapsPass;
+
             using Base = RPI::RasterPass;
             AZ_RPI_PASS(ShadowmapPass);
       
@@ -52,6 +55,9 @@ namespace AZ
         private:
             ShadowmapPass() = delete;
             explicit ShadowmapPass(const RPI::PassDescriptor& descriptor);
+
+            // Sets the underlying pipeline view tag. Purpose of this function is to allow parent shadow passes to update the view tag.
+            void UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag);
 
             // RHI::Pass overrides...
             void BuildInternal() override;

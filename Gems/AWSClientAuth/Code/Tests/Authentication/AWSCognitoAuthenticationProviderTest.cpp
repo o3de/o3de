@@ -64,12 +64,12 @@ public:
     {
         AZ_Assert(
         m_cognitoAuthenticationProviderMock.GetAuthenticationTokens().GetAccessToken() ==
-            AWSClientAuthUnitTest::TEST_ACCESS_TOKEN,
-        "Access token expected to match");
+                "",
+            "Access token expected to be empty");
         AZ_Assert(
             m_cognitoAuthenticationProviderMock.GetAuthenticationTokens().GetOpenIdToken() ==
-                AWSClientAuthUnitTest::TEST_ID_TOKEN,
-            "Id token expected to match");
+                "",
+            "Id token expected to be empty");
         AZ_Assert(
             m_cognitoAuthenticationProviderMock.GetAuthenticationTokens().GetRefreshToken() ==
                 AWSClientAuthUnitTest::TEST_REFRESH_TOKEN,

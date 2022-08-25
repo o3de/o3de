@@ -7,6 +7,7 @@
  */
 
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <AzNetworking/AzNetworking_Traits_Platform.h>
 #include <AzNetworking/Utilities/Endian.h>
 #include <AzNetworking/Utilities/NetworkIncludes.h>
@@ -97,12 +98,12 @@ namespace AzNetworking
         return SerializeBoundedValue<uint32_t>(0, bufferCapacity, outSize) && SerializeBytes(reinterpret_cast<uint8_t*>(buffer), outSize);
     }
 
-    bool NetworkInputSerializer::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool NetworkInputSerializer::BeginObject([[maybe_unused]] const char* name)
     {
         return true;
     }
 
-    bool NetworkInputSerializer::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool NetworkInputSerializer::EndObject([[maybe_unused]] const char* name)
     {
         return true;
     }
@@ -187,4 +188,11 @@ namespace AzNetworking
         m_bufferSize += count;
         return true;
     }
+
+    bool NetworkInputSerializer::CopyToBuffer(const uint8_t* data, uint32_t dataSize)
+    {
+        return NetworkInputSerializer::SerializeBytes(data, dataSize);
+    }
+
+    template class TypeValidatingSerializer<NetworkInputSerializer>;
 }

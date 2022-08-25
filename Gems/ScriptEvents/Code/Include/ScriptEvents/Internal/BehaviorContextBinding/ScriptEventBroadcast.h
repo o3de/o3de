@@ -18,7 +18,7 @@
 namespace AZ
 {
     class BehaviorContext;
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace ScriptEvents
@@ -33,7 +33,7 @@ namespace ScriptEvents
 
         ScriptEventBroadcast(AZ::BehaviorContext* behaviorContext, const ScriptEvent& definition, AZStd::string eventName);
 
-        bool Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const override;
+        bool Call(AZ::BehaviorArgument* params, unsigned int paramCount, AZ::BehaviorArgument* returnValue) const override;
         bool HasResult() const override { return !m_returnType.IsNull(); }
         bool IsMember() const override { return false; }
 
@@ -79,7 +79,7 @@ namespace ScriptEvents
     private:
 
         AZ::Uuid m_returnType;
-        AZ::BehaviorValueParameter m_result;
+        AZ::BehaviorArgument m_result;
 
         AZStd::vector<AZStd::string> m_argumentNames;
         AZStd::vector<AZStd::string> m_argumentToolTips;

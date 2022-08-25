@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/std/containers/span.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <SurfaceData/SurfacePointList.h>
@@ -16,10 +17,11 @@
 namespace SurfaceData
 {
     /**
-    * the EBus is used to request information about a surface
+    * The EBus is used to request information about a surface.
+    * This bus uses shared dispatches, which means that all requests on the bus can run in parallel, but will NOT run in parallel
+    * with bus connections / disconnections.
     */
-    class SurfaceDataProviderRequests
-        : public AZ::EBusTraits
+    class SurfaceDataProviderRequests : public AZ::EBusSharedDispatchTraits<SurfaceDataProviderRequests>
     {
     public:
         ////////////////////////////////////////////////////////////////////////
@@ -28,9 +30,6 @@ namespace SurfaceData
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::u32 BusIdType;
         ////////////////////////////////////////////////////////////////////////
-
-        //! allows multiple threads to call
-        using MutexType = AZStd::recursive_mutex;
 
         //! Get all of the surface points that this provider has at the given input position.
         //! @param inPosition - The input position to query. Only XY are guaranteed to be valid, Z should be ignored.

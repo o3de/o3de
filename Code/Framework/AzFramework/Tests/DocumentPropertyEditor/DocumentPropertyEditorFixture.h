@@ -10,6 +10,7 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/DocumentPropertyEditor/BasicAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 
 namespace AZ::DocumentPropertyEditor::Tests
 {
@@ -21,5 +22,6 @@ namespace AZ::DocumentPropertyEditor::Tests
         void TearDown() override;
 
         AZStd::unique_ptr<BasicAdapter> m_adapter;
+        AZStd::unique_ptr<PropertyEditorSystem> m_system;
     };
 }

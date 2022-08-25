@@ -45,15 +45,6 @@ namespace EMStudio
         delete m_dialogStack;
     }
 
-
-    // clone the log window
-    EMStudioPlugin* MorphTargetsWindowPlugin::Clone()
-    {
-        MorphTargetsWindowPlugin* newPlugin = new MorphTargetsWindowPlugin();
-        return newPlugin;
-    }
-
-
     // init after the parent dock window has been created
     bool MorphTargetsWindowPlugin::Init()
     {

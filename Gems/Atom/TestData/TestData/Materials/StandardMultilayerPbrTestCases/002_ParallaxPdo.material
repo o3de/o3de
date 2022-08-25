@@ -24,6 +24,7 @@
         ],
         "layer3_baseColor.textureMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
         "parallax.pdo": true,
-        "parallax.quality": "Medium"
+        "parallax.quality": "Medium",
+        "parallax.shadowFactor": 0.800000011920929
     }
 }

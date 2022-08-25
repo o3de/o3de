@@ -26,10 +26,6 @@ set(FILES
     Source/Debug/RenderDebugEditorComponent.h
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h
@@ -70,8 +66,6 @@ set(FILES
     Source/PostProcess/ChromaticAberration/EditorChromaticAberrationComponent.h
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.cpp
     Source/PostProcess/ColorGrading/EditorHDRColorGradingComponent.h
-    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.cpp
-    Source/PostProcess/EditorModeFeedback/EditorEditorModeFeedbackSystemComponent.h
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/EditorDepthOfFieldComponent.h
     Source/PostProcess/DisplayMapper/EditorDisplayMapperComponent.cpp
@@ -98,6 +92,8 @@ set(FILES
     Source/ReflectionProbe/EditorReflectionProbeComponent.cpp
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.h
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.h
     Source/SkyBox/EditorHDRiSkyboxComponent.cpp
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp

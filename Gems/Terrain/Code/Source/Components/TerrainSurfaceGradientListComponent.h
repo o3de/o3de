@@ -97,12 +97,9 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         TerrainSurfaceGradientListConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
-
-        // The TerrainAreaSurfaceRequestBus has lockless dispatch, so make sure that queries don't happen at the same
-        // time as bus connects / disconnects.
-        mutable AZStd::shared_mutex m_queryMutex;
     };
 } // namespace Terrain

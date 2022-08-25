@@ -56,7 +56,11 @@ namespace GraphCanvas
         }
 
         entity->CreateComponent<DataSlotLayoutComponent>();
-        entity->CreateComponent<StylingComponent>(Styling::Elements::DataSlot, nodeId, "");
+
+        AZStd::string styleClass;
+        StyledEntityRequestBus::EventResult(styleClass, nodeId, &StyledEntityRequests::GetClass);
+
+        entity->CreateComponent<StylingComponent>(Styling::Elements::DataSlot, nodeId, styleClass);
 
         SlotConnectionFilterComponent* connectionFilter = entity->CreateComponent<SlotConnectionFilterComponent>();
 

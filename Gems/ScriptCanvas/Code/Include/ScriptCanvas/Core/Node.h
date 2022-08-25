@@ -434,7 +434,10 @@ namespace ScriptCanvas
         using ExploredDynamicGroupCache = AZStd::unordered_map<AZ::EntityId, AZStd::unordered_set< AZ::Crc32 >>;
 
     private:
-
+        AZStd::string m_name = "";
+        AZStd::string m_toolTip = "";
+        AZStd::string m_nodeStyle = "";
+        AZ::Crc32 m_nodeLexicalId;
         struct IteratorCache
         {
         public:
@@ -538,6 +541,13 @@ namespace ScriptCanvas
         virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
+        virtual const AZStd::string& GetNodeToolTip() const;
+        virtual const AZStd::string& GetNodeStyle() const;
+
+        virtual void SetNodeName(const AZStd::string& name);
+        virtual void SetNodeToolTip(const AZStd::string& toolTip);
+        virtual void SetNodeStyle(const AZStd::string& nodeStyle);
+        virtual void SetNodeLexicalId(const AZ::Crc32& nodeLexicalId);
 
         AZStd::string GetSlotName(const SlotId& slotId) const;
 
@@ -869,10 +879,6 @@ namespace ScriptCanvas
         //! returns a list of all slots, regardless of type
         SlotList& ModSlots() { return m_slots; }
         
-        // \todo make fast query to the system debugger
-        AZ_INLINE static bool IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier);
-        AZ_INLINE static bool IsVariableObserved(const VariableId& variableId);
-
         const Datum* FindDatumByIndex(size_t index) const;
         void FindModifiableDatumViewByIndex(size_t index, ModifiableDatumView& controller);
 
@@ -912,13 +918,6 @@ protected:
 
         SlotDataMap CreateInputMap() const;
         SlotDataMap CreateOutputMap() const;
-
-        Signal CreateNodeInputSignal(const SlotId& slotId) const;
-        Signal CreateNodeOutputSignal(const SlotId& slotId) const;
-
-        NodeStateChange CreateNodeStateUpdate() const;
-        VariableChange CreateVariableChange(const GraphVariable& graphVariable) const;
-        VariableChange CreateVariableChange(const Datum& variableDatum, const VariableId& variableId) const;
 
         void ClearDisplayType(const AZ::Crc32& dynamicGroup)
         {
@@ -1071,24 +1070,7 @@ protected:
 
         template<typename ResultType, typename t_Traits, typename>
         friend struct Internal::OutputSlotHelper;
-
-        template<size_t... inputDatumIndices>
-        friend struct SetDefaultValuesByIndex;
     };
-
-    bool Node::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsGraphObserved, entityId, identifier);
-        return isObserved;
-    }
-
-    bool Node::IsVariableObserved(const VariableId& variableId)
-    {
-        bool isObserved{};
-        ExecutionNotificationsBus::BroadcastResult(isObserved, &ExecutionNotifications::IsVariableObserved, variableId);
-        return isObserved;
-    }
 
     namespace Internal
     {

@@ -43,15 +43,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maxmum Exposure", "Maximum exposure value for the auto exposure.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureMax, "Maximum Exposure", "Maximum exposure value for the auto exposure.")
                             ->Attribute(AZ::Edit::Attributes::Min, -16.0f)
                             ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapates to bright scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedUp, "Speed Up", "The speed at which auto exposure adapts to bright scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
-                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapates to dark scenes.")
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &ExposureControlConfig::m_autoExposureSpeedDown, "Speed Down", "The speed at which auto exposure adapts to dark scenes.")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.01)
                             ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
 
@@ -77,7 +77,7 @@ namespace AZ
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow sepcific far clip distance.")
+                        ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_shadowFarClipDistance, "Shadow Far Clip", "Shadow specific far clip distance.")
                         ->DataElement(Edit::UIHandlers::ComboBox, &LightConfig::m_shadowmapSize, "Shadowmap Size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")

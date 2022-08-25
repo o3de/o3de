@@ -1,6 +1,0 @@
-<download name="PhysX_ForceRegion_PointForceOnRigidBodies" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9884" md5="43961c2e52f9cdff4213bcaed98ce7bc"/>
- </files>
-</download>

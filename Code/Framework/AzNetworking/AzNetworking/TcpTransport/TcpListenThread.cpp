@@ -70,6 +70,7 @@ namespace AzNetworking
             {
                 // This kills any ability to route new incoming connections to the network interface
                 listenPort.m_tcpNetworkInterface = nullptr;
+                listenPort.m_listenSocket.Close();
             }
         };
         m_listenPorts.Visit(visitor);

@@ -151,7 +151,7 @@ namespace AzFramework
     {
         // Don't create any barriers if we are debugging. This will cause artifacts but better then
         // a confined cursor during debugging.
-        if (AZ::Debug::Trace::IsDebuggerPresent())
+        if (AZ::Debug::Trace::Instance().IsDebuggerPresent())
         {
             AZ_Warning("XcbInput", false, "Debugger running. Barriers will not be created.");
             return;

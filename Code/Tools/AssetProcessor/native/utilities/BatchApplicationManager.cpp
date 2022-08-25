@@ -123,7 +123,7 @@ void BatchApplicationManager::MakeActivationConnections()
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileFailed,
         m_assetProcessorManager, [this](AssetProcessor::JobEntry entry)
         {
-            m_failedAssetsCount++;
+            m_failedAssets.emplace(entry.GetAbsoluteSourcePath().toUtf8().constData());
 
             AssetProcessor::JobDiagnosticInfo info{};
             AssetProcessor::JobDiagnosticRequestBus::BroadcastResult(info, &AssetProcessor::JobDiagnosticRequestBus::Events::GetDiagnosticInfo, entry.m_jobRunKey);
@@ -133,7 +133,7 @@ void BatchApplicationManager::MakeActivationConnections()
 
             using AssetJobLogRequest = AzToolsFramework::AssetSystem::AssetJobLogRequest;
             using AssetJobLogResponse = AzToolsFramework::AssetSystem::AssetJobLogResponse;
-            if (m_failedAssetsCount < s_MaximumFailuresToReport) // if we're in the situation where many assets are failing we need to stop spamming after a few
+            if (m_failedAssets.size() < s_MaximumFailuresToReport) // if we're in the situation where many assets are failing we need to stop spamming after a few
             {
                 AssetJobLogRequest request;
                 AssetJobLogResponse response;
@@ -151,7 +151,7 @@ void BatchApplicationManager::MakeActivationConnections()
                         });
                 }
             }
-            else if (m_failedAssetsCount == s_MaximumFailuresToReport)
+            else if (m_failedAssets.size() == s_MaximumFailuresToReport)
             {
                 // notify the user that we're done here, and will not be notifying any more.
                 AZ_Printf(AssetProcessor::ConsoleChannel, "%s\n", QCoreApplication::translate("Batch Mode", "Too Many Compile Errors - not printing out full logs for remaining errors").toUtf8().constData());

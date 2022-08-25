@@ -219,6 +219,8 @@ namespace ScriptCanvas
 
             void MarkOnGraphStart();
 
+            void MarkRefersToSelfEntityId();
+
             void MarkRequiresConstructionParameters();
 
             void MarkRequiresConstructionParametersForDependencies();
@@ -234,6 +236,8 @@ namespace ScriptCanvas
 
             // Populates the list of out keys
             AZ::Outcome<void, AZStd::string> Parse();
+
+            bool RefersToSelfEntityId() const;
 
             bool RequiresConstructionParameters() const;
 
@@ -259,6 +263,9 @@ namespace ScriptCanvas
             bool m_requiresConstructionParameters = false;
 
             bool m_requiresConstructionParametersForDependencies = false;
+
+            // #scriptcanvas_component_extension
+            bool m_refersToSelfEntityId = false;
 
             ExecutionCharacteristics m_executionCharacteristics = ExecutionCharacteristics::Pure;
 

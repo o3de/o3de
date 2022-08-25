@@ -1,7 +1,7 @@
 {
     "Type": "JsonSerialization",
     "Version": 1,
-    "ClassName": "AZStd::string",
+    "ClassName": "Graph",
     "ClassData": {
     }
 }

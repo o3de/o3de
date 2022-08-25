@@ -33,20 +33,26 @@ namespace AZ
         protected:
             bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId) const;
             AZStd::string FetchPythonType(const AZ::BehaviorParameter& param) const;
-            void WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
+            void PrepareMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod);
+            void PrepareProperty(AZStd::string_view propertyName, const AZ::BehaviorProperty& behaviorProperty);
 
         private:
             const AZ::BehaviorClass* m_behaviorClass = nullptr;
             AZStd::vector<AZStd::string> m_methodList;
+            AZStd::vector<AZStd::string> m_propertyList;
         };
 
         PythonBehaviorInfo::PythonBehaviorInfo(const AZ::BehaviorClass* behaviorClass)
             : m_behaviorClass(behaviorClass)
         {
             AZ_Assert(m_behaviorClass, "PythonBehaviorInfo requires a valid behaviorClass pointer");
-            for (const auto& entry : behaviorClass->m_methods)
+            for (const auto& method : behaviorClass->m_methods)
             {
-                WriteMethod(entry.first, *entry.second);
+                PrepareMethod(method.first, *method.second);
+            }
+            for (const auto& property : behaviorClass->m_properties)
+            {
+                PrepareProperty(property.first, *property.second);
             }
         }
 
@@ -62,7 +68,9 @@ namespace AZ
                         { return self.m_behaviorClass->m_name; }, nullptr)
                     ->Property("classUuid", [](const PythonBehaviorInfo& self)
                         { return self.m_behaviorClass->m_typeId.ToString<AZStd::string>(); }, nullptr)
-                    ->Property("methodList", BehaviorValueGetter(&PythonBehaviorInfo::m_methodList), nullptr);
+                    ->Property("methodList", BehaviorValueGetter(&PythonBehaviorInfo::m_methodList), nullptr)
+                    ->Property("propertyList", BehaviorValueGetter(&PythonBehaviorInfo::m_propertyList), nullptr)
+                    ;
             }
         }
 
@@ -82,7 +90,7 @@ namespace AZ
             return None;
         }
 
-        void PythonBehaviorInfo::WriteMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod)
+        void PythonBehaviorInfo::PrepareMethod(AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod)
         {
             // if the method is a static method then it is not a part of the abstract class
             const bool isMemberLike = IsMemberLike(behaviorMethod, m_behaviorClass->m_typeId);
@@ -136,6 +144,31 @@ namespace AZ
             AzFramework::StringFunc::Append(buffer, resultValue.c_str());
             m_methodList.emplace_back(buffer);
         }
+
+        void PythonBehaviorInfo::PrepareProperty(AZStd::string_view propertyName, const AZ::BehaviorProperty& behaviorProperty)
+        {
+            AZStd::string buffer;
+            AZStd::vector<AZStd::string> pythonArgs;
+
+            AzFramework::StringFunc::Append(buffer, propertyName.data());
+
+            AzFramework::StringFunc::Append(buffer, "(");
+            if (behaviorProperty.m_setter)
+            {
+                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_setter->GetArgument(1));
+                AzFramework::StringFunc::Append(buffer, type.data());
+            }
+            AzFramework::StringFunc::Append(buffer, ")");
+
+            if (behaviorProperty.m_getter)
+            {
+                AZStd::string_view type = FetchPythonType(*behaviorProperty.m_getter->GetResult());
+                AzFramework::StringFunc::Append(buffer, "->");
+                AzFramework::StringFunc::Append(buffer, type.data());
+            }
+
+            m_propertyList.emplace_back(buffer);
+        }
     }
 
     namespace SceneAPI
@@ -157,6 +190,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Method("CastWithTypeName", &GraphObjectProxy::CastWithTypeName)
                         ->Method("Invoke", &GraphObjectProxy::Invoke)
+                        ->Method("Fetch", &GraphObjectProxy::Fetch)
                         ->Method("GetClassInfo", [](GraphObjectProxy& self) -> Python::PythonBehaviorInfo*
                             {
                                 if (self.m_pythonBehaviorInfo)
@@ -200,35 +234,40 @@ namespace AZ
                 return false;
             }
 
-            AZStd::any GraphObjectProxy::Invoke(AZStd::string_view method, AZStd::vector<AZStd::any> argList)
+            AZStd::any GraphObjectProxy::Fetch(AZStd::string_view property)
             {
-                AZ::SerializeContext* serializeContext = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-                if (!serializeContext)
-                {
-                    AZ_Error("SceneAPI", false, "AZ::SerializeContext should be prepared.");
-                    return AZStd::any(false);
-                }
-
                 if (!m_behaviorClass)
                 {
-                    AZ_Warning("SceneAPI", false, "Use the CastWithTypeName() to assign the concrete type of IGraphObject to Invoke().");
+                    AZ_Warning("SceneAPI", false, "Empty behavior class. Use the CastWithTypeName() to assign the concrete type of IGraphObject to Invoke().");
                     return AZStd::any(false);
                 }
 
-                auto entry = m_behaviorClass->m_methods.find(method);
-                if (m_behaviorClass->m_methods.end() == entry)
+                auto entry = m_behaviorClass->m_properties.find(property);
+                if (m_behaviorClass->m_properties.end() == entry)
                 {
-                    AZ_Warning("SceneAPI", false, "Missing method %.*s from class %s",
-                        aznumeric_cast<int>(method.size()),
-                        method.data(),
+                    AZ_Warning("SceneAPI", false, "Missing property %.*s from class %s",
+                        aznumeric_cast<int>(property.size()),
+                        property.data(),
                         m_behaviorClass->m_name.c_str());
 
                     return AZStd::any(false);
                 }
 
-                AZ::BehaviorMethod* behaviorMethod = entry->second;
+                if (!entry->second->m_getter)
+                {
+                    AZ_Warning("SceneAPI", false, "Property %.*s from class %s has a NULL getter",
+                        aznumeric_cast<int>(property.size()),
+                        property.data(),
+                        m_behaviorClass->m_name.c_str());
 
+                    return AZStd::any(false);
+                }
+
+                return InvokeBehaviorMethod(entry->second->m_getter, {});
+            }
+
+            AZStd::any GraphObjectProxy::InvokeBehaviorMethod(AZ::BehaviorMethod* behaviorMethod, AZStd::vector<AZStd::any> argList)
+            {
                 constexpr size_t behaviorParamListSize = 8;
                 if (behaviorMethod->GetNumArguments() > behaviorParamListSize)
                 {
@@ -238,7 +277,7 @@ namespace AZ
                         behaviorMethod->GetNumArguments());
                     return AZStd::any(false);
                 }
-                AZ::BehaviorValueParameter behaviorParamList[behaviorParamListSize];
+                AZ::BehaviorArgument behaviorParamList[behaviorParamListSize];
 
                 // detect if the method passes in a "this" pointer which can be true if the method is a member function
                 // or if the first argument is the same as the behavior class such as from a lambda function
@@ -248,13 +287,13 @@ namespace AZ
                     hasSelfPointer = behaviorMethod->GetArgument(0)->m_typeId == m_behaviorClass->m_typeId;
                 }
 
-                // record the "this" pointer's metadata like its RTTI so that it can be
+                // record the "this" pointer's meta data like its RTTI so that it can be
                 // down casted to a parent class type if needed to invoke a parent method
                 if (const AZ::BehaviorParameter* thisInfo = behaviorMethod->GetArgument(0); hasSelfPointer)
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
                     // the BehaviorObject.m_value is a pointer; the reference version is already dereferenced
-                    AZ::BehaviorValueParameter theThisPointer;
+                    AZ::BehaviorArgument theThisPointer;
                     const void* self = reinterpret_cast<const void*>(m_graphObject.get());
                     if ((thisInfo->m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                     {
@@ -288,7 +327,7 @@ namespace AZ
                     ++paramCount;
                 }
 
-                AZ::BehaviorValueParameter returnBehaviorValue;
+                AZ::BehaviorArgument returnBehaviorValue;
                 if (behaviorMethod->HasResult())
                 {
                     returnBehaviorValue.Set(*behaviorMethod->GetResult());
@@ -320,7 +359,7 @@ namespace AZ
                     }
                 }
 
-                if (!entry->second->Call(behaviorParamList, paramCount, &returnBehaviorValue))
+                if (!behaviorMethod->Call(behaviorParamList, paramCount, &returnBehaviorValue))
                 {
                     return AZStd::any(false);
                 }
@@ -330,13 +369,43 @@ namespace AZ
                     return AZStd::any(true);
                 }
 
+                AZ::SerializeContext* serializeContext = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+                if (!serializeContext)
+                {
+                    AZ_Error("SceneAPI", false, "AZ::SerializeContext should be prepared.");
+                    return AZStd::any(false);
+                }
+
                 // Create temporary any to get its type info to construct a new AZStd::any with new data
                 AZStd::any tempAny = serializeContext->CreateAny(returnBehaviorValue.m_typeId);
                 return AZStd::move(AZStd::any(returnBehaviorValue.m_value, tempAny.get_type_info()));
             }
 
+            AZStd::any GraphObjectProxy::Invoke(AZStd::string_view method, AZStd::vector<AZStd::any> argList)
+            {
+                if (!m_behaviorClass)
+                {
+                    AZ_Warning("SceneAPI", false, "Use the CastWithTypeName() to assign the concrete type of IGraphObject to Invoke().");
+                    return AZStd::any(false);
+                }
+
+                auto entry = m_behaviorClass->m_methods.find(method);
+                if (m_behaviorClass->m_methods.end() == entry)
+                {
+                    AZ_Warning("SceneAPI", false, "Missing method %.*s from class %s",
+                        aznumeric_cast<int>(method.size()),
+                        method.data(),
+                        m_behaviorClass->m_name.c_str());
+
+                    return AZStd::any(false);
+                }
+
+                return InvokeBehaviorMethod(entry->second, argList);
+            }
+
             template <typename FROM, typename TO>
-            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id != azrtti_typeid<FROM>())
                 {
@@ -353,7 +422,7 @@ namespace AZ
                 return true;
             }
 
-            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id == argBehaviorInfo->m_typeId)
                 {

@@ -33,6 +33,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_download
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_download.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_enable_gem
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_enable_gem.py
     TEST_SUITE smoke
@@ -63,6 +70,13 @@ ly_add_pytest(
 ly_add_pytest(
     NAME o3de_project_properties
     PATH ${CMAKE_CURRENT_LIST_DIR}/test_project_properties.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
+    NAME o3de_repo
+    PATH ${CMAKE_CURRENT_LIST_DIR}/test_repo.py
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )

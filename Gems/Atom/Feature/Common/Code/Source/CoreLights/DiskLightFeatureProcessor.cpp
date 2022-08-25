@@ -31,7 +31,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<DiskLightFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -341,6 +341,22 @@ namespace AZ
         void DiskLightFeatureProcessor::SetEsmExponent(LightHandle handle, float exponent)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, exponent);
+        }
+
+        void DiskLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetAffectsGI().");
+
+            m_diskLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void DiskLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to DiskLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_diskLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_deviceBufferNeedsUpdate = true;
         }
 
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)

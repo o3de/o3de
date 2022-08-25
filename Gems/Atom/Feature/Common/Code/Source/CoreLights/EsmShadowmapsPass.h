@@ -79,7 +79,6 @@ namespace AZ
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behaviour overrides...
-            void ResetInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void UpdateChildren();
