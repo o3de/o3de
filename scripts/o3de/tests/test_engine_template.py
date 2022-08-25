@@ -366,13 +366,13 @@ class TestCreateTemplate:
                          True, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
                          "Test Gem", "Test Summary", "Test Requirements", "Test License", "https://o3de.org/license", 
-                         "Test Origin", "https://o3de.org", "tag1, tag2, tag3", "preview.png", "https://o3de.org/docs", "https://o3de.org/repo",
-                         ["tag1","tag2","tag3","TestGem"] ),
+                         "Test Origin", "https://o3de.org", "tag1", "preview.png", "https://o3de.org/docs", "https://o3de.org/repo",
+                         ["tag1","TestGem"] ),
             pytest.param(TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
                          TEST_TEMPLATE_JSON_CONTENTS,
                          "Test Gem2", "Test Summary2", "Test Requirements2", "Test License2", "https://o3de.org/license2", 
-                         "Test Origin2", "https://o3de.org/2", "tag2, tag3, tag4", "preview2.png", "https://o3de.org/docs2", "https://o3de.org/repo2",
+                         "Test Origin2", "https://o3de.org/2", "tag2 tag3  tag4", "preview2.png", "https://o3de.org/docs2", "https://o3de.org/repo2",
                          ["tag2","tag3","tag4","TestGem"] ),
         ]
     )

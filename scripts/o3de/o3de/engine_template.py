@@ -1822,7 +1822,7 @@ def create_gem(gem_path: pathlib.Path,
                license_url: str = None,
                origin: str = None,
                origin_url: str = None,
-               user_tags: str = None,
+               user_tags: list or str = None,
                icon_path: str = None,
                documentation_url: str = None,
                repo_uri: str = None,
@@ -2112,7 +2112,8 @@ def create_gem(gem_path: pathlib.Path,
     
     tags = [gem_name]
     if user_tags:
-        tags.extend(user_tags.split(','))
+        new_tags = user_tags.split() if isinstance(user_tags, str) else user_tags
+        tags.extend(new_tags)
     tags_quoted = ','.join(f'"{word.strip()}"' for word in set(tags))
     # remove the first and last quote because those already exist in gem.json
     replacements.append(("${UserTags}", tags_quoted[1:-1]))
@@ -2736,9 +2737,8 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False, 
                        default='The website for this Gem',
                        help='The website for your Gem. i.e. http://www.mydomain.com')
-    create_gem_subparser.add_argument('-ut', '--user-tags', type=str, required=False,
-                       default='',
-                       help='A comma separated list of keywords.')
+    create_gem_subparser.add_argument('-ut', '--user-tags', type=str, nargs='*', required=False,
+                       help='Adds tag(s) to user_tags property. Can be specified multiple times.')
     create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False, 
                        default="preview.png",
                        help='Select Gem icon path')
