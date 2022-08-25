@@ -618,6 +618,8 @@ namespace PhysX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/MeshCollider.svg")
+                            ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
 
                         ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, "Name PhysX Mesh",
                             "<span>Name for the group. This name will also be used as a part of the name for the "

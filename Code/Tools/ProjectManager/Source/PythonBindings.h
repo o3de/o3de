@@ -84,6 +84,7 @@ namespace O3DE::ProjectManager
 
         // Templates
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() override;
         AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() override;
 
         void AddErrorString(AZStd::string errorString) override;

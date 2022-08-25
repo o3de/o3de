@@ -31,6 +31,10 @@ namespace GradientSignal
                 ->Field("OutputImagePath", &EditorImageGradientComponent::m_outputImagePath)
                 ->Field("Configuration", &EditorImageGradientComponent::m_configuration)
                 ->Field("ComponentMode", &EditorImageGradientComponent::m_componentModeDelegate)
+                // For now, we need to serialize the paint brush settings so that they can be displayed via the EditContext
+                // while in the component mode. This can eventually be removed if we add support for paint brush settting
+                // modifications in-viewport.
+                ->Field("PaintBrush", &EditorImageGradientComponent::m_paintBrush)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -43,8 +47,8 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_imageAsset,
                         "Image Asset", "Image asset whose values will be mapped as gradient output.")
                         ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ImageGradientConfig::GetImageAssetPropertyName)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsImageAssetReadOnly)
                         // Refresh the attributes because some fields will switch between read-only and writeable when
                         // the image asset is changed.
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -53,7 +57,6 @@ namespace GradientSignal
                         "Sampling Type", "Sampling type to use for the image data.")
                         ->EnumAttribute(SamplingType::Point, "Point")
                         ->EnumAttribute(SamplingType::Bilinear, "Bilinear")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling,
@@ -63,7 +66,6 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse,
@@ -73,14 +75,12 @@ namespace GradientSignal
                         ->EnumAttribute(ChannelToUse::Blue, "Blue")
                         ->EnumAttribute(ChannelToUse::Alpha, "Alpha")
                         ->EnumAttribute(ChannelToUse::Terrarium, "Terrarium")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, "Mip Index", "Mip index to sample from.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType,
@@ -90,7 +90,6 @@ namespace GradientSignal
                         ->EnumAttribute(CustomScaleType::Manual, "Manual")
                         // Refresh the entire tree on scaling changes, because it will show/hide the scale ranges for Manual scaling.
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin,
@@ -124,6 +123,7 @@ namespace GradientSignal
                         "Source Type", "Select whether to create a new image or use an existing image.")
                         ->EnumAttribute(ImageCreationOrSelection::UseExistingImage, "Use Existing Image")
                         ->EnumAttribute(ImageCreationOrSelection::CreateNewImage, "Create New Image")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
 
                     // Controls for creating a new image
@@ -143,8 +143,9 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
 
                     // Configuration for the Image Gradient control itself
-                    ->DataElement(0, &EditorImageGradientComponent::m_configuration, "Configuration", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_configuration, "Configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageOptionsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::GetImageOptionsReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::ConfigurationChanged)
 
                     // Paint controls for editing the image
@@ -152,8 +153,15 @@ namespace GradientSignal
                         "Paint Image", "Paint into an image asset")
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Paint")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetPaintModeVisibility)
-                    ;
 
+                    // For now, we need to display the paint brush settings here to make them editable while we're in component mode.
+                    // If we ever provide in-viewport editing for the properties, this can be removed.
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_paintBrush,
+                        "Paint Brush", "Paint Brush Properties")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::InComponentMode)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::PaintBrushSettingsChanged)
+                    ;
             }
         }
     }
@@ -230,13 +238,20 @@ namespace GradientSignal
         RefreshImageAssetStatus();
         RefreshCreationSelectionChoice();
 
+        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorImageGradientComponent, EditorImageGradientComponentMode>(
-            AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
+            entityComponentIdPair, nullptr);
+
+        // The PaintBrushNotificationBus is needed so that we can keep our viewable / editable paint brush settings in sync
+        // with the ones on the brush manipulator itself.
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
 
     }
 
     void EditorImageGradientComponent::Deactivate()
     {
+        AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
+
         m_componentModeDelegate.Disconnect();
 
         m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
@@ -354,7 +369,7 @@ namespace GradientSignal
         // Make sure the creation/selection visibility flags have been refreshed correctly.
         RefreshCreationSelectionChoice();
 
-        if (RefreshImageAssetStatus() && m_configuration.GetImageOptionsVisibility())
+        if (RefreshImageAssetStatus() && GetImageOptionsVisibility())
         {
             // If the asset status changed and the image asset property is visible, refresh the entire tree so
             // that the label change is picked up.
@@ -401,16 +416,21 @@ namespace GradientSignal
 
     AZ::u32 EditorImageGradientComponent::RefreshCreationSelectionChoice()
     {
-        m_configuration.SetImageOptionsVisibility(m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage);
-
         // We need to refresh the entire tree because this selection changes the visibility of other properties.
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::Crc32 EditorImageGradientComponent::GetImageOptionsVisibility() const
+    {
+        return (m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage)
+            ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
+            : AZ::Edit::PropertyVisibility::Hide;
     }
 
     bool EditorImageGradientComponent::GetImageCreationVisibility() const
     {
         // Only show the image creation options if we don't have an existing image asset selected.
-        return !m_configuration.GetImageOptionsVisibility();
+        return (m_creationSelectionChoice == ImageCreationOrSelection::CreateNewImage);
     }
 
     AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
@@ -428,12 +448,17 @@ namespace GradientSignal
         }
 
         // Only show the image painting button while we're using an image, not while we're creating one.
-        return (m_configuration.GetImageOptionsVisibility()
+        return ((GetImageOptionsVisibility() != AZ::Edit::PropertyVisibility::Hide)
                 && m_configuration.m_imageAsset.IsReady()
                 && !ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
             ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
             : AZ::Edit::PropertyVisibility::Hide;
 
+    }
+
+    bool EditorImageGradientComponent::GetImageOptionsReadOnly() const
+    {
+        return ((GetImageOptionsVisibility() == AZ::Edit::PropertyVisibility::Hide) || m_component.ModificationBufferIsActive());
     }
 
     AZ::Vector2 EditorImageGradientComponent::GetOutputResolution() const
@@ -466,10 +491,48 @@ namespace GradientSignal
         m_outputImagePath = outputImagePath;
     }
 
-    bool EditorImageGradientComponent::InComponentMode()
+    bool EditorImageGradientComponent::InComponentMode() const
     {
         return m_componentModeDelegate.AddedToComponentMode();
     }
+
+    void EditorImageGradientComponent::OnIntensityChanged(float intensity)
+    {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
+        m_paintBrush.m_intensity = intensity;
+    }
+
+    void EditorImageGradientComponent::OnOpacityChanged(float opacity)
+    {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
+        m_paintBrush.m_opacity = opacity;
+    }
+
+    void EditorImageGradientComponent::OnRadiusChanged(float radius)
+    {
+        // Any time the paint brush manipulator changes a brush setting, keep our displayed settings in sync with it.
+        m_paintBrush.m_radius = radius;
+    }
+
+    AZ::u32 EditorImageGradientComponent::PaintBrushSettingsChanged()
+    {
+        // Any time a paint brush setting is edited via the component UX, broadcast it out so that the paint brush manipulator
+        // stays in sync with it.
+
+        auto entityComponentIdPair = AZ::EntityComponentIdPair(GetEntityId(), GetId());
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetRadius, m_paintBrush.m_radius);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetIntensity, m_paintBrush.m_intensity);
+
+        AzToolsFramework::PaintBrushRequestBus::Event(
+            entityComponentIdPair, &AzToolsFramework::PaintBrushRequestBus::Events::SetOpacity, m_paintBrush.m_opacity);
+
+        return AZ::Edit::PropertyRefreshLevels::ValuesOnly;
+    }
+
 
     bool EditorImageGradientComponent::GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath)
     {
@@ -521,6 +584,23 @@ namespace GradientSignal
         }
 
         return true;
+    }
+
+    void EditorImageGradientComponent::StartImageModification()
+    {
+        // While we're editing, we need to set all the configuration properties to read-only and refresh them.
+        // Otherwise, the property changes could conflict with the current painted modifications.
+        m_configuration.m_imageModificationActive = true;
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
+
+    void EditorImageGradientComponent::EndImageModification()
+    {
+        // We're done editing, so set all the configuration properties back to writeable and refresh them.
+        m_configuration.m_imageModificationActive = false;
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorImageGradientComponent::CreateImage()

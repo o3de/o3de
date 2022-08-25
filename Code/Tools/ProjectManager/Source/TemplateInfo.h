@@ -31,5 +31,6 @@ namespace O3DE::ProjectManager
         QString m_summary;
         QStringList m_canonicalTags;
         QStringList m_userTags;
+        bool m_isRemote = false;
     };
 } // namespace O3DE::ProjectManager
