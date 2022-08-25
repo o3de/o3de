@@ -51,7 +51,6 @@ namespace ImGui
         ImGuiLYCameraMonitor m_cameraMonitor;
         ImGuiLYEntityOutliner m_entityOutliner;
         bool m_showDeltaTimeGraphs = false;
-        bool m_borderActiveForImGui = false;
         ImGui::LYImGuiUtils::HistogramContainer m_deltaTimeHistogram;
     };
 }
