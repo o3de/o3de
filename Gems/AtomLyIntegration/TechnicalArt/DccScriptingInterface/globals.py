@@ -32,15 +32,15 @@ from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
 PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
 # allows env to override the folder path location externally
 PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG, PATH_DCCSIG)).resolve()
-sys.path.append(PATH_DCCSIG)
-site.addsitedir(PATH_DCCSIG)
-_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
+sys.path.append(PATH_DCCSIG.as_posix())
+site.addsitedir(PATH_DCCSIG.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG.as_posix()}') # debug tracking
 
 # ensure package dependancies are accessible, by python sys version
 # other pkgs and modules may depend on them
 from DccScriptingInterface.constants import PATH_DCCSI_PYTHON_LIB
 PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).resolve()
-site.addsitedir(PATH_DCCSIG)
+site.addsitedir(PATH_DCCSI_PYTHON_LIB.as_posix())
 
 from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUG
 from DccScriptingInterface.constants import ENVAR_DCCSI_DEV_MODE
@@ -56,7 +56,7 @@ from DccScriptingInterface.constants import FRMT_LOG_LONG
 # sub pkg dccsi imports
 # in next iteration these should be refactored to:
 # from DccScriptingInterface.azpy import foo
-from azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.env_bool import env_bool
 
 # global state init and storage, can be overriden from external env
 # retreive the dccsi global debug flag
@@ -90,7 +90,7 @@ DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
 # when enabled additional interal tests are run, like forcing cascaded imports
 DCCSI_TESTS = env_bool(ENVAR_DCCSI_TESTS, False)
 
-if DCCSI_GDEBUG and DCCSI_DEV_MODE:
+if DCCSI_GDEBUG or DCCSI_DEV_MODE:
     DCCSI_LOGLEVEL = _logging.DEBUG
     _LOGGER.setLevel(DCCSI_LOGLEVEL) # throttle up help
 
