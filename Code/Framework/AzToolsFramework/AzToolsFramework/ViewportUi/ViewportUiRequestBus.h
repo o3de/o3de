@@ -73,7 +73,7 @@ namespace AzToolsFramework::ViewportUi
         //! Updates/sets the switcher button's tooltip to the passed string.
         virtual void SetSwitcherButtonTooltip(SwitcherId switcherId, ButtonId buttonId, const AZStd::string& tooltip) = 0;
         //! Registers a new button onto a cluster.
-        virtual const ButtonId CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon) = 0;
+        virtual const ButtonId CreateClusterButton(ClusterId clusterId, const AZStd::string& icon) = 0;
         //! Registers a new button onto a switcher.
         virtual const ButtonId CreateSwitcherButton(
             SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name = AZStd::string()) = 0;
@@ -105,9 +105,9 @@ namespace AzToolsFramework::ViewportUi
         //! Create the highlight border with optional back button to exit the given editor mode.
         virtual void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) = 0;
         //! Retrns if the viewport border is visible.
-        virtual const bool GetViewportBorderVisible() const = 0;
+        virtual const bool GetViewportBorderVisible() = 0;
         //! Changes the text on the viewport border while in component mode.
-        virtual void ChangeViewportBorderText(const AZStd::string borderTitle) = 0;
+        virtual void ChangeViewportBorderText(const AZStd::string& borderTitle) = 0;
         //! Remove the viewport border.
         virtual void RemoveViewportBorder() = 0;
         //! Invoke a button press on a cluster.

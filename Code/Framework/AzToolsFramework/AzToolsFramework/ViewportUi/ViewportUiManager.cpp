@@ -119,7 +119,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    const ButtonId ViewportUiManager::CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon)
+    const ButtonId ViewportUiManager::CreateClusterButton(ClusterId clusterId, const AZStd::string& icon)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
@@ -266,12 +266,12 @@ namespace AzToolsFramework::ViewportUi
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
     }
 
-    const bool ViewportUiManager::GetViewportBorderVisible() const
+    const bool ViewportUiManager::GetViewportBorderVisible()
     {
         return m_viewportUi->GetViewportBorderVisible();
     }
 
-    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string borderTitle)
+    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string& borderTitle)
     {
         m_viewportUi->ChangeViewportBorderText(borderTitle.c_str());
     }
