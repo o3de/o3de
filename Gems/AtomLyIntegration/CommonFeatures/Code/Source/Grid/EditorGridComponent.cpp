@@ -29,7 +29,7 @@ namespace AZ
                     editContext->Class<EditorGridComponent>(
                         "Grid", "Adds grid to the scene")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                            ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Other")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))

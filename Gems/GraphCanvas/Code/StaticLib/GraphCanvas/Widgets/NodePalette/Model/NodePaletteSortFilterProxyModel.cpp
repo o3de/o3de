@@ -19,7 +19,8 @@ namespace GraphCanvas
     // NodePaletteAutoCompleteModel
     /////////////////////////////////
 
-    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel()
+    NodePaletteAutoCompleteModel::NodePaletteAutoCompleteModel(QObject* parent)
+        : QAbstractItemModel(parent)
     {
     }
 
@@ -112,8 +113,8 @@ namespace GraphCanvas
 
     NodePaletteSortFilterProxyModel::NodePaletteSortFilterProxyModel(QObject* parent)
         : QSortFilterProxyModel(parent)
-        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
-        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel())
+        , m_unfilteredAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
+        , m_sourceSlotAutoCompleteModel(aznew NodePaletteAutoCompleteModel(this))
         , m_hasSourceSlotFilter(false)
     {
         m_unfilteredCompleter.setModel(m_unfilteredAutoCompleteModel);
@@ -190,12 +191,9 @@ namespace GraphCanvas
     bool NodePaletteSortFilterProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
     {
         QAbstractItemModel* model = sourceModel();
-        QString left = model->data(source_left).toString();
-        QString right = model->data(source_right).toString();
-
         if (m_filter.isEmpty())
         {
-            // When item has no children, put it at front; otherwise follow alphabetical order
+            // When item has no children, put it at front
             if (model->hasChildren(source_left) && !model->hasChildren(source_right))
             {
                 return false;
@@ -204,22 +202,22 @@ namespace GraphCanvas
             {
                 return true;
             }
-            return left < right;
         }
         else
         {
-            int leftScore = CalculateSortingScore(source_left);
-            int rightScore = CalculateSortingScore(source_right);
-            // When sorting score is equal, follow alphabetical order instead
-            if (leftScore == rightScore)
-            {
-                return left < right;
-            }
-            else
+            // Calculate a sorting score based on the filter
+            const int leftScore = CalculateSortingScore(source_left);
+            const int rightScore = CalculateSortingScore(source_right);
+            if (leftScore != rightScore)
             {
                 return leftScore < rightScore;
             }
         }
+
+        // Fall back to a case insensitive alphabetical sort
+        const QString left = model->data(source_left).toString();
+        const QString right = model->data(source_right).toString();
+        return left.compare(right, Qt::CaseInsensitive) < 0;
     }
 
     int NodePaletteSortFilterProxyModel::CalculateSortingScore(const QModelIndex& source) const

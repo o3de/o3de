@@ -30,9 +30,19 @@ namespace GradientSignal
         //! Currently does nothing, but might eventually need to perform some cleanup logic.
         virtual void EndImageModification() = 0;
 
-        //! Temporary API for testing the end-to-end painting workflow.
-        //! This will get replaced with better APIs, likely SetValues() or SetPixels() or something.
-        virtual AZStd::vector<float>* GetImageModificationBuffer()  = 0;
+        /**
+         * Set the value at the given position.
+         * @param position The position to set the value at.
+         * @param value The value to set it to.
+         */
+        virtual void SetValue(const AZ::Vector3& position, float value) = 0;
+
+        /**
+         * Given a list of positions, set those positions to values.
+         * @param positions The list of positions to set the values for.
+         * @param values The list of values to set. This list is expected to be the same size as the positions list.
+         */
+        virtual void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) = 0;
     };
 
     using ImageGradientModificationBus = AZ::EBus<ImageGradientModifications>;

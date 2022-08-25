@@ -38,14 +38,13 @@ namespace AtomToolsFramework
         virtual void LoadConfigFiles(const AZStd::string& extension) = 0;
 
         //! Register a DynamicNodeConfig with the manager.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
         //! @param config DynamicNodeConfig to be added.
-        virtual bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) = 0;
+        virtual bool RegisterConfig(const DynamicNodeConfig& config) = 0;
 
         //! Get a DynamicNodeConfig with a specified ID.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
+        //! @param configId Unique identifier used to register a DynamicNodeConfig
         //! @returns DynamicNodeConfig matching the ID or a default.
-        virtual DynamicNodeConfig GetConfig(const AZStd::string& configId) const = 0;
+        virtual DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const = 0;
 
         //! Remove all registered DynamicNodeConfig.
         virtual void Clear() = 0;
