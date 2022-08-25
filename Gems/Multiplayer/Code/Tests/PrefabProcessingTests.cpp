@@ -284,7 +284,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabEntityHierarchy_NestedNetworkEntityIsFound)
+    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabEntityHierarchy_GrandchildNetworkEntityProducesNetworkSpawnable)
     {
         using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
 
@@ -322,7 +322,8 @@ namespace UnitTest
         // Verify entities are ordered by parent/child hierarchy
         const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
 
-        // Verify that the nested network entity was discovered and 2 processed objects (spawnable and network.spawnable) were created
+        // Verify that the nested network entity was discovered by the network prefab processor (NetworkPrefabProcessor::ProcessPrefab)
+        // and 2 processed objects (spawnable and network.spawnable) were produced.
         EXPECT_EQ(processedObjects.size(), 2);
     }
 } // namespace UnitTest
