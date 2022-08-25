@@ -38,6 +38,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
+#include <ISystem.h>
 #include <AzCore/Debug/Profiler.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
@@ -226,6 +227,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
+        CrySystemEventBus::Handler::BusConnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
@@ -257,6 +259,7 @@ namespace Multiplayer
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
+        CrySystemEventBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
     }
@@ -646,10 +649,11 @@ namespace Multiplayer
         reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
-            AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            sv_map = packet.GetMap().c_str();
             AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
+            m_blockClientLoadLevel = false;
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            m_blockClientLoadLevel = true;
         }
         else
         {
@@ -1356,6 +1360,51 @@ namespace Multiplayer
         }
 
         m_playersWaitingToBeSpawned.clear();
+    }
+
+    void MultiplayerSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
+    {
+        m_levelSystem = system.GetILevelSystem();
+        m_levelSystem->AddListener(this);
+    }
+
+    void MultiplayerSystemComponent::OnCrySystemShutdown(ISystem& system)
+    {
+        m_levelSystem->RemoveListener(this);
+        m_levelSystem = nullptr;
+    }
+
+    bool MultiplayerSystemComponent::BlockLoading([[maybe_unused]]const char* levelName)
+    {
+        switch (m_agentType)
+        {
+        case MultiplayerAgentType::Uninitialized:
+            return false;
+        case MultiplayerAgentType::Client:
+            // Clients should not change the level unless instructed from the server during the initial connection acceptance.
+            if (m_blockClientLoadLevel)
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.")
+            }
+            return m_blockClientLoadLevel;
+        case MultiplayerAgentType::ClientServer:
+            if (m_playersWaitingToBeSpawned.empty())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because we already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
+                return true;
+            }
+            return false;
+        case MultiplayerAgentType::DedicatedServer:
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.")
+                return true;
+            }
+            return false;
+        }
+
+        AZLOG_WARN("MultiplayerSystemComponent::BlockLoading called with unsupported agent type. Please update code to support agent type: %s.", GetEnumString(m_agentType));
+        return false;
     }
 
     void MultiplayerSystemComponent::StartServerToClientReplication(uint64_t userId, NetworkEntityHandle controlledEntity, IConnection* connection)

@@ -143,7 +143,13 @@ namespace Multiplayer
 
     void NetworkRigidBodyComponentController::OnTransformUpdate()
     {
-        AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
+        // Even though this component requires a rigid body, OnTransformUpdate can get called while the entity is being destroyed and may already have its rigidbody removed
+        if (GetEntity()->GetState() == AZ::Entity::State::Destroying)
+        {
+            return;
+        }
+
+        const AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
         SetLinearVelocity(rigidBody->GetLinearVelocity());
         SetAngularVelocity(rigidBody->GetAngularVelocity());
     }
