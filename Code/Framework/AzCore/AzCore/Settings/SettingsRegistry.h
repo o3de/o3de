@@ -96,6 +96,26 @@ namespace AZ
             Object
         };
 
+        //! Type of an integer
+        enum class Signedness
+        {
+            None,
+            Signed,
+            Unsigned
+        };
+
+        //! Encapsulate stored value and its signedness
+        struct SettingsType
+        {
+            operator Type() const
+            {
+                return m_type;
+            }
+
+            Type m_type{ Type::NoType };
+            Signedness m_signedness{ Signedness::None };
+        };
+
         //! The response to let the visit call know what to do next.
         enum class VisitResponse
         {
@@ -169,7 +189,7 @@ namespace AZ
         virtual ~SettingsRegistryInterface() = default;
 
         //! Returns the type of an entry in the Settings Registry or Type::None if there's no value or the path is invalid.
-        virtual Type GetType(AZStd::string_view path) const = 0;
+        virtual SettingsType GetType(AZStd::string_view path) const = 0;
         //! Traverses over the entries in the Settings Registry. Use this version to retrieve the values of entries as well.
         //! @param visitor An instance of a class derived from Visitor that will repeatedly be called as entries are encountered.
         //! @param path An offset at which traversal should start.

@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Mocks/MockBehaviorUtils.h
     Mocks/Containers/MockScene.h
     Mocks/DataTypes/GraphData/MockIMeshData.h
     Mocks/DataTypes/MockIGraphObject.h

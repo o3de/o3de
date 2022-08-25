@@ -190,7 +190,7 @@ namespace EMotionFX
                         physicsSetupManipulatorData.m_jointLimitWidget = m_jointLimitWidget;
                         physicsSetupManipulatorData.m_valid = true;
                     }
-                    m_physicsSetupViewportUiCluster.CreateClusterIfNoneExists(physicsSetupManipulatorData);
+                    m_physicsSetupViewportUiCluster.UpdateClusters(physicsSetupManipulatorData);
                 }
             }
             else
@@ -202,7 +202,7 @@ namespace EMotionFX
                 m_jointLimitWidget->Update(QModelIndex());
                 m_jointLimitWidget->hide();
                 m_collidersWidget->hide();
-                m_physicsSetupViewportUiCluster.DestroyClusterIfExists();
+                m_physicsSetupViewportUiCluster.UpdateClusters(PhysicsSetupManipulatorData());
             }
         }
         else
@@ -210,7 +210,7 @@ namespace EMotionFX
             m_ragdollNodeEditor->ClearInstances(true);
             m_jointLimitWidget->Update(QModelIndex());
             m_collidersWidget->Reset();
-            m_physicsSetupViewportUiCluster.DestroyClusterIfExists();
+            m_physicsSetupViewportUiCluster.UpdateClusters(PhysicsSetupManipulatorData());
         }
     }
 

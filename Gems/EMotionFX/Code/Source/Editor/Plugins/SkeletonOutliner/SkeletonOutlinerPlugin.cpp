@@ -226,6 +226,7 @@ namespace EMotionFX
             Node* selectedNode = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             Actor* selectedActor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, selectedActor, selectedNode);
+            m_treeView->scrollTo(modelIndex);
         }
         else
         {

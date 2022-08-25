@@ -113,6 +113,8 @@ set(FILES
     Include/Atom/RHI/ObjectCollector.h
     Include/Atom/RHI/ObjectPool.h
     Source/RHI/Object.cpp
+    Include/Atom/RHI/PageTileAllocator.h
+    Source/RHI/PageTileAllocator.cpp
     Include/Atom/RHI/PhysicalDevice.h
     Source/RHI/PhysicalDevice.cpp
     Include/Atom/RHI/PipelineLibrary.h

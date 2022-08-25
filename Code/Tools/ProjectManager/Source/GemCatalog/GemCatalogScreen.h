@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit GemCatalogScreen(bool readOnly = false, QWidget* parent = nullptr);
+        explicit GemCatalogScreen(DownloadController* downloadController, bool readOnly = false, QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 

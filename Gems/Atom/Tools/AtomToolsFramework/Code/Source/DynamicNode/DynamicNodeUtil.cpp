@@ -10,24 +10,34 @@
 
 namespace AtomToolsFramework
 {
-    void VisitDynamicNodeSettings(const DynamicNodeConfig& nodeConfig, const SettingsVisitorFn& visitorFn)
+    void VisitDynamicNodeSlotConfigs(const DynamicNodeConfig& nodeConfig, const SlotConfigVisitorFn& visitorFn)
     {
-        visitorFn(nodeConfig.m_settings);
-
         for (const auto& slotConfig : nodeConfig.m_propertySlots)
         {
-            visitorFn(slotConfig.m_settings);
+            visitorFn(slotConfig);
         }
 
         for (const auto& slotConfig : nodeConfig.m_inputSlots)
         {
-            visitorFn(slotConfig.m_settings);
+            visitorFn(slotConfig);
         }
 
         for (const auto& slotConfig : nodeConfig.m_outputSlots)
         {
-            visitorFn(slotConfig.m_settings);
+            visitorFn(slotConfig);
         }
+    }
+
+    void VisitDynamicNodeSettings(const DynamicNodeConfig& nodeConfig, const SettingsVisitorFn& visitorFn)
+    {
+        visitorFn(nodeConfig.m_settings);
+
+        VisitDynamicNodeSlotConfigs(
+            nodeConfig,
+            [visitorFn](const DynamicNodeSlotConfig& slotConfig)
+            {
+                visitorFn(slotConfig.m_settings);
+            });
     }
 
     void CollectDynamicNodeSettings(

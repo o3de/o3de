@@ -92,7 +92,6 @@ namespace AzToolsFramework
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
         FocusModeNotificationBus::Handler::BusDisconnect();
-        Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -116,7 +115,6 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
-        Prefab::PrefabFocusNotificationBus::Handler::BusConnect(editorEntityContextId);
         FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
@@ -1242,18 +1240,6 @@ namespace AzToolsFramework
         QueueEntityToExpand(entityId, true);
     }
 
-    void EntityOutlinerListModel::OnInstanceOpened(AZ::EntityId containerEntityId)
-    {
-        QueueEntityToExpand(containerEntityId, true);
-    }
-
-    void EntityOutlinerListModel::OnPrefabFocusChanged(
-        [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
-    {
-        QueueEntityToExpand(previousContainerEntityId, false);
-        QueueEntityToExpand(newContainerEntityId, true);
-    }
-
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
     {
         //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
@@ -2244,27 +2230,32 @@ namespace AzToolsFramework
 
     bool EntityOutlinerItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
     {
-        if (event->type() == QEvent::MouseButtonPress &&
-            (index.column() == EntityOutlinerListModel::Column::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::Column::ColumnLockToggle))
-        {
-            // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
-            // This prevents selection from changing if a toggle is clicked
-            return true;
-        }
-
         if (event->type() == QEvent::MouseButtonPress)
         {
-            AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+            if (index.column() == EntityOutlinerListModel::Column::ColumnVisibilityToggle || index.column() == EntityOutlinerListModel::Column::ColumnLockToggle)
+            {
+                // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
+                // This prevents selection from changing if a toggle is clicked
+                return true;
+            }
 
+            QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+            AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
             if (auto editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get(); editorEntityUiInterface != nullptr)
             {
                 auto mouseEvent = static_cast<QMouseEvent*>(event);
 
-                auto entityUiHandler = editorEntityUiInterface->GetHandler(entityId);
+                if (auto entityUiHandler = editorEntityUiInterface->GetHandler(entityId))
+                {
+                    // If lock and visibility can be toggled, outliner clicks should not be propagated to those columns.
+                    bool isToggleColumnActive = (entityUiHandler->CanToggleLockVisibility(entityId) &&
+                            (index.column() == EntityOutlinerListModel::Column::ColumnVisibilityToggle ||
+                                index.column() == EntityOutlinerListModel::Column::ColumnLockToggle));
 
-                if (entityUiHandler && entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index))
-                {                
-                    return true;
+                    if (!isToggleColumnActive && entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index))
+                    {
+                        return true;
+                    }
                 }
             }
         }
