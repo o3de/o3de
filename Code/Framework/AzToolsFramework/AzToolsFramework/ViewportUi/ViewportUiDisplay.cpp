@@ -66,10 +66,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_viewportBorderText(&m_uiOverlay)
         , m_viewportBorderBackButton(&m_uiOverlay)
     {
+        AzFramework::ViewportBorderNotificationBus::Handler::BusConnect();
     }
 
     ViewportUiDisplay::~ViewportUiDisplay()
     {
+        AzFramework::ViewportBorderNotificationBus::Handler::BusDisconnect();
         UnparentWidgets(m_viewportUiElements);
     }
 
@@ -303,6 +305,18 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
+    int ViewportUiDisplay::CalculateTopMargin() const
+    {
+        if (m_imGuiActive)
+        {
+            return ViewportUiTopBorderSize + ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding;
+        }
+        else
+        {
+            return ViewportUiTopBorderSize + ViewportUiOverlayMargin;
+        }
+    }
+
     void ViewportUiDisplay::CreateViewportBorder(
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
@@ -310,19 +324,43 @@ namespace AzToolsFramework::ViewportUi::Internal
                                       .arg(
                                           QString::number(HighlightBorderSize), HighlightBorderColor,
                                           QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
-        m_uiOverlayLayout.setContentsMargins(
-            HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
-            HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
+
+            m_uiOverlayLayout.setContentsMargins(
+                HighlightBorderSize + ViewportUiOverlayMargin,
+                CalculateTopMargin(),
+                HighlightBorderSize + ViewportUiOverlayMargin,
+                HighlightBorderSize + ViewportUiOverlayMargin);
+
+
+
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
 
         m_viewportBorderText.show();
-        ChangeViewportBorderText(borderTitle.c_str());
+        m_viewportBorderText.setText(borderTitle.c_str());
 
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
     }
 
+    void ViewportUiDisplay::ImGuiActive(bool active)
+    {
+        if (active)
+        {
+            m_imGuiActive = true;
+        }
+        else
+        {
+            m_imGuiActive = false;
+        }
+
+        m_uiOverlayLayout.setContentsMargins(
+            HighlightBorderSize + ViewportUiOverlayMargin,
+            CalculateTopMargin(),
+            HighlightBorderSize + ViewportUiOverlayMargin,
+            HighlightBorderSize + ViewportUiOverlayMargin);
+    };
     void ViewportUiDisplay::ChangeViewportBorderText(
         const char* borderTitle)
     {
