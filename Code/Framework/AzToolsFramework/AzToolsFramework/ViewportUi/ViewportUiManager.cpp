@@ -266,7 +266,7 @@ namespace AzToolsFramework::ViewportUi
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
     }
 
-    const bool ViewportUiManager::GetViewportBorderVisible()
+    bool ViewportUiManager::GetViewportBorderVisible() const
     {
         return m_viewportUi->GetViewportBorderVisible();
     }
