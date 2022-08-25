@@ -445,7 +445,7 @@ namespace AtomToolsFramework
 
                     layoutMenu->addAction(
                         tr("Delete"),
-                        [this, layoutSettingsPair]()
+                        [layoutSettingsPair]()
                         {
                             auto layoutSettings = GetSettingsObject(LayoutSettingsKey, LayoutSettingsMap());
                             layoutSettings.erase(layoutSettingsPair.first);
