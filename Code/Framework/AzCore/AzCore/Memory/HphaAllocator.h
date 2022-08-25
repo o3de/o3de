@@ -29,21 +29,7 @@ namespace AZ
         struct Descriptor
         {
             AZ_TYPE_INFO(Descriptor, "{FE628EB0-C24F-4A59-9CB0-44900EEE3924}")
-            Descriptor()
-                : m_pageSize(AZ_PAGE_SIZE)
-                , m_poolPageSize(4*1024)
-                , m_isPoolAllocations(true)
-                , m_subAllocator(nullptr)
-                , m_systemChunkSize(0)
-                , m_capacity(AZ_CORE_MAX_ALLOCATOR_SIZE)
-            {}
-
-            unsigned int            m_pageSize;                             ///< Page allocation size must be 1024 bytes aligned.
-            unsigned int            m_poolPageSize : 31;                    ///< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it.
-            unsigned int            m_isPoolAllocations : 1;                ///< True to allow allocations from pools, otherwise false.
-            IAllocator*       m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
-            size_t                  m_systemChunkSize;                      ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
-            size_t                  m_capacity;                             ///< Max size this allocator can grow to
+            IAllocator* m_subAllocator{}; ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
         };
 
         AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
@@ -78,9 +64,7 @@ namespace AZ
         // Up this value to 18 KiB to be safe
         static constexpr size_t hpAllocatorStructureSize = 18 * 1024;
 
-        Descriptor          m_desc;
         int                 m_pad;      // pad the Descriptor to avoid C4355
-        size_type           m_capacity;                 ///< Capacity in bytes.
         HpAllocator*        m_allocator;
         AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
     };

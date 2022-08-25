@@ -4340,10 +4340,7 @@ LUA_API const Node* lua_getDummyNode()
                 {
                     if (!allocator)
                     {
-                        Internal::LuaSystemAllocator::Descriptor desc;
-                        // Prevent allocator from growing in small chunks
-                        desc.m_heap.m_systemChunkSize = 1024 * 1024;
-                        m_luaAllocator.Create(desc);
+                        m_luaAllocator.Create({});
                         allocator = m_luaAllocator.Get();
                     }
                     m_lua = lua_newstate(&LuaMemoryHook, allocator);

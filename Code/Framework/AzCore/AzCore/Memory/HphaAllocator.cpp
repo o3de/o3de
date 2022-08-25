@@ -346,29 +346,26 @@ namespace AZ
         bool ptr_in_bucket(void* ptr) const
         {
             bool result = false;
-            if (m_isPoolAllocations)
+            page* p = ptr_get_page(ptr);
+            unsigned bi = p->bucket_index();
+            if (bi < NUM_BUCKETS)
             {
-                page* p = ptr_get_page(ptr);
-                unsigned bi = p->bucket_index();
-                if (bi < NUM_BUCKETS)
-                {
-                    result = p->check_marker(mBuckets[bi].marker());
-                    // there's a minimal chance the marker check is not sufficient
-                    // due to random data that happens to match the marker
-                    // the exhaustive search below will catch this case
-                    // and that will indicate that more secure measures are needed
+                result = p->check_marker(mBuckets[bi].marker());
+                // there's a minimal chance the marker check is not sufficient
+                // due to random data that happens to match the marker
+                // the exhaustive search below will catch this case
+                // and that will indicate that more secure measures are needed
 #ifdef DEBUG_PTR_IN_BUCKET_CHECK
 #ifdef MULTITHREADED
-                    AZStd::lock_guard<AZStd::mutex> lock(mBuckets[bi].get_lock());
+                AZStd::lock_guard<AZStd::mutex> lock(mBuckets[bi].get_lock());
 #endif
-                    const page* pe = mBuckets[bi].page_list_end();
-                    const page* pb = mBuckets[bi].page_list_begin();
-                    for (; pb != pe && pb != p; pb = pb->next())
-                    {
-                    }
-                    HPPA_ASSERT(result == (pb == p));
-#endif
+                const page* pe = mBuckets[bi].page_list_end();
+                const page* pb = mBuckets[bi].page_list_begin();
+                for (; pb != pe && pb != p; pb = pb->next())
+                {
                 }
+                HPPA_ASSERT(result == (pb == p));
+#endif
             }
             return result;
         }
@@ -614,7 +611,7 @@ namespace AZ
             {
                 return nullptr;
             }
-            if (m_isPoolAllocations && is_small_allocation(size))
+            if (is_small_allocation(size))
             {
                 size = clamp_small_allocation(size);
                 void* ptr = bucket_alloc_direct(bucket_spacing_function(size + MEMORY_GUARD_SIZE));
@@ -643,7 +640,7 @@ namespace AZ
             {
                 return nullptr;
             }
-            if (m_isPoolAllocations && is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
+            if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
             {
                 size = clamp_small_allocation(size);
                 void* ptr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size + MEMORY_GUARD_SIZE, alignment)));
@@ -676,7 +673,7 @@ namespace AZ
             void* newPtr = nullptr;
             if (ptr_in_bucket(ptr))
             {
-                if (is_small_allocation(size)) // no point to check m_isPoolAllocations as if it's false pointer can't be in a bucket.
+                if (is_small_allocation(size))
                 {
                     size = clamp_small_allocation(size);
                     debug_remove(
@@ -699,7 +696,7 @@ namespace AZ
             }
             else
             {
-                if (m_isPoolAllocations && is_small_allocation(size))
+                if (is_small_allocation(size))
                 {
                     size = clamp_small_allocation(size);
                     newPtr = bucket_alloc(size + MEMORY_GUARD_SIZE);
@@ -763,7 +760,7 @@ namespace AZ
             void* newPtr = nullptr;
             if (ptr_in_bucket(ptr))
             {
-                if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION) // no point to check m_isPoolAllocations as if it was false, pointer can't be in a bucket
+                if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
                 {
                     size = clamp_small_allocation(size);
                     debug_remove(
@@ -786,7 +783,7 @@ namespace AZ
             }
             else
             {
-                if (m_isPoolAllocations && is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
+                if (is_small_allocation(size) && alignment <= MAX_SMALL_ALLOCATION)
                 {
                     size = clamp_small_allocation(size);
                     newPtr = bucket_alloc_direct(bucket_spacing_function(AZ::SizeAlignUp(size + MEMORY_GUARD_SIZE, alignment)));
@@ -902,7 +899,7 @@ namespace AZ
             {
                 return;
             }
-            if (m_isPoolAllocations && is_small_allocation(origSize))
+            if (is_small_allocation(origSize))
             {
                 // if this asserts probably the original alloc used alignment
                 HPPA_ASSERT(ptr_in_bucket(ptr));
@@ -920,7 +917,7 @@ namespace AZ
             {
                 return;
             }
-            if (m_isPoolAllocations && is_small_allocation(origSize) && oldAlignment <= MAX_SMALL_ALLOCATION)
+            if (is_small_allocation(origSize) && oldAlignment <= MAX_SMALL_ALLOCATION)
             {
                 HPPA_ASSERT(ptr_in_bucket(ptr), "small object ptr not in a bucket");
                 debug_remove(ptr, origSize, DEBUG_SOURCE_BUCKETS);
@@ -965,7 +962,6 @@ namespace AZ
         const size_t m_treePageSize;
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
-        bool         m_isPoolAllocations;
         IAllocator* m_subAllocator;
 
 #if !defined (USE_MUTEX_PER_BUCKET)
@@ -1024,8 +1020,8 @@ namespace AZ
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
         // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
         // with virtual memory addresses when the tree grows and we cannot specify an alignment in all cases
-        : m_treePageSize(desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
-        , m_treePageAlignment(desc.m_pageSize)
+        : m_treePageSize(OS_VIRTUAL_PAGE_SIZE)
+        , m_treePageAlignment(OS_VIRTUAL_PAGE_SIZE)
         , m_poolPageSize(OS_VIRTUAL_PAGE_SIZE)
         , m_subAllocator(desc.m_subAllocator)
     {
@@ -1037,7 +1033,6 @@ namespace AZ
         mTotalAllocatedSizeBuckets = 0;
         mTotalAllocatedSizeTree = 0;
 
-        m_isPoolAllocations = desc.m_isPoolAllocations;
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
 #if defined(MULTITHREADED)
         // For some platforms we can use an actual spin lock, test and profile. We don't expect much contention there
@@ -2461,15 +2456,8 @@ namespace AZ
     template<bool DebugAllocator>
     HphaSchemaBase<DebugAllocator>::HphaSchemaBase(const Descriptor& desc)
     {
-        (void)m_pad;
-        m_capacity = 0;
-
-        m_desc = desc;
-
-        m_capacity = desc.m_capacity;
-
         static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
-        m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(m_desc);
+        m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(desc);
     }
 
     //=========================================================================
@@ -2479,7 +2467,6 @@ namespace AZ
     template<bool DebugAllocator>
     HphaSchemaBase<DebugAllocator>::~HphaSchemaBase()
     {
-        m_capacity = 0;
         m_allocator->~HpAllocator();
     }
 

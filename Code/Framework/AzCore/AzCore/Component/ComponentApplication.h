@@ -137,10 +137,8 @@ namespace AZ
             bool            m_doNotUsePools;            //!< True of we want to pipe all allocation to a generic allocator (not pools), this can help debugging a memory stomp. (default: false)
             bool            m_enableScriptReflection;   //!< True if we want to enable reflection to the script context.
 
-            unsigned int    m_pageSize;                 //!< Page allocation size must be 1024 bytes aligned. (default: SystemAllocator::Descriptor::Heap::m_defaultPageSize)
-            unsigned int    m_poolPageSize;             //!< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it. (default: SystemAllocator::Descriptor::Heap::m_defaultPoolPageSize)
             unsigned int    m_memoryBlockAlignment;     //!< Alignment of memory block. (default: SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment)
-            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes if. This parameter is ignored if m_grabAllMemory is set to true. (default: 0 - use memory on demand, no preallocation)
+            AZ::u64         m_memoryBlocksByteSize;     //!< Memory block size in bytes.
             Debug::AllocationRecords::Mode m_recordingMode; //!< When to record stack traces (default: AZ::Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE)
             AZ::u64         m_stackRecordLevels;        //!< If stack recording is enabled, how many stack levels to record. (default: 5)
 

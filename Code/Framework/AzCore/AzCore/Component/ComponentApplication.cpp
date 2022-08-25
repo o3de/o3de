@@ -144,8 +144,6 @@ namespace AZ
         m_doNotUsePools = false;
         m_enableScriptReflection = true;
 
-        m_pageSize = SystemAllocator::Descriptor::Heap::m_defaultPageSize;
-        m_poolPageSize = SystemAllocator::Descriptor::Heap::m_defaultPoolPageSize;
         m_memoryBlockAlignment = SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment;
         m_memoryBlocksByteSize = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
@@ -312,8 +310,6 @@ namespace AZ
                 ->Field("markUnallocatedMemory", &Descriptor::m_markUnallocatedMemory)
                 ->Field("doNotUsePools", &Descriptor::m_doNotUsePools)
                 ->Field("enableScriptReflection", &Descriptor::m_enableScriptReflection)
-                ->Field("pageSize", &Descriptor::m_pageSize)
-                ->Field("poolPageSize", &Descriptor::m_poolPageSize)
                 ->Field("blockAlignment", &Descriptor::m_memoryBlockAlignment)
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("modules", &Descriptor::m_modules)
@@ -339,15 +335,8 @@ namespace AZ
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_autoIntegrityCheck, "Validate allocations", "Check allocations for integrity on each allocation/free (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_markUnallocatedMemory, "Mark freed memory", "Set memory to 0xcd when a block is freed for debugging (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_doNotUsePools, "Don't pool allocations", "Pipe pool allocations in system/tree heap (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_pageSize, "Page size", "Memory page size in bytes (must be OS page size aligned)")
-                        ->Attribute(Edit::Attributes::Step, 1024)
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_poolPageSize, "Pool page size", "Memory pool page size in bytes (must be a multiple of page size)")
-                        ->Attribute(Edit::Attributes::Max, &Descriptor::m_pageSize)
-                        ->Attribute(Edit::Attributes::Step, 1024)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlockAlignment, "Block alignment", "Memory block alignment in bytes (must be multiple of the page size)")
-                        ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize, "Block size", "Memory block size in bytes (must be multiple of the page size)")
-                        ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ;
             }
         }
@@ -945,8 +934,6 @@ namespace AZ
         {
             // Create the system allocator
             AZ::SystemAllocator::Descriptor desc;
-            desc.m_heap.m_pageSize = m_descriptor.m_pageSize;
-            desc.m_heap.m_poolPageSize = m_descriptor.m_poolPageSize;
             desc.m_allocationRecords = m_descriptor.m_allocationRecords;
             desc.m_stackRecordLevels = aznumeric_caster(m_descriptor.m_stackRecordLevels);
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);

@@ -82,12 +82,8 @@ namespace AZ
         {
             m_isCustom = false;
             HphaSchema::Descriptor heapDesc;
-            heapDesc.m_pageSize = desc.m_heap.m_pageSize;
-            heapDesc.m_poolPageSize = desc.m_heap.m_poolPageSize;
             heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
-            heapDesc.m_isPoolAllocations = desc.m_heap.m_isPoolAllocations;
             // Fix SystemAllocator from growing in small chunks
-            heapDesc.m_systemChunkSize = desc.m_heap.m_systemChunkSize;
             if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
             {
                 AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
