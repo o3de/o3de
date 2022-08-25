@@ -158,11 +158,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void NewProjectSettingsScreen::HandleDownloadProgress(
-        [[maybe_unused]] const QString& templateName,
-        [[maybe_unused]] DownloadController::DownloadObjectType objectType,
-        [[maybe_unused]] int bytesDownloaded,
-        [[maybe_unused]] int totalBytes)
+    void NewProjectSettingsScreen::HandleDownloadProgress(const QString& templateName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)
     {
         if (objectType != DownloadController::DownloadObjectType::Template)
         {
@@ -335,11 +331,7 @@ namespace O3DE::ProjectManager
             templateDetailsLayout->addWidget(m_downloadTemplateButton);
 
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
-            connect(
-                configureGemsButton,
-                &QPushButton::clicked,
-                this,
-                [=]()
+            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
                 {
                     emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
                 });
