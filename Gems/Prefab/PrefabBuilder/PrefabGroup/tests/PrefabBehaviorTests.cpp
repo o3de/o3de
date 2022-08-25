@@ -264,10 +264,9 @@ namespace UnitTest
         AssetImportRequest::ManifestAction action = AssetImportRequest::ManifestAction::ConstructDefault;
         AssetImportRequest::RequestingApplication requester = {};
 
-        Behaviors::PrefabGroupBehavior prefabGroupBehavior;
         ProcessingResult result = ProcessingResult::Failure;
         AssetImportRequestBus::BroadcastResult(result, &AssetImportRequestBus::Events::UpdateManifest, scene, action, requester);
-        EXPECT_NE(result,  ProcessingResult::Failure);
+        EXPECT_NE(result, ProcessingResult::Failure);
     }
 
     TEST_F(PrefabBehaviorTests, PrefabBehavior_UpdateManifestWithEmptyScene_Ignored)

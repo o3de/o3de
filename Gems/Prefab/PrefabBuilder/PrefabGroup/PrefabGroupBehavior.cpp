@@ -135,6 +135,12 @@ namespace AZ::SceneAPI::Behaviors
             }
         }
 
+        // ignore empty scenes (i.e. only has the root node)
+        if (scene.GetGraph().GetNodeCount() == 1)
+        {
+            return Events::ProcessingResult::Ignored;
+        }
+
         AZStd::optional<AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates> manifestUpdates;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
             manifestUpdates,
