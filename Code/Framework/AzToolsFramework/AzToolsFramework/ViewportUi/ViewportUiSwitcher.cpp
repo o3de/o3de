@@ -10,6 +10,10 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <QBitmap>
 
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -44,11 +48,22 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
+    [[maybe_unused]] static QPixmap CreateIconMask(const char* buttonIcon)
+    {
+        auto buttonPixmap = QPixmap(QString(buttonIcon));
+        auto mask = buttonPixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
+        buttonPixmap.fill((QColor(255, 255, 255)));
+        buttonPixmap.setMask(mask);
+
+        return buttonPixmap;
+    }
+
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
         action->setCheckable(false);
-        action->setIcon(QIcon(QString(button->m_icon.c_str())));
+        action->setIcon(CreateIconMask(button->m_icon.c_str()));
+        
 
         if (!action)
         {
@@ -137,7 +152,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
-            QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
+            QIcon buttonIcon = CreateIconMask(((*buttonIt)->m_icon).c_str());
 
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
@@ -173,3 +188,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()
