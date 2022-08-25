@@ -415,7 +415,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             InstallAndPullGitLFS()
         }
         //get the external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
-        pipelineConfig.EXTERNAL_REPOS.each { -> repo
+        pipelineConfig.EXTERNAL_REPOS.each { repo ->
             dir(repo.REPOSITORY_NAME) {
                 def THIS_ORG_REPO = repo.ORGANIZATION_NAME + '/' + repo.REPOSITORY_NAME
                 def setEnvCommit = false
@@ -454,7 +454,7 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
             dir(ENGINE_REPOSITORY_NAME) {
                 PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
             }
-            pipelineConfig.EXTERNAL_REPOS.each { -> repo
+            pipelineConfig.EXTERNAL_REPOS.each { repo ->
                 def allObjects = true
                 def automatedTestingGems = {}
 
@@ -469,22 +469,22 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                 dir(ENGINE_REPOSITORY_NAME) {
                     if(!allObjects) {
                         //register all the objects specified in this repos .automatedtesting.json
-                        automatedTestingGems.REGISTER_ENGINES.each { -> engineName
+                        automatedTestingGems.REGISTER_ENGINES.each { engineName ->
                             PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}/${engineName}")
                         }
-                        automatedTestingGems.REGISTER_ENGINES.each { -> projectName
+                        automatedTestingGems.REGISTER_ENGINES.each { projectName ->
                             PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}/${projectName}")
                         }
-                        automatedTestingGems.REGISTER_ENGINES.each { -> gemName
+                        automatedTestingGems.REGISTER_ENGINES.each { gemName ->
                             PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}/${gemName}")
                         }
-                        automatedTestingGems.REGISTER_ENGINES.each { -> templateName
+                        automatedTestingGems.REGISTER_ENGINES.each { templateName ->
                             PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}/${templateName}")
                         }
-                        automatedTestingGems.REGISTER_ENGINES.each { -> restrictedName
+                        automatedTestingGems.REGISTER_ENGINES.each { restrictedName ->
                             PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName}")
                         }
-                        automatedTestingGems.ENABLE_GEMS.each { -> gemName
+                        automatedTestingGems.ENABLE_GEMS.each { gemName ->
                             PlatformSh("scripts/o3de${ext} enable-gem --gem-name ${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
                         }
                     } else {
