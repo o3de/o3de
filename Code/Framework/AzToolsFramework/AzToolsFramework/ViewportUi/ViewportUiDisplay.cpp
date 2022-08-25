@@ -66,12 +66,12 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_viewportBorderText(&m_uiOverlay)
         , m_viewportBorderBackButton(&m_uiOverlay)
     {
-        AzFramework::ViewportBorderNotificationBus::Handler::BusConnect();
+        AzFramework::ViewportImGuiNotificationsBus::Handler::BusConnect();
     }
 
     ViewportUiDisplay::~ViewportUiDisplay()
     {
-        AzFramework::ViewportBorderNotificationBus::Handler::BusDisconnect();
+        AzFramework::ViewportImGuiNotificationsBus::Handler::BusDisconnect();
         UnparentWidgets(m_viewportUiElements);
     }
 

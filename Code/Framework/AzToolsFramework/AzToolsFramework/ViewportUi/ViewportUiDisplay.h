@@ -50,7 +50,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay : private AzFramework::ViewportBorderNotificationBus::Handler
+    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationsBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
@@ -98,7 +98,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveViewportBorder();
         bool GetViewportBorderVisible() const;
 
-        // ViewportBorderNotificationBus overrides ...
+        // ViewportImGuiNotificationsBus overrides ...
         void ImGuiActive(bool active) override;
 
     private:
@@ -116,7 +116,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);
         void UpdateUiOverlayGeometry();
-        
 
         ViewportUiElementInfo GetViewportUiElementInfo(const ViewportUiElementId elementId);
 
