@@ -252,8 +252,7 @@ namespace ScriptCanvas
     FileLoadResult LoadFromFile
         ( AZStd::string_view path
         , MakeInternalGraphEntitiesUnique makeEntityIdsUnique
-        , LoadReferencedAssets loadReferencedAssets
-        , bool useObjectStreamOnly)
+        , LoadReferencedAssets loadReferencedAssets)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -262,10 +261,6 @@ namespace ScriptCanvas
         auto fileStringOutcome = AZ::Utils::ReadFile<AZStd::string>(path);
         if (!fileStringOutcome)
         {
-            if (useObjectStreamOnly)
-            {
-                return AZ::Failure(AZStd::string("--converterted--"));
-            }
             result.m_isSuccess = false;
             result.m_fileReadErrors = fileStringOutcome.TakeError();
             return result;

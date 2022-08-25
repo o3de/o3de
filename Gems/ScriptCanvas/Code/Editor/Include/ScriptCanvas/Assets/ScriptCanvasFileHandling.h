@@ -55,6 +55,5 @@ namespace ScriptCanvas
     FileLoadResult LoadFromFile
         ( AZStd::string_view path
         , MakeInternalGraphEntitiesUnique makeEntityIdsUnique = MakeInternalGraphEntitiesUnique::Yes
-        , LoadReferencedAssets loadReferencedAssets = LoadReferencedAssets::Yes
-		, bool useObjectStreamOnly = false);
+        , LoadReferencedAssets loadReferencedAssets = LoadReferencedAssets::Yes);
 }
