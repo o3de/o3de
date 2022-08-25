@@ -160,9 +160,14 @@ namespace GradientSignal
         // ImageGradientModificationBus overrides...
         void StartImageModification() override;
         void EndImageModification() override;
-        void SetValue(const AZ::Vector3& position, float value) override;
-        void GetPointValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
-        void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+        void GetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
+        void SetValueByPosition(const AZ::Vector3& position, float value) override;
+        void SetValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+
+        void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const override;
+        void GetValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const override;
+        void SetValueByPixelIndex(const PixelIndex& position, float value) override;
+        void SetValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values) override;
 
         AZStd::vector<float>* GetImageModificationBuffer();
 

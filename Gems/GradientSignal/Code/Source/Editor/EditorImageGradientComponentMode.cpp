@@ -59,17 +59,17 @@ namespace GradientSignal
 
         void Undo() override
         {
-            if (m_positions.empty())
+            if (m_pixelIndices.empty())
             {
                 return;
             }
 
             // Run through our buffer in backwards order to make sure that positions that appear more than once in our list
             // end with the correct final value.
-            for (int32_t index = aznumeric_cast<int32_t>(m_positions.size()) - 1; index >= 0; index--)
+            for (int32_t index = aznumeric_cast<int32_t>(m_pixelIndices.size()) - 1; index >= 0; index--)
             {
                 ImageGradientModificationBus::Event(
-                    m_entityId, &ImageGradientModificationBus::Events::SetValue, m_positions[index], m_oldValues[index]);
+                    m_entityId, &ImageGradientModificationBus::Events::SetValueByPixelIndex, m_pixelIndices[index], m_oldValues[index]);
             }
 
             // Notify anything listening to the image gradient that the modified region has changed.
@@ -81,13 +81,14 @@ namespace GradientSignal
 
         void Redo() override
         {
-            if (m_positions.empty())
+            if (m_pixelIndices.empty())
             {
                 return;
             }
 
             // Replay all the changes in forward order.
-            ImageGradientModificationBus::Event(m_entityId, &ImageGradientModificationBus::Events::SetValues, m_positions, m_newValues);
+            ImageGradientModificationBus::Event(
+                m_entityId, &ImageGradientModificationBus::Events::SetValuesByPixelIndex, m_pixelIndices, m_newValues);
 
             // Notify anything listening to the image gradient that the modified region has changed.
             // We expand the region by one pixel in each direction to account for any data affected by bilinear filtering as well.
@@ -98,21 +99,21 @@ namespace GradientSignal
 
         bool Changed() const override
         {
-            return !m_positions.empty();
+            return !m_pixelIndices.empty();
         }
 
         //! Grow our buffers based on the maximum number of points that we're expecting to add in this paint stroke.
         void ReserveBuffer(size_t numPointsToAdd)
         {
-            m_positions.reserve(m_positions.size() + numPointsToAdd);
+            m_pixelIndices.reserve(m_pixelIndices.size() + numPointsToAdd);
             m_oldValues.reserve(m_oldValues.size() + numPointsToAdd);
             m_newValues.reserve(m_newValues.size() + numPointsToAdd);
         }
 
         //! Add a point change to our undo buffer.
-        void AddPoint(const AZ::Vector3& position, float oldValue, float newValue)
+        void AddPoint(const AZ::Vector3& position, const PixelIndex& pixelIndex, float oldValue, float newValue)
         {
-            m_positions.emplace_back(position);
+            m_pixelIndices.emplace_back(pixelIndex);
             m_oldValues.emplace_back(oldValue);
             m_newValues.emplace_back(newValue);
             m_dirtyArea.AddPoint(position);
@@ -132,7 +133,7 @@ namespace GradientSignal
         AZ::EntityId m_entityId;
 
         //! The undo/redo data for the paint strokes.
-        AZStd::vector<AZ::Vector3> m_positions;
+        AZStd::vector<PixelIndex> m_pixelIndices;
         AZStd::vector<float> m_oldValues;
         AZStd::vector<float> m_newValues;
 
@@ -291,9 +292,30 @@ namespace GradientSignal
 
         valueLookupFn(points, intensities, opacities, validFlags);
 
+        // Remove all of the positions that weren't affected by the paintbrush.
+        AZStd::erase_if(points, [&points, &validFlags](const AZ::Vector3& value)
+            {
+                return !validFlags[(&value) - (points.begin())];
+            });
+        AZStd::erase_if(intensities, [&intensities, &validFlags](const float& value)
+            {
+                return !validFlags[(&value) - (intensities.begin())];
+            });
+        AZStd::erase_if(opacities, [&opacities, &validFlags](const float& value)
+            {
+                return !validFlags[(&value) - (opacities.begin())];
+            });
+
+        AZStd::erase(validFlags, false);
+
+        AZStd::vector<PixelIndex> pixelIndices(points.size());
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::GetPixelIndicesForPositions, points, pixelIndices);
+
         // Get the previous gradient image values
         AZStd::vector<float> oldValues(points.size());
-        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModificationBus::Events::GetPointValues, points, oldValues);
+        ImageGradientModificationBus::Event(
+            GetEntityId(), &ImageGradientModificationBus::Events::GetValuesByPixelIndex, pixelIndices, oldValues);
 
         AZ_Assert(m_paintBrushUndoBuffer != nullptr, "Undo batch is expected to exist while painting");
         m_paintBrushUndoBuffer->ReserveBuffer(points.size());
@@ -302,17 +324,14 @@ namespace GradientSignal
         // For each value, blend it with the painted value and set the gradient image to the new value.
         for (size_t index = 0; index < points.size(); index++)
         {
-            if (validFlags[index])
+            float newValue = AZStd::lerp(oldValues[index], intensities[index], opacities[index]);
+
+            if (newValue != oldValues[index])
             {
-                float newValue = AZStd::lerp(oldValues[index], intensities[index], opacities[index]);
+                m_paintBrushUndoBuffer->AddPoint(points[index], pixelIndices[index], oldValues[index], newValue);
 
-                if (newValue != oldValues[index])
-                {
-                    m_paintBrushUndoBuffer->AddPoint(points[index], oldValues[index], newValue);
-
-                    ImageGradientModificationBus::Event(
-                        GetEntityId(), &ImageGradientModificationBus::Events::SetValue, points[index], newValue);
-                }
+                ImageGradientModificationBus::Event(
+                    GetEntityId(), &ImageGradientModificationBus::Events::SetValueByPixelIndex, pixelIndices[index], newValue);
             }
         }
 
