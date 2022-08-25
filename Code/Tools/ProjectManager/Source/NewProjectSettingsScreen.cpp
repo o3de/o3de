@@ -17,6 +17,7 @@
 #include <CreateProjectCtrl.h>
 #include <TagWidget.h>
 #include <ProjectUtils.h>
+#include <AddRemoteTemplateDialog.h>
 
 #include <AzCore/Math/Uuid.h>
 #include <AzQtComponents/Components/FlowLayout.h>
@@ -95,6 +96,15 @@ namespace O3DE::ProjectManager
                             emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
                         }
                     }
+                    if (button && button->property("AddRemoteTemplate").isValid())
+                    {
+                        // Open add remote template source
+                        AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
+                        if (addRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)
+                        {
+                            // Refresh template list
+                        }
+                    }
                 });
 
             containerLayout->addWidget(templatesScrollArea);
@@ -164,6 +174,12 @@ namespace O3DE::ProjectManager
 
                 m_templateFlowLayout->addWidget(templateButton);
             }
+
+            // Insert the add a remote template button
+            TemplateButton* remoteTemplateButton = new TemplateButton(":/DefaultTemplate.png", tr("Add remote Template"), this);
+            remoteTemplateButton->setProperty("AddRemoteTemplate", true);
+            m_projectTemplateButtonGroup->addButton(remoteTemplateButton);
+            m_templateFlowLayout->addWidget(remoteTemplateButton);
 
             // Select the first project template (default selection).
             SelectProjectTemplate(0, /*blockSignals=*/true);
