@@ -57,7 +57,7 @@ namespace AZ
                 virtual void UpdateDeletable();
                 
                 virtual const char* GetSerializedName(const DataTypes::IManifestObject* target) const;
-                virtual void SetIcon(const DataTypes::IManifestObject* target);
+                virtual void UpdateUIForManifestObject(const DataTypes::IManifestObject* target);
 
                 AZStd::string m_objectName;
                 QScopedPointer<Ui::HeaderWidget> ui;

@@ -76,22 +76,27 @@ namespace GradientSignal
             CreateNewImage
         };
 
+        // EditorImageGradientRequestBus overrides ...
+        void StartImageModification() override;
+        void EndImageModification() override;
+        bool SaveImage() override;
 
         bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
         void CreateImage();
-        bool SaveImage() override;
         bool SaveImageInternal(
             AZ::IO::Path& fullPath, AZStd::string& relativePath,
             int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer);
 
         AZ::u32 RefreshCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
+        AZ::Crc32 GetImageOptionsVisibility() const;
         AZ::Crc32 GetPaintModeVisibility() const;
+        bool GetImageOptionsReadOnly() const;
 
         bool RefreshImageAssetStatus();
         static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
 
-        bool InComponentMode();
+        bool InComponentMode() const;
 
         // PaintBrushNotificationBus overrides...
         // These are used to keep the paintbrush config in sync with the current manipulator.
