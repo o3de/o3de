@@ -181,7 +181,6 @@ namespace ScriptCanvasFileHandlingCpp
             if (!result.m_source.AnyEquals(possibleDependency.m_source))
             {
                 // now that circular dependencies can be guarded against, load each dependency from disk only once
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path, bool useObjectStreamOnly)
                 {
                     SourceTreeLoader dependencyLoader;
                     dependencyLoader.m_source = possibleDependency.m_source;
@@ -211,13 +210,7 @@ namespace ScriptCanvasFileHandlingCpp
             }
         }
 
-        
-            if (useObjectStreamOnly)
-            {
-                return AZ::Failure(AZStd::string("--converterted--"));
-            }
-			
-			return AZ::Success();
+        return AZ::Success();
     }
 
 }
@@ -259,7 +252,8 @@ namespace ScriptCanvas
     FileLoadResult LoadFromFile
         ( AZStd::string_view path
         , MakeInternalGraphEntitiesUnique makeEntityIdsUnique
-        , LoadReferencedAssets loadReferencedAssets)
+        , LoadReferencedAssets loadReferencedAssets
+        , bool useObjectStreamOnly)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
 
@@ -268,6 +262,10 @@ namespace ScriptCanvas
         auto fileStringOutcome = AZ::Utils::ReadFile<AZStd::string>(path);
         if (!fileStringOutcome)
         {
+            if (useObjectStreamOnly)
+            {
+                return AZ::Failure(AZStd::string("--converterted--"));
+            }
             result.m_isSuccess = false;
             result.m_fileReadErrors = fileStringOutcome.TakeError();
             return result;

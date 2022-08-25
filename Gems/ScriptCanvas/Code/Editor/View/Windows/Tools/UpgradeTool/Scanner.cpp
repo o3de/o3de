@@ -102,12 +102,17 @@ namespace ScriptCanvasEditor
 
         AZStd::pair<SourceHandle, bool> Scanner::LoadAsset()
         {
-            auto result = LoadFromFile(ModCurrentAsset().Path().c_str(), AZstd::default, AZstd::default, true);
+            auto result = LoadFromFile
+                ( ModCurrentAsset().AbsolutePath().c_str()
+                , ScriptCanvas::MakeInternalGraphEntitiesUnique::Yes
+                , ScriptCanvas::LoadReferencedAssets::Yes
+                , true);
+
             if (!result)
             {
                 return {};
             }
-			else if (fileOutcome.GetError() == "--converterted--")
+			else if (!result.m_deserializeResult.m_errors.empty() && result.m_deserializeResult.m_errors.front() == "--converterted--")
             {
                 return { {}, false };
             }
