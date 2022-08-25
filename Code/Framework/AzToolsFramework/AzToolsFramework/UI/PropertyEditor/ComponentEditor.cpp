@@ -40,10 +40,6 @@ AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QApplication>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     namespace ComponentEditorConstants
@@ -927,7 +923,6 @@ namespace AzToolsFramework
         // refresh which Component Editor/Card looks selected in the Entity Outliner
         SetSelected(componentType == m_componentType);
     }
-} // namespace AzToolsFramework
-#pragma optimize("", on)
-#pragma inline_depth()
+}
+
 #include "UI/PropertyEditor/moc_ComponentEditor.cpp"
