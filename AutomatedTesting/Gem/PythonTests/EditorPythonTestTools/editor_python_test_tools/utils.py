@@ -13,7 +13,10 @@ import traceback
 from typing import Callable, Tuple
 
 import azlmbr
-import azlmbr.legacy.general as general
+try:
+    import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
+except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
+    import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
@@ -303,7 +306,7 @@ class Report:
             Report._exception = traceback.format_exc()
 
         success, report_str = Report.get_report(test_function)
-        # Print on the o3de console, for debugging purpuses
+        # Print on the o3de console, for debugging purposes
         print(report_str)
         # Print the report on the piped stdout of the application
         general.test_output(report_str)
