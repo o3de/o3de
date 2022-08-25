@@ -962,8 +962,6 @@ namespace AZ
         void*   SystemAlloc(size_t size, size_t align);
         void    SystemFree(void* ptr);
 
-        void*        m_fixedBlock;
-        size_t       m_fixedBlockSize;
         const size_t m_treePageSize;
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
@@ -1026,10 +1024,9 @@ namespace AZ
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
         // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
         // with virtual memory addresses when the tree grows and we cannot specify an alignment in all cases
-        : m_treePageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_pageSize :
-            desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
+        : m_treePageSize(desc.m_systemChunkSize != 0 ? desc.m_systemChunkSize : OS_VIRTUAL_PAGE_SIZE)
         , m_treePageAlignment(desc.m_pageSize)
-        , m_poolPageSize(desc.m_fixedMemoryBlock != nullptr ? desc.m_poolPageSize : OS_VIRTUAL_PAGE_SIZE)
+        , m_poolPageSize(OS_VIRTUAL_PAGE_SIZE)
         , m_subAllocator(desc.m_subAllocator)
     {
         if constexpr (DebugAllocatorEnable)
@@ -1040,15 +1037,7 @@ namespace AZ
         mTotalAllocatedSizeBuckets = 0;
         mTotalAllocatedSizeTree = 0;
 
-        m_fixedBlock = desc.m_fixedMemoryBlock;
-        m_fixedBlockSize = desc.m_fixedMemoryBlockByteSize;
         m_isPoolAllocations = desc.m_isPoolAllocations;
-        if (desc.m_fixedMemoryBlock)
-        {
-            block_header* bl = tree_add_block(m_fixedBlock, m_fixedBlockSize);
-            tree_attach(bl);
-        }
-
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
 #if defined(MULTITHREADED)
         // For some platforms we can use an actual spin lock, test and profile. We don't expect much contention there
@@ -1086,30 +1075,20 @@ namespace AZ
                 HPPA_ASSERT(mBuckets[i].page_list_empty(), "small object leak");
             }
 
-            if (!m_fixedBlock)
-            {
 #ifdef AZ_ENABLE_TRACING
-                if (!mFreeTree.empty())
-                {
-                    auto node = mFreeTree.begin();
-                    auto end = mFreeTree.end();
-                    while (node != end)
-                    {
-                        block_header* cur = node->get_block();
-                        AZ_TracePrintf("HPHA", "Block in free tree: %p, size=%zi bytes", cur, cur->size());
-                        ++node;
-                    }
-                }
-#endif
-                HPPA_ASSERT(mFreeTree.empty());
-            }
-            else
+            if (!mFreeTree.empty())
             {
-                // Verify that the last block in the free tree is the m_fixedBlock
-                HPPA_ASSERT(mFreeTree.size() == 1);
-                HPPA_ASSERT(mFreeTree.begin()->get_block()->prev() == m_fixedBlock);
-                HPPA_ASSERT((mFreeTree.begin()->get_block()->size() + sizeof(block_header) * 3) == m_fixedBlockSize);
+                auto node = mFreeTree.begin();
+                auto end = mFreeTree.end();
+                while (node != end)
+                {
+                    block_header* cur = node->get_block();
+                    AZ_TracePrintf("HPHA", "Block in free tree: %p, size=%zi bytes", cur, cur->size());
+                    ++node;
+                }
             }
+#endif
+            HPPA_ASSERT(mFreeTree.empty());
         }
     }
 
@@ -1204,16 +1183,8 @@ namespace AZ
     void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_system_alloc()
     {
         void* ptr;
-        if (m_fixedBlock)
-        {
-            ptr = tree_alloc_bucket_page();
-            // mTotalCapacitySizeBuckets memory is part of the tree allocations
-        }
-        else
-        {
-            ptr = SystemAlloc(m_poolPageSize, m_poolPageSize);
-            mTotalCapacitySizeBuckets += m_poolPageSize;
-        }
+        ptr = SystemAlloc(m_poolPageSize, m_poolPageSize);
+        mTotalCapacitySizeBuckets += m_poolPageSize;
         HPPA_ASSERT(((size_t)ptr & (m_poolPageSize - 1)) == 0);
         return ptr;
     }
@@ -1222,16 +1193,8 @@ namespace AZ
     void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::bucket_system_free(void* ptr)
     {
         HPPA_ASSERT(ptr);
-        if (m_fixedBlock)
-        {
-            tree_free_bucket_page(ptr);
-            // mTotalAllocatedSizeBuckets memory is part of the tree allocations
-        }
-        else
-        {
-            SystemFree(ptr);
-            mTotalCapacitySizeBuckets -= m_poolPageSize;
-        }
+        SystemFree(ptr);
+        mTotalCapacitySizeBuckets -= m_poolPageSize;
     }
 
     template<bool DebugAllocatorEnable>
@@ -1534,10 +1497,6 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::tree_system_alloc(size_t size)
     {
-        if (m_fixedBlock)
-        {
-            return nullptr; // we ran out of memory in our fixed block
-        }
         size_t allocSize = AZ::SizeAlignUp(size, OS_VIRTUAL_PAGE_SIZE);
         mTotalCapacitySizeTree += allocSize;
         return SystemAlloc(size, m_treePageAlignment);
@@ -1549,10 +1508,6 @@ namespace AZ
         HPPA_ASSERT(ptr);
         (void)size;
 
-        if (m_fixedBlock)
-        {
-            return; // no need to free the fixed block
-        }
         size_t allocSize = AZ::SizeAlignUp(size, OS_VIRTUAL_PAGE_SIZE);
         mTotalCapacitySizeTree -= allocSize;
         SystemFree(ptr);
@@ -2074,88 +2029,6 @@ namespace AZ
             memset(mem, 0xff, sizeof(block_header));
             tree_system_free(mem, size);
         }
-        //else if( m_fixedBlock )
-        //{
-        //  size_t requiredFrontSize = 2*sizeof(block_header) + sizeof(free_node); // 1 fake start (prev()->prev()) and one free block
-        //  size_t requiredEndSize = 2*sizeof(block_header) + sizeof(free_node); // 1 fake start (prev()->prev()) and one free block
-        //  if( bl->prev()->prev() == NULL )
-        //  {
-        //      char* alignedEnd = AZ::PointerAlignDown((char*)bl->next()-requiredFrontSize,m_treePageSize);
-        //      char* memStart = (char*)bl->prev();
-        //      if( alignedEnd > memStart )
-        //      {
-        //          tree_detach(bl);
-        //          block_header* frontFence = (block_header*)alignedEnd;
-        //          frontFence->prev(0);
-        //          frontFence->size(0);
-        //          frontFence->set_used();
-        //          block_header* frontFreeBlock = (block_header*)frontFence->mem();
-        //          frontFreeBlock->prev(frontFence);
-        //          frontFreeBlock->set_unused();
-        //          frontFreeBlock->next(bl->next()); // set's the size
-        //          bl->next()->prev(frontFreeBlock);
-        //          tree_attach(frontFreeBlock);
-
-        //          memset(memStart,0xff,sizeof(block_header));
-        //          tree_system_free(memStart, alignedEnd - memStart);
-        //      }
-        //  }
-        //  else if( bl->next()->size() == 0)
-        //  {
-        //      char* alignedStart = AZ::PointerAlignUp((char*)bl+requiredEndSize,m_treePageSize);
-        //      char* memEnd = (char*)bl->next()+sizeof(block_header);
-        //      if( alignedStart < memEnd )
-        //      {
-        //          tree_detach(bl);
-        //          block_header* backFence = (block_header*)(alignedStart-sizeof(block_header));
-        //          block_header* backFreeBlock = bl;
-        //          backFreeBlock->next(backFence); // set's the size
-        //
-        //          backFence->prev(backFreeBlock);
-        //          backFence->size(0);
-        //          backFence->set_used();
-
-        //          tree_attach(backFreeBlock);
-        //
-        //          memset(alignedStart,0xff,sizeof(block_header));
-        //          tree_system_free(alignedStart, memEnd - alignedStart);
-        //      }
-        //  }
-        //  else
-        //  {
-        //      char* alignedStart = AZ::PointerAlignUp((char*)bl+requiredEndSize,m_treePageSize);
-        //      char* alignedEnd = AZ::PointerAlignDown((char*)bl->next()-requiredFrontSize,m_treePageSize);
-        //      if( alignedStart < alignedEnd )
-        //      {
-        //          tree_detach(bl);
-
-        //          //
-        //          block_header* frontFence = (block_header*)alignedEnd;
-        //          frontFence->prev(0);
-        //          frontFence->size(0);
-        //          frontFence->set_used();
-        //          block_header* frontFreeBlock = (block_header*)frontFence->mem();
-        //          frontFreeBlock->prev(frontFence);
-        //          frontFreeBlock->set_unused();
-        //          frontFreeBlock->next(bl->next()); // set's the size
-        //          bl->next()->prev(frontFreeBlock);
-        //          tree_attach(frontFreeBlock);
-
-        //          //
-        //          block_header* backFence = (block_header*)(alignedStart-sizeof(block_header));
-        //          block_header* backFreeBlock = bl;
-        //          backFreeBlock->next(backFence); // set's the size
-
-        //          backFence->prev(backFreeBlock);
-        //          backFence->size(0);
-        //          backFence->set_used();
-        //          tree_attach(backFreeBlock);
-
-        //          memset(alignedStart,0xff,sizeof(block_header));
-        //          tree_system_free(alignedStart, alignedEnd - alignedStart);
-        //      }
-        //  }
-        //}
     }
 
     template<bool DebugAllocatorEnable>
@@ -2214,10 +2087,7 @@ namespace AZ
         {
             block_header* cur = node->get_block();
             ++node;
-            if (cur->prev() != m_fixedBlock) // check we are not purging the fixed block
-            {
-                tree_purge_block(cur);
-            }
+            tree_purge_block(cur);
         }
     }
 
@@ -2279,13 +2149,6 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     size_t HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::AllocationSize(void* ptr)
     {
-        if (m_fixedBlock)
-        {
-            if (ptr < m_fixedBlock && ptr >= (char*)m_fixedBlock + m_fixedBlockSize)
-            {
-                return 0;
-            }
-        }
         return size(ptr);
     }
 
@@ -2602,25 +2465,8 @@ namespace AZ
         m_capacity = 0;
 
         m_desc = desc;
-        m_ownMemoryBlock = false;
 
-        if (m_desc.m_fixedMemoryBlockByteSize > 0)
-        {
-            AZ_Assert((m_desc.m_fixedMemoryBlockByteSize & (m_desc.m_pageSize - 1)) == 0, "Memory block size %d MUST be multiples of the of the page size %d!", m_desc.m_fixedMemoryBlockByteSize, m_desc.m_pageSize);
-            if (m_desc.m_fixedMemoryBlock == nullptr)
-            {
-                AZ_Assert(m_desc.m_subAllocator != nullptr, "Sub allocator must point to a valid allocator if m_fixedMemoryBlock is NOT allocated (NULL)!");
-                m_desc.m_fixedMemoryBlock = m_desc.m_subAllocator->Allocate(m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment);
-                AZ_Assert(m_desc.m_fixedMemoryBlock != nullptr, "Failed to allocate %d bytes!", m_desc.m_fixedMemoryBlockByteSize);
-                m_ownMemoryBlock = true;
-            }
-            AZ_Assert((reinterpret_cast<size_t>(m_desc.m_fixedMemoryBlock) & static_cast<size_t>(desc.m_fixedMemoryBlockAlignment - 1)) == 0, "Memory block must be page size (%d bytes) aligned!", desc.m_fixedMemoryBlockAlignment);
-            m_capacity = m_desc.m_fixedMemoryBlockByteSize;
-        }
-        else
-        {
-            m_capacity = desc.m_capacity;
-        }
+        m_capacity = desc.m_capacity;
 
         static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
         m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(m_desc);
@@ -2635,12 +2481,6 @@ namespace AZ
     {
         m_capacity = 0;
         m_allocator->~HpAllocator();
-
-        if (m_ownMemoryBlock)
-        {
-            m_desc.m_subAllocator->DeAllocate(m_desc.m_fixedMemoryBlock, m_desc.m_fixedMemoryBlockByteSize, m_desc.m_fixedMemoryBlockAlignment);
-            m_desc.m_fixedMemoryBlock = nullptr;
-        }
     }
 
     //=========================================================================

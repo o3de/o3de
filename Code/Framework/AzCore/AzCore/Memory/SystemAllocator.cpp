@@ -84,12 +84,6 @@ namespace AZ
             HphaSchema::Descriptor heapDesc;
             heapDesc.m_pageSize = desc.m_heap.m_pageSize;
             heapDesc.m_poolPageSize = desc.m_heap.m_poolPageSize;
-            AZ_Assert(desc.m_heap.m_numFixedMemoryBlocks <= 1, "We support max1 memory block at the moment!");
-            if (desc.m_heap.m_numFixedMemoryBlocks > 0)
-            {
-                heapDesc.m_fixedMemoryBlock = desc.m_heap.m_fixedMemoryBlocks[0];
-                heapDesc.m_fixedMemoryBlockByteSize = desc.m_heap.m_fixedMemoryBlocksByteSize[0];
-            }
             heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
             heapDesc.m_isPoolAllocations = desc.m_heap.m_isPoolAllocations;
             // Fix SystemAllocator from growing in small chunks

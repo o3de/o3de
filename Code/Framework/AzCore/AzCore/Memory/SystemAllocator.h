@@ -56,20 +56,15 @@ namespace AZ
                     : m_pageSize(m_defaultPageSize)
                     , m_poolPageSize(m_defaultPoolPageSize)
                     , m_isPoolAllocations(true)
-                    , m_numFixedMemoryBlocks(0)
                     , m_subAllocator(nullptr)
                     , m_systemChunkSize(0)
                 {}
                 static const int        m_defaultPageSize = AZ_TRAIT_OS_DEFAULT_PAGE_SIZE;
                 static const int        m_defaultPoolPageSize = 4 * 1024;
                 static const int        m_memoryBlockAlignment = m_defaultPageSize;
-                static const int        m_maxNumFixedBlocks = 3;
                 unsigned int            m_pageSize;                                 ///< Page allocation size must be 1024 bytes aligned. (default m_defaultPageSize)
                 unsigned int            m_poolPageSize;                             ///< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it. (default m_defaultPoolPageSize)
                 bool                    m_isPoolAllocations;                        ///< True (default) if we use pool for small allocations (< 256 bytes), otherwise false. IMPORTANT: Changing this to false will degrade performance!
-                int                     m_numFixedMemoryBlocks;                     ///< Number of memory blocks to use.
-                void*                   m_fixedMemoryBlocks[m_maxNumFixedBlocks];   ///< Pointers to provided memory blocks or NULL if you want the system to allocate them for you with the System Allocator.
-                size_t                  m_fixedMemoryBlocksByteSize[m_maxNumFixedBlocks]; ///< Sizes of different memory blocks (MUST be multiple of m_pageSize), if m_memoryBlock is 0 the block will be allocated for you with the System Allocator.
                 IAllocator*       m_subAllocator;                             ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
                 size_t                  m_systemChunkSize;                          ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
             }                           m_heap;

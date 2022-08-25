@@ -45,7 +45,6 @@ void CreateAudioAllocators()
     {
         Audio::AudioSystemAllocator::Descriptor allocDesc;
         allocDesc.m_allocationRecords = false;
-        allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 0;
         AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create(allocDesc);
     }
 }

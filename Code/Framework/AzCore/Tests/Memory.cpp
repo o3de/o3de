@@ -2170,13 +2170,11 @@ namespace UnitTest
             printf("\t\t\t=======================\n");
             DebugSysAllocSchema da;
             {
+                // TODO Switch to using instance of HphaAllocator with a sub allocator of a fixed size
                 HphaSchema::Descriptor hphaDesc;
-                hphaDesc.m_fixedMemoryBlockByteSize = AZ_TRAIT_OS_HPHA_MEMORYBLOCKBYTESIZE;
-                hphaDesc.m_fixedMemoryBlock = AZ_OS_MALLOC(hphaDesc.m_fixedMemoryBlockByteSize, hphaDesc.m_fixedMemoryBlockAlignment);
                 PoolSchema::Descriptor poolDesc;
                 poolDesc.m_pageAllocator = &da;
                 poolDesc.m_numStaticPages = 100;
-                printf("\t\t\tPrealocated memory %.2f MB!\n", (float)hphaDesc.m_fixedMemoryBlockByteSize / (1024.f*1024.f));
                 {
                     HphaSchema hpha(hphaDesc);
                     PoolSchema pool;
@@ -2206,7 +2204,6 @@ namespace UnitTest
                     pool.Destroy();
                     threadPool.Destroy();
                 }
-                AZ_OS_FREE(hphaDesc.m_fixedMemoryBlock);
             }
 
             #if AZ_TRAIT_UNITTEST_NON_PREALLOCATED_HPHA_TEST

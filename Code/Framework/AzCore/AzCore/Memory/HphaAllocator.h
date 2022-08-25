@@ -30,23 +30,17 @@ namespace AZ
         {
             AZ_TYPE_INFO(Descriptor, "{FE628EB0-C24F-4A59-9CB0-44900EEE3924}")
             Descriptor()
-                : m_fixedMemoryBlockAlignment(AZ_TRAIT_OS_DEFAULT_PAGE_SIZE)
-                , m_pageSize(AZ_PAGE_SIZE)
+                : m_pageSize(AZ_PAGE_SIZE)
                 , m_poolPageSize(4*1024)
                 , m_isPoolAllocations(true)
-                , m_fixedMemoryBlockByteSize(0)
-                , m_fixedMemoryBlock(nullptr)
                 , m_subAllocator(nullptr)
                 , m_systemChunkSize(0)
                 , m_capacity(AZ_CORE_MAX_ALLOCATOR_SIZE)
             {}
 
-            unsigned int            m_fixedMemoryBlockAlignment;
             unsigned int            m_pageSize;                             ///< Page allocation size must be 1024 bytes aligned.
             unsigned int            m_poolPageSize : 31;                    ///< Page size used to small memory allocations. Must be less or equal to m_pageSize and a multiple of it.
             unsigned int            m_isPoolAllocations : 1;                ///< True to allow allocations from pools, otherwise false.
-            size_t                  m_fixedMemoryBlockByteSize;             ///< Memory block size, if 0 we use the OS memory allocation functions.
-            void*                   m_fixedMemoryBlock;                     ///< Can be NULL if so the we will allocate memory from the subAllocator if m_memoryBlocksByteSize is != 0.
             IAllocator*       m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
             size_t                  m_systemChunkSize;                      ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
             size_t                  m_capacity;                             ///< Max size this allocator can grow to
@@ -64,7 +58,7 @@ namespace AZ
 
         size_type       NumAllocatedBytes() const override;
 
-        /// Return unused memory to the OS (if we don't use fixed block). Don't call this unless you really need free memory, it is slow.
+        /// Return unused memory to the OS. Don't call this unless you really need free memory, it is slow.
         void            GarbageCollect() override;
 
         static size_t GetMemoryGuardSize();
@@ -89,7 +83,6 @@ namespace AZ
         size_type           m_capacity;                 ///< Capacity in bytes.
         HpAllocator*        m_allocator;
         AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
-        bool                m_ownMemoryBlock;
     };
 
     // Template is externed here and explicitly instantiated in the cpp file

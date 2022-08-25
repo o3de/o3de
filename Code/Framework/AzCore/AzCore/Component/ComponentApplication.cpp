@@ -136,7 +136,6 @@ namespace AZ
     ComponentApplication::Descriptor::Descriptor()
     {
         m_useExistingAllocator = false;
-        m_grabAllMemory = false;
         m_allocationRecords = true;
         m_allocationRecordsSaveNames = false;
         m_allocationRecordsAttemptDecodeImmediately = false;
@@ -149,8 +148,6 @@ namespace AZ
         m_poolPageSize = SystemAllocator::Descriptor::Heap::m_defaultPoolPageSize;
         m_memoryBlockAlignment = SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment;
         m_memoryBlocksByteSize = 0;
-        m_reservedOS = 0;
-        m_reservedDebug = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
         m_stackRecordLevels = 5;
     }
@@ -306,7 +303,6 @@ namespace AZ
             serializeContext->Class<Descriptor>(&app->GetDescriptor())
                 ->Version(2, AppDescriptorConverter)
                 ->Field("useExistingAllocator", &Descriptor::m_useExistingAllocator)
-                ->Field("grabAllMemory", &Descriptor::m_grabAllMemory)
                 ->Field("allocationRecords", &Descriptor::m_allocationRecords)
                 ->Field("allocationRecordsSaveNames", &Descriptor::m_allocationRecordsSaveNames)
                 ->Field("allocationRecordsAttemptDecodeImmediately", &Descriptor::m_allocationRecordsAttemptDecodeImmediately)
@@ -320,8 +316,6 @@ namespace AZ
                 ->Field("poolPageSize", &Descriptor::m_poolPageSize)
                 ->Field("blockAlignment", &Descriptor::m_memoryBlockAlignment)
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
-                ->Field("reservedOS", &Descriptor::m_reservedOS)
-                ->Field("reservedDebug", &Descriptor::m_reservedDebug)
                 ->Field("modules", &Descriptor::m_modules)
                 ;
 
@@ -335,7 +329,6 @@ namespace AZ
                 ec->Class<Descriptor>("System memory settings", "Settings for managing application memory usage")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_grabAllMemory, "Allocate all memory at startup", "Allocate all system memory at startup if enabled, or allocate as needed if disabled")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecords, "Record allocations", "Collect information on each allocation made for debugging purposes (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsSaveNames, "Record allocations with name saving", "Saves names/filenames information on each allocation made, useful for tracking down leaks in dynamic modules (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsAttemptDecodeImmediately, "Record allocations and attempt immediate decode", "Decode callstacks for each allocation when they occur, used for tracking allocations that fail decoding. Very expensive. (ignored in Release builds)")
@@ -355,8 +348,6 @@ namespace AZ
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize, "Block size", "Memory block size in bytes (must be multiple of the page size)")
                         ->Attribute(Edit::Attributes::Step, &Descriptor::m_pageSize)
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedOS, "OS reserved memory", "System memory reserved for OS (used only when 'Allocate all memory at startup' is true)")
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_reservedDebug, "Memory reserved for debugger", "System memory reserved for Debug allocator, like memory tracking (used only when 'Allocate all memory at startup' is true)")
                     ;
             }
         }
@@ -910,11 +901,6 @@ namespace AZ
             AZ::Debug::Trace::Instance().Destroy();
             AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
-            if (m_fixedMemoryBlock)
-            {
-                m_osAllocator->DeAllocate(m_fixedMemoryBlock);
-            }
-            m_fixedMemoryBlock = nullptr;
             m_isSystemAllocatorOwner = false;
         }
 
@@ -961,30 +947,6 @@ namespace AZ
             AZ::SystemAllocator::Descriptor desc;
             desc.m_heap.m_pageSize = m_descriptor.m_pageSize;
             desc.m_heap.m_poolPageSize = m_descriptor.m_poolPageSize;
-            if (m_descriptor.m_grabAllMemory)
-            {
-                // grab all available memory
-                AZ::u64 availableOS = AZ_CORE_MAX_ALLOCATOR_SIZE;
-                AZ::u64 reservedOS = m_descriptor.m_reservedOS;
-                AZ::u64 reservedDbg = m_descriptor.m_reservedDebug;
-                AZ_Warning("Memory", false, "This platform is not supported for grabAllMemory flag! Provide a valid allocation size and set the m_grabAllMemory flag to false! Using default max memory size %llu!", availableOS);
-                AZ_Assert(availableOS > 0, "OS doesn't have any memory available!");
-                // compute total memory to grab
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0] = static_cast<size_t>(availableOS - reservedOS - reservedDbg);
-                // memory block MUST be a multiple of pages
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0] = AZ::SizeAlignDown(desc.m_heap.m_fixedMemoryBlocksByteSize[0], m_descriptor.m_pageSize);
-            }
-            else
-            {
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0] = static_cast<size_t>(m_descriptor.m_memoryBlocksByteSize);
-            }
-
-            if (desc.m_heap.m_fixedMemoryBlocksByteSize[0] > 0) // 0 means one demand memory which we support
-            {
-                m_fixedMemoryBlock = m_osAllocator->Allocate(desc.m_heap.m_fixedMemoryBlocksByteSize[0], m_descriptor.m_memoryBlockAlignment);
-                desc.m_heap.m_fixedMemoryBlocks[0] = m_fixedMemoryBlock;
-                desc.m_heap.m_numFixedMemoryBlocks = 1;
-            }
             desc.m_allocationRecords = m_descriptor.m_allocationRecords;
             desc.m_stackRecordLevels = aznumeric_caster(m_descriptor.m_stackRecordLevels);
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);
