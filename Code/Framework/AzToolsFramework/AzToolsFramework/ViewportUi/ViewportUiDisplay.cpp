@@ -142,11 +142,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
-        viewportUiSwitcher->setObjectName("viewportUiSwitcher");
         auto id = AddViewportUiElement(viewportUiSwitcher);
         buttonGroup->SetViewportUiElementId(id);
         PositionViewportUiElementAnchored(id, GetQtAlignment(alignment));
-        //viewportUiSwitcher->setStyleSheet(viewportUiSwitcher->styleSheet() + QString("margin-top: 50px;"));
     }
 
     void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
@@ -338,8 +336,6 @@ namespace AzToolsFramework::ViewportUi::Internal
                 HighlightBorderSize + ViewportUiOverlayMargin,
                 HighlightBorderSize + ViewportUiOverlayMargin);
 
-
-
         m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
 
@@ -469,7 +465,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         widget->setAttribute(Qt::WA_ShowWithoutActivating);
         widget->setParent(&m_uiOverlay);
-        //widget->setStyleSheet("border: none;");
+        widget->setStyleSheet("border: none;");
     }
 
     void ViewportUiDisplay::SetUiOverlayContents(QPointer<QWidget> widget)

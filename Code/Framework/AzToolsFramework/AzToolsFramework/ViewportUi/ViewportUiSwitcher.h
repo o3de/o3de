@@ -12,7 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
-#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+
 
 #include <QPointer>
 #include <QToolBar>
@@ -23,9 +23,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     class ButtonGroup;
 
     //! Helper class to make switchers (toolbars) for display in Viewport UI.
-    class ViewportUiSwitcher :
-        public QToolBar,
-        private ViewportEditorModeNotificationsBus::Handler
+    class ViewportUiSwitcher : public QToolBar
     {
         Q_OBJECT
 
@@ -48,9 +46,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<ButtonGroup> m_buttonGroup; //!< Data structure which the cluster will be displaying to the Viewport UI.
         AZStd::unordered_map<ButtonId, QPointer<QAction>> m_buttonActionMap; //!< Map for buttons to their corresponding actions.
         ViewportUiWidgetCallbacks m_widgetCallbacks; //!< Registers actions and manages updates.
-        QString m_styleSheet;
-
-        bool m_imGuiActive = false;
-        bool m_test = false;
     };
 } // namespace AzToolsFramework::ViewportUi::Internal
