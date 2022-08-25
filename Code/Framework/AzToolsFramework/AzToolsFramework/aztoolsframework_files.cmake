@@ -37,6 +37,7 @@ set(FILES
     ActionManager/ToolBar/ToolBarManager.h
     ActionManager/ToolBar/ToolBarManagerInterface.h
     ActionManager/ToolBar/ToolBarManagerInternalInterface.h
+    ActionManager/ToolBar/ToolBarManagerNotificationBus.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui

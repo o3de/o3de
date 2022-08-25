@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerNotificationBus.h>
 
 #include <QWidget>
 
@@ -63,6 +64,8 @@ namespace AzToolsFramework
                 EditorToolBar(properties.m_name)
             }
         );
+
+        ToolBarManagerNotificationBus::Broadcast(&ToolBarManagerNotifications::OnToolBarRegistered, toolBarIdentifier, properties);
 
         return AZ::Success();
     }

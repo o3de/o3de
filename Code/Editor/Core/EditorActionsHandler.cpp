@@ -177,6 +177,7 @@ EditorActionsHandler::~EditorActionsHandler()
     {
         AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::ToolBarManagerNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
     }
@@ -1555,6 +1556,8 @@ void EditorActionsHandler::InitializeMenus()
 
 void EditorActionsHandler::InitializeToolBars()
 {
+    AzToolsFramework::ToolBarManagerNotificationBus::Handler::BusConnect();
+
     // Initialize ToolBars
     {
         AzToolsFramework::ToolBarProperties toolBarProperties;
@@ -1568,10 +1571,6 @@ void EditorActionsHandler::InitializeToolBars()
         m_toolBarManagerInterface->RegisterToolBar(PlayControlsToolBarIdentifier, toolBarProperties);
     }
 
-    // Set the toolbars
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(ToolsToolBarIdentifier));
-    m_mainWindow->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar(PlayControlsToolBarIdentifier));
-    
     // Add actions to each toolbar
 
     // Play Controls
@@ -1673,6 +1672,14 @@ void EditorActionsHandler::OnEntityStreamLoadSuccess()
     if (!m_isPrefabSystemEnabled)
     {
         m_actionManagerInterface->TriggerActionUpdater(LevelLoadedUpdaterIdentifier);
+    }
+}
+
+void EditorActionsHandler::OnToolBarRegistered(const AZStd::string& toolBarIdentifier, const AzToolsFramework::ToolBarProperties& properties)
+{
+    if (m_mainWindow)
+    {
+        m_mainWindow->addToolBar(properties.m_area, m_toolBarManagerInterface->GetToolBar(toolBarIdentifier));
     }
 }
 

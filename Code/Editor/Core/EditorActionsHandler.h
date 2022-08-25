@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -34,6 +35,7 @@ namespace AzToolsFramework
 class EditorActionsHandler
     : private AzToolsFramework::EditorEventsBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    , private AzToolsFramework::ToolBarManagerNotificationBus::Handler
     , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
     , private AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
 {
@@ -61,6 +63,9 @@ private:
     void OnStartPlayInEditor() override;
     void OnStopPlayInEditor() override;
     void OnEntityStreamLoadSuccess() override;
+
+    // ToolBarManagerNotificationBus overrides ...
+    void OnToolBarRegistered(const AZStd::string& toolBarIdentifier, const AzToolsFramework::ToolBarProperties& properties) override;
 
     // ToolsApplicationNotificationBus overrides ...
     void AfterEntitySelectionChanged(

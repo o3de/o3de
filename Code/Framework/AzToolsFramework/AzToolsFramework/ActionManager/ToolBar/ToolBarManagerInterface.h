@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <QMainWindow>
+
 class QToolBar;
 
 namespace AzToolsFramework
@@ -28,6 +30,9 @@ namespace AzToolsFramework
         virtual ~ToolBarProperties() = default;
 
         AZStd::string m_name = "";
+
+        // TODO: Might want to create our own enum for this for ease of serialization?
+        Qt::ToolBarArea m_area = Qt::ToolBarArea::TopToolBarArea;
     };
 
     //! ToolBarManagerInterface

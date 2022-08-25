@@ -97,6 +97,15 @@ namespace EditorPythonBindings
                 ;
 
             behaviorContext
+                ->Class<AzToolsFramework::ToolBarProperties>("ToolBarProperties")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Property("name", BehaviorValueProperty(&AzToolsFramework::ToolBarProperties::m_name))
+                ->Property("area", BehaviorValueProperty(&AzToolsFramework::ToolBarProperties::m_area))
+                ;
+
+            behaviorContext
                 ->EBus<ToolBarManagerRequestBus>("ToolBarManagerPythonRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Action")
