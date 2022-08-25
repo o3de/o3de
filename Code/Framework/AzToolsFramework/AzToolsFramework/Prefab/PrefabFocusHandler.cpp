@@ -385,7 +385,7 @@ namespace AzToolsFramework::Prefab
 
         {
             // Climb up the instance hierarchy from this instance until you hit the focused prefab instance.
-            InstanceOptionalConstReference instance = owningInstance;
+            InstanceOptionalReference instance = owningInstance;
             AZStd::vector<InstanceOptionalConstReference> instancePath;
 
             auto climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(&instance->get(), &focusedPrefabInstance->get());

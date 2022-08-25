@@ -155,11 +155,15 @@ namespace GradientSignal
         void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
         uint32_t GetImageHeight() const override;
         uint32_t GetImageWidth() const override;
+        AZ::Vector2 GetImagePixelsPerMeter() const override;
 
         // ImageGradientModificationBus overrides...
         void StartImageModification() override;
         void EndImageModification() override;
-        AZStd::vector<float>* GetImageModificationBuffer() override;
+        void SetValue(const AZ::Vector3& position, float value) override;
+        void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+
+        AZStd::vector<float>* GetImageModificationBuffer();
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
