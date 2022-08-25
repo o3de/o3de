@@ -232,7 +232,7 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
-        size_t cachedHoveredJointIndex;
+        size_t cachedHoveredJointIndex = InvalidIndex;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
 
@@ -256,9 +256,9 @@ namespace AZ::Render
                 debugDisplay,
                 instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::HitDetection),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_hitDetectionColliderColor,
-                  renderActorSettings.m_selectedHitDetectionColliderColor,
-                  renderActorSettings.m_hoveredHitDetectionColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_hitDetectionColliderColor,
+                                                                   renderActorSettings.m_selectedHitDetectionColliderColor,
+                                                                   renderActorSettings.m_hoveredHitDetectionColliderColor });
         }
 
         // Cloth colliders
@@ -268,9 +268,9 @@ namespace AZ::Render
                 debugDisplay,
                 instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Cloth),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_clothColliderColor,
-                  renderActorSettings.m_selectedClothColliderColor,
-                  renderActorSettings.m_hoveredClothColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_clothColliderColor,
+                                                                   renderActorSettings.m_selectedClothColliderColor,
+                                                                   renderActorSettings.m_hoveredClothColliderColor });
         }
 
         // Simulated object colliders
@@ -280,9 +280,9 @@ namespace AZ::Render
                 debugDisplay,
                 instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::SimulatedObjectCollider),
                 nodeDebugDrawDataFunction,
-                { renderActorSettings.m_simulatedObjectColliderColor,
-                  renderActorSettings.m_selectedSimulatedObjectColliderColor,
-                  renderActorSettings.m_hoveredSimulatedObjectColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_simulatedObjectColliderColor,
+                                                                   renderActorSettings.m_selectedSimulatedObjectColliderColor,
+                                                                   renderActorSettings.m_hoveredSimulatedObjectColliderColor });
         }
 
         // Ragdoll
@@ -314,10 +314,10 @@ namespace AZ::Render
                 ragdollColliderConfiguration,
                 nodeDebugDrawDataFunction,
                 parentIndices,
-                { renderActorSettings.m_ragdollColliderColor,
-                  renderActorSettings.m_selectedRagdollColliderColor,
-                  renderActorSettings.m_hoveredRagdollColliderColor,
-                  renderActorSettings.m_violatedRagdollColliderColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_ragdollColliderColor,
+                                                                   renderActorSettings.m_selectedRagdollColliderColor,
+                                                                   renderActorSettings.m_hoveredRagdollColliderColor,
+                                                                   renderActorSettings.m_violatedRagdollColliderColor });
         }
         if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits))
         {
@@ -325,10 +325,10 @@ namespace AZ::Render
                 debugDisplay,
                 instance->GetActor()->GetPhysicsSetup()->GetRagdollConfig(),
                 jointDebugDrawDataFunction,
-                { renderActorSettings.m_ragdollColliderColor,
-                  renderActorSettings.m_selectedRagdollColliderColor,
-                  renderActorSettings.m_hoveredRagdollColliderColor,
-                  renderActorSettings.m_violatedJointLimitColor });
+                Physics::CharacterPhysicsDebugDraw::ColorSettings{ renderActorSettings.m_ragdollColliderColor,
+                                                                   renderActorSettings.m_selectedRagdollColliderColor,
+                                                                   renderActorSettings.m_hoveredRagdollColliderColor,
+                                                                   renderActorSettings.m_violatedJointLimitColor });
         }
     }
 
@@ -472,7 +472,7 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
-        size_t cachedHoveredJointIndex;
+        size_t cachedHoveredJointIndex = InvalidIndex;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
 
@@ -517,7 +517,7 @@ namespace AZ::Render
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedSelectedJointIndices, &EMotionFX::JointSelectionRequests::FindSelectedJointIndices, instance);
 
-        size_t cachedHoveredJointIndex;
+        size_t cachedHoveredJointIndex = InvalidIndex;
         EMotionFX::JointSelectionRequestBus::BroadcastResult(
             cachedHoveredJointIndex, &EMotionFX::JointSelectionRequests::FindHoveredJointIndex, instance);
 
