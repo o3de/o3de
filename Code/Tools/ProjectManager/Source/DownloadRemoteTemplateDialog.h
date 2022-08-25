@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ProjectInfo.h>
+#include <ProjectTemplateInfo.h>
 
 #include <QDialog>
 #endif
@@ -30,36 +30,23 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit DownloadRemoteTemplateDialog(QWidget* parent = nullptr);
+        explicit DownloadRemoteTemplateDialog(const ProjectTemplateInfo& projectTemplate, QWidget* parent = nullptr);
         ~DownloadRemoteTemplateDialog() = default;
 
-        QString GetRepoPath();
         QString GetInstallPath();
-        bool ShouldBuild();
-
-        void SetCurrentProject(const ProjectInfo& projectInfo);
-
-    private:
-        void SetDialogReady(bool isReady);
 
     signals:
         void StartObjectDownload(const QString& objectName);
 
     private slots:
-        void ValidateURI();
         void DownloadObject();
 
     private:
-        ProjectInfo m_currentProject;
-
-        FormLineEditWidget* m_repoPath = nullptr;
         FormLineEditWidget* m_installPath = nullptr;
-
-        QCheckBox* m_autoBuild = nullptr;
 
         QLabel* m_buildToggleLabel = nullptr;
 
-        QLabel* m_downloadProjectLabel = nullptr;
+        QLabel* m_downloadTemplateLabel = nullptr;
 
         QLabel* m_requirementsTitleLabel = nullptr;
         QLabel* m_licensesTitleLabel = nullptr;
@@ -69,7 +56,5 @@ namespace O3DE::ProjectManager
 
         QDialogButtonBox* m_dialogButtons = nullptr;
         QPushButton* m_applyButton = nullptr;
-
-        QTimer* m_inputTimer = nullptr;
     };
 } // namespace O3DE::ProjectManager

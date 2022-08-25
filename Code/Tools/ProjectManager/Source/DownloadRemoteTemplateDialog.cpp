@@ -25,13 +25,13 @@
 
 namespace O3DE::ProjectManager
 {
-    DownloadRemoteTemplateDialog::DownloadRemoteTemplateDialog(QWidget* parent)
+    DownloadRemoteTemplateDialog::DownloadRemoteTemplateDialog(const ProjectTemplateInfo& projectTemplate, QWidget* parent)
         : QDialog(parent)
     {
-        setWindowTitle(tr("Download a remote teamplte"));
+        setWindowTitle(tr("Download a remote template"));
         setModal(true);
         setObjectName("downloadRemoteTempalteDialog");
-        setFixedSize(QSize(760, 600));
+        setFixedSize(QSize(760, 390));
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(30, 30, 25, 10);
@@ -39,62 +39,30 @@ namespace O3DE::ProjectManager
         vLayout->setAlignment(Qt::AlignTop);
         setLayout(vLayout);
 
-        QLabel* instructionTitleLabel = new QLabel(tr("Please enter a remote URL for your project"), this);
-        instructionTitleLabel->setObjectName("remoteProjectDialogInstructionTitleLabel");
-        instructionTitleLabel->setAlignment(Qt::AlignLeft);
-        vLayout->addWidget(instructionTitleLabel);
-
-        vLayout->addSpacing(10);
-
-        m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
-        m_repoPath->setMinimumSize(QSize(600, 0));
-        vLayout->addWidget(m_repoPath);
-
-        vLayout->addSpacing(10);
-
-        QLabel* warningLabel = new QLabel(tr("Online repositories may contain files that could potentially harm your computer,"
-            " please ensure you understand the risks before downloading from third-party sources."), this);
-        warningLabel->setObjectName("remoteProjectDialogWarningLabel");
-        warningLabel->setWordWrap(true);
+        QLabel* warningLabel = new QLabel(tr("\"%1\" needs to be downloaded from the repository first, before using it as your template.").arg(projectTemplate.m_displayName), this);
+        warningLabel->setObjectName("remoteTemplateDialogDownloadTemplateLabel");
         warningLabel->setAlignment(Qt::AlignLeft);
         vLayout->addWidget(warningLabel);
 
-        vLayout->addSpacing(10);
+        vLayout->addSpacing(20);
 
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
         hLine->setObjectName("horizontalSeparatingLine");
         vLayout->addWidget(hLine);
 
-        vLayout->addSpacing(10);
+        vLayout->addSpacing(20);
 
-        m_downloadProjectLabel = new QLabel(tr("Download Project..."), this);
-        m_downloadProjectLabel->setObjectName("remoteProjectDialogDownloadProjectLabel");
-        m_downloadProjectLabel->setAlignment(Qt::AlignLeft);
-        vLayout->addWidget(m_downloadProjectLabel);
+        m_downloadTemplateLabel = new QLabel(tr("Choose the location for the template"), this);
+        m_downloadTemplateLabel->setObjectName("remoteTemplateDialogDownloadTemplateLabel");
+        m_downloadTemplateLabel->setAlignment(Qt::AlignLeft);
+        vLayout->addWidget(m_downloadTemplateLabel);
 
-        m_installPath = new FormFolderBrowseEditWidget(tr("Local project directory"));
+        m_installPath = new FormFolderBrowseEditWidget(tr("Local template directory"));
         m_installPath->setMinimumSize(QSize(600, 0));
+        m_installPath->lineEdit()->setText(
+            QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectTemplate.m_name));
         vLayout->addWidget(m_installPath);
-
-        vLayout->addSpacing(10);
-
-        QHBoxLayout* buildHLayout = new QHBoxLayout(this);
-        buildHLayout->setContentsMargins(0, 0, 0, 0);
-        buildHLayout->setAlignment(Qt::AlignLeft);
-
-        m_autoBuild = new QCheckBox(this);
-        m_autoBuild->setChecked(true);
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_autoBuild);
-        buildHLayout->addWidget(m_autoBuild);
-
-        buildHLayout->addSpacing(10);
-
-        m_buildToggleLabel = new QLabel(tr("Automatically build project"), this);
-        m_buildToggleLabel->setAlignment(Qt::AlignLeft);
-        buildHLayout->addWidget(m_buildToggleLabel);
-
-        vLayout->addLayout(buildHLayout);
 
         vLayout->addSpacing(20);
 
@@ -105,28 +73,28 @@ namespace O3DE::ProjectManager
         extraInfoGridLayout->setAlignment(Qt::AlignLeft);
         
 
-        m_requirementsTitleLabel = new QLabel(tr("Requirements"), this);
-        m_requirementsTitleLabel->setObjectName("remoteProjectDialogRequirementsTitleLabel");
+        m_requirementsTitleLabel = new QLabel(tr("Template Requirements"), this);
+        m_requirementsTitleLabel->setObjectName("remoteTemplateDialogRequirementsTitleLabel");
         m_requirementsTitleLabel->setAlignment(Qt::AlignLeft);
 
         extraInfoGridLayout->addWidget(m_requirementsTitleLabel, 0, 0);
 
         m_licensesTitleLabel = new QLabel(tr("Licenses"), this);
-        m_licensesTitleLabel->setObjectName("remoteProjectDialogLicensesTitleLabel");
+        m_licensesTitleLabel->setObjectName("remoteTemplateDialogLicensesTitleLabel");
         m_licensesTitleLabel->setAlignment(Qt::AlignLeft);
         extraInfoGridLayout->addWidget(m_licensesTitleLabel, 0, 1);
 
         extraInfoGridLayout->setVerticalSpacing(15);
 
-        m_requirementsContentLabel = new TextOverflowLabel(tr("Requirements"));
-        m_requirementsContentLabel->setObjectName("remoteProjectDialogRequirementsContentLabel");
+        m_requirementsContentLabel = new TextOverflowLabel(tr("Requirements"), projectTemplate.m_requirements);
+        m_requirementsContentLabel->setObjectName("remoteTemplateDialogRequirementsContentLabel");
         m_requirementsContentLabel->setWordWrap(true);
         m_requirementsContentLabel->setAlignment(Qt::AlignLeft);
         m_requirementsContentLabel->setFixedWidth(350);
         extraInfoGridLayout->addWidget(m_requirementsContentLabel, 1, 0);
 
-        m_licensesContentLabel = new TextOverflowLabel(tr("Licenses"));
-        m_licensesContentLabel->setObjectName("remoteProjectDialogLicensesContentLabel");
+        m_licensesContentLabel = new TextOverflowLabel(tr("Licenses"), projectTemplate.m_license);
+        m_licensesContentLabel->setObjectName("remoteTemplateDialogLicensesContentLabel");
         m_licensesContentLabel->setWordWrap(true);
         m_licensesContentLabel->setAlignment(Qt::AlignLeft);
         m_licensesContentLabel->setFixedWidth(350);
@@ -142,71 +110,17 @@ namespace O3DE::ProjectManager
 
         QPushButton* cancelButton = m_dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
-        m_applyButton = m_dialogButtons->addButton(tr("Download && Build"), QDialogButtonBox::ApplyRole);
+        m_applyButton = m_dialogButtons->addButton(tr("Download"), QDialogButtonBox::ApplyRole);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
-        connect(m_applyButton, &QPushButton::clicked, this, &DownloadRemoteTemplateDialog::DownloadObject);
-
-        m_inputTimer = new QTimer(this);
-        m_inputTimer->setSingleShot(true);
-        connect(m_inputTimer, &QTimer::timeout, this, &DownloadRemoteTemplateDialog::ValidateURI);
-
-        connect(
-            m_autoBuild, &QCheckBox::clicked, [this](bool checked)
-            {
-                if (checked)
-                {
-                    m_applyButton->setText(tr("Download && Build"));
-                }
-                else
-                {
-                    m_applyButton->setText(tr("Download"));
-                }
-            }
-        );
-
-        connect(
-            m_repoPath->lineEdit(), &QLineEdit::textEdited,
-            [this]([[maybe_unused]] const QString& text)
-            {
-                // wait for a second before attempting to validate so we're less likely to do it per keypress
-                m_inputTimer->start(1000);
-                
-            });
-
-        SetDialogReady(false);
+        connect(m_applyButton, &QPushButton::clicked, this, &QDialog::accept);
     }
 
-    void DownloadRemoteTemplateDialog::ValidateURI()
-    {
-        // validate URI, if it's a valid repository, get the project info and set the dialog as ready
-        bool validRepository = PythonBindingsInterface::Get()->ValidateRepository(m_repoPath->lineEdit()->text());
-        bool containsProjects = false;
-
-        if (validRepository)
-        {
-            auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
-            if (repoProjectsResult.IsSuccess())
-            {
-                const auto repoProjects = repoProjectsResult.GetValue();
-                if (!repoProjects.isEmpty())
-                {
-                    // only get the first one for now
-                    const ProjectInfo& project = repoProjects.at(0);
-                    SetCurrentProject(project);
-
-                    containsProjects = true;
-                }
-            }
-        }
-
-        SetDialogReady(validRepository && containsProjects);
-    }
 
     void DownloadRemoteTemplateDialog::DownloadObject()
     {
         // Add Repo:
-        const QString repoUri = m_repoPath->lineEdit()->text();
+        /* const QString repoUri = m_repoPath->lineEdit()->text();
         auto addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
         if (addGemRepoResult.IsSuccess())
         {
@@ -219,49 +133,11 @@ namespace O3DE::ProjectManager
             QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
             ProjectUtils::DisplayDetailedError(failureMessage, addGemRepoResult, this);
             AZ_Error("Project Manager", false, failureMessage.toUtf8().constData());
-        }
+        }*/
     }
 
-    QString DownloadRemoteTemplateDialog::GetRepoPath()
-    {
-        return m_repoPath->lineEdit()->text();
-    }
     QString DownloadRemoteTemplateDialog::GetInstallPath()
     {
         return m_installPath->lineEdit()->text();
-    }
-    bool DownloadRemoteTemplateDialog::ShouldBuild()
-    {
-        return m_autoBuild->isChecked();
-    }
-
-    void DownloadRemoteTemplateDialog::SetCurrentProject(const ProjectInfo& projectInfo)
-    {
-        m_currentProject = projectInfo;
-
-        m_downloadProjectLabel->setText(tr("Download Project %1").arg(projectInfo.m_displayName));
-        m_installPath->lineEdit()->setText(QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectInfo.m_projectName));
-        m_requirementsContentLabel->setText(projectInfo.m_requirements);
-        m_licensesContentLabel->setText(projectInfo.m_license);
-    }
-
-    void DownloadRemoteTemplateDialog::SetDialogReady(bool isReady)
-    {
-        // Reset
-        if (!isReady)
-        {
-            m_downloadProjectLabel->setText(tr("Download Project..."));
-            m_installPath->setText("");
-        }
-
-        m_downloadProjectLabel->setEnabled(isReady);
-        m_installPath->setEnabled(isReady);
-        m_autoBuild->setEnabled(isReady);
-        m_buildToggleLabel->setEnabled(isReady);
-        m_requirementsTitleLabel->setEnabled(isReady);
-        m_licensesTitleLabel->setEnabled(isReady);
-        m_requirementsContentLabel->setEnabled(isReady);
-        m_licensesContentLabel->setEnabled(isReady);
-        m_applyButton->setEnabled(isReady);
     }
 } // namespace O3DE::ProjectManager
