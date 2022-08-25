@@ -226,12 +226,12 @@ def GetCrashArtifactDir() {
 }
 
 def GetRemoteConfig(remoteConfigs, repositoryName, repositoryUrl) {
-    def extrasRemoteConfigs = [
+    def theRemoteConfig = [
         name: repositoryName,
         url: repositoryUrl,
         credentialsId: remoteConfigs.credentialsId[0]
     ]
-    return extrasRemoteConfigs
+    return theRemoteConfig
 }
 
 def UnInstallGitLFS() {
@@ -389,12 +389,9 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             if(repositoryName == "${ENGINE_ORG_REPO}") {
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
-            } else if (repositoryName == "${EXTRAS_ORG_REPO}") {
-                //this pr is for the extras repo so we want to use the development branch for the engine and do not set the commit id or change date
-                the_branch = ENGINE_DEVELOPMENT_BRANCH
             } else {
-                //wtf
-                assert false : "repositoryName: ${repositoryName} Unknown"
+                //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
+                the_branch = ENGINE_DEVELOPMENT_BRANCH
             }
 
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
@@ -417,7 +414,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
             InstallAndPullGitLFS()
         }
-        //get the external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the extras repo
+        //get the external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         ${pipelineConfig.EXTERNAL_REPOS.each { -> repo
             dir(repo.REPOSITORY_NAME) {
                 def THIS_ORG_REPO = repo.ORGANIZATION_NAME + '/' + repo.REPOSITORY_NAME
@@ -436,7 +433,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
                 UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
-                //checkout the extras branch
+                //checkout the branch
                 CheckoutRepo(the_branch, GetRemoteConfig(scm.userRemoteConfigs, repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
 
                 InstallAndPullGitLFS()
@@ -496,14 +493,14 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                     }
                     else {
                         //register all the objects in this repo
-                        PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Engines")
-                        PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Projects")
-                        PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems")
-                        PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Templates")
-                        PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${EXTRAS_REPOSITORY_NAME}/Restricted")
+                        PlatformSh("scripts/o3de${ext} register --all-engines-path ${workspace}/${repo.REPOSITORY_NAME}/Engines || ver>nul", "Registering all engines in ${workspace}/${repo.REPOSITORY_NAME}/Engines")
+                        PlatformSh("scripts/o3de${ext} register --all-projects-path ${workspace}/${repo.REPOSITORY_NAME}/Projects || ver>nul", "Registering all projects in ${workspace}/${repo.REPOSITORY_NAME}/Projects")
+                        PlatformSh("scripts/o3de${ext} register --all-gems-path ${workspace}/${repo.REPOSITORY_NAME}/Gems || ver>nul", "Registering all gems in ${workspace}/${repo.REPOSITORY_NAME}/Gems")
+                        PlatformSh("scripts/o3de${ext} register --all-templates-path ${workspace}/${repo.REPOSITORY_NAME}/Templates || ver>nul", "Registering all templates in ${workspace}/${repo.REPOSITORY_NAME}/Templates")
+                        PlatformSh("scripts/o3de${ext} register --all-restricted-path ${workspace}/${repo.REPOSITORY_NAME}/Restricted || ver>nul", "Registering all restricted in ${workspace}/${repo.REPOSITORY_NAME}/Restricted")
 
                         //enable all gems in this repo
-                        PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${EXTRAS_REPOSITORY_NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
+                        PlatformSh("scripts/o3de${ext} enable-gem --all-gem-paths ${workspace}/${repo.REPOSITORY_NAME}/Gems --project-name AutomatedTesting || ver>nul", "Enabling all gems in AutomatedTesting")
                     }
 
                     PlatformSh(command, "Running ${platform} ${type}")
