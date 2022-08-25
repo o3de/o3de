@@ -96,7 +96,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
         void ChangeViewportBorderText(const AZStd::string& borderTitle);
         void RemoveViewportBorder();
-        const bool ViewportBorderVisible()
+        bool ViewportBorderVisible() const
         {
             return m_viewportBorderText.isVisible();
         }
