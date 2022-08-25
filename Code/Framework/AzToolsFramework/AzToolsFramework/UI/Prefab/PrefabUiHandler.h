@@ -20,10 +20,9 @@ namespace AzToolsFramework
     {
         class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
-    };
+    }; // namespace Prefab
 
-    class PrefabUiHandler
-        : public EditorEntityUiHandlerBase
+    class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);
@@ -85,5 +84,8 @@ namespace AzToolsFramework
         QString m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
         QString m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
         QString m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
+
+        const QPoint m_expanderOffset = { -18, 3 };
+        const QPoint m_editIconOffset = { -13, 7 };
     };
 } // namespace AzToolsFramework

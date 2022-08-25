@@ -340,7 +340,6 @@ namespace AzToolsFramework
     void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
-        const QPoint offset = QPoint(-18, 3);
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         const int iconSize = 16;
         const int editIconSize = 10;
@@ -360,7 +359,7 @@ namespace AzToolsFramework
         {
             if (isFirstColumn && (option.state & QStyle::State_Enabled))
             {
-                // Only show the close icon if the prefab is expanded.
+                // Only show the close icon if the prefab is expanded or empty.
                 // This allows the prefab container to be opened if it was collapsed during propagation.
                 if (isExpanded || noChild)
                 {
@@ -377,12 +376,12 @@ namespace AzToolsFramework
 
                     // Paint a rect to cover up the expander.
                     QRect rect = QRect(0, 0, 16, 16);
-                    rect.translate(option.rect.topLeft() + offset);
+                    rect.translate(option.rect.topLeft() + m_expanderOffset);
                     painter->fillRect(rect, editIconBackgroundColor);
 
                     // Paint the icon.
                     QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                    painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+                    painter->drawPixmap(option.rect.topLeft() + m_expanderOffset, closeIcon.pixmap(iconSize));
                 }
             }
         }
@@ -392,7 +391,7 @@ namespace AzToolsFramework
             if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topRight() + QPoint(-13, 7), openIcon.pixmap(editIconSize));
+                painter->drawPixmap(option.rect.topRight() + m_editIconOffset, openIcon.pixmap(editIconSize));
             }
         }
 
@@ -444,13 +443,12 @@ namespace AzToolsFramework
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
-        const QPoint expenderOffset = QPoint(-18, 3);
-        QRect expenderRect = QRect(0, 0, 16, 16);
-        expenderRect.translate(option.rect.topLeft() + expenderOffset);
+        QRect expanderRect = QRect(0, 0, 16, 16);
+        expanderRect.translate(option.rect.topLeft() + m_expanderOffset);
 
         const QPoint textOffset = QPoint(0, 3);
         QRect filenameRect = QRect(0, 0, 12, 10);
-        filenameRect.translate(option.rect.topRight() + QPoint(-13, 7) + textOffset);
+        filenameRect.translate(option.rect.topRight() + m_editIconOffset + textOffset);
         if (filenameRect.contains(position))
         {
             if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
@@ -462,7 +460,7 @@ namespace AzToolsFramework
             // Don't propagate event.
             return true;
         }
-        else if (expenderRect.contains(position))
+        else if (expanderRect.contains(position))
         {
             if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
             {
