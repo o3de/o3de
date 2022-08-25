@@ -348,6 +348,7 @@ namespace AzToolsFramework
         const bool isExpanded =
             firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
+        const bool noChild = !index.model()->hasChildren(index);
 
         bool isContainerOpen = m_containerEntityInterface->IsContainerOpen(entityId);
 
@@ -360,7 +361,7 @@ namespace AzToolsFramework
             {
                 // Only show the close icon if the prefab is expanded.
                 // This allows the prefab container to be opened if it was collapsed during propagation.
-                if (isExpanded)
+                if (isExpanded || noChild)
                 {
                     // Use the same color as the background.
                     QColor editIconBackgroundColor = m_backgroundColor;
