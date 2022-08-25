@@ -92,12 +92,10 @@ namespace AZ
 
         virtual void SetElapsedTimeMs([[maybe_unused]] TimeMs timeMs) override
         {
-            return;
         }
 
         virtual void SetElapsedTimeUs([[maybe_unused]] TimeUs timeUs) override
         {
-            return;
         }
 
         virtual void SetSimulationTickDeltaOverride([[maybe_unused]]TimeMs timeMs) override
