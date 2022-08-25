@@ -45,6 +45,7 @@ namespace AzToolsFramework
         void SetSharePrior(bool sharePrior);
         bool ShouldSharePrior();
         int SharedWidgetCount();
+        void WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment);
 
 
         // QLayout overrides
@@ -72,7 +73,11 @@ namespace AzToolsFramework
         //! Vector containing pairs of widgets and integers, where each pair in the vector represents a unique shared column layout.
         //! Each widget in a pair will be the first widget in the shared column,
         //! while the integer in a pair represents the number of widgets in the shared column. 
-        AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn; 
+        AZStd::vector<AZStd::pair<QWidget*, int>> m_sharePriorColumn;
+
+        //! Map containing all widgets that have special alignment.
+        //! Each widget will be aligned according to its value, where 0 = LEFT align, 1 = CENTER align, and 2 = RIGHT align.
+        AZStd::unordered_map<QWidget*, Qt::Alignment> m_widgetAlignment;
 
     private:
         // These cached sizes must be mutable since they are set inside of an overidden const function
