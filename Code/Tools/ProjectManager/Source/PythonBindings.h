@@ -87,7 +87,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<TemplateInfo>> GetGemTemplates() override;
 
         void AddErrorString(AZStd::string errorString) override;
-        void ClearErrorStrings() override;
 
     protected:
         static void OnStdOut(const char* msg); 
@@ -96,8 +95,8 @@ namespace O3DE::ProjectManager
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
-        AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
-        bool ExecuteWithLock(AZStd::function<void()> executionCallback);
+        AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback) const;
+        bool ExecuteWithLock(AZStd::function<void()> executionCallback) const;
         EngineInfo EngineInfoFromPath(pybind11::handle enginePath);
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
@@ -111,7 +110,7 @@ namespace O3DE::ProjectManager
         bool m_pythonStarted = false;
 
         AZ::IO::FixedMaxPath m_enginePath;
-        AZStd::recursive_mutex m_lock;
+        mutable AZStd::recursive_mutex m_lock;
 
         pybind11::handle m_engineTemplate;
         pybind11::handle m_engineProperties;
@@ -126,6 +125,6 @@ namespace O3DE::ProjectManager
         pybind11::handle m_pathlib;
 
         bool m_requestCancelDownload = false;
-        AZStd::vector<AZStd::string> m_pythonErrorStrings;
+        mutable AZStd::vector<AZStd::string> m_pythonErrorStrings;
     };
 } // namespace O3DE::ProjectManager

@@ -349,7 +349,7 @@ namespace O3DE::ProjectManager
         return Py_IsInitialized() == 0;
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
+    AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback) const
     {
         if (!Py_IsInitialized())
         {
@@ -360,7 +360,7 @@ namespace O3DE::ProjectManager
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
 
-        ClearErrorStrings();
+        m_pythonErrorStrings.clear();
 
         try
         {
@@ -375,7 +375,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
+    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback) const
     {
         return ExecuteWithLockErrorHandling(executionCallback).IsSuccess();
     }
@@ -1671,10 +1671,5 @@ namespace O3DE::ProjectManager
     void PythonBindings::AddErrorString(AZStd::string errorString)
     {
         m_pythonErrorStrings.push_back(errorString);
-    }
-
-    void PythonBindings::ClearErrorStrings()
-    {
-        m_pythonErrorStrings.clear();
     }
 } // namespace O3DE::ProjectManager

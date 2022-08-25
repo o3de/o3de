@@ -344,11 +344,6 @@ namespace O3DE::ProjectManager
          * @param The error string to be displayed.
          */
         virtual void AddErrorString(AZStd::string errorString) = 0;
-
-        /**
-         * Clears the current list of error strings.
-         */
-        virtual void ClearErrorStrings() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;
