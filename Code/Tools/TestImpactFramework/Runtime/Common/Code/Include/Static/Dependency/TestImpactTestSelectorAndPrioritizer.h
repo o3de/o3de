@@ -375,22 +375,26 @@ namespace TestImpact
             const BuildTargetList<ProductionTarget, TestTarget>* buildTargetList = m_dynamicDependencyMap->GetBuildTargetList();
             const BuildGraph<ProductionTarget, TestTarget>& buildGraph = buildTargetList->GetBuildGraph();
 
-            AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<size_t>>> testTargetDistancePairs;
+            AZStd::vector<AZStd::pair<const TestTarget*, AZStd::optional<AZStd::size_t>>> testTargetDistancePairs;
             testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
 
             // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the
             // production targets in productionTargets
             for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
             {
-                AZStd::vector<AZStd::pair<BuildTarget<ProductionTarget, TestTarget>, size_t>> targetDistancePairs;
+                AZStd::optional<AZStd::size_t> minimum;
                 buildGraph.WalkBuildDependencies(
                     buildTargetList->GetBuildTargetOrThrow(testTarget->GetName()),
-                    [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, size_t distance)
+                    [&](const BuildGraphVertex<ProductionTarget, TestTarget>& vertex, AZStd::size_t distance)
                     {
                         if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
                             productionTarget && productionTargets.contains(productionTarget))
                         {
-                            targetDistancePairs.emplace_back(vertex.m_buildTarget, distance);
+                            AZ_Printf("", "raaa");
+                            if (!minimum.has_value() || distance < minimum)
+                            {
+                                minimum = distance;
+                            };
                         }
                         return BuildGraphVertexVisitResult::Continue;
                     });
@@ -398,16 +402,9 @@ namespace TestImpact
                 // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map
                 // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance
                 // and the test targets priority will be lower
-                if (!targetDistancePairs.empty())
+                if (minimum.has_value())
                 {
-                    AZStd::sort(
-                        targetDistancePairs.begin(),
-                        targetDistancePairs.end(),
-                        [](const auto& left, const auto& right)
-                        {
-                            return left.second < right.second;
-                        });
-                    testTargetDistancePairs.emplace_back(testTarget, targetDistancePairs.front().second);
+                    testTargetDistancePairs.emplace_back(testTarget, minimum);
                 }
                 else
                 {
