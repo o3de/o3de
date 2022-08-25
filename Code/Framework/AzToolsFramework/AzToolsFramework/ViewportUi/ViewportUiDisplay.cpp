@@ -331,8 +331,6 @@ namespace AzToolsFramework::ViewportUi::Internal
                 HighlightBorderSize + ViewportUiOverlayMargin,
                 HighlightBorderSize + ViewportUiOverlayMargin);
 
-
-
         m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
 

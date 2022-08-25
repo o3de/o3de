@@ -22,14 +22,16 @@ namespace AzToolsFramework::ViewportUi::Internal
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : m_buttonGroup(buttonGroup)
     {
-        AzFramework::ViewportBorderNotificationBus::Handler::BusConnect();
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId()); 
 
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
         setStyleSheet("border: none;");
-        m_styleSheet = styleSheet();
+        setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
+                              "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
+                              "border-width: 2px; padding: 7px; color: white;}"));
 
+        // Add am empty active button (is set in the call to SetActiveMode)s
         m_activeButton = new QToolButton();
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -50,7 +52,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     ViewportUiSwitcher::~ViewportUiSwitcher()
     {
         ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
-        AzFramework::ViewportBorderNotificationBus::Handler::BusDisconnect();
         delete m_activeButton;
     }
 
