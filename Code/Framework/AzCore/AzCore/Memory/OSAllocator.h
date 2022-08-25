@@ -33,19 +33,15 @@ namespace AZ
         OSAllocator(OSAllocator&&) = delete;
         OSAllocator& operator=(const OSAllocator&) = delete;
         OSAllocator& operator=(OSAllocator&&) = delete;
-        ~OSAllocator() override;
 
         /**
          * You can override the default allocation policy.
          */
         struct Descriptor
         {
-            Descriptor()
-                : m_custom(0) {}
-            IAllocatorSchema*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HeapScheme will be used with the provided Descriptor.
         };
 
-        bool Create(const Descriptor& desc);
+        bool Create(const Descriptor&);
 
         void Destroy() override;
 
@@ -60,11 +56,10 @@ namespace AZ
         pointer         reallocate(pointer ptr, size_type newSize, align_type newAlignment) override;
         size_type       get_allocated_size(pointer ptr, align_type alignment = 1) const override;
 
-        size_type       NumAllocatedBytes() const override       { return m_custom ? m_custom->NumAllocatedBytes() : m_numAllocatedBytes; }
+        size_type       NumAllocatedBytes() const override       { return m_numAllocatedBytes; }
 
     protected:
-        IAllocatorSchema*     m_custom;
-        size_type               m_numAllocatedBytes;
+        size_type m_numAllocatedBytes = 0;
     };
 
     typedef AZStdAlloc<OSAllocator> OSStdAllocator;

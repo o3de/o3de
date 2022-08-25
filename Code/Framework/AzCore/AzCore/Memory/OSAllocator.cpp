@@ -16,16 +16,6 @@ namespace AZ
     //=========================================================================
     OSAllocator::OSAllocator()
         : AllocatorBase(this)
-        , m_custom(nullptr)
-        , m_numAllocatedBytes(0)
-    {
-    }
-
-    //=========================================================================
-    // ~OSAllocator
-    // [9/2/2009]
-    //=========================================================================
-    OSAllocator::~OSAllocator()
     {
     }
 
@@ -33,9 +23,8 @@ namespace AZ
     // Create
     // [9/2/2009]
     //=========================================================================
-    bool OSAllocator::Create(const Descriptor& desc)
+    bool OSAllocator::Create(const Descriptor&)
     {
-        m_custom = desc.m_custom;
         m_numAllocatedBytes = 0;
         return true;
     }
@@ -61,18 +50,9 @@ namespace AZ
     // Allocate
     // [9/2/2009]
     //=========================================================================
-    OSAllocator::pointer
-    OSAllocator::allocate(size_type byteSize, size_type alignment)
+    OSAllocator::pointer OSAllocator::allocate(size_type byteSize, size_type alignment)
     {
-        OSAllocator::pointer address;
-        if (m_custom)
-        {
-            address = m_custom->allocate(byteSize, alignment);
-        }
-        else
-        {
-            address = AZ_OS_MALLOC(byteSize, alignment);
-        }
+        pointer address = AZ_OS_MALLOC(byteSize, alignment);
 
         if (address == nullptr && byteSize > 0)
         {
@@ -90,32 +70,31 @@ namespace AZ
     // DeAllocate
     // [9/2/2009]
     //=========================================================================
-    void OSAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
+    void OSAllocator::deallocate(pointer ptr, size_type byteSize, [[maybe_unused]] size_type alignment)
     {
-        (void)alignment;
-        if (m_custom)
-        {
-            m_custom->deallocate(ptr);
-        }
-        else
-        {
-            AZ_OS_FREE(ptr);
-        }
+        AZ_OS_FREE(ptr);
 
         m_numAllocatedBytes -= byteSize;
     }
 
     OSAllocator::pointer OSAllocator::reallocate(pointer ptr, size_type newSize, align_type alignment)
     {
+        if (ptr)
+        {
+            m_numAllocatedBytes -= get_allocated_size(ptr, alignment);
+        }
+
         // Realloc in most platforms doesnt support allocating from a nulltpr
-        const pointer newPtr = m_custom ? m_custom->reallocate(ptr, newSize, alignment)
-            : ptr                       ? AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment))
-                                        : AZ_OS_MALLOC(newSize, static_cast<AZStd::size_t>(alignment));
+        pointer newPtr = ptr ? AZ_OS_REALLOC(ptr, newSize, static_cast<AZStd::size_t>(alignment))
+                             : AZ_OS_MALLOC(newSize, static_cast<AZStd::size_t>(alignment));
+
+        m_numAllocatedBytes += get_allocated_size(newPtr, alignment);
+
         return newPtr;
     }
 
     OSAllocator::size_type OSAllocator::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        return m_custom ? m_custom->get_allocated_size(ptr, alignment) : ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
+        return ptr ? AZ_OS_MSIZE(ptr, alignment) : 0;
     }
-}
+} // namespace AZ
