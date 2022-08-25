@@ -8,22 +8,14 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QBitmap>
-#include <QTimer>
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
         : m_buttonGroup(buttonGroup)
     {
-        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId()); 
-
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
         setStyleSheet("border: none;");
@@ -31,7 +23,7 @@ namespace AzToolsFramework::ViewportUi::Internal
                               "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
                               "border-width: 2px; padding: 7px; color: white;}"));
 
-        // Add am empty active button (is set in the call to SetActiveMode)s
+        // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -51,7 +43,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     ViewportUiSwitcher::~ViewportUiSwitcher()
     {
-        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         delete m_activeButton;
     }
 
@@ -137,7 +128,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // Check if it is the first active mode to be set
         bool initialActiveMode = (m_activeButtonId == ButtonId(0));
-
+        
         // Change the tool button's name and icon to that button
         const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
         auto found = [buttonId](Button* button)
@@ -184,5 +175,3 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
-#pragma optimize("", on)
-#pragma inline_depth()
