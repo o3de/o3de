@@ -127,7 +127,7 @@ namespace O3DE::ProjectManager
 
     void TemplateButton::SetProgressPercentage(float percentage)
     {
-        m_progessBar->setValue(percentage);
+        m_progessBar->setValue(static_cast<int>(percentage));
         m_progressMessageLabel->setText(QString("%1%").arg(static_cast<int>(percentage)));
     }
 
