@@ -249,7 +249,7 @@ void ImGuiManager::Render()
     {
         if (!m_deactivationBroadcasted)
         {
-            AzFramework::ViewportBorderNotificationBus::Broadcast(&AzFramework::ViewportBorderNotificationBus::Events::ImGuiActive, false);
+            AzFramework::ViewportImGuiNotificationsBus::Broadcast(&AzFramework::ViewportImGuiNotificationsBus::Events::ImGuiActive, false);
             m_deactivationBroadcasted = true;
             m_activationBroadcasted = false;
         } 
@@ -393,7 +393,7 @@ void ImGuiManager::Render()
 
     if (!m_activationBroadcasted)
     {
-        AzFramework::ViewportBorderNotificationBus::Broadcast(&AzFramework::ViewportBorderNotificationBus::Events::ImGuiActive, true);
+        AzFramework::ViewportImGuiNotificationsBus::Broadcast(&AzFramework::ViewportImGuiNotificationsBus::Events::ImGuiActive, true);
         m_activationBroadcasted = true;
         m_deactivationBroadcasted = false;
     }
