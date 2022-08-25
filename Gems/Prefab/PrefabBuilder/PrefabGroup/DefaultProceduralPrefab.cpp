@@ -29,7 +29,7 @@
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates, "{B84CBFB5-4630-4484-AE69-A4155A8B0D9B}");
+    AZ_TYPE_INFO_SPECIALIZE(AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates, "{B84CBFB5-4630-4484-AE69-A4155A8B0D9B}");
 }
 
 namespace AZ::SceneAPI
@@ -75,11 +75,11 @@ namespace AZ::SceneAPI
             behaviorContext->EBus<PrefabGroupEventBus>("PrefabGroupEventBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(Script::Attributes::Module, "prefab")
-                ->Event("GeneratePrefabGroupManifestUpdates", &PrefabGroupEvents::GeneratePrefabGroupManifestUpdates);
+                ->Event("GeneratePrefabGroupManifestUpdates", &PrefabGroupRequests::GeneratePrefabGroupManifestUpdates);
         }
     }
 
-    AZStd::optional<PrefabGroupEvents::ManifestUpdates> DefaultProceduralPrefabGroup::GeneratePrefabGroupManifestUpdates(
+    AZStd::optional<PrefabGroupRequests::ManifestUpdates> DefaultProceduralPrefabGroup::GeneratePrefabGroupManifestUpdates(
         const Scene& scene) const
     {
         auto nodeDataMap = CalculateNodeDataMap(scene);

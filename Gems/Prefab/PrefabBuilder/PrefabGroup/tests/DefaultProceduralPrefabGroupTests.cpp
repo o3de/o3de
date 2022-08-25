@@ -106,7 +106,7 @@ namespace UnitTest
         AZ::SceneAPI::DefaultProceduralPrefabGroup defaultProceduralPrefabGroup;
 
         auto scene = CreateMockScene();
-        AZStd::optional<AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates> result;
+        AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> result;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
             result,
             &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates,

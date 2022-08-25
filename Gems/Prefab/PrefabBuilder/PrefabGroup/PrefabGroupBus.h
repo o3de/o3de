@@ -35,22 +35,22 @@ namespace AZ::SceneAPI
 
     //! Events that handle Prefab Group logic.
     //! The behavior context will reflect this EBus so that it can be used in Python and C++ code.
-    class PrefabGroupEvents
+    class PrefabGroupRequests
         : public AZ::EBusTraits
     {
     public:
-        AZ_RTTI(PrefabGroupEvents, "{2AF2819A-59DA-4469-863A-E90D0AEF1646}");
+        AZ_RTTI(PrefabGroupRequests, "{2AF2819A-59DA-4469-863A-E90D0AEF1646}");
 
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        PrefabGroupEvents() = default;
-        virtual ~PrefabGroupEvents() = default;
+        PrefabGroupRequests() = default;
+        virtual ~PrefabGroupRequests() = default;
 
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
 
         virtual AZStd::optional<ManifestUpdates> GeneratePrefabGroupManifestUpdates(const Scene& scene) const = 0;
     };
-    using PrefabGroupEventBus = AZ::EBus<PrefabGroupEvents>;
+    using PrefabGroupEventBus = AZ::EBus<PrefabGroupRequests>;
 
     //! Notifications during the default Prefab Group construction so that other scene builders can contribute the entity-component prefab.
     //! The behavior context will reflect this EBus so that it can be used in Python and C++ code.

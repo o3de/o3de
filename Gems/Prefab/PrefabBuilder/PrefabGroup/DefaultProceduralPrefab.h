@@ -102,9 +102,9 @@ namespace AZStd
     };
 
     template<>
-    struct hash<AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates>
+    struct hash<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates>
     {
-        inline size_t operator()(const AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates& updates) const
+        inline size_t operator()(const AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates& updates) const
         {
             size_t hashValue{ 0 };
             hash_combine(hashValue, updates.size());

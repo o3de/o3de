@@ -141,7 +141,7 @@ namespace AZ::SceneAPI::Behaviors
             return Events::ProcessingResult::Ignored;
         }
 
-        AZStd::optional<AZ::SceneAPI::PrefabGroupEvents::ManifestUpdates> manifestUpdates;
+        AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> manifestUpdates;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
             manifestUpdates,
             &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates,
