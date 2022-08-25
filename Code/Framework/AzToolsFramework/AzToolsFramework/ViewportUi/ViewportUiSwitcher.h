@@ -13,7 +13,6 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
 
-
 #include <QPointer>
 #include <QToolBar>
 #include <QToolButton>
