@@ -164,7 +164,7 @@ namespace AZ
         }
 
         using AllocatorType = PoolAllocation<PoolSchemaImpl>;
-        IAllocatorSchema*                   m_pageAllocator;
+        IAllocator*                   m_pageAllocator;
         AllocatorType m_allocator;
         void* m_staticDataBlock;
         unsigned int m_numStaticPages;
@@ -302,7 +302,7 @@ namespace AZ
         FreePagesType m_freePages;
         AZStd::vector<ThreadPoolData*> m_threads; ///< Array with all separate thread data. Used to traverse end free elements.
 
-        IAllocatorSchema*           m_pageAllocator;
+        IAllocator*           m_pageAllocator;
         void* m_staticDataBlock;
         size_t m_numStaticPages;
         size_t m_pageSize;
@@ -621,11 +621,10 @@ namespace AZ
     // ~Destroy
     // [9/15/2009]
     //=========================================================================
-    bool PoolSchema::Destroy()
+    void PoolSchema::Destroy()
     {
         delete m_impl;
         m_impl = nullptr;
-        return true;
     }
 
     //=========================================================================
@@ -929,11 +928,10 @@ namespace AZ
     // Destroy
     // [9/15/2009]
     //=========================================================================
-    bool ThreadPoolSchema::Destroy()
+    void ThreadPoolSchema::Destroy()
     {
         delete m_impl;
         m_impl = nullptr;
-        return true;
     }
     //=========================================================================
     // Allocate

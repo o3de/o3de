@@ -22,7 +22,7 @@ namespace AZ
     class AllocatorBase : public IAllocator
     {
     protected:
-        AllocatorBase(IAllocatorSchema* allocationSchema);
+        AllocatorBase(IAllocator* allocationSchema);
         ~AllocatorBase();
 
     public:

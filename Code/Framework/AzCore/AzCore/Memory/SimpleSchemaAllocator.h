@@ -66,7 +66,7 @@ namespace AZ
         }
 
         //---------------------------------------------------------------------
-        // IAllocatorSchema
+        // IAllocator
         //---------------------------------------------------------------------
         pointer allocate(size_type byteSize, size_type alignment) override
         {

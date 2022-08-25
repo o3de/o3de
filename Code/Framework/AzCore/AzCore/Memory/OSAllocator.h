@@ -50,7 +50,7 @@ namespace AZ
         AllocatorDebugConfig GetDebugConfig() override;
 
         //////////////////////////////////////////////////////////////////////////
-        // IAllocatorSchema
+        // IAllocator
         pointer    allocate(size_type byteSize, size_type alignment) override;
         void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
         pointer         reallocate(pointer ptr, size_type newSize, align_type newAlignment) override;

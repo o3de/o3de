@@ -14,7 +14,7 @@ namespace AZ
     // structure of another allocator
     template <class ParentAllocator>
     class ChildAllocatorSchema
-        : public IAllocatorSchema
+        : public IAllocator
     {
     public:
         AZ_TYPE_INFO(ChildAllocatorSchema, "{2A28BEF4-278A-4A98-AC7D-5C1D6D190A36}")
@@ -29,7 +29,7 @@ namespace AZ
         ChildAllocatorSchema(const Descriptor&) {}
 
         //---------------------------------------------------------------------
-        // IAllocatorSchema
+        // IAllocator
         //---------------------------------------------------------------------
         pointer allocate(size_type byteSize, size_type alignment) override
         {

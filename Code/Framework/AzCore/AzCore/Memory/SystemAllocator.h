@@ -36,7 +36,7 @@ namespace AZ
          * we will allocate system memory using system calls. You can
          * provide arenas (spaces) with pre-allocated memory, and use the
          * flag to specify which arena you want to allocate from.
-         * You are also allowed to supply IAllocatorSchema, but if you do
+         * You are also allowed to supply IAllocator, but if you do
          * so you will need to take care of all allocations, we will not use
          * the default HphaSchema.
          * \ref HphaSchema::Descriptor
@@ -48,7 +48,7 @@ namespace AZ
                 , m_allocationRecords(true)
                 , m_stackRecordLevels(5)
             {}
-            IAllocatorSchema*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HphaScheme will be used with the provided Descriptor.
+            IAllocator*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HphaScheme will be used with the provided Descriptor.
 
             struct Heap
             {
@@ -70,7 +70,7 @@ namespace AZ
                 int                     m_numFixedMemoryBlocks;                     ///< Number of memory blocks to use.
                 void*                   m_fixedMemoryBlocks[m_maxNumFixedBlocks];   ///< Pointers to provided memory blocks or NULL if you want the system to allocate them for you with the System Allocator.
                 size_t                  m_fixedMemoryBlocksByteSize[m_maxNumFixedBlocks]; ///< Sizes of different memory blocks (MUST be multiple of m_pageSize), if m_memoryBlock is 0 the block will be allocated for you with the System Allocator.
-                IAllocatorSchema*       m_subAllocator;                             ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
+                IAllocator*       m_subAllocator;                             ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
                 size_t                  m_systemChunkSize;                          ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
             }                           m_heap;
             bool                        m_allocationRecords;    ///< True if we want to track memory allocations, otherwise false.
@@ -86,7 +86,7 @@ namespace AZ
         AllocatorDebugConfig GetDebugConfig() override;
 
         //////////////////////////////////////////////////////////////////////////
-        // IAllocatorSchema
+        // IAllocator
 
         pointer         allocate(size_type byteSize, size_type alignment) override;
         void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;

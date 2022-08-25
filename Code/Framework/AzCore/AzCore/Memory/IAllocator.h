@@ -40,21 +40,45 @@ namespace AZ
     class AllocatorManager;
 
     /**
-     * Allocator schema interface
+    * Standardized debug configuration for an allocator.
+    */
+    struct AllocatorDebugConfig
+    {
+        /// Sets the number of entries to omit from the top of the callstack when recording stack traces.
+        AllocatorDebugConfig& StackRecordLevels(int levels) { m_stackRecordLevels = levels; return *this; }
+
+        /// Set to true if this allocator should not have its records recorded and analyzed.
+        AllocatorDebugConfig& ExcludeFromDebugging(bool exclude = true) { m_excludeFromDebugging = exclude; return *this; }
+
+        /// Set to true if this allocator expands allocations with guard sections to detect overruns.
+        AllocatorDebugConfig& UsesMemoryGuards(bool use = true) { m_usesMemoryGuards = use; return *this; }
+
+        /// Set to true if this allocator writes into unallocated memory so it can be detected at runtime.
+        AllocatorDebugConfig& MarksUnallocatedMemory(bool marks = true) { m_marksUnallocatedMemory = marks; return *this; }
+
+        unsigned int m_stackRecordLevels = 0;
+        bool m_excludeFromDebugging = false;
+        bool m_usesMemoryGuards = false;
+        bool m_marksUnallocatedMemory = false;
+    };
+
+    /**
+     * Allocator interface base class
      */
-    class IAllocatorSchema
+    class IAllocator
     {
     public:
-        AZ_RTTI(IAllocatorSchema, "{0A3C59AE-169C-45F6-9423-3B8C89245E2E}");
+        AZ_RTTI(IAllocator, "{0A3C59AE-169C-45F6-9423-3B8C89245E2E}");
 
         AZ_ALLOCATOR_DEFAULT_TRAITS
 
-        IAllocatorSchema() = default;
-        IAllocatorSchema(const IAllocatorSchema&) = delete;
-        IAllocatorSchema(IAllocatorSchema&&) = delete;
-        IAllocatorSchema& operator=(const IAllocatorSchema&) = delete;
-        IAllocatorSchema& operator=(IAllocatorSchema&&) = delete;
-        virtual ~IAllocatorSchema() = default;
+        IAllocator() = default;
+        IAllocator(IAllocator* schema);
+        IAllocator(const IAllocator&) = delete;
+        IAllocator(IAllocator&&) = delete;
+        IAllocator& operator=(const IAllocator&) = delete;
+        IAllocator& operator=(IAllocator&&) = delete;
+        virtual ~IAllocator() = default;
 
         virtual pointer allocate(size_type byteSize, align_type alignment = 1) = 0;
         virtual void deallocate(pointer ptr, size_type byteSize = 0, align_type alignment = 0) = 0;
@@ -75,6 +99,20 @@ namespace AZ
         }
 
         virtual size_type get_allocated_size(pointer ptr, align_type alignment = 1) const = 0;
+
+        // Frees (if possible) unused memory from the allocator. Unused memory is memory that was allocated
+        // from the OS point of view but was not assigned to be used by a pointer.
+        // NOTE: this function should be thread safe, allocations can happen at the same time this function
+        // is called. Allocators can optionally implement it and should do best effort (i.e. they dont need
+        // to completely free all unused memory).
+        virtual void GarbageCollect()
+        {
+        }
+
+        const char* GetName() const
+        {
+            return RTTI_GetTypeName();
+        }
 
         // Kept for backwards-compatibility reasons
         /////////////////////////////////////////////
@@ -122,20 +160,6 @@ namespace AZ
             return get_allocated_size(ptr);
         }
 
-        /**
-         * Call from the system when we want allocators to free unused memory.
-         * IMPORTANT: This function is/should be thread safe. We can call it from any context to free memory.
-         * Freeing the actual memory is optional (if you can), thread safety is a must.
-         */
-        virtual void GarbageCollect()
-        {
-        }
-
-        const char* GetName() const
-        {
-            return RTTI_GetTypeName();
-        }
-
         virtual size_type NumAllocatedBytes() const
         {
             return 0;
@@ -176,44 +200,9 @@ namespace AZ
         {
             return 0;
         }
-    };
-
-    /**
-    * Standardized debug configuration for an allocator.
-    */
-    struct AllocatorDebugConfig
-    {
-        /// Sets the number of entries to omit from the top of the callstack when recording stack traces.
-        AllocatorDebugConfig& StackRecordLevels(int levels) { m_stackRecordLevels = levels; return *this; }
-
-        /// Set to true if this allocator should not have its records recorded and analyzed.
-        AllocatorDebugConfig& ExcludeFromDebugging(bool exclude = true) { m_excludeFromDebugging = exclude; return *this; }
-
-        /// Set to true if this allocator expands allocations with guard sections to detect overruns.
-        AllocatorDebugConfig& UsesMemoryGuards(bool use = true) { m_usesMemoryGuards = use; return *this; }
-
-        /// Set to true if this allocator writes into unallocated memory so it can be detected at runtime.
-        AllocatorDebugConfig& MarksUnallocatedMemory(bool marks = true) { m_marksUnallocatedMemory = marks; return *this; }
-
-        unsigned int m_stackRecordLevels = 0;
-        bool m_excludeFromDebugging = false;
-        bool m_usesMemoryGuards = false;
-        bool m_marksUnallocatedMemory = false;
-    };
-
-    /**
-     * Interface class for all allocators.
-     */
-    class IAllocator : public IAllocatorSchema
-    {
-    public:
-        AZ_RTTI(IAllocator, "{8CE19DC6-0038-4C6D-9603-2B0BBAE37278}", IAllocatorSchema);
-
-        IAllocator(IAllocatorSchema* schema = nullptr);
-        virtual ~IAllocator();
 
         /// Returns the schema
-        AZ_FORCE_INLINE IAllocatorSchema* GetSchema() const { return m_schema; };
+        AZ_FORCE_INLINE IAllocator* GetSchema() const { return m_schema; };
 
         /// Returns the debug configuration for this allocator.
         virtual AllocatorDebugConfig GetDebugConfig() { return {}; }
@@ -254,7 +243,7 @@ namespace AZ
         virtual void Destroy() {}
 
     protected:
-        IAllocatorSchema* m_schema;
+        IAllocator* m_schema{};
 
         template<class Allocator>
         friend class AllocatorStorage::StoragePolicyBase;
@@ -264,5 +253,5 @@ namespace AZ
         template<class Allocator>
         friend class AllocatorWrapper;
     };
-}
 
+} // namespace AZ

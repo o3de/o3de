@@ -138,7 +138,7 @@ namespace
 
 namespace AZ
 {
-    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema)
+    AllocatorBase::AllocatorBase(IAllocator* allocationSchema)
         : IAllocator(allocationSchema)
     {
     }

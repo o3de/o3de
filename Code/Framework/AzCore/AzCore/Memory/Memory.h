@@ -137,9 +137,9 @@
  */
 #define azfree(...)         AZ_MACRO_SPECIALIZE(azfree_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-/// Returns allocation size, based on it's pointer \ref AZ::IAllocatorSchema::AllocationSize.
+/// Returns allocation size, based on it's pointer \ref AZ::IAllocator::AllocationSize.
 #define azallocsize(_Ptr, _Allocator)    AZ::AllocatorInstance< _Allocator >::Get().AllocationSize(_Ptr)
-/// Returns the new expanded size or 0 if NOT supported by the allocator \ref AZ::IAllocatorSchema::Resize.
+/// Returns the new expanded size or 0 if NOT supported by the allocator \ref AZ::IAllocator::Resize.
 #define azallocresize(_Ptr, _NewSize, _Allocator) AZ::AllocatorInstance< _Allocator >::Get().Resize(_Ptr, _NewSize)
 
 namespace AZ {

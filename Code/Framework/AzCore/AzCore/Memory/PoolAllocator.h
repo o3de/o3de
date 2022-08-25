@@ -23,7 +23,7 @@ namespace AZ
      * use ThreadPool Schema or do the sync yourself.
      */
     class PoolSchema 
-        : public IAllocatorSchema
+        : public IAllocator
     {
     public:
         /**
@@ -54,7 +54,7 @@ namespace AZ
              * this is the minimum number of pages we will have allocated at all times, otherwise the total number of pages supported.
              */
             unsigned int        m_numStaticPages;
-            IAllocatorSchema*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
+            IAllocator*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
         };
         AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
 
@@ -62,7 +62,7 @@ namespace AZ
         ~PoolSchema();
 
         bool Create(const Descriptor& desc);
-        bool Destroy();
+        void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -89,7 +89,7 @@ namespace AZ
         * for each thread. So there will be some memory overhead, especially if you use fixed pool sizes.
         */
     class ThreadPoolSchema
-        : public IAllocatorSchema
+        : public IAllocator
     {
     public:
         // Functions for getting an instance of a ThreadPoolData when using thread local storage
@@ -105,7 +105,7 @@ namespace AZ
         ~ThreadPoolSchema();
 
         bool Create(const Descriptor& desc);
-        bool Destroy();
+        void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
         void deallocate(pointer ptr, size_type byteSize, size_type alignment) override;
@@ -250,7 +250,7 @@ namespace AZ
             }
 
             //////////////////////////////////////////////////////////////////////////
-            // IAllocatorSchema
+            // IAllocator
             pointer reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
             {
                 (void)ptr;

@@ -18,7 +18,7 @@ namespace AZ
     */
     template<bool DebugAllocator = false>
     class HphaSchemaBase
-        : public IAllocatorSchema
+        : public IAllocator
     {
     public:
         /**
@@ -47,7 +47,7 @@ namespace AZ
             unsigned int            m_isPoolAllocations : 1;                ///< True to allow allocations from pools, otherwise false.
             size_t                  m_fixedMemoryBlockByteSize;             ///< Memory block size, if 0 we use the OS memory allocation functions.
             void*                   m_fixedMemoryBlock;                     ///< Can be NULL if so the we will allocate memory from the subAllocator if m_memoryBlocksByteSize is != 0.
-            IAllocatorSchema*       m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
+            IAllocator*       m_subAllocator;                         ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
             size_t                  m_systemChunkSize;                      ///< Size of chunk to request from the OS when more memory is needed (defaults to m_pageSize)
             size_t                  m_capacity;                             ///< Max size this allocator can grow to
         };

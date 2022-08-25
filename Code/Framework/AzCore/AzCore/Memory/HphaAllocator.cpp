@@ -68,7 +68,7 @@ namespace AZ
 
     template<bool DebugAllocatorEnable>
     class HphaSchemaBase<DebugAllocatorEnable>::HpAllocator
-        : public IAllocatorSchema
+        : public IAllocator
     {
     public:
         // the guard size controls how many extra bytes are stored after
@@ -968,7 +968,7 @@ namespace AZ
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
         bool         m_isPoolAllocations;
-        IAllocatorSchema* m_subAllocator;
+        IAllocator* m_subAllocator;
 
 #if !defined (USE_MUTEX_PER_BUCKET)
         mutable AZStd::mutex m_mutex;

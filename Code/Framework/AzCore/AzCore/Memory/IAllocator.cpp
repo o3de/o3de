@@ -9,12 +9,8 @@
 
 namespace AZ
 {
-    IAllocator::IAllocator(IAllocatorSchema* schema)
+    IAllocator::IAllocator(IAllocator* schema)
         : m_schema(schema)
-    {
-    }
-
-    IAllocator::~IAllocator()
     {
     }
 }

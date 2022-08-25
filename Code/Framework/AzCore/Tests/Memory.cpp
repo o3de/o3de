@@ -1037,7 +1037,7 @@ namespace UnitTest
         }
 
         class DebugSysAllocSchema
-            : public AZ::IAllocatorSchema
+            : public AZ::IAllocator
         {
             pointer    allocate(size_type byteSize, size_type alignment) override
             {
