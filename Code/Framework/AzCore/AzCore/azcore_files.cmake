@@ -401,6 +401,8 @@ set(FILES
     Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
+    Memory/AllocatorTrackingRecorder.cpp
+    Memory/AllocatorTrackingRecorder.h
     Memory/AllocatorWrapper.h
     Memory/ChildAllocatorSchema.h
     Memory/Config.h
