@@ -291,7 +291,7 @@ Please note that only those seed files will get updated that are active for your
 
         return products;
     }
-
+#pragma optimize("", off)
     bool SourceFileRelocator::GetFilesFromSourceControl(SourceFileRelocationContainer& sources, const ScanFolderInfo* scanFolderInfo, QString absolutePath, bool excludeMetaDataFiles) const
     {
         QStringList pathMatches;
@@ -326,6 +326,7 @@ Please note that only those seed files will get updated that are active for your
 
         return !pathMatches.isEmpty();
     }
+#pragma optimize("", on)
 
     AZ::Outcome<void, AZStd::string> SourceFileRelocator::GetSourcesByPath(const AZStd::string& normalizedSource, SourceFileRelocationContainer& sources, const ScanFolderInfo*& scanFolderInfoOut, bool excludeMetaDataFiles) const
     {
@@ -799,7 +800,7 @@ Please note that only those seed files will get updated that are active for your
 
         return report;
     }
-
+#pragma optimize("", off)
     AZ::Outcome<RelocationSuccess, MoveFailure> SourceFileRelocator::Move(const AZStd::string& source, const AZStd::string& destination, bool previewOnly, bool allowDependencyBreaking, bool removeEmptyFolders, bool updateReferences, bool excludeMetaDataFiles)
     {
         AZStd::string normalizedSource = source;
@@ -881,6 +882,7 @@ Please note that only those seed files will get updated that are active for your
             AZStd::move(relocationContainer),
             AZStd::move(updateTasks)));
     }
+#pragma optimize("", on)
 
     AZ::Outcome<RelocationSuccess, AZStd::string> SourceFileRelocator::Delete(const AZStd::string& source, bool previewOnly, bool allowDependencyBreaking, bool removeEmptyFolders, bool excludeMetaDataFiles)
     {

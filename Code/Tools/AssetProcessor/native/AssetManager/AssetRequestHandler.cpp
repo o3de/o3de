@@ -72,7 +72,7 @@ namespace
 {
     using namespace AzToolsFramework::AssetSystem;
     using namespace AzFramework::AssetSystem;
-
+#pragma optimize("", off)
     AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
     {
         auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
@@ -105,7 +105,7 @@ namespace
         }
         return AssetChangeReportResponse(5);
     }
-
+#pragma optimize("", on)
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)
     {
         bool fullPathFound = false;
