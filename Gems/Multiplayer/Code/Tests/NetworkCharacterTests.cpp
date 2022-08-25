@@ -161,9 +161,10 @@ namespace Multiplayer
         NetworkCharacterComponentController* controller = dynamic_cast<NetworkCharacterComponentController*>(
             m_root->m_entity->FindComponent<NetworkCharacterComponent>()->GetController());
 
+        // NO_COUNT suppression here as we expect a MATH_ASSERT which is disabled in Profile
         AZ_TEST_START_TRACE_SUPPRESSION;
         controller->TryMoveWithVelocity(AZ::Vector3(100.f,100.f,100.f), 1.f);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         m_root->m_entity->FindComponent<NetBindComponent>()->NotifySyncRewindState();
     }
 }

@@ -172,7 +172,7 @@ namespace Multiplayer
         netInputArray[0].SetHostBlendFactor(0.8f);
         netInputArray[0].SetHostTimeMs(AZ::TimeMs(1));
         netInputArray[0].SetHostFrameId(HostFrameId(1));
-        AZ::HashValue32 dummyHash;
+        AZ::HashValue32 dummyHash = AZ::HashValue32(0);
 
         LocalPredictionPlayerInputComponentController* controller =
             dynamic_cast<LocalPredictionPlayerInputComponentController*>(m_localPredictionComponent->GetController());
