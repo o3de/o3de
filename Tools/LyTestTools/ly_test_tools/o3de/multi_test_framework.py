@@ -398,8 +398,8 @@ class MultiTestSuite(object):
             parallel_batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=True)
 
             # User can provide a CLI option to not parallelize/batch the tests.
-            no_parallelize = self.config.getoption("--no-test-batch", default=False)
-            no_batch = self.config.getoption("--no-test-parallel", default=False)
+            no_batch = self.config.getoption("--no-test-batch", default=False)
+            no_parallelize = self.config.getoption("--no-test-parallel", default=False)
             if no_parallelize:
                 single_tests += parallel_tests
                 parallel_tests = []
