@@ -105,7 +105,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         TEST_SUITE main
         TEST_SERIAL
         TIMEOUT 700
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_MaterialEditor.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_MaterialEditor_01.py
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets

@@ -113,7 +113,7 @@ class TestAutomation(EditorTestSuite):
         from .EditorScripts import PrefabInstanceSpawner_External_E2E as test_module
 
         # Custom setup/teardown to remove test level created during test
-        def setup(self, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(self, request, workspace, editor_test_results, launcher_platform):
             TestAutomation.cleanup_test_level(self, workspace)
 
         def teardown(self, request, workspace, editor_test_results, launcher_platform):

@@ -13,6 +13,7 @@ import ly_test_tools
 import ly_test_tools.launchers.exceptions
 import ly_test_tools.o3de.multi_test_framework as multi_test_framework
 from ly_test_tools.o3de.editor_test_utils import prepare_asset_processor
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxLauncher
 from ly_test_tools.launchers.platforms.win.launcher import WinLauncher
 
 
@@ -879,7 +880,7 @@ class TestRunningTests(unittest.TestCase):
 
         assert mock_exec_multitest.called
         assert mock_collected_test_data.results.update.called
-        assert type(mock_test_suite.executable) == WinLauncher
+        assert type(mock_test_suite.executable) in [WinLauncher, LinuxLauncher]
         assert mock_test_suite.executable.workspace == mock_workspace
 
     @mock.patch('threading.Thread')
