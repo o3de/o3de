@@ -14,7 +14,6 @@ import os
 import socket
 import time
 from datetime import datetime
-from warnings import warn
 
 import pytest
 
@@ -253,20 +252,6 @@ def _launcher(request, workspace, launcher_platform, level=""):
     request.addfinalizer(teardown)
 
     return launcher
-
-
-@pytest.fixture(scope="function")
-def generic_launcher(workspace, request, crash_log_watchdog):
-    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
-    return _generic_launcher(
-        workspace=workspace,
-        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_GENERIC_EXECUTABLE),
-        exe_file_name=get_fixture_argument(request, 'exe_file_name', ''))
-
-
-def _generic_launcher(workspace, launcher_platform, exe_file_name):
-    """Separate implementation to call directly during unit tests"""
-    return ly_test_tools.launchers.launcher_helper.create_generic_launcher(workspace, launcher_platform, exe_file_name)
 
 
 @pytest.fixture
