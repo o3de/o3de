@@ -14,8 +14,6 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 
-#include <AzFramework/Viewport/ViewportBus.h>
-
 #include <QPointer>
 #include <QToolBar>
 #include <QToolButton>
@@ -27,7 +25,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     //! Helper class to make switchers (toolbars) for display in Viewport UI.
     class ViewportUiSwitcher :
         public QToolBar,
-        private AzFramework::ViewportBorderNotificationBus::Handler,
         private ViewportEditorModeNotificationsBus::Handler
     {
         Q_OBJECT
@@ -44,14 +41,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetActiveButton(ButtonId buttonId);
         //! Updates the button's tooltip to the passed string.
         void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
-
-        // ViewportBorderNotificationBus overrides ...
-        void ImGuiActive(bool active) override;
-
-        // ViewportEditorModeNotificationsBus overrides ...
-        void OnEditorModeActivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
-        void OnEditorModeDeactivated(
-            [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
     private:
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.
