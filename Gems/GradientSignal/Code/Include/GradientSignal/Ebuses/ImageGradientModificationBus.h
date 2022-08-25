@@ -31,6 +31,15 @@ namespace GradientSignal
         virtual void EndImageModification() = 0;
 
         /**
+         * Get the image gradient values at a list of positions.
+         * Unlike GetValues on the GradientRequestBus, this will always use point sampling regardless of
+         * the Image Gradient sampler type because the values are expected to be used for image modifications.
+         * @param positions The list of positions to query
+         * @param outValues The list of output values. This list is expected to be the same size as the positions list.
+         */
+        virtual void GetPointValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const = 0;
+
+        /**
          * Set the value at the given position.
          * @param position The position to set the value at.
          * @param value The value to set it to.

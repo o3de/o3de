@@ -161,6 +161,7 @@ namespace GradientSignal
         void StartImageModification() override;
         void EndImageModification() override;
         void SetValue(const AZ::Vector3& position, float value) override;
+        void GetPointValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
 
         AZStd::vector<float>* GetImageModificationBuffer();
@@ -180,14 +181,15 @@ namespace GradientSignal
         void UpdateCachedImageBufferData(const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData);
 
         void GetSubImageData();
-        float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
+        void GetValuesInternal(SamplingType samplingType, AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const;
+        float GetValueFromImageData(SamplingType samplingType, const AZ::Vector3& uvw, float defaultValue) const;
         float GetPixelValue(AZ::u32 x, AZ::u32 y) const;
         float GetTerrariumPixelValue(AZ::u32 x, AZ::u32 y) const;
         void SetupMultiplierAndOffset(float min, float max);
         void SetupDefaultMultiplierAndOffset();
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
-        float GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
+        float GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
 
         float GetTilingX() const override;
         void SetTilingX(float tilingX) override;

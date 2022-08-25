@@ -11,9 +11,12 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
 
 namespace GradientSignal
 {
+    class PaintBrushUndoBuffer;
+
     class EditorImageGradientComponentMode
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
         , private AzToolsFramework::PaintBrushNotificationBus::Handler
@@ -34,9 +37,18 @@ namespace GradientSignal
 
     protected:
         // PaintBrushNotificationBus overrides
+        void OnPaintBegin() override;
+        void OnPaintEnd() override;
         void OnPaint(const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn) override;
+
+        void BeginUndoBatch();
+        void EndUndoBatch();
 
     private:
         AZStd::shared_ptr<AzToolsFramework::PaintBrushManipulator> m_brushManipulator;
+
+        //! The undo information for the in-progress painting brush stroke.
+        AzToolsFramework::UndoSystem::URSequencePoint* m_undoBatch = nullptr;
+        PaintBrushUndoBuffer* m_paintBrushUndoBuffer = nullptr;
     };
 } // namespace GradientSignal

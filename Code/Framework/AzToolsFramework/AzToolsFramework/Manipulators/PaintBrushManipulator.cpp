@@ -181,8 +181,10 @@ namespace AzToolsFramework
         {
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
-                const bool isFirstPaintedPoint = true;
                 m_isPainting = true;
+                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintBegin);
+
+                const bool isFirstPaintedPoint = true;
                 MovePaintBrush(
                     mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId,
                     mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, isFirstPaintedPoint);
@@ -194,6 +196,8 @@ namespace AzToolsFramework
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
             {
                 m_isPainting = false;
+                PaintBrushNotificationBus::Event(m_ownerEntityComponentId, &PaintBrushNotificationBus::Events::OnPaintEnd);
+
                 return true;
             }
         }

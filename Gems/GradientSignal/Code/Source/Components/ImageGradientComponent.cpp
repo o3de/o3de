@@ -368,7 +368,7 @@ namespace GradientSignal
         }
     }
 
-    float ImageGradientComponent::GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const
+    float ImageGradientComponent::GetValueFromImageData(SamplingType samplingType, const AZ::Vector3& uvw, float defaultValue) const
     {
         if (!m_imageData.empty())
         {
@@ -414,7 +414,7 @@ namespace GradientSignal
                 auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
 
                 // Retrieve our pixel value based on our sampling type
-                const float value = GetValueForSamplingType(x, y, pixelX, pixelY);
+                const float value = GetValueForSamplingType(samplingType, x, y, pixelX, pixelY);
 
                 // Scale (inverse lerp) the value into a 0 - 1 range. We also clamp it because manual scale values could cause
                 // the result to fall outside of the expected output range.
@@ -538,9 +538,9 @@ namespace GradientSignal
         SetupMultiplierAndOffset(m_configuration.m_scaleRangeMin, m_configuration.m_scaleRangeMax);
     }
 
-    float ImageGradientComponent::GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const
+    float ImageGradientComponent::GetValueForSamplingType(SamplingType samplingType, AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const
     {
-        switch (m_currentSamplingType)
+        switch (samplingType)
         {
         case SamplingType::Point:
         default:
@@ -803,31 +803,27 @@ namespace GradientSignal
             (reinterpret_cast<const void*>(m_imageData.data()) == reinterpret_cast<const void*>(m_modifiedImageData.data()));
     }
 
-
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ::Vector3 uvw = sampleParams.m_position;
-        bool wasPointRejected = false;
+        AZ::Vector3 position(sampleParams.m_position);
+        float value = 0.0f;
+        GetValuesInternal(m_currentSamplingType, AZStd::span<AZ::Vector3>(&position, 1), AZStd::span<float>(&value, 1));
 
-        AZStd::shared_lock lock(m_queryMutex);
-
-        // Return immediately if our cached image data hasn't been retrieved yet
-        if (m_imageData.empty())
-        {
-            return 0.0f;
-        }
-
-        m_gradientTransform.TransformPositionToUVWNormalized(sampleParams.m_position, uvw, wasPointRejected);
-
-        if (!wasPointRejected)
-        {
-            return GetValueFromImageData(uvw, 0.0f);
-        }
-
-        return 0.0f;
+        return value;
     }
 
     void ImageGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        GetValuesInternal(m_currentSamplingType, positions, outValues);
+    }
+
+    void ImageGradientComponent::GetPointValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        GetValuesInternal(SamplingType::Point, positions, outValues);
+    }
+
+    void ImageGradientComponent::GetValuesInternal(
+        SamplingType samplingType, AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
     {
         if (positions.size() != outValues.size())
         {
@@ -852,7 +848,7 @@ namespace GradientSignal
 
             if (!wasPointRejected)
             {
-                outValues[index] = GetValueFromImageData(uvw, 0.0f);
+                outValues[index] = GetValueFromImageData(samplingType, uvw, 0.0f);
             }
             else
             {

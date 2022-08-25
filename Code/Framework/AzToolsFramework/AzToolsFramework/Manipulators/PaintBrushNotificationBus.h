@@ -56,6 +56,12 @@ namespace AzToolsFramework
         //! @param brushTransform The new transform for the brush position/rotation/scale.
         virtual void OnWorldSpaceChanged([[maybe_unused]] const AZ::Transform& brushTransform) { }
 
+        //! OnPaintBegin notifies listeners that painting has begun.
+        virtual void OnPaintBegin() { }
+
+        //! OnPaintBegin notifies listeners that painting has ended.
+        virtual void OnPaintEnd() { }
+
         //! OnPaint notifies listeners that the paintbrush has painted in a region.
         //! This will get called in each frame that the paintbrush continues to paint and the brush has moved.
         //! Since the paintbrush doesn't know how it's being used, and the system using a paintbrush doesn't know the specifics of the
