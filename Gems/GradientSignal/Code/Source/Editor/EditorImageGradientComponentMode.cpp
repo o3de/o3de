@@ -43,6 +43,7 @@ namespace GradientSignal
         const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
+        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::StartImageModification);
         ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::StartImageModification);
 
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusConnect(entityComponentIdPair);
@@ -61,8 +62,10 @@ namespace GradientSignal
         AzToolsFramework::PaintBrushNotificationBus::Handler::BusDisconnect();
         m_brushManipulator->Unregister();
 
-        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
         EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::SaveImage);
+
+        ImageGradientModificationBus::Event(GetEntityId(), &ImageGradientModifications::EndImageModification);
+        EditorImageGradientRequestBus::Event(GetEntityId(), &EditorImageGradientRequests::EndImageModification);
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorImageGradientComponentMode::PopulateActionsImpl()
