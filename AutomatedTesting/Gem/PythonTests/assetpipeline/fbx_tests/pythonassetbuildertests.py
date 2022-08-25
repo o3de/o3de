@@ -195,3 +195,21 @@ class TestsPythonAssetProcessing_APBatch(object):
                     assert current_set == set(unselected_node_list), "Unselected node list does not contain the correct meshes"
                     found_mesh_nodes.add(selected_node_list[0])
             assert found_mesh_nodes == expected_mesh_nodes, "Not all expected mesh groups found"
+
+    def test_ProcessAssetScript_SimpleFbx_HasExpectedProducts(self, workspace, ap_setup_fixture, asset_processor):
+        # This tests all of the entry points a scene builder can script:
+        # - OnUpdateManifest() returns a JSON string to use as the scene manifest; this must succeed to continue the scene pipe
+        # - OnPrepareForExport() returns an export product list; this test should produce a simple.fbx.fake_asset export product
+
+        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "script_basics")
+
+        result, _ = asset_processor.batch_process(extra_params=self.asset_processor_extra_params)
+        assert result, "AP Batch failed"
+
+        expected_product_list = [
+            "simple.fbx.fake_asset"
+        ]
+
+        missing_assets, _ = utils.compare_assets_with_cache(expected_product_list, asset_processor.project_test_cache_folder())
+        assert not missing_assets, f'The following assets were expected to be in, but not found in cache: {str(missing_assets)}'
+

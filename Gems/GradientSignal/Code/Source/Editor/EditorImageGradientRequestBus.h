@@ -20,6 +20,8 @@ namespace GradientSignal
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
+        virtual void StartImageModification() = 0;
+        virtual void EndImageModification() = 0;
         virtual bool SaveImage() = 0;
     };
 

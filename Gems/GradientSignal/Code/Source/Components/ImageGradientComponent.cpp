@@ -183,22 +183,17 @@ namespace GradientSignal
 
     bool ImageGradientConfig::GetManualScaleVisibility() const
     {
-        return ((m_customScaleType == CustomScaleType::Manual) && m_showImageOptions);
+        return (m_customScaleType == CustomScaleType::Manual);
     }
 
-    bool ImageGradientConfig::GetImageOptionsVisibility() const
+    bool ImageGradientConfig::IsImageAssetReadOnly() const
     {
-        return m_showImageOptions;
-    }
-
-    void ImageGradientConfig::SetImageOptionsVisibility(bool showOptions)
-    {
-        m_showImageOptions = showOptions;
+        return m_imageModificationActive;
     }
 
     bool ImageGradientConfig::AreImageOptionsReadOnly() const
     {
-        return !(m_imageAsset.GetId().IsValid());
+        return m_imageModificationActive || !(m_imageAsset.GetId().IsValid());
     }
 
     AZStd::string ImageGradientConfig::GetImageAssetPropertyName() const
@@ -728,6 +723,8 @@ namespace GradientSignal
 
     void ImageGradientComponent::StartImageModification()
     {
+        m_configuration.m_imageModificationActive = true;
+
         if (m_modifiedImageData.empty())
         {
             CreateImageModificationBuffer();
@@ -736,6 +733,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::EndImageModification()
     {
+        m_configuration.m_imageModificationActive = false;
     }
 
     AZStd::vector<float>* ImageGradientComponent::GetImageModificationBuffer()
