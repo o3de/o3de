@@ -442,8 +442,12 @@ namespace AzToolsFramework
     bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
-        const QPoint textOffset = QPoint(0, 3);
 
+        const QPoint expenderOffset = QPoint(-18, 3);
+        QRect expenderRect = QRect(0, 0, 16, 16);
+        expenderRect.translate(option.rect.topLeft() + expenderOffset);
+
+        const QPoint textOffset = QPoint(0, 3);
         QRect filenameRect = QRect(0, 0, 12, 10);
         filenameRect.translate(option.rect.topRight() + QPoint(-13, 7) + textOffset);
         if (filenameRect.contains(position))
@@ -452,6 +456,17 @@ namespace AzToolsFramework
             {
                 // Focus on this prefab.
                 m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+            }
+
+            // Don't propagate event.
+            return true;
+        }
+        else if (expenderRect.contains(position))
+        {
+            if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+            {
+                // Close this prefab and focus on the parent
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
             }
 
             // Don't propagate event.
