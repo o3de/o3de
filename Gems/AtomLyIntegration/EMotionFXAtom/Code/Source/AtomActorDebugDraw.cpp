@@ -446,13 +446,13 @@ namespace AZ::Render
         const AZStd::unordered_set<size_t>* cachedSelectedJointIndices,
         size_t cachedHoveredJointIndex) const
     {
-        if (cachedHoveredJointIndex == jointIndex)
-        {
-            return HoveredColor;
-        }
-        else if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+        if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
         {
             return SelectedColor;
+        }
+        else if (cachedHoveredJointIndex == jointIndex)
+        {
+            return HoveredColor;
         }
         else
         {

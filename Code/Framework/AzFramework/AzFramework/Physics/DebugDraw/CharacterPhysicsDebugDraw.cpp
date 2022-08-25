@@ -45,13 +45,13 @@ namespace Physics
         {
             const auto& collider = colliders[colliderIndex];
             AZ::Color colliderColor;
-            if (nodeDebugDrawData.m_hovered)
-            {
-                colliderColor = colorSettings.m_hoveredColor;
-            }
-            else if (nodeDebugDrawData.m_selected)
+            if (nodeDebugDrawData.m_selected)
             {
                 colliderColor = colorSettings.m_selectedColor;
+            }
+            else if (nodeDebugDrawData.m_hovered)
+            {
+                colliderColor = colorSettings.m_hoveredColor;
             }
             else if ((1 << colliderIndex) & invalidColliderBitArray)
             {
