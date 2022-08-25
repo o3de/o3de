@@ -120,7 +120,7 @@ namespace LmbrCentral
     CapsuleInternalEndPoints CapsuleShape::GetCapsulePoints()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
         return { m_intersectionDataCache.m_basePlaneCenterPoint, m_intersectionDataCache.m_topPlaneCenterPoint };
     }
@@ -128,7 +128,7 @@ namespace LmbrCentral
     AZ::Aabb CapsuleShape::GetEncompassingAabb()
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
         const AZ::Aabb topAabb(AZ::Aabb::CreateCenterRadius(
             m_intersectionDataCache.m_topPlaneCenterPoint, m_intersectionDataCache.m_radius));
@@ -149,7 +149,7 @@ namespace LmbrCentral
     bool CapsuleShape::IsPointInside(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
         const float radiusSquared = powf(m_intersectionDataCache.m_radius, 2.0f);
 
@@ -180,7 +180,7 @@ namespace LmbrCentral
     float CapsuleShape::DistanceSquaredFromPoint(const AZ::Vector3& point)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
         const Lineseg lineSeg(
             AZVec3ToLYVec3(m_intersectionDataCache.m_basePlaneCenterPoint),
@@ -195,7 +195,7 @@ namespace LmbrCentral
     bool CapsuleShape::IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         AZStd::shared_lock lock(m_mutex);
-        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, m_mutex);
+        m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_capsuleShapeConfig, &m_mutex);
 
         if (m_intersectionDataCache.m_isSphere)
         {

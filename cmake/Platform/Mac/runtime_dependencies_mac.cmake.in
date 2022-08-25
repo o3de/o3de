@@ -185,13 +185,13 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         # other issues that produce signature problems
         if(depends_on_python)
             message(STATUS "Fixing ${bundle_path}/Contents/Frameworks/Python.framework...")
-            list(APPEND fixup_bundle_ignore Python python3.7m python3.7)
+            list(APPEND fixup_bundle_ignore Python python3.10m python3.10)
             file(REMOVE_RECURSE
                 "${bundle_path}/Contents/Frameworks/Python.framework/Versions/Current"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/Headers"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/Python"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/test"
-                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib/python3.7/site-packages/scipy/io/tests"
+                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.10/Headers"
+                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.10/lib/Python"
+                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.10/lib/python3.10/test"
+                "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/scipy/io/tests"
                 "${bundle_path}/Contents/Frameworks/Python.framework/Python"
                 "${bundle_path}/Contents/Frameworks/Python.framework/Resources"
                 "${bundle_path}/Contents/Frameworks/Python.framework/Headers"
@@ -200,10 +200,10 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             if(exe_file_list)
                 file(REMOVE_RECURSE ${exe_file_list})
             endif()
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python3.7m Headers
-                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.7"
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python3.10m Headers
+                WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/3.10"
             )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.7 Current
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.10 Current
                 WORKING_DIRECTORY "${bundle_path}/Contents/Frameworks/Python.framework/Versions/"
             )
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python

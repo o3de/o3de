@@ -10,29 +10,7 @@
     },
     "repo": {
       "root": "${repo_dir}",
-      "tiaf_bin": "${tiaf_bin}"
-    },
-    "workspace": {
-      "temp": {
-        "root": "${temp_dir}",
-        "relative_paths": {
-          "artifact_dir": "RuntimeArtifact",
-          "enumeration_cache_dir": "EnumerationCache"
-        }
-      },
-      "active": {
-        "root": "${active_dir}",
-        "relative_paths": {
-          "test_impact_data_file": "TestImpactData.spartia",
-          "previous_test_run_data_file": "PreviousTestRunData.json"
-        }
-      },
-      "historic": {
-        "root": "${historic_dir}",
-        "relative_paths": {
-          "data": "historic_data.json"
-        }
-      }
+      "build": "${bin_dir}"
     },
     "artifacts": {
       "static": {
@@ -41,7 +19,7 @@
           "target_sources": {
             "static": {
               "include_filters": [
-                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx"
+                ".h", ".hpp", ".hxx", ".inl", ".c", ".cpp", ".cxx", ".py"
               ]
             },
             "autogen": {
@@ -71,9 +49,31 @@
     }
   },
   "native": {
+    "workspace": {
+      "temp": {
+        "root": "${native_temp_dir}",
+        "run_artifact_dir": "${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}",
+        "coverage_artifact_dir": "${native_temp_dir}/Coverage",
+        "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache"
+      },
+      "active": {
+        "root": "${native_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${native_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
+      }
+    },
+    "runtime_bin": "${native_runtime_bin}",
     "test_engine": {
       "test_runner": {
-          "bin": "${test_runner_bin}"
+          "bin": "${native_test_runner_bin}"
       },
       "instrumentation": {
         "bin": "${instrumentation_bin}"
@@ -98,10 +98,41 @@
     }
   },
   "python": {
-    "artifact": { 
-      "result": {
-        "external_run_output": "${PYTEST_XML_OUTPUT_DIR}"
+    "workspace": {
+      "temp": {
+        "root": "${python_temp_dir}",
+        "run_artifact_dir": "${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}",
+        "coverage_artifact_dir": "${python_temp_dir}/Coverage",
+        "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache"
+      },
+      "active": {
+        "root": "${python_active_dir}",
+        "relative_paths": {
+          "test_impact_data_file": "TestImpactData.spartia",
+          "previous_test_run_data_file": "PreviousTestRunData.json"
+        }
+      },
+      "historic": {
+        "root": "${python_historic_dir}",
+        "relative_paths": {
+          "data": "historic_data.json"
+        }
       }
+    },
+    "runtime_bin": "${python_runtime_bin}",
+    "test_engine": {
+      "test_runner": {
+          "bin": "${python_cmd}"
+      }
+    },
+    "target": {
+      "exclude": [
+        {
+          "target": "cli_test_driver",
+          "tests": [
+          ]
+        }
+      ]
     }
   }
 }

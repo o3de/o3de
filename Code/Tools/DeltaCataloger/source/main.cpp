@@ -132,6 +132,7 @@ DeltaCatalogerResult ParseArgs(const AzFramework::CommandLine* parser, DeltaCata
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     DeltaCatalogerResult exitCode = DeltaCatalogerResult::Success;
     const AZ::u8 minimumArgCount = 3; // 0 = exe, 1 = source catalog path, 2 = source pak path, from raw commandline input
     if (argc < minimumArgCount)

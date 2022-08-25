@@ -23,6 +23,7 @@ int runDefaultRunner(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     AZ::Debug::Trace::HandleExceptions(true);
     AZ::Test::ApplyGlobalParameters(&argc, argv);
 

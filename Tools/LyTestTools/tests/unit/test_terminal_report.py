@@ -19,7 +19,7 @@ class TestTerminalReport(object):
 
     @mock.patch('ly_test_tools._internal.pytest_plugin.failed_test_rerun_command.build_rerun_commands')
     def test_AddCommands_MockCommands_CommandsAdded(self, mock_build_commands):
-        mock_build_commands.side_effect = lambda path, nodes, dir: nodes
+        mock_build_commands.side_effect = lambda path, nodes: nodes
         mock_reporter = mock.MagicMock()
         header = 'This is a header'
         test_path = 'Foo'

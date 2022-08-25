@@ -13,8 +13,6 @@
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/Conversions.h>
-#include <Atom/RHI/StreamingImagePool.h>
-#include <Atom/RHI/BufferPool.h>
 #include <AzCore/Component/TickBus.h>
 
 namespace AZ
@@ -243,232 +241,247 @@ namespace AZ
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
             AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: QueueUpload");
+            uint64_t fenceValue = 0;
 
-            uint64_t fenceValue = m_uploadFence.Increment();
-
-            Image* image = static_cast<Image*>(request.m_image);
-            image->SetUploadFenceValue(fenceValue);
-
-            uint32_t startMip = residentMip - 1;
-            uint32_t endMip = residentMip - static_cast<uint32_t>(request.m_mipSlices.size());
-
-            Memory* imageMemory = static_cast<Image&>(*request.m_image).GetMemoryView().GetMemory();
-
-            m_copyQueue->QueueCommand([=](void* commandQueue)
+            // Use the mutex in following scope so it won't have dead lock issue when the request has m_waitForUpload set to true
             {
-                AZ_PROFILE_SCOPE(RHI, "Upload Image");
-                ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
-                FramePacket* framePacket = BeginFramePacket();
+                AZStd::scoped_lock lock{m_copyQueueMutex};
 
-                uint32_t arraySize = request.m_image->GetDescriptor().m_arraySize;
-                uint16_t imageMipLevels = request.m_image->GetDescriptor().m_mipLevels;
+                // cache the request until request was processed
+                m_imageExpandRequests.push(request);
 
-                // Variables for split subresource slice. 
-                // If a subresource slice pitch is large than one staging size, we may split the slice by rows.
-                // And using the CopyTextureRegion to only copy a section of the subresource 
-                bool needSplitSlice = false;
-                uint32_t rowsPerSplit = 0;
+                fenceValue = m_uploadFence.Increment();
 
-                for (uint32_t curMip = endMip; curMip <= startMip; curMip++)
+                Image* image = static_cast<Image*>(request.m_image);
+                image->SetUploadFenceValue(fenceValue);
+
+                uint32_t startMip = residentMip - 1;
+                uint32_t endMip = residentMip - static_cast<uint32_t>(request.m_mipSlices.size());
+
+                Memory* imageMemory = static_cast<Image&>(*request.m_image).GetMemoryView().GetMemory();
+
+                const RHI::StreamingImageExpandRequest& cachedRequest = m_imageExpandRequests.back();
+
+                m_copyQueue->QueueCommand([=](void* commandQueue)
                 {
-                    size_t sliceIndex = curMip - endMip;
-                    const RHI::ImageSubresourceLayout& subresourceLayout = request.m_mipSlices[sliceIndex].m_subresourceLayout;
-                    uint32_t arraySlice = 0;
-                    const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
+                    AZ_PROFILE_SCOPE(RHI, "Upload Image");
+                    ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
+                    FramePacket* framePacket = BeginFramePacket();
 
-                    // Staging sizes
-                    uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
-                    uint32_t stagingSlicePitch = RHI::AlignUp(subresourceLayout.m_rowCount*stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-                    const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
+                    uint32_t arraySize = cachedRequest.m_image->GetDescriptor().m_arraySize;
+                    uint16_t imageMipLevels = cachedRequest.m_image->GetDescriptor().m_mipLevels;
 
-                    // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
-                    // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
-                    if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
+                    // Variables for split subresource slice. 
+                    // If a subresource slice pitch is larger than one staging size, we may split the slice by rows.
+                    // And using the CopyTextureRegion to only copy a section of the subresource 
+                    bool needSplitSlice = false;
+                    uint32_t rowsPerSplit = 0;
+
+                    for (uint32_t curMip = endMip; curMip <= startMip; curMip++)
                     {
-                        AZ_Error("StreamingImage", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
-                        return 0;
-                    }
+                        size_t sliceIndex = curMip - endMip;
+                        const RHI::ImageSubresourceLayout& subresourceLayout = cachedRequest.m_mipSlices[sliceIndex].m_subresourceLayout;
+                        uint32_t arraySlice = 0;
+                        const uint32_t subresourceSlicePitch = subresourceLayout.m_bytesPerImage;
 
-                    // The final staging size for each CopyTextureRegion command
-                    uint32_t stagingSize = stagingSlicePitch;
+                        // Staging sizes
+                        uint32_t stagingRowPitch = RHI::AlignUp(subresourceLayout.m_bytesPerRow, DX12_TEXTURE_DATA_PITCH_ALIGNMENT);
+                        uint32_t stagingSlicePitch = RHI::AlignUp(subresourceLayout.m_rowCount*stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+                        const uint32_t compressedTexelBlockSizeHeight = subresourceLayout.m_blockElementHeight;
 
-                    // Prepare for spliting this subresource if needed
-                    if (stagingSlicePitch > m_descriptor.m_stagingSizeInBytes)
-                    {
-                        // Calculate minimum size of one row of this subresrouce
-                        uint32_t minSize = RHI::AlignUp(stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-                        if (minSize > m_descriptor.m_stagingSizeInBytes)
+                        // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
+                        // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
+                        if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
                         {
-                            AZ_Warning("RHI::DX12", false, "AsyncUploadQueue staging buffer (%dK) is not big enough"
-                                "for the size of one row of image's sub-resource (%dK). Please increase staging buffer size.",
-                                m_descriptor.m_stagingSizeInBytes / 1024.0f, stagingSlicePitch / 1024.f);
-                            continue;
+                            AZ_Error("StreamingImage", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
+                            return 0;
                         }
 
-                        needSplitSlice = true;
-                        rowsPerSplit = static_cast<uint32_t>(RHI::AlignDown(m_descriptor.m_stagingSizeInBytes, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) / stagingRowPitch);
-                        stagingSize = RHI::AlignUp(rowsPerSplit * stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
-                        AZ_Assert(stagingSize <= m_descriptor.m_stagingSizeInBytes, "Final staging size can't be larger than staging buffer size");
-                    }
+                        // The final staging size for each CopyTextureRegion command
+                        uint32_t stagingSize = stagingSlicePitch;
 
-                    if (!needSplitSlice)
-                    {
-                        // Try to use one frame packet for all sub-resources if it's possible.
-                        for (const auto& subresource : request.m_mipSlices[sliceIndex].m_subresources)
+                        // Prepare for splitting this subresource if needed
+                        if (stagingSlicePitch > m_descriptor.m_stagingSizeInBytes)
                         {
-                            for (uint32_t depth = 0; depth < subresourceLayout.m_size.m_depth; depth++)
+                            // Calculate minimum size of one row of this subresource
+                            uint32_t minSize = RHI::AlignUp(stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+                            if (minSize > m_descriptor.m_stagingSizeInBytes)
                             {
-                                // If the current framePacket is not big enough, switch to next one.
-                                if (stagingSize > m_descriptor.m_stagingSizeInBytes - framePacket->m_dataOffset)
-                                {
-                                    EndFramePacket(dx12CommandQueue);
-                                    framePacket = BeginFramePacket();
-                                }
-
-                                // Copy subresource data to staging memory.
-                                {
-                                    AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
-
-                                    uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
-                                    const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
-
-                                    for (uint32_t row = 0; row < subresourceLayout.m_rowCount; row++)
-                                    {
-                                        memcpy(stagingDataStart + row * stagingRowPitch,
-                                            subresourceSliceDataStart + row * subresourceLayout.m_bytesPerRow,
-                                            subresourceLayout.m_bytesPerRow);
-                                    }
-                                }
-
-                                // Add copy command to copy image subresource from staging memory to image gpu resource.
-
-                                // Source location
-                                D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
-                                const DXGI_FORMAT imageFormat = GetBaseFormat(ConvertFormat(request.m_image->GetDescriptor().m_format));
-                                footprint.Footprint.Width = subresourceLayout.m_size.m_width;
-                                footprint.Footprint.Height = subresourceLayout.m_size.m_height;
-                                footprint.Footprint.Depth = 1;
-                                footprint.Footprint.Format = imageFormat;
-                                footprint.Footprint.RowPitch = stagingRowPitch;
-                                footprint.Offset = framePacket->m_dataOffset;
-                                CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(framePacket->m_stagingResource.get(), footprint);
-
-                                // Dest location.
-                                const uint32_t subresourceIdx = D3D12CalcSubresource(curMip, arraySlice, 0, imageMipLevels, arraySize);
-                                CD3DX12_TEXTURE_COPY_LOCATION destLocation(imageMemory, subresourceIdx);
-
-                                framePacket->m_commandList->CopyTextureRegion(
-                                    &destLocation,
-                                    0, 0, depth,
-                                    &sourceLocation,
-                                    nullptr);
-
-                                framePacket->m_dataOffset += stagingSlicePitch;
+                                AZ_Warning("RHI::DX12", false, "AsyncUploadQueue staging buffer (%dK) is not big enough"
+                                    "for the size of one row of image's sub-resource (%dK). Please increase staging buffer size.",
+                                    m_descriptor.m_stagingSizeInBytes / 1024.0f, stagingSlicePitch / 1024.f);
+                                continue;
                             }
-                            // Next slice in this array.
-                            arraySlice++;
-                        }
-                    }
-                    else
-                    {
-                        // Each subresource need to be split.
-                        for (const auto& subresource : request.m_mipSlices[sliceIndex].m_subresources)
-                        {
-                            // The copy destination is same for each subresource.
-                            const uint32_t subresourceIdx = D3D12CalcSubresource(curMip, arraySlice, 0, imageMipLevels, arraySize);
-                            CD3DX12_TEXTURE_COPY_LOCATION destLocation(imageMemory, subresourceIdx);
 
-                            for (uint32_t depth = 0; depth < subresourceLayout.m_size.m_depth; depth++)
+                            needSplitSlice = true;
+                            rowsPerSplit = static_cast<uint32_t>(RHI::AlignDown(m_descriptor.m_stagingSizeInBytes, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT) / stagingRowPitch);
+                            stagingSize = RHI::AlignUp(rowsPerSplit * stagingRowPitch, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+                            AZ_Assert(stagingSize <= m_descriptor.m_stagingSizeInBytes, "Final staging size can't be larger than staging buffer size");
+                        }
+
+                        if (!needSplitSlice)
+                        {
+                            // Try to use one frame packet for all sub-resources if it's possible.
+                            for (const auto& subresource : cachedRequest.m_mipSlices[sliceIndex].m_subresources)
                             {
-                                uint32_t startRow = 0;
-                                uint32_t destHeight = 0;
-                                while (startRow < subresourceLayout.m_rowCount)
+                                for (uint32_t depth = 0; depth < subresourceLayout.m_size.m_depth; depth++)
                                 {
+                                    // If the current framePacket is not big enough, switch to next one.
                                     if (stagingSize > m_descriptor.m_stagingSizeInBytes - framePacket->m_dataOffset)
                                     {
                                         EndFramePacket(dx12CommandQueue);
                                         framePacket = BeginFramePacket();
                                     }
 
-                                    const uint32_t endRow = AZStd::GetMin(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
-
-                                    // Calculate the blocksize for BC formatted images; the copy command works in texels.
-                                    uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
-
-                                    // Copy subresource data to staging memory
+                                    // Copy subresource data to staging memory.
                                     {
                                         AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
-                                        for (uint32_t row = startRow; row < endRow; row++)
-                                        {
-                                            uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
-                                            const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
 
-                                            memcpy(stagingDataStart + (row - startRow) * stagingRowPitch,
+                                        uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
+                                        const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
+
+                                        for (uint32_t row = 0; row < subresourceLayout.m_rowCount; row++)
+                                        {
+                                            memcpy(stagingDataStart + row * stagingRowPitch,
                                                 subresourceSliceDataStart + row * subresourceLayout.m_bytesPerRow,
                                                 subresourceLayout.m_bytesPerRow);
                                         }
                                     }
 
-                                    //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
-                                    //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
-                                    if(destHeight+heightToCopy > subresourceLayout.m_size.m_height)
-                                    {
-                                        uint32_t HeightDiff = (destHeight + heightToCopy) - subresourceLayout.m_size.m_height;
-                                        heightToCopy -= HeightDiff;
-                                    }
-                                    
-                                    // Add copy command to copy image subresource from staging memory to image gpu resource
+                                    // Add copy command to copy image subresource from staging memory to image gpu resource.
 
                                     // Source location
                                     D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
-                                    const DXGI_FORMAT imageFormat = GetBaseFormat(ConvertFormat(request.m_image->GetDescriptor().m_format));
+                                    const DXGI_FORMAT imageFormat = GetBaseFormat(ConvertFormat(cachedRequest.m_image->GetDescriptor().m_format));
                                     footprint.Footprint.Width = subresourceLayout.m_size.m_width;
-                                    footprint.Footprint.Height = heightToCopy;
+                                    footprint.Footprint.Height = subresourceLayout.m_size.m_height;
                                     footprint.Footprint.Depth = 1;
                                     footprint.Footprint.Format = imageFormat;
                                     footprint.Footprint.RowPitch = stagingRowPitch;
                                     footprint.Offset = framePacket->m_dataOffset;
                                     CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(framePacket->m_stagingResource.get(), footprint);
 
+                                    // Dest location.
+                                    const uint32_t subresourceIdx = D3D12CalcSubresource(curMip, arraySlice, 0, imageMipLevels, arraySize);
+                                    CD3DX12_TEXTURE_COPY_LOCATION destLocation(imageMemory, subresourceIdx);
+
                                     framePacket->m_commandList->CopyTextureRegion(
                                         &destLocation,
-                                        0, destHeight, depth,
+                                        0, 0, depth,
                                         &sourceLocation,
                                         nullptr);
 
-                                    framePacket->m_dataOffset += stagingSize;
-                                    startRow = endRow;
-                                    destHeight += heightToCopy;
+                                    framePacket->m_dataOffset += stagingSlicePitch;
                                 }
+                                // Next slice in this array.
+                                arraySlice++;
                             }
-                            // Next slice in this array
-                            arraySlice++;
-
                         }
-                    }
-                }
-
-                EndFramePacket(dx12CommandQueue);
-
-                dx12CommandQueue->Signal(m_uploadFence.Get(), fenceValue);
-
-                if (request.m_completeCallback && !request.m_waitForUpload)
-                {
-                    {
-                        AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
-                        if (m_callbacks.size() > 0)
+                        else
                         {
-                            // The callbacks are added with the increasing order of fenceValue
-                            // If this is not true, the ProcessCallbacks function need to updated.
-                            AZ_Assert(m_callbacks.back().second < fenceValue, "Callbacks should be added with increasing order of fenceValue");
-                        }
-                        m_callbacks.push({ request.m_completeCallback, fenceValue });
-                    }
-                    AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
-                }
+                            // Each subresource needs to be split.
+                            for (const auto& subresource : cachedRequest.m_mipSlices[sliceIndex].m_subresources)
+                            {
+                                // The copy destination is same for each subresource.
+                                const uint32_t subresourceIdx = D3D12CalcSubresource(curMip, arraySlice, 0, imageMipLevels, arraySize);
+                                CD3DX12_TEXTURE_COPY_LOCATION destLocation(imageMemory, subresourceIdx);
 
-                return 0;
-            }); // End m_copyQueue->QueueCommand
+                                for (uint32_t depth = 0; depth < subresourceLayout.m_size.m_depth; depth++)
+                                {
+                                    uint32_t startRow = 0;
+                                    uint32_t destHeight = 0;
+                                    while (startRow < subresourceLayout.m_rowCount)
+                                    {
+                                        if (stagingSize > m_descriptor.m_stagingSizeInBytes - framePacket->m_dataOffset)
+                                        {
+                                            EndFramePacket(dx12CommandQueue);
+                                            framePacket = BeginFramePacket();
+                                        }
+
+                                        const uint32_t endRow = AZStd::GetMin(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
+
+                                        // Calculate the blocksize for BC formatted images; the copy command works in texels.
+                                        uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;
+
+                                        // Copy subresource data to staging memory
+                                        {
+                                            AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
+                                            for (uint32_t row = startRow; row < endRow; row++)
+                                            {
+                                                uint8_t* stagingDataStart = framePacket->m_stagingResourceData + framePacket->m_dataOffset;
+                                                const uint8_t* subresourceSliceDataStart = static_cast<const uint8_t*>(subresource.m_data) + (depth * subresourceSlicePitch);
+
+                                                memcpy(stagingDataStart + (row - startRow) * stagingRowPitch,
+                                                    subresourceSliceDataStart + row * subresourceLayout.m_bytesPerRow,
+                                                    subresourceLayout.m_bytesPerRow);
+                                            }
+                                        }
+
+                                        //Clamp heightToCopy to match subresourceLayout.m_size.m_height as it is possible to go over
+                                        //if subresourceLayout.m_size.m_height is not perfectly divisible by compressedTexelBlockSizeHeight
+                                        if(destHeight+heightToCopy > subresourceLayout.m_size.m_height)
+                                        {
+                                            uint32_t HeightDiff = (destHeight + heightToCopy) - subresourceLayout.m_size.m_height;
+                                            heightToCopy -= HeightDiff;
+                                        }
+                                    
+                                        // Add copy command to copy image subresource from staging memory to image gpu resource
+
+                                        // Source location
+                                        D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
+                                        const DXGI_FORMAT imageFormat = GetBaseFormat(ConvertFormat(cachedRequest.m_image->GetDescriptor().m_format));
+                                        footprint.Footprint.Width = subresourceLayout.m_size.m_width;
+                                        footprint.Footprint.Height = heightToCopy;
+                                        footprint.Footprint.Depth = 1;
+                                        footprint.Footprint.Format = imageFormat;
+                                        footprint.Footprint.RowPitch = stagingRowPitch;
+                                        footprint.Offset = framePacket->m_dataOffset;
+                                        CD3DX12_TEXTURE_COPY_LOCATION sourceLocation(framePacket->m_stagingResource.get(), footprint);
+
+                                        framePacket->m_commandList->CopyTextureRegion(
+                                            &destLocation,
+                                            0, destHeight, depth,
+                                            &sourceLocation,
+                                            nullptr);
+
+                                        framePacket->m_dataOffset += stagingSize;
+                                        startRow = endRow;
+                                        destHeight += heightToCopy;
+                                    }
+                                }
+                                // Next slice in this array
+                                arraySlice++;
+
+                            }
+                        }
+                    }
+
+                    EndFramePacket(dx12CommandQueue);
+
+                    dx12CommandQueue->Signal(m_uploadFence.Get(), fenceValue);
+
+                    if (cachedRequest.m_completeCallback && !cachedRequest.m_waitForUpload)
+                    {
+                        {
+                            AZStd::lock_guard<AZStd::mutex> lock(m_callbackMutex);
+                            if (m_callbacks.size() > 0)
+                            {
+                                // The callbacks are added with the increasing order of fenceValue
+                                // If this is not true, the ProcessCallbacks function need to updated.
+                                AZ_Assert(m_callbacks.back().second < fenceValue, "Callbacks should be added with increasing order of fenceValue");
+                            }
+                            m_callbacks.push({ cachedRequest.m_completeCallback, fenceValue });
+                        }
+                        AZ::SystemTickBus::QueueFunction([this] { ProcessCallbacks(uint64_t(-1)); });
+                    }
+
+                    // remove the request from the queue
+                    AZStd::scoped_lock lock{m_copyQueueMutex};
+                    m_imageExpandRequests.pop();
+
+                    return 0;
+                }); // End m_copyQueue->QueueCommand
+            }
 
             if (request.m_waitForUpload)
             {
@@ -512,39 +525,23 @@ namespace AZ
             }
         }
 
-        void AsyncUploadQueue::QueueTileMapping(CommandList::TileMapRequest& request)
+        void AsyncUploadQueue::QueueTileMapping(const CommandList::TileMapRequest& request)
         {
+            AZStd::scoped_lock lock{m_copyQueueMutex};
+            m_tileMapRequests.push(request);
+
+            const CommandList::TileMapRequest& cachedRequest = m_tileMapRequests.back();
+
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "QueueTileMapping");
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
-                const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
-
-                // DX12 requires that we pass the full array of range counts (even though they are all 1).
-                if (m_rangeCounts.size() < tileCount)
-                {
-                    m_rangeCounts.resize(tileCount, 1);
-                }
-
-                // Same with range flags, except that we can skip if they are all 'None'.
-                D3D12_TILE_RANGE_FLAGS* rangeFlags = nullptr;
-                if (!request.m_destinationHeap)
-                {
-                    if (m_rangeFlags.size() < tileCount)
-                    {
-                        m_rangeFlags.resize(tileCount, D3D12_TILE_RANGE_FLAG_NULL);
-                    }
-                    rangeFlags = m_rangeFlags.data();
-                }
-
-                // Maps a single range of source tiles to N disjoint destination tiles on a heap (or null, if no heap is specified).
-                dx12CommandQueue->UpdateTileMappings(
-                    request.m_sourceMemory,
-                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
-                    request.m_destinationHeap,
-                    tileCount, rangeFlags, request.m_destinationTileMap.data(), m_rangeCounts.data(),
-                    D3D12_TILE_MAPPING_FLAG_NONE);
+                UpdateTileMap(dx12CommandQueue, cachedRequest);
+                                
+                // remove the request from the queue
+                AZStd::scoped_lock lock{m_copyQueueMutex};
+                m_tileMapRequests.pop();
             });
         }
     }

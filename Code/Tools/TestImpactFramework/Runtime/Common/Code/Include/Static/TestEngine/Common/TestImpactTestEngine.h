@@ -17,6 +17,12 @@
 
 namespace TestImpact
 {
+    template<typename TestTarget>
+    class TestEngineRegularRun;
+
+    template<typename TestTarget, typename Coverage>
+    class TestEngineInstrumentedRun;
+
     //! Callback for when a given test engine job has failed and requires determination of the error code it returned.
     template<typename TestJobRunner> 
     using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
@@ -24,6 +30,12 @@ namespace TestImpact
     //! Callback for when a given test engine job completes.
     template<typename TestTarget>
     using TestEngineJobCompleteCallback = AZStd::function<void(const TestEngineJob<TestTarget>& testJob)>;
+
+    template<typename TestTarget>
+    using TestEngineRegularRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineRegularRun<TestTarget>>>;
+
+    template<typename TestTarget, typename Coverage>
+    using TestEngineInstrumentedRunResult = AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineInstrumentedRun<TestTarget, Coverage>>>;
 
     // Calculate the sequence result by analyzing the state of the test targets that were run.
     template<typename TestEngineJobType>
@@ -157,6 +169,8 @@ namespace TestImpact
             // The individual timer for the test target expired
             case JobResult::Timeout:
                 return Client::TestRunResult::Timeout;
+            case JobResult::FailedToExecute:
+                return Client::TestRunResult::FailedToExecute;
             default:
                 throw(TestEngineException(AZStd::string::format("Unexpected job result: %u", static_cast<unsigned int>(meta.m_result))));
             }
@@ -219,7 +233,7 @@ namespace TestImpact
 
     //! Helper function to run the specified tests.
     template<typename TestJobRunner, typename TestTarget>
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> RunTests(
+    auto RunTests(
         TestJobRunner* testRunner,
         const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
         const AZStd::vector<const TestTarget*>& testTargets,
@@ -232,7 +246,7 @@ namespace TestImpact
         AZStd::optional<TestEngineJobCompleteCallback<TestTarget>> jobCallback,
         AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
     {
-        TestEngineJobMap<TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
+        TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTarget> engineJobs;
         auto [result, runnerJobs] = testRunner->RunTests(
             jobInfos,
             targetOutputCapture == Policy::TargetOutputCapture::None ? StdOutputRouting::None : StdOutputRouting::ToParent,
@@ -249,12 +263,12 @@ namespace TestImpact
             stdContentCallback);
 
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTarget>(testTargets, runnerJobs, AZStd::move(engineJobs));
-        return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
+        return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
     //! Helper function to generate the test engine job infos and the proceed to running the tests.
     template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
-    AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> GenerateJobInfosAndRunTests(
+    auto GenerateJobInfosAndRunTests(
         TestJobRunner* testRunner,
         TestJobInfoGenerator* jobInfoGenerator,
         const AZStd::vector<const TestTarget*>& testTargets,
@@ -280,5 +294,32 @@ namespace TestImpact
             jobCallback,
             stdContentCallback
         );
+    }
+
+    template<typename TestEngineJob>
+    auto GenerateInstrumentedRunResult(const AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJob>>& engineJobs, Policy::IntegrityFailure integrityFailurePolicy)
+    {
+        const auto& [result, engineRuns] = engineJobs;
+
+        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
+        // where a test target ran and completed its tests without incident yet failed to produce coverage data
+        if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+        {
+            for (const auto& engineRun : engineRuns)
+            {
+                if (const auto testResult = engineRun.GetTestResult();
+                    testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
+                {
+                    AZ_TestImpact_Eval(
+                        engineRun.GetCoverge().has_value(),
+                        TestEngineException,
+                        AZStd::string::format(
+                            "Test target %s completed its test run but failed to produce coverage data",
+                            engineRun.GetTestTarget()->GetName().c_str()));
+                }
+            }
+        }
+
+        return AZStd::pair{ result, engineRuns };
     }
 } // namespace TestImpact

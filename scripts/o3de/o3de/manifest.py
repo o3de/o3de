@@ -537,8 +537,10 @@ def get_project_json_data(project_name: str = None,
 
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
-
-    return get_json_data('project', project_path, validation.valid_o3de_project_json)
+    if pathlib.Path(project_path).is_file():
+        return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
+    else:
+        return get_json_data('project', project_path, validation.valid_o3de_project_json)
 
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -550,6 +552,7 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
+    # Call get_json_data_file if the path is an existing file as get_json_data appends gem.json
     if pathlib.Path(gem_path).is_file():
         return get_json_data_file(gem_path, 'gem', validation.valid_o3de_gem_json)
     else:
@@ -565,7 +568,11 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    return get_json_data('template', template_path, validation.valid_o3de_template_json)
+    # Call get_json_data_file if the path is an existing file as get_json_data appends template.json
+    if pathlib.Path(template_path).is_file():
+        return get_json_data_file(template_path, 'template', validation.valid_o3de_template_json)
+    else:
+        return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,

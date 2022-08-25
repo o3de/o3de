@@ -13,12 +13,23 @@ import uuid
 
 BUILD_INFO_KEY = 'build_info'
 CONFIG_PATH_KEY = 'config'
-BINARY_PATH_KEY = 'tiaf_bin'
+BINARY_PATH_KEY = 'runtime_bin'
 COMMON_CONFIG_KEY = "common"
 WORKSPACE_KEY = "workspace"
 ROOT_KEY = "root"
 TEMP_KEY = "temp"
 REPO_KEY = "repo"
+RELATIVE_PATHS_KEY = "relative_paths"
+HISTORIC_KEY = 'historic'
+HISTORIC_SEQUENCES_KEY = "historic_sequences"
+ACTIVE_KEY = "active"
+HISTORIC_KEY = "historic"
+TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
+PREVIOUS_TEST_RUN_DATA_FILE_KEY = "previous_test_run_data_file"
+LAST_COMMIT_HASH_KEY = "last_commit_hash"
+COVERAGE_DATA_KEY = "coverage_data"
+PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
+HISTORIC_DATA_FILE_KEY = "data"
 
 
 @pytest.fixture
@@ -28,7 +39,7 @@ def test_data_file(build_directory):
         return json.load(file)
 
 
-@pytest.fixture(scope='module', params=['profile', pytest.param('debug', marks=pytest.mark.skipif("True"))])
+@pytest.fixture(params=[pytest.param('profile', marks=pytest.mark.skipif("False")), pytest.param('debug', marks=pytest.mark.skipif("True"))])
 def build_type(request):
     """
     # debug build type disabled as we can't support testing this in AR as debug is not built
@@ -37,18 +48,32 @@ def build_type(request):
 
 
 @pytest.fixture
+def storage_config(runtime_type, config_data):
+    args_from_config = {}
+    args_from_config['active_workspace'] = config_data[runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
+    args_from_config['historic_workspace'] = config_data[runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
+    args_from_config['unpacked_coverage_data_file'] = config_data[runtime_type][
+        WORKSPACE_KEY][ACTIVE_KEY][RELATIVE_PATHS_KEY][TEST_IMPACT_DATA_FILE_KEY]
+    args_from_config['previous_test_run_data_file'] = config_data[runtime_type][WORKSPACE_KEY][
+        ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+    args_from_config['historic_data_file'] = config_data[runtime_type][WORKSPACE_KEY][
+        HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
+    return args_from_config
+
+
+@pytest.fixture
 def config_path(build_type, test_data_file):
     return test_data_file[BUILD_INFO_KEY][build_type][CONFIG_PATH_KEY]
 
 
 @pytest.fixture
-def binary_path(config_data):
-    return config_data[COMMON_CONFIG_KEY][REPO_KEY][BINARY_PATH_KEY]
+def binary_path(config_data, runtime_type):
+    return config_data[runtime_type][BINARY_PATH_KEY]
 
 
 @pytest.fixture()
-def report_path(build_type, config_data, mock_uuid):
-    return config_data[COMMON_CONFIG_KEY][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
+def report_path(runtime_type, config_data, mock_uuid):
+    return config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
 
 
 @pytest.fixture
@@ -68,6 +93,17 @@ def tiaf_args(config_path):
     args['suite'] = "main"
     args['test_failure_policy'] = "continue"
     return args
+
+
+@pytest.fixture
+def main_args(tiaf_args, runtime_type, request):
+    tiaf_args['runtime_type'] = runtime_type
+    return tiaf_args
+
+
+@pytest.fixture(params=["native", "python"])
+def runtime_type(request):
+    return request.param
 
 
 @pytest.fixture

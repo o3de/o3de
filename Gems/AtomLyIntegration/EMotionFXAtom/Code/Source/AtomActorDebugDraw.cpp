@@ -32,6 +32,7 @@ namespace AZ::Render
         : m_entityId(entityId)
     {
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
+        AZ_Assert(m_auxGeomFeatureProcessor, "AuxGeomFeatureProcessor doesn't exist. Check if it is missing from AnimViewport.setreg file.");
     }
 
     // Function for providing data required for debug drawing colliders
@@ -444,7 +445,7 @@ namespace AZ::Render
                 continue;
             }
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(parentIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }
@@ -500,7 +501,7 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
-            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(jointIndex) != cachedSelectedJointIndices->end())
+            if (cachedSelectedJointIndices && cachedSelectedJointIndices->find(parentIndex) != cachedSelectedJointIndices->end())
             {
                 renderColor = SelectedColor;
             }

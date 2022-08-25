@@ -217,15 +217,7 @@ SEditorSettings::SEditorSettings()
     //////////////////////////////////////////////////////////////////////////
     // Initialize GUI settings.
     //////////////////////////////////////////////////////////////////////////
-    gui.bWindowsVista = QOperatingSystemVersion::current() >= QOperatingSystemVersion(QOperatingSystemVersion::Windows7);
-
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
-
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
-    gui.nDefaultFontHieght = lfHeight;
-    gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
-    gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
-    gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     backgroundUpdatePeriod = 0;
     g_TemporaryLevelName = nullptr;
