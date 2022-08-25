@@ -30,5 +30,6 @@ namespace O3DE::ProjectManager
         QStringList m_includedGems;
         QStringList m_canonicalTags;
         QStringList m_userTags;
+        bool m_isRemote = false;
     };
 } // namespace O3DE::ProjectManager

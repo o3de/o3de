@@ -378,25 +378,22 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
         # Extract just the target name, ignoring the namespace
         if(TARGET ${qualified_target_name})
             set(target_to_add "")
-            string(REPLACE "::" ";" target_name_components ${qualified_target_name})
-            list(LENGTH target_name_components num_name_components)
-            if(num_name_components GREATER 1)
-                list(GET target_name_components 0 target_namespace)
-                list(GET target_name_components 1 target_name)
-                set(target_to_add ${target_name})
-            else()
-                set(target_to_add ${target_name})
-            endif()
-
-            if(NOT ${target_to_add} STREQUAL "")
+            get_target_property(is_imported ${qualified_target_name} IMPORTED)
+            get_target_property(is_gem_module ${qualified_target_name} GEM_MODULE)
+            # Skip third party dependencies
+            if(NOT is_imported OR is_gem_module)
+                string(REPLACE "::" ";" target_name_components ${qualified_target_name})
+                list(LENGTH target_name_components num_name_components)
+                if(num_name_components GREATER 1)
+                    list(GET target_name_components 1 target_name)
+                    set(target_to_add ${target_name})
+                else()
+                    set(target_to_add ${qualified_target_name})
+                endif()
                 # Extract the targets this target may alias
                 ly_extract_aliased_target_dependencies(${target_to_add} de_aliased_targets)
                 foreach(de_aliased_target ${de_aliased_targets})
-                    # Skip third party dependencies
-                    get_target_property(is_imported ${qualified_target_name} IMPORTED)
-                    if(NOT is_imported)
-                        list(APPEND dependencies "\"${de_aliased_target}\"")
-                    endif()
+                    list(APPEND dependencies "\"${de_aliased_target}\"")
                 endforeach()
             endif()
         endif()
@@ -405,6 +402,22 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
     # Convert to a comma separated list
     string (REPLACE ";" ",\n" dependencies "${dependencies}")
     set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
+endfunction()
+
+#! ly_get_target_type: retrieves the type of target (either production or test target).
+#
+# \arg:TARGET target to get the type for
+# \arg:TARGET_TYPE the retrieved target type
+function(ly_get_target_type TARGET TARGET_TYPE)
+    get_property(O3DE_ALL_TESTS_DE_NAMESPACED GLOBAL PROPERTY O3DE_ALL_TESTS_DE_NAMESPACED)
+    if(${target_name} IN_LIST O3DE_ALL_TESTS_DE_NAMESPACED)
+        set(target_type "test")
+    else()
+        set(target_type "production")
+    endif()
+
+    set(${TARGET_TYPE} ${target_type} PARENT_SCOPE)
+
 endfunction()
 
 #! ly_test_impact_export_source_target_mappings: exports the static source to target mappings to file.
@@ -425,6 +438,9 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
         set(target_name ${target})
         get_target_property(target_path_abs ${target} SOURCE_DIR)
         file(RELATIVE_PATH target_path ${LY_ROOT_FOLDER} ${target_path_abs})
+
+        # Target type
+        ly_get_target_type(${target_name} target_type)
 
         # Output name
         get_target_property(target_output_name ${target} OUTPUT_NAME)
