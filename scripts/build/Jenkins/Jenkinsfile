@@ -225,19 +225,10 @@ def GetCrashArtifactDir() {
     }
 }
 
-def GetEngineRemoteConfig(remoteConfigs) {
-    def engineRemoteConfigs = [
-        name: "${ENGINE_REPOSITORY_NAME}",
-        url: "${ENGINE_URL}",
-        credentialsId: remoteConfigs.credentialsId[0]
-    ]
-    return engineRemoteConfigs
-}
-
-def GetExtrasRemoteConfig(remoteConfigs) {
+def GetRemoteConfig(remoteConfigs, repositoryName, repositoryUrl) {
     def extrasRemoteConfigs = [
-        name: "${EXTRAS_REPOSITORY_NAME}",
-        url: "${EXTRAS_URL}",
+        name: repositoryName,
+        url: repositoryUrl,
         credentialsId: remoteConfigs.credentialsId[0]
     ]
     return extrasRemoteConfigs
@@ -280,7 +271,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [GetEngineRemoteConfig(scm.userRemoteConfigs)]
+        userRemoteConfigs: [GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL)]
     ])
 }
 
@@ -409,7 +400,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetEngineRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL), disableSubmodules, setEnvCommit)
 
             // Get python
             dir(pipelineConfig.PYTHON_DIR) {
@@ -446,7 +437,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
                 //checkout the extras branch
-                CheckoutRepo(the_branch, GetExtrasRemoteConfig(scm.userRemoteConfigs), disableSubmodules, setEnvCommit)
+                CheckoutRepo(the_branch, GetRemoteConfig(scm.userRemoteConfigs, repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
 
                 InstallAndPullGitLFS()
             }

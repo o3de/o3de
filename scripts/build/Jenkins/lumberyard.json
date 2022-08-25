@@ -13,6 +13,7 @@
         {
             "REPOSITORY_NAME": "o3de-extras",
             "ORGANIZATION_NAME": "aws-lumberyard-dev",
+            "URL": "https://github.com/aws-lumberyard-dev/o3de-extras.git",
             "DEVELOPMENT_BRANCH": "development"
         }
     ]
