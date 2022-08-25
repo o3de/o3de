@@ -27,6 +27,14 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::Null,
     "The color to use for the Angular Manipulator circle feedback display");
 
+AZ_CVAR(
+    AZ::Color,
+    ed_angularManipulatorCircleFeedbackRadiusSegmentColor,
+    AZ::Color::CreateFromRgba(255, 255, 255, 255),
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The color to use for the begin / end angle radius segments in the Angular Manipulator circle feedback display");
+
 namespace AzToolsFramework
 {
     void AngularManipulatorCircleViewFeedback::Display(
@@ -91,9 +99,10 @@ namespace AzToolsFramework
                 manipulatorState.m_localPosition + second * view->m_radius * viewScale);
         }
 
-        debugDisplay.SetColor(AZ::Color(1.f));
+        debugDisplay.SetColor(ed_angularManipulatorCircleFeedbackRadiusSegmentColor);
 
-        const auto drawRadiusSegment = [&](float angle)
+        const auto drawRadiusSegment =
+            [&debugDisplay, &fixedAxis, &initialPointToCenter, &manipulatorState, view, viewScale](float angle)
         {
             const auto direction = AZ::Quaternion::CreateFromAxisAngle(fixedAxis, angle).TransformVector(initialPointToCenter);
             debugDisplay.DrawLine(
