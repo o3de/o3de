@@ -9,12 +9,12 @@
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Utilities/ScreenUtilities.h>
+#include <AzQtComponents/Utilities/TextUtilities.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
-#include <AzQtComponents/Utilities/ScreenUtilities.h>
-#include <AzQtComponents/Utilities/TextUtilities.h>
 #include <QAbstractItemModel>
 #include <QApplication>
 #include <QFont>
@@ -72,9 +72,9 @@ namespace AzToolsFramework
             }
 
             infoString = QObject::tr("<table style=\"font-size: 10px;\"><tr><td>%1%2</td><td width=\"%3\"></td></tr></table>")
-                .arg(path.Filename().Native().data())
-                .arg(saveFlag)
-                .arg(m_prefabFileNameFontSize);
+                             .arg(path.Filename().Native().data())
+                             .arg(saveFlag)
+                             .arg(m_prefabFileNameFontSize);
         }
 
         return infoString;
@@ -126,8 +126,7 @@ namespace AzToolsFramework
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
         QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
-        const bool hasVisibleChildren =
-            firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
+        const bool hasVisibleChildren = firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
 
         QColor backgroundColor = m_prefabCapsuleColor;
@@ -173,7 +172,7 @@ namespace AzToolsFramework
                 bottomRect.setTop(bottomRect.top() + (bottomRect.height() / 2));
                 backgroundPath.addRect(bottomRect);
             }
-            
+
             // Regular rect, half height, to square the opposite border
             QRect squareRect = tempRect;
             if (isFirstColumn)
@@ -197,8 +196,8 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
-        const QModelIndex& descendantIndex) const
+    void PrefabUiHandler::PaintDescendantBackground(
+        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex) const
     {
         if (!painter)
         {
@@ -213,7 +212,7 @@ namespace AzToolsFramework
         {
             return;
         }
-        
+
         QColor borderColor = m_prefabCapsuleDisabledColor;
         if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
         {
@@ -244,7 +243,11 @@ namespace AzToolsFramework
     }
 
     void PrefabUiHandler::PaintDescendantBorder(
-        QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index, const QModelIndex& descendantIndex, const QColor borderColor) const
+        QPainter* painter,
+        const QStyleOptionViewItem& option,
+        const QModelIndex& index,
+        const QModelIndex& descendantIndex,
+        const QColor borderColor) const
     {
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
@@ -292,7 +295,6 @@ namespace AzToolsFramework
                 curvedCorner.arcTo(curveRect, 180, 90);
                 curvedCorner.lineTo(fullRect.bottomRight());
                 painter->drawPath(curvedCorner);
-
             }
             else if (isLastColumn)
             {
@@ -345,8 +347,7 @@ namespace AzToolsFramework
         const bool isHovered = (option.state & QStyle::State_MouseOver);
         const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
-        const bool isExpanded =
-            firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
+        const bool isExpanded = firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
             firstColumnIndex.model()->hasChildren(firstColumnIndex);
         const bool noChild = !index.model()->hasChildren(index);
 
@@ -505,4 +506,4 @@ namespace AzToolsFramework
         // Don't propagate event.
         return true;
     }
-}
+} // namespace AzToolsFramework
