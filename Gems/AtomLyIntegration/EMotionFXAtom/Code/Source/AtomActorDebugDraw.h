@@ -128,7 +128,7 @@ namespace AZ::Render
         static constexpr float BaseFontSize = 0.7f;
         const Vector3 TopRightBorderPadding = AZ::Vector3(-40.0f, 22.0f, 0.0f);
         const AZ::Color SelectedColor = AZ::Color{ 1.0f, 0.67f, 0.0f, 1.0f };
-        const AZ::Color HoveredColor = AZ::Color{ 0.0f, 0.0f, 1.0f, 1.0f };
+        const AZ::Color HoveredColor = AZ::Color{ 0.78f, 1.0f, 0.67f, 1.0f };
 
         RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
         AZStd::vector<AZ::Vector3> m_auxVertices;
