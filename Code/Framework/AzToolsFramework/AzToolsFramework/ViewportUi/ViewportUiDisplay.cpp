@@ -343,7 +343,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderBackButton.hide();
     }
 
-    inline const bool ViewportUiDisplay::GetViewportBorderVisible() const
+    bool ViewportUiDisplay::GetViewportBorderVisible() const
     {
         return m_viewportBorderText.isVisible();
     }
