@@ -136,12 +136,24 @@ namespace LmbrCentral
                 }
             }
 
+            // The handling of the intersection data cache within this shape is especially complex. It gets passed a pointer
+            // to a shared mutex that will get promoted to a unique lock only if the the cache is actually getting updated.
+            // However, we're managing our shared lock in a way where it might already be a unique lock, so we do the following:
+            // - If our shared mutex has a shared lock, we'll pass it down to the intersection data cache as-is.
+            // - If our shared mutex already has a unique lock, pass down a null pointer to the intersection data cache.
+            AZStd::shared_mutex* GetMutexForIntersectionDataCache()
+            {
+                // If unlockOnDestroy is set, it's because we have a shared lock, so we'll pass our shared mutex
+                // to the intersection data cache. Otherwise, we already have a unique, so pass down a nullptr to prevent
+                // the intersection data cache from trying to manage it.
+                return (m_unlockOnDestroy) ? &m_mutex : nullptr;
+            }
+
         private:
             PolygonPrismSharedLockGuard(const PolygonPrismSharedLockGuard&) = delete;
             PolygonPrismSharedLockGuard& operator=(const PolygonPrismSharedLockGuard&) = delete;
             AZStd::shared_mutex& m_mutex;
             bool m_unlockOnDestroy = false;
-
         };
 
         class PolygonPrismUniqueLockGuard

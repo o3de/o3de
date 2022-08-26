@@ -18,16 +18,22 @@
             <Parameter Name ="Source"/>
         </Function>
         
-        <Function Name="FromRotationAndTranslation">
-            <Parameter Name ="Rotation"/>
-            <Parameter Name ="Translation"/>
-        </Function>
-        
         <Function Name="FromScale">
             <Parameter Name ="Scale"/>
         </Function>
         
         <Function Name="FromTranslation">
+            <Parameter Name ="Translation"/>
+        </Function>
+        
+        <Function Name="FromRotationAndTranslation">
+            <Parameter Name ="Rotation"/>
+            <Parameter Name ="Translation"/>
+        </Function>
+
+        <Function Name="FromRotationScaleAndTranslation">
+            <Parameter Name ="Rotation"/>
+            <Parameter Name ="Scale"/>
             <Parameter Name ="Translation"/>
         </Function>
         

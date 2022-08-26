@@ -100,4 +100,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         COMPONENT
             Atom
     )
+    ly_add_pytest(
+        NAME AutomatedTesting::Atom_Main_Null_Render_MaterialEditor
+        TEST_SUITE main
+        TEST_SERIAL
+        TIMEOUT 700
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Null_Render_MaterialEditor_01.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            MaterialEditor
+        COMPONENT
+            Atom
+    )
 endif()

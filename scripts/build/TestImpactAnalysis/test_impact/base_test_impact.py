@@ -7,6 +7,7 @@
 #
 
 from abc import ABC, abstractmethod
+from doctest import REPORT_CDIFF
 import uuid
 from pathlib import PurePath, Path
 import json
@@ -17,6 +18,7 @@ from test_impact import RuntimeArgs
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
 from tiaf_tools import get_logger
+import tiaf_report_constants as constants
 
 logger = get_logger(__file__)
 
@@ -28,6 +30,7 @@ ARG_SOURCE_BRANCH = 'src_branch'
 ARG_DESTINATION_BRANCH = 'dst_branch'
 ARG_COMMIT = 'commit'
 ARG_S3_TOP_LEVEL_DIR = 's3_top_level_dir'
+ARG_SEQUENCE_OVERRIDE = 'sequence_override'
 ARG_INTEGRATION_POLICY = RuntimeArgs.COMMON_IPOLICY.driver_argument
 ARG_TEST_FAILURE_POLICY = RuntimeArgs.COMMON_FPOLICY.driver_argument
 ARG_CHANGE_LIST = RuntimeArgs.COMMON_CHANGELIST.driver_argument
@@ -39,7 +42,6 @@ TIA_NOWRITE = 'tianowrite'
 TIA_SEED = 'seed'
 TIA_ON = 'tia'
 TIA_REGULAR = 'regular'
-    
 
 
 class BaseTestImpact(ABC):
@@ -128,7 +130,7 @@ class BaseTestImpact(ABC):
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
-        args[ARG_SEQUENCE] = sequence_type
+        args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE, sequence_type)
         self._report_file = PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file
@@ -196,10 +198,10 @@ class BaseTestImpact(ABC):
         try:
             if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch)
+                    self._config, suite, self._dst_commit, s3_bucket, self._compile_s3_top_level_dir_name(s3_top_level_dir), self._source_of_truth_branch, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file)
             else:
                 return PersistentStorageLocal(
-                    self._config, suite, self._dst_commit)
+                    self._config, suite, self._dst_commit, self._active_workspace, self._unpacked_coverage_data_file, self._previous_test_run_data_file, self._historic_workspace, self._historic_data_file)
         except SystemError as e:
             logger.warning(
                 f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
@@ -229,17 +231,36 @@ class BaseTestImpact(ABC):
         @param config_file: The runtime config file to obtain the runtime configuration data from.
         """
 
+        COMMON_CONFIG_KEY = "common"
+        WORKSPACE_KEY = "workspace"
+        HISTORIC_SEQUENCES_KEY = "historic_sequences"
+        ACTIVE_KEY = "active"
+        ROOT_KEY = "root"
+        TEMP_KEY = "temp"
+        REPO_KEY = "repo"
+        HISTORIC_KEY = "historic"
+        RELATIVE_PATHS_KEY = "relative_paths"
+        TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
+        PREVIOUS_TEST_RUN_DATA_FILE_KEY = "previous_test_run_data_file"
+        LAST_COMMIT_HASH_KEY = "last_commit_hash"
+        COVERAGE_DATA_KEY = "coverage_data"
+        PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
+        HISTORIC_DATA_FILE_KEY = "data"
+        JENKINS_KEY = "jenkins"
+        USE_TIAF_KEY = "use_test_impact_analysis"
+        RUNTIME_BIN_KEY = "runtime_bin"
+
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
         try:
             with open(config_file, "r") as config_data:
                 config = json.load(config_data)
-                self._repo_dir = config["common"]["repo"]["root"]
+                self._repo_dir = config[COMMON_CONFIG_KEY][REPO_KEY][ROOT_KEY]
                 self._repo = Repo(self._repo_dir)
 
                 # TIAF
-                self._use_test_impact_analysis = config["common"]["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = Path(config["common"]["repo"]["tiaf_bin"])
+                self._use_test_impact_analysis = config[COMMON_CONFIG_KEY][JENKINS_KEY][USE_TIAF_KEY]
+                self._tiaf_bin = Path(config[self.runtime_type][RUNTIME_BIN_KEY])
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(
                         f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
@@ -249,9 +270,15 @@ class BaseTestImpact(ABC):
                         f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
-                self._active_workspace = config["common"]["workspace"]["active"]["root"]
-                self._historic_workspace = config["common"]["workspace"]["historic"]["root"]
-                self._temp_workspace = config["common"]["workspace"]["temp"]["root"]
+                self._active_workspace = config[self.runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
+                self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
+                self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
+                self._unpacked_coverage_data_file = config[self.runtime_type][
+                    WORKSPACE_KEY][ACTIVE_KEY][RELATIVE_PATHS_KEY][TEST_IMPACT_DATA_FILE_KEY]
+                self._previous_test_run_data_file = config[self.runtime_type][WORKSPACE_KEY][
+                    ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
+                self._historic_data_file = config[self.runtime_type][WORKSPACE_KEY][
+                    HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
@@ -350,6 +377,7 @@ class BaseTestImpact(ABC):
             self._has_change_list = False
             return
 
+    
     def _generate_result(self, s3_bucket: str, suite: str, return_code: int, report: dict, runtime_args: list):
         """
         Generates the result object from the pertinent runtime meta-data and sequence report.
@@ -358,22 +386,23 @@ class BaseTestImpact(ABC):
         """
 
         result = {}
-        result["src_commit"] = self._src_commit
-        result["dst_commit"] = self._dst_commit
-        result["commit_distance"] = self._commit_distance
-        result["src_branch"] = self._src_branch
-        result["dst_branch"] = self._dst_branch
-        result["suite"] = suite
-        result["use_test_impact_analysis"] = self._use_test_impact_analysis
-        result["source_of_truth_branch"] = self._source_of_truth_branch
-        result["is_source_of_truth_branch"] = self._is_source_of_truth_branch
-        result["has_change_list"] = self._has_change_list
-        result["has_historic_data"] = self._has_historic_data
-        result["s3_bucket"] = s3_bucket
-        result["runtime_args"] = runtime_args
-        result["return_code"] = return_code
-        result["report"] = report
-        result["change_list"] = self._change_list
+        result[constants.SRC_COMMIT_KEY] = self._src_commit
+        result[constants.DST_COMMIT_KEY] = self._dst_commit
+        result[constants.COMMIT_DISTANCE_KEY] = self._commit_distance
+        result[constants.SRC_BRANCH_KEY] = self._src_branch
+        result[constants.DST_BRANCH_KEY] = self._dst_branch
+        result[constants.SUITE_KEY] = suite
+        result[constants.USE_TEST_IMPACT_ANALYSIS_KEY] = self._use_test_impact_analysis
+        result[constants.SOURCE_OF_TRUTH_BRANCH_KEY] = self._source_of_truth_branch
+        result[constants.IS_SOURCE_OF_TRUTH_BRANCH_KEY] = self._is_source_of_truth_branch
+        result[constants.HAS_CHANGE_LIST_KEY] = self._has_change_list
+        result[constants.HAS_HISTORIC_DATA_KEY] = self._has_historic_data
+        result[constants.S3_BUCKET_KEY] = s3_bucket
+        result[constants.RUNTIME_ARGS_KEY] = runtime_args
+        result[constants.RUNTIME_RETURN_CODE_KEY] = return_code
+        result[constants.REPORT_KEY] = report
+        result[constants.CHANGE_LIST_KEY] = self._change_list
+        result[constants.RUNTIME_TYPE_KEY] = self.runtime_type
         return result
 
     def _compile_s3_top_level_dir_name(self, dir_name: str):
@@ -390,6 +419,34 @@ class BaseTestImpact(ABC):
             return dir_name
         raise SystemError(
             "s3_top_level_dir not set while trying to access s3 instance.")
+    
+    
+    def _extract_test_runs_from_test_run_report(self, report: dict):
+        """
+        Extract all test runs from a test run report and store in one list
+        @param report: The test run report.
+        """
+        test_runs = []
+        test_runs += report[constants.PASSING_TEST_RUNS_KEY]
+        test_runs += report[constants.FAILING_TEST_RUNS_KEY]
+        test_runs += report[constants.EXECUTION_FAILURE_TEST_RUNS_KEY]
+        test_runs += report[constants.TIMED_OUT_TEST_RUNS_KEY]
+        test_runs += report[constants.UNEXECUTED_TEST_RUNS_KEY]
+        return test_runs
+
+    
+    def _extract_test_runs_from_sequence_report(self, report):
+        """
+        Extract all relevant test runs from the report generated by the TIAF runtime.
+        @param report: The report generated by the TIAF runtime, in dict format.
+        """
+        report_type = report[constants.SEQUENCE_TYPE_KEY]
+        test_runs = self._extract_test_runs_from_test_run_report(report[constants.SELECTED_TEST_RUN_REPORT_KEY])
+
+        if report_type == constants.IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or report_type == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+            test_runs = test_runs + self._extract_test_runs_from_test_run_report(report[constants.DRAFTED_TEST_RUN_REPORT_KEY])
+            if report_type == constants.SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
+                test_runs = test_runs + self._extract_test_runs_from_test_run_report(report[constants.DISCARDED_TEST_RUN_REPORT_KEY])
 
     def run(self):
         """
@@ -402,8 +459,8 @@ class BaseTestImpact(ABC):
         """
         unpacked_args = " ".join(self._runtime_args)
         logger.info(f"Args: {unpacked_args}")
-        runtime_result = subprocess.run(
-            [str(self._tiaf_bin)] + self._runtime_args)
+        args = [str(self._tiaf_bin)] + self._runtime_args
+        runtime_result = subprocess.run(args, shell=True)
         report = None
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
@@ -418,7 +475,7 @@ class BaseTestImpact(ABC):
 
             # Attempt to store the historic data for this branch and sequence
             if self._is_source_of_truth_branch and self._persistent_storage:
-                self._persistent_storage.update_and_store_historic_data()
+                self._persistent_storage.update_and_store_historic_data(test_runs)
         else:
             logger.error(
                 f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")

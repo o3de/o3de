@@ -10,7 +10,7 @@
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/parallel/lock.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
 

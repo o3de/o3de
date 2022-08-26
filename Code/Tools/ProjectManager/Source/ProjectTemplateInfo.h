@@ -8,27 +8,16 @@
 
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <QString>
-#include <QStringList>
-#endif
+#include "TemplateInfo.h"
 
 namespace O3DE::ProjectManager
 {
-    class ProjectTemplateInfo
+    class ProjectTemplateInfo : public TemplateInfo
     {
     public:
         ProjectTemplateInfo() = default;
-        ProjectTemplateInfo(const QString& path);
+        ProjectTemplateInfo(const TemplateInfo& templateInfo) : TemplateInfo(templateInfo) {};
 
-        bool IsValid() const;
-
-        QString m_displayName;
-        QString m_name;
-        QString m_path;
-        QString m_summary;
         QStringList m_includedGems;
-        QStringList m_canonicalTags;
-        QStringList m_userTags;
     };
 } // namespace O3DE::ProjectManager

@@ -19,7 +19,7 @@
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 
-#define ANY_JSON_REFERENCE_STRING_FORMAT "{\n\t\"$type\": \"%s\",\n\t\"value\": %s\n}"
+#define ANY_JSON_REFERENCE_STRING_FORMAT "{\n\t\"$type\": \"%s\",\n\t\"Value\": %s\n}"
 
 namespace JsonSerializationTests
 {

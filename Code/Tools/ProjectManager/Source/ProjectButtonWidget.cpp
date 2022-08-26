@@ -89,6 +89,12 @@ namespace O3DE::ProjectManager
         m_warningIcon->setVisible(false);
         horizontalWarningMessageLayout->addWidget(m_warningIcon);
 
+        m_cloudIcon = new QLabel(this);
+        m_cloudIcon->setObjectName("projectCloudIconOverlay");
+        m_cloudIcon->setPixmap(QIcon(":/Download.svg").pixmap(32, 32));
+        m_cloudIcon->setVisible(false);
+        horizontalWarningMessageLayout->addWidget(m_cloudIcon);
+
         horizontalWarningMessageLayout->addSpacing(15);
 
         verticalMessageLayout->addLayout(horizontalWarningMessageLayout);
@@ -124,6 +130,35 @@ namespace O3DE::ProjectManager
         m_buildingAnimation->setMovie(new QMovie(":/SpinningGears.webp"));
         m_buildingAnimation->movie()->start();
         verticalCenterLayout->addWidget(m_buildingAnimation);
+
+        // Download Progress
+        QWidget* m_downloadProgress = new QWidget(this);
+        m_progessBar = new QProgressBar(this);
+        m_progessBar->setVisible(false);
+
+        QVBoxLayout* downloadProgressLayout = new QVBoxLayout();
+        QHBoxLayout* downloadProgressTextLayout = new QHBoxLayout();
+
+        m_downloadMessageLabel = new QLabel(tr("Downloading Project"), this);
+        m_downloadMessageLabel->setAlignment(Qt::AlignCenter);
+        m_downloadMessageLabel->setVisible(false);
+        verticalCenterLayout->addWidget(m_downloadMessageLabel);
+
+        downloadProgressTextLayout->addSpacing(25);
+        m_progressMessageLabel = new QLabel(tr("0%"), this);
+        m_progressMessageLabel->setAlignment(Qt::AlignRight);
+        m_progressMessageLabel->setVisible(false);
+        downloadProgressTextLayout->addWidget(m_progressMessageLabel);
+        downloadProgressTextLayout->addSpacing(25);
+        verticalCenterLayout->addLayout(downloadProgressTextLayout);
+
+        QHBoxLayout* progressbarLayout = new QHBoxLayout();
+        downloadProgressLayout->addLayout(progressbarLayout);
+        m_downloadProgress->setLayout(downloadProgressLayout);
+        progressbarLayout->addSpacing(20);
+        progressbarLayout->addWidget(m_progessBar);
+        progressbarLayout->addSpacing(20);
+        verticalCenterLayout->addWidget(m_downloadProgress);
 
         m_projectOverlayLayout->addWidget(middleWidget);
 
@@ -186,6 +221,11 @@ namespace O3DE::ProjectManager
         return m_warningIcon;
     }
 
+    QLabel* LabelButton::GetCloudIcon()
+    {
+        return m_cloudIcon;
+    }
+
     QSpacerItem* LabelButton::GetWarningSpacer()
     {
         return m_warningSpacer;
@@ -221,6 +261,20 @@ namespace O3DE::ProjectManager
         return m_darkenOverlay;
     }
 
+    QProgressBar* LabelButton::GetProgressBar()
+    {
+        return m_progessBar;
+    }
+
+    QLabel* LabelButton::GetProgressPercentage()
+    {
+        return m_progressMessageLabel;
+    }
+
+    QLabel* LabelButton::GetDownloadMessageLabel()
+    {
+        return m_downloadMessageLabel;
+    }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent)
         : QFrame(parent)
@@ -368,6 +422,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetState(enum ProjectButtonState state)
     {
         m_currentState = state;
+        ResetButtonWidgets();
 
         switch (state)
         {
@@ -386,6 +441,12 @@ namespace O3DE::ProjectManager
             break;
         case ProjectButtonState::BuildFailed:
             ShowBuildFailedState();
+            break;
+        case ProjectButtonState::NotDownloaded:
+            ShowNotDownloadedState();
+            break;
+        case ProjectButtonState::Downloading:
+            ShowDownloadingState();
             break;
         }
     }
@@ -407,13 +468,10 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ShowLaunchingState()
     {
-        HideContextualLabelButtonWidgets();
-
-        SetLaunchingEnabled(false);
-        SetProjectBuilding(false);
-
         // Hide button in-case it is still showing
         m_projectImageLabel->GetOpenEditorButton()->hide();
+
+        SetLaunchingEnabled(false);
 
         ShowMessage(tr("Opening Editor..."));
     }
@@ -447,6 +505,26 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetShowLogsButton()->setVisible(!m_projectInfo.m_logUrl.isEmpty());
 
         ShowWarning(tr("Failed to build"));
+    }
+
+    void ProjectButton::ShowNotDownloadedState()
+    {
+        m_projectImageLabel->GetCloudIcon()->setVisible(true);
+        m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+        SetLaunchingEnabled(false);
+    }
+
+    void ProjectButton::ShowDownloadingState()
+    {
+        m_projectImageLabel->GetCloudIcon()->setVisible(true);
+        m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+        m_projectImageLabel->GetDownloadMessageLabel()->setVisible(true);
+        m_projectImageLabel->GetProgressPercentage()->setVisible(true);
+        m_projectImageLabel->GetProgressBar()->setVisible(true);
+
+        SetLaunchingEnabled(false);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -484,6 +562,12 @@ namespace O3DE::ProjectManager
         m_projectInfo.m_logUrl = logUrl;
     }
 
+    void ProjectButton::SetProgressBarPercentage(const float percent)
+    {
+        m_projectImageLabel->GetProgressBar()->setValue(static_cast<int>(percent*100));
+        m_projectImageLabel->GetProgressPercentage()->setText(QString("%1%").arg(static_cast<int>(percent*100)));
+    }
+
     void ProjectButton::SetContextualText(const QString& text)
     {
         if (m_currentState == ProjectButtonState::Building)
@@ -516,6 +600,17 @@ namespace O3DE::ProjectManager
         connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMakeGUI(m_projectInfo); });
 
         projectActionButton->setMenu(menu);
+    }
+
+    void ProjectButton::ResetButtonWidgets()
+    {
+        HideContextualLabelButtonWidgets();
+        SetProjectBuilding(false);
+        SetProgressBarPercentage(0);
+
+        m_projectImageLabel->GetDownloadMessageLabel()->setVisible(false);
+        m_projectImageLabel->GetProgressPercentage()->setVisible(false);
+        m_projectImageLabel->GetProgressBar()->setVisible(false);
     }
 
     // Only setting message without setting submessage will hide submessage

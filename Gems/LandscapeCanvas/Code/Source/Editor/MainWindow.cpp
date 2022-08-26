@@ -35,7 +35,7 @@
 // Gradient Signal
 #include <GradientSignal/Ebuses/GradientPreviewContextRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
-#include <GradientSignal/Editor/EditorGradientBakerRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 
 // Qt
 #include <QApplication>
@@ -104,8 +104,12 @@
 #include <Editor/Nodes/Shapes/CylinderShapeNode.h>
 #include <Editor/Nodes/Shapes/DiskShapeNode.h>
 #include <Editor/Nodes/Shapes/PolygonPrismShapeNode.h>
+#include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
+#include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
+#include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
 #include <EditorLandscapeCanvasComponent.h>
 
@@ -235,7 +239,7 @@ namespace LandscapeCanvasEditor
         // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
-        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+        static const QStringList preferredCategories = { "Vegetation", "Graphics/Mesh" };
 
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
         for (const auto& categoryName : preferredCategories)
@@ -384,8 +388,18 @@ namespace LandscapeCanvasEditor
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, CylinderShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, DiskShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, PolygonPrismShapeNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(shapeCategory, ReferenceShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, SphereShapeNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(shapeCategory, TubeShapeNode, editorId);
+
+        // Don't give the Terrain options if the gem isn't present.
+        bool terrainGemIsPresent = AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("TerrainService"));
+        if (terrainGemIsPresent)
+        {
+            GraphCanvas::IconDecoratedNodePaletteTreeItem* terrainCategory = rootItem->CreateChildNode<GraphCanvas::IconDecoratedNodePaletteTreeItem>("Terrain", editorId);
+            terrainCategory->SetTitlePalette("TerrainNodeTitlePalette");
+            REGISTER_NODE_PALETTE_ITEM(terrainCategory, TerrainLayerSpawnerNode, editorId);
+        }
 
         GraphModelIntegration::AddCommonNodePaletteUtilities(rootItem, editorId);
 
@@ -443,6 +457,17 @@ namespace LandscapeCanvasEditor
                 category->DetachItem();
             }
         }
+
+        return rootItem;
+    }
+
+    GraphCanvas::GraphCanvasTreeItem* GetTerrainExtendersNodePaletteRoot(const GraphCanvas::EditorId& editorId, AZ::EntityId entityId)
+    {
+        using namespace LandscapeCanvas;
+        GraphCanvas::NodePaletteTreeItem* rootItem = aznew GraphCanvas::NodePaletteTreeItem("Root", editorId);
+
+        REGISTER_NODE_PALETTE_ITEM_UNIQUE(rootItem, TerrainHeightGradientListNode, editorId, entityId);
+        REGISTER_NODE_PALETTE_ITEM_UNIQUE(rootItem, TerrainSurfaceGradientListNode, editorId, entityId);
 
         return rootItem;
     }
@@ -1029,13 +1054,25 @@ namespace LandscapeCanvasEditor
         AZ::EntityId entityId = baseNode->GetVegetationEntityId();
 
         GraphCanvas::NodePaletteConfig config;
-        config.m_rootTreeItem = GetAreaExtendersNodePaletteRoot(GetEditorId(), entityId);
         config.m_editorId = GetEditorId();
         config.m_mimeType = LandscapeCanvas::MIME_EVENT_TYPE;
         config.m_isInContextMenu = true;
         config.m_saveIdentifier = LandscapeCanvas::CONTEXT_MENU_SAVE_IDENTIFIER;
 
-        // Create the Context Menu with embedded Node Palette for adding Filters/Modifiers to Layers
+        switch (baseNode->GetBaseNodeType())
+        {
+        case LandscapeCanvas::BaseNode::TerrainArea:
+            config.m_rootTreeItem = GetTerrainExtendersNodePaletteRoot(GetEditorId(), entityId);
+            break;
+        case LandscapeCanvas::BaseNode::VegetationArea:
+            config.m_rootTreeItem = GetAreaExtendersNodePaletteRoot(GetEditorId(), entityId);
+            break;
+        default:
+            AZ_Assert(false, "Unsupported node type: %d", baseNode->GetBaseNodeType());
+            return;
+        }
+
+        // Create the Context Menu with embedded Node Palette for adding extenders to the wrapped node
         // The ownership of this Node Palette is passed to the context menu
         LayerExtenderContextMenu menu(config, this);
         menu.exec(screenPoint);
@@ -1056,7 +1093,7 @@ namespace LandscapeCanvasEditor
                 GraphModel::NodePtr node;
                 GraphModelIntegration::GraphControllerRequestBus::EventResult(node, graphId, &GraphModelIntegration::GraphControllerRequests::GetNodeById, nodeId);
 
-                // Wrap the created Filter or Modifier node on its parent layer node.
+                // Wrap the extender node on its parent wrapped node.
                 AZ::u32 layoutOrder = GetWrappedNodeLayoutOrder(node);
                 GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::WrapNodeOrdered, wrapperNode, node, layoutOrder);
             }
@@ -1217,7 +1254,7 @@ namespace LandscapeCanvasEditor
     QString MainWindow::GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex)
     {
         static const char* ConfigurationPropertyPrefix = "Configuration|";
-        static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
+        static const char* PreviewEntityIdPropertyPath = "Previewer|Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
         static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
@@ -1252,13 +1289,30 @@ namespace LandscapeCanvasEditor
         } break;
         case LandscapeCanvas::LandscapeCanvasDataTypeEnum::Gradient:
         {
-            propertyPath = GradientEntityIdPropertyPath;
+            GraphModel::NodePtr targetNode = slot->GetParentNode();
+            auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
+            auto targetBaseNodeType = targetBaseNode->GetBaseNodeType();
+
+            if (targetBaseNodeType != LandscapeCanvas::BaseNode::TerrainExtender)
+            {
+                propertyPath = GradientEntityIdPropertyPath;
+            }
 
             // Special case handling of some gradient properties for extendable gradient mixers
             // and the position modifier which are nested under group elements
             if (slot->SupportsExtendability())
             {
-                propertyPath.prepend(QString("Layers|[%1]|").arg(elementIndex));
+                QString gradientListName;
+                if (targetBaseNodeType == LandscapeCanvas::BaseNode::TerrainExtender)
+                {
+                    gradientListName = "Gradient Entities|[%1]";
+                }
+                else
+                {
+                    gradientListName = "Layers|[%1]|";
+                }
+
+                propertyPath.prepend(gradientListName.arg(elementIndex));
             }
             else if (slotName == LandscapeCanvas::BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_ID
                 || slotName == LandscapeCanvas::BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_ID
@@ -1266,14 +1320,13 @@ namespace LandscapeCanvasEditor
             {
                 // The X/Y/Z supported nodes are Position/Rotation modifiers, so we need
                 // to figure out which one this is to get the right property path
-                GraphModel::NodePtr node = slot->GetParentNode();
-                if (node)
+                if (targetNode)
                 {
                     // The node titles are "Position Modifier" or "Rotation Modifier", and
                     // the property path is expecting Position/Rotation|Gradient|Gradient Entity Id
                     // so we need to parse the "Position"/"Rotation" out of the title to use
                     // in the property path
-                    QStringList parts = QString(node->GetTitle()).split(' ');
+                    QStringList parts = QString(targetNode->GetTitle()).split(' ');
                     AZ_Assert(!parts.empty(), "Unrecognized node title");
                     propertyPath.prepend(QString("%1 %2|").arg(parts[0]).arg(slotName.back()));
                 }
@@ -1566,8 +1619,8 @@ namespace LandscapeCanvasEditor
         // So we need to use the corresponding request bus APIs to update the image asset path on
         // the Image Gradient
         AZ::IO::Path outputImagePath;
-        GradientSignal::GradientBakerRequestBus::EventResult(
-            outputImagePath, sourceEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+        GradientSignal::GradientImageCreatorRequestBus::EventResult(
+            outputImagePath, sourceEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
         if (!outputImagePath.empty())
         {
@@ -3057,7 +3110,7 @@ namespace LandscapeCanvasEditor
             GradientPreviewThumbnailItem* previewThumbnail = new GradientPreviewThumbnailItem(gradientEntityId);
             GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::SetThumbnailOnNode, node, previewThumbnail);
         }
-        else if (nodeType == LandscapeCanvas::BaseNode::VegetationArea)
+        else if ((nodeType == LandscapeCanvas::BaseNode::VegetationArea || nodeType == LandscapeCanvas::BaseNode::TerrainArea) && (node->GetNodeType() == GraphModel::NodeType::WrapperNode))
         {
             GraphModelIntegration::GraphControllerRequestBus::Event(graphId, &GraphModelIntegration::GraphControllerRequests::SetWrapperNodeActionString, node, QObject::tr("Add Extenders").toUtf8().constData());
         }
@@ -3355,8 +3408,8 @@ namespace LandscapeCanvasEditor
                 }
 
                 AZ::IO::Path outputImagePath;
-                GradientSignal::GradientBakerRequestBus::EventResult(
-                    outputImagePath, nodeEntityId, &GradientSignal::GradientBakerRequests::GetOutputImagePath);
+                GradientSignal::GradientImageCreatorRequestBus::EventResult(
+                    outputImagePath, nodeEntityId, &GradientSignal::GradientImageCreatorRequests::GetOutputImagePath);
 
                 if (imageSourceAssetPath == outputImagePath)
                 {

@@ -43,6 +43,14 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult.GetTranslation(), AZ::Vector3::CreateOne());
     }
 
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, FromRotationScaleAndTranslation_Call_GetExpectedResult)
+    {
+        auto actualResult = TransformFunctions::FromRotationScaleAndTranslation(AZ::Quaternion::CreateIdentity(), 2.0, AZ::Vector3::CreateOne());
+        EXPECT_EQ(actualResult.GetUniformScale(), 2);
+        EXPECT_EQ(actualResult.GetRotation(), AZ::Quaternion::CreateIdentity());
+        EXPECT_EQ(actualResult.GetTranslation(), AZ::Vector3::CreateOne());
+    }
+
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromScale_Call_GetExpectedResult)
     {
         auto actualResult = TransformFunctions::FromScale(5);

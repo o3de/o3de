@@ -9,7 +9,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Frustum.h>
@@ -677,19 +679,19 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
+    void AtomDebugDisplayViewportInterface::DrawPolyLine(AZStd::span<const AZ::Vector3> points, bool cycled)
     {
         if (m_auxGeomPtr)
         {
-            AZStd::vector<AZ::Vector3> wsPoints(static_cast<size_t>(numPoints));
-            for (int index = 0; index < numPoints; ++index)
-            {
-                wsPoints[index] = ToWorldSpacePosition(pnts[index]);
-            }
+            AZStd::vector<AZ::Vector3> wsPoints;
+            wsPoints.resize_no_construct(points.size());
+            AZStd::transform(points.begin(), points.end(), wsPoints.begin(), [&](auto& pnt) {
+                return ToWorldSpacePosition(pnt);
+            });
             AZ::RPI::AuxGeomDraw::PolylineEnd polylineEnd = cycled ? AZ::RPI::AuxGeomDraw::PolylineEnd::Closed : AZ::RPI::AuxGeomDraw::PolylineEnd::Open;
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = wsPoints.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(numPoints);
+            drawArgs.m_vertCount = aznumeric_cast <uint32_t>(wsPoints.size());
             drawArgs.m_colors = &m_rendState.m_color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
@@ -699,6 +701,11 @@ namespace AZ::AtomBridge
             drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
             m_auxGeomPtr->DrawPolylines(drawArgs, polylineEnd);
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
+    {
+        DrawPolyLine(AZStd::span<const AZ::Vector3>(pnts, numPoints), cycled);
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z)
