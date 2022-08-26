@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Session/ISessionHandlingRequests.h>
 #include <Multiplayer/Session/SessionNotifications.h>
