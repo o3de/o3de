@@ -271,7 +271,7 @@ namespace AzToolsFramework::ViewportUi
         return m_viewportUi->GetViewportBorderVisible();
     }
 
-    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string borderTitle)
+    void ViewportUiManager::ChangeViewportBorderText(const AZStd::string& borderTitle)
     {
         m_viewportUi->ChangeViewportBorderText(borderTitle.c_str());
     }
