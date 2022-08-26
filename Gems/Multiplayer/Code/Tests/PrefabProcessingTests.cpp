@@ -29,7 +29,7 @@ namespace UnitTest
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext);
 
         explicit TestPrefabProcessorContext(const AZ::Uuid& sourceUuid)
-            : AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext(sourceUuid)
+            : PrefabProcessorContext(sourceUuid)
         {
         }
 
@@ -121,6 +121,19 @@ namespace UnitTest
             return childIndex > parentIndex;
         }
 
+        static bool ContainsEntity(const AzFramework::Spawnable::EntityList& entityList, const AZStd::string& name)
+        {
+            for (const auto& entity : entityList)
+            {
+                if (entity->GetName() == name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         const AZStd::string m_staticEntityName = "static_floor";
         const AZStd::string m_netEntityName = "networked_entity";
 
@@ -157,17 +170,10 @@ namespace UnitTest
 
         // Verify we have only the networked entity in the network spawnable and not the static one
         const AzFramework::Spawnable* netSpawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
-        const AzFramework::Spawnable::EntityList& entityList = netSpawnable->GetEntities();
-        auto countEntityCallback = [](const auto& name)
-        {
-            return [name](const auto& entity)
-            {
-                return entity->GetName() == name;
-            };
-        };
+        const AzFramework::Spawnable::EntityList& networkSpawnableEntityList = netSpawnable->GetEntities();
 
-        EXPECT_EQ(0, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_staticEntityName)));
-        EXPECT_EQ(1, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_netEntityName)));
+        EXPECT_FALSE(ContainsEntity(networkSpawnableEntityList, m_staticEntityName));
+        EXPECT_TRUE(ContainsEntity(networkSpawnableEntityList, m_netEntityName));
     }
 
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NonNetEntityDoesNotProduceNetSpawnable)
@@ -281,6 +287,7 @@ namespace UnitTest
             const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
 
             EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+            EXPECT_FALSE(ContainsEntity(entityList, parentName));
         }
     }
 
@@ -325,5 +332,26 @@ namespace UnitTest
         // Verify that the nested network entity was discovered by the network prefab processor (NetworkPrefabProcessor::ProcessPrefab)
         // and 2 processed objects (spawnable and network.spawnable) were produced.
         EXPECT_EQ(processedObjects.size(), 2);
+
+        // Static spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_TRUE(IsChildAfterParent(childName, parentName, entityList));
+            EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+        }
+
+        // Network spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[1].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_FALSE(ContainsEntity(entityList, parentName));
+            EXPECT_FALSE(ContainsEntity(entityList, childName));
+            EXPECT_TRUE(ContainsEntity(entityList, childOfChildName));
+        }
     }
 } // namespace UnitTest
