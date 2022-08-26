@@ -167,7 +167,7 @@ namespace O3DE::ProjectManager
         }
         else if (m_stack->currentWidget() == m_gemRepoScreen)
         {
-            m_header->setSubTitle(tr("Gem Repositories"));
+            m_header->setSubTitle(tr("Remote Sources"));
             m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Back"));
             m_primaryButton->setVisible(false);

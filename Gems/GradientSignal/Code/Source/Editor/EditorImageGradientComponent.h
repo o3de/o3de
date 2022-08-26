@@ -14,6 +14,8 @@
 #include <GradientSignal/Editor/GradientPreviewer.h>
 
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
+#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
 
 #include <Editor/EditorImageGradientRequestBus.h>
 
@@ -28,6 +30,7 @@ namespace GradientSignal
         , protected LmbrCentral::DependencyNotificationBus::Handler
         , private GradientImageCreatorRequestBus::Handler
         , private EditorImageGradientRequestBus::Handler
+        , private AzToolsFramework::PaintBrushNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -73,22 +76,35 @@ namespace GradientSignal
             CreateNewImage
         };
 
+        // EditorImageGradientRequestBus overrides ...
+        void StartImageModification() override;
+        void EndImageModification() override;
+        bool SaveImage() override;
 
         bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
         void CreateImage();
-        bool SaveImage() override;
         bool SaveImageInternal(
             AZ::IO::Path& fullPath, AZStd::string& relativePath,
             int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer);
 
         AZ::u32 RefreshCreationSelectionChoice();
         bool GetImageCreationVisibility() const;
+        AZ::Crc32 GetImageOptionsVisibility() const;
         AZ::Crc32 GetPaintModeVisibility() const;
+        bool GetImageOptionsReadOnly() const;
 
         bool RefreshImageAssetStatus();
         static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
 
-        bool InComponentMode();
+        bool InComponentMode() const;
+
+        // PaintBrushNotificationBus overrides...
+        // These are used to keep the paintbrush config in sync with the current manipulator.
+        void OnIntensityChanged(float intensity) override;
+        void OnOpacityChanged(float opacity) override;
+        void OnRadiusChanged(float radius) override;
+
+        AZ::u32 PaintBrushSettingsChanged();
 
         ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
 
@@ -107,6 +123,7 @@ namespace GradientSignal
         //! Delegates the handling of component editing mode to a paint controller.
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate;
+        AzToolsFramework::PaintBrushConfig m_paintBrush;
 
         //! Preview of the gradient image
         GradientPreviewer m_previewer;
@@ -116,5 +133,6 @@ namespace GradientSignal
         ImageGradientConfig m_configuration;
         bool m_visible = true;
         bool m_runtimeComponentActive = false;
+
     };
 }

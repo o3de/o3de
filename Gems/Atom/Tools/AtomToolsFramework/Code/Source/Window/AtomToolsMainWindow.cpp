@@ -14,12 +14,14 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
 #include <QCloseEvent>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
@@ -201,7 +203,7 @@ namespace AtomToolsFramework
 
                     // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
                     // popping when the menu bar is recreated
-                    auto menus = menuBar()->findChildren<QMenu*>();
+                    auto menus = menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly);
                     for (auto menu : menus)
                     {
                         delete menu;
@@ -229,7 +231,7 @@ namespace AtomToolsFramework
         m_menuHelp = menuBar->addMenu("&Help");
         m_menuHelp->setObjectName("menuHelp");
 
-        m_menuFile->addAction("Run &Python...", [this]() {
+        m_menuFile->addAction(tr("Run &Python..."), [this]() {
             const QString script = QFileDialog::getOpenFileName(
                 this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
             if (!script.isEmpty())
@@ -243,42 +245,25 @@ namespace AtomToolsFramework
 
         m_menuFile->addSeparator();
 
-        m_menuFile->addAction("E&xit", [this]() {
+        m_menuFile->addAction(tr("E&xit"), [this]() {
             close();
         }, QKeySequence::Quit);
 
-        // Add menu options to toggle the visibility of all dock widgets
-        auto dockWidgets = findChildren<QDockWidget*>();
-        AZStd::sort(dockWidgets.begin(), dockWidgets.end(), [](QDockWidget* a, QDockWidget* b) {
-            return a->windowTitle() < b->windowTitle();
-        });
-
-        for (auto dockWidget : dockWidgets)
-        {
-            const auto dockWidgetName = dockWidget->windowTitle();
-            auto dockAction = m_menuTools->addAction(dockWidgetName, [this, dockWidgetName](const bool checked) {
-                SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
-            });
-            dockAction->setCheckable(true);
-            dockAction->setChecked(dockWidget->isVisible());
-            connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
-        }
-
-        m_menuTools->addSeparator();
-        m_menuTools->addAction("Default Layout", [this]() {
-            m_advancedDockManager->restoreState(m_defaultWindowState);
-        });
+        BuildDockingMenu();
         m_menuTools->addSeparator();
 
-        m_menuTools->addAction("&Settings...", [this]() {
+        BuildLayoutsMenu();
+        m_menuTools->addSeparator();
+
+        m_menuTools->addAction(tr("&Settings..."), [this]() {
             OpenSettingsDialog();
         }, QKeySequence::Preferences);
 
-        m_menuHelp->addAction("&Help...", [this]() {
+        m_menuHelp->addAction(tr("&Help..."), [this]() {
             OpenHelpDialog();
         });
 
-        m_menuHelp->addAction("&About...", [this]() {
+        m_menuHelp->addAction(tr("&About..."), [this]() {
             OpenAboutDialog();
         });
     }
@@ -381,8 +366,7 @@ namespace AtomToolsFramework
             m_shownBefore = true;
             m_defaultWindowState = m_advancedDockManager->saveState();
             m_mainWindowWrapper->showFromSettings();
-            const AZStd::string windowState =
-                GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
+            const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
             m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
         }
 
@@ -394,12 +378,103 @@ namespace AtomToolsFramework
         if (closeEvent->isAccepted())
         {
             const QByteArray windowState = m_advancedDockManager->saveState();
-            SetSettingsObject(
-                "/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
+            SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
             AtomToolsMainWindowNotificationBus::Event(m_toolId, &AtomToolsMainWindowNotifications::OnMainWindowClosing);
         }
 
         Base::closeEvent(closeEvent);
+    }
+
+    void AtomToolsMainWindow::BuildDockingMenu()
+    {
+        auto dockWidgets = findChildren<QDockWidget*>();
+        AZStd::sort(
+            dockWidgets.begin(),
+            dockWidgets.end(),
+            [](QDockWidget* a, QDockWidget* b)
+            {
+                return a->windowTitle() < b->windowTitle();
+            });
+
+        for (auto dockWidget : dockWidgets)
+        {
+            const auto dockWidgetName = dockWidget->windowTitle();
+            if (!dockWidgetName.isEmpty())
+            {
+                auto dockAction = m_menuTools->addAction(
+                    dockWidgetName,
+                    [this, dockWidgetName](const bool checked)
+                    {
+                        SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
+                    });
+
+                dockAction->setCheckable(true);
+                dockAction->setChecked(dockWidget->isVisible());
+                connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+            }
+        }
+    }
+
+    void AtomToolsMainWindow::BuildLayoutsMenu()
+    {
+        using LayoutSettingsMap = AZStd::map<AZStd::string, AZStd::string>;
+
+        constexpr const char* LayoutSettingsKey = "/O3DE/AtomToolsFramework/MainWindow/Layouts";
+
+        QMenu* layoutSettingsMenu = m_menuTools->addMenu(tr("Layouts"));
+        connect(
+            layoutSettingsMenu,
+            &QMenu::aboutToShow,
+            this,
+            [this, layoutSettingsMenu]()
+            {
+                layoutSettingsMenu->clear();
+
+                const auto& layoutSettings = GetSettingsObject(LayoutSettingsKey, LayoutSettingsMap());
+                for (const auto& layoutSettingsPair : layoutSettings)
+                {
+                    QMenu* layoutMenu = layoutSettingsMenu->addMenu(layoutSettingsPair.first.c_str());
+
+                    layoutMenu->addAction(
+                        tr("Load"),
+                        [this, layoutSettingsPair]()
+                        {
+                            const auto& windowState = layoutSettingsPair.second;
+                            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+                        });
+
+                    layoutMenu->addAction(
+                        tr("Delete"),
+                        [layoutSettingsPair]()
+                        {
+                            auto layoutSettings = GetSettingsObject(LayoutSettingsKey, LayoutSettingsMap());
+                            layoutSettings.erase(layoutSettingsPair.first);
+                            SetSettingsObject(LayoutSettingsKey, layoutSettings);
+                        });
+                }
+
+                layoutSettingsMenu->addAction(
+                    tr("Save Layout..."),
+                    [this]()
+                    {
+                        const AZStd::string layoutName =
+                            QInputDialog::getText(this, tr("Layout Name"), QString()).toLower().toUtf8().constData();
+                        if (!layoutName.empty())
+                        {
+                            auto layoutSettings = GetSettingsObject(LayoutSettingsKey, LayoutSettingsMap());
+                            const QByteArray windowState = m_advancedDockManager->saveState();
+                            layoutSettings[layoutName] = AZStd::string(windowState.begin(), windowState.end());
+                            SetSettingsObject(LayoutSettingsKey, layoutSettings);
+                        }
+                    });
+
+                layoutSettingsMenu->addAction(
+                    tr("Restore Default Layout"),
+                    [this]()
+                    {
+                        m_advancedDockManager->restoreState(m_defaultWindowState);
+                    });
+            });
     }
 
     void AtomToolsMainWindow::SetupMetrics()

@@ -365,12 +365,36 @@ namespace AzToolsFramework
     //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
     //! origin of the ray will be returned.
     //! @note The intersection will only consider visible objects.
+    //! @param viewportId The id of the viewport the raycast into.
+    //! @param screenPoint The starting point of the ray in screen space. (The ray will cast into the screen)
+    //! @param rayLength The length of the ray in meters.
+    //! @param defaultDistance The distance to use for the result point if no hit is found.
+    //! @return The world position of the intersection point (either from a hit or from the default distance)
     AZ::Vector3 FindClosestPickIntersection(
         AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
 
+    //! Performs an intersection test against meshes in the scene and returns the his position only if there
+    //! is a hit (the ray intersects a mesh).
+    //! @note The intersection will only consider visible objects.
+    //! @param viewportId The id of the viewport the raycast into.
+    //! @param screenPoint The starting point of the ray in screen space. (The ray will cast into the screen)
+    //! @param rayLength The length of the ray in meters.
+    //! @return The world position of the intersection if there is a hit, or nothing if not.
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(
+        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength);
+
     //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
     //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
+    //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
+    //! @param defaultDistance The distance to use for the result point if no hit is found.
+    //! @return The world position of the intersection point (either from a hit or from the default distance)
     AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, float defaultDistance);
+
+    //! Overload of FindClosestPickIntersection taking a RenderGeometry::RayRequest directly.
+    //! @note rayRequest must contain a valid ray/line segment (start/endWorldPosition must not be at the same position).
+    //! @param rayRequest Information describing the start/end positions and which entities to raycast against.
+    //! @return The world position of the intersection if there is a hit, or nothing if not.
+    AZStd::optional<AZ::Vector3> FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest);
 
     //! Update the in/out parameter rayRequest based on the latest viewport ray.
     void RefreshRayRequest(

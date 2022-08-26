@@ -180,22 +180,27 @@ namespace O3DE::ProjectManager
     void AddRemoteProjectDialog::ValidateURI()
     {
         // validate URI, if it's a valid repository, get the project info and set the dialog as ready
-        bool validRepository = false;
+        bool validRepository = PythonBindingsInterface::Get()->ValidateRepository(m_repoPath->lineEdit()->text());
+        bool containsProjects = false;
 
-        auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
-        if (repoProjectsResult.IsSuccess())
+        if (validRepository)
         {
-            const auto repoProjects = repoProjectsResult.GetValue();
-            if (!repoProjects.isEmpty())
+            auto repoProjectsResult = PythonBindingsInterface::Get()->GetProjectsForRepo(m_repoPath->lineEdit()->text());
+            if (repoProjectsResult.IsSuccess())
             {
-                // only get the first one for now
-                const ProjectInfo& project = repoProjects.at(0);
-                SetCurrentProject(project);
+                const auto repoProjects = repoProjectsResult.GetValue();
+                if (!repoProjects.isEmpty())
+                {
+                    // only get the first one for now
+                    const ProjectInfo& project = repoProjects.at(0);
+                    SetCurrentProject(project);
 
-                validRepository = true;
+                    containsProjects = true;
+                }
             }
         }
-        SetDialogReady(validRepository);
+
+        SetDialogReady(validRepository && containsProjects);
     }
 
     void AddRemoteProjectDialog::DownloadObject()
