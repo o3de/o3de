@@ -624,7 +624,10 @@ namespace AzToolsFramework
                         {
                             AZ_Assert(false, "AssetChangeReportRequest failed ");
                         }
-                        AZ_TracePrintf("JJS", "response = %d\n", response.m_resultCode);
+                        for (int i = 0 ; i < response.m_lines.size(); ++i)
+                        {
+                            AZ_TracePrintf("JJS", "%s\n", response.m_lines[i].c_str());
+                        }
                     }
                 }
             }

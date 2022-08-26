@@ -1286,10 +1286,10 @@ namespace AzFramework
             static void Reflect(AZ::ReflectContext* context);
 
             AssetChangeReportResponse() = default;
-            AssetChangeReportResponse(AZ::u32 resultCode);
+            AssetChangeReportResponse(AZStd::vector<AZStd::string> lines);
             unsigned int GetMessageType() const override;
 
-            AZ::u32 m_resultCode;
+            AZStd::vector<AZStd::string> m_lines;
         };
 
     } // namespace AssetSystem

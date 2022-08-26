@@ -75,6 +75,8 @@ namespace
 #pragma optimize("", off)
     AssetChangeReportResponse HandleAssetChangeReportRequest(MessageData < AssetChangeReportRequest> messageData)
     {
+        AZStd::vector<AZStd::string> lines;
+
         auto* relocationInterface = AZ::Interface<AssetProcessor::ISourceFileRelocation>::Get();
         if (relocationInterface)
         {
@@ -91,7 +93,6 @@ namespace
                         // The report can be too long for the AZ_Printf buffer, so split it into individual lines
                         AZStd::string report =
                             relocationInterface->BuildReport(success.m_relocationContainer, success.m_updateTasks, true, false);
-                        AZStd::vector<AZStd::string> lines;
                         AzFramework::StringFunc::Tokenize(report.c_str(), lines, "\n");
 
                         for (const AZStd::string& line : lines)
@@ -103,7 +104,7 @@ namespace
                 break;
             }
         }
-        return AssetChangeReportResponse(5);
+        return AssetChangeReportResponse(lines);
     }
 #pragma optimize("", on)
     GetFullSourcePathFromRelativeProductPathResponse HandleGetFullSourcePathFromRelativeProductPathRequest(MessageData<GetFullSourcePathFromRelativeProductPathRequest> messageData)

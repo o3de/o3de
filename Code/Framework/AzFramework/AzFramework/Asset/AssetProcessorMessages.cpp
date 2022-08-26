@@ -1542,8 +1542,8 @@ namespace AzFramework
             }
         }
 
-        AssetChangeReportResponse::AssetChangeReportResponse(AZ::u32 resultCode)
-            : m_resultCode(resultCode)
+        AssetChangeReportResponse::AssetChangeReportResponse(AZStd::vector<AZStd::string> lines)
+            : m_lines(lines)
         {
         }
 
@@ -1559,7 +1559,7 @@ namespace AzFramework
             {
                 serialize->Class<AssetChangeReportResponse, BaseAssetProcessorMessage>()
                     ->Version(1)
-                    ->Field("ResultCode", &AssetChangeReportResponse::m_resultCode);
+                    ->Field("Report", &AssetChangeReportResponse::m_lines);
             }
         }
 
