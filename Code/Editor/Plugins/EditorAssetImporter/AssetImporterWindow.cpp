@@ -10,7 +10,6 @@
 #include <ui_AssetImporterWindow.h>
 #include <AssetImporterPlugin.h>
 #include <ImporterRootDisplay.h>
-#include <SceneSettingsCard.h>
 
 #include <QTimer>
 #include <QFile>
@@ -45,6 +44,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.h>
+#include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
@@ -297,12 +297,13 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     //m_busyLabel->SetText("Busy Message Test");
         
     SceneSettingsCard* card = new SceneSettingsCard(ui->m_rootWidget);
-    card->setTitle("Example Processing Card 1");
-    //ui->mainAreaLayout->addWidget(card, 0,0);
+    //card->setTitle("Example Processing Card 1");
+    card->SetState(SceneSettingsCard::SceneSettingsCardState::Loading);
 
     m_notificationLayout->addWidget(card);
+    card->SetAndStartProcessingHandler(asyncLoadHandler);
         
-    SceneSettingsCard* card2 = new SceneSettingsCard(ui->m_rootWidget);
+    /*SceneSettingsCard* card2 = new SceneSettingsCard(ui->m_rootWidget);
     card2->setTitle("Example Processing Card 2");
 
     m_notificationLayout->addWidget(card2);
@@ -311,16 +312,16 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     SceneSettingsCard* card3 = new SceneSettingsCard(ui->m_rootWidget);
     card3->setTitle("Example Processing Card 3");
 
-    m_notificationLayout->addWidget(card3);
+    m_notificationLayout->addWidget(card3);*/
 
     //m_notificationRootWidget->adjustSize();
         
 
-    m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Loading, s_browseTag));
-    m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
-    m_processingOverlay->SetAutoCloseOnSuccess(true);
-    connect(m_processingOverlay.data(), &AZ::SceneAPI::SceneUI::ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
+    //m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Loading, s_browseTag));
+    //m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
+    //m_processingOverlay->SetAutoCloseOnSuccess(true);
+    //connect(m_processingOverlay.data(), &AZ::SceneAPI::SceneUI::ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
+    //m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
 }
 
 bool AssetImporterWindow::IsAllowedToChangeSourceFile()
@@ -393,14 +394,25 @@ void AssetImporterWindow::UpdateClicked()
         return;
     }
 
-    m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Exporting, s_browseTag));
-    connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
+    SceneSettingsCard* card = new SceneSettingsCard(ui->m_rootWidget);
+    card->SetState(SceneSettingsCard::SceneSettingsCardState::Processing);
+
+    m_notificationLayout->addWidget(card);
+    
+    QLabel* m_progressLabel = new QLabel("Processing...");
+    m_progressLabel->setAlignment(Qt::AlignCenter);
+    AzQtComponents::OverlayWidgetButtonList buttons;
+    //m_processingOverlayIndex = m_overlay->PushLayer(m_progressLabel, nullptr, "File progress", buttons);
+    //card->SetAndStartProcessingHandler(asyncLoadHandler);
+
+    //m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Exporting, s_browseTag));
+    //connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
+    //m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
 
     // We need to block closing of the overlay until source control operations are complete
-    m_processingOverlay->BlockClosing();
+    //m_processingOverlay->BlockClosing();
 
-    m_processingOverlay->OnSetStatusMessage("Saving settings...");
+    //m_processingOverlay->OnSetStatusMessage("Saving settings...");
     bool isSourceControlActive = false;
     {
         using SCRequestBus = AzToolsFramework::SourceControlConnectionRequestBus;
@@ -409,7 +421,7 @@ void AssetImporterWindow::UpdateClicked()
 
     AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
     m_assetImporterDocument->SaveScene(output,
-        [output, this, isSourceControlActive](bool wasSuccessful)
+        [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
             if (output->HasAnyWarnings())
             {
@@ -434,19 +446,20 @@ void AssetImporterWindow::UpdateClicked()
                 m_rootDisplay->HandleSaveWasSuccessful();
 
                 // Don't attach the job processor until all files are saved.
-                m_processingOverlay->SetAndStartProcessingHandler(AZStd::make_shared<ExportJobProcessingHandler>(s_browseTag, m_fullSourcePath));
+                //m_processingOverlay->SetAndStartProcessingHandler(AZStd::make_shared<ExportJobProcessingHandler>(s_browseTag, m_fullSourcePath));
+                card->SetAndStartProcessingHandler(AZStd::make_shared<ExportJobProcessingHandler>(s_browseTag, m_fullSourcePath));
             }
             else
             {
                 // This kind of failure means that it's possible the jobs will never actually start,
                 //  so we act like the processing is complete to make it so the user won't be stuck
                 //  in the processing UI in that case.
-                m_processingOverlay->OnProcessingComplete();
+                //m_processingOverlay->OnProcessingComplete();
             }
 
             // Blocking is only used for the period saving is happening. The ExportJobProcessingHandler will inform
             // the overlay widget when the AP is done with processing, which will also block closing until done.
-            m_processingOverlay->UnblockClosing();
+            //m_processingOverlay->UnblockClosing();
         }
     );
 }

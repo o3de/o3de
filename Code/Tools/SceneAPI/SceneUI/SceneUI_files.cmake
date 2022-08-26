@@ -19,6 +19,8 @@ set(FILES
     CommonWidgets/ProcessingOverlayWidget.h
     CommonWidgets/ProcessingOverlayWidget.cpp
     CommonWidgets/ProcessingOverlayWidget.ui
+    CommonWidgets/SceneSettingsCard.h
+    CommonWidgets/SceneSettingsCard.cpp
     CommonWidgets/ExpandCollapseToggler.h
     CommonWidgets/ExpandCollapseToggler.cpp
     Handlers/ProcessingHandlers/ProcessingHandler.h
