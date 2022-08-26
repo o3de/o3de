@@ -343,7 +343,6 @@ namespace AssetProcessor
         void DispatchFileChange();
         bool InitializeCacheRoot();
         void PopulateJobStateCache();
-        QString GetAbsolutePathForSourceGuid(AZ::Uuid uuid);
         void AutoFailJob(
             AZStd::string_view consoleMsg,
             AZStd::string_view autoFailReason,

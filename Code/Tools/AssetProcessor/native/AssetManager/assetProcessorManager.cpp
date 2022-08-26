@@ -105,18 +105,6 @@ namespace AssetProcessor
         }
     }
 
-    QString AssetProcessorManager::GetAbsolutePathForSourceGuid(AZ::Uuid uuid)
-    {
-        using namespace AzToolsFramework::AssetDatabase;
-
-        SourceDatabaseEntry sourceEntry;
-        m_stateData->GetSourceBySourceGuid(uuid, sourceEntry);
-        ScanFolderDatabaseEntry scanFolderEntry;
-        m_stateData->GetScanFolderByScanFolderID(sourceEntry.m_scanFolderPK, scanFolderEntry);
-
-        return QDir(scanFolderEntry.m_scanFolder.c_str()).absoluteFilePath(sourceEntry.m_sourceName.c_str());
-    }
-
     template <class R>
     inline bool AssetProcessorManager::Recv(unsigned int connId, QByteArray payload, R& request)
     {
@@ -1987,8 +1975,12 @@ namespace AssetProcessor
         // now that the right hand column (in terms of [thing] -> [depends on thing]) has been updated, eliminate anywhere its on the left
         // hand side:
         results.clear();
-        m_stateData->GetDependsOnSourceBySource(sources[0].m_sourceGuid, SourceFileDependencyEntry::DEP_Any, results);
-        m_stateData->RemoveSourceFileDependencies(results);
+
+        if (!sources.empty())
+        {
+            m_stateData->GetDependsOnSourceBySource(sources[0].m_sourceGuid, SourceFileDependencyEntry::DEP_Any, results);
+            m_stateData->RemoveSourceFileDependencies(results);
+        }
 
         Q_EMIT SourceDeleted(databaseSourceFile); // note that this removes it from the RC Queue Model, also
     }
@@ -4355,10 +4347,13 @@ namespace AssetProcessor
             // we also have to re-queue the source for analysis, if it exists, since it means something it depends on
             // has suddenly appeared on disk:
 
-            if (auto&& path = GetAbsolutePathForSourceGuid(resultEntry.m_sourceGuid); !path.isEmpty())
+            SourceInfo info;
+            if (SearchSourceInfoBySourceUUID(resultEntry.m_sourceGuid, info))
             {
                 // add it to the queue for analysis:
-                AssessFileInternal(path, false, false);
+                QString absPath = QDir(info.m_watchFolder).absoluteFilePath(info.m_sourceRelativeToWatchFolder);
+
+                AssessFileInternal(absPath, false, false);
             }
         }
 
@@ -4629,8 +4624,10 @@ namespace AssetProcessor
                 }
             }
 
-            if (auto&& absolutePath = GetAbsolutePathForSourceGuid(entry.m_sourceGuid); !absolutePath.isEmpty())
+            SourceInfo info;
+            if (SearchSourceInfoBySourceUUID(entry.m_sourceGuid, info))
             {
+                auto absolutePath = QDir(info.m_watchFolder).absoluteFilePath(info.m_sourceRelativeToWatchFolder);
                 // add it to the queue for analysis:
                 absoluteSourceFilePathQueue.insert(absolutePath);
             }
@@ -5153,12 +5150,15 @@ namespace AssetProcessor
 
         for (AZ::Uuid dep : results)
         {
-            QString absolutePath = GetAbsolutePathForSourceGuid(dep);
+            SourceInfo info;
 
-            if (absolutePath.isEmpty())
+            if (!SearchSourceInfoBySourceUUID(dep, info))
             {
                 continue;
             }
+
+            QString absolutePath = QDir(info.m_watchFolder).absoluteFilePath(info.m_sourceRelativeToWatchFolder);
+
             finalDependencyList.insert(AZStd::make_pair(absolutePath.toUtf8().constData(), dep.ToFixedString().c_str()));
         }
     }
