@@ -8,7 +8,6 @@
 
 import pathlib
 import shutil
-from typing_extensions import runtime
 from persistent_storage import PersistentStorage
 from tiaf_logger import get_logger
 

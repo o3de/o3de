@@ -11,7 +11,7 @@ from pathlib import PurePath, Path
 import json
 import subprocess
 import re
-import os
+import uuid
 from test_impact import RuntimeArgs
 from git_utils import Repo
 from persistent_storage import PersistentStorageLocal, PersistentStorageS3
