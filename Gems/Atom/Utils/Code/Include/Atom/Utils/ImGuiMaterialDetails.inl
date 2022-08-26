@@ -44,6 +44,9 @@ namespace AZ::Render
     {
         if (m_dialogIsOpen)
         {
+            // Make sure the window doesn't have a 0 size the first time it's opened.
+            ImGui::SetNextWindowSizeConstraints(ImVec2(200, 100), ImVec2(10'000, 10'000));
+
             if (ImGui::Begin("Material Shader Details", &m_dialogIsOpen, ImGuiWindowFlags_None))
             {
                 if (selectionName && selectionName[0])
