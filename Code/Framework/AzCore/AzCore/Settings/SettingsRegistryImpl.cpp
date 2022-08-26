@@ -16,10 +16,10 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/split_view.h>
 
 namespace AZ::SettingsRegistryImplInternal
 {
@@ -232,7 +232,9 @@ namespace AZ
                 if (!path.empty())
                 {
                     path.remove_prefix(1); // Remove the leading slash as the StackedString will add this back in.
-                    jsonPath.Push(path);
+                    // Push each JSON pointer reference token to avoid '/' being encoded
+                    AZStd::ranges::for_each(path | AZStd::views::split(JsonPointerReferenceTokenPrefix),
+                        [&jsonPath](AZStd::string_view refToken) { jsonPath.Push(refToken); });
                 }
                 // Extract the last token of the JSON pointer to use as the valueName
                 AZStd::string_view valueName;
