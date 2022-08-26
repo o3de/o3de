@@ -17,12 +17,7 @@
 
 namespace AZ::Render
 {
-    inline void ImGuiMaterialDetails::SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material)
-    {
-        m_material = material;
-    }
-
-    inline void ImGuiMaterialDetails::SetDrawPacket(const RPI::MeshDrawPacket* drawPacket)
+    inline void ImGuiMaterialDetails::SetSelectedDrawPacket(const RPI::MeshDrawPacket* drawPacket)
     {
         m_selectedDrawPacket = drawPacket;
 
@@ -45,67 +40,7 @@ namespace AZ::Render
         m_dialogIsOpen = false;
     }
 
-    inline bool ImGuiMaterialDetails::Tick()
-    {
-        if (m_dialogIsOpen)
-        {
-            if (ImGui::Begin("Material Details", &m_dialogIsOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings))
-            {
-                if (m_material)
-                {
-                    const ImGuiTreeNodeFlags flagDefaultOpen = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen;
-                    if (ImGui::TreeNodeEx("Shaders", flagDefaultOpen))
-                    {
-                        for (size_t i = 0; i < m_material->GetShaderCollection().size(); i++)
-                        {
-                            const AZ::RPI::ShaderCollection::Item& shaderItem = m_material->GetShaderCollection()[i];
-
-                            if (ImGui::TreeNodeEx(AZStd::string::format("Shader[%d] - Enabled=%d - %s", aznumeric_cast<int>(i), shaderItem.IsEnabled(), shaderItem.GetShaderAsset()->GetName().GetCStr()).c_str(), flagDefaultOpen))
-                            {
-                                if (shaderItem.IsEnabled())
-                                {
-                                    AZ::RPI::ShaderVariantId requestedVariantId = shaderItem.GetShaderVariantId();
-                                    AZ::Data::Asset<AZ::RPI::ShaderVariantAsset> selectedVariantAsset =
-                                        shaderItem.GetShaderAsset()->GetVariantAsset(requestedVariantId);
-
-                                    if (!selectedVariantAsset)
-                                    {
-                                        selectedVariantAsset = shaderItem.GetShaderAsset()->GetRootVariantAsset();
-                                    }
-
-                                    if (selectedVariantAsset)
-                                    {
-                                        AZ::RPI::ShaderVariantId selectedVariantId = selectedVariantAsset->GetShaderVariantId();
-
-                                        ImGui::Indent();
-
-                                        ImGuiShaderUtils::DrawShaderVariantTable(
-                                            shaderItem.GetShaderAsset()->GetShaderOptionGroupLayout(), requestedVariantId,
-                                            selectedVariantId);
-
-                                        ImGui::Unindent();
-                                    }
-                                }
-
-                                ImGui::TreePop();
-                            }
-                        }
-
-                        ImGui::TreePop();
-                    }
-                }
-                else
-                {
-                    ImGui::Text("No material selected");
-                }
-            }
-            ImGui::End();
-        }
-
-        return m_dialogIsOpen;
-    }
-    
-    inline bool ImGuiMaterialDetails::Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets)
+    inline bool ImGuiMaterialDetails::Tick(const AZ::RPI::MeshDrawPacketLods* drawPackets, const char* selectionName)
     {
         if (m_dialogIsOpen)
         {

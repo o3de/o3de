@@ -28,17 +28,21 @@ namespace AZ
         class ImGuiMaterialDetails
         {
         public:
-            void SetMaterial(AZ::Data::Instance<AZ::RPI::Material> material);
-            void SetDrawPacket(const RPI::MeshDrawPacket* drawPacket);
+            //! Sets which draw packet should be selected for viewing. This draw packet must appear in the 
+			//! list provided to the Tick() function, or this selection will be ignored.
+            void SetSelectedDrawPacket(const RPI::MeshDrawPacket* drawPacket);
 
             void OpenDialog();
             void CloseDialog();
-            bool Tick();
-            bool Tick(const char* selectionName, const AZ::RPI::MeshDrawPacketLods* drawPackets);
+
+            //! Per-frame UI draw function. 
+			//! @param drawPackets is the tree of draw packets that should be listed for user selection. The selected draw packet
+			//!                    will have its shader list displayed with debug information.
+			//! @param selectionName is an optional name to be displayed at the top, indicating what entity or what list of draw packets is displayed.
+            bool Tick(const AZ::RPI::MeshDrawPacketLods* drawPackets, const char* selectionName = nullptr);
 
         private:
 
-            AZ::Data::Instance<AZ::RPI::Material> m_material;
             bool m_dialogIsOpen = false;
 
             // There are multiple ways that draw packet selection can be recalled

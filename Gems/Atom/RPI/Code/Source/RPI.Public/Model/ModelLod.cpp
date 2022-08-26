@@ -56,7 +56,6 @@ namespace AZ
             for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
                 Mesh meshInstance;
-                meshInstance.m_name = mesh.GetName();
 
                 const BufferAssetView& indexBufferAssetView = mesh.GetIndexBufferAssetView();
                 const Data::Asset<BufferAsset>& indexBufferAsset = indexBufferAssetView.GetBufferAsset();
