@@ -94,12 +94,14 @@ namespace AzToolsFramework
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
             void ClearTypeFilter();
+            void doubleClickedSignal(const QModelIndex& index);
 
         public Q_SLOTS:
             void OpenItemForEditing(const QModelIndex& index);
 
         protected:
             QModelIndexList selectedIndexes() const override;
+            void mouseDoubleClickEvent(QMouseEvent* ev) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
