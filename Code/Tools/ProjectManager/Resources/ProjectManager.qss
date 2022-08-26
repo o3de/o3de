@@ -34,6 +34,24 @@ QTabBar::tab {
 QTabBar::tab:text {
     text-align:left;
 }
+
+#createAGemTab QTabBar::tab {
+    background-color: #444444;
+    font-size:16px;
+    min-height:230px;
+    margin: 0px;
+    text-align:left;
+
+}
+
+QTabWidget#createAGemTab::tab-bar {
+    left: 0px;
+}
+
+QTabBar#createAGemTab::tab:text {
+    text-align:left;
+}
+
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;

@@ -67,6 +67,7 @@ namespace O3DE::ProjectManager
         connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::CreateANewGem, this, &GemCatalogScreen::HandleCreateAGem);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
@@ -606,6 +607,13 @@ namespace O3DE::ProjectManager
         {
             emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
         }
+    }
+
+    void GemCatalogScreen::HandleCreateAGem()
+    {
+#ifdef CREATE_A_GAME_ACTIVE
+        emit ChangeScreenRequest(ProjectManagerScreen::CreateAGem);
+#endif
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
