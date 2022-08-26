@@ -58,6 +58,8 @@ class ImporterRootDisplay;
 class QCloseEvent;
 class QMenu;
 class QAction;
+class QVBoxLayout;
+class QScrollArea;
 
 class AssetImporterWindow
     : public QMainWindow
@@ -119,6 +121,8 @@ private:
     QScopedPointer<Ui::AssetImporterWindow> ui;
     QScopedPointer<AssetImporterDocument> m_assetImporterDocument;
     QScopedPointer<AZ::SceneAPI::UI::OverlayWidget> m_overlay;
+    QVBoxLayout* m_notificationLayout = nullptr;
+    QWidget* m_notificationRootWidget = nullptr;
 
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;

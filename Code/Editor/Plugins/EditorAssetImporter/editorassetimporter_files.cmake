@@ -17,6 +17,8 @@ set(FILES
     ImporterRootDisplay.cpp
     AssetBrowserContextProvider.h
     AssetBrowserContextProvider.cpp
+    SceneSettingsCard.h
+    SceneSettingsCard.cpp
     SceneSerializationHandler.h
     SceneSerializationHandler.cpp
     Main.cpp

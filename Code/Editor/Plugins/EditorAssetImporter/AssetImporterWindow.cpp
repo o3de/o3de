@@ -10,6 +10,7 @@
 #include <ui_AssetImporterWindow.h>
 #include <AssetImporterPlugin.h>
 #include <ImporterRootDisplay.h>
+#include <SceneSettingsCard.h>
 
 #include <QTimer>
 #include <QFile>
@@ -20,10 +21,13 @@
 #include <QUrl>
 #include <QDockWidget>
 #include <QLabel>
+#include <QVBoxLayout>
 
 class IXMLDOMDocumentPtr; // Needed for settings.h
 class CXTPDockingPaneLayout; // Needed for settings.h
 #include <Settings.h>
+
+#include <QScrollArea>
 
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -35,6 +39,9 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzCore/std/string/conversions.h>
 #include <Util/PathUtil.h>
 #include <ActionOutput.h>
+
+#include <AzQtComponents/Components/StyledDetailsTableView.h>
+#include <AzQtComponents/Components/StyledBusyLabel.h>
 
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.h>
@@ -186,6 +193,11 @@ void AssetImporterWindow::Init()
 
     ResetMenuAccess(WindowState::InitialNothingLoaded);
 
+    m_notificationRootWidget = new QWidget(this);
+    m_notificationLayout = new QVBoxLayout(m_notificationRootWidget);
+    //m_notificationRootWidget->setWidgetResizable(true);
+    ui->m_mainArea->layout()->addWidget(m_notificationRootWidget);
+
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
@@ -197,6 +209,19 @@ void AssetImporterWindow::Init()
 
     m_overlay->SetRoot(m_rootDisplay.data());
     ui->m_mainArea->layout()->addWidget(m_overlay.data());
+
+    //ui->m_sceneDetailsCard->setTitle("Scene Details");
+    
+    /* AzQtComponents::StyledDetailsTableModel* m_reportModel = new AzQtComponents::StyledDetailsTableModel();
+    m_reportModel->AddColumn("Status", AzQtComponents::StyledDetailsTableModel::StatusIcon);
+    m_reportModel->AddColumn("Message");
+    m_reportModel->AddColumnAlias("message", "Message");
+
+    
+    AzQtComponents::StyledDetailsTableView* m_reportView = new AzQtComponents::StyledDetailsTableView();
+    m_reportView->setModel(m_reportModel);*/
+
+    //ui->m_sceneDetailsCard->setContentWidget(m_reportView);
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
@@ -264,6 +289,32 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         {
             HandleAssetLoadingCompleted();
         }, this);
+    
+    //AzQtComponents::StyledBusyLabel* m_busyLabel = new AzQtComponents::StyledBusyLabel(ui->m_rootWidget);
+    //m_busyLabel->SetIsBusy(true);
+    //m_busyLabel->SetBusyIconSize(14);
+    //ui->mainAreaLayout->addWidget(m_busyLabel);
+    //m_busyLabel->SetText("Busy Message Test");
+        
+    SceneSettingsCard* card = new SceneSettingsCard(ui->m_rootWidget);
+    card->setTitle("Example Processing Card 1");
+    //ui->mainAreaLayout->addWidget(card, 0,0);
+
+    m_notificationLayout->addWidget(card);
+        
+    SceneSettingsCard* card2 = new SceneSettingsCard(ui->m_rootWidget);
+    card2->setTitle("Example Processing Card 2");
+
+    m_notificationLayout->addWidget(card2);
+
+        
+    SceneSettingsCard* card3 = new SceneSettingsCard(ui->m_rootWidget);
+    card3->setTitle("Example Processing Card 3");
+
+    m_notificationLayout->addWidget(card3);
+
+    //m_notificationRootWidget->adjustSize();
+        
 
     m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Loading, s_browseTag));
     m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
