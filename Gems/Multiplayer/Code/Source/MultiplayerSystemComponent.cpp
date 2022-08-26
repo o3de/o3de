@@ -1368,7 +1368,7 @@ namespace Multiplayer
         m_levelSystem->AddListener(this);
     }
 
-    void MultiplayerSystemComponent::OnCrySystemShutdown(ISystem& system)
+    void MultiplayerSystemComponent::OnCrySystemShutdown([[maybe_unused]]ISystem& system)
     {
         m_levelSystem->RemoveListener(this);
         m_levelSystem = nullptr;
@@ -1379,9 +1379,24 @@ namespace Multiplayer
         switch (m_agentType)
         {
         case MultiplayerAgentType::Uninitialized:
+        {
+            // replace .spawnable with .network.spawnable
+            AZStd::string networkSpawnablePath(levelName);
+            networkSpawnablePath.erase(networkSpawnablePath.size() - strlen(AzFramework::Spawnable::DotFileExtension));
+            networkSpawnablePath += NetworkSpawnableFileExtension;
+
+            AZ::Data::AssetId networkSpawnableAssetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                networkSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, networkSpawnablePath.c_str(), azrtti_typeid<AzFramework::Spawnable>(), false);
+
+            if (networkSpawnableAssetId.IsValid())
+            {
+                AZLOG_WARN("MultiplayerSystemComponent blocked loading a network level. Your multiplayer agent is uninitialized; did you forget to host before loading a network level?")
+                return true;
+            }
             return false;
+        }
         case MultiplayerAgentType::Client:
-            // Clients should not change the level unless instructed from the server during the initial connection acceptance.
             if (m_blockClientLoadLevel)
             {
                 AZLOG_WARN("MultiplayerSystemComponent blocked this client from loading a new level. Clients should only attempt to load level when instructed by their server. Disconnect from server before calling LoadLevel.")
@@ -1390,12 +1405,12 @@ namespace Multiplayer
         case MultiplayerAgentType::ClientServer:
             if (m_playersWaitingToBeSpawned.empty())
             {
-                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because we already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
+                AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because you already have a player. Loading a new level could destroy the existing network player entity. Disconnect from the multiplayer simulation before changing levels.")
                 return true;
             }
             return false;
         case MultiplayerAgentType::DedicatedServer:
-            if (m_networkInterface->GetConnectionSet().GetConnectionCount())
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() > 0)
             {
                 AZLOG_WARN("MultiplayerSystemComponent blocked this host from loading a new level because clients are connected. Loading a new level would destroy the existing clients' network player entity.")
                 return true;
