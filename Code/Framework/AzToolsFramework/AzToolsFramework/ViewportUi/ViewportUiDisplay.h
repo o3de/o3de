@@ -20,6 +20,7 @@
 #include <QMainWindow>
 #include <QPointer>
 #include <QToolButton>
+#include <QMargins>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -114,7 +115,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
         void PositionUiOverlayOverRenderViewport();
 
-        int CalculateTopMargin() const;
+        QMargins CalculateViewportElementMargins() const;
         bool UiDisplayEnabled() const;
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);
