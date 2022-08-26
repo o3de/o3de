@@ -19,6 +19,7 @@ namespace LmbrCentral
 
         EditorAxisAlignedBoxShapeComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
 
+        //! AzToolsFramework::BoxComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
     };
-}
+} // namespace LmbrCentral
