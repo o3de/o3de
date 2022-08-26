@@ -191,18 +191,6 @@ namespace AudioSystemGem
         GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     }
 
-    void AudioSystemGemSystemComponent::RevertToNullAudio()
-    {
-        AZ_Assert(m_audioSystem != nullptr, "Expected IAudioSystem interface to be registered!");
-        // Only do this when the audio system has been constructed but Initialize() hasn't been called yet.
-        // See CSystem::InitAudioSystem
-        if (!m_audioSystem->IsInitialized())
-        {
-            m_audioSystem.reset();
-            m_audioSystem = AZStd::make_unique<Audio::NullAudioSystem>();
-        }
-    }
-
     void AudioSystemGemSystemComponent::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
     {
         switch (event)

@@ -73,7 +73,6 @@ namespace Audio
         bool Initialize() override;
         void Release() override;
         void ExternalUpdate() override;
-        bool IsInitialized() const override;
 
         void PushRequest(AudioRequestVariant&& request) override;
         void PushRequests(AudioRequestsQueue& requests) override;

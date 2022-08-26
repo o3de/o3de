@@ -58,7 +58,6 @@ namespace AudioSystemGem
         // Audio::Gem::SystemRequestBus interface implementation
         bool Initialize() override;
         void Release() override;
-        void RevertToNullAudio() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

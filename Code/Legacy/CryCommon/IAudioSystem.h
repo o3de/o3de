@@ -478,7 +478,6 @@ namespace Audio
         virtual bool Initialize() = 0;
         virtual void Release() = 0;
         virtual void ExternalUpdate() = 0;
-        virtual bool IsInitialized() const { return false; }
 
         virtual void PushRequest(AudioRequestVariant&& request) = 0;
         virtual void PushRequests(AudioRequestsQueue& requests) = 0;
@@ -599,17 +598,11 @@ namespace Audio
             ///////////////////////////////////////////////////////////////////////////////////////////
         };
 
-        class SystemRequests : public SystemBusInterface
-        {
-        public:
-            virtual void RevertToNullAudio() = 0;
-        };
-
-        class EngineRequests : public SystemBusInterface {};
-
         // SystemRequestBus is used with AudioSystem Gem
+        class SystemRequests : public SystemBusInterface {};
         using SystemRequestBus = AZ::EBus<SystemRequests>;
         // EngineRequestBus is used with AudioEngine* Gem
+        class EngineRequests : public SystemBusInterface {};
         using EngineRequestBus = AZ::EBus<EngineRequests>;
 
     } // namespace Gem

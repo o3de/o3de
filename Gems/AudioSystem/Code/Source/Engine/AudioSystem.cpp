@@ -300,12 +300,6 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    bool CAudioSystem::IsInitialized() const
-    {
-        return m_bSystemInitialized;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     TAudioControlID CAudioSystem::GetAudioTriggerID(const char* const sAudioTriggerName) const
     {
         return m_oATL.GetAudioTriggerID(sAudioTriggerName);

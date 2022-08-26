@@ -350,33 +350,24 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
+bool CSystem::InitAudioSystem()
 {
     if (!Audio::Gem::SystemRequestBus::HasHandlers())
     {
-        // AudioSystem Gem has not been enabled for this project/configuration.
+        // AudioSystem Gem has not been enabled for this project/configuration (e.g. Server).
         // This should not generate an error, but calling scope will warn.
         return false;
     }
 
     bool result = false;
-
-    bool shouldInitializeAudioSystem = (!initParams.bPreview && !initParams.bUnattendedMode);
-    if (shouldInitializeAudioSystem)
+    Audio::Gem::SystemRequestBus::BroadcastResult(result, &Audio::Gem::SystemRequestBus::Events::Initialize);
+    if (result)
     {
-        Audio::Gem::SystemRequestBus::BroadcastResult(result, &Audio::Gem::SystemRequestBus::Events::Initialize);
-        if (result)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Audio System is initialized and ready!\n");
-        }
-        else
-        {
-            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, result, "The Audio System did not initialize correctly!\n");
-        }
+        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Audio System is initialized and ready!\n");
     }
     else
     {
-        Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::RevertToNullAudio);
+        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, result, "The Audio System did not initialize correctly!\n");
     }
 
     return result;
@@ -978,16 +969,10 @@ AZ_POP_DISABLE_WARNING
         // AUDIO
         //////////////////////////////////////////////////////////////////////////
         {
-            if (InitAudioSystem(startupParams))
-            {
-                // Pump the Log - Audio initialization happened on a non-main thread, there may be log messages queued up.
-                gEnv->pLog->Update();
-            }
-            else
-            {
-                // Failure to initialize audio system is no longer a fatal or an error.  A warning is sufficient.
-                AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, "<Audio>: Running without any AudioSystem!");
-            }
+            [[maybe_unused]] bool audioInitResult = InitAudioSystem();
+            // Getting false here is not an error, the engine may run fine without it so a warning here is sufficient.
+            // But if there were errors internally during initialization, those would be reported above this.
+            AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, audioInitResult, "<Audio>: Running without any AudioSystem!");
         }
 
 
