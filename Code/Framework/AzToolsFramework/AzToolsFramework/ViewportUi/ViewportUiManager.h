@@ -56,7 +56,7 @@ namespace AzToolsFramework::ViewportUi
             const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) override;
         void ChangeViewportBorderText(const AZStd::string& borderTitle) override;
         void RemoveViewportBorder() override;
-        bool GetViewportBorderVisible() const override;
+        const bool GetViewportBorderVisible() override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
 

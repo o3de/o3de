@@ -169,7 +169,7 @@ namespace UnitTest
             void(
                 const AZStd::string& borderTitle,
                 AZStd::optional<AzToolsFramework::ViewportUi::ViewportUiBackButtonCallback> backButtonCallback));
-        MOCK_CONST_METHOD0(GetViewportBorderVisible, bool());
+        MOCK_METHOD0(GetViewportBorderVisible, const bool());
         MOCK_METHOD1(ChangeViewportBorderText, void(const AZStd::string& borderTitle));
         MOCK_METHOD0(RemoveViewportBorder, void());
         MOCK_METHOD2(PressButton, void(ClusterId clusterId, ButtonId buttonId));
