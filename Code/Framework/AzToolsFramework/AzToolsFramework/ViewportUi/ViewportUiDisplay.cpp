@@ -17,13 +17,9 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    const static int HighlightBorderSize = 5;
+    const static int HighlightBorderSize = ViewportUiLeftRightBottomBorderSize;
     const static char* const HighlightBorderColor = "#4A90E2";
     const static int HighlightBorderBackButtonIconSize = 20;
     const static char* const HighlightBorderBackButtonIconFile = "X_axis.svg";
@@ -309,15 +305,29 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
-    int ViewportUiDisplay::CalculateTopMargin() const
+    QMargins ViewportUiDisplay::CalculateViewportElementMargins() const
     {
-        if (m_imGuiActive && ViewportBorderVisible())
+        if (m_imGuiActive)
         {
-            return ViewportUiTopBorderSize + ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding;
+            if (ViewportBorderVisible())
+            {
+                return ViewportUiOverlayImGuiBorderMargin;
+            }
+            else
+            {
+                return ViewportUiOverlayImGuiMargin;
+            }
         }
         else
         {
-            return ViewportUiTopBorderSize + ViewportUiOverlayMargin;
+            if (ViewportBorderVisible())
+            {
+                return ViewportUiOverlayBorderMargin;
+            }
+            else
+            {
+                return ViewportUiOverlayDefaultMargin;
+            }
         }
     }
 
@@ -332,11 +342,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderText.show();
         m_viewportBorderText.setText(borderTitle.c_str());
 
-        m_uiOverlayLayout.setContentsMargins(
-            HighlightBorderSize + ViewportUiOverlayMargin,
-            CalculateTopMargin(),
-            HighlightBorderSize + ViewportUiOverlayMargin,
-            HighlightBorderSize + ViewportUiOverlayMargin);
+        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
 
         m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
@@ -357,14 +363,8 @@ namespace AzToolsFramework::ViewportUi::Internal
             m_imGuiActive = false;
         }
 
-        if (ViewportBorderVisible())
-        {
-            m_uiOverlayLayout.setContentsMargins(
-                HighlightBorderSize + ViewportUiOverlayMargin,
-                CalculateTopMargin(),
-                HighlightBorderSize + ViewportUiOverlayMargin,
-                HighlightBorderSize + ViewportUiOverlayMargin);
-        }
+        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
+        
     };
     void ViewportUiDisplay::ChangeViewportBorderText(
         const char* borderTitle)
@@ -568,6 +568,3 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAutoFillBackground(false);
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
-
-#pragma optimize("", on)
-#pragma inline_depth()
