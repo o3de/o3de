@@ -36,79 +36,6 @@ namespace UnitTest
     using namespace AzToolsFramework;
     using namespace AzToolsFramework::ComponentModeFramework;
 
-    using ButtonId = ViewportUi::ButtonId;
-    using ClusterId = ViewportUi::ClusterId;
-    using SwitcherId = ViewportUi::SwitcherId;
-    using TextFieldId = ViewportUi::TextFieldId;
-
-    //class MockVieportUiRequestBusHandler : public AzToolsFramework::ViewportUi::ViewportUiRequestBus::Handler
-    //{
-    //public:
-    //    MOCK_METHOD1(CreateCluster, const ClusterId(ViewportUi::Alignment align));
-    //    MOCK_METHOD1(CreateSwitcher, const SwitcherId(ViewportUi::Alignment align));
-    //    MOCK_METHOD2(SetClusterActiveButton, void(ClusterId clusterId, ButtonId buttonId));
-    //    MOCK_METHOD1(ClearClusterActiveButton, void(ClusterId clusterId));
-    //    MOCK_METHOD2(SetSwitcherActiveButton, void(SwitcherId switcherId, ButtonId buttonId));
-    //    MOCK_METHOD3(SetClusterButtonLocked, void(ClusterId clusterId, ButtonId buttonId, bool isLocked));
-    //    MOCK_METHOD3(SetClusterButtonTooltip,
-    //        void(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip));
-    //    MOCK_METHOD3(SetSwitcherButtonTooltip,
-    //        void(SwitcherId switcherId, ButtonId buttonId, const AZStd::string& tooltip));
-    //    MOCK_METHOD2(CreateClusterButton, const ButtonId(const ClusterId clusterId, const AZStd::string& icon));
-    //    MOCK_METHOD3(CreateSwitcherButton,
-    //        const ButtonId(SwitcherId switcherId, const AZStd::string& icon, const AZStd::string& name));
-    //    MOCK_METHOD2(RegisterClusterEventHandler, void(ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler));
-    //    MOCK_METHOD2(RegisterSwitcherEventHandler, void(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler));
-    //    MOCK_METHOD1(RemoveCluster, void(ClusterId clusterId));
-    //    MOCK_METHOD1(RemoveSwitcher, void(SwitcherId switcherId));
-    //    MOCK_METHOD2(RemoveSwitcherButton, void(SwitcherId switcherId, ButtonId buttonId));
-    //    MOCK_METHOD2(SetClusterVisible, void(ClusterId clusterId, bool visible));
-    //    MOCK_METHOD2(SetClusterGroupVisible, void(const AZStd::vector<ClusterId>& clusterGroup, bool visible));
-    //    MOCK_METHOD3(CreateTextField,
-    //        const TextFieldId(
-    //            const AZStd::string& labelText, const AZStd::string& textFieldDefaultText, ViewportUi::TextFieldValidationType validationType));
-    //    MOCK_METHOD2(SetTextFieldText, void(TextFieldId textFieldId, const AZStd::string& text));
-    //    MOCK_METHOD2(RegisterTextFieldCallback, void(TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler));
-    //    MOCK_METHOD1(RemoveTextField, void(TextFieldId textFieldId));
-    //    MOCK_METHOD2(SetTextFieldVisible, void(TextFieldId textFieldId, bool visible));
-    //    MOCK_METHOD2(CreateViewportBorder,
-    //        void(const AZStd::string& borderTitle, AZStd::optional<ViewportUi::ViewportUiBackButtonCallback> backButtonCallback));
-    //    MOCK_METHOD0(GetViewportBorderVisible, void());
-    //    MOCK_METHOD1(ChangeViewportBorderText, void(const AZStd::string borderTitle));
-    //    MOCK_METHOD0(RemoveViewportBorder, void());
-    //    MOCK_METHOD2(PressButton, void(ClusterId clusterId, ButtonId buttonId));
-    //    MOCK_METHOD2(PressButton, void(SwitcherId switcherId, ButtonId buttonId));
-
-    //};
-
-    // class ComponentModeTestFixtureMock: public ComponentModeTestFixture
-    //{
-    //public:
-    //    //using MockComponentApplicationBusHandler = UnitTest::MockComponentApplication;
-    //    void SetUp() override
-    //    {
-    //        using namespace AzToolsFramework;
-
-    //        ComponentModeTestFixtureMock::SetUp();
-
-    //        m_viewportUiRequestBusHandlerMock = AZStd::make_unique<testing::NiceMock<MockVieportUiRequestBusHandler>>();
-
-    //        m_viewportUiRequestBusHandlerMock.get()->BusConnect(AzToolsFramework::ViewportUi::DefaultViewportId);
-
-    //        // AddEntity should just return true - to avoid asserts, etc.
-    //        //ON_CALL(*m_componentApplicationMock.get(), AddEntity(::testing::_)).WillByDefault(::testing::Return(true));
-    //    }
-
-    //    void TearDown() override
-    //    {
-    //        m_viewportUiRequestBusHandlerMock.get()->BusDisconnect();
-    //    }
-
-    //protected:
-    //    AZStd::unique_ptr<testing::NiceMock<MockVieportUiRequestBusHandler>> m_viewportUiRequestBusHandlerMock;
-
-    //};
-
     TEST_F(ComponentModeTestFixture, BeginEndComponentMode)
     {
         using ::testing::Eq;
@@ -138,14 +65,6 @@ namespace UnitTest
         ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
 
         ComponentModeSystemRequestBus::BroadcastResult(inComponentMode, &ComponentModeSystemRequests::InComponentMode);
-
-        m_viewportUiRequestBusMock.get()->RemoveViewportBorder();
-
-        EXPECT_CALL(
-            *m_viewportUiRequestBusMock.get(),
-            RemoveViewportBorder)
-            .Times(0);
-
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
