@@ -101,7 +101,7 @@ namespace O3DE::ProjectManager
                             emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
                         }
                     }
-                    if (button && button->property(k_addRemoteTemplateProperty).isValid())
+                    else if (button && button->property(k_addRemoteTemplateProperty).isValid())
                     {
                         AddRemoteTemplateDialog* addRemoteTemplateDialog = new AddRemoteTemplateDialog(this);
                         addRemoteTemplateDialog->exec();
@@ -343,6 +343,7 @@ namespace O3DE::ProjectManager
 
     void NewProjectSettingsScreen::StartTemplateDownload(const QString& templateName)
     {
+        AZ_Assert(m_downloadController, "DownloadController must exist.");
         m_downloadController->AddObjectDownload(templateName, DownloadController::DownloadObjectType::Template);
         auto foundButton = AZStd::ranges::find_if(
             m_templateButtons,
@@ -364,7 +365,7 @@ namespace O3DE::ProjectManager
         m_templateIncludedGems->Update(templateInfo.m_includedGems);
         m_downloadTemplateButton->setVisible(templateInfo.m_isRemote);
         m_downloadTemplateButton->disconnect();
-        connect(m_downloadTemplateButton, &QPushButton::clicked, this, [=]()
+        connect(m_downloadTemplateButton, &QPushButton::clicked, this, [&, templateInfo]()
                 {
                     DownloadRemoteTemplateDialog* downloadRemoteTemplateDialog = new DownloadRemoteTemplateDialog(templateInfo, this);
                     if (downloadRemoteTemplateDialog->exec() == QDialog::DialogCode::Accepted)

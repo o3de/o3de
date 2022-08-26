@@ -71,7 +71,6 @@ namespace O3DE::ProjectManager
         extraInfoGridLayout->setHorizontalSpacing(5);
         extraInfoGridLayout->setVerticalSpacing(15);
         extraInfoGridLayout->setAlignment(Qt::AlignLeft);
-        
 
         m_requirementsTitleLabel = new QLabel(tr("Template Requirements"), this);
         m_requirementsTitleLabel->setObjectName("remoteTemplateDialogRequirementsTitleLabel");
@@ -101,7 +100,6 @@ namespace O3DE::ProjectManager
         extraInfoGridLayout->addWidget(m_licensesContentLabel, 1, 1);
 
         vLayout->addLayout(extraInfoGridLayout);
-
         vLayout->addStretch();
 
         m_dialogButtons = new QDialogButtonBox();

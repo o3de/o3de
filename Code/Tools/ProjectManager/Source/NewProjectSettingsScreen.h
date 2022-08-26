@@ -12,6 +12,7 @@
 #include <ProjectTemplateInfo.h>
 #include <DownloadController.h>
 #include <TemplateButtonWidget.h>
+#include <QPointer>
 #include <QVector>
 #endif
 
@@ -70,7 +71,7 @@ namespace O3DE::ProjectManager
         int m_selectedTemplateIndex = -1;
         bool m_userChangedProjectPath = false;
 
-        DownloadController* m_downloadController = nullptr;
+        QPointer<DownloadController> m_downloadController = nullptr;
 
         inline constexpr static int s_spacerSize = 20;
         inline constexpr static int s_templateDetailsContentMargin = 20;
