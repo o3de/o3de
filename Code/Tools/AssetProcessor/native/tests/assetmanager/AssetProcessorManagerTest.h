@@ -239,6 +239,7 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
 
     AZ::Uuid m_dummyBuilderUuid;
+    AZ::Uuid m_sourceFileUuid = AssetUtilities::CreateSafeSourceUUIDFromName("assetProcessorManagerTest.txt");
     AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
     AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
     AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
