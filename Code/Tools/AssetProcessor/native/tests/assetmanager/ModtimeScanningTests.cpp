@@ -44,6 +44,10 @@ namespace UnitTests
             });
     }
 
+    void ModtimeScanningTest::PopulateDatabase()
+    {
+    }
+
     void ModtimeScanningTest::SetUp()
     {
         using namespace AssetProcessor;

@@ -660,7 +660,7 @@ namespace UnitTests
             }
         }
 
-        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ m_data->m_dependency1Uuid }));
+        ASSERT_THAT(databaseSourceNames, testing::UnorderedElementsAreArray({ m_data->m_dependency2Uuid }));
         ASSERT_THAT(databaseProductDependencyNames, testing::UnorderedElementsAreArray({ 2 }));
     }
 

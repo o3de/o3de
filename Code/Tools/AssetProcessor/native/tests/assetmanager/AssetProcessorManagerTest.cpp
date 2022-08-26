@@ -76,6 +76,7 @@ void AssetProcessorManagerTest::SetUp()
     using namespace testing;
     using ::testing::NiceMock;
     using namespace AssetProcessor;
+    using namespace AzToolsFramework::AssetDatabase;
 
     AssetProcessorTest::SetUp();
 
@@ -169,6 +170,8 @@ void AssetProcessorManagerTest::SetUp()
     {
         m_isIdling = newState;
     });
+
+    PopulateDatabase();
 }
 
 void AssetProcessorManagerTest::TearDown()
@@ -196,6 +199,27 @@ void AssetProcessorManagerTest::TearDown()
     AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
     AssetProcessor::AssetProcessorTest::TearDown();
+}
+
+void AssetProcessorManagerTest::PopulateDatabase()
+{
+    using namespace AzToolsFramework::AssetDatabase;
+
+    QDir tempPath(m_tempDir.path());
+
+    AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder(
+        tempPath.absoluteFilePath("subfolder1").toUtf8().constData(), "temp path", "temp path");
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetScanFolder(scanFolder));
+
+    SourceDatabaseEntry source1(scanFolder.m_scanFolderID, "a.txt", m_aUuid, "fingerprint");
+    SourceDatabaseEntry source2(scanFolder.m_scanFolderID, "b.txt", m_bUuid, "fingerprint");
+    SourceDatabaseEntry source3(scanFolder.m_scanFolderID, "c.txt", m_cUuid, "fingerprint");
+    SourceDatabaseEntry source4(scanFolder.m_scanFolderID, "d.txt", m_dUuid, "fingerprint");
+
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source1));
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source2));
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source3));
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source4));
 }
 
 TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
@@ -758,6 +782,7 @@ TEST_F(BuilderDirtiness, BuilderDirtiness_NewAnalysisFingerprint_IsNotANewBuilde
 
 TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTest)
 {
+    using SourceDatabaseEntry = AzToolsFramework::AssetDatabase::SourceDatabaseEntry;
     using SourceFileDependencyEntry = AzToolsFramework::AssetDatabase::SourceFileDependencyEntry;
 
     //  A depends on B, which depends on both C and D
@@ -769,26 +794,22 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/c.txt"), QString("tempdata\n"));
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/d.txt"), QString("tempdata\n"));
 
-    AZ::Uuid aUuid{ "{2BA5A7A3-6798-4719-AFDD-6F425CACB228}" };
-    AZ::Uuid bUuid{ "{451A13E8-B683-4643-9616-4D89BF22EF22}" };
-    AZ::Uuid cUuid{ "{C21B5D80-560B-40F4-838C-08B019D22CEC}" };
-
     SourceFileDependencyEntry newEntry1;  // a depends on B
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry1.m_sourceGuid = aUuid;
+    newEntry1.m_sourceGuid = m_aUuid;
     newEntry1.m_dependsOnSource = "b.txt";
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry2.m_sourceGuid = bUuid;
+    newEntry2.m_sourceGuid = m_bUuid;
     newEntry2.m_dependsOnSource = "c.txt";
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry3.m_sourceGuid = bUuid;
+    newEntry3.m_sourceGuid = m_bUuid;
     newEntry3.m_dependsOnSource = "d.txt";
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry1));
@@ -796,7 +817,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry3));
 
     AssetProcessor::SourceFilesForFingerprintingContainer dependencies;
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource );
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource );
     EXPECT_EQ(dependencies.size(), 4); // a depends on b, c, and d - with the latter two being indirect.
 
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()), dependencies.end());
@@ -804,14 +825,14 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()), dependencies.end());
 
-    // make sure the corresponding values in the map are also correct (ie, database path only)
-    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()].c_str(), "a.txt");
-    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), "b.txt");
-    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), "c.txt");
-    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()].c_str(), "d.txt");
+    // make sure the corresponding values in the map are also correct
+    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()].c_str(), m_aUuid.ToFixedString().c_str());
+    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()].c_str(), m_bUuid.ToFixedString().c_str());
+    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()].c_str(), m_cUuid.ToFixedString().c_str());
+    EXPECT_STREQ(dependencies[tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()].c_str(), m_dUuid.ToFixedString().c_str());
 
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(bUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_bUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
     EXPECT_EQ(dependencies.size(), 3); // b  depends on c, and d
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/c.txt").toUtf8().constData()), dependencies.end());
@@ -821,7 +842,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->RemoveSourceFileDependency(newEntry2.m_sourceDependencyID));
 
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
     EXPECT_EQ(dependencies.size(), 3); // a depends on b and d, but no longer c
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()), dependencies.end());
@@ -840,28 +861,24 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/c.txt"), QString("tempdata\n"));
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/d.txt"), QString("tempdata\n"));
 
-    AZ::Uuid aUuid{ "{2BA5A7A3-6798-4719-AFDD-6F425CACB228}" };
-    AZ::Uuid bUuid{ "{451A13E8-B683-4643-9616-4D89BF22EF22}" };
-    AZ::Uuid cUuid{ "{C21B5D80-560B-40F4-838C-08B019D22CEC}" };
-
     SourceFileDependencyEntry newEntry1;  // a depends on B as a SOURCE dependency.
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry1.m_sourceGuid = aUuid;
+    newEntry1.m_sourceGuid = m_aUuid;
     newEntry1.m_dependsOnSource = "b.txt";
     newEntry1.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
     SourceFileDependencyEntry newEntry2; // b depends on C as a JOB dependency
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry2.m_sourceGuid = bUuid;
+    newEntry2.m_sourceGuid = m_bUuid;
     newEntry2.m_dependsOnSource = "c.txt";
     newEntry2.m_typeOfDependency = SourceFileDependencyEntry::DEP_JobToJob;
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D as a SOURCE dependency
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry3.m_sourceGuid = bUuid;
+    newEntry3.m_sourceGuid = m_bUuid;
     newEntry3.m_dependsOnSource = "d.txt";
     newEntry3.m_typeOfDependency = SourceFileDependencyEntry::DEP_SourceToSource;
 
@@ -870,7 +887,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry3));
 
     AssetProcessor::SourceFilesForFingerprintingContainer dependencies;
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
     // note that a depends on b, c, and d - with the latter two being indirect.
     // however, since b's dependency on C is via JOB, and we're asking for SOURCE only, we should not see C.
     EXPECT_EQ(dependencies.size(), 3);
@@ -880,7 +897,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()), dependencies.end());
 
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(bUuid, dependencies, SourceFileDependencyEntry::DEP_JobToJob);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_bUuid, dependencies, SourceFileDependencyEntry::DEP_JobToJob);
     // b  depends on c, and d  - but we're asking for job dependencies only, so we should not get anything except C and B
     EXPECT_EQ(dependencies.size(), 2);
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()), dependencies.end());
@@ -888,7 +905,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
 
     // now ask for ALL kinds and you should get the full tree.
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_Any);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_Any);
     EXPECT_EQ(dependencies.size(), 4);
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/b.txt").toUtf8().constData()), dependencies.end());
@@ -910,26 +927,29 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Missing
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/d.txt"), QString("tempdata\n"));
     // note that we don't actually create b and c here, they are missing.
 
-    AZ::Uuid aUuid{ "{2BA5A7A3-6798-4719-AFDD-6F425CACB228}" };
-    AZ::Uuid bUuid{ "{451A13E8-B683-4643-9616-4D89BF22EF22}" };
-    AZ::Uuid cUuid{ "{C21B5D80-560B-40F4-838C-08B019D22CEC}" };
+    AzToolsFramework::AssetDatabase::SourceDatabaseEntry entry;
+    m_assetProcessorManager->m_stateData->GetSourceBySourceGuid(m_bUuid, entry);
+    m_assetProcessorManager->m_stateData->RemoveSource(entry.m_sourceID);
+
+    m_assetProcessorManager->m_stateData->GetSourceBySourceGuid(m_cUuid, entry);
+    m_assetProcessorManager->m_stateData->RemoveSource(entry.m_sourceID);
 
     SourceFileDependencyEntry newEntry1;  // a depends on B
     newEntry1.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry1.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry1.m_sourceGuid = aUuid;
+    newEntry1.m_sourceGuid = m_aUuid;
     newEntry1.m_dependsOnSource = "b.txt";
 
     SourceFileDependencyEntry newEntry2; // b depends on C
     newEntry2.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry2.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry2.m_sourceGuid = bUuid;
+    newEntry2.m_sourceGuid = m_bUuid;
     newEntry2.m_dependsOnSource = "c.txt";
 
     SourceFileDependencyEntry newEntry3;  // b also depends on D
     newEntry3.m_sourceDependencyID = AzToolsFramework::AssetDatabase::InvalidEntryId;
     newEntry3.m_builderGuid = AZ::Uuid::CreateRandom();
-    newEntry3.m_sourceGuid = bUuid;
+    newEntry3.m_sourceGuid = m_bUuid;
     newEntry3.m_dependsOnSource = "d.txt";
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry1));
@@ -937,22 +957,22 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Missing
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependency(newEntry3));
 
     AssetProcessor::SourceFilesForFingerprintingContainer dependencies;
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
-    EXPECT_EQ(dependencies.size(), 2); // a depends on b, c, and d - with the latter two being indirect.
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    EXPECT_EQ(dependencies.size(), 2); // b and c don't exist, so only expect a and d
 
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()), dependencies.end());
 
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(bUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
-    EXPECT_EQ(dependencies.size(), 1); // b  depends on c, and d
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_bUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    EXPECT_EQ(dependencies.size(), 1); // c doesn't exist, so only expect d
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()), dependencies.end());
 
     // eliminate b --> c
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->RemoveSourceFileDependency(newEntry2.m_sourceDependencyID));
 
     dependencies.clear();
-    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
+    m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
     EXPECT_EQ(dependencies.size(), 2); // a depends on b and d, but no longer c
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/a.txt").toUtf8().constData()), dependencies.end());
     EXPECT_NE(dependencies.find(tempPath.absoluteFilePath("subfolder1/d.txt").toUtf8().constData()), dependencies.end());
@@ -3728,6 +3748,9 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     job.m_jobsToAnalyze.push_back(newDetails);
 
     m_assetProcessorManager.get()->UpdateSourceFileDependenciesDatabase(job);
+
+    AzToolsFramework::AssetDatabase::SourceDatabaseEntry wildcard(scanFolder->ScanFolderID(), "wildcardTest.txt", wildcardTestUuid, "fingerprint");
+    m_assetProcessorManager->m_stateData->SetSource(wildcard);
 
     AssetProcessor::SourceFilesForFingerprintingContainer deps;
     m_assetProcessorManager.get()->QueryAbsolutePathDependenciesRecursive(wildcardTestUuid, deps, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceToSource);

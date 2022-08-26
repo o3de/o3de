@@ -168,6 +168,8 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
+    virtual void PopulateDatabase();
+
     QTemporaryDir m_tempDir;
 
     AZStd::unique_ptr<AssetProcessorManager_Test> m_assetProcessorManager;
@@ -177,6 +179,11 @@ protected:
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
     QMetaObject::Connection m_idleConnection;
+
+    AZ::Uuid m_aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
+    AZ::Uuid m_bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
+    AZ::Uuid m_cUuid = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
+    AZ::Uuid m_dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
 
     struct StaticData
     {
