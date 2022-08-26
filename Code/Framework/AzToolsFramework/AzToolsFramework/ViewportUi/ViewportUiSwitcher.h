@@ -40,7 +40,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
 
     private:
-        QPixmap CreateIconMask(const char* buttonIcon);
+        //! Removes color from switcher icon.
+        QPixmap RemoveIconColor(const char* buttonIcon);
 
         QToolButton* m_activeButton; //!< The first button in the toolbar. Only button with a label/text.
         ButtonId m_activeButtonId = ButtonId(0); //!< ButtonId corresponding to the active button in the buttonActionMap.
