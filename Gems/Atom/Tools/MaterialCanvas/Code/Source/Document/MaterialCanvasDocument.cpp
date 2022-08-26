@@ -918,8 +918,8 @@ namespace MaterialCanvas
                     propertyGroup = materialTypeSourceData.AddPropertyGroup(propertyGroupName);
 
                     // The unmodified text value will be used as the display name and description for now
-                    propertyGroup->SetDisplayName(materialInputGroupSlot->GetValue<AZStd::string>());
-                    propertyGroup->SetDescription(materialInputGroupSlot->GetValue<AZStd::string>());
+                    propertyGroup->SetDisplayName(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
+                    propertyGroup->SetDescription(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
                 }
 
                 // Get the symbol for the material input based on the node and the property name. This will be used as both the

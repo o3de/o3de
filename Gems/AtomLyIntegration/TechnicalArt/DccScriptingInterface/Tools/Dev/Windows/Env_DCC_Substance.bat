@@ -79,7 +79,7 @@ echo     DCCSI_SUBSTANCE_PYTHON = %DCCSI_SUBSTANCE_PYTHON%
 IF "%DCCSI_SUBSTANCE_PY_EXE%"=="" (set "DCCSI_SUBSTANCE_PY_EXE=%DCCSI_SUBSTANCE_PYTHON%\python.exe")
 echo     DCCSI_SUBSTANCE_PY_EXE = %DCCSI_SUBSTANCE_PY_EXE%
 
-:: set as a interpretter hook for wing ide
+:: set as a interpreter hook for wing ide
 set "DCCSI_PY_SUBSTANCE=%DCCSI_SUBSTANCE_PY_EXE%"
 echo     DCCSI_PY_SUBSTANCE = %DCCSI_PY_SUBSTANCE%
 
@@ -98,14 +98,6 @@ echo     DCCSI_SUBSTANCE_CFG_SLUG = %DCCSI_SUBSTANCE_CFG_SLUG%
 :: https://substance3d.adobe.com/documentation/sddoc/project-settings-188974384.html
 IF "%DCCSI_SUBSTANCE_CFG%"=="" (set "DCCSI_SUBSTANCE_CFG=%DCCSI_TOOLS_SUBSTANCE%\%DCCSI_SUBSTANCE_CFG_SLUG%")
 echo     DCCSI_SUBSTANCE_CFG = %DCCSI_SUBSTANCE_CFG%
-
-:: Only launchers should actually set the PATH and PYTHONPATH !!!
-:: add to the PATH
-::SET PATH=%DCCSI_BLENDER_LOCATION%;%DCCSI_BLENDER_PY_BIN%;%PATH%
-
-:: add all python related paths to PYTHONPATH for package imports
-::set PYTHONPATH=%DCCSI_BLENDER_SCRIPTS%;%DCCSI_BLENDER_SCRIPTS%;%PYTHONPATH%
-::echo     PYTHONPATH = %PYTHONPATH%
 
 ::ENDLOCAL
 

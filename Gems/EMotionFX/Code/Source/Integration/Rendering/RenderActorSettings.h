@@ -38,15 +38,19 @@ namespace AZ::Render
         bool m_enabledStaticBasedAabb = true;
 
         AZ::Color m_hitDetectionColliderColor{0.44f, 0.44f, 0.44f, 1.0f};
-        AZ::Color m_selectedHitDetectionColliderColor{ 0.3f, 0.56f, 0.88f, 1.0f };
+        AZ::Color m_selectedHitDetectionColliderColor{ 0.09f, 0.30f, 0.55f, 1.0f };
+        AZ::Color m_hoveredHitDetectionColliderColor{ 0.75f, 0.84f, 0.96f, 1.0f };
         AZ::Color m_ragdollColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
-        AZ::Color m_selectedRagdollColliderColor{ 0.96f, 0.65f, 0.14f, 1.0f };
+        AZ::Color m_selectedRagdollColliderColor{ 0.67f, 0.43f, 0.03f, 1.0f };
         AZ::Color m_violatedRagdollColliderColor{ 1.0f, 0.0f, 0.0f, 1.0f };
+        AZ::Color m_hoveredRagdollColliderColor{ 0.98f, 0.81f, 0.52f, 1.0f };
         AZ::Color m_violatedJointLimitColor{ 1.0f, 0.0f, 0.0f, 1.0f };
         AZ::Color m_clothColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
-        AZ::Color m_selectedClothColliderColor{ 0.6f, 0.46f, 1.0f, 1.0f };
+        AZ::Color m_selectedClothColliderColor{ 0.26f,0.0f, 0.99f, 1.0f };
+        AZ::Color m_hoveredClothColliderColor{ 0.89f, 0.86f, 1.0f, 1.0f };
         AZ::Color m_simulatedObjectColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
-        AZ::Color m_selectedSimulatedObjectColliderColor{ 1.0, 0.34f, 0.87f, 1.0f };
+        AZ::Color m_selectedSimulatedObjectColliderColor{ 0.87f, 0.0f, 0.70f, 1.0f };
+        AZ::Color m_hoveredSimulatedObjectColliderColor{ 1.0f, 0.81f, 0.96f, 1.0f };
 
         AZ::Color m_vertexNormalsColor{ 0.0f, 1.0f, 0.0f, 1.0f };
         AZ::Color m_faceNormalsColor{ 0.5f, 0.5f, 1.0f, 1.0f };
@@ -54,7 +58,7 @@ namespace AZ::Render
         AZ::Color m_mirroredBitangentsColor{ 1.0f, 1.0f, 0.0f, 1.0f };
         AZ::Color m_bitangentsColor{ 1.0f, 1.0f, 1.0f, 1.0f };
         AZ::Color m_wireframeColor{ 0.0f, 0.0f, 0.0f, 1.0f };
-        AZ::Color m_lineSkeletonColor{ 0.33333f, 1.0f, 0.0f, 1.0f };
+        AZ::Color m_lineSkeletonColor{ 0.27f, 0.8f, 0.0f, 1.0f };
         AZ::Color m_skeletonColor{ 0.19f, 0.58f, 0.19f, 1.0f };
         AZ::Color m_jointNameColor{ 1.0f, 1.0f, 1.0f, 1.0f };
 

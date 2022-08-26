@@ -32,7 +32,7 @@ PUSHD %~dp0
 ::SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 :: Constant Vars (Global)
 :: global debug (propogates)
@@ -55,22 +55,33 @@ IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
 :: Initialize env
-CALL %~dp0\..\Env_O3DE_Core.bat
+CALL %~dp0..\Env_O3DE_Core.bat
 
 :: add to the PATH here (this is global)
 SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
+:: WingIDE version Major
+IF "%DCCSI_WING_VERSION_MAJOR%"=="" (set DCCSI_WING_VERSION_MAJOR=7)
+:: WingIDE version Minor
+IF "%DCCSI_WING_VERSION_MINOR%"=="" (set DCCSI_WING_VERSION_MINOR=2)
+
+set "WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%"
+echo     WINGHOME = %WINGHOME%
+
+set "WING_PROJ=%PATH_DCCSIG%\Tools\Dev\Windows\Solutions\.wing\DCCsi_%DCCSI_WING_VERSION_MAJOR%x.wpr"
+echo     WING_PROJ = %WING_PROJ%
+
 :: Initialize env
-CALL %~dp0\..\Env_O3DE_Python.bat
+CALL %~dp0..\Env_O3DE_Python.bat
 
 :: add to the PATH here (this is global)
 SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-SET PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+SET PYTHONPATH=%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
 
 :: Initialize env
-CALL %~dp0\..\Env_O3DE_Qt.bat
+CALL %~dp0..\Env_O3DE_Qt.bat
 
 :: add to the PATH
 SET PATH=%QTFORPYTHON_PATH%;%PATH%
@@ -83,15 +94,15 @@ SET PYTHONPATH=%QT_PLUGIN_PATH%;%PYTHONPATH%
 SET PATH=%PATH_O3DE_BIN%;%PATH%
 
 :: Initialize env
-CALL %~dp0\..\Env_DCC_Maya.bat
-CALL %~dp0\..\Env_DCC_Blender.bat
-CALL %~dp0\..\Env_DCC_Substance.bat
-CALL %~dp0\..\Env_IDE_WingIDE.bat
+CALL %~dp0..\Env_DCC_Maya.bat
+CALL %~dp0..\Env_DCC_Blender.bat
+CALL %~dp0..\Env_DCC_Substance.bat
+CALL %~dp0..\Env_IDE_Wing.bat
 
 SET PATH=%WINGHOME%;%PATH%
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
@@ -109,6 +120,8 @@ echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%
+
+pause
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
     start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"
