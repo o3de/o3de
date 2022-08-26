@@ -8,13 +8,12 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! O3DE DCCsi Tools package
+"""Treat IDE tool integrations as a package
 
-:file: < DCCsi >/Tools/__init__.py
+    < DCCsi >/Tools/IDE/__init__.py
+
 :Status: Prototype
 :Version: 0.0.1
-
-This init allows us to treat the Tools folder as a package.
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -27,12 +26,11 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'DCCsi.Tools'
+_PACKAGENAME = 'DCCsi.Tools.IDE'
 
-__all__ = ['DCC',
-           'IDE',
-           'Python']  # to do: add others when they are set up
-          #'Foo',
+__all__ = ['Wing']
+           # 'PyCharm',
+           # 'VScode']  # to do: add others when they are set up
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
@@ -40,25 +38,23 @@ _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 
 # -------------------------------------------------------------------------
-# we need to set up basic access to the DCCsi
+# set up access to this IDE folder as a pkg
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 
-# turtles all the way down, the paths from there to here
-from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
-from DccScriptingInterface import PATH_DCCSIG
-# this makes sure nothing asserts higher up
+# last two package paths, follow the turtles all the way down
+from DccScriptingInterface.Tools import PATH_DCCSIG
+from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
 from DccScriptingInterface.globals import *
 
-from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS
+from DccScriptingInterface.constants import ENVAR_PATH_DCCSI_TOOLS_IDE
 
-# the path to this < dccsi >/Tools pkg
-PATH_DCCSI_TOOLS = Path(_MODULE_PATH.parent)
-# this allows the Tool location to be overriden in the external env
-PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
-                                   PATH_DCCSI_TOOLS.as_posix()))
-site.addsitedir(PATH_DCCSI_TOOLS.as_posix())
-_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS}: {PATH_DCCSI_TOOLS}')
+# the path to this < dccsi >/Tools/IDE pkg
+PATH_DCCSI_TOOLS_IDE = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_IDE = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_IDE,
+                                       PATH_DCCSI_TOOLS_IDE.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS_IDE.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_IDE}: {PATH_DCCSI_TOOLS_IDE}')
 # -------------------------------------------------------------------------
 
 

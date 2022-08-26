@@ -11,17 +11,17 @@ REM
 :: Launches Wing IDE and the DccScriptingInterface Project Files
 
 :: Set up window
-TITLE O3DE DCCsi Launch WingIDE 7x
+TITLE O3DE DCCsi Launch Wing Pro 8
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE DCCsi WingIDE Launch Env ...
+echo ~    O3DE DCCsi Wing Pro 8 Launch Env ...
 echo _____________________________________________________________________
 echo.
-echo ~    default envas for wingide env
+echo ~    default envas for wing pro 8 env
 echo.
 
 :: Store current dir
@@ -30,6 +30,9 @@ cd %~dp0
 PUSHD %~dp0
 
 ::SETLOCAL ENABLEDELAYEDEXPANSION
+
+:: if the user has set up a custom env call it
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 :: Constant Vars (Global)
 :: global debug (propogates)
@@ -51,18 +54,6 @@ echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 IF "%DCCSI_LOGLEVEL%"=="" (set DCCSI_LOGLEVEL=20)
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%
 
-:: maya defaults, so we can boostrap the correct dccsi 3rdparty lib sandbox
-:: Maya 2022: 3.7.7 (tags/v3.7.7:d7c567b08f, Mar 10 2020, 10:41:24) [MSC v.1900 64 bit (AMD64)]
-IF "%DCCSI_PY_VERSION_MAJOR%"=="" (set DCCSI_PY_VERSION_MAJOR=3)
-IF "%DCCSI_PY_VERSION_MINOR%"=="" (set DCCSI_PY_VERSION_MINOR=7)
-IF "%DCCSI_PY_VERSION_RELEASE%"=="" (set DCCSI_PY_VERSION_RELEASE=7)
-
-:: Default Maya Version
-IF "%MAYA_VERSION%"=="" (set MAYA_VERSION=2022)
-
-:: if the user has set up a custom env call it
-IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
-
 :: Initialize env
 CALL %~dp0..\Env_O3DE_Core.bat
 
@@ -70,41 +61,49 @@ CALL %~dp0..\Env_O3DE_Core.bat
 SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
 :: Initialize env
-CALL %~dp0..\Env_DCC_Maya.bat
-
-:: ide and debugger plug
-set "DCCSI_PY_DEFAULT=%MAYA_BIN_PATH%\mayapy.exe"
-echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
-
-:: Some IDEs like Wing, may in some cases need acess directly to the exe to operate correctly
-set "DCCSI_PY_IDE=%MAYA_BIN_PATH%\mayapy.exe"
-echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
-
-SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
-
-:: Initialize env
 CALL %~dp0..\Env_O3DE_Python.bat
 
-:: add to the PYTHONPATH here (this is global)
-SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
-
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BIN%;%PYTHONPATH%
+SET PYTHONPATH=%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
+
+:: add to the PATH here (this is global)
+SET PATH=%DCCSI_PY_IDE%;%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%PATH%
+
+REM :: Initialize env
+REM CALL %~dp0..\Env_O3DE_Qt.bat
+
+REM :: add to the PATH
+REM SET PATH=%QTFORPYTHON_PATH%;%PATH%
+REM SET PYTHONPATH=%QTFORPYTHON_PATH%;%PYTHONPATH%
+
+REM :: add to the PATH
+REM SET PATH=%QT_PLUGIN_PATH%;%PATH%
+REM SET PYTHONPATH=%QT_PLUGIN_PATH%;%PYTHONPATH%
+
+REM SET PATH=%PATH_O3DE_BIN%;%PATH%
 
 :: Initialize env
-CALL %~dp0..\Env_IDE_Wing.bat
+CALL %~dp0..\Env_DCC_Maya.bat
+SET PATH=%DCCSI_PY_MAYA%;%PATH%
 
+CALL %~dp0..\Env_DCC_Blender.bat
+SET PATH=%DCCSI_BLENDER_PY_EXE%;%PATH%
+
+CALL %~dp0..\Env_DCC_Substance.bat
+SET PATH=%DCCSI_SUBSTANCE_PY_EXE%;%PATH%
+
+CALL %~dp0..\Env_IDE_Wing.bat
 SET PATH=%WINGHOME%;%PATH%
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
+IF EXIST "%~dp0Env_Dev.bat" CALL %~dp0Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~ WingIDE Version %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
-echo ~ Launching O3DE %O3DE_PROJECT% project in WingIDE %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR% ...
-echo ~ MayaPy.exe (default python interpreter)
+echo ~ WingIDE Version %DCCSI_WING_VERSION_MAJOR%
+echo ~ Launching O3DE project: %O3DE_PROJECT%
+echo ~ in Wing Pro %DCCSI_WING_VERSION_MAJOR% ...
 echo _____________________________________________________________________
 echo.
 
@@ -116,7 +115,8 @@ echo.
 
 :: Change to root dir
 CD /D %PATH_O3DE_PROJECT%
-echo.
+
+pause
 
 IF EXIST "%WINGHOME%\bin\wing.exe" (
     start "" "%WINGHOME%\bin\wing.exe" "%WING_PROJ%"
