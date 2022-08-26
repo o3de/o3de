@@ -46,10 +46,10 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
-    QPixmap ViewportUiSwitcher::RemoveIconColor(const char* buttonIcon)
+    static QPixmap RemoveIconColor(const char* buttonIconPath)
     {
         QPainter painter;
-        QPixmap buttonPixmap = QPixmap(QString(buttonIcon));
+        QPixmap buttonPixmap = QPixmap(QString(buttonIconPath));
 
         painter.begin(&buttonPixmap);
         painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
