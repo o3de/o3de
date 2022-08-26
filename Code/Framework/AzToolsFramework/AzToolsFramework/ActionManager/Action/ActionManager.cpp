@@ -65,7 +65,8 @@ namespace AzToolsFramework
         const ActionProperties& properties,
         AZStd::function<void()> handler)
     {
-        if (!m_actionContexts.contains(contextIdentifier))
+        auto actionContextIterator = m_actionContexts.find(contextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
@@ -86,7 +87,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionContextIterator->second->GetWidget(),
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
@@ -109,7 +110,8 @@ namespace AzToolsFramework
         AZStd::function<void()> handler,
         AZStd::function<bool()> checkStateCallback)
     {
-        if (!m_actionContexts.contains(contextIdentifier))
+        auto actionContextIterator = m_actionContexts.find(contextIdentifier);
+        if (actionContextIterator == m_actionContexts.end())
         {
             return AZ::Failure(AZStd::string::format(
                 "Action Manager - Could not register action \"%s\" - context \"%s\" has not been registered.",
@@ -130,7 +132,7 @@ namespace AzToolsFramework
             {
                 actionIdentifier,
                 EditorAction(
-                    m_actionContexts[contextIdentifier]->GetWidget(),
+                    actionContextIterator->second->GetWidget(),
                     actionIdentifier,
                     properties.m_name,
                     properties.m_description,
@@ -504,6 +506,28 @@ namespace AzToolsFramework
         }
 
         return actionIterator->second.GetAction();
+    }
+
+    EditorAction* ActionManager::GetEditorAction(const AZStd::string& actionIdentifier)
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return &actionIterator->second;
+    }
+
+    const EditorAction* ActionManager::GetEditorActionConst(const AZStd::string& actionIdentifier) const
+    {
+        auto actionIterator = m_actions.find(actionIdentifier);
+        if (actionIterator == m_actions.end())
+        {
+            return nullptr;
+        }
+
+        return &actionIterator->second;
     }
 
     bool ActionManager::GetHideFromMenusWhenDisabled(const AZStd::string& actionIdentifier) const

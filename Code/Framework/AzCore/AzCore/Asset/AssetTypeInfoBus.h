@@ -55,11 +55,18 @@ namespace AZ
         //! You can use this to filter by subIds or do your own validation here if needed
         virtual bool CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const { return true; }
 
-        //! Determines if other products conflict with the given one when multiple are generated from a source asset.
-        //! This will be called before attempting to create a component from an asset (drag&drop, etc)
-        //! You can use this to filter by conflicting product types or in case you want to skip for UX reasons.
-        //! @param[in] productAssetTypes Asset types of all generated products, including the one for our given type in this bus.
-        virtual bool HasConflictingProducts([[maybe_unused]] const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const { return false; }
+        static constexpr const int s_LowPriority = -10; //! use when you want your type to be the last resort
+        static constexpr const int s_NormalPriority = 0; //! the default priority
+        static constexpr const int s_HighPriority = 10;
+        
+        //! Used to assign a sort order to assets in the case where the user
+        //! drags and drops a source file (like a FBX, but others too) which result in many
+        //! different products of different types.  Creating entities for each will cause a jumbled
+        //! mess, so instead, the products will be sorted using this value as a hint
+        //! and the first one in the resulting list will be picked to represent the drop operation.
+        //! Highest number wins.   In the case of ties, the list will also be sorted alphabetically
+        //! and give a higher weight to assets with the same name as the source file that produced them.
+        virtual int GetAssetTypeDragAndDropCreationPriority() const { return s_NormalPriority; }
     };
 
     using AssetTypeInfoBus = AZ::EBus<AssetTypeInfo>;

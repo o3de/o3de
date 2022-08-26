@@ -190,7 +190,7 @@ namespace AZ::Dom
             path,
             [&visitor](const Path& path, T& value)
             {
-                visitor(path, value);
+                return visitor(path, value);
             },
             flags);
     }

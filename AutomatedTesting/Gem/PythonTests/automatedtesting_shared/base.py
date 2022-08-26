@@ -21,6 +21,7 @@ import ly_test_tools.environment.waiter as waiter
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.log.log_monitor import LogMonitor, LogMonitorException
+from ly_test_tools.o3de.editor_test_utils import compile_test_case_name_from_request
 
 class TestRunError():
     def __init__(self, title, content):
@@ -96,7 +97,8 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}",
+        compiled_test_case_name = compile_test_case_name_from_request(request)
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={compiled_test_case_name}",
                  "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
                  f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
 

@@ -204,6 +204,7 @@ namespace AZ::DocumentPropertyEditor
             ForwardAttributes(attributes);
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
+            m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
             m_builder.EndPropertyEditor();
 
             CheckContainerElement(instance, attributes);
@@ -295,11 +296,22 @@ namespace AZ::DocumentPropertyEditor
             {
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(parentContainerAttribute);
                 auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentContainerInstanceAttribute);
+
+                // check if this element is actually standing in for a direct child of a container. This is used in scenarios like
+                // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an editable item
+                // who pretends that they can be removed directly from the container
+                auto containerElementOverrideAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
+                if (!containerElementOverrideAttribute.IsNull())
+                {
+                    instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(containerElementOverrideAttribute);
+                }
+
                 m_containers.SetValue(m_builder.GetCurrentPath(), BoundContainer{ parentContainer, parentContainerInstance, instance });
 
                 if (!parentContainer->IsFixedSize())
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                    m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                     m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                     m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                     m_builder.EndPropertyEditor();
@@ -376,11 +388,13 @@ namespace AZ::DocumentPropertyEditor
                     if (!container->IsFixedSize())
                     {
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                        m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
 
                         m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                        m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignRight);
                         m_builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::Clear);
                         m_builder.AddMessageHandler(m_adapter, Nodes::ContainerActionButton::OnActivate.GetName());
                         m_builder.EndPropertyEditor();
@@ -494,12 +508,22 @@ namespace AZ::DocumentPropertyEditor
         if (changeNotify.IsSuccess())
         {
             // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-            PropertyRefreshLevel value = changeNotify.GetValue();
-            if (value != PropertyRefreshLevel::Undefined && value != PropertyRefreshLevel::None)
+            PropertyRefreshLevel level = changeNotify.GetValue();
+            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
             {
-                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, value);
+                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
             }
         }
+    }
+
+    void ReflectionAdapter::ConnectPropertyChangeHandler(PropertyChangeEvent::Handler& handler)
+    {
+        handler.Connect(m_propertyChangeEvent);
+    }
+
+    void ReflectionAdapter::NotifyPropertyChanged(const PropertyChangeInfo& changeInfo)
+    {
+        m_propertyChangeEvent.Signal(changeInfo);
     }
 
     Dom::Value ReflectionAdapter::GenerateContents()
@@ -517,17 +541,15 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value ReflectionAdapter::HandleMessage(const AdapterMessage& message)
     {
-        using Nodes::ContainerActionButton;
-        using Nodes::PropertyEditor;
-
         auto handlePropertyEditorChanged =
-            [&](const Dom::Value& valueFromEditor, [[maybe_unused]] PropertyEditor::ValueChangeType changeType)
+            [&](const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
         {
             auto changeHandler = m_impl->m_onChangedCallbacks.ValueAtPath(message.m_messageOrigin, AZ::Dom::PrefixTreeMatch::ExactPath);
             if (changeHandler != nullptr)
             {
                 Dom::Value newValue = (*changeHandler)(valueFromEditor);
                 NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(message.m_messageOrigin / "Value", newValue) });
+                NotifyPropertyChanged({ message.m_messageOrigin, newValue, changeType });
             }
         };
 
@@ -542,7 +564,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 using Nodes::ContainerAction;
                 AZ::Dom::Value node = GetContents()[message.m_messageOrigin];
-                auto action = ContainerActionButton::Action.ExtractFromDomNode(node);
+                auto action = Nodes::ContainerActionButton::Action.ExtractFromDomNode(node);
                 if (!action.has_value())
                 {
                     return;
@@ -564,13 +586,14 @@ namespace AZ::DocumentPropertyEditor
 
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
         {
-            // For now just trigger a soft reset.
+            // For now just trigger a soft reset but the end goal is to handle granular updates.
             // This will still only send the view patches for what's actually changed.
             NotifyResetDocument();
         };
 
         return message.Match(
-            PropertyEditor::OnChanged, handlePropertyEditorChanged, ContainerActionButton::OnActivate, handleContainerOperation,
-            PropertyEditor::RequestTreeUpdate, handleTreeUpdate);
+            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
+            Nodes::ContainerActionButton::OnActivate, handleContainerOperation,
+            Nodes::PropertyEditor::RequestTreeUpdate, handleTreeUpdate);
     }
 } // namespace AZ::DocumentPropertyEditor

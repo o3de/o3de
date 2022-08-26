@@ -63,6 +63,9 @@ namespace AtomToolsFramework
         void showEvent(QShowEvent* showEvent) override;
         void closeEvent(QCloseEvent* closeEvent) override;
 
+        void BuildDockingMenu();
+        void BuildLayoutsMenu();
+
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
         virtual void UpdateWindowTitle();

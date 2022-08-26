@@ -45,9 +45,9 @@ public:
     virtual void Stop();
     virtual bool IsStarted() const { return m_running; }
 
-    virtual void AddLogMessage(const char* log);
-    virtual void AddLogWarning(const char* log);
-    virtual void AddLogError(const char* log);
+    virtual void AddLogMessage(AZStd::string_view log);
+    virtual void AddLogWarning(AZStd::string_view log);
+    virtual void AddLogError(AZStd::string_view log);
 
     virtual void Update();
 

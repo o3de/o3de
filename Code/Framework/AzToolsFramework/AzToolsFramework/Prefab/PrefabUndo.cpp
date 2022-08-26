@@ -56,7 +56,47 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
         }
 
-        //PrefabEntityUpdateUndo
+        PrefabUndoAddEntity::PrefabUndoAddEntity(const AZStd::string& undoOperationName)
+            : PrefabUndoBase(undoOperationName)
+        {
+        }
+
+        void PrefabUndoAddEntity::Capture(const PrefabDomValue& entityDom, AZ::EntityId entityId, TemplateId templateId)
+        {
+            m_templateId = templateId;
+
+            // Create redo patch.
+            m_redoPatch.SetArray();
+            PrefabDomValue redoPatch(rapidjson::kObjectType);
+            AZStd::string patchPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
+            rapidjson::Value path = rapidjson::Value(patchPath.data(), aznumeric_caster(patchPath.length()), m_redoPatch.GetAllocator());
+            rapidjson::Value patchValue;
+            patchValue.CopyFrom(entityDom, m_redoPatch.GetAllocator(), true);
+            redoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), m_redoPatch.GetAllocator())
+                .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_redoPatch.GetAllocator())
+                .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), m_redoPatch.GetAllocator());
+            m_redoPatch.PushBack(redoPatch.Move(), m_redoPatch.GetAllocator());
+
+            // Create undo patch.
+            m_undoPatch.SetArray();
+            PrefabDomValue undoPatch(rapidjson::kObjectType);
+            path = rapidjson::Value(patchPath.data(), aznumeric_caster(patchPath.length()), m_undoPatch.GetAllocator());
+            undoPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("remove"), m_undoPatch.GetAllocator())
+                .AddMember(rapidjson::StringRef("path"), AZStd::move(path), m_undoPatch.GetAllocator());
+            m_undoPatch.PushBack(undoPatch.Move(), m_undoPatch.GetAllocator());
+        }
+
+        void PrefabUndoAddEntity::Undo()
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+        }
+
+        void PrefabUndoAddEntity::Redo()
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
+        }
+
+        // PrefabEntityUpdateUndo
         PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
             : PrefabUndoBase(undoOperationName)
         {
@@ -64,10 +104,7 @@ namespace AzToolsFramework
             AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
         }
 
-        void PrefabUndoEntityUpdate::Capture(
-            PrefabDom& initialState,
-            PrefabDom& endState,
-            const AZ::EntityId& entityId)
+        void PrefabUndoEntityUpdate::Capture(const PrefabDomValue& initialState, const PrefabDomValue& endState, AZ::EntityId entityId)
         {
             //get the entity alias for future undo/redo
             auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);

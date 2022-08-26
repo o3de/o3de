@@ -45,61 +45,75 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
             AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback);
+
+    protected:
+        //! Default implementation of payload producer for test enumerators.
+        virtual typename TestJobRunner::PayloadMap PayloadMapProducer(const typename TestJobRunner::JobDataMap& jobDataMap);
+
+        //! Extracts the payload outcome for a given job payload.
+        virtual typename TestJobRunner::JobPayloadOutcome
+          PayloadExtractor(const typename TestJobRunner::JobInfo& jobData, const JobMeta& jobMeta) = 0;
+    };
+
+    template<typename AdditionalInfo>
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestEnumerator<AdditionalInfo>::TestJobRunner::Job>> TestEnumerator<
+        AdditionalInfo>::
+        Enumerate(
+        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        StdOutputRouting stdOutRouting,
+        StdErrorRouting stdErrRouting,
+        AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
+        AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
+        AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
+        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+    {
+        AZStd::vector<typename TestJobRunner::Job> cachedJobs;
+        AZStd::vector<typename TestJobRunner::JobInfo> jobQueue;
+
+        for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
         {
-            AZStd::vector<typename TestJobRunner::Job> cachedJobs;
-            AZStd::vector<typename TestJobRunner::JobInfo> jobQueue;
-
-            for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
+            // If this job has a cache read policy attempt to read the cache
+            if (jobInfo->GetCache().has_value())
             {
-                // If this job has a cache read policy attempt to read the cache
-                if (jobInfo->GetCache().has_value())
+                if (jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Read)
                 {
-                    if (jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Read)
+                    JobMeta meta;
+                    AZStd::optional<TestEnumeration> enumeration;
+
+                    try
                     {
-                        JobMeta meta;
-                        AZStd::optional<TestEnumeration> enumeration;
+                        enumeration =
+                            TestEnumeration(DeserializeTestEnumeration(ReadFileContents<TestRunnerException>(jobInfo->GetCache()->m_file)));
+                    } catch (const TestRunnerException& e)
+                    {
+                        AZ_Printf("Enumerate", AZStd::string::format("Enumeration cache error: %s\n", e.what()).c_str());
+                        DeleteFile(jobInfo->GetCache()->m_file);
+                    }
 
-                        try
-                        {
-                            enumeration = TestEnumeration(
-                                DeserializeTestEnumeration(ReadFileContents<TestRunnerException>(jobInfo->GetCache()->m_file)));
-                        } catch (const TestRunnerException& e)
-                        {
-                            AZ_Printf("Enumerate", AZStd::string::format("Enumeration cache error: %s\n", e.what()).c_str());
-                            DeleteFile(jobInfo->GetCache()->m_file);
-                        }
+                    // Even though cached jobs don't get executed we still give the client the opportunity to handle the job state
+                    // change in order to make the caching process transparent to the client
+                    if (enumeration.has_value())
+                    {
+                        // Cache read successfully, this job will not be placed in the job queue
+                        cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
 
-                        // Even though cached jobs don't get executed we still give the client the opportunity to handle the job state
-                        // change in order to make the caching process transparent to the client
-                        if (enumeration.has_value())
+                        if (clientCallback.has_value() && (*clientCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
                         {
-                            // Cache read successfully, this job will not be placed in the job queue
-                            cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
-
-                            if (clientCallback.has_value() && (*clientCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+                            // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
+                            AZStd::vector<Job> jobs(cachedJobs);
+                            for (auto emptyJobInfo = ++jobInfo; emptyJobInfo != jobInfos.end(); ++emptyJobInfo)
                             {
-                                // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
-                                AZStd::vector<Job> jobs(cachedJobs);
-                                for (auto emptyJobInfo = ++jobInfo; emptyJobInfo != jobInfos.end(); ++emptyJobInfo)
-                                {
-                                    jobs.emplace_back(Job(*emptyJobInfo, {}, AZStd::nullopt));
-                                }
-
-                                return { ProcessSchedulerResult::UserAborted, jobs };
+                                jobs.emplace_back(Job(*emptyJobInfo, {}, AZStd::nullopt));
                             }
-                        }
-                        else
-                        {
-                            // The cache read failed and exception policy for cache read failures is not to throw so instead place this
-                            // job in the job queue
-                            jobQueue.emplace_back(*jobInfo);
+
+                            return { ProcessSchedulerResult::UserAborted, jobs };
                         }
                     }
                     else
                     {
-                        // This job has no cache read policy so delete the cache and place in job queue
-                        DeleteFile(jobInfo->GetCache()->m_file);
+                        // The cache read failed and exception policy for cache read failures is not to throw so instead place this
+                        // job in the job queue
                         jobQueue.emplace_back(*jobInfo);
                     }
                 }
@@ -110,57 +124,67 @@ namespace TestImpact
                     jobQueue.emplace_back(*jobInfo);
                 }
             }
-            
-            const auto payloadGenerator = [](const typename TestJobRunner::JobDataMap& jobDataMap)
+            else
             {
-                typename TestJobRunner::PayloadMap enumerations;
-                for (const auto& [jobId, jobData] : jobDataMap)
+                // This job has no cache read policy so delete the cache and place in job queue
+                DeleteFile(jobInfo->GetCache()->m_file);
+                jobQueue.emplace_back(*jobInfo);
+            }
+        }
+
+        const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
+        {
+            return PayloadMapProducer(jobDataMap);
+        };
+
+        // Generate the enumeration results for the jobs that weren't cached
+        auto [result, jobs] = this->m_jobRunner.Execute(
+            jobQueue,
+            payloadGenerator,
+            stdOutRouting,
+            stdErrRouting,
+            enumerationTimeout,
+            enumeratorTimeout,
+            clientCallback,
+            stdContentCallback);
+
+        // We need to add the cached jobs to the completed job list even though they technically weren't executed
+        for (auto&& job : cachedJobs)
+        {
+            jobs.emplace_back(AZStd::move(job));
+        }
+
+        return { result, jobs };
+    }
+
+    template<typename AdditionalInfo>
+    typename TestJobRunner<AdditionalInfo, TestEnumeration>::PayloadMap TestEnumerator<AdditionalInfo>::PayloadMapProducer(
+        const typename TestJobRunner::JobDataMap& jobDataMap)
+    {
+        typename TestJobRunner::PayloadMap enumerations;
+        for (const auto& [jobId, jobData] : jobDataMap)
+        {
+            const auto& [meta, jobInfo] = jobData;
+            if (meta.m_result == JobResult::ExecutedWithSuccess)
+            {
+                if (auto outcome = PayloadExtractor(*jobInfo, meta); outcome.IsSuccess())
                 {
-                    const auto& [meta, jobInfo] = jobData;
-                    if (meta.m_result == JobResult::ExecutedWithSuccess)
+                    const auto& enumeration = (enumerations[jobId] = AZStd::move(outcome.TakeValue()));
+
+                    // Write out the enumeration to a cache file if we have a cache write policy for this job
+                    if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Write)
                     {
-                        if (auto outcome = PayloadFactory<AdditionalInfo, TestEnumeration>(*jobInfo, meta);
-                            outcome.IsSuccess())
-                        {
-                            const auto& enumeration = (enumerations[jobId] = AZStd::move(outcome.TakeValue()));
-                            
-                            // Write out the enumeration to a cache file if we have a cache write policy for this job
-                            if (jobInfo->GetCache().has_value() &&
-                                jobInfo->GetCache()->m_policy == TestEnumerationJobData::CachePolicy::Write)
-                            {
-                                WriteFileContents<TestRunnerException>(
-                                    SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
-                            }
-                        }
-                        else
-                        {
-                            AZ_Warning("Enumerate", false, outcome.GetError().c_str());
-                            enumerations[jobId] = AZStd::nullopt;
-                        }
+                        WriteFileContents<TestRunnerException>(SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
                     }
                 }
-
-                return enumerations;
-            };
-
-            // Generate the enumeration results for the jobs that weren't cached
-            auto [result, jobs] = this->m_jobRunner.Execute(
-                jobQueue,
-                payloadGenerator,
-                stdOutRouting,
-                stdErrRouting,
-                enumerationTimeout,
-                enumeratorTimeout,
-                clientCallback,
-                stdContentCallback);
-
-            // We need to add the cached jobs to the completed job list even though they technically weren't executed
-            for (auto&& job : cachedJobs)
-            {
-                jobs.emplace_back(AZStd::move(job));
+                else
+                {
+                    AZ_Warning("Enumerate", false, outcome.GetError().c_str());
+                    enumerations[jobId] = AZStd::nullopt;
+                }
             }
-
-            return { result, jobs };
         }
-    };
+
+        return enumerations;
+    }
 } // namespace TestImpact

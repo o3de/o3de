@@ -25,6 +25,8 @@ namespace Multiplayer
     {
     public:
         static constexpr int MaxMessageLength = 256;
+
+        // Messaging for clients
         static constexpr char CenterViewportDebugTitle[] = "Multiplayer Editor";
         static constexpr char ClientStatusTitle[] = "Multiplayer Client Status:";
         static constexpr char OnServerLaunchedMessage[] = "(1/3) Launching server...";
@@ -33,6 +35,19 @@ namespace Multiplayer
         static constexpr char OnEditorConnectionAttemptsFailedMessage[] = "(2/3) Failed to connect to server after %i attempts!\nPlease exit play mode and try again.";  
         static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
         static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
+        static constexpr char OnEditorServerStoppedUnexpectedly[] ="Editor server has unexpectedly stopped running!";
+
+        // Messaging common for both dedicated server and client-server
+        static constexpr char ServerHostingPort[] = "Hosting on port %i";
+
+        // Messaging for dedicated server
+        static constexpr char DedicatedServerStatusTitle[] = "Multiplayer Dedicated Server Status:";
+        static constexpr char DedicatedServerNotHosting[] = "Not Hosting";
+        static constexpr char DedicatedServerHostingClientCount[] = "%i client(s)";
+
+        // Messaging for client-server
+        static constexpr char ClientServerStatusTitle[] = "Multiplayer Client-Server Status:";
+        static constexpr char ClientServerHostingClientCount[] = "%i client(s) (including self)";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -62,12 +77,14 @@ namespace Multiplayer
         void OnConnectToSimulationSuccess() override;
         void OnConnectToSimulationFail(uint16_t serverPort) override;
         void OnPlayModeEnd() override;
+        void OnEditorServerProcessStoppedUnexpectedly() override;
         //! @}
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostAddress);
         void DrawConnectionStatusLine(const char* line, const AZ::Color& color);
 
         AZStd::fixed_string<MaxMessageLength> m_centerViewportDebugText;
+        AZ::Color m_centerViewportDebugTextColor = AZ::Colors::Yellow;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;
