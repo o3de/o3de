@@ -630,13 +630,22 @@ namespace MaterialEditor
                 AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> dynamicPropertyGroup;
                 dynamicPropertyGroup.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
 
-                // Copy details about this property group from the material type property group definition.
-                dynamicPropertyGroup->m_description = propertyGroup->GetDescription();
-
-                // Recombined the group name and display name vectors so that the complete hierarchy will be displayed in the UI and
-                // available for creating property IDs.
+                // Copy details about this property group from the material type property group definition. Recombine the group name and
+                // display name vectors so that the complete hierarchy will be displayed in the UI and available for creating property IDs.
                 AzFramework::StringFunc::Join(dynamicPropertyGroup->m_name, groupNameVector.begin(), groupNameVector.end(), ".");
                 AzFramework::StringFunc::Join(dynamicPropertyGroup->m_displayName, groupDisplayNameVector.begin(), groupDisplayNameVector.end(), " | ");
+
+                if (dynamicPropertyGroup->m_displayName.empty())
+                {
+                    dynamicPropertyGroup->m_displayName =
+                        !propertyGroup->GetDisplayName().empty() ? propertyGroup->GetDisplayName() : propertyGroup->GetName();
+                }
+
+                dynamicPropertyGroup->m_description = propertyGroup->GetDescription();
+                if (dynamicPropertyGroup->m_description.empty())
+                {
+                    dynamicPropertyGroup->m_description = dynamicPropertyGroup->m_displayName;
+                }
 
                 // All of the material type properties must be adapted for display in the ui. This is done by converting them into a dynamic
                 // property class that can be used to display and edit multiple types.
