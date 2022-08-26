@@ -109,14 +109,14 @@ namespace AZ
         return m_realAccumulatedTimeUs;
     }
 
-    void TimeSystem::SetElapsedTimeMs([[maybe_unused]] TimeMs time)
+    void TimeSystem::SetElapsedTimeMsDebug([[maybe_unused]] TimeMs time)
     {
 #ifndef AZ_RELEASE_BUILD
         m_accumulatedTimeUs = TimeMsToUs(time);
 #endif
     }
 
-    void TimeSystem::SetElapsedTimeUs([[maybe_unused]] TimeUs time)
+    void TimeSystem::SetElapsedTimeUsDebug([[maybe_unused]] TimeUs time)
     {
 #ifndef AZ_RELEASE_BUILD
         m_accumulatedTimeUs = time;

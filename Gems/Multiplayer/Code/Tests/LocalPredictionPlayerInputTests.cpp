@@ -153,7 +153,7 @@ namespace Multiplayer
         LocalPredictionPlayerInputComponentController* controller =
             dynamic_cast<LocalPredictionPlayerInputComponentController*>(m_localPredictionComponent->GetController());
         controller->ForceEnableAutonomousUpdate();
-        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMs(AZ::TimeMs(1000));
+        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMsDebug(AZ::TimeMs(1000));
         m_eventScheduler->OnTick(1000, AZ::ScriptTimePoint());
         controller->ForceDisableAutonomousUpdate();
     }
@@ -180,10 +180,10 @@ namespace Multiplayer
         controller->HandleSendClientInput(&connection, netInputArray, dummyHash);
         netInputArray[0].SetClientInputId(ClientInputId(1));
         // Force update to increment client input ID
-        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMs(AZ::TimeMs(1000));
+        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMsDebug(AZ::TimeMs(1000));
         controller->HandleSendClientInput(&connection, netInputArray, dummyHash);
         // Force update to update banked time
-        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMs(AZ::TimeMs(1010));
+        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMsDebug(AZ::TimeMs(1010));
         m_eventScheduler->OnTick(1000, AZ::ScriptTimePoint());
 
         EXPECT_EQ(controller->GetInputFrameId(netInputArray[0]), netInputArray[0].GetHostFrameId());
@@ -209,7 +209,7 @@ namespace Multiplayer
 
         // Force update to increment client input id
         controller->ForceEnableAutonomousUpdate();
-        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMs(AZ::TimeMs(1000));
+        AZ::Interface<AZ::ITime>::Get()->SetElapsedTimeMsDebug(AZ::TimeMs(1000));
         m_eventScheduler->OnTick(100, AZ::ScriptTimePoint());
         controller->HandleSendClientInputCorrection(&connection, ClientInputId(0), buffer);
         controller->HandleSendClientInputCorrection(&connection, ClientInputId(1), buffer);
