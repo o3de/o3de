@@ -195,6 +195,22 @@ site.addsitedir(_PATH_O3DE_PYTHON_SCRIPTS.as_posix())
 
 
 # -------------------------------------------------------------------------
+# refactor this module into a class object, other configs can inherit
+from DccScriptingInterface.azpy.config_class import ConfigClass
+
+# it is suggested that the core <dccsi>\config.py is re-written
+class CoreConfig(ConfigClass):
+    """A class representing the DCCsi core config"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _LOGGER.info(f'Initializing: {self.get_classname()}')
+
+# build the config
+core_config = CoreConfig(config_name='dccsi_core', auto_set=True)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # An improvement would be to move this to azpy.config_utils
 # and be refactored to utilize py3+ fstrings
 def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
