@@ -463,11 +463,9 @@ namespace TestImpact
                     AZ_Warning(
                         "TestSelectorAndPrioritizer",
                         false,
-                        AZStd::string::format(
-                            "Create operation for file with no parent targets but coverage data was not expected to be handled here for "
-                            "file '%s'",
-                            sourceDependency.GetPath().c_str())
-                            .c_str());
+                        "Create operation for file with no parent targets but coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
                     continue;
                 }
                 else
@@ -485,11 +483,9 @@ namespace TestImpact
                     AZ_Warning(
                         "TestSelectorAndPrioritizer",
                         false,
-                        AZStd::string::format(
-                            "Create operation for file with no parent targets or coverage data was not expected to be handled here for "
-                            "file '%s'",
-                            sourceDependency.GetPath().c_str())
-                            .c_str());
+                        "Create operation for file with no parent targets or coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
                     continue;
                 }
             }
@@ -563,11 +559,9 @@ namespace TestImpact
                     AZ_Warning(
                         "TestSelectorAndPrioritizer",
                         false,
-                        AZStd::string::format(
-                            "Update operation for file with no parent targets or coverage data was not expected to be handled here for "
-                            "file '%s'",
-                            sourceDependency.GetPath().c_str())
-                            .c_str());
+                        "Update operation for file with no parent targets or coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
                     continue;
                 }
             }
@@ -595,11 +589,9 @@ namespace TestImpact
                     AZ_Warning(
                         "TestSelectorAndPrioritizer",
                         false,
-                        AZStd::string::format(
-                            "Delete operation for file with parent targets and coverage data was not expected to be handled here for "
-                            "file '%s'",
-                            sourceDependency.GetPath().c_str())
-                            .c_str());
+                        "Delete operation for file with parent targets and coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
                     continue;
                 }
                 else
@@ -619,11 +611,9 @@ namespace TestImpact
                     AZ_Warning(
                         "TestSelectorAndPrioritizer",
                         false,
-                        AZStd::string::format(
-                            "Delete operation for file with parent targets but no coverage data was not expected to be handled here for "
-                            "file '%s'",
-                            sourceDependency.GetPath().c_str())
-                            .c_str());
+                        "Delete operation for file with parent targets but no coverage data was not expected to be handled here for "
+                        "file '%s'",
+                        sourceDependency.GetPath().c_str());
                     continue;
                 }
             }

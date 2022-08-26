@@ -232,12 +232,10 @@ namespace TestImpact
                 else
                 {
                     AZ_Warning(
-                        "ReplaceSourceCoverage", false,
-                        AZStd::string::format(
-                            "Test target %s exists in the coverage data "
-                            "but has since been removed from the build system",
-                            unresolvedTestTarget.c_str())
-                            .c_str());
+                        "ReplaceSourceCoverage",
+                        false,
+                        "Test target %s exists in the coverage data but has since been removed from the build system",
+                        unresolvedTestTarget.c_str());
                 }
             }
 
@@ -491,17 +489,16 @@ namespace TestImpact
                         //
                         // Note: coverage will be deleted upon updating of coverage after test runs (if any)
                         //       see TestSelectorAndPrioritizer::SelectTestTargets for scenarios and actions
-                        AZ_Printf(
+                        AZ_Warning(
                             "DynamicDependencyMap",
-                            AZStd::string::format(
-                                "Source file '%s' is potentially an orphan (used by build targets "
-                                "without explicitly being added to the build system, e.g. an include directive pulling in a header from "
-                                "the "
-                                "repository). Running the covering tests for this file with instrumentation will confirm whether or nor "
-                                "this "
-                                "is the case.\n",
-                                updatedFile.c_str())
-                                .c_str());
+                            false,
+                            "Source file '%s' is potentially an orphan (used by build targets "
+                            "without explicitly being added to the build system, e.g. an include directive pulling in a header from "
+                            "the "
+                            "repository). Running the covering tests for this file with instrumentation will confirm whether or nor "
+                            "this "
+                            "is the case.\n",
+                            updatedFile.c_str());
 
                         updateDependencies.emplace_back(AZStd::move(*sourceDependency));
                     }

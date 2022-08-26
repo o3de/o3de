@@ -14,6 +14,7 @@
 
 namespace TestImpact
 {
+    //! Test selector and prioritizer for the Python tests.
     class PythonTestSelectorAndPrioritizer
         : public TestSelectorAndPrioritizer<PythonProductionTarget, PythonTestTarget>
     {
