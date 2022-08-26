@@ -70,8 +70,8 @@ set(FILES
     Source/AnimGraph/NodeGroupWindow.h
     Source/AnimGraph/NodePaletteWidget.cpp
     Source/AnimGraph/NodePaletteWidget.h
-    Source/AnimGraph/ParameterCreateEditDialog.cpp
-    Source/AnimGraph/ParameterCreateEditDialog.h
+    Source/AnimGraph/ParameterCreateEditWidget.cpp
+    Source/AnimGraph/ParameterCreateEditWidget.h
     Source/AnimGraph/ParameterSelectionWindow.cpp
     Source/AnimGraph/ParameterSelectionWindow.h
     Source/AnimGraph/ParameterWidget.cpp
