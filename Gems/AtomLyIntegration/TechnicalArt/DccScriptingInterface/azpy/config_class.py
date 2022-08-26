@@ -135,7 +135,7 @@ class ConfigClass(object):
 
     @settings.getter
     def settings(self):
-        '''! If the class property self.auto_set is Rrue, settings.setenv() occurs
+        '''! If the class property self.auto_set is True, settings.setenv() occurs
         :return: settings, dynaconf'''
         # now standalone we can validate the config. env, settings.
         from dynaconf import settings
@@ -456,7 +456,7 @@ class ConfigClass(object):
 
         @param merge: whether existing file should be merged with new data
 
-        @param log_settings: ouptus settings contents to logging
+        @param log_settings: outputs settings contents to logging
 
         The default is to write: < dccsi >/settings.local.json
 
@@ -470,10 +470,10 @@ class ConfigClass(object):
 
         That will find and execute the local config and aggregate
         settings from the following:
-            config.py
-            settings.py
-            settings.json
-            settings.local.json
+            config.py (walks to find)
+            settings.py (in the same folder as config.py)
+            settings.json (in the same folder as config.py)
+            settings.local.json (in the same folder as config.py)
 
         We do not commit settings.local.json to source control,
         effectively it can be created and used as a local stash of the
