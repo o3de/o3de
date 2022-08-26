@@ -107,7 +107,7 @@ namespace AzToolsFramework::ViewportUi
         //! Returns if the viewport border is visible.
         virtual bool GetViewportBorderVisible() const = 0;
         //! Changes the text on the viewport border while in component mode.
-        virtual void ChangeViewportBorderText(const AZStd::string borderTitle) = 0;
+        virtual void ChangeViewportBorderText(const AZStd::string& borderTitle) = 0;
         //! Remove the viewport border.
         virtual void RemoveViewportBorder() = 0;
         //! Invoke a button press on a cluster.
