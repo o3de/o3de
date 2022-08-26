@@ -89,7 +89,7 @@ namespace AZStd
     /**
      * Default iterator traits struct.
     */
-    template <class Iterator>
+    template <class Iterator, class>
     struct iterator_traits
         : Internal::iterator_traits_type_aliases<Iterator, Internal::has_iterator_type_aliases_v<Iterator>>
     {
