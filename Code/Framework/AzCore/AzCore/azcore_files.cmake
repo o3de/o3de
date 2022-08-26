@@ -409,7 +409,6 @@ set(FILES
     Memory/dlmalloc.inl
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
-    Memory/IAllocator.cpp
     Memory/IAllocator.h
     Memory/Memory.cpp
     Memory/Memory.h

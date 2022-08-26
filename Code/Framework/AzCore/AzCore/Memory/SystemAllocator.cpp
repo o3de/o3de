@@ -31,17 +31,6 @@ namespace AZ
     //////////////////////////////////////////////////////////////////////////
 
     //=========================================================================
-    // SystemAllocator
-    // [9/2/2009]
-    //=========================================================================
-    SystemAllocator::SystemAllocator()
-        : AllocatorBase(nullptr)
-        , m_isCustom(false)
-        , m_ownsOSAllocator(false)
-    {
-    }
-
-    //=========================================================================
     // ~SystemAllocator
     //=========================================================================
     SystemAllocator::~SystemAllocator()
@@ -72,43 +61,27 @@ namespace AZ
             AllocatorInstance<OSAllocator>::Create();
         }
         bool isReady = false;
-        if (desc.m_custom)
+        m_isCustom = false;
+        HphaSchema::Descriptor heapDesc;
+        heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
+        // Fix SystemAllocator from growing in small chunks
+        if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
         {
-            m_isCustom = true;
-            m_schema = desc.m_custom;
+            AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
+
+            m_subAllocator = new (&g_systemSchema) HphaSchema(heapDesc);
+            g_isSystemSchemaUsed = true;
             isReady = true;
         }
         else
         {
-            m_isCustom = false;
-            HphaSchema::Descriptor heapDesc;
-            heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
-            // Fix SystemAllocator from growing in small chunks
-            if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
-            {
-                AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
+            // this class should be inheriting from SystemAllocator
+            AZ_Assert(
+                AllocatorInstance<SystemAllocator>::IsReady(),
+                "System allocator must be created before any other allocator! They allocate from it.");
 
-                m_schema = new (&g_systemSchema) HphaSchema(heapDesc);
-                g_isSystemSchemaUsed = true;
-                isReady = true;
-            }
-            else
-            {
-                // this class should be inheriting from SystemAllocator
-                AZ_Assert(
-                    AllocatorInstance<SystemAllocator>::IsReady(),
-                    "System allocator must be created before any other allocator! They allocate from it.");
-
-                m_schema = azcreate(HphaSchema, (heapDesc), SystemAllocator);
-                if (m_schema == nullptr)
-                {
-                    isReady = false;
-                }
-                else
-                {
-                    isReady = true;
-                }
-            }
+            m_subAllocator = azcreate(HphaSchema, (heapDesc), SystemAllocator);
+            isReady = m_subAllocator != nullptr;
         }
 
         return isReady;
@@ -128,14 +101,14 @@ namespace AZ
 
         if (!m_isCustom)
         {
-            if ((void*)m_schema == (void*)&g_systemSchema)
+            if ((void*)m_subAllocator == (void*)&g_systemSchema)
             {
-                static_cast<HphaSchema*>(m_schema)->~HphaSchema();
+                static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
                 g_isSystemSchemaUsed = false;
             }
             else
             {
-                azdestroy(m_schema);
+                azdestroy(m_subAllocator);
             }
         }
 
@@ -172,14 +145,14 @@ namespace AZ
 
         byteSize = MemorySizeAdjustedUp(byteSize);
         SystemAllocator::pointer address =
-            m_schema->allocate(byteSize, alignment);
+            m_subAllocator->allocate(byteSize, alignment);
 
         if (address == nullptr)
         {
             // Free all memory we can and try again!
             AllocatorManager::Instance().GarbageCollect();
 
-            address = m_schema->allocate(byteSize, alignment);
+            address = m_subAllocator->allocate(byteSize, alignment);
         }
 
         if (address == nullptr)
@@ -206,7 +179,7 @@ namespace AZ
         byteSize = MemorySizeAdjustedUp(byteSize);
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
         AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
-        m_schema->deallocate(ptr, byteSize, alignment);
+        m_subAllocator->deallocate(ptr, byteSize, alignment);
     }
 
     //=========================================================================
@@ -219,7 +192,7 @@ namespace AZ
 
         AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
         AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
-        pointer newAddress = m_schema->reallocate(ptr, newSize, newAlignment);
+        pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
 
@@ -232,7 +205,7 @@ namespace AZ
     //=========================================================================
     SystemAllocator::size_type SystemAllocator::get_allocated_size(pointer ptr, align_type alignment) const
     {
-        size_type allocSize = MemorySizeAdjustedDown(m_schema->get_allocated_size(ptr, alignment));
+        size_type allocSize = MemorySizeAdjustedDown(m_subAllocator->get_allocated_size(ptr, alignment));
 
         return allocSize;
     }

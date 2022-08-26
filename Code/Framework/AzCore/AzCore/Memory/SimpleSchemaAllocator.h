@@ -31,11 +31,7 @@ namespace AZ
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
 
-        SimpleSchemaAllocator()
-            : AllocatorBase(nullptr)
-        {
-        }
-
+        SimpleSchemaAllocator() = default;
         ~SimpleSchemaAllocator() override
         {
             if (m_schema)
@@ -148,6 +144,8 @@ namespace AZ
             return m_schema->NumAllocatedBytes();
         }
 
+    protected:
+        IAllocator* m_schema;
     private:
         typename AZStd::aligned_storage<sizeof(Schema), AZStd::alignment_of<Schema>::value>::type m_schemaStorage;
     };

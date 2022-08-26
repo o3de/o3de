@@ -174,7 +174,7 @@ AllocatorManager::GarbageCollect()
 
     for (int i = 0; i < m_numAllocators; ++i)
     {
-        m_allocators[i]->GetSchema()->GarbageCollect();
+        m_allocators[i]->GarbageCollect();
     }
 }
 

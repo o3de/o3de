@@ -28,7 +28,7 @@ namespace AZ
     public:
         AZ_RTTI(OSAllocator, "{9F835EE3-F23C-454E-B4E3-011E2F3C8118}", AllocatorBase)
 
-        OSAllocator();
+        OSAllocator() = default;
         OSAllocator(const OSAllocator&) = delete;
         OSAllocator(OSAllocator&&) = delete;
         OSAllocator& operator=(const OSAllocator&) = delete;

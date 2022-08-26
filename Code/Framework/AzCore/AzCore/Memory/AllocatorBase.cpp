@@ -138,11 +138,6 @@ namespace
 
 namespace AZ
 {
-    AllocatorBase::AllocatorBase(IAllocator* allocationSchema)
-        : IAllocator(allocationSchema)
-    {
-    }
-
     AllocatorBase::~AllocatorBase()
     {
         AZ_Assert(

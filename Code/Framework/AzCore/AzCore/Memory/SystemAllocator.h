@@ -28,7 +28,7 @@ namespace AZ
     public:
         AZ_RTTI(SystemAllocator, "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}", AllocatorBase)
 
-        SystemAllocator();
+        SystemAllocator() = default;
         ~SystemAllocator() override;
 
         /**
@@ -44,11 +44,9 @@ namespace AZ
         struct Descriptor
         {
             Descriptor()
-                : m_custom(0)
-                , m_allocationRecords(true)
+                : m_allocationRecords(true)
                 , m_stackRecordLevels(5)
             {}
-            IAllocator*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HphaScheme will be used with the provided Descriptor.
 
             struct Heap
             {
@@ -79,9 +77,9 @@ namespace AZ
         void            deallocate(pointer ptr, size_type byteSize = 0, size_type alignment = 0) override;
         pointer         reallocate(pointer ptr, size_type newSize, size_type newAlignment) override;
         size_type get_allocated_size(pointer ptr, size_type alignment) const override;
-        void            GarbageCollect() override                 { GetSchema()->GarbageCollect(); }
+        void            GarbageCollect() override                 { m_subAllocator->GarbageCollect(); }
 
-        size_type       NumAllocatedBytes() const override       { return GetSchema()->NumAllocatedBytes(); }
+        size_type       NumAllocatedBytes() const override       { return m_subAllocator->NumAllocatedBytes(); }
 
         //////////////////////////////////////////////////////////////////////////
 
@@ -90,8 +88,9 @@ namespace AZ
         SystemAllocator& operator=(const SystemAllocator&);
 
         Descriptor                  m_desc;
-        bool                        m_isCustom;
-        bool                        m_ownsOSAllocator;
+        bool                        m_isCustom = false;
+        bool                        m_ownsOSAllocator = false;
+        IAllocator* m_subAllocator;
     };
 }
 

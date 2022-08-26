@@ -25,8 +25,8 @@ using namespace AZ;
 ZLib::ZLib(IAllocator* workMemAllocator)
     : m_strDeflate(nullptr)
     , m_strInflate(nullptr)
+    , m_workMemoryAllocator(workMemAllocator)
 {
-    m_workMemoryAllocator = workMemAllocator->GetSchema();
     if (!m_workMemoryAllocator)
     {
         m_workMemoryAllocator = &AllocatorInstance<SystemAllocator>::Get();

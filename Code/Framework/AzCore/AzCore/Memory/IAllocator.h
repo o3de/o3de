@@ -73,7 +73,6 @@ namespace AZ
         AZ_ALLOCATOR_DEFAULT_TRAITS
 
         IAllocator() = default;
-        IAllocator(IAllocator* schema);
         IAllocator(const IAllocator&) = delete;
         IAllocator(IAllocator&&) = delete;
         IAllocator& operator=(const IAllocator&) = delete;
@@ -201,9 +200,6 @@ namespace AZ
             return 0;
         }
 
-        /// Returns the schema
-        AZ_FORCE_INLINE IAllocator* GetSchema() const { return m_schema; };
-
         /// Returns the debug configuration for this allocator.
         virtual AllocatorDebugConfig GetDebugConfig() { return {}; }
 
@@ -243,8 +239,6 @@ namespace AZ
         virtual void Destroy() {}
 
     protected:
-        IAllocator* m_schema{};
-
         template<class Allocator>
         friend class AllocatorStorage::StoragePolicyBase;
 
