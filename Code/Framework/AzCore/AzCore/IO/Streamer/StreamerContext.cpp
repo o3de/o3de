@@ -174,7 +174,7 @@ namespace AZ
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
             auto now = AZStd::chrono::steady_clock::now();
 #endif
-            TaskGraph task;
+            TaskGraph task("FinalizeCompletedRequests");
                             
             bool hasCompletedRequests = false;
             while (true)

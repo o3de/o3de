@@ -247,7 +247,7 @@ namespace AZ::IO
     {
         bool hasFinalizedReads = FinalizeReads();
 
-        TaskGraph readTasks;
+        TaskGraph readTasks("ExecuteRequests");
 
         // Queue as many read requests as possible in order to maximize throughput.
         while (!m_pendingReadRequests.empty())
@@ -1008,7 +1008,7 @@ namespace AZ::IO
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
-        TaskGraph readTasks;
+        TaskGraph readTasks("FinalizeReadRequests");
 
         bool hasWorked = false;
         for (size_t readSlot = 0; readSlot < m_readSlots_active.size(); ++readSlot)
@@ -1047,7 +1047,7 @@ namespace AZ::IO
                             hasWorked = true;
                             constexpr bool encounteredError = true;
                             constexpr bool isCanceled = false;
-                            FinalizeSingleRequest(status, readSlot, bytesTransferred, false, encounteredError, readTasks);
+                            FinalizeSingleRequest(status, readSlot, bytesTransferred, isCanceled, encounteredError, readTasks);
                         }
                     }
                 }
@@ -1075,7 +1075,7 @@ namespace AZ::IO
 
             m_activeReads_ByteCount = 0;
         }
-        
+
         FileReadInformation& fileReadInfo = m_readSlots_readInfo[readSlot];
 
         auto readCommand = AZStd::get_if<Requests::ReadData>(&fileReadInfo.m_request->GetCommand());
