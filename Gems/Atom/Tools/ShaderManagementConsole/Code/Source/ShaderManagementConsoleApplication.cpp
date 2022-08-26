@@ -141,9 +141,7 @@ namespace ShaderManagementConsole
         AZStd::list<AZStd::string> materialTypeSources;
 
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
-            shaderFilePath.c_str(),
-            nullptr,
-            AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
+            shaderFilePath.c_str(), nullptr, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
                 if (AzFramework::StringFunc::Path::IsExtension(
@@ -162,16 +160,12 @@ namespace ShaderManagementConsole
         {
             bool result = false;
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                result,
-                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
-                materialTypeSource.c_str(),
-                materialTypeSourceAssetInfo,
-                watchFolder);
+                result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, materialTypeSource.c_str(),
+                materialTypeSourceAssetInfo, watchFolder);
             if (result)
             {
                 assetDatabaseConnection.QueryDirectReverseProductDependenciesBySourceGuidSubId(
-                    materialTypeSourceAssetInfo.m_assetId.m_guid,
-                    materialTypeSourceAssetInfo.m_assetId.m_subId,
+                    materialTypeSourceAssetInfo.m_assetId.m_guid, materialTypeSourceAssetInfo.m_assetId.m_subId,
                     [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
                     {
                         if (AzFramework::StringFunc::Path::IsExtension(entry.m_productName.c_str(), AZ::RPI::MaterialAsset::Extension))
@@ -208,10 +202,8 @@ namespace ShaderManagementConsole
         if (!materialAsset.IsReady())
         {
             AZ_Error(
-                "ShaderManagementConsole",
-                false,
-                "Failed to load material asset from asset id: %s",
-                materialAssetId.ToString<AZStd::string>().c_str());
+                "ShaderManagementConsole", false, "Failed to load material asset from asset id: %s",
+                materialAssetId.ToFixedString().c_str());
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 
@@ -219,9 +211,7 @@ namespace ShaderManagementConsole
         if (!materialInstance)
         {
             AZ_Error(
-                "ShaderManagementConsole",
-                false,
-                "Failed to create material instance from asset: %s",
+                "ShaderManagementConsole", false, "Failed to create material instance from asset: %s",
                 materialAsset.ToString<AZStd::string>().c_str());
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }

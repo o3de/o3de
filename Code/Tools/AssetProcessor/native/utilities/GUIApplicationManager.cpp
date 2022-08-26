@@ -805,7 +805,8 @@ ApplicationManager::RegistryCheckInstructions GUIApplicationManager::PopupRegist
 
 void GUIApplicationManager::InitSourceControl()
 {
-    QSettings settings;
+    // Look in the editor's settings for the Source Control value
+    QSettings settings(QApplication::organizationName(), QString("O3DE Editor"));
     settings.beginGroup("Settings");
     bool enableSourceControl = settings.value("EnableSourceControl", 1).toBool();
 

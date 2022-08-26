@@ -12,7 +12,6 @@ import getpass
 import logging
 import os
 import socket
-import time
 from datetime import datetime
 from warnings import warn
 
@@ -253,6 +252,20 @@ def _launcher(request, workspace, launcher_platform, level=""):
     request.addfinalizer(teardown)
 
     return launcher
+
+
+@pytest.fixture(scope="function")
+def material_editor(workspace, request, crash_log_watchdog):
+    # type: (...) -> ly_test_tools.launchers.platforms.base.Launcher
+    return _material_editor(
+        request=request,
+        workspace=workspace,
+        launcher_platform=get_fixture_argument(request, 'launcher_platform', HOST_OS_PLATFORM))
+
+
+def _material_editor(request, workspace, launcher_platform):
+    """Separate implementation to call directly during unit tests"""
+    return ly_test_tools.launchers.launcher_helper.create_material_editor(workspace, launcher_platform)
 
 
 @pytest.fixture(scope="function")

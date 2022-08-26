@@ -101,9 +101,16 @@ if _DCCSI_DEV_MODE:
 _DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
 
 # now standalone we can validate the config, env, settings.
+# Qt/PySide2 is disabled here, as it will cause some Qt5 apps to fail
+# one of those apps is Wing ide...
+# suggestion is to refactor this Blender\config.py with ConfigClass
+# and provide a way to toggle access,
+# so it can be disabled to start wing,
+# but Blender\boostrap.py can reenable
 _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=True,
+                                                  enable_o3de_pyside2=False,
                                                   set_env=True)
+
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
 # we are enabling the O3DE PySide2 (aka QtForPython) access for Blender

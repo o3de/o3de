@@ -204,6 +204,7 @@ namespace AZ::DocumentPropertyEditor
             ForwardAttributes(attributes);
             m_onChangedCallbacks.SetValue(m_builder.GetCurrentPath(), AZStd::move(onChanged));
             m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::OnChanged);
+            m_builder.AddMessageHandler(m_adapter, Nodes::PropertyEditor::RequestTreeUpdate);
             m_builder.EndPropertyEditor();
 
             CheckContainerElement(instance, attributes);
@@ -507,10 +508,10 @@ namespace AZ::DocumentPropertyEditor
         if (changeNotify.IsSuccess())
         {
             // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-            PropertyRefreshLevel value = changeNotify.GetValue();
-            if (value != PropertyRefreshLevel::Undefined && value != PropertyRefreshLevel::None)
+            PropertyRefreshLevel level = changeNotify.GetValue();
+            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
             {
-                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, value);
+                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
             }
         }
     }
@@ -585,7 +586,7 @@ namespace AZ::DocumentPropertyEditor
 
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
         {
-            // For now just trigger a soft reset.
+            // For now just trigger a soft reset but the end goal is to handle granular updates.
             // This will still only send the view patches for what's actually changed.
             NotifyResetDocument();
         };
