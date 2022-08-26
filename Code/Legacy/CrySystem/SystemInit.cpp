@@ -352,39 +352,31 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 {
-    if (!Audio::Gem::AudioSystemGemRequestBus::HasHandlers())
+    if (!Audio::Gem::SystemRequestBus::HasHandlers())
     {
-        // AudioSystem Gem has not been enabled for this project.
+        // AudioSystem Gem has not been enabled for this project/configuration.
         // This should not generate an error, but calling scope will warn.
         return false;
     }
 
-    bool useRealAudioSystem = false;
-    if (!initParams.bPreview
-        && !m_bDedicatedServer
-        && m_sys_audio_disable->GetIVal() == 0)
-    {
-        useRealAudioSystem = true;
-    }
-
     bool result = false;
-    if (useRealAudioSystem)
-    {
-        Audio::Gem::AudioSystemGemRequestBus::BroadcastResult(result, &Audio::Gem::AudioSystemGemRequestBus::Events::Initialize, &initParams);
-    }
-    else
-    {
-        Audio::Gem::AudioSystemGemRequestBus::BroadcastResult(result, &Audio::Gem::AudioSystemGemRequestBus::Events::Initialize, nullptr);
-    }
 
-    if (result)
+    bool shouldInitializeAudioSystem = (!initParams.bPreview && !initParams.bUnattendedMode);
+    if (shouldInitializeAudioSystem)
     {
-        AZ_Assert(AZ::Interface<Audio::IAudioSystem>::Get() != nullptr,
-            "Initialization of the Audio System succeeded, but the IAudioSystem interface is not registered!\n");
+        Audio::Gem::SystemRequestBus::BroadcastResult(result, &Audio::Gem::SystemRequestBus::Events::Initialize);
+        if (result)
+        {
+            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Audio System is initialized and ready!\n");
+        }
+        else
+        {
+            AZ_Error(AZ_TRACE_SYSTEM_WINDOW, result, "The Audio System did not initialize correctly!\n");
+        }
     }
     else
     {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, result, "The Audio System did not initialize correctly!\n");
+        Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::RevertToNullAudio);
     }
 
     return result;
@@ -892,9 +884,6 @@ AZ_POP_DISABLE_WARNING
             // Register system console variables.
             CreateSystemVars();
 
-            // Register Audio-related system CVars
-            CreateAudioVars();
-
             // Register any AZ CVar commands created above with the AZ Console system.
             AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();
             AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);
@@ -1356,20 +1345,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::CreateAudioVars()
-{
-    assert(gEnv);
-    assert(gEnv->pConsole);
-
-    m_sys_audio_disable = REGISTER_INT("sys_audio_disable", 0, VF_REQUIRE_APP_RESTART,
-            "Specifies whether to use the NULLAudioSystem in place of the regular AudioSystem\n"
-            "Usage: sys_audio_disable [0/1]\n"
-            "0: use regular AudioSystem.\n"
-            "1: use NullAudioSystem (disable all audio functionality).\n"
-            "Default: 0 (enable audio functionality)");
 }
 
 /////////////////////////////////////////////////////////////////////
