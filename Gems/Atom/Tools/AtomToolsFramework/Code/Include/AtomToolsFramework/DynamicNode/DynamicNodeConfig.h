@@ -40,6 +40,8 @@ namespace AtomToolsFramework
         //! @returns True if the operation succeeded, otherwise false
         bool Load(const AZStd::string& path);
 
+        //! Globally unique identifier for referencing this node config inside of DynamicNodeManager and graphs
+        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
         //! The category will be used by the DynamicNodeManager to sort and group node palette tree items
         AZStd::string m_category;
         //! Title will be displayed at the top of every DynamicNode in the graph view 

@@ -47,8 +47,8 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_imageAsset,
                         "Image Asset", "Image asset whose values will be mapped as gradient output.")
                         ->Attribute(AZ::Edit::Attributes::Handler, AZ_CRC_CE("GradientSignalStreamingImageAsset"))
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &ImageGradientConfig::GetImageAssetPropertyName)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::IsImageAssetReadOnly)
                         // Refresh the attributes because some fields will switch between read-only and writeable when
                         // the image asset is changed.
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -57,7 +57,6 @@ namespace GradientSignal
                         "Sampling Type", "Sampling type to use for the image data.")
                         ->EnumAttribute(SamplingType::Point, "Point")
                         ->EnumAttribute(SamplingType::Bilinear, "Bilinear")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Vector2, &ImageGradientConfig::m_tiling,
@@ -67,7 +66,6 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 1024.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.25f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_channelToUse,
@@ -77,14 +75,12 @@ namespace GradientSignal
                         ->EnumAttribute(ChannelToUse::Blue, "Blue")
                         ->EnumAttribute(ChannelToUse::Alpha, "Alpha")
                         ->EnumAttribute(ChannelToUse::Terrarium, "Terrarium")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &ImageGradientConfig::m_mipIndex, "Mip Index", "Mip index to sample from.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RHI::Limits::Image::MipCountMax)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ImageGradientConfig::m_customScaleType,
@@ -94,7 +90,6 @@ namespace GradientSignal
                         ->EnumAttribute(CustomScaleType::Manual, "Manual")
                         // Refresh the entire tree on scaling changes, because it will show/hide the scale ranges for Manual scaling.
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ImageGradientConfig::GetImageOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &ImageGradientConfig::AreImageOptionsReadOnly)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ImageGradientConfig::m_scaleRangeMin,
@@ -128,6 +123,7 @@ namespace GradientSignal
                         "Source Type", "Select whether to create a new image or use an existing image.")
                         ->EnumAttribute(ImageCreationOrSelection::UseExistingImage, "Use Existing Image")
                         ->EnumAttribute(ImageCreationOrSelection::CreateNewImage, "Create New Image")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::InComponentMode)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::RefreshCreationSelectionChoice)
 
                     // Controls for creating a new image
@@ -147,8 +143,9 @@ namespace GradientSignal
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageCreationVisibility)
 
                     // Configuration for the Image Gradient control itself
-                    ->DataElement(0, &EditorImageGradientComponent::m_configuration, "Configuration", "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorImageGradientComponent::m_configuration, "Configuration", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorImageGradientComponent::GetImageOptionsVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorImageGradientComponent::GetImageOptionsReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorImageGradientComponent::ConfigurationChanged)
 
                     // Paint controls for editing the image
@@ -372,7 +369,7 @@ namespace GradientSignal
         // Make sure the creation/selection visibility flags have been refreshed correctly.
         RefreshCreationSelectionChoice();
 
-        if (RefreshImageAssetStatus() && m_configuration.GetImageOptionsVisibility())
+        if (RefreshImageAssetStatus() && GetImageOptionsVisibility())
         {
             // If the asset status changed and the image asset property is visible, refresh the entire tree so
             // that the label change is picked up.
@@ -419,16 +416,21 @@ namespace GradientSignal
 
     AZ::u32 EditorImageGradientComponent::RefreshCreationSelectionChoice()
     {
-        m_configuration.SetImageOptionsVisibility(m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage);
-
         // We need to refresh the entire tree because this selection changes the visibility of other properties.
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
+    }
+
+    AZ::Crc32 EditorImageGradientComponent::GetImageOptionsVisibility() const
+    {
+        return (m_creationSelectionChoice == ImageCreationOrSelection::UseExistingImage)
+            ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
+            : AZ::Edit::PropertyVisibility::Hide;
     }
 
     bool EditorImageGradientComponent::GetImageCreationVisibility() const
     {
         // Only show the image creation options if we don't have an existing image asset selected.
-        return !m_configuration.GetImageOptionsVisibility();
+        return (m_creationSelectionChoice == ImageCreationOrSelection::CreateNewImage);
     }
 
     AZ::Crc32 EditorImageGradientComponent::GetPaintModeVisibility() const
@@ -446,12 +448,17 @@ namespace GradientSignal
         }
 
         // Only show the image painting button while we're using an image, not while we're creating one.
-        return (m_configuration.GetImageOptionsVisibility()
+        return ((GetImageOptionsVisibility() != AZ::Edit::PropertyVisibility::Hide)
                 && m_configuration.m_imageAsset.IsReady()
                 && !ImageHasPendingJobs(m_configuration.m_imageAsset.GetId()))
             ? AZ::Edit::PropertyVisibility::ShowChildrenOnly
             : AZ::Edit::PropertyVisibility::Hide;
 
+    }
+
+    bool EditorImageGradientComponent::GetImageOptionsReadOnly() const
+    {
+        return ((GetImageOptionsVisibility() == AZ::Edit::PropertyVisibility::Hide) || m_component.ModificationBufferIsActive());
     }
 
     AZ::Vector2 EditorImageGradientComponent::GetOutputResolution() const
@@ -484,7 +491,7 @@ namespace GradientSignal
         m_outputImagePath = outputImagePath;
     }
 
-    bool EditorImageGradientComponent::InComponentMode()
+    bool EditorImageGradientComponent::InComponentMode() const
     {
         return m_componentModeDelegate.AddedToComponentMode();
     }
@@ -577,6 +584,23 @@ namespace GradientSignal
         }
 
         return true;
+    }
+
+    void EditorImageGradientComponent::StartImageModification()
+    {
+        // While we're editing, we need to set all the configuration properties to read-only and refresh them.
+        // Otherwise, the property changes could conflict with the current painted modifications.
+        m_configuration.m_imageModificationActive = true;
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
+
+    void EditorImageGradientComponent::EndImageModification()
+    {
+        // We're done editing, so set all the configuration properties back to writeable and refresh them.
+        m_configuration.m_imageModificationActive = false;
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
     void EditorImageGradientComponent::CreateImage()

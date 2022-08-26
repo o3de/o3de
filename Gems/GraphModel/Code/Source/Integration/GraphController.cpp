@@ -303,16 +303,7 @@ namespace GraphModelIntegration
         using namespace GraphModel;
 
         GraphCanvas::SlotConfiguration slotConfig;
-
-        // The user can provide put a reader-friendly name, but if left blank
-        // we just use the true name for display.
-        AZStd::string displayName = slot->GetDisplayName();
-        if (displayName.empty())
-        {
-            displayName = slot->GetName();
-        }
-
-        slotConfig.m_name = displayName;
+        slotConfig.m_name = !slot->GetDisplayName().empty() ? slot->GetDisplayName() : slot->GetName();
         slotConfig.m_tooltip = slot->GetDescription();
         slotConfig.m_connectionType = ToGraphCanvasConnectionType(slot->GetSlotDirection());
         slotConfig.m_slotGroup = ToGraphCanvasSlotGroup(slot->GetSlotType());
@@ -1254,7 +1245,7 @@ namespace GraphModelIntegration
 
     GraphCanvas::NodePropertyDisplay* GraphController::CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const
     {
-        if (!inputSlot)
+        if (!inputSlot || !inputSlot->SupportsEditingOnNode())
         {
             return nullptr;
         }
@@ -1264,9 +1255,6 @@ namespace GraphModelIntegration
 
         GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
         AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
-
-        // We cannot use SHADER_CANVAS_DATA_MACRO here because there is not code alignment between the type and the GraphCanvasRequest
-        // function.
 
         if (dataTypeUuid == azrtti_typeid<bool>())
         {

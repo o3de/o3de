@@ -15,6 +15,13 @@
 
 namespace TestImpact
 {
+    //! Enumeration to facilitate runtime determination of build target types.
+    enum class TargetType : AZ::u8
+    {
+        TestTarget,
+        ProductionTarget
+    };
+
     //! Pairing between a given autogen input source and the generated output source(s).
     struct AutogenPairs
     {
@@ -45,6 +52,7 @@ namespace TestImpact
     struct TargetDescriptor
     {
         AZStd::string m_name; //!< Build target name.
+        TargetType m_type; //!< The type of target.
         RepoPath m_path; //!< Source path to target location in source tree (relative to repository root).
         TargetSources m_sources; //!< Sources that are parented by this build target.
         TargetDependencies m_dependencies; //!< Build and runtime dependencies.
