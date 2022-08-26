@@ -174,8 +174,11 @@ def get_table_values(cursor: sqlite3.Cursor, table: str) -> dict:
 def get_database_values(cursor: sqlite3.Cursor, tables: list) -> dict:
     database_values = {}
     for table in tables:
-        cursor.execute(f"""SELECT * from {table}""")
-        table_values = cursor.fetchall()
-        database_values[table] = table_values
+        try:
+            cursor.execute(f"""SELECT * from {table}""")
+            table_values = cursor.fetchall()
+            database_values[table] = table_values
+        except sqlite3.OperationalError:
+            continue
     return database_values
 
