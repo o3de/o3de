@@ -20,3 +20,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
     class test_DeletePrefab_DuplicatedPrefabInstance(EditorSharedTest):
         from .tests.delete_prefab import DeletePrefab_DuplicatedPrefabInstance as test_module
+
+    class test_ReparentEntity_UnderEntityHierarchies(EditorSharedTest):
+        from .tests.reparent_prefab import ReparentEntity_UnderEntityHierarchies as test_module

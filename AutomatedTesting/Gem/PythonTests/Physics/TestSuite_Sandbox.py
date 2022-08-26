@@ -53,7 +53,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
     search_subdirs = True
 
     @classmethod
-    def wrap_run(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
+    def wrap_run(cls, instance, request, workspace, editor_test_results, launcher_platform):
         root_path = cls.base_dir
         if root_path is not None:
             root_path = os.path.join(workspace.paths.engine_root(), root_path)

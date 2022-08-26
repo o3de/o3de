@@ -43,19 +43,6 @@ echo     QT_PLUGIN_PATH = %QT_PLUGIN_PATH%
 set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile"
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
-echo.
-echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
-
-:: add to the PATH
-::SET PATH=%QTFORPYTHON_PATH%;%PATH%
-::SET PYTHONPATH=%QTFORPYTHON_PATH%;%PYTHONPATH%
-
-:: add to the PATH
-::SET PATH=%QT_PLUGIN_PATH%;%PATH%
-::SET PYTHONPATH=%QT_PLUGIN_PATH%;%PYTHONPATH%
-
-::SET PATH=%PATH_O3DE_BIN%;%PATH%
-
 ::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice

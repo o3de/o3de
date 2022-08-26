@@ -10,39 +10,49 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
-#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        class Instance;
+
+        //! Defines climb-up result returned by climb-up operation.
+        struct InstanceClimbUpResult
+        {
+            //! Instance pointer to the destination.
+            const Instance* m_reachedInstance = nullptr;
+            //! Instance list that contains instances that are climbed up from bottom to top.
+            //! The list does not include the reached instance.
+            AZStd::vector<InstanceOptionalConstReference> m_climbedInstances;
+        };
+
         namespace PrefabInstanceUtils
         {
-            /**
-             * Climbs up the instance hierarchy tree from startInstance.
-             * Stops when it hits either the targetInstance or the root.
-             * Then return relative path between targetInstance and startInstance.
-             * @param startInstance An instance as starting point from an instance hierarchy tree.
-             * @param targetInstance Target instance to climb up to from startInstance.
-             * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
-             * of startInstance), and targetInstance's relative path to startInstance.
-             */
-            AZStd::pair<const Instance*, AZStd::vector<InstanceOptionalConstReference>> ClimbUpToTargetOrRootInstance(
-                const Instance* startInstance, const Instance* targetInstance);
+            //! Climbs up the instance hierarchy tree from the given start instance until it hits
+            //! the target instance or the root instance.
+            //! @param startInstance The instance as the starting point in an instance hierarchy tree.
+            //! @param targetInstance The instance to climb up to. If not provided, root instance will be hit.
+            //! @return InstanceClimbUpResult that shows the climb-up info.
+            InstanceClimbUpResult ClimbUpToTargetOrRootInstance(const Instance& startInstance, const Instance* targetInstance);
 
-            /**
-             * Climbs up the instance hierarchy tree from startInstance.
-             * Stops when it hits either the targetInstance or the root.
-             * Then return a string of relative path between startInstance and targetInstance.
-             * @param startInstance An instance as starting point from an instance hierarchy tree.
-             * @param targetInstance Target instance to climb up to from startInstance.
-             * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
-             * of startInstance), and a string of startInstance's relative path to targetInstance.
-             */
-            AZStd::pair<const Instance*, AZStd::string> GetRelativePathBetweenInstances(
-                const Instance* startInstance, const Instance* targetInstance);
+            //! Generates a relative path from a parent instance to its child instance.
+            //! @param parentInstance The parent instance that the path points from.
+            //! @param childInstance The child instance that the path points to.
+            //! @return The relative path string. Or empty string if the parent instance is not a valid parent.
+            AZStd::string GetRelativePathBetweenInstances(const Instance& parentInstance, const Instance& childInstance);
+
+            //! Generates a relative path from a list of climbed instances.
+            //! @param climbedInstances The list of climbed instances from bottom to top.
+            //! @return The relative path string.
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances);
+
+            //! Checks if the child instance is a descendant of the parent instance.
+            //! @param childInstance The given child instance.
+            //! @param parentInstance The given parent instance.
+            //! @return bool on whether the relation is valid. Returns true if two instances are identical.
+            bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
 
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
-

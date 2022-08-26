@@ -299,6 +299,20 @@ class AbstractResourceLocator(object):
                             'ly_test_tools',
                             'devices.ini')
 
+    def material_editor_log(self):
+        """
+        Return path to the project's MaterialEditor log dir using the builds project and platform
+        :return: path to MaterialEditor.log
+        """
+        return os.path.join(self.project_log(), "MaterialEditor.log")
+
+    def editor_log(self):
+        """
+        Return path to the project's editor log dir using the builds project and platform
+        :return: path to Editor.log
+        """
+        return os.path.join(self.project_log(), "Editor.log")
+
     #
     #   The following are OS specific paths and must be defined by an override
     #
@@ -346,17 +360,6 @@ class AbstractResourceLocator(object):
             "project_screenshots() is not implemented on the base AbstractResourceLocator() class. "
             "It must be defined by the inheriting class - "
             "i.e. _WindowsResourceLocator(AbstractResourceLocator).project_screenshots()")
-
-    @abstractmethod
-    def editor_log(self):
-        """
-        Return path to the project's editor log dir using the builds project and platform
-        :return: path to Editor.log
-        """
-        raise NotImplementedError(
-            "editor_log() is not implemented on the base AbstractResourceLocator() class. "
-            "It must be defined by the inheriting class - "
-            "i.e. _WindowsResourceLocator(AbstractResourceLocator).editor_log()")
 
     @abstractmethod
     def crash_log(self):

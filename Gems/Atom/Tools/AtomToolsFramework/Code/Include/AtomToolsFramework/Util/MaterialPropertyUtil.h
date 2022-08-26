@@ -46,4 +46,7 @@ namespace AtomToolsFramework
         [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
+
+    AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(
+        AZ::RPI::MaterialPropertyValue& propertyValue, bool hasEnumValues);
 } // namespace AtomToolsFramework

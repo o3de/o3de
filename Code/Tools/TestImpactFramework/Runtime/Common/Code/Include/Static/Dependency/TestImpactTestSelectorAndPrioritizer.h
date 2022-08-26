@@ -218,7 +218,7 @@ namespace TestImpact
             for (const auto& parentTarget : sourceDependency.GetParentTargets())
             {
 
-                if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
                 {
                     // Parent Targets: Yes
                     // Coverage Data : No
@@ -254,7 +254,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                        if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
                         {
                             // Parent Targets: Yes
                             // Coverage Data : Yes
@@ -284,7 +284,7 @@ namespace TestImpact
                 {
                     for (const auto& parentTarget : sourceDependency.GetParentTargets())
                     {
-                        if (parentTarget.GetTargetType() == BuildTargetType::ProductionTarget)
+                        if (parentTarget.GetTarget()->GetType() == TargetType::ProductionTarget)
                         {
                             // Parent Targets: Yes
                             // Coverage Data : No

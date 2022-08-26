@@ -10,9 +10,9 @@
 # -------------------------------------------------------------------------
 """! @brief
 Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//start.py
+    < DCCsi >:: Tools//DCC//Substance//start.py
 
-This module is used to start blender with O3DE bootstrapping
+This module is used to start substance with O3DE bootstrapping
 """
 # -------------------------------------------------------------------------
 import timeit
