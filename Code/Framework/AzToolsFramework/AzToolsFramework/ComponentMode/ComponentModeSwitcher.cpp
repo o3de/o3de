@@ -17,11 +17,6 @@
 
 #include <QTimer>
 
-
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
-
 namespace AzToolsFramework::ComponentModeFramework
 {
     // ComponentData constructor to fill in component info
@@ -420,5 +415,3 @@ namespace AzToolsFramework::ComponentModeFramework
             });
     }
 } // namespace AzToolsFramework::ComponentModeFramework
-#pragma optimize("", on)
-#pragma inline_depth()
