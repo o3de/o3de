@@ -655,6 +655,9 @@ namespace AzToolsFramework
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
 
+            m_prefabUndoCache.UpdateCache(entityId);
+            m_prefabUndoCache.UpdateCache(parentId);
+
             // Get the alias of the parent entity in the owning template's DOM.
             AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
             PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());

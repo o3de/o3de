@@ -902,7 +902,14 @@ namespace ScriptCanvasEditor
 
             if (shouldSaveResults == UnsavedChangesOptions::SAVE)
             {
-                SaveAssetImpl(assetId, Save::InPlace);
+                if (assetId.IsDescriptionValid())
+                {
+                    SaveAssetImpl(assetId, Save::InPlace);
+                }
+                else
+                {
+                    SaveAssetImpl(assetId, Save::As);
+                }
                 event->ignore();
                 return;
             }

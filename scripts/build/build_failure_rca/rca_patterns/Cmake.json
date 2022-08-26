@@ -7,7 +7,7 @@
         "single_line": true,
         "find_all": true,
         "log_patterns": [
-          "^.*CMake Error at .*CMakeLists.txt.*$"
+          "^.*CMake Error at .*$"
         ],
         "log_testcases": [
           "CMake Error at CMakeLists.txt"

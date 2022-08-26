@@ -46,6 +46,7 @@ namespace O3DE::ProjectManager
         QLabel* GetMessageLabel();
         QLabel* GetSubMessageLabel();
         QLabel* GetWarningIcon();
+        QLabel* GetCloudIcon();
         QSpacerItem* GetWarningSpacer();
         QLabel* GetBuildingAnimationLabel();
         QPushButton* GetOpenEditorButton();
@@ -53,6 +54,9 @@ namespace O3DE::ProjectManager
         QPushButton* GetActionCancelButton();
         QPushButton* GetShowLogsButton();
         QLabel* GetDarkenOverlay();
+        QProgressBar* GetProgressBar();
+        QLabel* GetProgressPercentage();
+        QLabel* GetDownloadMessageLabel();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
@@ -71,7 +75,13 @@ namespace O3DE::ProjectManager
         QLabel* m_warningIcon = nullptr;
         QSpacerItem* m_warningSpacer = nullptr;
 
+        QLabel* m_cloudIcon = nullptr;
+
         QLabel* m_buildingAnimation = nullptr;
+        QLabel* m_downloadMessageLabel = nullptr;
+
+        QProgressBar* m_progessBar = nullptr;
+        QLabel* m_progressMessageLabel = nullptr;
 
         QPushButton* m_openEditorButton = nullptr;
         QPushButton* m_actionButton = nullptr;
@@ -85,7 +95,10 @@ namespace O3DE::ProjectManager
         Launching,
         NeedsToBuild,
         Building,
-        BuildFailed
+        BuildFailed,
+        NotDownloaded,
+        Downloading,
+        DownloadFailed
     };
 
     class ProjectButton
@@ -105,6 +118,8 @@ namespace O3DE::ProjectManager
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
+
+        void SetProgressBarPercentage(const float percent);
 
         void SetContextualText(const QString& text);
 
@@ -132,6 +147,9 @@ namespace O3DE::ProjectManager
         void ShowBuildRequiredState();
         void ShowBuildingState();
         void ShowBuildFailedState();
+        void ShowNotDownloadedState();
+        void ShowDownloadingState();
+        void ResetButtonWidgets();
         void ShowMessage(const QString& message = {}, const QString& submessage = {});
         void ShowWarning(const QString& warning = {});
         void ShowBuildButton();

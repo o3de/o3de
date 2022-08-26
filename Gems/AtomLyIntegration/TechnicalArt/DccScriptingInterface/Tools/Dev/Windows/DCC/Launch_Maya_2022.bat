@@ -43,7 +43,7 @@ SET PATH=%MAYA_BIN_PATH%;%DCCSI_PY_IDE%;%DCCSI_PY_DEFAULT%;%PATH%
 :: the next line sets up too much, I beleive is causing a maya boot failure
 ::CALL %~dp0..\Env_O3DE_Python.bat
 
-:: shared location for 64bit python 3.7 DEV location
+:: shared location for 64bit python 3.10 DEV location
 :: this defines a DCCsi sandbox for lib site-packages by version
 :: <O3DE>\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\3rdParty\Python\Lib
 set "PATH_DCCSI_PYTHON=%PATH_DCCSIG%\3rdParty\Python"
@@ -58,7 +58,7 @@ echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 SET PATH=%MAYA_BIN_PATH%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
-set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PYTHONPATH%
+set PYTHONPATH=%DCCSI_MAYA_SCRIPT_PATH%;%PATH_O3DE_TECHART_GEMS%;%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PYTHONPATH%
 
 :: if the user has set up a custom env call it
 IF EXIST "%~dp0..\Env_Dev.bat" CALL %~dp0..\Env_Dev.bat
