@@ -105,7 +105,7 @@ namespace AzToolsFramework::ViewportUi
         //! Create the highlight border with optional back button to exit the given editor mode.
         virtual void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) = 0;
         //! Retrns if the viewport border is visible.
-        virtual const bool GetViewportBorderVisible() const = 0;
+        virtual bool GetViewportBorderVisible() const = 0;
         //! Changes the text on the viewport border while in component mode.
         virtual void ChangeViewportBorderText(const AZStd::string borderTitle) = 0;
         //! Remove the viewport border.
