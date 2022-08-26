@@ -34,7 +34,7 @@ namespace AZ
                     editContext->Class<EditorDecalComponent>(
                         "Decal", "The Decal component allows an entity to project a texture or material onto a mesh")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Category, "Atom")
+                        ->Attribute(AZ::Edit::Attributes::Category, "Graphics/Mesh")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Decal.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Decal.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))

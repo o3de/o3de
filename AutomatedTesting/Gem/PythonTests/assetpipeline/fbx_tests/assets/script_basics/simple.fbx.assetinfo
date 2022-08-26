@@ -1,0 +1,8 @@
+{
+    "values": [
+      {
+        "$type": "ScriptProcessorRule",
+        "scriptFilename": "script_basics/base_example.py"
+      }
+    ]
+}

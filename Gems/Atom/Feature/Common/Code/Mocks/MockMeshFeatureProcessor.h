@@ -42,6 +42,7 @@ namespace UnitTest
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetRayTracingEnabled, bool(const MeshHandle&));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
+        MOCK_CONST_METHOD1(GetVisible, bool(const MeshHandle&));
         MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));
     };
 } // namespace UnitTest
