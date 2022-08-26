@@ -26,6 +26,9 @@
 
 namespace AzToolsFramework
 {
+    static const QPoint ExpanderOffset = { -18, 3 };
+    static const QPoint EditIconOffset = { -13, 7 };
+
     AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
 
     PrefabUiHandler::PrefabUiHandler()
@@ -376,12 +379,12 @@ namespace AzToolsFramework
 
                     // Paint a rect to cover up the expander.
                     QRect rect = QRect(0, 0, 16, 16);
-                    rect.translate(option.rect.topLeft() + m_expanderOffset);
+                    rect.translate(option.rect.topLeft() + ExpanderOffset);
                     painter->fillRect(rect, editIconBackgroundColor);
 
                     // Paint the icon.
                     QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
-                    painter->drawPixmap(option.rect.topLeft() + m_expanderOffset, closeIcon.pixmap(iconSize));
+                    painter->drawPixmap(option.rect.topLeft() + ExpanderOffset, closeIcon.pixmap(iconSize));
                 }
             }
         }
@@ -391,7 +394,7 @@ namespace AzToolsFramework
             if (isFirstColumn && isHovered && !isContainerOpen)
             {
                 QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
-                painter->drawPixmap(option.rect.topRight() + m_editIconOffset, openIcon.pixmap(editIconSize));
+                painter->drawPixmap(option.rect.topRight() + EditIconOffset, openIcon.pixmap(editIconSize));
             }
         }
 
@@ -444,11 +447,11 @@ namespace AzToolsFramework
         AZ::EntityId entityId = GetEntityIdFromIndex(index);
 
         QRect expanderRect = QRect(0, 0, 16, 16);
-        expanderRect.translate(option.rect.topLeft() + m_expanderOffset);
+        expanderRect.translate(option.rect.topLeft() + ExpanderOffset);
 
         const QPoint textOffset = QPoint(0, 3);
         QRect filenameRect = QRect(0, 0, 12, 10);
-        filenameRect.translate(option.rect.topRight() + m_editIconOffset + textOffset);
+        filenameRect.translate(option.rect.topRight() + EditIconOffset + textOffset);
         if (filenameRect.contains(position))
         {
             if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
