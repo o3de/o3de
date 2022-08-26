@@ -75,8 +75,7 @@ namespace GradientSignal
 
         bool GetManualScaleVisibility() const;
 
-        bool GetImageOptionsVisibility() const;
-        void SetImageOptionsVisibility(bool setVisibility);
+        bool IsImageAssetReadOnly() const;
         bool AreImageOptionsReadOnly() const;
 
         AZStd::string GetImageAssetPropertyName() const;
@@ -101,8 +100,9 @@ namespace GradientSignal
 
         // Non-serialized properties used by the Editor for display purposes.
 
-        //! Show or hide the set of image options. (This is used when switching between image creation and image usage)
-        bool m_showImageOptions = true;
+        //! True if we're currently modifying the image, false if not.
+        bool m_imageModificationActive = false;
+
         //! Label to use for the image asset. This gets modified to show current asset loading/processing state.
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
     };
@@ -155,11 +155,15 @@ namespace GradientSignal
         void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
         uint32_t GetImageHeight() const override;
         uint32_t GetImageWidth() const override;
+        AZ::Vector2 GetImagePixelsPerMeter() const override;
 
         // ImageGradientModificationBus overrides...
         void StartImageModification() override;
         void EndImageModification() override;
-        AZStd::vector<float>* GetImageModificationBuffer() override;
+        void SetValue(const AZ::Vector3& position, float value) override;
+        void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+
+        AZStd::vector<float>* GetImageModificationBuffer();
 
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);

@@ -46,7 +46,7 @@ Env_DCC_Substance.bat   : Configures Substance Designer
 ### IDE env
 
 ```bash
-Env_IDE_WingIDE.bat     : configures WingIDE for DCCsi development
+Env_IDE_Wing.bat        : configures WingIDE for DCCsi development
 Env_IDE_VScode.bat      : configures VScode
 Env_IDE_PyCharm.bat     : configures PyCharm
 ```
@@ -76,6 +76,8 @@ A set of IDE launchers for developers are here, these init the env and then laun
 
 - < O3DE >/DccScriptingInterface/Tools/Dev/Windows/IDE/*
 - Launch_WindIDE-7-1.bat  : Starts WingIDE  within managed env context
+
+Note: per-tool launchers will be moved into the tools directory and these may be deprecated in the future. We will maintain them in both places for now diring the transition.
 
 ### Instructions
 

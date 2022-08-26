@@ -183,22 +183,17 @@ namespace GradientSignal
 
     bool ImageGradientConfig::GetManualScaleVisibility() const
     {
-        return ((m_customScaleType == CustomScaleType::Manual) && m_showImageOptions);
+        return (m_customScaleType == CustomScaleType::Manual);
     }
 
-    bool ImageGradientConfig::GetImageOptionsVisibility() const
+    bool ImageGradientConfig::IsImageAssetReadOnly() const
     {
-        return m_showImageOptions;
-    }
-
-    void ImageGradientConfig::SetImageOptionsVisibility(bool showOptions)
-    {
-        m_showImageOptions = showOptions;
+        return m_imageModificationActive;
     }
 
     bool ImageGradientConfig::AreImageOptionsReadOnly() const
     {
-        return !(m_imageAsset.GetId().IsValid());
+        return m_imageModificationActive || !(m_imageAsset.GetId().IsValid());
     }
 
     AZStd::string ImageGradientConfig::GetImageAssetPropertyName() const
@@ -288,6 +283,7 @@ namespace GradientSignal
     void ImageGradientComponent::SetupDependencies()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_imageAsset.GetId());
     }
@@ -727,6 +723,8 @@ namespace GradientSignal
 
     void ImageGradientComponent::StartImageModification()
     {
+        m_configuration.m_imageModificationActive = true;
+
         if (m_modifiedImageData.empty())
         {
             CreateImageModificationBuffer();
@@ -735,6 +733,7 @@ namespace GradientSignal
 
     void ImageGradientComponent::EndImageModification()
     {
+        m_configuration.m_imageModificationActive = false;
     }
 
     AZStd::vector<float>* ImageGradientComponent::GetImageModificationBuffer()
@@ -798,6 +797,8 @@ namespace GradientSignal
 
     bool ImageGradientComponent::ModificationBufferIsActive() const
     {
+        // The modification buffer is considered active if the modification buffer has data in it and
+        // our cached imageData pointer is pointing into the modification buffer instead of into an image asset.
         return (m_modifiedImageData.data() != nullptr) &&
             (reinterpret_cast<const void*>(m_imageData.data()) == reinterpret_cast<const void*>(m_modifiedImageData.data()));
     }
@@ -997,6 +998,24 @@ namespace GradientSignal
         return m_imageDescriptor.m_size.m_width;
     }
 
+    AZ::Vector2 ImageGradientComponent::GetImagePixelsPerMeter() const
+    {
+        // Get the number of pixels in our image that maps to each meter based on the tiling settings.
+
+        const auto& width = m_imageDescriptor.m_size.m_width;
+        const auto& height = m_imageDescriptor.m_size.m_height;
+
+        if (width > 0 && height > 0)
+        {
+            const AZ::Aabb bounds = m_gradientTransform.GetBounds();
+            const AZ::Vector2 boundsMeters(bounds.GetExtents());
+            const AZ::Vector2 imagePixelsInBounds(width / GetTilingX(), height / GetTilingY());
+            return imagePixelsInBounds / boundsMeters;
+        }
+
+        return AZ::Vector2::CreateZero();
+    }
+
     float ImageGradientComponent::GetTilingX() const
     {
         return m_configuration.m_tiling.GetX();
@@ -1028,4 +1047,60 @@ namespace GradientSignal
         }
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
+
+    void ImageGradientComponent::SetValue(const AZ::Vector3& position, float value)
+    {
+        SetValues(AZStd::span<const AZ::Vector3>(&position, 1), AZStd::span<float>(&value, 1));
+    }
+
+    void ImageGradientComponent::SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values)
+    {
+        AZStd::unique_lock lock(m_queryMutex);
+
+        if (m_modifiedImageData.empty())
+        {
+            AZ_Error("ImageGradientComponent", false,
+                "Image modification mode needs to be started before the image values can be set.");
+            return;
+        }
+
+        const auto& width = m_imageDescriptor.m_size.m_width;
+        const auto& height = m_imageDescriptor.m_size.m_height;
+
+        // No pixels, so nothing to modify.
+        if ((width == 0) || (height == 0))
+        {
+            return;
+        }
+
+        const AZ::Vector3 tiledDimensions((width * GetTilingX()), (height * GetTilingY()), 0.0f);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // Use the Gradient Transform to convert from world space to image space.
+            AZ::Vector3 uvw = positions[index];
+            bool wasPointRejected = true;
+            m_gradientTransform.TransformPositionToUVWNormalized(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                // Since the Image Gradient also has a tiling factor, scale the returned image space value
+                // by the tiling factor to get to the specific pixel requested.
+                AZ::Vector3 pixelLookup = (uvw * tiledDimensions);
+
+                // UVs outside the 0-1 range are treated as infinitely tiling, we mod the values to bring them back into image bounds.
+                float pixelX = pixelLookup.GetX();
+                float pixelY = pixelLookup.GetY();
+                auto x = aznumeric_cast<AZ::u32>(pixelX) % width;
+                auto y = aznumeric_cast<AZ::u32>(pixelY) % height;
+
+                // Flip the y because images are stored in reverse of our world axes
+                y = (height - 1) - y;
+
+                // Modify the correct pixel in our modification buffer.
+                m_modifiedImageData[(y * width) + x] = values[index];
+            }
+        }
+    }
+
 }

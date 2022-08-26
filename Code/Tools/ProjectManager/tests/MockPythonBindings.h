@@ -44,7 +44,9 @@ namespace O3DE::ProjectManager
         MOCK_METHOD0(RemoveInvalidProjects, bool());
 
         // ProjectTemplate
-        MOCK_METHOD1(GetProjectTemplates, AZ::Outcome<QVector<ProjectTemplateInfo>>(const QString&));
+        MOCK_METHOD0(GetProjectTemplates, AZ::Outcome<QVector<ProjectTemplateInfo>>());
+        MOCK_METHOD0(GetProjectTemplatesForAllRepos, AZ::Outcome<QVector<ProjectTemplateInfo>>());
+        MOCK_METHOD0(GetGemTemplates, AZ::Outcome<QVector<TemplateInfo>>());
 
         // Gem Repos
         MOCK_METHOD1(RefreshGemRepo, AZ::Outcome<void, AZStd::string>(const QString&));
@@ -60,6 +62,5 @@ namespace O3DE::ProjectManager
 
         // Errors
         MOCK_METHOD1(AddErrorString, void(AZStd::string));
-        MOCK_METHOD0(ClearErrorStrings, void());
     };
 } // namespace UnitTest
