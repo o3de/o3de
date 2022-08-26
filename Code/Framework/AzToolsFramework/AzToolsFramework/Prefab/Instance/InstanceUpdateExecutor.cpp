@@ -83,7 +83,16 @@ namespace AzToolsFramework
                 return;
             }
 
-            m_instancesUpdateQueue.emplace_back(&(instance->get()));
+            AddInstanceToQueue(&(instance->get()));
+        }
+
+        void InstanceUpdateExecutor::AddInstanceToQueue(Instance* instance)
+        {
+            // Skip the insertion into queue if the instance is already present in the set.
+            if (m_uniqueInstancesForPropagation.emplace(instance).second)
+            {
+                m_instancesUpdateQueue.emplace_back(instance);
+            }
         }
 
         void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
@@ -110,17 +119,23 @@ namespace AzToolsFramework
             {
                 if (instance != instanceToExcludePtr)
                 {
-                    m_instancesUpdateQueue.emplace_back(instance);
+                    AddInstanceToQueue(instance);
                 }
             }
         }
 
-        void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(const Instance* instance)
+        void InstanceUpdateExecutor::RemoveTemplateInstanceFromQueue(Instance* instance)
         {
-            AZStd::erase_if(m_instancesUpdateQueue, [instance](Instance* entry)
+            // Skip the removal from the queue if the instance is not present in the set.
+            if (m_uniqueInstancesForPropagation.erase(instance))
             {
-                return entry == instance;
-            });
+                AZStd::erase_if(
+                    m_instancesUpdateQueue,
+                    [instance](Instance* entry)
+                    {
+                        return entry == instance;
+                    });
+            }
         }
 
         void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
@@ -168,6 +183,7 @@ namespace AzToolsFramework
                         Instance* instanceToUpdate = m_instancesUpdateQueue.front();
                         m_instancesUpdateQueue.pop_front();
                         AZ_Assert(instanceToUpdate != nullptr, "Invalid instance on update queue.");
+                        m_uniqueInstancesForPropagation.erase(instanceToUpdate);
 
                         TemplateId instanceTemplateId = instanceToUpdate->GetTemplateId();
                         if (currentTemplateId != instanceTemplateId)
@@ -202,9 +218,8 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
-                            instanceToUpdate, instanceDom);
-                        if (!instanceDomGenerated)
+                        // Generates instance DOM for a given instance object.
+                        if (!m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate))
                         {
                             AZ_Assert(
                                 false,
@@ -215,6 +230,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
+                        // Loads instance obejct from the generated instance DOM.
                         EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))

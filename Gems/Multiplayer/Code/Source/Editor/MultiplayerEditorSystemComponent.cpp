@@ -13,6 +13,7 @@
 
 #include <MultiplayerSystemComponent.h>
 #include <PythonEditorEventsBus.h>
+#include <Editor/MultiplayerEditorAutomation.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
 
 #include <AzCore/Console/IConsole.h>
@@ -93,6 +94,8 @@ namespace Multiplayer
     
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        Automation::MultiplayerEditorAutomationHandler::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerEditorSystemComponent, AZ::Component>()

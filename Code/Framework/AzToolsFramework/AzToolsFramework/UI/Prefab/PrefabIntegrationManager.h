@@ -98,6 +98,8 @@ namespace AzToolsFramework
             void ContextMenu_ClosePrefab();
             void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
+            void ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity);
+            void ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity);
             void ContextMenu_Duplicate();
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
@@ -107,11 +109,14 @@ namespace AzToolsFramework
             void UninitializeShortcuts();
 
             // Reference detection
-            static void GatherAllReferencedEntitiesAndCompare(const EntityIdSet& entities, EntityIdSet& entitiesAndReferencedEntities,
-                bool& hasExternalReferences);
+            static void GatherAllReferencedEntitiesAndCompare(
+                const EntityIdSet& entities, EntityIdSet& entitiesAndReferencedEntities, bool& hasExternalReferences);
             static void GatherAllReferencedEntities(EntityIdSet& entitiesWithReferences, AZ::SerializeContext& serializeContext);
-            static bool QueryAndPruneMissingExternalReferences(EntityIdSet& entities, EntityIdSet& selectedAndReferencedEntities,
-                bool& useReferencedEntities, bool defaultMoveExternalRefs = false);
+            static bool QueryAndPruneMissingExternalReferences(
+                EntityIdSet& entities,
+                EntityIdSet& selectedAndReferencedEntities,
+                bool& useReferencedEntities,
+                bool defaultMoveExternalRefs = false);
 
             static AZ::u32 GetSliceFlags(const AZ::Edit::ElementData* editData, const AZ::Edit::ClassData* classData);
 

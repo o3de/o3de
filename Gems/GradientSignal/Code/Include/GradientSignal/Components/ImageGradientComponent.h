@@ -18,14 +18,9 @@
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientModificationBus.h>
 #include <GradientSignal/Util.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
-
-namespace LmbrCentral
-{
-    template<typename, typename>
-    class EditorWrappedComponentBase;
-}
 
 namespace GradientSignal
 {
@@ -78,19 +73,38 @@ namespace GradientSignal
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        bool IsAdvancedModeReadOnly() const;
-        AZ::Crc32 GetManualScaleVisibility() const;
+        bool GetManualScaleVisibility() const;
 
+        bool IsImageAssetReadOnly() const;
+        bool AreImageOptionsReadOnly() const;
+
+        AZStd::string GetImageAssetPropertyName() const;
+        void SetImageAssetPropertyName(const AZStd::string& imageAssetPropertyName);
+
+        // Serialized properties that control the image data.
+
+        //! The image asset used for the image gradient.
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_imageAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        //! How often the image should repeat within its shape bounds.
         AZ::Vector2 m_tiling = AZ::Vector2::CreateOne();
-
-        bool m_advancedMode = false;
+        //! Which color channel to use from the image.
         ChannelToUse m_channelToUse = ChannelToUse::Red;
+        //! Which mipmap level to use from the image.
+        AZ::u32 m_mipIndex = 0;
+        //! Scale type to apply to the image data. (Auto = auto-scale data to use full 0-1 range, Manual = use scaleRangeMin/Max)
         CustomScaleType m_customScaleType = CustomScaleType::None;
         float m_scaleRangeMin = 0.0f;
         float m_scaleRangeMax = 1.0f;
-        AZ::u32 m_mipIndex = 0;
+        //! Which sampling method to use for querying gradient values (Point = exact image data, Bilinear = interpolated image data)
         SamplingType m_samplingType = SamplingType::Point;
+
+        // Non-serialized properties used by the Editor for display purposes.
+
+        //! True if we're currently modifying the image, false if not.
+        bool m_imageModificationActive = false;
+
+        //! Label to use for the image asset. This gets modified to show current asset loading/processing state.
+        AZStd::string m_imageAssetPropertyLabel = "Image Asset";
     };
 
     static const AZ::Uuid ImageGradientComponentTypeId = "{4741F079-157F-457E-93E0-D6BA4EAF76FE}";
@@ -103,14 +117,16 @@ namespace GradientSignal
         , private AZ::Data::AssetBus::Handler
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
+        , private ImageGradientModificationBus::Handler
         , private GradientTransformNotificationBus::Handler
     {
     public:
-        template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
+        friend class EditorImageGradientComponent;
         AZ_COMPONENT(ImageGradientComponent, ImageGradientComponentTypeId);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
         ImageGradientComponent(const ImageGradientConfig& configuration);
@@ -132,11 +148,36 @@ namespace GradientSignal
         void OnAssetMoved(AZ::Data::Asset<AZ::Data::AssetData> asset, void* oldDataPointer) override;
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
+        // ImageGradientRequestBus overrides...
+        AZStd::string GetImageAssetPath() const override;
+        AZStd::string GetImageAssetSourcePath() const override;
+        void SetImageAssetPath(const AZStd::string& assetPath) override;
+        void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
+        uint32_t GetImageHeight() const override;
+        uint32_t GetImageWidth() const override;
+        AZ::Vector2 GetImagePixelsPerMeter() const override;
+
+        // ImageGradientModificationBus overrides...
+        void StartImageModification() override;
+        void EndImageModification() override;
+        void SetValue(const AZ::Vector3& position, float value) override;
+        void SetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
+
+        AZStd::vector<float>* GetImageModificationBuffer();
+
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
+        void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
+
     protected:
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
         void SetupDependencies();
+
+        void CreateImageModificationBuffer();
+        void ClearImageModificationBuffer();
+        bool ModificationBufferIsActive() const;
+        void UpdateCachedImageBufferData(const AZ::RHI::ImageDescriptor& imageDescriptor, AZStd::span<const uint8_t> imageData);
 
         void GetSubImageData();
         float GetValueFromImageData(const AZ::Vector3& uvw, float defaultValue) const;
@@ -147,12 +188,6 @@ namespace GradientSignal
         void SetupAutoScaleMultiplierAndOffset();
         void SetupManualScaleMultiplierAndOffset();
         float GetValueForSamplingType(AZ::u32 x0, AZ::u32 y0, float pixelX, float pixelY) const;
-
-        // ImageGradientRequestBus overrides...
-        AZStd::string GetImageAssetPath() const override;
-        AZStd::string GetImageAssetSourcePath() const override;
-        void SetImageAssetPath(const AZStd::string& assetPath) override;
-        void SetImageAssetSourcePath(const AZStd::string& assetPath) override;
 
         float GetTilingX() const override;
         void SetTilingX(float tilingX) override;
@@ -165,13 +200,19 @@ namespace GradientSignal
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         mutable AZStd::shared_mutex m_queryMutex;
         GradientTransform m_gradientTransform;
-        AZStd::span<const uint8_t> m_imageData;
         ChannelToUse m_currentChannel = ChannelToUse::Red;
         CustomScaleType m_currentScaleType = CustomScaleType::None;
         float m_multiplier = 1.0f;
         float m_offset = 0.0f;
         AZ::u32 m_currentMipIndex = 0;
-        AZ::RHI::ImageDescriptor m_imageDescriptor;
         SamplingType m_currentSamplingType = SamplingType::Point;
+
+        //! Cached information for our loaded image data.
+        //! This can either contain information about the image data in the image asset or information about our in-memory modifications.
+        AZ::RHI::ImageDescriptor m_imageDescriptor;
+        AZStd::span<const uint8_t> m_imageData;
+
+        //! Temporary buffer for runtime modifications of the image data.
+        AZStd::vector<float> m_modifiedImageData;
     };
 }

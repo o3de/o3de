@@ -56,13 +56,6 @@ namespace LandscapeCanvas
         return BaseNode::VegetationAreaSelector;
     }
 
-    const bool AssetWeightSelectorNode::ShouldShowEntityName() const
-    {
-        // Don't show the entity name for Area Selectors since they will
-        // be wrapped on a Vegetation Area it would be redundant
-        return false;
-    }
-
     const char* AssetWeightSelectorNode::GetTitle() const
     {
         return TITLE.toUtf8().constData();
