@@ -137,6 +137,13 @@ PATH_DCCSI_TOOLS_IDE_WING_PROJ = Path(PATH_DCCSI_TOOLS_IDE_WING_PROJ).resolve()
 wing_config.add_setting(ENVAR_WING_PROJ,
                         PATH_DCCSI_TOOLS_IDE_WING_PROJ.as_posix())
 
+# a managed envar setting  for the userhome wing appdata folder
+from Tools.IDE.Wing.constants import ENVAR_WING_APPDATA
+from Tools.IDE.Wing.constants import PATH_WING_APPDATA
+PATH_WING_APPDATA = Path(PATH_WING_APPDATA).resolve()
+wing_config.add_setting(ENVAR_WING_APPDATA,
+                        PATH_WING_APPDATA.as_posix())
+
 # initialize configs for DCC tools we want to develop with
 # so we get access to their python interpreter, etc.
 # it is suggested the in the future, there be a project setreg for wing
@@ -177,4 +184,5 @@ if __name__ == '__main__':
     _LOGGER.info(f'{ENVAR_WINGHOME} is: {settings.WINGHOME}')
     _LOGGER.info(f'{ENVAR_WING_EXE} is: {settings.WING_EXE}')
     _LOGGER.info(f'{ENVAR_WING_PROJ} is: {settings.WING_PROJ}')
+    _LOGGER.info(f'{ENVAR_WING_APPDATA} is: {settings.WING_APPDATA}')
 # --- END -----------------------------------------------------------------

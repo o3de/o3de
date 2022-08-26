@@ -557,7 +557,7 @@ if __name__ == '__main__':
     new_list.append('c:/foo')
     new_list.append('c:/fooey')
 
-    # lets pass that list to set out insternal sys_path storage setter
+    # lets pass that list to set our insternal sys_path storage setter
     _foo_test.sys_path = new_list
     # that will also set up the dynamic setting
     _LOGGER.info(f'_foo_test.DCCSI_SYS_PATH = {_foo_test.settings.DCCSI_SYS_PATH}')

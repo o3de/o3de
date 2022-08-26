@@ -229,20 +229,6 @@ ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 
 
 # -------------------------------------------------------------------------
-# IDE: constants, like wing ENVARS
-TAG_DEFAULT_WING_MAJOR_VER = str(7)
-TAG_DEFAULT_WING_MINOR_VER = str(2)  # I had to bump so I could locally debug
-TAG_WING_IDE = str('Wing IDE ')  # old, pre 7
-TAG_WING_PRO = str('Wing Pro ')  # new 7+
-
-ENVAR_WINGHOME = str('WINGHOME')
-ENVAR_DCCSI_WING_VERSION_MAJOR = str('DCCSI_WING_VERSION_MAJOR')
-ENVAR_DCCSI_WING_VERSION_MINOR = str('DCCSI_WING_VERSION_MINOR')
-
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # dcc:(all) API constants
 
 # -------------------------------------------------------------------------
@@ -354,14 +340,6 @@ PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(PATH_DCCSIG,
                                                               TAG_PY_MAJOR,
                                                               TAG_PY_MINOR)
 
-
-# wing paths
-STR_CONSTRUCT_WING_PATH = str(f'{PATH_PROGRAMFILES_X86}\\{TAG_WING_PRO} {TAG_DEFAULT_WING_MAJOR_VER}.{TAG_DEFAULT_WING_MINOR_VER}')
-PATH_DEFAULT_WINGHOME = str('{0}\\{1}{2}.{3}'
-                            ''.format(PATH_PROGRAMFILES_X86,
-                                      TAG_WING_PRO,
-                                      TAG_DEFAULT_WING_MAJOR_VER,
-                                      TAG_DEFAULT_WING_MINOR_VER))
 
 PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
                             ''.format(PATH_PROGRAMFILES_X64,
