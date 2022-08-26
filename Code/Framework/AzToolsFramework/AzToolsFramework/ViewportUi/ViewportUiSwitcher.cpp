@@ -8,8 +8,9 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
-#include <QBitmap>
 
+#include <QBitmap>
+#include <QPainter>
 
 #pragma optimize("", off)
 #pragma inline_depth(0)
@@ -48,12 +49,15 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
-    [[maybe_unused]] static QPixmap CreateIconMask(const char* buttonIcon)
+    QPixmap ViewportUiSwitcher::CreateIconMask(const char* buttonIcon)
     {
-        auto buttonPixmap = QPixmap(QString(buttonIcon));
-        auto mask = buttonPixmap.createMaskFromColor(Qt::transparent, Qt::MaskInColor);
-        buttonPixmap.fill((QColor(255, 255, 255)));
-        buttonPixmap.setMask(mask);
+        QPainter painter;
+        QPixmap buttonPixmap = QPixmap(QString(buttonIcon));
+
+        painter.begin(&buttonPixmap);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(buttonPixmap.rect(), Qt::white);
+        painter.end();
 
         return buttonPixmap;
     }
