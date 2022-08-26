@@ -149,8 +149,10 @@ namespace Multiplayer
             return;
         }
 
-        const AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody();
-        SetLinearVelocity(rigidBody->GetLinearVelocity());
-        SetAngularVelocity(rigidBody->GetAngularVelocity());
+        if (const AzPhysics::RigidBody* rigidBody = GetParent().m_physicsRigidBodyComponent->GetRigidBody())
+        {
+            SetLinearVelocity(rigidBody->GetLinearVelocity());
+            SetAngularVelocity(rigidBody->GetAngularVelocity());
+        }
     }
 } // namespace Multiplayer
