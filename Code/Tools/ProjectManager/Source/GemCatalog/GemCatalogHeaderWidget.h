@@ -108,6 +108,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void AddGem();
+        void CreateANewGem();
         void OpenGemsRepo();
         void RefreshGems();
         void UpdateGemCart(QWidget* gemCart);

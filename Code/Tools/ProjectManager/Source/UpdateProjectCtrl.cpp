@@ -8,6 +8,7 @@
 
 #include <ProjectGemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -43,9 +44,15 @@ namespace O3DE::ProjectManager
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
         m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController);
         m_gemRepoScreen = new GemRepoScreen(this);
+#ifdef CREATE_A_GAME_ACTIVE
+        m_createAGemScreen = new CreateAGemScreen();
+#endif
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
+#ifdef CREATE_A_GAME_ACTIVE
+        connect(m_createAGemScreen, &CreateAGemScreen::CreateButtonPressed, this, &UpdateProjectCtrl::HandleBackButton);
+#endif
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -73,6 +80,9 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_projectGemCatalogScreen);
         m_stack->addWidget(m_gemRepoScreen);
+#ifdef CREATE_A_GAME_ACTIVE
+        m_stack->addWidget(m_createAGemScreen);
+#endif
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -133,6 +143,13 @@ namespace O3DE::ProjectManager
             m_stack->setCurrentWidget(m_updateSettingsScreen);
             Update();
         }
+#ifdef CREATE_A_GAME_ACTIVE
+        else if (screen == ProjectManagerScreen::CreateAGem)
+        {
+            m_stack->setCurrentWidget(m_createAGemScreen);
+            Update();
+        }
+#endif
         else
         {
             emit ChangeScreenRequest(screen);
