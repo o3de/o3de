@@ -15,6 +15,7 @@ namespace AZStd
 {
     // Bring in std utility functions into AZStd namespace
     using std::forward;
+    using std::addressof;
 
     //! basic_const_iterator is an iterator adapter that behaves the same as the underlying iterator type
     //! except its indirection operator converts the value returned by the underlying iterators'
