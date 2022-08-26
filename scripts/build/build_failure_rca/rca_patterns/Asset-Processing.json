@@ -7,7 +7,7 @@
         "single_line": true,
         "find_all": true,
         "log_patterns": [
-          "^.*AssetProcessor: Failed.*$"
+          "^.*AssetProcessor: Failed.*\.\.\.$"
         ],
         "log_testcases": [
           "AssetProcessor: Failed Shaders/Terrain/TerrainDetailClipmapGenerationPass.shader"

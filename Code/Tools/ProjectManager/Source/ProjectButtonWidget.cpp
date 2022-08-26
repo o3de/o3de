@@ -471,6 +471,8 @@ namespace O3DE::ProjectManager
         // Hide button in-case it is still showing
         m_projectImageLabel->GetOpenEditorButton()->hide();
 
+        SetLaunchingEnabled(false);
+
         ShowMessage(tr("Opening Editor..."));
     }
 
@@ -509,6 +511,8 @@ namespace O3DE::ProjectManager
     {
         m_projectImageLabel->GetCloudIcon()->setVisible(true);
         m_projectImageLabel->GetWarningSpacer()->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+        SetLaunchingEnabled(false);
     }
 
     void ProjectButton::ShowDownloadingState()
@@ -519,6 +523,8 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->GetDownloadMessageLabel()->setVisible(true);
         m_projectImageLabel->GetProgressPercentage()->setVisible(true);
         m_projectImageLabel->GetProgressBar()->setVisible(true);
+
+        SetLaunchingEnabled(false);
     }
 
     void ProjectButton::SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda)
@@ -599,7 +605,6 @@ namespace O3DE::ProjectManager
     void ProjectButton::ResetButtonWidgets()
     {
         HideContextualLabelButtonWidgets();
-        SetLaunchingEnabled(false);
         SetProjectBuilding(false);
         SetProgressBarPercentage(0);
 
