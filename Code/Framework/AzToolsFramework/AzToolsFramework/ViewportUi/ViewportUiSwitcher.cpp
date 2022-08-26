@@ -64,7 +64,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         QAction* action = new QAction();
         action->setCheckable(false);
         action->setIcon(RemoveIconColor(button->m_icon.c_str()));
-        
 
         if (!action)
         {
