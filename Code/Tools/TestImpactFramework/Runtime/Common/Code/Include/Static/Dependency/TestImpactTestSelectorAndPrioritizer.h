@@ -379,7 +379,7 @@ namespace TestImpact
             testTargetDistancePairs.reserve(selectedTestTargetAndDependerMap.size());
 
             // Loop through each test target in our map, walk the build dependency graph for that target and retrieve the vertices for the
-            // production targets in productionTargets
+            // production targets in productionTargets. Find and store the distance to the closest productionTarget if one exists.
             for (const auto [testTarget, productionTargets] : selectedTestTargetAndDependerMap)
             {
                 AZStd::optional<AZStd::size_t> minimum;
@@ -390,7 +390,6 @@ namespace TestImpact
                         if (const auto productionTarget = vertex.m_buildTarget.GetProductionTarget();
                             productionTarget && productionTargets.contains(productionTarget))
                         {
-                            AZ_Printf("", "raaa");
                             if (!minimum.has_value() || distance < minimum)
                             {
                                 minimum = distance;
@@ -399,7 +398,7 @@ namespace TestImpact
                         return BuildGraphVertexVisitResult::Continue;
                     });
 
-                // If we found any vertices, sort by distance and pick the closest and insert it as a pair in our map
+                // If we found any productionTargets, store the distance to the closest one.
                 // Else we didn't find any vertices, store the testTarget with no distance. This will be interpreted as infinite distance
                 // and the test targets priority will be lower
                 if (minimum.has_value())
