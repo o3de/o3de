@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
+    core,
     aws_cloudwatch as cloudwatch
 )
 

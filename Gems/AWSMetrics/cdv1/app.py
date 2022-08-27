@@ -7,9 +7,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import (
-    App, Environment
-)
+from aws_cdk import core
 from aws_metrics.aws_metrics_construct import AWSMetrics
 
 import os
@@ -29,10 +27,10 @@ PROJECT_FEATURE_NAME = f'{PROJECT_NAME}-{FEATURE_NAME}'
 
 """End of Configuration"""
 
-app = App()
+app = core.App()
 
 # Set-up regions to deploy stack to, or use default if not set
-env = Environment(
+env = core.Environment(
     account=ACCOUNT,
     region=REGION)
 

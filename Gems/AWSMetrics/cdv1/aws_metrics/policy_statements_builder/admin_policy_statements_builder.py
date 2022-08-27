@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 from __future__ import annotations
 
 from aws_cdk import (
-    Fn,
+    core,
     aws_iam as iam
 )
 
@@ -30,7 +30,6 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
     """
     Build the admin user policy statement list for the AWSMetrics gem
     """
-
     def __init__(self):
         super().__init__()
 
@@ -50,8 +49,8 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub('arn:${AWS::Partition}:s3:::cdktoolkit-stagingbucket-*'),
-                Fn.sub('arn:${AWS::Partition}:s3:::cdktoolkit-stagingbucket-*/*'),
+                core.Fn.sub('arn:${AWS::Partition}:s3:::cdktoolkit-stagingbucket-*'),
+                core.Fn.sub('arn:${AWS::Partition}:s3:::cdktoolkit-stagingbucket-*/*'),
             ],
             sid='UpdateBootstrapBucket'
         )
@@ -68,13 +67,13 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${StackName}/*',
                     variables={
                         'StackName': component.stack_name
                     }
                 ),
-                Fn.sub('arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CDKToolkit/*')
+                core.Fn.sub('arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CDKToolkit/*')
             ],
             sid='UpdateResourcesStacks'
         )
@@ -101,7 +100,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
 
         self._add_to_logs_policy_statement(
             [
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                          'API-Gateway-Execution-Logs_${RestApiId}/${Stage}:log-stream:*',
                     variables={
@@ -114,8 +113,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
 
         return self
 
-    def add_real_time_data_processing_policy_statements(self,
-                                                        component: RealTimeDataProcessing) -> AdminPolicyStatementsBuilder:
+    def add_real_time_data_processing_policy_statements(self, component: RealTimeDataProcessing) -> AdminPolicyStatementsBuilder:
         """
         Add the additional policy statements to update the Kinesis Data Analytics application
         and analytics processing Lambda for admin.
@@ -135,7 +133,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             effect=iam.Effect.ALLOW,
 
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:kinesisanalytics:${AWS::Region}:${AWS::AccountId}:application/'
                          '${AnalyticsApplicationName}',
                     variables={
@@ -157,7 +155,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
 
         self._add_to_logs_policy_statement(
             [
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                          '/aws/lambda/${AnalyticsProcessingLambdaName}:log-stream:*',
                     variables={
@@ -183,13 +181,13 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
-                    body='arn:${AWS::Partition}:cloudwatch::${AWS::AccountId}:dashboard/${DashboardName}',
-                    variables={
-                        'DashboardName': component.dashboard_name
-                    }
-                )
-            ],
+                core.Fn.sub(
+                        body='arn:${AWS::Partition}:cloudwatch::${AWS::AccountId}:dashboard/${DashboardName}',
+                        variables={
+                            'DashboardName': component.dashboard_name
+                        }
+                    )
+                ],
             sid='UpdateDashboard'
         )
 
@@ -215,8 +213,8 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub('arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'),
-                Fn.sub(
+                core.Fn.sub('arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'),
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${EventsDatabaseName}',
                     variables={
                         'EventsDatabaseName': component.events_database_name
@@ -227,34 +225,34 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
         )
 
         self._policy_statement_mapping['glue_table'] = iam.PolicyStatement(
-            actions=[
-                'glue:GetTable',
-                'glue:GetTableVersion',
-                'glue:GetTableVersions',
-                'glue:UpdateTable',
-                'glue:GetPartitions'
-            ],
-            effect=iam.Effect.ALLOW,
-            resources=[
-                Fn.sub('arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'),
-                Fn.sub(
-                    body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/'
-                         '${EventsDatabaseName}/${EventsTableName}',
-                    variables={
-                        'EventsDatabaseName': component.events_database_name,
-                        'EventsTableName': component.events_table_name
-                    }
-                ),
-                Fn.sub(
-                    body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:'
-                         'database/${EventsDatabaseName}',
-                    variables={
-                        'EventsDatabaseName': component.events_database_name
-                    }
-                )
-            ],
-            sid='UpdateEventsTable'
-        )
+                actions=[
+                    'glue:GetTable',
+                    'glue:GetTableVersion',
+                    'glue:GetTableVersions',
+                    'glue:UpdateTable',
+                    'glue:GetPartitions'
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[
+                    core.Fn.sub('arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'),
+                    core.Fn.sub(
+                        body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/'
+                             '${EventsDatabaseName}/${EventsTableName}',
+                        variables={
+                            'EventsDatabaseName': component.events_database_name,
+                            'EventsTableName': component.events_table_name
+                        }
+                    ),
+                    core.Fn.sub(
+                        body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:'
+                             'database/${EventsDatabaseName}',
+                        variables={
+                            'EventsDatabaseName': component.events_database_name
+                        }
+                    )
+                ],
+                sid='UpdateEventsTable'
+            )
 
         self._policy_statement_mapping['glue_crawler'] = iam.PolicyStatement(
             actions=[
@@ -264,7 +262,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
                 'glue:UpdateCrawler'
             ],
             effect=iam.Effect.ALLOW,
-            resources=[Fn.sub(
+            resources=[core.Fn.sub(
                 body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:crawler/${EventsCrawlerName}',
                 variables={
                     'EventsCrawlerName': component.events_crawler_name
@@ -280,13 +278,13 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:s3:::${AnalyticsBucketName}',
                     variables={
                         'AnalyticsBucketName': component.analytics_bucket_name
                     }
                 ),
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:s3:::${AnalyticsBucketName}/*',
                     variables={
                         'AnalyticsBucketName': component.analytics_bucket_name
@@ -302,14 +300,14 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:s3:::${AnalyticsBucketName}/${AthenaOutputDirectory}',
                     variables={
                         'AnalyticsBucketName': component.analytics_bucket_name,
                         'AthenaOutputDirectory': constants.ATHENA_OUTPUT_DIRECTORY
                     }
                 ),
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:s3:::${AnalyticsBucketName}/${AthenaOutputDirectory}/*',
                     variables={
                         'AnalyticsBucketName': component.analytics_bucket_name,
@@ -324,8 +322,8 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
 
         self._add_to_logs_policy_statement(
             [
-                Fn.sub('arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
-                       '/aws-glue/crawlers:log-stream:*')
+                core.Fn.sub('arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
+                            '/aws-glue/crawlers:log-stream:*')
             ]
         )
 
@@ -349,7 +347,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:firehose:${AWS::Region}:${AWS::AccountId}:'
                          'deliverystream/${DeliveryStreamName}',
                     variables={
@@ -371,14 +369,14 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
 
         self._add_to_logs_policy_statement(
             [
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                          '/aws/lambda/${EventsProcessingLambdaName}:log-stream:*',
                     variables={
                         'EventsProcessingLambdaName': component.events_processing_lambda_name
                     }
                 ),
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                          '${DeliveryStreamLogGroupName}:log-stream:*',
                     variables={
@@ -416,7 +414,7 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                Fn.sub(
+                core.Fn.sub(
                     body='arn:${AWS::Partition}:athena:${AWS::Region}:${AWS::AccountId}:workgroup/${WorkGroupName}',
                     variables={
                         'WorkGroupName': component.athena_work_group_name

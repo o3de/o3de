@@ -5,10 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from constructs import Construct
 from aws_cdk import (
-    Fn,
-    CfnOutput,
+    core,
     aws_athena as athena
 )
 
@@ -21,7 +19,7 @@ class BatchAnalytics:
     Query the metrics stored in the S3 data lake via Amazon Athena
     """
     def __init__(self,
-                 stack: Construct,
+                 stack: core.Construct,
                  application_name: str,
                  analytics_bucket_name: str,
                  events_database_name: str,
@@ -52,7 +50,7 @@ class BatchAnalytics:
                     encryption_configuration=athena.CfnWorkGroup.EncryptionConfigurationProperty(
                         encryption_option='SSE_S3'
                     ),
-                    output_location=Fn.sub(
+                    output_location=core.Fn.sub(
                         body='s3://${AnalyticsBucket}/${AthenaOutputDirectory}/',
                         variables={
                             'AnalyticsBucket': self._analytics_bucket_name,
@@ -62,8 +60,7 @@ class BatchAnalytics:
                 )
             )
         )
-
-        CfnOutput(
+        core.CfnOutput(
             self._stack,
             id='AthenaWorkGroupName',
             description='Name of the Athena work group that contains sample queries',
@@ -131,3 +128,4 @@ class BatchAnalytics:
     @property
     def athena_work_group_name(self) -> athena.CfnWorkGroup.name:
         return self._athena_work_group.name
+
