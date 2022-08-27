@@ -538,7 +538,6 @@ namespace MaterialEditor
             [](const AZStd::string& group, const AZStd::string& name, const AZStd::string& description, const AZStd::any& value)
         {
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-            propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Invalid;
             propertyConfig.m_name = name;
             propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_name);
             propertyConfig.m_groupName = group;

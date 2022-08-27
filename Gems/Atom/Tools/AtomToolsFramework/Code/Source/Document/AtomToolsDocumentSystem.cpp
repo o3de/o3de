@@ -33,7 +33,7 @@ namespace AtomToolsFramework
         AZ_Error("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", true))
         {
-            QMessageBox::critical(parent, title, text);
+            QMessageBox::critical(parent, title, QObject::tr("%1\nThese messages can be disabled from settings.").arg(text));
         }
     }
 
@@ -42,7 +42,7 @@ namespace AtomToolsFramework
         AZ_Warning("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", true))
         {
-            QMessageBox::warning(parent, title, text);
+            QMessageBox::warning(parent, title, QObject::tr("%1\nThese messages can be disabled from settings.").arg(text));
         }
     }
 
