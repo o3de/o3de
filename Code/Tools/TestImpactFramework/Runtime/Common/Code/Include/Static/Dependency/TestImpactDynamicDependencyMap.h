@@ -41,6 +41,15 @@ namespace TestImpact
         //! @param productionTarget The production target to retrieve the covering tests for.
         AZStd::vector<const TestTarget*> GetCoveringTestTargetsForProductionTarget(const ProductionTarget& productionTarget) const;
 
+        //! Returns the test targets that cover one or more sources in the repository.
+        AZStd::vector<const TestTarget*> GetCoveringTests() const;
+
+        //! Returns the test targets that do not cover any sources in the repository.
+        AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
+
+        //! Returns all the production targets with test coverage.
+        AZStd::unordered_set<const TestTarget*> GetCoveredProductionTargets() const;
+
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
         //! @returns If found, the source dependency information for the specified source file, otherwise empty.
@@ -72,12 +81,6 @@ namespace TestImpact
 
         //! Removes the specified test target from all source coverage.
         void RemoveTestTargetFromSourceCoverage(const TestTarget* testTarget);
-
-        //! Returns the test targets that cover one or more sources in the repository.
-        AZStd::vector<const TestTarget*> GetCoveringTests() const;
-
-        //! Returns the test targets that do not cover any sources in the repository.
-        AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
 
     private:
         //! Internal handler for ReplaceSourceCoverage where the pruning of parentless and coverageless source depenencies after the
@@ -229,12 +232,10 @@ namespace TestImpact
                 else
                 {
                     AZ_Warning(
-                        "ReplaceSourceCoverage", false,
-                        AZStd::string::format(
-                            "Test target %s exists in the coverage data "
-                            "but has since been removed from the build system",
-                            unresolvedTestTarget.c_str())
-                            .c_str());
+                        "ReplaceSourceCoverage",
+                        false,
+                        "Test target %s exists in the coverage data but has since been removed from the build system",
+                        unresolvedTestTarget.c_str());
                 }
             }
 
@@ -408,22 +409,57 @@ namespace TestImpact
             {
                 if (sourceDependency->GetNumCoveringTestTargets())
                 {
+                    // Parent Targets: Yes or no
+                    // Coverage Data : Yes
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. This file previously existed in one or more source to target mapping artifacts
+                    // 2. The file has since been deleted yet no delete crud operation acted upon:
+                    //    a) The coverage data for this file was not deleted from the Source Covering Test List
+                    // 3. The file has since been recreated
+                    // 4. This file does not exist in any source to target mapping artifacts
+                    //
+                    // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                    // 1. Log Source Covering Test List compromised error
+                    // 2. Throw exception
                     const AZStd::string msg = AZStd::string::format(
                         "The newly-created file '%s' belongs to a build target yet "
                         "still has coverage data in the source covering test list implying that a delete CRUD operation has been "
                         "missed, thus the integrity of the source covering test list has been compromised.",
                         createdFile.c_str());
-                    AZ_Error("File Creation", false, msg.c_str());
+                    AZ_Error("DynamicDependencyMap", false, msg.c_str());
 
                     if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
                     {
                         throw DependencyException(msg);
                     }
-                }
 
-                if (sourceDependency->GetNumParentTargets())
+                    coverageToDelete.push_back(createdFile);
+                }
+                else if (sourceDependency->GetNumParentTargets())
                 {
+                    // Parent Targets: Yes
+                    // Coverage Data : No
+                    // Source Type   : Any
+                    //
+                    // Note: see TestSelectorAndPrioritizer::SelectTestTargets for scenarios and actions
                     createDependencies.emplace_back(AZStd::move(*sourceDependency));
+                }
+                else
+                {
+                    // Parent Targets: No
+                    // Coverage Data : No
+                    // Source Type   : Any
+                    //
+                    // Scenario
+                    // 1. The existing file has been modified
+                    // 2. This file does not exist in any source to target mapping artifacts
+                    // 3. There exists no coverage data for this file in the Source Covering Test List
+                    // 
+                    // Action
+                    // 1. Skip the file
+                    continue;
                 }
             }
         }
@@ -436,26 +472,50 @@ namespace TestImpact
             {
                 if (sourceDependency->GetNumParentTargets())
                 {
+                    // Parent Targets: Yes
+                    // Coverage Data : Yes or no
+                    // Source Type   : Any
+                    //
+                    // Note: see TestSelectorAndPrioritizer::SelectTestTargets for scenarios and actions
                     updateDependencies.emplace_back(AZStd::move(*sourceDependency));
                 }
                 else
                 {
                     if (sourceDependency->GetNumCoveringTestTargets())
                     {
-                        AZ_Printf(
-                            "File Update",
-                            AZStd::string::format(
-                                "Source file '%s' is potentially an orphan (used by build targets "
-                                "without explicitly being added to the build system, e.g. an include directive pulling in a header from "
-                                "the "
-                                "repository). Running the covering tests for this file with instrumentation will confirm whether or nor "
-                                "this "
-                                "is the case.\n",
-                                updatedFile.c_str())
-                                .c_str());
+                        // Parent Targets: No
+                        // Coverage Data : Yes
+                        // Source Type   : Indeterminate
+                        //
+                        // Note: coverage will be deleted upon updating of coverage after test runs (if any)
+                        //       see TestSelectorAndPrioritizer::SelectTestTargets for scenarios and actions
+                        AZ_Warning(
+                            "DynamicDependencyMap",
+                            false,
+                            "Source file '%s' is potentially an orphan (used by build targets "
+                            "without explicitly being added to the build system, e.g. an include directive pulling in a header from "
+                            "the "
+                            "repository). Running the covering tests for this file with instrumentation will confirm whether or nor "
+                            "this "
+                            "is the case.\n",
+                            updatedFile.c_str());
 
                         updateDependencies.emplace_back(AZStd::move(*sourceDependency));
-                        coverageToDelete.push_back(updatedFile);
+                    }
+                    else
+                    {
+                        // Parent Targets: No
+                        // Coverage Data : No
+                        // Source Type   : Indeterminate
+                        //
+                        // Scenario
+                        // 1. The existing file has been modified
+                        // 2. This file does not exist in any source to target mapping artifacts
+                        // 3. There exists no coverage data for this file in the Source Covering Test List
+                        //
+                        // Action (handled prior by DynamicDependencyMap::ApplyAndResoveChangeList)
+                        // 1. Skip the file
+                        continue;
                     }
                 }
             }
@@ -472,40 +532,67 @@ namespace TestImpact
 
             if (sourceDependency->GetNumParentTargets())
             {
-                if (sourceDependency->GetNumCoveringTestTargets())
-                {
-                    const AZStd::string msg = AZStd::string::format(
-                        "The deleted file '%s' still belongs to a build target and still "
-                        "has coverage data in the source covering test list, implying that the integrity of both the source to target "
-                        "mappings and the source covering test list has been compromised.",
-                        deletedFile.c_str());
-                    AZ_Error("File Delete", false, msg.c_str());
+                // Parent Targets: Yes
+                // Coverage Data : Yes or no
+                // Source Type   : Irrelevant
+                //
+                // Scenario
+                // 1. The existing file has been deleted.
+                // 2. This file still exists in one or more source to target mapping artifacts
+                // 3. There may or not exist coverage data for this file in the Source Covering Test List
+                //
+                // Action
+                // 1. Log source to target mapping and Source Covering Test List integrity compromised error
+                // 2. Throw exception
 
-                    if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-                    {
-                        throw DependencyException(msg);
-                    }
-                }
-                else
-                {
-                    const AZStd::string msg = AZStd::string::format(
-                        "The deleted file '%s' still belongs to a build target implying "
-                        "that the integrity of the source to target mappings has been compromised.",
-                        deletedFile.c_str());
-                    AZ_Error("File Delete", false, msg.c_str());
+                const AZStd::string msg = AZStd::string::format(
+                    "The deleted file '%s' still belongs to a build target implying "
+                    "that the integrity of the source to target mappings has been compromised.",
+                    deletedFile.c_str());
+                AZ_Error("DynamicDependencyMap", false, msg.c_str());
 
-                    if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
-                    {
-                        throw DependencyException(msg);
-                    }
+                if (integrityFailurePolicy == Policy::IntegrityFailure::Abort)
+                {
+                    throw DependencyException(msg);
                 }
+
+                coverageToDelete.push_back(deletedFile);
             }
             else
             {
                 if (sourceDependency->GetNumCoveringTestTargets())
                 {
+                    // Parent Targets: No
+                    // Coverage Data : Yes
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The file has been deleted.
+                    // 2. This file previously existed in one or more source to target mapping artifacts
+                    // 3. This file no longer exists in any source to target mapping artifacts
+                    // 4. The coverage data for this file was has yet to be deleted from the Source Covering Test List
+                    //
+                    // Action
+                    // 1. Select all test targets covering this file.
+                    // 2. Delete the existing coverage data from the Source Covering Test List
+                    //
+                    // Note: coverage will be deleted upon updating of coverage after test runs (if any)
                     deleteDependencies.emplace_back(AZStd::move(*sourceDependency));
-                    coverageToDelete.push_back(deletedFile);
+                }
+                else
+                {
+                    // Parent Targets: No
+                    // Coverage Data : No
+                    // Source Type   : Indeterminate
+                    //
+                    // Scenario
+                    // 1. The file has been deleted
+                    // 2. This file does not exist in any source to target mapping artifacts
+                    // 3. There exists no coverage data for this file in the Source Covering Test List
+                    //
+                    // Action
+                    // 1. Skip the file
+                    continue;
                 }
             }
         }
@@ -567,5 +654,20 @@ namespace TestImpact
         }
 
         return notCovering;
+    }
+
+    template<typename ProductionTarget, typename TestTarget>
+    AZStd::unordered_set<const TestTarget*> DynamicDependencyMap<ProductionTarget, TestTarget>::GetCoveredProductionTargets() const
+    {
+        AZStd::unordered_set coveredProductionTargets;
+        for (const auto& [source, dependencyData] : m_sourceDependencyMap)
+        {
+            for(const auto* parentTarget : dependencyData.GetParentTargets())
+            {
+                coveredProductionTargets.insert(parentTarget);
+            }
+        }
+
+        return coveredProductionTargets;
     }
 } // namespace TestImpact

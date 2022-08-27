@@ -46,6 +46,8 @@ namespace AtomToolsFramework
         void OnDocumentObjectInfoChanged(const AZ::Uuid& documentId, const DocumentObjectInfo& objectInfo, bool rebuilt) override;
         void OnDocumentObjectInfoInvalidated(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
+        void OnDocumentCleared(const AZ::Uuid& documentId) override;
+        void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;

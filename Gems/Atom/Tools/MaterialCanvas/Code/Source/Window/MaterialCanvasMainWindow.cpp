@@ -103,18 +103,6 @@ namespace MaterialCanvas
         m_documentInspector->SetDocumentId(documentId);
     }
 
-    void MaterialCanvasMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentCleared(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
-    void MaterialCanvasMainWindow::OnDocumentError(const AZ::Uuid& documentId)
-    {
-        Base::OnDocumentError(documentId);
-        m_documentInspector->SetDocumentId(documentId);
-    }
-
     void MaterialCanvasMainWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
