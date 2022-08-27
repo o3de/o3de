@@ -468,7 +468,8 @@ namespace MaterialCanvas
             AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> group;
             group.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
             group->m_name = GetSymbolNameFromNode(currentNode);
-            group->m_displayName = currentNode->GetTitle();
+            group->m_displayName = AtomToolsFramework::GetDisplayNameFromPath(
+                AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
             group->m_description = currentNode->GetSubTitle();
 
             // Visit all of the slots in the order that they will be displayed on the node
@@ -877,7 +878,7 @@ namespace MaterialCanvas
     }
 
     bool MaterialCanvasDocument::BuildMaterialTypeFromTemplate(
-        const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const
+        GraphModel::ConstNodePtr templateNode, const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const
     {
         // Load the material type template file, which is the same format as MaterialTypeSourceData with a different extension
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(templateInputPath);
@@ -887,7 +888,15 @@ namespace MaterialCanvas
             return false;
         }
 
+        // Copy the material type source data from the template and begin populating it.
         AZ::RPI::MaterialTypeSourceData materialTypeSourceData = materialTypeOutcome.TakeValue();
+
+        // If the node providing all the template information has a description then assign it to the material type source data.
+        const auto templateDescriptionSlot = templateNode->GetSlot("inDescription");
+        if (templateDescriptionSlot)
+        {
+            materialTypeSourceData.m_description = templateDescriptionSlot->GetValue<AZStd::string>();
+        }
 
         // Search the graph for nodes defining material input properties that should be added to the material type and material SRG
         for (const auto& inputNodePair : m_graph->GetNodes())
@@ -926,7 +935,7 @@ namespace MaterialCanvas
                 // variable name and material type property name.
                 AZStd::string propertyName = GetMaterialInputNameFromNode(inputNode);
                 auto property = propertyGroup->AddProperty(propertyName);
-                property->m_displayName = materialInputNameSlot->GetValue<AZStd::string>();
+                property->m_displayName = AtomToolsFramework::GetDisplayNameFromPath(propertyName);
                 property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
                 property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
 
@@ -1035,7 +1044,7 @@ namespace MaterialCanvas
 
                 if (AZ::StringFunc::EndsWith(templateOutputPath, ".materialtype"))
                 {
-                    if (!BuildMaterialTypeFromTemplate(templateInputPath, templateOutputPath))
+                    if (!BuildMaterialTypeFromTemplate(currentNode, templateInputPath, templateOutputPath))
                     {
                         m_generatedFiles.clear();
                         return false;
