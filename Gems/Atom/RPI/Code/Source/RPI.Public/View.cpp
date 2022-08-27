@@ -244,6 +244,11 @@ namespace AZ
             return m_clipToWorldMatrix;
         }
 
+        const Vector2 View::GetClipNearFar() const
+        {
+            return Vector2{ m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.GetX(), m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.GetY() };
+        }
+
         bool View::HasDrawListTag(RHI::DrawListTag drawListTag)
         {
             return drawListTag.IsValid() && m_drawListMask[drawListTag.GetIndex()];

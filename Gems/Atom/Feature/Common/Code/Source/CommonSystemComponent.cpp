@@ -57,6 +57,7 @@
 #include <PostProcessing/EyeAdaptationPass.h>
 #include <PostProcessing/LuminanceHistogramGeneratorPass.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
+#include <PostProcessing/Fsr2TaaUpscalePass.h>
 #include <PostProcessing/LookModificationCompositePass.h>
 #include <PostProcessing/LookModificationTransformPass.h>
 #include <PostProcessing/SMAAFeatureProcessor.h>
@@ -135,6 +136,7 @@ namespace AZ
             ImGuiPassData::Reflect(context);
             RayTracingPassData::Reflect(context);
             TaaPassData::Reflect(context);
+            Fsr2TaaUpscalePassData::Reflect(context);
             RenderDebugFeatureProcessor::Reflect(context);
 
             LightingPreset::Reflect(context);
@@ -233,8 +235,9 @@ namespace AZ
             // Add Depth Downsample/Upsample passes
             passSystem->AddPassCreator(Name("DepthUpsamplePass"), &DepthUpsamplePass::Create);
             
-            // Add Taa Pass
+            // Add Taa and FSR2 passes
             passSystem->AddPassCreator(Name("TaaPass"), &TaaPass::Create);
+            passSystem->AddPassCreator(Name("Fsr2TaaUpscalePass"), &Fsr2TaaUpscalePass::Create);
 
             // Add DepthOfField pass
             passSystem->AddPassCreator(Name("DepthOfFieldCompositePass"), &DepthOfFieldCompositePass::Create);

@@ -15,6 +15,7 @@
 #if defined(IMGUI_ENABLED)
 #include <ImGuiBus.h>
 #include <imgui/imgui.h>
+#include <Atom/Utils/ImGuiFeatureConfig.h>
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 #include <Atom/Utils/ImGuiPassTree.h>
 #include <Atom/Utils/ImGuiTransientAttachmentProfiler.h>
@@ -55,6 +56,9 @@ namespace AtomImGuiTools
     private:
 
 #if defined(IMGUI_ENABLED)
+        AZ::Render::ImGuiFeatureConfig m_imguiFeatureConfig;
+        bool m_showFeatureConfig = false;
+
         AZ::Render::ImGuiPassTree m_imguiPassTree;
         bool m_showPassTree = false;
 

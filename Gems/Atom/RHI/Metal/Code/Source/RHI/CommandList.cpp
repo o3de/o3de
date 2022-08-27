@@ -803,5 +803,11 @@ namespace AZ
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
+
+        void CommandList::Submit(FfxFsr2Context& context, FfxFsr2DispatchDescription& fsr2DispatchItem)
+        {
+            // Provide a metal backend for FSR2
+            AZ_Assert(false, "Not implemented");
+        }
     }
 }

@@ -27,6 +27,7 @@
 #include <RHI/BufferPool.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
+#include <ffx_fsr2.h>
 
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
@@ -488,6 +489,19 @@ namespace AZ
             {
                 SetViewports(viewportState.m_states.data(), aznumeric_caster(viewportState.m_states.size()));
             }
+        }
+
+        void CommandList::Submit(FfxFsr2Context& context, FfxFsr2DispatchDescription& fsr2DispatchItem)
+        {
+            fsr2DispatchItem.commandList = GetCommandList();
+
+            ffxFsr2ContextDispatch(&context, &fsr2DispatchItem);
+
+            // TODO: FSR2 internally creates various resource views in its own heap. Unfortunately,
+            // this means we have to swap the active descriptor heap back after FSR2 is finished,
+            // which can incur some costly cache flushes. Fixing this will require some FSR2
+            // modifications.
+            m_descriptorContext->SetDescriptorHeaps(GetCommandList());
         }
 
         void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)

@@ -37,6 +37,7 @@ namespace AZ
             void Submit([[maybe_unused]] const RHI::CopyItem& copyItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] FfxFsr2Context& context, [[maybe_unused]] FfxFsr2DispatchDescription& fsr2DispatchItem) override {}
             void BeginPredication([[maybe_unused]] const RHI::Buffer& buffer, [[maybe_unused]] uint64_t offset, [[maybe_unused]] RHI::PredicationOp operation) override {}
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas) override {}
