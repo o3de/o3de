@@ -11,17 +11,19 @@
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 
+#ifndef OUTPUT_DEPTH
+#define OUTPUT_DEPTH 0
+#endif
+
 #ifdef UNIFIED_FORWARD_OUTPUT
 
 struct ForwardPassOutput
 {
     float4 m_color  : SV_Target0;
-};
 
-struct ForwardPassOutputWithDepth
-{
-    float4 m_color  : SV_Target0;
+#if OUTPUT_DEPTH
     float m_depth : SV_Depth;
+#endif
 };
 
 #else
@@ -33,18 +35,10 @@ struct ForwardPassOutput
     float4 m_albedo : SV_Target2;            //!< RGB = Surface albedo pre-multiplied by other factors that will be multiplied later by diffuse GI, A = specularOcclusion
     float4 m_specularF0 : SV_Target3;        //!< RGB = Specular F0, A = roughness
     float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = Flags (IBL/Multiscatter enabled)
-};
 
-struct ForwardPassOutputWithDepth
-{
-    // See above for descriptions of special encodings
-
-    float4 m_diffuseColor  : SV_Target0;
-    float4 m_specularColor : SV_Target1;
-    float4 m_albedo : SV_Target2;
-    float4 m_specularF0 : SV_Target3;
-    float4 m_normal : SV_Target4;
+#if OUTPUT_DEPTH
     float m_depth : SV_Depth;
+#endif
 };
 
 #endif

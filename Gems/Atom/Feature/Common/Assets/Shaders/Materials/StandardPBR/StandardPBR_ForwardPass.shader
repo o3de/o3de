@@ -1,6 +1,8 @@
 {
     "Source" : "./StandardPBR_ForwardPass.azsl",
 
+    "Definitions": ["OUTPUT_DEPTH=1"],
+
     "DepthStencilState" :
     {
         "Depth" :
@@ -32,18 +34,19 @@
 
     "ProgramSettings":
     {
-      "EntryPoints":
-      [
-        {
-          "name": "StandardPbr_ForwardPassVS",
-          "type": "Vertex"
-        },
-        {
-          "name": "StandardPbr_ForwardPassPS",
-          "type": "Fragment"
-        }
-      ]
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
+            }
+        ]
     },
+
 
     "DrawList" : "forward"
 }

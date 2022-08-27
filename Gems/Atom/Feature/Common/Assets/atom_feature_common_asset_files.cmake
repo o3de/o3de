@@ -222,6 +222,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
+    ShaderLib/Atom/Features/PBR/MaterialUtils.azsli
+    ShaderLib/Atom/Features/PBR/SpecularAA.azsli
     ShaderLib/Atom/Features/PBR/Lighting/BaseLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
@@ -371,16 +373,12 @@ set(FILES
     Shaders/Materials/MaterialFunctions/EnhancedParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/EvaluateEnhancedSurface.azsli
     Shaders/Materials/MaterialFunctions/EvaluateEyeSurface.azsli
-    Shaders/Materials/MaterialFunctions/EvaluateStandardSurface.azsli
     Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli
     Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli
     Shaders/Materials/MaterialFunctions/ParallaxShadowUtil.azsli
     Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli
-    Shaders/Materials/MaterialFunctions/StandardGetNormalToWorld.azsli
-    Shaders/Materials/MaterialFunctions/StandardGetObjectToWorld.azsli
     Shaders/Materials/MaterialFunctions/StandardTransformDetailUvs.azsli
-    Shaders/Materials/MaterialFunctions/StandardTransformUvs.azsli
     Shaders/Materials/MaterialInputs/AlphaInput.azsli
     Shaders/Materials/MaterialInputs/BaseColorInput.azsli
     Shaders/Materials/MaterialInputs/ClearCoatInput.azsli
@@ -415,17 +413,24 @@ set(FILES
     Shaders/Materials/Skin/Skin.azsl
     Shaders/Materials/Skin/Skin.shader
     Shaders/Materials/Skin/Skin_Common.azsli
+    Shaders/Materials/StandardPBR/StandardPBR.azsli
     Shaders/Materials/StandardPBR/StandardPBR_Common.azsli
     Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.azsl
     Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.shader
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.azsl
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.shader
     Shaders/Materials/StandardPBR/StandardPBR_ForwardPass_EDS.shader
+    Shaders/Materials/StandardPBR/StandardPBR_Lighting.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_LightingModel.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.azsl
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.shader
     Shaders/Materials/StandardPBR/StandardPBR_LowEndForward_EDS.shader
+    Shaders/Materials/StandardPBR/StandardPBR_PixelGeometry.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli
     Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.azsl
     Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.shader
-    Shaders/Materials/StandardPBR/StandardSurface_ForwardPass.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_Surface.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli
     Shaders/MorphTargets/MorphTargetCS.azsl
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli

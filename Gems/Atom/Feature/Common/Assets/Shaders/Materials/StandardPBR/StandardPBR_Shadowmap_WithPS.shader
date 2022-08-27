@@ -1,7 +1,10 @@
 {
-    "Source" : "./StandardPBR_Shadowmap_WithPS.azsl",
+    "Source" : "./StandardPBR_DepthPass_WithPS.azsl",
 
-    "DepthStencilState" : { 
+    "Definitions" : ["SHADOWMAP=1"] ,
+
+    
+    "DepthStencilState" : {
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
     },
 
@@ -12,7 +15,7 @@
     "RasterState" :
     {
         "depthBias" : "10",
-        "depthBiasSlopeScale" : "4"        
+        "depthBiasSlopeScale" : "4"
     },
     
     "ProgramSettings":

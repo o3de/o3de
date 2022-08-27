@@ -15,8 +15,8 @@
 #define Surface     SurfaceData_BasePBR
 #endif
 
-// Todo: factor out surface constants into separate file
-#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+#include <Atom/Features/PBR/SpecularAA.azsli>
 
 class SurfaceData_BasePBR
 {   
@@ -33,9 +33,6 @@ class SurfaceData_BasePBR
     float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
     float3 specularF0;          //!< Fresnel f0 spectral value of the surface
 
-    //! Applies specular anti-aliasing to roughnessA2
-    void ApplySpecularAA();
-
     //! Calculates roughnessA and roughnessA2 after roughness has been set
     void CalculateRoughnessA();
 
@@ -43,41 +40,9 @@ class SurfaceData_BasePBR
     void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
 };
 
-// Specular Anti-Aliasing technique from this paper:
-// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
-void SurfaceData_BasePBR::ApplySpecularAA()
-{
-    // Constants for formula below
-    const float screenVariance = 0.25f;
-    const float varianceThresh = 0.18f;
-
-    // Specular Anti-Aliasing
-    float3 dndu = ddx_fine( normal );
-    float3 dndv = ddy_fine( normal );
-    float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
-    float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
-    float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
-    roughnessA2 = filteredRoughnessA2;
-
-    roughnessA = sqrt(roughnessA2);
-    roughnessLinear = sqrt(roughnessA);
-}
-
 void SurfaceData_BasePBR::CalculateRoughnessA()
 {
-    // The roughness value in microfacet calculations (called "alpha" in the literature) does not give perceptually
-    // linear results. Disney found that squaring the roughness value before using it in microfacet equations causes
-    // the user-provided roughness parameter to be more perceptually linear. We keep both values available as some
-    // equations need roughnessLinear (i.e. IBL sampling) while others need roughnessA (i.e. GGX equations).
-    // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
-
-    roughnessA = max(roughnessLinear * roughnessLinear, MinRoughnessA);
-
-    roughnessA2 = roughnessA * roughnessA;
-    if(o_applySpecularAA)
-    {
-        ApplySpecularAA();
-    }
+    CalculateRoughnessValues(normal, roughnessLinear, roughnessA, roughnessA2);
 }
 
 void SurfaceData_BasePBR::SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor, float newMetallic)
@@ -85,9 +50,6 @@ void SurfaceData_BasePBR::SetAlbedoAndSpecularF0(float3 newBaseColor, float spec
     baseColor = newBaseColor;
     metallic = newMetallic;
 
-    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
-
-    // Compute albedo and specularF0 based on metalness
-    albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
-    specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
+    albedo = GetAlbedo(baseColor, metallic);
+    specularF0 = GetSpecularF0(baseColor, metallic, specularF0Factor);
 }

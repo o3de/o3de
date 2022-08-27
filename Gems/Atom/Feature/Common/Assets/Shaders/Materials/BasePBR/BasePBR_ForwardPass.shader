@@ -32,18 +32,19 @@
 
     "ProgramSettings":
     {
-      "EntryPoints":
-      [
-        {
-          "name": "VertexShader",
-          "type": "Vertex"
-        },
-        {
-          "name": "PixelShader",
-          "type": "Fragment"
-        }
-      ]
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
+            }
+        ]
     },
+
 
     "DrawList" : "forward"
 }

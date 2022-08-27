@@ -16,4 +16,4 @@
 
 
 // --- Vertex + Pixel Shader ---
-#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>
+#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>

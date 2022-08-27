@@ -6,14 +6,12 @@
  *
  */
 
-#include "./StandardPBR_Common.azsli"
+#include <scenesrg.srgi>
+#include "StandardPBR_Common.azsli"
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 
-#include "../MaterialFunctions/StandardGetObjectToWorld.azsli"
-#include "../MaterialFunctions/StandardGetNormalToWorld.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include "../MaterialFunctions/StandardTransformUvs.azsli"
 #include "../MaterialFunctions/ParallaxDepth.azsli"
 
 #define ENABLE_ALPHA_CLIP 1
