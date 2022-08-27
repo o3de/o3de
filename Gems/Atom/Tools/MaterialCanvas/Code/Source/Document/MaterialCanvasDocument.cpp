@@ -174,7 +174,8 @@ namespace MaterialCanvas
                 objectInfo.m_objectPtr = const_cast<AtomToolsFramework::DynamicPropertyGroup*>(group.get());
                 objectInfo.m_nodeIndicatorFunction = [](const AzToolsFramework::InstanceDataNode* /*node*/)
                 {
-                    return ":/Icons/blank.png";
+                    // There are currently no indicators for material canvas nodes.
+                    return nullptr;
                 };
                 objects.push_back(objectInfo);
             }
@@ -484,7 +485,6 @@ namespace MaterialCanvas
                         {
                             // Create and add a dynamic property for each input slot on the node
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
-                            propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Invalid;
                             propertyConfig.m_id = currentSlot->GetName();
                             propertyConfig.m_name = currentSlot->GetName();
                             propertyConfig.m_displayName = currentSlot->GetDisplayName();
