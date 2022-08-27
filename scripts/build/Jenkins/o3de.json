@@ -8,5 +8,13 @@
         "scripts/build/Platform/*/build_config.json",
         "restricted/*/scripts/build/build_config.json"
     ],
-    "PYTHON_DIR": "python"
+    "PYTHON_DIR": "python",
+    "EXTERNAL_REPOS": [
+        {
+            "REPOSITORY_NAME": "o3de-extras",
+            "ORGANIZATION_NAME": "aws-lumberyard-dev",
+            "URL": "https://github.com/aws-lumberyard-dev/o3de-extras.git",
+            "DEVELOPMENT_BRANCH": "development"
+        }
+    ]
 }
