@@ -89,6 +89,7 @@ set(FILES
     Passes/Forward.pass
     Passes/ForwardCheckerboard.pass
     Passes/ForwardSubsurface.pass
+    Passes/Fsr2TaaUpscale.pass
     Passes/FullscreenCopy.pass
     Passes/FullscreenOutputOnly.pass
     Passes/FullscreenShadow.pass

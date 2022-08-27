@@ -11,6 +11,7 @@ set(FILES
     Include/Atom/Utils/ImageComparison.h
     Include/Atom/Utils/ImGuiCullingDebug.h
     Include/Atom/Utils/ImGuiCullingDebug.inl
+    Include/Atom/Utils/ImGuiFeatureConfig.h
     Include/Atom/Utils/ImGuiGpuProfiler.h
     Include/Atom/Utils/ImGuiMaterialDetails.h
     Include/Atom/Utils/ImGuiMaterialDetails.inl
@@ -30,6 +31,7 @@ set(FILES
     Include/Atom/Utils/Utils.h
     Include/Atom/Utils/Utils.inl
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
+    Source/ImGuiFeatureConfig.cpp
     Source/ImGuiGpuProfiler.cpp
     Source/DdsFile.cpp
     Source/ImageComparison.cpp

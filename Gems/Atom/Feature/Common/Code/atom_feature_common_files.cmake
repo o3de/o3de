@@ -224,6 +224,8 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/Fsr2TaaUpscalePass.cpp
+    Source/PostProcessing/Fsr2TaaUpscalePass.h
     Source/PostProcessing/HDRColorGradingPass.cpp
     Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp

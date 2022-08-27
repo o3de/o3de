@@ -79,6 +79,10 @@ namespace AtomImGuiTools
 #if defined(IMGUI_ENABLED)
     void AtomImGuiToolsSystemComponent::OnImGuiUpdate()
     {
+        if (m_showFeatureConfig)
+        {
+            m_imguiFeatureConfig.Draw(m_showFeatureConfig);
+        }
         if (m_showPassTree)
         {
             m_imguiPassTree.Draw(m_showPassTree, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
@@ -103,6 +107,7 @@ namespace AtomImGuiTools
     {
         if (ImGui::BeginMenu("Atom Tools"))
         {
+            ImGui::MenuItem("Feature Config", "", &m_showFeatureConfig);
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))

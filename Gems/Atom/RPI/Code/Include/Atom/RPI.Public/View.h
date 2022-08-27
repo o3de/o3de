@@ -100,6 +100,7 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+            const Vector2 GetClipNearFar() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
             AZ::Matrix3x4 GetViewToWorldMatrixAsMatrix3x4() const;

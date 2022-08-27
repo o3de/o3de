@@ -26,6 +26,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <ffx_fsr2.h>
 
 namespace AZ
 {
@@ -167,6 +168,14 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             RHI::ResultCode CompactSRGMemory() override;
+            bool HasFsr2Support() const override { return true; }
+            RHI::ResultCode CreateFsr2Context(FfxFsr2Context& outContext, const FfxFsr2ContextDescription& desc) override;
+            RHI::ResultCode PopulateFsr2Resource(
+                FfxFsr2Context& context,
+                FfxResource& outResource,
+                const RHI::Image& image,
+                const wchar_t* name,
+                bool unorderedAccess) override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
@@ -210,6 +219,9 @@ namespace AZ
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
             HANDLE m_waitHandle;
+
+            AZStd::unique_ptr<char[]> m_fsr2Scratch;
+            FfxFsr2Interface m_fsr2Interface;
         };
     }
 }

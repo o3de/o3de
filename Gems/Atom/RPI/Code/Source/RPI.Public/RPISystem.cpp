@@ -117,7 +117,7 @@ namespace AZ
 
             // set the default multisample state to MSAA 4x
             // the default render pipeline may override this when it is loaded
-            m_multisampleState.m_samples = 4;
+            m_multisampleState.m_samples = 1;
         }
 
         void RPISystem::Shutdown()

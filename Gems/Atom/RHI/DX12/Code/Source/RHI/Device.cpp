@@ -18,6 +18,37 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <ffx_types.h>
+#include <dx12/ffx_fsr2_dx12.h>
+
+static const char* FfxErrorString(FfxErrorCode error)
+{
+#define FFX_ERROR_CASE(error)                                                                                                              \
+    case error:                                                                                                                            \
+        return #error
+
+    switch (error)
+    {
+        FFX_ERROR_CASE(FFX_OK);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_POINTER);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ALIGNMENT);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_SIZE);
+        FFX_ERROR_CASE(FFX_EOF);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_PATH);
+        FFX_ERROR_CASE(FFX_ERROR_EOF);
+        FFX_ERROR_CASE(FFX_ERROR_MALFORMED_DATA);
+        FFX_ERROR_CASE(FFX_ERROR_OUT_OF_MEMORY);
+        FFX_ERROR_CASE(FFX_ERROR_INCOMPLETE_INTERFACE);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ENUM);
+        FFX_ERROR_CASE(FFX_ERROR_INVALID_ARGUMENT);
+        FFX_ERROR_CASE(FFX_ERROR_OUT_OF_RANGE);
+        FFX_ERROR_CASE(FFX_ERROR_NULL_DEVICE);
+        FFX_ERROR_CASE(FFX_ERROR_BACKEND_API_ERROR);
+        FFX_ERROR_CASE(FFX_ERROR_INSUFFICIENT_MEMORY);
+    default:
+        return "Unknown FidelityFX error!";
+    }
+}
 
 namespace AZ
 {
@@ -632,6 +663,49 @@ namespace AZ
                 m_isDescriptorHeapCompactionNeeded = false;
                 return m_descriptorContext->CompactDescriptorHeap();
             }
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Device::CreateFsr2Context(FfxFsr2Context& outContext, const FfxFsr2ContextDescription& desc)
+        {
+            if (!m_fsr2Scratch)
+            {
+                // Retrieve device function pointers in an interface required by FSR2
+                size_t scratchSize = ffxFsr2GetScratchMemorySizeDX12();
+                m_fsr2Scratch = AZStd::make_unique<char[]>(scratchSize);
+                FfxErrorCode error = ffxFsr2GetInterfaceDX12(&m_fsr2Interface, GetDevice(), m_fsr2Scratch.get(), scratchSize);
+
+                if (error != FFX_OK)
+                {
+                    AZ_Error("DX12::Device", false, "Failed to initialize FSR2 DX12 RHI interface table (%s)", FfxErrorString(error));
+                    return RHI::ResultCode::Fail;
+                }
+            }
+
+            FfxFsr2ContextDescription clonedDesc = desc;
+            clonedDesc.callbacks = m_fsr2Interface;
+            clonedDesc.device = GetDevice();
+
+            FfxErrorCode error = ffxFsr2ContextCreate(&outContext, &clonedDesc);
+            if (error != FFX_OK)
+            {
+                AZ_Error("DX12::Device", false, "Failed to create FSR2 DX12 RHI context (%s)", FfxErrorString(error));
+                return RHI::ResultCode::Fail;
+            }
+
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ResultCode Device::PopulateFsr2Resource(
+            FfxFsr2Context& context, FfxResource& outResource, const RHI::Image& image, const wchar_t* name, bool unorderedAccess)
+        {
+            const DX12::Image& dx12Image = reinterpret_cast<const DX12::Image&>(image);
+            outResource = ffxGetResourceDX12(
+                &context,
+                dx12Image.GetMemoryView().GetMemory(),
+                name,
+                unorderedAccess ? FFX_RESOURCE_STATE_UNORDERED_ACCESS : FFX_RESOURCE_STATE_COMPUTE_READ);
+
             return RHI::ResultCode::Success;
         }
 
