@@ -18,6 +18,11 @@
 #include <tests/UnitTestUtilities.h>
 #include <QCoreApplication>
 
+namespace AZ::IO
+{
+    class LocalFileIO;
+}
+
 namespace UnitTests
 {
     class MockDiskSpaceResponder : public AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Registrar
