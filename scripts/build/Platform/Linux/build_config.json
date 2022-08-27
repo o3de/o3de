@@ -24,7 +24,7 @@
       "periodic-clean-weekly-internal",
     ],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"linux-7058deb8-test"
+      "NODE_LABEL":"linux-ubuntu-22"
     },
     "steps": [
       "profile_nounity",
