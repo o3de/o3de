@@ -8,6 +8,19 @@
                 "Key": 1,
                 "Value": {
                     "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        }
+                    ],
                     "m_inputDataSlots": [
                         {
                             "Key": {
@@ -54,6 +67,22 @@
                         },
                         {
                             "Key": {
+                                "m_name": "inPositionOffset"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "Vector4",
+                                    "Value": [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        1.0
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
                                 "m_name": "inRoughness"
                             },
                             "Value": {
@@ -85,6 +114,51 @@
                 "Key": 2,
                 "Value": {
                     "$type": "DynamicNode",
+                    "m_propertySlots": [
+                        {
+                            "Key": {
+                                "m_name": "inDescription"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inGroup"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inName"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                    "Value": ""
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "m_name": "inValue"
+                            },
+                            "Value": {
+                                "m_value": {
+                                    "$type": "{403A7CFE-B218-5D57-8540-BD58E734BCFE} Asset<StreamingImageAsset>"
+                                }
+                            }
+                        }
+                    ],
                     "m_inputDataSlots": [
                         {
                             "Key": {
