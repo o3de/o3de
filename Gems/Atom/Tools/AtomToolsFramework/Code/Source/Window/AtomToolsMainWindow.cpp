@@ -471,7 +471,7 @@ namespace AtomToolsFramework
                     [this]()
                     {
                         const AZStd::string layoutName =
-                            GetDisplayNameFromPath(QInputDialog::getText(this, tr("Layout Name"), QString()).toUtf8().constData());
+                            GetDisplayNameFromText(QInputDialog::getText(this, tr("Layout Name"), QString()).toUtf8().constData());
                         if (!layoutName.empty() && layoutName != "Default")
                         {
                             auto userLayoutSettings = GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap());

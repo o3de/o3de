@@ -468,7 +468,7 @@ namespace MaterialCanvas
             AZStd::shared_ptr<AtomToolsFramework::DynamicPropertyGroup> group;
             group.reset(aznew AtomToolsFramework::DynamicPropertyGroup);
             group->m_name = GetSymbolNameFromNode(currentNode);
-            group->m_displayName = AtomToolsFramework::GetDisplayNameFromPath(
+            group->m_displayName = AtomToolsFramework::GetDisplayNameFromText(
                 AZStd::string::format("Node%u %s", currentNode->GetId(), currentNode->GetTitle()));
             group->m_description = currentNode->GetSubTitle();
 
@@ -521,14 +521,11 @@ namespace MaterialCanvas
 
     AZStd::string MaterialCanvasDocument::GetGraphName() const
     {
+        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
         AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
-
-        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
-        AZ::StringFunc::Replace(documentName, "-", "_");
-        AZ::StringFunc::Replace(documentName, ".", "_");
-        return AZ::RPI::AssetUtils::SanitizeFileName(documentName);
+        return AtomToolsFramework::GetSymbolNameFromText(documentName);
     }
 
     AZStd::string MaterialCanvasDocument::GetOutputPathFromTemplatePath(const AZStd::string& templateInputPath) const
@@ -741,20 +738,14 @@ namespace MaterialCanvas
 
     AZStd::string MaterialCanvasDocument::GetSymbolNameFromNode(GraphModel::ConstNodePtr inputNode) const
     {
-        AZStd::string nodeName = AZ::RPI::AssetUtils::SanitizeFileName(inputNode->GetTitle());
-        AZStd::to_lower(nodeName.begin(), nodeName.end());
-        AZ::StringFunc::Replace(nodeName, "-", "_");
-        AZ::StringFunc::Replace(nodeName, ".", "_");
-        return AZStd::string::format("node%u_%s", inputNode->GetId(), nodeName.c_str());
+        return AtomToolsFramework::GetSymbolNameFromText(AZStd::string::format("node%u_%s", inputNode->GetId(), inputNode->GetTitle()));
     }
 
     AZStd::string MaterialCanvasDocument::GetMaterialInputNameFromNode(GraphModel::ConstNodePtr inputNode) const
     {
         if (auto materialInputNameSlot = inputNode->GetSlot("inName"))
         {
-            AZStd::string materialInputName = AZ::RPI::AssetUtils::SanitizeFileName(materialInputNameSlot->GetValue<AZStd::string>());
-            AZ::StringFunc::Replace(materialInputName, "-", "_");
-            AZ::StringFunc::Replace(materialInputName, ".", "_");
+            const auto& materialInputName = AtomToolsFramework::GetSymbolNameFromText(materialInputNameSlot->GetValue<AZStd::string>());
             if (!materialInputName.empty())
             {
                 return materialInputName;
@@ -911,8 +902,7 @@ namespace MaterialCanvas
             {
                 // Because users can specify any value for property and group names, and attempt will be made to convert them into valid,
                 // usable names by sanitizing, removing unsupported characters, and changing case
-                AZStd::string propertyGroupName = AZ::RPI::AssetUtils::SanitizeFileName(materialInputGroupSlot->GetValue<AZStd::string>());
-                AZ::StringFunc::Replace(propertyGroupName, "-", "_");
+                AZStd::string propertyGroupName = AtomToolsFramework::GetSymbolNameFromText(materialInputGroupSlot->GetValue<AZStd::string>());
                 if (propertyGroupName.empty())
                 {
                     // If no group name was specified, general will be used by default
@@ -927,15 +917,15 @@ namespace MaterialCanvas
                     propertyGroup = materialTypeSourceData.AddPropertyGroup(propertyGroupName);
 
                     // The unmodified text value will be used as the display name and description for now
-                    propertyGroup->SetDisplayName(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
-                    propertyGroup->SetDescription(AtomToolsFramework::GetDisplayNameFromPath(propertyGroupName));
+                    propertyGroup->SetDisplayName(AtomToolsFramework::GetDisplayNameFromText(propertyGroupName));
+                    propertyGroup->SetDescription(AtomToolsFramework::GetDisplayNameFromText(propertyGroupName));
                 }
 
                 // Get the symbol for the material input based on the node and the property name. This will be used as both the
                 // variable name and material type property name.
-                AZStd::string propertyName = GetMaterialInputNameFromNode(inputNode);
+                const auto& propertyName = GetMaterialInputNameFromNode(inputNode);
                 auto property = propertyGroup->AddProperty(propertyName);
-                property->m_displayName = AtomToolsFramework::GetDisplayNameFromPath(propertyName);
+                property->m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyName);
                 property->m_description = materialInputDescriptionSlot->GetValue<AZStd::string>();
                 property->m_value = AZ::RPI::MaterialPropertyValue::FromAny(materialInputValueSlot->GetValue());
 

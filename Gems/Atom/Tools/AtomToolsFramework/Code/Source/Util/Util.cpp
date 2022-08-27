@@ -84,8 +84,8 @@ namespace AtomToolsFramework
         QString symbolName(text.c_str());
         symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
         symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
-        symbolName.replace(QRegExp("\\b([\\d])"), "_\\1");
-        symbolName.replace(QRegExp("\\s*"), "_");
+        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("\\s+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
 

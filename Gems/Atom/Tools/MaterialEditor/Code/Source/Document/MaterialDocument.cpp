@@ -540,9 +540,9 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
             propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Invalid;
             propertyConfig.m_name = name;
-            propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromPath(propertyConfig.m_name);
+            propertyConfig.m_displayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_name);
             propertyConfig.m_groupName = group;
-            propertyConfig.m_groupDisplayName = AtomToolsFramework::GetDisplayNameFromPath(propertyConfig.m_groupName);
+            propertyConfig.m_groupDisplayName = AtomToolsFramework::GetDisplayNameFromText(propertyConfig.m_groupName);
             propertyConfig.m_id = propertyConfig.m_groupName + "." + name;
             propertyConfig.m_description = description;
             propertyConfig.m_parentValue = propertyConfig.m_originalValue = propertyConfig.m_defaultValue = value;
