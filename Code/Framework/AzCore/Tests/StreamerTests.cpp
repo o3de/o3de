@@ -20,6 +20,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <AzTest/GemTestEnvironment.h>
 
 namespace AZ::IO
@@ -252,8 +253,6 @@ namespace AZ::IO
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-            m_taskExecutor = AZStd::make_unique<TaskExecutor>();
-            TaskExecutor::SetInstance(m_taskExecutor.get());
 
             m_prevFileIO = FileIOBase::GetInstance();
             FileIOBase::SetInstance(&m_fileIO);
@@ -262,6 +261,7 @@ namespace AZ::IO
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_useExistingAllocator = true;
             auto m_systemEntity = m_application->Create(appDesc);
+            m_systemEntity->AddComponent(aznew AZ::TaskGraphSystemComponent());
             m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
             m_systemEntity->Init();
             m_systemEntity->Activate();
@@ -278,9 +278,6 @@ namespace AZ::IO
             m_application = nullptr;
 
             FileIOBase::SetInstance(m_prevFileIO);
-
-            TaskExecutor::SetInstance(nullptr);
-            m_taskExecutor.reset();
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
@@ -369,7 +366,6 @@ namespace AZ::IO
         IStreamer* m_streamer{ nullptr };
         AZ::ComponentApplication* m_application{ nullptr };
         size_t m_testFileCount{ 0 };
-        AZStd::unique_ptr<TaskExecutor> m_taskExecutor;
     };
 
     template<typename TestTag>

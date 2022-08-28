@@ -28,6 +28,8 @@ namespace AZ
     class TaskExecutor;
     class TaskGraph;
 
+    inline constexpr uint32_t TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
+
     class TaskGraphActiveInterface
     {
     public:
