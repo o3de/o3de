@@ -48,14 +48,14 @@ PSOutput MainPS(VSOutput IN)
     float2 clipPos = float2(mad(IN.m_texCoord.x, 2.0, -1.0), mad(IN.m_texCoord.y, -2.0, 1.0));
     float4 worldPos = mul(ViewSrg::m_viewProjectionInverseMatrix, float4(clipPos, depth, 1.0));
 
-    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4((worldPos / worldPos.w).xyz, 1.0));
-    clipPosPrev = (clipPosPrev / clipPosPrev.w);
+    float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4(worldPos.xyz / worldPos.w, 1.0));
+    clipPosPrev /= clipPosPrev.w;
 
     // Clip space is from -1.0 to 1.0, so the motion vectors are 2x as big as they should be
-    OUT.m_motion = (clipPos - clipPosPrev.xy) * 0.5;
+    float2 motion = clipPos - clipPosPrev.xy - ViewSrg::m_jitterCompensation_motionVectorScale.xy;
 
     // Flip y to line up with uv coordinates
-    OUT.m_motion.y = -OUT.m_motion.y;
+    OUT.m_motion = ViewSrg::m_jitterCompensation_motionVectorScale.zw * motion * float2(0.5, -0.5);
 
     return OUT;
 }

@@ -1317,6 +1317,64 @@ namespace AZ
             // readback attachment with input state
             UpdateReadbackAttachment(params, true);
 
+            // Supplied the default viewport and scissor value based on the largest output or input/output
+            // image attachment that exists. This is a reasonable default but a pass override may be needed
+            // in the case of a raster pass that decides to advertise an larger image UAV than any bound
+            // render target.
+            const PassAttachment* representativeOutput = nullptr;
+
+            for (uint32_t i = 0; i != GetOutputCount(); ++i)
+            {
+                const auto& attachment = GetOutputBinding(i).GetAttachment();
+                if (attachment && attachment->GetAttachmentType() == RHI::AttachmentType::Image)
+                {
+                    if (representativeOutput)
+                    {
+                        RHI::Size outputSize = representativeOutput->m_descriptor.m_image.m_size;
+                        RHI::Size candidateSize = attachment->m_descriptor.m_image.m_size;
+                        if (candidateSize.m_width > outputSize.m_width)
+                        {
+                            representativeOutput = attachment.get();
+                        }
+                    }
+                    else
+                    {
+                        representativeOutput = attachment.get();
+                    }
+                    break;
+                }
+            }
+            for (uint32_t i = 0; i != GetInputOutputCount(); ++i)
+            {
+                const auto& attachment = GetInputOutputBinding(i).GetAttachment();
+                if (attachment && attachment->GetAttachmentType() == RHI::AttachmentType::Image)
+                {
+                    if (representativeOutput)
+                    {
+                        RHI::Size outputSize = representativeOutput->m_descriptor.m_image.m_size;
+                        RHI::Size candidateSize = attachment->m_descriptor.m_image.m_size;
+                        if (candidateSize.m_width > outputSize.m_width)
+                        {
+                            representativeOutput = attachment.get();
+                        }
+                    }
+                    else
+                    {
+                        representativeOutput = attachment.get();
+                    }
+                    break;
+                }
+            }
+
+            if (representativeOutput)
+            {
+                RHI::Size outputSize = representativeOutput->m_descriptor.m_image.m_size;
+                params.m_scissorState.m_maxX = outputSize.m_width;
+                params.m_scissorState.m_maxY = outputSize.m_height;
+                params.m_viewportState.m_maxX = aznumeric_cast<float>(outputSize.m_width);
+                params.m_viewportState.m_maxY = aznumeric_cast<float>(outputSize.m_height);
+            }
+
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
             {

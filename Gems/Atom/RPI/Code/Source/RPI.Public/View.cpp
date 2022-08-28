@@ -276,6 +276,11 @@ namespace AZ
             m_clipSpaceOffset.Set(xOffset, yOffset);
         }
 
+        void View::SetMotionVectorScale(float xScale, float yScale)
+        {
+            m_motionVectorScale.Set(xScale, yScale);
+        }
+
         const AZ::Matrix4x4& View::GetWorldToViewMatrix() const
         {
             return m_worldToViewMatrix;
@@ -522,8 +527,8 @@ namespace AZ
                     offsetViewToClipMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
 
                     Matrix4x4 offsetViewToClipPrevMatrix = m_viewToClipPrevMatrix;
-                    offsetViewToClipPrevMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
-                    offsetViewToClipPrevMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
+                    offsetViewToClipPrevMatrix.SetElement(0, 2, m_clipSpaceOffsetPrev.GetX());
+                    offsetViewToClipPrevMatrix.SetElement(1, 2, m_clipSpaceOffsetPrev.GetY());
 
                     // Build other matrices dependent on the view to clip matrices
                     Matrix4x4 offsetWorldToClipMatrix = offsetViewToClipMatrix * m_worldToViewMatrix;
@@ -542,13 +547,22 @@ namespace AZ
                 m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_linearizeDepthConstants);
                 m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
 
+                // The jitter compensation is subtracted from the computed motion vector.
+                Vector2 jitterCompensation = -m_clipSpaceOffset + m_clipSpaceOffsetPrev;
+                m_shaderResourceGroup->SetConstant(
+                    m_jitterCompensation_motionVectorScale,
+                    Vector4{
+                        jitterCompensation.GetX(), jitterCompensation.GetY(), m_motionVectorScale.GetX(), m_motionVectorScale.GetY() });
+
                 m_shaderResourceGroup->Compile();
             }
 
             m_viewToClipPrevMatrix = m_viewToClipMatrix;
             m_worldToViewPrevMatrix = m_worldToViewMatrix;
 
+            m_clipSpaceOffsetPrev = m_clipSpaceOffset;
             m_clipSpaceOffset.Set(0);
+            m_motionVectorScale.Set(1.f);
         }
 
         void View::BeginCulling()

@@ -72,12 +72,11 @@ PSOutput MainPS(VSOutput IN)
     // Reprojected last frame's clip position, for skinned mesh it also implies last key frame
     float4 clipPosPrev = mul(ViewSrg::m_viewProjectionPrevMatrix, float4(IN.m_worldPosPrev, 1.0));
 
-    float2 motion = (clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w) * 0.5;
+    float2 motion = clipPos.xy / clipPos.w - clipPosPrev.xy / clipPosPrev.w - ViewSrg::m_jitterCompensation_motionVectorScale.xy;
 
-    OUT.m_motion = motion;
-    
     // Flip y to line up with uv coordinates
-    OUT.m_motion.y = -OUT.m_motion.y;
+    OUT.m_motion = ViewSrg::m_jitterCompensation_motionVectorScale.zw * motion * float2(0.5, -0.5);
+    // OUT.m_motion = motion * float2(0.5, -0.5);
     
     return OUT;
 }

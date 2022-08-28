@@ -31,6 +31,8 @@ partial ShaderResourceGroup ViewSrg
     // See the GetViewSpacePosition( ) function below
     float4 m_unprojectionConstants;
 
+    float4 m_jitterCompensation_motionVectorScale;
+
     // Debug members...
 
     // Rendering options related to shader debugging

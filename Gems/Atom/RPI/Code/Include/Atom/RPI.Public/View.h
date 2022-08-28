@@ -94,6 +94,9 @@ namespace AZ
             //! Sets a pixel offset on the view, usually used for jittering the camera for anti-aliasing techniques.
             void SetClipSpaceOffset(float xOffset, float yOffset);
 
+            //! Set scale factors to apply to motion vectors
+            void SetMotionVectorScale(float xScale, float yScale);
+
             const AZ::Matrix4x4& GetWorldToViewMatrix() const;
             //! Use GetViewToWorldMatrix().GetTranslation() to get the camera's position.
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
@@ -180,6 +183,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
             RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_linearizeDepthConstants";
             RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
+            RHI::ShaderInputNameIndex m_jitterCompensation_motionVectorScale = "m_jitterCompensation_motionVectorScale";
 
             // The context containing draw lists associated with the view.
             RHI::DrawListContext m_drawListContext;
@@ -208,6 +212,10 @@ namespace AZ
 
             // Clip space offset for camera jitter with taa
             Vector2 m_clipSpaceOffset = Vector2(0.0f, 0.0f);
+            Vector2 m_clipSpaceOffsetPrev = Vector2(0.0f, 0.0f);
+
+            // Scale factor to apply to computed motion vectors
+            Vector2 m_motionVectorScale = Vector2{ 1.f, 1.f };
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;
