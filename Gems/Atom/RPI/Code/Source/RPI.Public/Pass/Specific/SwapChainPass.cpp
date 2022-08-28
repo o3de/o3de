@@ -14,6 +14,34 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
+#include <AzCore/Console/Console.h>
+
+AZ_CVAR(
+    float,
+    r_renderScale,
+    2.f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "When set to a number greater than 1.0 (the minimum allowed), renders the scene at a reduced resolution, "
+    "relying on FSR2 or some other pass to upscale the rendered output to the final display.");
+
+AZ_CVAR(
+    float,
+    r_renderScaleMin,
+    1.f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "The minimum render scale can be used to enforce the maximum resolution the scene can render at prior to upscale. Increasing "
+    "this minimum from 1.0 can be used to conserve some memory needed to allocate transient render targets.");
+
+AZ_CVAR(
+    float,
+    r_renderScaleMax,
+    3.f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "The render scale allowed is capped at this amount (defaults to a maximum 3x upscale).");
+
 namespace AZ
 {
     namespace RPI
@@ -78,6 +106,29 @@ namespace AZ
                       swapChainOutput->m_slotType == PassSlotType::InputOutput,
                       "PassTemplate used to create SwapChainPass must have an InputOutput called PipelineOutput");
 
+            PassAttachmentBinding* renderOutput = FindAttachmentBinding(Name("RenderOutput"));
+            if (renderOutput)
+            {
+                // A pipeline may optionally define a render output attachment as a logical input/output.
+                // This attachment isn't actually tied to a physically backed render target, but is used
+                // to control render resolution, which may be lower than the final pipeline output. Passes
+                // that render the scene prior to UI and various post-processing passes will target the
+                // render output attachment by default.
+
+                if (!m_renderOutputAttachment)
+                {
+                    m_renderOutputAttachment = aznew PassAttachment;
+                    m_renderOutputAttachment->m_name = "RenderOutput";
+                    m_renderOutputAttachment->m_path = "RenderOutput";
+                }
+
+                // Initialize the render output descriptor to the swapchain image descriptor. The actual
+                // render scale is adjusted each frame.
+                m_renderOutputAttachment->m_descriptor.m_image = swapChainImageDesc;
+
+                renderOutput->SetAttachment(m_renderOutputAttachment);
+            }
+
             swapChainOutput->SetAttachment(m_swapChainAttachment);
         }
 
@@ -96,6 +147,20 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
+            if (m_renderOutputAttachment)
+            {
+
+                // If the pipeline exposes a RenderOutput attachment, modulate the render target
+                // size based on the r_renderScale cvars.
+                m_currentRenderScale = AZ::GetClamp((float)r_renderScale, (float)r_renderScaleMin, (float)r_renderScaleMax);
+                float invRenderScale = 1.f / m_currentRenderScale;
+
+                m_renderOutputAttachment->m_descriptor.m_image.m_size.m_width =
+                    aznumeric_cast<uint32_t>(invRenderScale * m_swapChainDimensions.m_imageWidth);
+                m_renderOutputAttachment->m_descriptor.m_image.m_size.m_height =
+                    aznumeric_cast<uint32_t>(invRenderScale * m_swapChainDimensions.m_imageHeight);
+            }
+
             ParentPass::BuildInternal();
         }
 
@@ -109,6 +174,11 @@ namespace AZ
                 m_windowContext->GetSwapChain(m_swapChainMode)->GetImageCount() == 0)
             {
                 return;
+            }
+
+            if (m_renderOutputAttachment && r_renderScale != m_currentRenderScale)
+            {
+                QueueForBuildAndInitialization();
             }
 
             RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();

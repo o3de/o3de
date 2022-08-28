@@ -8,12 +8,31 @@
 #include <PostProcessing/Fsr2TaaUpscalePass.h>
 
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Console/Console.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
+
+AZ_CVAR_EXTERNED(float, r_renderScaleMin);
+
+AZ_CVAR(
+    bool,
+    r_fsr2SharpeningEnabled,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Set to enable FSR2's built-in contrast adaptive sharpening.");
+
+AZ_CVAR(
+    float,
+    r_fsr2SharpeningStrength,
+    0.8f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "If FSR2 sharpening is enabled, modulates the strenght of the sharpening.");
 
 namespace AZ::Render
 {
@@ -84,14 +103,16 @@ namespace AZ::Render
             fsr2Desc.flags |= FFX_FSR2_ENABLE_DYNAMIC_RESOLUTION;
         }
 
-        RHI::ImageDescriptor& inputColorDesc = m_inputColor->GetAttachment()->m_descriptor.m_image;
-        fsr2Desc.maxRenderSize.width = inputColorDesc.m_size.m_width;
-        fsr2Desc.maxRenderSize.height = inputColorDesc.m_size.m_height;
+        RHI::ImageDescriptor& outputColorDesc = m_outputColor->GetAttachment()->m_descriptor.m_image;
+        fsr2Desc.displaySize.width = outputColorDesc.m_size.m_width;
+        fsr2Desc.displaySize.height = outputColorDesc.m_size.m_height;
 
-        // TODO: FSR2 Upscale
-        fsr2Desc.displaySize.width = fsr2Desc.maxRenderSize.width;
-        fsr2Desc.displaySize.height = fsr2Desc.maxRenderSize.height;
+        float invRenderScaleMin = 1.f / r_renderScaleMin;
+        fsr2Desc.maxRenderSize.width = aznumeric_cast<uint32_t>(invRenderScaleMin * fsr2Desc.displaySize.width);
+        fsr2Desc.maxRenderSize.height = aznumeric_cast<uint32_t>(invRenderScaleMin * fsr2Desc.displaySize.height);
 
+        // Check if the flags or render/display dimensions since the last time the context was created (or
+        // if the context was created at all) and create the FSR2 context if needed.
         if (memcmp(&fsr2Desc, &m_fsr2ContextDesc, sizeof(FfxFsr2ContextDescription)) != 0)
         {
             if (IsFsr2ContextValid())
@@ -133,6 +154,11 @@ namespace AZ::Render
         m_outputColor = FindAttachmentBinding(Name{ "OutputColor" });
         AZ_Error("Fsr2TaaUpscalePass", m_outputColor, "Fsr2TaaUpscalePass missing OutputColor attachment.");
 
+        // Synchronize the attachment size with the pipeline output
+        RPI::Ptr<RPI::PassAttachment> output = FindOwnedAttachment(Name{ "OutputColor" });
+        output->Update();
+        m_outputColor->SetAttachment(output);
+
         MaybeCreateFsr2Context();
     }
 
@@ -145,47 +171,43 @@ namespace AZ::Render
 
         params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
-        // Synchronize the attachment size with the pipeline output
-        RPI::Ptr<RPI::PassAttachment> output = FindOwnedAttachment(Name{ "OutputColor" });
-        output->Update();
-        m_outputColor->SetAttachment(output);
+        RHI::ImageDescriptor& inputColorDesc = m_inputColor->GetAttachment()->m_descriptor.m_image;
+        m_fsr2DispatchDesc.renderSize.width = inputColorDesc.m_size.m_width;
+        m_fsr2DispatchDesc.renderSize.height = inputColorDesc.m_size.m_height;
 
-        // TODO: Apply upscale, query this jitter in the motion vector pass
-        m_fsr2DispatchDesc.renderSize.width = m_fsr2ContextDesc.displaySize.width;
-        m_fsr2DispatchDesc.renderSize.height = m_fsr2ContextDesc.displaySize.height;
-
+        // The motion vector scale * motion vector produces a vector with a length given in pixel units.
+        // Negation is needed because we compute motion as (current clip position - previous clip position)
+        // but FSR2 expects the additive inverse.
         m_fsr2DispatchDesc.motionVectorScale.x = aznumeric_cast<float>(m_fsr2DispatchDesc.renderSize.width);
         m_fsr2DispatchDesc.motionVectorScale.y = aznumeric_cast<float>(m_fsr2DispatchDesc.renderSize.height);
 
         // Determine the jitter offset based on current render scale. The sequence length grows as a function
         // of the upscale amount. The FSR2 provided jitter sequence is a Halton sequence (outputs are in
         // unit pixel space).
-        int jitterPhaseCount = ffxFsr2GetJitterPhaseCount(m_fsr2ContextDesc.displaySize.width, m_fsr2ContextDesc.displaySize.width);
-        ffxFsr2GetJitterOffset(
-            &m_fsr2DispatchDesc.jitterOffset.x,
-            &m_fsr2DispatchDesc.jitterOffset.y,
-            ++m_frameCount,
-            jitterPhaseCount);
+        int jitterPhaseCount = ffxFsr2GetJitterPhaseCount(m_fsr2DispatchDesc.renderSize.width, m_fsr2ContextDesc.displaySize.width);
+        ffxFsr2GetJitterOffset(&m_fsr2DispatchDesc.jitterOffset.x, &m_fsr2DispatchDesc.jitterOffset.y, ++m_frameCount, jitterPhaseCount);
 
         // Transfer from [-0.5, 0.5] to [-1/w, 1/w] in x and [-1/h, 1/h] in y
         Vector2 clipSpaceJitter{ 2.f * m_fsr2DispatchDesc.jitterOffset.x / m_fsr2DispatchDesc.renderSize.width,
-                                 2.f * m_fsr2DispatchDesc.jitterOffset.y / m_fsr2DispatchDesc.renderSize.height };
+                                 -2.f * m_fsr2DispatchDesc.jitterOffset.y / m_fsr2DispatchDesc.renderSize.height };
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
-        view->SetClipSpaceOffset(clipSpaceJitter.GetX(), clipSpaceJitter.GetY());
+        view->SetClipSpaceOffset(-clipSpaceJitter.GetX(), -clipSpaceJitter.GetY());
+        // FSR2 expects negative velocities in the motion vector buffer (current - previous clip position)
+        view->SetMotionVectorScale(-1.f, -1.f);
 
         Vector2 nearFar = view->GetClipNearFar();
-        m_fsr2DispatchDesc.cameraNear = nearFar.GetX();
-        m_fsr2DispatchDesc.cameraFar = nearFar.GetY();
+        // TODO: Fix this when the near and far planes are actually fixed in the view
+        m_fsr2DispatchDesc.cameraNear = nearFar.GetY();
+        m_fsr2DispatchDesc.cameraFar = nearFar.GetX();
 
         const AZ::Matrix4x4& viewToClip = view->GetViewToClipMatrix();
         // TODO: this is an ugly way to compute FOV (assumes perspective RH view-to-clip matrix construction)
         float viewToClip_2_2 = viewToClip.GetRow(1).GetY();
         m_fsr2DispatchDesc.cameraFovAngleVertical = 2.f / AZ::Atan(viewToClip_2_2);
 
-        // TODO: Drive from FSR2 settings
-        m_fsr2DispatchDesc.enableSharpening = true;
-        m_fsr2DispatchDesc.sharpness = 0.5f;
+        m_fsr2DispatchDesc.enableSharpening = r_fsr2SharpeningEnabled;
+        m_fsr2DispatchDesc.sharpness = r_fsr2SharpeningStrength;
 
         double currentTimeMS = RHI::RHISystemInterface::Get()->GetCpuFrameTime();
         m_fsr2DispatchDesc.frameTimeDelta = aznumeric_cast<float>(currentTimeMS - m_lastFrameTimeMS);
@@ -200,14 +222,10 @@ namespace AZ::Render
     void Fsr2TaaUpscalePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
         frameGraph.UseAttachment(
-            m_inputColor->m_unifiedScopeDesc.GetAsImage(),
-            m_inputColor->GetAttachmentAccess(),
-            RHI::ScopeAttachmentUsage::Shader);
+            m_inputColor->m_unifiedScopeDesc.GetAsImage(), m_inputColor->GetAttachmentAccess(), RHI::ScopeAttachmentUsage::Shader);
 
         frameGraph.UseAttachment(
-            m_inputDepth->m_unifiedScopeDesc.GetAsImage(),
-            m_inputDepth->GetAttachmentAccess(),
-            RHI::ScopeAttachmentUsage::Shader);
+            m_inputDepth->m_unifiedScopeDesc.GetAsImage(), m_inputDepth->GetAttachmentAccess(), RHI::ScopeAttachmentUsage::Shader);
 
         frameGraph.UseAttachment(
             m_inputMotionVectors->m_unifiedScopeDesc.GetAsImage(),
@@ -215,9 +233,7 @@ namespace AZ::Render
             RHI::ScopeAttachmentUsage::Shader);
 
         frameGraph.UseAttachment(
-            m_outputColor->m_unifiedScopeDesc.GetAsImage(),
-            m_outputColor->GetAttachmentAccess(),
-            RHI::ScopeAttachmentUsage::Shader);
+            m_outputColor->m_unifiedScopeDesc.GetAsImage(), m_outputColor->GetAttachmentAccess(), RHI::ScopeAttachmentUsage::Shader);
 
         for (RPI::Pass* pass : m_executeAfterPasses)
         {
