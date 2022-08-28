@@ -72,7 +72,7 @@ namespace AzFramework
         void FileExistsRequest(AZ::IO::FileRequest* request);
         void FileMetaDataRetrievalRequest(AZ::IO::FileRequest* request);
         AZ::u32 FindFileInCache(const AZ::IO::RequestPath& filePath) const;
-        void EstimateCompletionTimeForRequest(AZ::IO::FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+        void EstimateCompletionTimeForRequest(AZ::IO::FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
             const AZ::IO::RequestPath*& activeFile) const;
         void FlushCache(const AZ::IO::RequestPath& filePath);
         void FlushEntireCache();

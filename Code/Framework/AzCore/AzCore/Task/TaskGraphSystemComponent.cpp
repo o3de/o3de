@@ -28,8 +28,6 @@ AZ_CVAR(uint32_t, cl_taskGraphThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctor
 AZ_CVAR(uint32_t, cl_taskGraphThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph minimum number of worker threads to create after scaling the number of hw threads");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsMaxNumber, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph maximum number of worker threads to create after scaling the number of hw threads (0 indicates uncapped)");
 
-static constexpr AZ::Crc32 TaskExecutorServiceCrc = AZ_CRC_CE("TaskExecutorService");
-
 namespace AZ
 {
     void TaskGraphSystemComponent::Activate()

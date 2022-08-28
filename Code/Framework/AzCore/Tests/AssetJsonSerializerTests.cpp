@@ -18,6 +18,7 @@
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <Tests/Asset/MockLoadAssetCatalogAndHandler.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
 
 namespace JsonSerializationTests
@@ -250,6 +251,7 @@ namespace JsonSerializationTests
         {
             systemComponents.push_back(AZ::AssetManagerComponent::CreateDescriptor());
             systemComponents.push_back(AZ::JobManagerComponent::CreateDescriptor());
+            systemComponents.push_back(AZ::TaskGraphSystemComponent::CreateDescriptor());
             systemComponents.push_back(AZ::StreamerComponent::CreateDescriptor());
         }
 
