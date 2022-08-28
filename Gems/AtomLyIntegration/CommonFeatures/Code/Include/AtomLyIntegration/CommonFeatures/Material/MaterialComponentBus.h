@@ -166,51 +166,69 @@ namespace AZ
         };
         using MaterialComponentRequestBus = EBus<MaterialComponentRequests>;
 
-        //! MaterialComponent can send out notifications on the MaterialComponentNotificationBus
+        //! MaterialComponentNotificationBus notifications are sent whenever the state of the material component changes in a way that would
+        //! affect tools or consumers.
         class MaterialComponentNotifications : public ComponentBus
         {
         public:
-            //! This event is sent every time a material or property update affects UI.
+            //! This notification is sent whenever material changes are made that need to be reflected in the UI.
             virtual void OnMaterialsEdited(){};
 
-            //! This event is sent whenever the default material slot configuration is updated in the material component.
+            //! This notification is forwarded from the consumer whenever material slot layout or default values are changed.
             virtual void OnMaterialSlotLayoutChanged(){};
 
-            //! This event is sent when one or more material property changes have been applied, at most once per frame.
+            //! This notification is sent whenever the material component has completed adding or removing a batch of instances for the
+            //! material consumer to apply. The notification is not sent for individual property changes because the material component
+            //! applies property changes directly to the material instances it manages.
+            //! The notification should only be sent once per batch of changes, after material assets have been loaded, reloaded, or if a
+            //! material property change resulted in creating a new, unique instance. Other functions can be invoked through editing or
+            //! script that might also result in this notification being sent.
             virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials){};
 
-            //! This event is sent when the component has created the material instance to be used for rendering.
+            //! This notification is sent whenever the material component creates a new material instance.
             virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment){};
         };
         using MaterialComponentNotificationBus = EBus<MaterialComponentNotifications>;
 
-        //! Any component that wishes to interface with the material component must implement this bus. These functions provides the
-        //! material component with the layout, default materials, labels, and other information about all available material slots.
-        class MaterialReceiverRequests : public ComponentBus
+        //! Any component that wishes to consume materials from the material component and interface with its tools must implement this bus.
+        //! These functions provide the material component with the number, layout, default values, labels, and other information about
+        //! available material slots.
+        //! For example, the mesh and actor components implement the functions on this bus using data provided by their model assets. The
+        //! number of available LODs and material slots can change from one model asset to the next.
+        //! Components with a fixed LOD and material slot layout, like decals, might return simple constants for all of the functions or
+        //! simply use the default material slot.
+        class MaterialConsumerRequests : public ComponentBus
         {
         public:
             //! Search for a material assignment id matching lod and label substring
+            //! @param lod The index of the LOD For the requested material slot. LOD values less than zero correspond to the default
+            //! material slot or material slots without LODs.
+            //! @param label A substring that will be used to search for the name of a material slot.
             virtual MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
 
-            //! Returns a map of all material slot labels.
+            //! Returns a map of all material slot labels
             virtual MaterialAssignmentLabelMap GetMaterialLabels() const = 0;
 
             //! Returns the available material slots and default assigned materials
             virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
 
+            //! Returns a map of UV Overridable UV channel names
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };
-        using MaterialReceiverRequestBus = EBus<MaterialReceiverRequests>;
+        using MaterialConsumerRequestBus = EBus<MaterialConsumerRequests>;
 
-        //! Bus for notifying when materials embedded in or used by a source, like a model, change
-        class MaterialReceiverNotifications : public ComponentBus
+        //! Notifications sent when the state of the material consumer changes in a way that affects the material component and tools
+        class MaterialConsumerNotifications : public ComponentBus
         {
         public:
-            //! Notification that overridable material slots are available or have changed
+            //! This notification should be sent whenever the material consumer has updated its map of expected materials or their default
+            //! values. For example, the mesh and actor components send this notification after their model assets have loaded. The material
+            //! component will handle the notification and use MaterialConsumerRequestBus to enumerate all of the requested materials,
+            //! update default values, and repopulate the UI.
             virtual void OnMaterialAssignmentSlotsChanged(){};
         };
-        using MaterialReceiverNotificationBus = EBus<MaterialReceiverNotifications>;
+        using MaterialConsumerNotificationBus = EBus<MaterialConsumerNotifications>;
 
     } // namespace Render
 } // namespace AZ
