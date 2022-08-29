@@ -10,11 +10,15 @@ import unittest.mock as mock
 import unittest
 
 import ly_test_tools.o3de.editor_test_utils as editor_test_utils
+import ly_test_tools._internal.pytest_plugin.exceptions as exceptions
 
 pytestmark = pytest.mark.SUITE_smoke
 
 
 class TestEditorTestUtils(unittest.TestCase):
+
+    def test_LyTestToolsExceptions_RaisesException(self):
+        raise exceptions.LyTestToolsFrameworkException(Exception("Some inner exception."))
 
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, mock_kill_processes_named):
@@ -129,7 +133,8 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_log = 'mock log info'
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
-            assert f'[{mock_logname}]  {mock_log}' == editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
+            assert f'[{mock_logname}]  {mock_log}' == editor_test_utils.retrieve_editor_log_content(0, mock_logname,
+                                                                                                    mock_workspace)
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())

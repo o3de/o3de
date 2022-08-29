@@ -9,6 +9,8 @@ import datetime
 import json
 import socket
 
+import ly_test_tools._internal.pytest_plugin.exceptions as exceptions
+
 
 class FilebeatExn(Exception):
     pass
@@ -51,7 +53,7 @@ class FilebeatClient(object):
         try:
             self._socket.connect((self._filebeat_host, self._filebeat_port))
         except (ConnectionError, socket.timeout):
-            raise FilebeatExn("Failed to connect to Filebeat") from None
+            raise exceptions.LyTestToolsFrameworkException(FilebeatExn("Failed to connect to Filebeat")) from None
 
     def _send_data(self, data):
         total_sent = 0

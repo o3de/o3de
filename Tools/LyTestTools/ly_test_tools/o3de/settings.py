@@ -14,6 +14,7 @@ import re
 import os
 
 import ly_test_tools.environment.file_system
+import ly_test_tools._internal.pytest_plugin.exceptions as exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,7 @@ class JsonSettings(object):
                 obj = obj[token]
             return obj
         except KeyError as err:
-            logger.error(f'KeyError when retrieving {key_path} from file {self._file_path}: {err}')
+            logger.error(f'KeyError originating when retrieving {key_path} from file {self._file_path}: {err}')
             return default_value
 
     def set_key(self, key_path, value):
@@ -187,7 +188,7 @@ class JsonSettings(object):
             obj[path_tokens[-1]] = value
             self._modified = True
         except KeyError as err:
-            logger.error(f'KeyError when setting {key_path} from file {self._file_path}: {err}')
+            logger.error(f'KeyError originating from LyTT when setting {key_path} from file {self._file_path}: {err}')
 
     def remove_key(self, key_path):
         """
@@ -211,7 +212,7 @@ class JsonSettings(object):
             else:
                 logger.warning(f'Could not remove key {key} from file {self._file_path}')
         except KeyError as err:
-            logger.error(f'KeyError when removing {key_path} from file {self._file_path}: {err}')
+            logger.error(f'KeyError originating from LyTT when removing {key_path} from file {self._file_path}: {err}')
 
 
 class RegistrySettings(JsonSettings):
@@ -246,7 +247,7 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
     """
 
     if not os.path.isfile(settings_file):
-        raise IOError(f"Invalid file and/or path {settings_file}.")
+        raise exceptions.LyTestToolsFrameworkException(IOError(f"Invalid file and/or path {settings_file}."))
 
     match_obj = None
     document = None
@@ -277,7 +278,8 @@ def _edit_text_settings_file(settings_file, setting, value, comment_char=""):
                 print(line)
 
     except PermissionError as error:
-        logger.warning(f"PermissionError, possibly due to ({settings_file}) already being open. Error: {error}")
+        logger.warning(f"PermissionError originating from LyTT, possibly due to ({settings_file}) already being open. "
+                       f"Error: {error}")
     finally:
         if document is not None:
             document.close()
