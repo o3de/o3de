@@ -7,6 +7,5 @@
 #
 
 set(FILES
-    Source/AtomImGuiToolsSystemComponent.cpp
-    Source/AtomImGuiToolsSystemComponent.h
+    Include/AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h
 )

@@ -14,10 +14,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
-    BUILD_DEPENDENCIES
-        INTERFACE
-            Gem::Atom_RPI.Public
-            AZ::AzCore
 )
 
 ly_add_target(
