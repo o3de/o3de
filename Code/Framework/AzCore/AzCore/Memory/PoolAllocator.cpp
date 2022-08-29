@@ -22,6 +22,10 @@
 
 #include <AzCore/std/parallel/containers/lock_free_intrusive_stamped_stack.h>
 
+#define POOL_ALLOCATION_PAGE_SIZE (size_t{4} * size_t{1024})
+#define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
+#define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
+
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
@@ -711,11 +715,11 @@ namespace AZ
     //=========================================================================
     PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor& desc)
         : m_pageAllocator(desc.m_pageAllocator ? desc.m_pageAllocator : &AllocatorInstance<SystemAllocator>::Get())
-        , m_allocator(this, desc.m_pageSize, desc.m_minAllocationSize, desc.m_maxAllocationSize)
+        , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
         , m_staticDataBlock(nullptr)
         , m_numStaticPages(desc.m_numStaticPages)
         , m_isDynamic(desc.m_isDynamic)
-        , m_pageSize(desc.m_pageSize)
+        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
     {
         if (m_numStaticPages)
         {
@@ -1017,9 +1021,9 @@ namespace AZ
         , m_pageAllocator(desc.m_pageAllocator)
         , m_staticDataBlock(nullptr)
         , m_numStaticPages(desc.m_numStaticPages)
-        , m_pageSize(desc.m_pageSize)
-        , m_minAllocationSize(desc.m_minAllocationSize)
-        , m_maxAllocationSize(desc.m_maxAllocationSize)
+        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
+        , m_minAllocationSize(POOL_ALLOCATION_MIN_ALLOCATION_SIZE)
+        , m_maxAllocationSize(POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
         , m_isDynamic(desc.m_isDynamic)
     {
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT

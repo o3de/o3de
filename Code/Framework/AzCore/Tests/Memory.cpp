@@ -602,13 +602,6 @@ namespace UnitTest
             struct Descriptor
                 : public ThreadPoolBase<MyThreadPoolAllocator>::Descriptor
             {
-                Descriptor()
-                    : ThreadPoolBase<MyThreadPoolAllocator>::Descriptor()
-                {
-                    m_pageSize = 64 * 1024;
-                    m_minAllocationSize = 1024;
-                    m_maxAllocationSize = 1024;
-                }
             };
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
@@ -742,11 +735,12 @@ namespace UnitTest
             }
             //////////////////////////////////////////////////////////////////////////
 
-            // Our pools will support only 1024 byte allocations
+            // Our pools will support only 512 byte allocations
             AZ::AllocatorInstance<MyThreadPoolAllocator>::Create();
 
-            void* pooled1024 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(1024, 1024);
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled1024);
+            void* pooled512 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(512, 512);
+            ASSERT_TRUE(pooled512);
+            AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().DeAllocate(pooled512);
 
             AZ_TEST_START_TRACE_SUPPRESSION;
             void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048);

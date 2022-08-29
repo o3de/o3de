@@ -37,17 +37,11 @@ namespace AZ
         {
             AZ_TYPE_INFO(Descriptor, "{DB802BA9-33E0-4E7A-A79B-CC6EBC39DC82}")
             Descriptor()
-                : m_pageSize(4 * 1024)
-                , m_minAllocationSize(8)
-                , m_maxAllocationSize(512)
-                , m_isDynamic(true)
+                : m_isDynamic(true)
                 , m_numStaticPages(0)
                 , m_pageAllocator(nullptr)
 
             {}
-            size_t              m_pageSize;             ///< Page size in bytes.
-            size_t              m_minAllocationSize;    ///< Minimal allocation size >= 8 bytes and power of 2
-            size_t              m_maxAllocationSize;    ///< Maximum allocation size
             bool                m_isDynamic;            ///< True if we allocate pages at runtime, false if we allocate at create.
             /**
              * Number of static pages defined how many pages will be allocated at the start. If the m_isDynamic is true
@@ -209,20 +203,6 @@ namespace AZ
                 }
 
                 m_desc = descriptor;
-
-                if (m_desc.m_minAllocationSize < 8)
-                {
-                    m_desc.m_minAllocationSize = 8;
-                }
-                if (m_desc.m_maxAllocationSize < m_desc.m_minAllocationSize)
-                {
-                    m_desc.m_maxAllocationSize = m_desc.m_minAllocationSize;
-                }
-
-                if (m_desc.m_allocationRecords && m_desc.m_isMemoryGuards)
-                {
-                    m_desc.m_maxAllocationSize = AZ_SIZE_ALIGN_UP(m_desc.m_maxAllocationSize + AZ_SIZE_ALIGN_UP(sizeof(Debug::GuardValue), m_desc.m_minAllocationSize), m_desc.m_minAllocationSize);
-                }
 
                 bool isReady = static_cast<Base*>(this)->Create(m_desc);
 
