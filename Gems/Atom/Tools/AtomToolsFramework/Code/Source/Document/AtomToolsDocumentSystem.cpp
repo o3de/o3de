@@ -150,7 +150,7 @@ namespace AtomToolsFramework
     {
         for (const auto& documentType : m_documentTypes)
         {
-            if (documentType.IsSupportedExtensionToCreate(path))
+            if (documentType.IsSupportedExtensionToCreate(path) || documentType.IsSupportedExtensionToOpen(path))
             {
                 return CreateDocumentFromType(documentType);
             }
@@ -188,7 +188,7 @@ namespace AtomToolsFramework
             DisplayErrorMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document could not be created"),
-                QObject::tr("Failed to create: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QObject::tr("Failed to create document from file type: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
 
