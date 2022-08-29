@@ -11,6 +11,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/Framework/Configuration.h>
+#include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorDeprecationData.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h>
 
@@ -23,6 +24,7 @@ namespace ScriptCanvasEditor
     class EditorScriptCanvasComponent final
         : public AzToolsFramework::Components::EditorComponentBase
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private EditorScriptCanvasComponentRequestBus::Handler
     {
     public:
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
@@ -64,6 +66,9 @@ namespace ScriptCanvasEditor
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
         void SetPrimaryAsset(const AZ::Data::AssetId&) override;
+
+        void SetAssetId(const SourceHandle& assetId) override;
+        bool HasAssetId() const override;
 
     private:
         Configuration m_configuration;
