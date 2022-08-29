@@ -64,6 +64,15 @@ namespace AWSCore
             }
         }
 
+        {
+            AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
+            auto credentials = m_instanceProfileCredentailsProvider->GetAWSCredentials();
+            if (!credentials.IsEmpty())
+            {
+                return m_instanceProfileCredentailsProvider;
+            }
+        }
+
         return nullptr;
     }
 
@@ -88,6 +97,9 @@ namespace AWSCore
             SetProfileCredentialsProvider(Aws::MakeShared<Aws::Auth::ProfileConfigFileAWSCredentialsProvider>(
                 AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG, m_profileName.c_str()));
         }
+
+        SetInstanceProfileCredentialProvider(
+            Aws::MakeShared<Aws::Auth::InstanceProfileCredentialsProvider>(AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG));
     }
 
     void AWSDefaultCredentialHandler::SetEnvironmentCredentialsProvider(
@@ -102,11 +114,18 @@ namespace AWSCore
         m_profileCredentialsProvider = credentialsProvider;
     }
 
+    void AWSDefaultCredentialHandler::SetInstanceProfileCredentialProvider(
+        std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> credentialsProvider)
+    {
+        m_instanceProfileCredentailsProvider = credentialsProvider;
+    }
+
     void AWSDefaultCredentialHandler::ResetCredentialsProviders()
     {
         // Must reset credential provider before AWSNativeSDKs shutdown
         AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
         m_environmentCredentialsProvider.reset();
         m_profileCredentialsProvider.reset();
+        m_instanceProfileCredentailsProvider.reset();
     }
 } // namespace AWSCore
