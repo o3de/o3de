@@ -46,6 +46,7 @@ class TestAssetProcessor(object):
     @mock.patch('ly_test_tools.o3de.asset_processor.AssetProcessor.connect_socket')
     @mock.patch('ly_test_tools.o3de.asset_processor.ASSET_PROCESSOR_PLATFORM_MAP', {'foo': 'bar'})
     @mock.patch('time.sleep', mock.MagicMock())
+    @mock.patch('tempfile.TemporaryDirectory', mock.MagicMock())
     def test_Start_NoneRunning_ProcStarted(self, mock_connect, mock_popen, mock_workspace):
         mock_ap_path = 'mock_ap_path'
         mock_workspace.asset_processor_platform = 'foo'
@@ -118,9 +119,8 @@ class TestAssetProcessor(object):
             ('NOT_RUNNING', None, None, False, 0, False),
             ('NO_CONTROL', mock.MagicMock(), None, False, 0, False),
             ('NO_QUIT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False), 0, False),
-            (
-            'IO_ERROR', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False, side_effect=IOError),
-            0, False),
+            ('IO_ERROR',
+             mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False, side_effect=IOError), 0, False),
             ('TIMEOUT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, False),
             ('NO_STOP', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, True),
         ],
@@ -150,6 +150,7 @@ class TestAssetProcessor(object):
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
+    @mock.patch('tempfile.TemporaryDirectory', mock.MagicMock())
     def test_BatchProcess_NoFastscanBatchCompletes_Success(self, mock_run, mock_workspace):
         mock_workspace.project = None
         mock_workspace.paths.project.return_value = mock_project_path
@@ -161,12 +162,14 @@ class TestAssetProcessor(object):
         assert result
         mock_run.assert_called_once_with([apb_path,
                                           f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"',
-                                          '--logDir', under_test.log_root()],
-                                         close_fds=True, capture_output=False,
+                                          '--logDir', f'{under_test.log_root()}'],
+                                         close_fds=True,
+                                         capture_output=False,
                                          timeout=1)
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
+    @mock.patch('tempfile.TemporaryDirectory', mock.MagicMock())
     def test_BatchProcess_FastscanBatchCompletes_Success(self, mock_run, mock_workspace):
         mock_workspace.project = mock_project
         mock_workspace.paths.project.return_value = mock_project_path
@@ -179,18 +182,18 @@ class TestAssetProcessor(object):
         assert result
         mock_run.assert_called_once_with([apb_path, '--zeroAnalysisMode',
                                           f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"',
-                                          '--logDir', under_test.log_root()],
-                                         close_fds=True, capture_output=False,
+                                          '--logDir', f'{under_test.log_root()}'],
+                                         close_fds=True,
+                                         capture_output=False,
                                          timeout=1)
-
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
+    @mock.patch('tempfile.TemporaryDirectory', mock.MagicMock())
     def test_BatchProcess_ReturnCodeFail_Failure(self, mock_run, mock_workspace):
         mock_workspace.project = None
         mock_workspace.paths.project.return_value = mock_project_path
         under_test = ly_test_tools.o3de.asset_processor.AssetProcessor(mock_workspace)
-        apb_path = mock_workspace.paths.asset_processor_batch()
         mock_run.return_value.returncode = 1
 
         result, _ = under_test.batch_process(None, False)
@@ -198,7 +201,6 @@ class TestAssetProcessor(object):
         assert not result
         mock_run.assert_called_once()
         assert f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"' in mock_run.call_args[0][0]
-
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     def test_EnableAssetProcessorPlatform_AssetProcessorObject_Updated(self, mock_workspace):

@@ -239,7 +239,7 @@ namespace LandscapeCanvasEditor
         // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
-        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+        static const QStringList preferredCategories = { "Vegetation", "Graphics/Mesh" };
 
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
         for (const auto& categoryName : preferredCategories)
