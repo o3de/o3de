@@ -357,7 +357,7 @@ namespace AzToolsFramework
 
     ReflectedPropertyEditor::~ReflectedPropertyEditor()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->InternalReflectedPropertyEditorEvents::Bus::Handler::BusDisconnect();
         m_impl->PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
@@ -484,7 +484,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::ClearInstances()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->SaveExpansion();
         m_impl->ReturnAllToPool();
@@ -872,7 +872,7 @@ namespace AzToolsFramework
     /// Must call after Add/Remove instance for the change to be applied
     void ReflectedPropertyEditor::InvalidateAll(const char* filter)
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         setUpdatesEnabled(false);
         m_impl->m_selectedRow = nullptr;
@@ -1008,7 +1008,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::InvalidateAttributesAndValues()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         for (InstanceDataHierarchy& instance : m_impl->m_instances)
         {
@@ -1040,7 +1040,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
@@ -2006,6 +2006,9 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerAddItem(PropertyRowWidget* widget, InstanceDataNode* pContainerNode)
     {
+        // Release the last prompt if its present
+        Q_EMIT releasePrompt();
+
         // Do expansion before modifying container as container modifications will invalidate and disallow the expansion until a later queued refresh
         OnPropertyRowExpandedOrContracted(widget, pContainerNode, true, true);
 
@@ -2113,6 +2116,11 @@ namespace AzToolsFramework
             int dialogFlag = -1;
             connect(buttonBox, &QDialogButtonBox::accepted, &dialog, [&dialogFlag]() {dialogFlag = 1; });
             connect(buttonBox, &QDialogButtonBox::rejected, &dialog, [&dialogFlag]() {dialogFlag = 0; });
+            connect(this, &ReflectedPropertyEditor::releasePrompt, &dialog, [&dialogFlag, &dialog]() 
+            {
+                dialog.reject();
+                dialogFlag = 0;
+            });
             layout->addWidget(buttonBox);
 
             // Make sure the dialog stays on top ready for dropping onto
@@ -2120,16 +2128,8 @@ namespace AzToolsFramework
             dialog.show();
             dialog.adjustSize();
 
-            m_releasePrompt = false;
-
             while (dialogFlag < 0)
             {
-                if (m_releasePrompt)
-                {
-                    dialogFlag = 0;
-                    dialog.reject();
-                    break;
-                }
 
                 qApp->processEvents();
             }

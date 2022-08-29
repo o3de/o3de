@@ -14,8 +14,8 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <Prefab/PrefabTestFixture.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
-#include <Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AZTestShared/Utils/Utils.h>
 
 namespace UnitTest
 {
@@ -34,8 +34,6 @@ namespace UnitTest
             AllocatorsTestFixture::SetUp();
 
             AZ::ComponentApplicationBus::Handler::BusConnect();
-
-            ASSERT_TRUE(m_temporaryDirectory.IsValid());
 
             m_localFileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
 
@@ -169,7 +167,7 @@ namespace UnitTest
         AZ::SerializeContext m_context;
         AZ::JsonRegistrationContext m_jsonContext;
         AZStd::unique_ptr<AZ::IO::LocalFileIO> m_localFileIo;
-        ScopedTemporaryDirectory m_temporaryDirectory;
+        AZ::Test::ScopedAutoTempDirectory m_temporaryDirectory;
         AZStd::unique_ptr<AZ::Entity> m_systemEntity;
 
         AZ::IO::FileIOBase* m_prevIoBase{};

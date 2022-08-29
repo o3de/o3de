@@ -214,4 +214,55 @@ namespace AtomToolsFramework
 
         return true;
     }
+
+    AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(
+        AZ::RPI::MaterialPropertyValue& propertyValue, bool hasEnumValues)
+    {
+        if (propertyValue.Is<bool>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Bool;
+        }
+        if (propertyValue.Is<AZ::s32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Int;
+        }
+        if (propertyValue.Is<AZ::u32>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::UInt;
+        }
+        if (propertyValue.Is<float>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Float;
+        }
+        if (propertyValue.Is<AZ::Vector2>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector2;
+        }
+        if (propertyValue.Is<AZ::Vector3>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector3;
+        }
+        if (propertyValue.Is<AZ::Vector4>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Vector4;
+        }
+        if (propertyValue.Is<AZ::Color>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Color;
+        }
+        if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
+        {
+            return AZ::RPI::MaterialPropertyDataType::Image;
+        }
+        if (propertyValue.Is<AZStd::string>())
+        {
+            return hasEnumValues ? AZ::RPI::MaterialPropertyDataType::Enum : AZ::RPI::MaterialPropertyDataType::Image;
+        }
+
+        return AZ::RPI::MaterialPropertyDataType::Invalid;
+    }
 } // namespace AtomToolsFramework

@@ -2292,7 +2292,7 @@ namespace AZ
                         stackLines[i][lineLength] = '\n';
                         stackLines[i][lineLength + 1] = 0;
                     }
-                    AZ::Debug::Trace::Output("HpAllocator", stackLines[i]);
+                    AZ::Debug::Trace::Instance().Output("HpAllocator", stackLines[i]);
                 }
             }
         }

@@ -63,6 +63,21 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FI
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
+# Path to the directory that the result of native runs will be stored in.
+set(LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR "${GTEST_XML_OUTPUT_DIR}")
+
+# Path to the directory that the result of python runs will be stored in.
+set(LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR "${PYTEST_XML_OUTPUT_DIR}")
+
+# If we are not provided a path to the Instrumentation bin,
+# set LY_TEST_IMPACT to false so that our tests don't get added
+# and TIAF doesn't get built.
+if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
+    set(LY_TEST_IMPACT_ACTIVE true)
+else()
+    set(LY_TEST_IMPACT_ACTIVE false)
+endif()
+
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
@@ -363,25 +378,22 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
         # Extract just the target name, ignoring the namespace
         if(TARGET ${qualified_target_name})
             set(target_to_add "")
-            string(REPLACE "::" ";" target_name_components ${qualified_target_name})
-            list(LENGTH target_name_components num_name_components)
-            if(num_name_components GREATER 1)
-                list(GET target_name_components 0 target_namespace)
-                list(GET target_name_components 1 target_name)
-                set(target_to_add ${target_name})
-            else()
-                set(target_to_add ${target_name})
-            endif()
-
-            if(NOT ${target_to_add} STREQUAL "")
+            get_target_property(is_imported ${qualified_target_name} IMPORTED)
+            get_target_property(is_gem_module ${qualified_target_name} GEM_MODULE)
+            # Skip third party dependencies
+            if(NOT is_imported OR is_gem_module)
+                string(REPLACE "::" ";" target_name_components ${qualified_target_name})
+                list(LENGTH target_name_components num_name_components)
+                if(num_name_components GREATER 1)
+                    list(GET target_name_components 1 target_name)
+                    set(target_to_add ${target_name})
+                else()
+                    set(target_to_add ${qualified_target_name})
+                endif()
                 # Extract the targets this target may alias
                 ly_extract_aliased_target_dependencies(${target_to_add} de_aliased_targets)
                 foreach(de_aliased_target ${de_aliased_targets})
-                    # Skip third party dependencies
-                    get_target_property(is_imported ${qualified_target_name} IMPORTED)
-                    if(NOT is_imported)
-                        list(APPEND dependencies "\"${de_aliased_target}\"")
-                    endif()
+                    list(APPEND dependencies "\"${de_aliased_target}\"")
                 endforeach()
             endif()
         endif()
@@ -390,6 +402,22 @@ function(ly_extract_target_dependencies INPUT_DEPENDENCY_LIST OUTPUT_DEPENDENCY_
     # Convert to a comma separated list
     string (REPLACE ";" ",\n" dependencies "${dependencies}")
     set(${OUTPUT_DEPENDENCY_LIST} ${dependencies} PARENT_SCOPE)
+endfunction()
+
+#! ly_get_target_type: retrieves the type of target (either production or test target).
+#
+# \arg:TARGET target to get the type for
+# \arg:TARGET_TYPE the retrieved target type
+function(ly_get_target_type TARGET TARGET_TYPE)
+    get_property(O3DE_ALL_TESTS_DE_NAMESPACED GLOBAL PROPERTY O3DE_ALL_TESTS_DE_NAMESPACED)
+    if(${target_name} IN_LIST O3DE_ALL_TESTS_DE_NAMESPACED)
+        set(target_type "test")
+    else()
+        set(target_type "production")
+    endif()
+
+    set(${TARGET_TYPE} ${target_type} PARENT_SCOPE)
+
 endfunction()
 
 #! ly_test_impact_export_source_target_mappings: exports the static source to target mappings to file.
@@ -410,6 +438,9 @@ function(ly_test_impact_export_source_target_mappings MAPPING_TEMPLATE_FILE)
         set(target_name ${target})
         get_target_property(target_path_abs ${target} SOURCE_DIR)
         file(RELATIVE_PATH target_path ${LY_ROOT_FOLDER} ${target_path_abs})
+
+        # Target type
+        ly_get_target_type(${target_name} target_type)
 
         # Output name
         get_target_property(target_output_name ${target} OUTPUT_NAME)
@@ -577,18 +608,37 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
 
 endfunction()
 
+#! ly_test_impact_clean_directories: Removes the artifact directory, test output directory, temp directory
+#! and the persistent directories containing TIAF configs for each build configuration.
+function(ly_test_impact_clean_directories)
+
+    # Clean the output folders of native and python tests to ensure only the most current run is in there.
+    file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
+    message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
+    file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
+    message("${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}")
+
+    # For each build configuration type, delete the persistent and temp folders
+    foreach(config_type ${LY_CONFIGURATION_TYPES})
+        file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}")
+        file(REMOVE_RECURSE "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
+    endforeach()
+    
+    # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
+    file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
+endfunction()
+
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
-    if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
+    if(NOT LY_TEST_IMPACT_ACTIVE)
         return()
     endif()
 
+    # Clean temporary and persistent directories
+    ly_test_impact_clean_directories()
+
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
-
-    # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_RUNTIME_TEMP_DIR}")
-    file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
 
     # Export the soruce to target mapping files
     ly_test_impact_export_source_target_mappings(

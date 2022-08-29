@@ -18,7 +18,6 @@
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 #include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiPassTree.h>
-#include <Atom/Utils/ImGuiShaderMetrics.h>
 #include <Atom/Utils/ImGuiMaterialDetails.h>
 #include <Atom/Utils/ImGuiTransientAttachmentProfiler.h>
 #include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
@@ -72,9 +71,6 @@ namespace AtomImGuiTools
 
         AZ::Render::ImGuiTransientAttachmentProfiler m_imguiTransientAttachmentProfiler;
         bool m_showTransientAttachmentProfiler = false;
-
-        AZ::Render::ImGuiShaderMetrics m_imguiShaderMetrics;
-        bool m_showShaderMetrics = false;
 
         AZ::Render::ImGuiMaterialDetails m_imguiMaterialDetails;
         bool m_showMaterialDetails = false;

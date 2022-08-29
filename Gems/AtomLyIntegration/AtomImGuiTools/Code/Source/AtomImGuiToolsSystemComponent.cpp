@@ -95,10 +95,6 @@ namespace AtomImGuiTools
                 m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);
             }
         }
-        if (m_showShaderMetrics)
-        {
-            m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
-        }
 
         m_showMaterialDetails = m_imguiMaterialDetails.Tick(m_materialDetailsController.GetMeshDrawPackets(), m_materialDetailsController.GetSelectionName().c_str());
     }
@@ -114,7 +110,6 @@ namespace AtomImGuiTools
                 AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
                     AZ::RHI::FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics, m_showTransientAttachmentProfiler);
             }
-            ImGui::MenuItem("Shader Metrics", "", &m_showShaderMetrics);
             if (ImGui::MenuItem("Material Shader Details", "", &m_showMaterialDetails))
             {
                 if (m_showMaterialDetails)

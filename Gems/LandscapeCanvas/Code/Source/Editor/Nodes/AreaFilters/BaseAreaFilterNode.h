@@ -34,12 +34,5 @@ namespace LandscapeCanvas
         {
             return BaseNode::VegetationAreaFilter;
         }
-
-        const bool ShouldShowEntityName() const override
-        {
-            // Don't show the entity name for Area Filters since they will
-            // be wrapped on a Vegetation Area it would be redundant
-            return false;
-        }
     };
 }

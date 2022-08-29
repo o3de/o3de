@@ -44,9 +44,23 @@ namespace Physics
         for (size_t colliderIndex = 0; colliderIndex < colliders.size(); colliderIndex++)
         {
             const auto& collider = colliders[colliderIndex];
-            const AZ::Color colliderColor = ((1 << colliderIndex) & invalidColliderBitArray)
-                ? colorSettings.m_errorColor
-                : (nodeDebugDrawData.m_selected ? colorSettings.m_selectedColor : colorSettings.m_defaultColor);
+            AZ::Color colliderColor;
+            if (nodeDebugDrawData.m_selected)
+            {
+                colliderColor = colorSettings.m_selectedColor;
+            }
+            else if (nodeDebugDrawData.m_hovered)
+            {
+                colliderColor = colorSettings.m_hoveredColor;
+            }
+            else if ((1 << colliderIndex) & invalidColliderBitArray)
+            {
+                colliderColor = colorSettings.m_errorColor;
+            }
+            else
+            {
+                colliderColor = colorSettings.m_defaultColor;
+            }
             debugDisplay->SetColor(colliderColor);
 
             const AZ::Transform colliderOffsetTransform =

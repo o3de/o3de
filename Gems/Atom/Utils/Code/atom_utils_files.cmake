@@ -18,8 +18,6 @@ set(FILES
     Include/Atom/Utils/ImGuiPassTree.inl
     Include/Atom/Utils/ImGuiFrameVisualizer.h
     Include/Atom/Utils/ImGuiFrameVisualizer.inl
-    Include/Atom/Utils/ImGuiShaderMetrics.h
-    Include/Atom/Utils/ImGuiShaderMetrics.inl
     Include/Atom/Utils/ImGuiShaderUtils.h
     Include/Atom/Utils/ImGuiShaderUtils.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h

@@ -116,10 +116,18 @@ set(FILES
     Source/Editor/Nodes/Shapes/DiskShapeNode.h
     Source/Editor/Nodes/Shapes/PolygonPrismShapeNode.cpp
     Source/Editor/Nodes/Shapes/PolygonPrismShapeNode.h
+    Source/Editor/Nodes/Shapes/ReferenceShapeNode.cpp
+    Source/Editor/Nodes/Shapes/ReferenceShapeNode.h
     Source/Editor/Nodes/Shapes/SphereShapeNode.cpp
     Source/Editor/Nodes/Shapes/SphereShapeNode.h
     Source/Editor/Nodes/Shapes/TubeShapeNode.cpp
     Source/Editor/Nodes/Shapes/TubeShapeNode.h
+    Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.h
+    Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h
+    Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.cpp
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.h
 )

@@ -103,6 +103,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             resize(minimumSizeHint());
 
             m_buttonActionMap.erase(buttonId);
+            m_buttonGroup->RemoveButton(buttonId);
 
             // reset current active mode if its the button being removed
             if (buttonId == m_activeButtonId)
@@ -117,6 +118,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiSwitcher::Update()
     {
+        QToolBar::repaint();
         m_widgetCallbacks.Update();
     }
 

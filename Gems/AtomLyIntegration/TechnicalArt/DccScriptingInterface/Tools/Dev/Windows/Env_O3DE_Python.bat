@@ -62,8 +62,8 @@ echo     PATH_DCCSI_PYTHON_LIB = %PATH_DCCSI_PYTHON_LIB%
 IF "%PATH_O3DE_PYTHON_INSTALL%"=="" (set "PATH_O3DE_PYTHON_INSTALL=%O3DE_DEV%\python")
 echo     PATH_O3DE_PYTHON_INSTALL = %PATH_O3DE_PYTHON_INSTALL%
 
-:: location for O3DE python 3.7 location 
-:: Note, many DCC tools (like Maya) include thier own python interpretter
+:: location for O3DE python 3.10 location 
+:: Note, many DCC tools (like Maya) include thier own python interpreter
 :: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
 IF "%DCCSI_PY_BASE%"=="" (set "DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.cmd")
@@ -81,16 +81,7 @@ echo     DCCSI_PY_DEFAULT = %DCCSI_PY_DEFAULT%
 IF "%DCCSI_PY_IDE%"=="" (set "DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe")
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
-echo.
-echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
-
-:: we should NOT add to the PATH here (this is global)
-::SET PATH=%PATH_O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
-
-:: we should NOT add to the PYTHONPATH here (this is global)
-:: add all python related paths to PYTHONPATH for package imports
-::set PYTHONPATH=%PATH_DCCSIG%;%PATH_DCCSI_PYTHON_LIB%;%PATH_O3DE_BUILD%;%PYTHONPATH%
-::echo     PYTHONPATH = %PYTHONPATH%
+::ENDLOCAL
 
 :: Set flag so we don't initialize dccsi environment twice
 SET DCCSI_ENV_PY_INIT=1

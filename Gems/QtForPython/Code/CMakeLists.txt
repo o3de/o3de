@@ -53,6 +53,7 @@ ly_add_target(
         PRIVATE
             Gem::QtForPython.Editor.Static
     RUNTIME_DEPENDENCIES
+        3rdParty::pyside2::Tools
         Gem::EditorPythonBindings.Editor
 )
 
