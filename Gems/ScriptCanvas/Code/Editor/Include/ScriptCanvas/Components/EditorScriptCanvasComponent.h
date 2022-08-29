@@ -73,5 +73,6 @@ namespace ScriptCanvasEditor
     private:
         Configuration m_configuration;
         AZ::EventHandler<const Configuration&> m_handlerSourceCompiled;
+        AZ::EventHandler<const Configuration&> m_handlerSourcePropertiesChanged;
     };
 }
