@@ -311,7 +311,7 @@ namespace AZ
             if (GetActiveAssetId().IsValid())
             {
                 AZStd::unordered_set<AZ::Name> modelUvNames;
-                MaterialReceiverRequestBus::EventResult(modelUvNames, m_entityId, &MaterialReceiverRequestBus::Events::GetModelUvNames);
+                MaterialConsumerRequestBus::EventResult(modelUvNames, m_entityId, &MaterialConsumerRequestBus::Events::GetModelUvNames);
 
                 RPI::MaterialModelUvOverrideMap matModUvOverrides;
                 MaterialComponentRequestBus::EventResult(
