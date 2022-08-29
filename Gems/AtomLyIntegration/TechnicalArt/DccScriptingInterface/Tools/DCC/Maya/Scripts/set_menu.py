@@ -101,8 +101,6 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
                 parent=_custom_tools_menu,
                 tearOff=True)
 
-    # make a dummy menu item to test
-    pm.menuItem(label='Test', command=pm.Callback(menu_cmd_test))
     # Conversion Section Menu Items
     pm.menuItem(label='Export Scene Materials', command=export_scene_materials)
 
