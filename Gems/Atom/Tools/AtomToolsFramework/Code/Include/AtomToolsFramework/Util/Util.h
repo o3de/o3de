@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 class QImage;
+class QMenu;
 class QMimeData;
 class QWidget;
 
@@ -183,9 +184,15 @@ namespace AtomToolsFramework
     //! Helper function to convert a full path into one containing an alias
     AZStd::string GetPathWithAlias(const AZStd::string& path);
 
-    //! Collect a set of file paths contained within asset browser entry or URL mine data
+    //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
     //! Collect a set of file paths from all project safe folders matching a wild card
     AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+
+    // Add menu actions for scripts specified in the settings registry
+    // @param menu The menu where the actions will be inserted
+    // @param registryKey The path to the registry setting where script categories are registered
+    // @param arguments The list of arguments passed into the script when executed
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments);
 } // namespace AtomToolsFramework
