@@ -18,6 +18,7 @@ namespace PhysX::Benchmarks
 {
     static constexpr float DefaultTimeStep = 0.0166667f; // 0.0166667f (60fps)
 
+    //! Rigid body benchmark types: create entities with rigid body component or rigid bodies with no entities
     static constexpr int RigidBodyApiObject = 0;
     static constexpr int RigidBodyEntity = 1;
 

@@ -272,7 +272,6 @@ namespace PhysX::Benchmarks
             },
             rigidBodies);
 
-
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
         Utils::ReportFrameStandardDeviationAndMeanCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
@@ -361,7 +360,6 @@ namespace PhysX::Benchmarks
                 rigidBodies.clear();
             },
             rigidBodies);
-
 
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());

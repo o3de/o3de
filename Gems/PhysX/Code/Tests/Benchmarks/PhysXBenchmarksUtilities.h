@@ -48,12 +48,14 @@ namespace PhysX::Benchmarks
         //! Function pointer to allow setting an Entity Id on the rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
         using GenerateEntityIdFuncPtr = AZStd::function<AZ::EntityId(int)>;
 
+        //! Type for returned objects when constructing rigid bodies. Depends on the desired type.
         using BenchmarkRigidBodies = AZStd::variant<AzPhysics::SimulatedBodyHandleList, PhysX::EntityList>;
 
         //! Helper function to create the required number of rigid bodies and spawn them in the provided world.
         //! @param numRigidBodies The number of bodies to spawn.
         //! @param world World where the rigid bodies will be spawned into.
         //! @param enableCCD Flag to enable|disable Continuous Collision Detection (CCD).
+        //! @param benchmarkObjectType Type specifying whether rigid bodies should be entities with components or API objects.
         //! @param genColliderFuncPtr [optional] Function pointer to allow caller to pick the collider object Default is a box sized at 1m.
         //! @param genSpawnPosFuncPtr [optional] Function pointer to allow caller to pick the spawn position.
         //! @param genSpawnOriFuncPtr [optional] Function pointer to allow caller to pick the spawn orientation.
