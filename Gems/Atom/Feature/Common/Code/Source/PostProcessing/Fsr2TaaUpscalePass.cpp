@@ -14,6 +14,7 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/GpuQuery/Query.h>
 #include <Atom/RPI.Public/View.h>
 
 AZ_CVAR_EXTERNED(float, r_renderScaleMin);
@@ -171,6 +172,19 @@ namespace AZ::Render
 
         params.m_frameGraphBuilder->ImportScopeProducer(*this);
 
+        if (IsTimestampQueryEnabled())
+        {
+            if (!m_timestampQuery)
+            {
+                m_timestampQuery = RPI::GpuQuerySystemInterface::Get()->CreateQuery(
+                    RHI::QueryType::Timestamp, RHI::QueryPoolScopeAttachmentType::Global, RHI::ScopeAttachmentAccess::Write);
+            }
+
+            uint64_t timestampResult[2] = {};
+            m_timestampQuery->GetLatestResult(&timestampResult, sizeof(timestampResult));
+            m_timestampResult = RPI::TimestampResult{ timestampResult[0], timestampResult[1], RHI::HardwareQueueClass::Graphics };
+        }
+
         RHI::ImageDescriptor& inputColorDesc = m_inputColor->GetAttachment()->m_descriptor.m_image;
         m_fsr2DispatchDesc.renderSize.width = inputColorDesc.m_size.m_width;
         m_fsr2DispatchDesc.renderSize.height = inputColorDesc.m_size.m_height;
@@ -219,6 +233,11 @@ namespace AZ::Render
         m_fsr2DispatchDesc.preExposure = 1.f;
     }
 
+    RPI::TimestampResult Fsr2TaaUpscalePass::GetTimestampResultInternal() const
+    {
+        return m_timestampResult;
+    }
+
     void Fsr2TaaUpscalePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
     {
         frameGraph.UseAttachment(
@@ -250,6 +269,11 @@ namespace AZ::Render
                 frameGraph.ExecuteBefore(fsr2Pass->GetScopeId());
             }
         }
+
+        if (IsTimestampQueryEnabled() && m_timestampQuery)
+        {
+            m_timestampQuery->AddToFrameGraph(frameGraph);
+        }
     }
 
     void Fsr2TaaUpscalePass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -275,7 +299,21 @@ namespace AZ::Render
 
     void Fsr2TaaUpscalePass::BuildCommandList(const RHI::FrameGraphExecuteContext& context)
     {
+        if (!IsTimestampQueryEnabled() && m_timestampQuery)
+        {
+            m_timestampQuery.reset();
+        }
+        else if (IsTimestampQueryEnabled() && context.GetCommandListIndex() == 0)
+        {
+            m_timestampQuery->BeginQuery(context);
+        }
+
         context.GetCommandList()->Submit(m_fsr2Context, m_fsr2DispatchDesc);
+
+        if (m_timestampQuery && context.GetCommandListIndex() == context.GetCommandListCount() - 1)
+        {
+            m_timestampQuery->EndQuery(context);
+        }
     }
 
     bool Fsr2TaaUpscalePass::IsFsr2ContextValid() const

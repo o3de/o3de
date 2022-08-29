@@ -549,10 +549,8 @@ namespace AZ
 
                 // The jitter compensation is subtracted from the computed motion vector.
                 Vector2 jitterCompensation = -m_clipSpaceOffset + m_clipSpaceOffsetPrev;
-                m_shaderResourceGroup->SetConstant(
-                    m_jitterCompensation_motionVectorScale,
-                    Vector4{
-                        jitterCompensation.GetX(), jitterCompensation.GetY(), m_motionVectorScale.GetX(), m_motionVectorScale.GetY() });
+                m_shaderResourceGroup->SetConstant(m_jitterCompensationIndex, jitterCompensation);
+                m_shaderResourceGroup->SetConstant(m_motionVectorScaleIndex, m_motionVectorScale);
 
                 m_shaderResourceGroup->Compile();
             }
