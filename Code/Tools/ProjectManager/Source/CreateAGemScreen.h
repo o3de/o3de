@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
         void AddDropdownActions(FormComboBoxWidget* dropdown);
 
         //First Screen
-        QVector<ProjectTemplateInfo> m_gemTemplates;
+        QVector<TemplateInfo> m_gemTemplates;
         QButtonGroup* m_radioButtonGroup;
         QRadioButton* m_formFolderRadioButton = nullptr;
         FormFolderBrowseEditWidget* m_gemTemplateLocation = nullptr;
