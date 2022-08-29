@@ -231,18 +231,7 @@ namespace AtomToolsFramework
         m_menuHelp = menuBar->addMenu("&Help");
         m_menuHelp->setObjectName("menuHelp");
 
-        m_menuFile->addAction(tr("Run &Python..."), [this]() {
-            const QString script = QFileDialog::getOpenFileName(
-                this, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
-            if (!script.isEmpty())
-            {
-                QTimer::singleShot(0, [script]() {
-                    AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                        &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
-                });
-            }
-        });
-
+        BuildScriptsMenu();
         m_menuFile->addSeparator();
 
         m_menuFile->addAction(tr("E&xit"), [this]() {
@@ -475,6 +464,15 @@ namespace AtomToolsFramework
                         m_advancedDockManager->restoreState(m_defaultWindowState);
                     });
             });
+    }
+
+    void AtomToolsMainWindow::BuildScriptsMenu()
+    {
+        QMenu* scriptsMenu = m_menuFile->addMenu(tr("Python Scripts"));
+        connect(scriptsMenu, &QMenu::aboutToShow, this, [scriptsMenu]() {
+            scriptsMenu->clear();
+            AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/MainWindow/FileMenuScripts", {});
+        });
     }
 
     void AtomToolsMainWindow::SetupMetrics()
