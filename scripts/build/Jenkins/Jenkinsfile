@@ -534,21 +534,21 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
                         automatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
                             PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.REPOSITORY_NAME}/${engineName}")
                         }
-                        automatedTestingControlFile.REGISTER_ENGINES.each { projectName ->
+                        automatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
                             PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.REPOSITORY_NAME}/${projectName}")
                         }
-                        automatedTestingControlFile.REGISTER_ENGINES.each { gemName ->
+                        automatedTestingControlFile.REGISTER_GEMS.each { gemName ->
                             PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.REPOSITORY_NAME}/${gemName}")
                         }
-                        automatedTestingControlFile.REGISTER_ENGINES.each { templateName ->
+                        automatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
                             PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.REPOSITORY_NAME}/${templateName}")
                         }
-                        automatedTestingControlFile.REGISTER_ENGINES.each { restrictedName ->
+                        automatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
                             PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.REPOSITORY_NAME}/${restrictedName}")
                         }
                         //enable all gems specified in the control file
                         automatedTestingControlFile.ENABLE_GEMS.each { gemName ->
-                            PlatformSh("scripts/o3de${ext} enable-gem --gem-name ${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
+                            PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
                         }
                     } else {
                         //register all the objects in this repo
