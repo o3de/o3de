@@ -109,9 +109,7 @@ namespace ShaderManagementConsole
         documentType.m_documentTypeName = "Shader Variant List";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
-        documentType.m_supportedExtensionsToCreate.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToCreate.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
-        documentType.m_supportedExtensionsToOpen.push_back({ "Shader", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
@@ -278,10 +276,7 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::LoadShaderSourceData()
     {
-        
-        m_modified = {};
-
-        return IsOpen() ? OpenSucceeded() : OpenFailed();
+        return OpenFailed();
     }
 
     bool ShaderManagementConsoleDocument::LoadShaderVariantListSourceData()
