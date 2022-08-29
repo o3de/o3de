@@ -29,7 +29,6 @@ namespace AZ
         struct Descriptor
         {
             AZ_TYPE_INFO(Descriptor, "{FE628EB0-C24F-4A59-9CB0-44900EEE3924}")
-            IAllocator* m_subAllocator{}; ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
         };
 
         AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")

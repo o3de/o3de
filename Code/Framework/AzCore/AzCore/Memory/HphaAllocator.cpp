@@ -595,7 +595,7 @@ namespace AZ
         size_t mTotalAllocatedSizeTree = 0;
         size_t mTotalCapacitySizeTree = 0;
     public:
-        HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc);
+        HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc = {});
         ~HpAllocator() override;
 
         pointer allocate(size_type byteSize, align_type alignment = 1) override;
@@ -962,7 +962,6 @@ namespace AZ
         const size_t m_treePageSize;
         const size_t m_treePageAlignment;
         const size_t m_poolPageSize;
-        IAllocator* m_subAllocator;
 
 #if !defined (USE_MUTEX_PER_BUCKET)
         mutable AZStd::mutex m_mutex;
@@ -1015,7 +1014,7 @@ namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     template<bool DebugAllocatorEnable>
-    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc)
+    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor)
         // We will use the os for direct allocations if memoryBlock == NULL
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
         // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
@@ -1023,7 +1022,6 @@ namespace AZ
         : m_treePageSize(OS_VIRTUAL_PAGE_SIZE)
         , m_treePageAlignment(OS_VIRTUAL_PAGE_SIZE)
         , m_poolPageSize(OS_VIRTUAL_PAGE_SIZE)
-        , m_subAllocator(desc.m_subAllocator)
     {
         if constexpr (DebugAllocatorEnable)
         {
@@ -2185,10 +2183,6 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     void* HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::SystemAlloc(size_t size, size_t align)
     {
-        if (m_subAllocator)
-        {
-            return m_subAllocator->Allocate(size, align);
-        }
         AZ_Assert(align % OS_VIRTUAL_PAGE_SIZE == 0, "Invalid allocation/page alignment %d should be a multiple of %d!", size, OS_VIRTUAL_PAGE_SIZE);
         return AZ_OS_MALLOC(size, align);
     }
@@ -2200,11 +2194,6 @@ namespace AZ
     template<bool DebugAllocatorEnable>
     void HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::SystemFree(void* ptr)
     {
-        if (m_subAllocator)
-        {
-            m_subAllocator->DeAllocate(ptr);
-            return;
-        }
         AZ_OS_FREE(ptr);
     }
 
