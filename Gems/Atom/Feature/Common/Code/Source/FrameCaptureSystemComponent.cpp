@@ -307,6 +307,10 @@ namespace AZ
                     ->Event("CaptureScreenshot", &FrameCaptureRequestBus::Events::CaptureScreenshot)
                     ->Event("CaptureScreenshotWithPreview", &FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview)
                     ->Event("CapturePassAttachment", &FrameCaptureRequestBus::Events::CapturePassAttachment)
+                    ->Event("SetScreenshotFolder", &FrameCaptureRequestBus::Events::SetScreenshotFolder)
+                    ->Event("SetTestEnvPath", &FrameCaptureRequestBus::Events::SetTestEnvPath)
+                    ->Event("SetOfficialBaselineImageFolder", &FrameCaptureRequestBus::Events::SetOfficialBaselineImageFolder)
+                    ->Event("SetLocalBaselineImageFolder", &FrameCaptureRequestBus::Events::SetLocalBaselineImageFolder)
                     ;
 
                 FrameCaptureNotificationBusHandler::Reflect(context);
@@ -816,14 +820,79 @@ namespace AZ
             m_result = result; 
         }
 
-
-
         void FrameCaptureSystemComponent::CaptureState::Reset()
         {
             //m_readback->Reset();
             m_outputFilePath.clear();
             m_latestCaptureInfo.clear();
             m_result = FrameCaptureResult::None;
+        }
+
+        void FrameCaptureSystemComponent::SetScreenshotFolder(const AZStd::string& screenshotFolder)
+        {
+            m_screenshotFolder = ResolvePath(screenshotFolder);
+        }
+
+        void FrameCaptureSystemComponent::SetTestEnvPath(const AZStd::string& envPath)
+        {
+            m_testEnvPath = ResolvePath(envPath);
+        }
+
+        void FrameCaptureSystemComponent::SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            m_officialBaselineImageFolder = ResolvePath(baselineFolder);
+        }
+
+        void FrameCaptureSystemComponent::SetLocalBaselineImageFolder(const AZStd::string& baselineFolder)
+        {
+            m_localBaselineImageFolder = ResolvePath(baselineFolder);
+        }
+
+        bool FrameCaptureSystemComponent::CompareScreenshots(
+            const AZStd::string& testCase, float* diffScore, float* filteredDiffScore, float minDiffFilter)
+        {
+            char screenshotPath[AZ_MAX_PATH_LEN];
+            azscprintf("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), testCase.c_str());
+
+            char baselineImagePath[AZ_MAX_PATH_LEN];
+            azscprintf("%s/%s", m_officialBaselineImageFolder.c_str(), testCase.c_str());
+
+            Utils::PngFile localImage = Utils::PngFile::Load(screenshotPath);
+
+            if (!localImage.IsValid())
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load screenshot image at: %s.", screenshotPath);
+                return false;
+            }
+
+            Utils::PngFile baselineImage = Utils::PngFile::Load(baselineImagePath);
+
+            if (!baselineImage.IsValid())
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load baseline image at: %s.", baselineImagePath);
+                return false;
+            }
+
+            Utils::ImageDiffResultCode rmsResult = Utils::CalcImageDiffRms(
+                localImage.GetBuffer(), RHI::Size(localImage.GetWidth(), localImage.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                baselineImage.GetBuffer(), RHI::Size(baselineImage.GetWidth(), baselineImage.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                diffScore, filteredDiffScore,
+                minDiffFilter
+            );
+
+            if (rmsResult == Utils::ImageDiffResultCode::SizeMismatch)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", screenshotPath, baselineImagePath);
+                return false;
+            }
+
+            if (rmsResult == Utils::ImageDiffResultCode::UnsupportedFormat || rmsResult == Utils::ImageDiffResultCode::FormatMismatch)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", screenshotPath, baselineImagePath);
+                return false;
+            }
+
+            return true;
         }
     }
 }

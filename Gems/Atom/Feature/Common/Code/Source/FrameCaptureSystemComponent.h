@@ -47,6 +47,13 @@ namespace AZ
             uint32_t CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
 
+            void SetScreenshotFolder(const AZStd::string& screenshotFolder) override;
+            void SetTestEnvPath(const AZStd::string& envPath) override;
+            void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
+            void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
+
+            bool CompareScreenshots(const AZStd::string& testCase, float* diffScore, float* filteredDiffScore, float minDiffFilter) override;
+
         private:
             // Wrap the state necessary for 1 capture
             struct CaptureState
@@ -106,6 +113,11 @@ namespace AZ
             AZStd::deque<CaptureHandle> m_idleCaptures; // fifo for idle captures
             AZStd::deque<CaptureHandle> m_inProgressCaptures; // uses a deque so we can maintain order, order created == order OnCaptureFinished sent
             AZStd::vector<CaptureState> m_allCaptures;
+
+            AZStd::string m_screenshotFolder;
+            AZStd::string m_testEnvPath;
+            AZStd::string m_officialBaselineImageFolder;
+            AZStd::string m_localBaselineImageFolder;
         };
     }
 }

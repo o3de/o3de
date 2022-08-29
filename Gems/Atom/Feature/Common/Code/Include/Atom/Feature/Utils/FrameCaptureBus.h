@@ -12,6 +12,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
+#include <Atom/Utils/ImageComparison.h>
 
 namespace AZ
 {
@@ -79,6 +80,25 @@ namespace AZ
             virtual uint32_t CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
                 , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) = 0;
 
+            //! Set the folder where the screenshot will be stored.
+            //! @param screenshotFolder The screenshot folder.
+            virtual void SetScreenshotFolder(const AZStd::string& screenshotFolder) = 0;
+
+            //! Set the test environment path portion under the screenshot folder, including render API, GPU info, etc.
+            //! The full path name is a combination of screenshotFolder + envPath + imageName/testcaseName.
+            //! @param envPath Test environment path
+            virtual void SetTestEnvPath(const AZStd::string& envPath) = 0;
+
+            //! Set the folder of official baseline images to be compared with the screenshots.
+            //! @param baselineFolder The folder of the official baseline images 
+            virtual void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) = 0;
+
+            //! Set the folder of local baseline images to be compared with the screenshots.
+            //! @param baselineFolder The folder of the local baseline images 
+            virtual void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) = 0;
+
+
+            virtual bool CompareScreenshots(const AZStd::string& testCase, float* diffScore, float* filteredDiffScore, float minDiffFilter) = 0;
         };
         using FrameCaptureRequestBus = EBus<FrameCaptureRequests>;
 
