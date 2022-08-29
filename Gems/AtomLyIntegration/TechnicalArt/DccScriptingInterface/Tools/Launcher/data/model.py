@@ -76,6 +76,7 @@ class LauncherModel:
         ]
         self.tools_headers = [
             'toolId',
+            'toolPlacement',
             'toolName',
             'toolDescription',
             'toolStartFile',
@@ -120,42 +121,10 @@ class LauncherModel:
         markdown = markdown_conversion.convert_markdown_file(markdown_file)
         return markdown
 
-    # def set_applications(self):
-    #     helpers.create_table(self.db, self.cursor, 'applications', [
-    #         'app varchar(20) NOT NULL',
-    #         'path varchar(20) NOT NULL'
-    #     ])
-    #     self.applications = helpers.get_json_data(Path(os.environ['DCC_PATHS_JSON']))
-    #     locked = self.applications['locked']
-    #     for index, (key, value) in enumerate(self.applications['locations'].items()):
-    #         if not locked:
-    #             value = helpers.validate_path(Path(value.replace('<username>', os.getenv('username'))))
-    #         self.applications[key] = value
-    #         helpers.create_table_entry(self.db, self.cursor, 'applications', [
-    #             self.format_for_query(key),
-    #             self.format_for_query(value.__str__())
-    #         ])
-    #
-    # def set_projects(self):
-    #     helpers.create_table(self.db, self.cursor, 'projects', [
-    #         'project varchar(20) NOT NULL',
-    #         'path varchar(20) NOT NULL'
-    #     ])
-    #     flagged_directories = ['Cache', 'DummyProject', 'Template']
-    #     for index, file_path in enumerate(helpers.get_files_by_name(Path(os.environ['LY_DEV']), 'project.json')):
-    #         if not [x for x in flagged_directories if x in file_path.parts]:
-    #             project_location = file_path.parent
-    #             project_data = Box(helpers.get_json_data(file_path))
-    #             project_name = project_data.project_name
-    #             self.projects[project_name] = project_location
-    #             helpers.create_table_entry(self.db, self.cursor, 'projects', [
-    #                 self.format_for_query(project_name),
-    #                 self.format_for_query(project_location)
-    #             ])
-
     def create_tool_table(self):
         table_data = [
             'toolId integer PRIMARY KEY',
+            'toolPlacement text NOT NULL',
             'toolName text NOT NULL',
             'toolDescription varchar(20)',
             'toolStartFile varchar(20) NOT NULL',

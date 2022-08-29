@@ -212,8 +212,13 @@ class Tools(QtWidgets.QWidget):
         self.add_tool_layout.addWidget(self.tool_name_field)
 
         # Category
+        self.category_placement_layout = QtWidgets.QHBoxLayout()
+        self.add_tool_layout.addLayout(self.category_placement_layout)
+
+        self.tool_category_layout = QtWidgets.QVBoxLayout()
+        self.category_placement_layout.addLayout(self.tool_category_layout)
         self.tool_category_label = QtWidgets.QLabel('Category')
-        self.add_tool_layout.addWidget(self.tool_category_label)
+        self.tool_category_layout.addWidget(self.tool_category_label)
         self.tool_category_combobox = QtWidgets.QComboBox()
         self.tool_category_combobox.setFixedHeight(25)
         self.tool_categories = (
@@ -222,8 +227,32 @@ class Tools(QtWidgets.QWidget):
             'Conversion',
             'Add New Category'
         )
-        self.add_tool_layout.addWidget(self.tool_category_combobox)
+        self.tool_category_layout.addWidget(self.tool_category_combobox)
         self.tool_category_combobox.addItems(self.tool_categories)
+        self.category_placement_layout.addSpacing(40)
+
+        # Tool window placement
+        self.align_window_layout = QtWidgets.QVBoxLayout()
+        self.align_window_layout.setAlignment(QtCore.Qt.AlignBottom)
+        self.category_placement_layout.addLayout(self.align_window_layout)
+        self.tool_window_layout = QtWidgets.QHBoxLayout()
+        self.align_window_layout.addLayout(self.tool_window_layout)
+        self.tool_ui_label = QtWidgets.QLabel('Tool Window Placement:')
+        self.tool_ui_label.setFixedWidth(140)
+        self.tool_window_layout.addWidget(self.tool_ui_label)
+        self.tool_window_layout.addSpacing(10)
+        self.window_radio_layout = QtWidgets.QHBoxLayout()
+        self.tool_window_layout.addLayout(self.window_radio_layout)
+        self.window_radio_button_group = QtWidgets.QButtonGroup()
+        self.embedded_radio_button = QtWidgets.QRadioButton('Embedded')
+        self.embedded_radio_button.setFixedWidth(100)
+        self.window_radio_layout.addWidget(self.embedded_radio_button)
+        self.window_radio_button_group.addButton(self.embedded_radio_button)
+        self.embedded_radio_button.setChecked(True)
+        self.standalone_radio_button = QtWidgets.QRadioButton('Standalone Window')
+        self.standalone_radio_button.setFixedWidth(140)
+        self.window_radio_layout.addWidget(self.standalone_radio_button)
+        self.window_radio_button_group.addButton(self.standalone_radio_button)
 
         # Description
         self.tool_description_label = QtWidgets.QLabel('Description')
@@ -284,22 +313,6 @@ class Tools(QtWidgets.QWidget):
         self.add_tool_layout.addLayout(self.separator_layout)
         self.add_remove_button_layout = QtWidgets.QHBoxLayout()
         self.add_tool_layout.addLayout(self.add_remove_button_layout)
-
-        # Tool window placement
-        self.tool_window_layout = QtWidgets.QVBoxLayout()
-        self.add_remove_button_layout.addLayout(self.tool_window_layout)
-        self.tool_ui_label = QtWidgets.QLabel('Tool Window Placement')
-        self.add_remove_button_layout.addWidget(self.tool_ui_label)
-        self.window_radio_layout = QtWidgets.QHBoxLayout()
-        self.tool_window_layout.addLayout(self.window_radio_layout)
-        self.window_radio_button_group = QtWidgets.QButtonGroup()
-        self.embedded_radio_button = QtWidgets.QRadioButton('Embedded')
-        self.window_radio_layout.addWidget(self.embedded_radio_button)
-        self.window_radio_button_group.addButton(self.embedded_radio_button)
-        self.embedded_radio_button.setChecked(True)
-        self.standalone_radio_button = QtWidgets.QRadioButton('Standalone Window')
-        self.window_radio_layout.addWidget(self.standalone_radio_button)
-        self.window_radio_button_group.addButton(self.standalone_radio_button)
 
         # Add tool button
         self.add_tool_button = QtWidgets.QPushButton('Add Tool')
@@ -420,6 +433,7 @@ class Tools(QtWidgets.QWidget):
         _LOGGER.info(f'ToolSettings: {tool_settings}')
         entry_list = []
         tool_settings['toolId'] = self.model.get_tool_id()
+        tool_settings['toolPlacement'] = self.window_radio_button_group.checkedButton().text()
         for attribute in self.model.tools_headers:
             _LOGGER.info(f'++++ Attribute: {attribute}')
             target_value = None
