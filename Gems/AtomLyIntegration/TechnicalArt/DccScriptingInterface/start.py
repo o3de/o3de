@@ -34,8 +34,9 @@ class Launcher(QtWidgets.QMainWindow):
         self.content = ContentContainer(self.model)
         self.setCentralWidget(self.content)
 
-        for target_dict in self.model.tables.values():
-            self.configuration.set_variables({k: v for k, v in target_dict.items()})
+        for key, values in self.model.tables.items():
+            _LOGGER.info(f'TargetDict [{key}] ::: {values}')
+            # self.configuration.set_variables({k: v for k, v in target_dict.items()})
 
         self.status_bar = QtWidgets.QStatusBar()
         self.status_bar.setVisible(False)

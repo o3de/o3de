@@ -132,32 +132,49 @@ def get_database(database_path: str) -> sqlite3.Connection:
         db = sqlite3.connect(database_path)
         _LOGGER.info(f'DB Connection Made: {sqlite3.version}')
         return db
-    except Error as e:
+    except Exception as e:
         _LOGGER.info(f'Database connection failed. Error: {e}')
         return None
 
 
-def create_table(db: sqlite3.Connection, cursor: sqlite3.Cursor, table_name: str, headers: list):
-    header_string = ', '.join(headers)
-    _LOGGER.info(f'CreatingTable [{table_name}]: {header_string}')
-    execute_db_command(db, cursor, f"""CREATE TABLE IF NOT EXISTS {table_name} ({header_string})""")
+def get_tables(db: sqlite3.Connection):
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table'")
+        values = [item[0] for item in cursor.fetchall()]
+        return values
+    except Exception as e:
+        return None
 
 
-def remove_table(db: sqlite3.Connection, cursor: sqlite3.Cursor, table_name: str):
-    execute_db_command(db, cursor, f"""DROP TABLE {table_name}""")
+def create_table(db: sqlite3.Connection, table_name, table_data):
+    command = f"CREATE TABLE IF NOT EXISTS {table_name} ("
+    for count, entry in enumerate(table_data):
+        command += entry
+        if count < len(table_data)-1:
+            command += ', '
+    command += ');'
+    execute_db_command(db, command)
 
 
-def create_table_entry(db: sqlite3.Connection, cursor: sqlite3.Cursor, table_name: str, values: list):
-    values_string = ', '.join(values)
-    execute_db_command(db, cursor, f"""INSERT INTO {table_name} VALUES ({values_string})""")
+def remove_table(db: sqlite3.Connection, table_name: str):
+    execute_db_command(db, f"DROP TABLE {table_name}")
 
 
-def remove_table_entry(db: sqlite3.Connection, cursor: sqlite3.Cursor, table_name: str, row_id: int):
-    execute_db_command(db, cursor, f"""DELETE from {table_name} where id = {row_id}""")
+def create_table_entry(db: sqlite3.Connection, table_name: str, headers: tuple, values: tuple):
+    sql = f"INSERT INTO {table_name}{headers} VALUES ({','.join(['?'] * len(headers))})"
+    cursor = db.cursor()
+    cursor.execute(sql, values)
+    db.commit()
 
 
-def execute_db_command(db: sqlite3.Connection, cursor: sqlite3.Cursor, command: str):
+def remove_table_entry(db: sqlite3.Connection, table_name: str, row_id: int):
+    execute_db_command(db, f"DELETE from {table_name} where id = {row_id}")
+
+
+def execute_db_command(db: sqlite3.Connection, command: str):
     _LOGGER.info(f'Executing: {command}')
+    cursor = db.cursor()
     cursor.execute(command)
     db.commit()
 

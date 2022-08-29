@@ -36,6 +36,7 @@ from Tools.Launcher.data.configuration import Configuration
 from Tools.Launcher.data.model import LauncherModel
 from Tools.Launcher.navigation import Navigation
 from Tools.Launcher.sections import splash, tools, projects, output, setup, help
+
 from box import Box
 import sys
 import os
@@ -87,7 +88,7 @@ class ContentContainer(QtWidgets.QWidget):
             self.sections_layout.addWidget(section[0])
 
         # Change this back to splash once you are done testing
-        self.change_section('setup')
+        self.change_section('tools')
 
     @Slot(str)
     def change_section(self, target_section: str):

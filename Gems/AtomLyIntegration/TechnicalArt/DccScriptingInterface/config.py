@@ -109,7 +109,7 @@ def initialize_core_settings():
     o3de_python_root = repository_root / 'python'
     dccsi_py_ide = Path(sys.executable)
     dccsi_tools_directory = dccsi_root / 'Tools'
-    dccsi_dcc_tools_directory = dccsi_tools_directory / 'Tools'
+    dccsi_dcc_tools_directory = dccsi_tools_directory / 'DCC'
     dccsi_dev_tools_directory = dccsi_tools_directory / 'Dev/Windows'
     dccsi_python_root = dccsi_root / '3rdParty/Python'
     dccsi_python_library = dccsi_python_root / f'Lib/{py_major}.x/{py_major}.{py_minor}.x/site-packages'

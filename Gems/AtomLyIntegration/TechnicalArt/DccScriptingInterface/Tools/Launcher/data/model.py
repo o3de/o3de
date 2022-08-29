@@ -24,7 +24,9 @@
 # @section Launcher Model Notes
 from dynaconf import settings
 from SDK.Python import general_utilities as helpers
+from azpy.o3de.utils import markdown_conversion
 from pathlib import Path
+import box
 from box import Box
 import logging
 import os
@@ -35,32 +37,50 @@ _LOGGER = logging.getLogger('Launcher.model')
 
 class LauncherModel:
     def __init__(self):
-        self.launcher_base_path = Path(settings.get("PATH_DCCSI_TOOLS_DEV")) / 'Launcher'
+        self.launcher_base_path = Path(settings.get('PATH_DCCSI_TOOLS')) / 'Launcher'
         self.launcher_sections = ['Tools', 'Projects', 'Output', 'Setup', 'Help']
         self.db_path = (self.launcher_base_path / 'data/launcher.db').as_posix()
         self.database_path = None
         self.icon_path = None
         self.db = None
-        self.db_path = None
         self.dcc_paths = {}
         self.cursor = None
         self.tools = Box({})
         self.projects = Box({})
         self.applications = Box({})
         self.tables = {
-            'tools': self.tools,
-            'projects': self.projects,
+            'tools':        self.tools,
+            'projects':     self.projects,
             'applications': self.applications
         }
+        self.projects_categories = [
+            'REGISTERED_PROJECTS',
+            'REGISTERED_ENGINE',
+            'BOOTSTRAP_LOCATION',
+            'CURRENT_PROJECT',
+            'CURRENT_ENGINE_PROJECTS',
+            'CURRENT_ENGINE_GEMS',
+            'ENGINE_EXTERNAL_DIRECTORIES',
+            'O3DE_MANIFEST'
+        ]
+        self.tools_categories = [
+            'O3DE',
+            'Utilities',
+            'Maya',
+            'Blender',
+            '3dsMax',
+            'Painter',
+            'Designer',
+            'Houdini',
+            'SAT'
+        ]
         self.tools_headers = [
+            'toolId',
             'toolName',
             'toolDescription',
-            'toolLocation',
+            'toolStartFile',
             'toolCategory',
             'toolMarkdown',
-            'toolDependencies',
-            'toolStartFile',
-            'toolTags',
             'toolDocumentation'
         ]
         self.projects_headers = [
@@ -72,26 +92,33 @@ class LauncherModel:
 
     def initialize_db_values(self):
         _LOGGER.info('Initializing DB Values...')
-        self.connect_to_launcher_db()
-        self.close_database()
-        self.get_projects()
-        self.get_tools()
-        self.get_applications()
+        if self.connect_to_launcher_db():
+            db_tables = helpers.get_tables(self.db)
+            _LOGGER.info(f'Existing Tables in DB: {db_tables}')
+            self.extract_db_values()
+            self.get_projects()
+            self.get_tools()
+            self.get_applications()
+        else:
+            _LOGGER.info('Database connection error occurred')
 
     def connect_to_launcher_db(self):
-        self.db = helpers.get_database(str(self.db_path))
+        self.db = helpers.get_database(self.db_path)
         if self.db:
             self.cursor = self.db.cursor()
-            self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            tables = self.cursor.fetchall()
-            self.extract_db_values(tables)
+            return True
+        return False
 
-    def extract_db_values(self, target_tables):
+    def extract_db_values(self):
         database_values = helpers.get_database_values(self.cursor, [*self.tables])
         for key, values in database_values.items():
             for value in values:
                 self.tables[key].update({value[0]: value[1]})
         self.close_database()
+
+    def convert_markdown(self, markdown_file):
+        markdown = markdown_conversion.convert_markdown_file(markdown_file)
+        return markdown
 
     # def set_applications(self):
     #     helpers.create_table(self.db, self.cursor, 'applications', [
@@ -125,49 +152,43 @@ class LauncherModel:
     #                 self.format_for_query(project_name),
     #                 self.format_for_query(project_location)
     #             ])
-    #
-    # def set_tools(self):
-    #     helpers.create_table(self.db, self.cursor, 'tools', [
-    #         'tool varchar(20) NOT NULL',
-    #         'path varchar(20) NOT NULL',
-    #     ])
-    #     for index, file_path in enumerate(helpers.get_files_by_name(Path(os.environ['DCCSIG_PATH']), 'README.md')):
-    #         if helpers.validate_markdown(file_path):
-    #             markdown_info = helpers.get_markdown_information(file_path)
-    #             tool = re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', file_path.parent.name)
-    #             self.tools.update({
-    #                 tool: {
-    #                     'base_directory': file_path.parent,
-    #                     'markdown_file': file_path.stem,
-    #                     'entry_file': markdown_info['Entry File']
-    #                 }})
-    #             helpers.create_table_entry(self.db, self.cursor, 'tools', [
-    #                 self.format_for_query(tool),
-    #                 self.format_for_query(file_path.parent.__str__()),
-    #             ])
 
-    def set_tools(self):
-        pass
+    def create_tool_table(self):
+        table_data = [
+            'toolId integer PRIMARY KEY',
+            'toolName text NOT NULL',
+            'toolDescription varchar(20)',
+            'toolStartFile varchar(20) NOT NULL',
+            'toolCategory varchar(20) NOT NULL',
+            'toolMarkdown varchar(20)',
+            'toolDocumentation varchar(20)'
+        ]
+        helpers.create_table(self.db, 'tools', table_data)
 
-    def set_projects(self):
+    def set_tool(self, data):
+        if self.connect_to_launcher_db():
+            existing_tables = helpers.get_tables(self.db)
+            if 'tools' not in existing_tables:
+                self.create_tool_table()
+            _LOGGER.info(f'Adding tool data: {data}')
+            helpers.create_table_entry(self.db, 'tools', tuple(self.tools_headers), tuple(data))
+
+    def set_project(self):
         pass
 
     def get_projects(self):
-        pass
+        for category in self.projects_categories:
+            self.tables['projects'][category] = settings.get(category)
 
     def get_tools(self):
-        # Temp values- fix this to get actual tools from DB
-        self.tools = {
-            'O3DE': ['LiveLink Tool', 'Create Gem'],
-            'Utilities': ['Directory Cleaner', 'Find Tool', 'Spreadsheet Creator'],
-            'Maya': ['Audit Tool', 'Material Conversion', 'LookDevTools'],
-            'Blender': ['Material Conversion', 'Blender Nifty Tool', 'Blendo 5000'],
-            '3dsMax': ['MaxTools', 'Rigging Tool v.5'],
-            'Painter': ['PainterTools', 'Smart Materials Helper'],
-            'Designer': ['Designer Paint Tool'],
-            'Houdini': ['Get It Done Suite', 'Out of a Box, vII', 'Houdini Magic Tool'],
-            'SAT': ['LookDevTools']
-        }
+        for tool_type in self.tools_categories:
+            try:
+                self.tools[tool_type] = self.tables['tools'][tool_type]
+            except box.exceptions.BoxKeyError:
+                self.tools[tool_type] = {}
+
+    def get_tool_id(self):
+        return len(self.tools)
 
     def get_applications(self):
         application_list = {
@@ -181,8 +202,8 @@ class LauncherModel:
             'SubstanceAutomationToolkit': {'location': 'PATH_PYSBS', 'exe': None},
             'Houdini': {'location': 'HOUDINI.EXE', 'exe': 'houdini.exe'}
         }
-        stored_values = {}
-        stored_values.update(self.get_stored_values('applications'))
+
+        stored_values = self.get_stored_values('applications')
 
         for application_key, application_values in application_list.items():
             self.applications[application_key] = application_values
@@ -191,7 +212,6 @@ class LauncherModel:
             except KeyError:
                 target_key = application_list[application_key]['location']
                 self.applications[application_key]['location'] = settings.get(target_key)
-                _LOGGER.info(settings.get(target_key))
             finally:
                 if not self.applications[application_key]['location']:
                     self.applications[application_key]['location'] = 'Not found'
@@ -205,8 +225,10 @@ class LauncherModel:
         return [*self.tables]
 
     def get_stored_values(self, target_table) -> dict:
-        _LOGGER.info(f'Table values stored for {target_table}::: {self.tables[target_table]}')
-        return self.tables[target_table]
+        stored_tables = helpers.get_tables(self.db)
+        if stored_tables and target_table in stored_tables:
+            return helpers.get_table_values(self.cursor, target_table)
+        return {}
 
     def get_sections(self) -> list:
         return self.launcher_sections

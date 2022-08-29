@@ -24,7 +24,7 @@ class Projects(QtWidgets.QWidget):
         self.get_info()
 
     def get_info(self):
-        _LOGGER.info('Gathering Information for the Projects Section...')
+        _LOGGER.info('\n\nGathering Information for the Projects Section...')
         info_text = 'Projects Information:\n\nFound projects:\n'
         _LOGGER.info(f'Value found: {self.model.projects.items()}')
         for index, value in self.model.projects.items():

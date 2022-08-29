@@ -355,9 +355,9 @@ class Setup(QtWidgets.QWidget):
 
         self.right_column_container.addSpacing(10)
         self.content_layout.addSpacing(10)
-        self.initialize_configuration_data()
+        self.open_section()
 
-    def initialize_configuration_data(self):
+    def open_section(self):
         self.set_logging_profile()
 
         # Gather Dynaconf Information
@@ -374,6 +374,9 @@ class Setup(QtWidgets.QWidget):
         self.get_dcc_paths()
         self.get_dynaconf_paths()
         self.get_system_paths()
+
+    def close_section(self):
+        pass
 
     def get_dcc_paths(self):
         for application in ['maya', 'blender', 'houdini', 'substance']:
@@ -507,12 +510,6 @@ class Setup(QtWidgets.QWidget):
             if index == selection_index:
                 target_button.setChecked(True)
         _LOGGER.info(self.ide_radio_group.checkedButton().text())
-
-    def open_section(self):
-        pass
-
-    def close_section(self):
-        pass
 
     def launch_dcc_application(self, environment, application_path):
         if Path(application_path).name not in (i.name() for i in psutil.process_iter()):
