@@ -168,7 +168,7 @@ namespace AZ
             // Pointer to list of passes relevant to the draw lists (passes will be used for sorting the draw lists)
             PassesByDrawList* m_passesByDrawList = nullptr;
 
-            // Indies of constants in default view srg
+            // Indices of constants in default view srg
             RHI::ShaderInputNameIndex m_viewProjectionMatrixConstantIndex = "m_viewProjectionMatrix";
             RHI::ShaderInputNameIndex m_worldPositionConstantIndex = "m_worldPosition";
             RHI::ShaderInputNameIndex m_viewMatrixConstantIndex = "m_viewMatrix";
@@ -179,7 +179,8 @@ namespace AZ
             RHI::ShaderInputNameIndex m_worldToClipPrevMatrixConstantIndex = "m_viewProjectionPrevMatrix";
             RHI::ShaderInputNameIndex m_zConstantsConstantIndex = "m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ";
             RHI::ShaderInputNameIndex m_unprojectionConstantsIndex = "m_unprojectionConstants";
-            RHI::ShaderInputNameIndex m_jitterCompensation_motionVectorScale = "m_jitterCompensation_motionVectorScale";
+            RHI::ShaderInputNameIndex m_jitterCompensationIndex = "m_jitterCompensation";
+            RHI::ShaderInputNameIndex m_motionVectorScaleIndex = "m_motionVectorScale";
 
             // The context containing draw lists associated with the view.
             RHI::DrawListContext m_drawListContext;

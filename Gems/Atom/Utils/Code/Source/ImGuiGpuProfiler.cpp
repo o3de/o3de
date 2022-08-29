@@ -575,6 +575,8 @@ namespace AZ
             AZStd::vector<PassEntry*> sortedPassEntries;
             AZStd::vector<AZStd::vector<PassEntry*>> sortedPassGrid;
 
+            PassEntry* displayMapperPass = nullptr;
+
             // Set the child of the parent, only if it passes the filter.
             for (auto& passEntryIt : timestampEntryDatabase)
             {
@@ -584,6 +586,11 @@ namespace AZ
                 if (passEntry->m_timestampResult.GetDurationInTicks() > 0)
                 {
                     sortedPassEntries.push_back(passEntry);
+                }
+
+                if (passEntry->m_parent && passEntry->m_parent->m_name == Name{ "DisplayMapperPass" })
+                {
+                    displayMapperPass = passEntry;
                 }
 
                 // Skip the pass if the pass' timestamp duration is 0
@@ -622,6 +629,15 @@ namespace AZ
             {
                 gpuTimestamp = sortedPassEntries.front()->m_timestampResult;
                 gpuTimestamp.Add(sortedPassEntries.back()->m_timestampResult);
+            }
+
+            // Compute the GPU time for the passes prior to the ImGui pass as a proxy for total scene
+            // time (excludes ImGui pass and swapchain copy)
+            RPI::TimestampResult gpuTimestampScene;
+            if (sortedPassEntries.size() > 0 && displayMapperPass)
+            {
+                gpuTimestampScene = sortedPassEntries.front()->m_timestampResult;
+                gpuTimestampScene.Add(displayMapperPass->m_timestampResult);
             }
 
             // Add a pass to the pass grid which none of the pass's timestamp range won't overlap each other.
@@ -689,6 +705,14 @@ namespace AZ
                     const AZStd::string formattedTimestamp = FormatTimestampLabel(gpuTimestamp.GetDurationInNanoseconds());
                     const AZStd::string headerFrameTime = AZStd::string::format("Total frame duration (GPU): %s", formattedTimestamp.c_str());
                     ImGui::Text("%s", headerFrameTime.c_str());
+
+                    if (displayMapperPass)
+                    {
+                        const AZStd::string formattedSceneTimestamp = FormatTimestampLabel(gpuTimestampScene.GetDurationInNanoseconds());
+                        const AZStd::string sceneFrameTime =
+                            AZStd::string::format("Scene frame duration (GPU): %s", formattedSceneTimestamp.c_str());
+                        ImGui::Text("%s", sceneFrameTime.c_str());
+                    }
 
                     // Draw the viewing option.
                     ImGui::RadioButton("Hierarchical", reinterpret_cast<int32_t*>(&m_viewType), static_cast<int32_t>(ProfilerViewType::Hierarchical));

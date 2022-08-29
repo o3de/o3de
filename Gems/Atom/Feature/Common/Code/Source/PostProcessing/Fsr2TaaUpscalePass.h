@@ -50,6 +50,7 @@ namespace AZ::Render
         void ResetInternal() override;
         void BuildInternal() override;
         void FrameBeginInternal(FramePrepareParams params) override;
+        RPI::TimestampResult GetTimestampResultInternal() const override;
 
         void MaybeCreateFsr2Context();
 
@@ -65,6 +66,10 @@ namespace AZ::Render
         RPI::PassAttachmentBinding* m_inputDepth = nullptr;
         RPI::PassAttachmentBinding* m_inputMotionVectors = nullptr;
         RPI::PassAttachmentBinding* m_outputColor = nullptr;
+
+        // Timestamp query and query readback result
+        RHI::Ptr<RPI::Query> m_timestampQuery;
+        RPI::TimestampResult m_timestampResult;
 
         // State needed to submit an FSR2 dispatch
         FfxFsr2ContextDescription m_fsr2ContextDesc{};
