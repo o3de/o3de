@@ -17,27 +17,25 @@
 #include <AtomToolsFramework/DynamicNode/DynamicNodeUtil.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <Document/MaterialCanvasDocument.h>
-#include <Document/MaterialCanvasDocumentNotificationBus.h>
-#include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphModel/Model/Connection.h>
-
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
+#include <Document/MaterialCanvasDocument.h>
+#include <Document/MaterialCanvasDocumentNotificationBus.h>
+#include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphModel/Model/Connection.h>
 
 namespace MaterialCanvas
 {
@@ -112,7 +110,7 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
     {
-        // Setting up placeholder document type info and extensions. This is not representative of final data.
+        // Setting up placeholder document type info and extensions.
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
