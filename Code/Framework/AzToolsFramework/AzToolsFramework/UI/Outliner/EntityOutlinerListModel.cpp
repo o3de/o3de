@@ -48,6 +48,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
@@ -1226,18 +1227,32 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
-        // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
-        QueueEntityUpdate(entityId);
-
-        EntityIdList children;
-        EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
-        for (auto childId : children)
+        if (!Prefab::IsPrefabOverridesUxEnabled())
         {
-            QueueEntityUpdate(childId);
-        }
+            // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+            QueueEntityUpdate(entityId);
 
-        // Always expand containers
-        QueueEntityToExpand(entityId, true);
+            EntityIdList children;
+            EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+            for (auto childId : children)
+            {
+                QueueEntityUpdate(childId);
+            }
+
+            // Always expand containers
+            QueueEntityToExpand(entityId, true);
+        }
+        else
+        {
+            QModelIndex changedIndex = GetIndexFromEntity(entityId);
+
+            // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
+            int numChildren = rowCount(changedIndex);
+            if (numChildren > 0)
+            {
+                emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
+            }
+        } 
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)

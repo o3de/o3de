@@ -1237,6 +1237,9 @@ namespace O3DE::ProjectManager
                     }
                 }
 
+
+                templateInfo.m_requirements = Py_To_String_Optional(data, "requirements", "");
+                templateInfo.m_license = Py_To_String_Optional(data, "license", "");
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
