@@ -29,16 +29,16 @@ namespace AZ
         {
         public:
             //! Sets which draw packet should be selected for viewing. This draw packet must appear in the 
-			//! list provided to the Tick() function, or this selection will be ignored.
+            //! list provided to the Tick() function, or this selection will be ignored.
             void SetSelectedDrawPacket(const RPI::MeshDrawPacket* drawPacket);
 
             void OpenDialog();
             void CloseDialog();
 
             //! Per-frame UI draw function. 
-			//! @param drawPackets is the tree of draw packets that should be listed for user selection. The selected draw packet
-			//!                    will have its shader list displayed with debug information.
-			//! @param selectionName is an optional name to be displayed at the top, indicating what entity or what list of draw packets is displayed.
+            //! @param drawPackets is the tree of draw packets that should be listed for user selection. The selected draw packet
+            //!                    will have its shader list displayed with debug information.
+            //! @param selectionName is an optional name to be displayed at the top, indicating what entity or what list of draw packets is displayed.
             bool Tick(const AZ::RPI::MeshDrawPacketLods* drawPackets, const char* selectionName = nullptr);
 
         private:
