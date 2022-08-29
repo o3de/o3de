@@ -105,8 +105,7 @@ namespace AtomToolsFramework
                     caller, QObject::tr("Run Script"), QString(AZ::Utils::GetProjectPath().c_str()), QString("*.py"));
                 if (!script.isEmpty())
                 {
-                    AZStd::string shaderPath = entry->GetFullPath();
-                    AZStd::vector<AZStd::string_view> pythonArgs{ shaderPath };
+                    AZStd::vector<AZStd::string_view> pythonArgs{ entry->GetFullPath() };
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, script.toUtf8().constData(),
                         pythonArgs);
