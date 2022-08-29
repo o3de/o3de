@@ -32,7 +32,7 @@ def get_codeowners(target_path: pathlib.PurePath) -> (str|None, str|None, pathli
 
 def find_github_codeowners(target_path: pathlib.PurePath) -> pathlib.Path|None:
     """
-    Finds the '.github/CODEOWNERS' file for the git repo containing target_path
+    Finds the '.github/CODEOWNERS' file for the git repo containing target_path, scanning upward through the filesystem
     :param target_path: a path expected to exist in a GitHub repository containing a CODEOWNERS file
     :return: path to the CODEOWNERS file, or None if no file could be located
     """
@@ -147,6 +147,7 @@ def _codeowners_path_matches(target_path: pathlib.PurePosixPath, owned_path: str
 
 def _pretty_print_success(print_fn, found_codeowners_path, matched_path, owner_aliases) -> None:
     """
+    Prints a friendly message, instead of the default terse output of owner alias(es)
     :param print_fn: function to call when logging strings
     :param found_codeowners_path: verified path to a GitHub CODEOWNERS file
     :param matched_path: first part of an entry matched in the CODEOWNERS file
@@ -159,7 +160,7 @@ def _pretty_print_success(print_fn, found_codeowners_path, matched_path, owner_a
 def _pretty_print_failure(print_fn, found_codeowners_path, matched_path, original_target,
                           default_alias=_DEFAULT_CODEOWNER_ALIAS) -> None:
     """
-    Prints a friendly message, instead of the default terse output of owner aliases
+    Prints a friendly message about failure to find an owner
     :param print_fn: function to call when logging strings
     :param found_codeowners_path: verified path to a GitHub CODEOWNERS file which, empty when missing
     :param matched_path: entry matched in the CODEOWNERS file, empty when not matched
@@ -177,18 +178,18 @@ def _pretty_print_failure(print_fn, found_codeowners_path, matched_path, origina
 
 
 def _main() -> int:
-    parser = argparse.ArgumentParser(description="Display GitHub CODEOWNERS information for a path to stdout")
+    parser = argparse.ArgumentParser(description="Display GitHub CODEOWNERS information to stdout for a target path")
     parser.add_argument('target', metavar='T', type=pathlib.Path,
                         help="file path to find an owner for")
     parser.add_argument('-c', '--codeowners', type=pathlib.Path,
-                        help="path to a GitHub CODEOWNERS file, when not set it will be searched for in the repo "
+                        help="path to a GitHub CODEOWNERS file, when not set this will scan upward to find the repo "
                              "containing the target")
     parser.add_argument('-d', '--default_alias', default=_DEFAULT_CODEOWNER_ALIAS,
-                        help="location to reach out for support when ownership cannot be determined")
+                        help="a default location to reach out for support, for when ownership cannot be determined")
     parser.add_argument('-p', '--pretty_print', action='store_true',
                         help="output ownership info as a friendly message instead of only alias(es)")
     parser.add_argument('-s', '--silent', action='store_true',
-                        help="Suppress warning messages and only print ownership information")
+                        help="Suppress any warning messages and only print ownership information")
     args = parser.parse_args()
 
     if args.silent:
