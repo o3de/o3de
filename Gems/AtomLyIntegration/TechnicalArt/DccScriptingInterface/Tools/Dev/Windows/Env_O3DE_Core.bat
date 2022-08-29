@@ -93,6 +93,10 @@ echo     O3DE_DEV = %O3DE_DEV%
 :: Restore original directory
 popd
 
+:: O3DE Technical Art Gems Location
+set "PATH_O3DE_TECHART_GEMS=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt"
+echo     PATH_O3DE_TECHART_GEMS = %PATH_O3DE_TECHART_GEMS%
+
 :: dcc scripting interface gem path
 :: currently know relative path to this gem
 set "PATH_DCCSIG=%O3DE_DEV%\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface"
@@ -122,12 +126,6 @@ echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
 
 IF "%PATH_O3DE_BIN%"=="" (set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile")
 echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
-
-echo.
-echo ~    Not setting up PATH or PYTHONPATH (each launcher should!)
-
-:: we are moving to only setting up PATH in launchers
-::SET PATH=%PATH_O3DE_BIN%;%PATH_DCCSIG%;%PATH%
 
 ::ENDLOCAL
 

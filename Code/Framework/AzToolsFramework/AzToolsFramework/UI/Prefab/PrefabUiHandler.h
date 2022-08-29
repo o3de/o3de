@@ -20,10 +20,9 @@ namespace AzToolsFramework
     {
         class PrefabFocusPublicInterface;
         class PrefabPublicInterface;
-    };
+    }; // namespace Prefab
 
-    class PrefabUiHandler
-        : public EditorEntityUiHandlerBase
+    class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
         AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);

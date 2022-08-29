@@ -6,16 +6,16 @@
  *
  */
 
-#include "ProjectTemplateInfo.h"
+#include "TemplateInfo.h"
 
 namespace O3DE::ProjectManager
 {
-    ProjectTemplateInfo::ProjectTemplateInfo(const QString& path)
+    TemplateInfo::TemplateInfo(const QString& path)
         : m_path(path)
     {
     }
 
-    bool ProjectTemplateInfo::IsValid() const
+    bool TemplateInfo::IsValid() const
     {
         return !m_path.isEmpty() && !m_name.isEmpty();
     }
