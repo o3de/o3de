@@ -1,5 +1,5 @@
 {
-    "Shader": "ImagePreview.shader",
+    "Shader": "Shaders/ImagePreview.shader",
     "Variants": [
         {
             "StableId": 1,

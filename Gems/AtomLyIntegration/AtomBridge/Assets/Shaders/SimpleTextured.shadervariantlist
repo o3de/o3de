@@ -1,5 +1,5 @@
 {
-    "Shader": "SimpleTextured.shader",
+    "Shader": "Shaders/SimpleTextured.shader",
     "Variants": [
         {
             "StableId": 1,

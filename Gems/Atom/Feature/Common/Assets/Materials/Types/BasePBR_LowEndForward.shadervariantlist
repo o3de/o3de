@@ -1,5 +1,5 @@
 {
-    "Shader" : "BasePBR_LowEndForward.shader",
+    "Shader" : "Materials/Types/BasePBR_LowEndForward.shader",
     "Variants": [
         {
             "StableId": 1,

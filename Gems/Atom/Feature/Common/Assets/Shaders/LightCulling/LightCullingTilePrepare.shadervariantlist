@@ -1,5 +1,5 @@
 {
-    "Shader": "LightCullingTilePrepare.shader",
+    "Shader": "Shaders/LightCulling/LightCullingTilePrepare.shader",
     "Variants": [
         {
             "StableId": 1,
