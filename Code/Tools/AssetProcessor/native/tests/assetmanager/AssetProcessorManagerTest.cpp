@@ -146,7 +146,7 @@ void AssetProcessorManagerTest::SetUp()
     m_config->EnablePlatform({ "pc", { "host", "renderer", "desktop" } }, true);
 
     m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "subfolder1", "subfolder1", false, true, m_config->GetEnabledPlatforms(), 1));
-    m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2/redirected"), "subfolder2", "subfolder2", false, true, m_config->GetEnabledPlatforms()));
+    m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "subfolder2", "subfolder2", false, true, m_config->GetEnabledPlatforms()));
     m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"), "subfolder3", "subfolder3", false, true, m_config->GetEnabledPlatforms(), 1));
     m_config->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"), "subfolder4", "subfolder4", false, true, m_config->GetEnabledPlatforms(), 1));
     m_config->AddMetaDataType("assetinfo", "");
@@ -201,6 +201,25 @@ void AssetProcessorManagerTest::TearDown()
     AssetProcessor::AssetProcessorTest::TearDown();
 }
 
+void AssetProcessorManagerTest::CreateSourceAndFile(const char* tempFolderRelativePath)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto absolutePath = tempPath.absoluteFilePath(tempFolderRelativePath);
+
+    auto scanFolder = m_config->GetScanFolderForFile(absolutePath);
+
+    QString relPath;
+    m_config->ConvertToRelativePath(absolutePath, scanFolder, relPath);
+
+    auto uuid = AssetUtilities::CreateSafeSourceUUIDFromName(relPath.toUtf8().constData());
+
+    AzToolsFramework::AssetDatabase::SourceDatabaseEntry source(scanFolder->ScanFolderID(), relPath.toUtf8().constData(), uuid, "fingerprint");
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source));
+
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(absolutePath));
+}
+
 void AssetProcessorManagerTest::PopulateDatabase()
 {
     using namespace AzToolsFramework::AssetDatabase;
@@ -211,15 +230,10 @@ void AssetProcessorManagerTest::PopulateDatabase()
         tempPath.absoluteFilePath("subfolder1").toUtf8().constData(), "temp path", "temp path");
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetScanFolder(scanFolder));
 
-    SourceDatabaseEntry source1(scanFolder.m_scanFolderID, "a.txt", m_aUuid, "fingerprint");
-    SourceDatabaseEntry source2(scanFolder.m_scanFolderID, "b.txt", m_bUuid, "fingerprint");
-    SourceDatabaseEntry source3(scanFolder.m_scanFolderID, "c.txt", m_cUuid, "fingerprint");
-    SourceDatabaseEntry source4(scanFolder.m_scanFolderID, "d.txt", m_dUuid, "fingerprint");
-
-    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source1));
-    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source2));
-    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source3));
-    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSource(source4));
+    CreateSourceAndFile("subfolder1/a.txt");
+    CreateSourceAndFile("subfolder1/b.txt");
+    CreateSourceAndFile("subfolder1/c.txt");
+    CreateSourceAndFile("subfolder1/d.txt");
 }
 
 TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
@@ -1013,7 +1027,7 @@ TEST_F(AssetProcessorManagerTest, BuilderSDK_API_CreateJobs_HasValidParameters_W
 {
     QDir tempPath(m_tempDir.path());
     // here we push a file change through APM and make sure that "CreateJobs" has correct parameters, with no output redirection
-    QString absPath(tempPath.absoluteFilePath("subfolder2/redirected/test_text.txt"));
+    QString absPath(tempPath.absoluteFilePath("subfolder2/test_text.txt"));
     UnitTestUtils::CreateDummyFile(absPath);
 
     m_mockApplicationManager->ResetMockBuilderCreateJobCalls();
@@ -1034,7 +1048,7 @@ TEST_F(AssetProcessorManagerTest, BuilderSDK_API_CreateJobs_HasValidParameters_W
     // subfolder2 has its output redirected in the cache
     // this test makes sure that the CreateJobs API is completely unaffected by that and none of the internal database stuff
     // is reflected by the API.
-    EXPECT_STREQ(req.m_watchFolder.c_str(), tempPath.absoluteFilePath("subfolder2/redirected").toUtf8().constData());
+    EXPECT_STREQ(req.m_watchFolder.c_str(), tempPath.absoluteFilePath("subfolder2").toUtf8().constData());
     EXPECT_STREQ(req.m_sourceFile.c_str(), "test_text.txt"); // only the name should be there, no output prefix.
 
     EXPECT_NE(req.m_sourceFileUUID, AZ::Uuid::CreateNull());
@@ -2378,91 +2392,6 @@ TEST_F(PathDependencyTest, MixedPathDependencies_Deferred_ResolveCorrectly)
     );
 }
 
-// This test ensures product path *product* file dependencies are matched by exact path
-// Dep1 is output as test.asset#, Dep2 is output as redirected/test.asset#
-// Dependencies on test.asset# should point to dep1 and never dep2
-TEST_F(PathDependencyTest, AssetProcessed_Impl_DeferredPathResolution_CorrectlyMatchesWithScanFolderPrefix)
-{
-    using namespace AssetProcessor;
-    using namespace AssetBuilderSDK;
-
-    // -------- Make main test asset, with dependencies on products that don't exist yet -----
-    TestAsset primaryFile("test_text");
-    ASSERT_TRUE(ProcessAsset(primaryFile, { { ".asset" }, {} }, { {"test.asset1", ProductPathDependencyType::ProductFile}, {"test.asset2", ProductPathDependencyType::ProductFile} }));
-
-    // create dependees
-    TestAsset dep1("test");
-    TestAsset dep2("test");
-
-    ASSERT_TRUE(ProcessAsset(dep1, { {".asset1"}, {".asset2"} }, {}, "subfolder1/"));
-    ASSERT_TRUE(ProcessAsset(dep2, { {".asset1"}, {".asset2"} }, {}, "subfolder2/redirected/"));
-
-    // ---------- Verify that the dependency was recorded, and did not keep the path after resolution ----------
-    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
-    ASSERT_TRUE(m_sharedConnection->GetProductDependencies(dependencyContainer));
-
-    VerifyDependencies(dependencyContainer, { dep1.m_products[0], dep2.m_products[1] });
-}
-
-// This test ensures product path *source* file dependencies are matched by exact path
-TEST_F(PathDependencyTest, SourceFileDependencyWithPrefix_Deferred_ResolvesCorrectly)
-{
-    using namespace AssetProcessor;
-    using namespace AssetBuilderSDK;
-
-    // -------- Make main test asset, with dependencies on products that don't exist yet -----
-    TestAsset primaryFile("test_text");
-
-    ASSERT_TRUE(ProcessAsset(primaryFile, { { ".asset" }, {} }, { {"test.txt", ProductPathDependencyType::SourceFile} }));
-
-    // create dependees
-    TestAsset dep1("test");
-    TestAsset dep2("test");
-
-    ASSERT_TRUE(ProcessAsset(dep1, { {".asset1"}, {".asset2"} }, {}, "subfolder1/"));
-    ASSERT_TRUE(ProcessAsset(dep2, { {".asset1"}, {".asset2"} }, {}, "subfolder2/redirected/"));
-
-    // ---------- Verify that the dependency was recorded, and did not keep the path after resolution ----------
-    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
-    ASSERT_TRUE(m_sharedConnection->GetProductDependencies(dependencyContainer));
-
-    VerifyDependencies(dependencyContainer,
-        {
-            dep2.m_products[0],
-            dep2.m_products[1],
-        }
-    );
-}
-
-TEST_F(PathDependencyTest, SourceFileDependencyWithPrefix_Existing_ResolvesCorrectly)
-{
-    using namespace AssetProcessor;
-    using namespace AssetBuilderSDK;
-
-    // create dependees
-    TestAsset dep1("test");
-    TestAsset dep2("test");
-
-    ASSERT_TRUE(ProcessAsset(dep1, { {".asset1"}, {".asset2"} }, {}, "subfolder1/"));
-    ASSERT_TRUE(ProcessAsset(dep2, { {".asset1"}, {".asset2"} }, {}, "subfolder2/redirected/"));
-
-    // -------- Make main test asset, with dependencies on products we just created -----
-    TestAsset primaryFile("test_text");
-
-    ASSERT_TRUE(ProcessAsset(primaryFile, { { ".asset" }, {} }, { {"test.txt", ProductPathDependencyType::SourceFile} }));
-
-    // ---------- Verify that the dependency was recorded, and did not keep the path after resolution ----------
-    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
-    ASSERT_TRUE(m_sharedConnection->GetProductDependencies(dependencyContainer));
-
-    VerifyDependencies(dependencyContainer,
-        {
-            dep2.m_products[0],
-            dep2.m_products[1],
-        }
-    );
-}
-
 void MultiplatformPathDependencyTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
@@ -2938,14 +2867,14 @@ void SourceFileDependenciesTest::SetupData(
 
     if (createFile1Dummies)
     {
-        ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Source, QString("tempdata\n")));
-        ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile1_Job, QString("tempdata\n")));
+        CreateSourceAndFile("subfolder1/a.txt");
+        CreateSourceAndFile("subfolder1/c.txt");
     }
 
     if (createFile2Dummies)
     {
-        ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile2_Source, QString("tempdata\n")));
-        ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_dependsOnFile2_Job, QString("tempdata\n")));
+        CreateSourceAndFile("subfolder1/b.txt");
+        CreateSourceAndFile("subfolder1/d.txt");
     }
 
     // construct the dummy job to feed to the database updater function:
@@ -2957,6 +2886,7 @@ void SourceFileDependenciesTest::SetupData(
     if (primeMap)
     {
         // note that we have to "prime" the map with the UUIDs to the source info for this to work:
+        m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[job.m_sourceFileInfo.m_uuid] = { m_watchFolderPath, job.m_sourceFileInfo.m_databasePath, job.m_sourceFileInfo.m_databasePath };
         m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfA] = { m_watchFolderPath, "a.txt", "a.txt" };
         m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfB] = { m_watchFolderPath, "b.txt", "b.txt" };
         m_assetProcessorManager->m_sourceUUIDToSourceInfoMap[m_uuidOfC] = { m_watchFolderPath, "c.txt", "c.txt" };
@@ -2982,6 +2912,19 @@ void SourceFileDependenciesTest::SetupData(
 
     // this is the one line that this unit test is really testing:
     m_assetProcessorManager->UpdateSourceFileDependenciesDatabase(job);
+}
+
+void SourceFileDependenciesTest::PopulateDatabase()
+{
+    using namespace AzToolsFramework::AssetDatabase;
+
+    QDir tempPath(m_tempDir.path());
+
+    AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder(
+        tempPath.absoluteFilePath("subfolder1").toUtf8().constData(), "temp path", "temp path");
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetScanFolder(scanFolder));
+
+    CreateSourceAndFile("subFolder1/assetProcessorManagerTest.txt");
 }
 
 AssetBuilderSDK::SourceFileDependency SourceFileDependenciesTest::MakeSourceDependency(const char* file, bool wildcard)
@@ -4367,12 +4310,12 @@ void WildcardSourceDependencyTest::SetUp()
         m_config->AddExcludeRecognizer(excludeFile);
     }
 
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1a.foo"));
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder1/1b.foo"));
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/a.foo"));
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/b.foo"));
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo"));
+    CreateSourceAndFile("subfolder1/1a.foo");
+    CreateSourceAndFile("subfolder1/1b.foo");
+    CreateSourceAndFile("subfolder2/a.foo");
+    CreateSourceAndFile("subfolder2/b.foo");
+    CreateSourceAndFile("subfolder2/folder/one/c.foo");
+    CreateSourceAndFile("subfolder2/folder/one/d.foo");
 
     // Add a file that is not in a scanfolder.  Should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("not/a/scanfolder/e.foo"));
@@ -4381,10 +4324,10 @@ void WildcardSourceDependencyTest::SetUp()
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
 
     // Add a file to an ignored folder
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/ignored/g.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/folder/ignored/g.foo"));
 
     // Add an ignored file
-    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/z.foo"));
+    UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("subfolder2/folder/one/z.foo"));
 
     // Add a file in the cache
     AZStd::string projectCacheRootValue;
@@ -4467,7 +4410,7 @@ TEST_F(WildcardSourceDependencyTest, Absolute_WithFolder)
     AZStd::vector<AZStd::string> resolvedPaths;
     QDir tempPath(m_tempDir.path());
 
-    ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/redirected/*.foo").toUtf8().constData(), resolvedPaths));
+    ASSERT_TRUE(Test(tempPath.absoluteFilePath("subfolder2/*.foo").toUtf8().constData(), resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre("a.foo", "b.foo", "folder/one/c.foo", "folder/one/d.foo"));
 }
 
@@ -4590,7 +4533,7 @@ TEST_F(WildcardSourceDependencyTest, FilesAddedAfterInitialCache)
     }
 
     // Add a file to a new ignored folder
-    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/folder/two/ignored/three/new.foo");
     UnitTestUtils::CreateDummyFile(newFilePath);
 
     excludedFolderCacheInterface->FileAdded(newFilePath);
@@ -4598,7 +4541,7 @@ TEST_F(WildcardSourceDependencyTest, FilesAddedAfterInitialCache)
     const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
 
     ASSERT_EQ(excludedFolders.size(), 3);
-    ASSERT_THAT(excludedFolders, ::testing::Contains(AZStd::string(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored").toUtf8().constData())));
+    ASSERT_THAT(excludedFolders, ::testing::Contains(AZStd::string(tempPath.absoluteFilePath("subfolder2/folder/two/ignored").toUtf8().constData())));
 }
 
 TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
@@ -4607,7 +4550,7 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
     QDir tempPath(m_tempDir.path());
 
     // Add a file to a new ignored folder
-    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/folder/two/ignored/three/new.foo");
     UnitTestUtils::CreateDummyFile(newFilePath);
 
     auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
@@ -4620,7 +4563,7 @@ TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
         ASSERT_EQ(excludedFolders.size(), 3);
     }
 
-    m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored"));
+    m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/folder/two/ignored"));
 
     const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
 
@@ -4633,7 +4576,7 @@ TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)
 
     auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1a.foo"));
 
-    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/a.foo").toUtf8().constData()));
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/a.foo").toUtf8().constData()));
 }
 
 TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedAbsoluteDependency)
@@ -4642,14 +4585,14 @@ TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedAbsoluteDependency)
 
     auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1b.foo"));
 
-    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/b.foo").toUtf8().constData()));
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/b.foo").toUtf8().constData()));
 }
 
 TEST_F(WildcardSourceDependencyTest, NewFile_MatchesDuplicatedDependenciesOnce)
 {
     QDir tempPath(m_tempDir.path());
 
-    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder2/folder/one/c.foo"));
 
-    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo").toUtf8().constData()));
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/folder/one/d.foo").toUtf8().constData()));
 }

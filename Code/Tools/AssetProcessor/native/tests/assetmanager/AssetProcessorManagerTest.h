@@ -168,6 +168,7 @@ protected:
     void SetUp() override;
     void TearDown() override;
 
+    virtual void CreateSourceAndFile(const char* tempFolderRelativePath);
     virtual void PopulateDatabase();
 
     QTemporaryDir m_tempDir;
@@ -228,6 +229,8 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
         bool createFile2Dummies,
         bool primeMap,
         AssetProcessor::AssetProcessorManager::JobToProcessEntry& job);
+
+    void PopulateDatabase() override;
 
     auto GetDependencyList();
 
