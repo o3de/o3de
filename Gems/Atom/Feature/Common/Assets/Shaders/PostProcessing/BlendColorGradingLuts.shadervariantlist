@@ -1,5 +1,5 @@
 {
-    "Shader" : "Shaders/PostProcessing/BlendColorGradingLuts.shader",
+    "Shader" : "BlendColorGradingLuts.shader",
     "Variants" : [
         {
             "StableId": 1,

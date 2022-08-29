@@ -1,5 +1,5 @@
 {
-    "Shader" : "Shaders/Shadow/DepthExponentiation.shader",
+    "Shader" : "DepthExponentiation.shader",
     "Variants" : [
       {
         "StableId": 1,

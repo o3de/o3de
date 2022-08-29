@@ -1,5 +1,5 @@
 {
-    "Shader" : "Shaders/AuxGeom/AuxGeomObjectLit.shader",
+    "Shader" : "AuxGeomObjectLit.shader",
     "Variants" :
     [
         {

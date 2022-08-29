@@ -1,5 +1,5 @@
 {
-    "Shader" : "LyShine/Shaders/LyShineUI.shader",
+    "Shader" : "LyShineUI.shader",
     "Variants" : [
         {
             "StableId": 1,
