@@ -2025,11 +2025,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 xmlObjStream->WriteClass(&testData);
                 xmlObjStream->Finalize();
 
-                AZ::IO::SystemFile tmpOut;
-                tmpOut.Open("SerializeContainersTest.xml", AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-                tmpOut.Write(xmlStream.GetData()->data(), xmlStream.GetLength());
-                tmpOut.Close();
-
                 xmlStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
                 ObjectStream::ClassReadyCB readyCB(AZStd::bind(&ContainersTest::VerifyLoad, this, AZStd::placeholders::_1, AZStd::placeholders::_2, &testData));
                 ObjectStream::LoadBlocking(&xmlStream, serializeContext, readyCB);
@@ -2847,11 +2842,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
                 xmlObjStream->WriteClass(&testData);
                 xmlObjStream->Finalize();
 
-                AZ::IO::SystemFile tmpOut;
-                tmpOut.Open("DataOverlayTest.xml", AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-                tmpOut.Write(xmlStream.GetData()->data(), xmlStream.GetLength());
-                tmpOut.Close();
-
                 DataOverlayProviderExample overlayProvider;
                 overlayProvider.BusConnect(DataOverlayProviderExample::GetProviderId());
                 xmlStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
@@ -2890,11 +2880,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
         ObjectStream* xmlObjStream = ObjectStream::Create(&xmlStream, serializeContext, ObjectStream::ST_XML);
         xmlObjStream->WriteClass(&testData);
         xmlObjStream->Finalize();
-
-        AZ::IO::SystemFile tmpOut;
-        tmpOut.Open("DynamicSerializableFieldTest.xml", AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-        tmpOut.Write(xmlStream.GetData()->data(), xmlStream.GetLength());
-        tmpOut.Close();
 
         xmlStream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
 
