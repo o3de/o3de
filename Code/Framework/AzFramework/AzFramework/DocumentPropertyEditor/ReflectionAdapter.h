@@ -60,6 +60,9 @@ namespace AZ::DocumentPropertyEditor
         //! property editor instances has altered its value.
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
+        void* GetInstance() { return m_instance; }
+        AZ::TypeId GetTypeId() { return m_typeId; }
+
     protected:
         Dom::Value GenerateContents() override;
         Dom::Value HandleMessage(const AdapterMessage& message) override;

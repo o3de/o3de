@@ -42,6 +42,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Adapter : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Adapter";
+        static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
+        static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
+
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
     };
