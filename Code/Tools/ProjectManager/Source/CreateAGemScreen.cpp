@@ -23,11 +23,12 @@ namespace O3DE::ProjectManager
     CreateAGemScreen::CreateAGemScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        QVBoxLayout* vLayout = new QVBoxLayout();
+        QVBoxLayout* vLayout = new QVBoxLayout(this);
         vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
-        m_tabWidget = new TabWidget();
+        m_tabWidget = new TabWidget(this);
+        m_tabWidget->setContentsMargins(0, 0, 0, 0);
         
         m_tabWidget->setObjectName("createAGemTab");
         m_tabWidget->addTab(CreateFirstScreen(), tr("1. Gem Setup"));
@@ -36,9 +37,9 @@ namespace O3DE::ProjectManager
         m_tabWidget->tabBar()->setEnabled(false);
         vLayout->addWidget(m_tabWidget);
 
-        QFrame* footerFrame = new QFrame();
+        QFrame* footerFrame = new QFrame(this);
         footerFrame->setObjectName("createAGemFooter");
-        m_backNextButtons = new QDialogButtonBox();
+        m_backNextButtons = new QDialogButtonBox(this);
         m_backNextButtons->setObjectName("footer");
         QVBoxLayout* footerLayout = new QVBoxLayout();
         footerLayout->setContentsMargins(0, 0, 0, 0);
@@ -60,19 +61,36 @@ namespace O3DE::ProjectManager
 
     void CreateAGemScreen::LoadButtonsFromGemTemplatePaths([[maybe_unused]]QVBoxLayout* firstScreen)
     {
-        QHash<QString, QString> formattedNames;
-        formattedNames.insert(QString("Prebuilt Gem Tenokate"), QString(tr("Prebuilt Gem")));
-        formattedNames.insert(QString("Asset Gem Template"), QString(tr("Asset Gem")));
-        formattedNames.insert(QString("Default Gem Template"), QString(tr("Default Gem")));
-        formattedNames.insert(QString("CppToolGem"), QString(tr("C++ Tool Gem")));
-        formattedNames.insert(QString("PythonToolGem"), QString(tr("Python Tool Gem")));
-
         m_radioButtonGroup = new QButtonGroup();
+
+        auto templatesResult = PythonBindingsInterface::Get()->GetGemTemplates();
+        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+        {
+            m_gemTemplates = templatesResult.GetValue();
+            for (int index = 0; index < m_gemTemplates.size(); ++index)
+            {
+                ProjectTemplateInfo gemTemplate = m_gemTemplates.at(index);
+
+                QRadioButton* button = new QRadioButton(gemTemplate.m_displayName);
+                button->setObjectName("createAGem");
+                m_radioButtonGroup->addButton(button, index);
+
+                QLabel* buttonSubtext = new QLabel();
+                buttonSubtext->setObjectName("createAGemRadioButtonSubtext");
+                buttonSubtext->setText(gemTemplate.m_summary);
+                if (index == 0)
+                {
+                    button->click();
+                }
+                firstScreen->addWidget(button);
+                firstScreen->addWidget(buttonSubtext);
+            }
+        }
     }
 
     QScrollArea* CreateAGemScreen::CreateFirstScreen()
     {
-        QScrollArea* firstScreenScrollArea = new QScrollArea();
+        QScrollArea* firstScreenScrollArea = new QScrollArea(this);
         firstScreenScrollArea->setWidgetResizable(true);
         firstScreenScrollArea->setMinimumWidth(660);
         firstScreenScrollArea->setObjectName("createAGemRightPane");
@@ -81,7 +99,7 @@ namespace O3DE::ProjectManager
         QWidget* firstScreenScrollWidget = new QWidget();
         firstScreenScrollArea->setWidget(firstScreenScrollWidget);
 
-        QVBoxLayout* firstScreen = new QVBoxLayout();
+        QVBoxLayout* firstScreen = new QVBoxLayout(this);
         firstScreen->setAlignment(Qt::AlignTop);
         firstScreen->addWidget(firstScreenFrame);
         firstScreenScrollWidget->setLayout(firstScreen);
@@ -109,7 +127,7 @@ namespace O3DE::ProjectManager
 
     QScrollArea* CreateAGemScreen::CreateSecondScreen()
     {
-        QScrollArea* secondScreenScrollArea = new QScrollArea();
+        QScrollArea* secondScreenScrollArea = new QScrollArea(this);
         secondScreenScrollArea->setWidgetResizable(true);
         secondScreenScrollArea->setMinimumWidth(660);
         secondScreenScrollArea->setObjectName("createAGemRightPane");
@@ -118,7 +136,7 @@ namespace O3DE::ProjectManager
         QWidget* secondScreenScrollWidget = new QWidget();
         secondScreenScrollArea->setWidget(secondScreenScrollWidget);
 
-        QVBoxLayout* secondScreen = new QVBoxLayout();
+        QVBoxLayout* secondScreen = new QVBoxLayout(this);
         secondScreen->setAlignment(Qt::AlignTop);
         secondScreen->addWidget(secondScreenFrame);
         secondScreenScrollWidget->setLayout(secondScreen);
@@ -204,7 +222,7 @@ namespace O3DE::ProjectManager
 
     QScrollArea* CreateAGemScreen::CreateThirdScreen()
     {
-        QScrollArea* thirdScreenScrollArea = new QScrollArea();
+        QScrollArea* thirdScreenScrollArea = new QScrollArea(this);
         thirdScreenScrollArea->setWidgetResizable(true);
         thirdScreenScrollArea->setMinimumWidth(660);
         thirdScreenScrollArea->setObjectName("createAGemRightPane");
@@ -431,7 +449,7 @@ namespace O3DE::ProjectManager
             {
                 m_createAGemInfo.m_creator = m_creatorName->lineEdit()->text();
                 m_createAGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
-                //auto result = PythonBindingsInterface::Get()->CreateGem(m_createAGemInfo);
+                auto result = PythonBindingsInterface::Get()->CreateGem(m_gemTemplateLocation->lineEdit()->text(), m_createAGemInfo);
                 emit CreateButtonPressed();
             }
         }

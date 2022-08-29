@@ -62,11 +62,9 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::GemRepos):
             newScreen = new GemRepoScreen(parent);
             break;
-#ifdef CREATE_A_GAME_ACTIVE
         case (ProjectManagerScreen::CreateAGem):
             newScreen = new CreateAGemScreen(parent);
             break;
-#endif
         case (ProjectManagerScreen::Empty):
         default:
             newScreen = new ScreenWidget(parent);
