@@ -12,6 +12,7 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Debug/TraceContextMultiStackHandler.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
@@ -59,7 +60,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 public:
-    SceneSettingsCard(QWidget* parent = nullptr);
+    SceneSettingsCard(AZ::Uuid traceTag, QWidget* parent = nullptr);
     ~SceneSettingsCard();
 
     void SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler>& handler);
@@ -83,7 +84,24 @@ public:
     void OnSetStatusMessage(const AZStd::string& message);
     void OnProcessingComplete();
 private:
+    enum class CompletionState
+    {
+        Success,
+        Warning,
+        Error,
+        Failure
+    };
+
+    bool ShouldProcessMessage();
+
+    void UpdateCompletionState(CompletionState newState);
+
+    QString GetTimeAsString();
+    
+    AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
+    AZ::Uuid m_traceTag;
     AzQtComponents::StyledDetailsTableModel* m_reportModel = nullptr;
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
+    CompletionState m_completionState = CompletionState::Success;
 };
