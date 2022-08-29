@@ -469,7 +469,7 @@ namespace AzToolsFramework
                 // tooltip from a child PropertyEditor (like the RPE)
                 if (!descriptionString.empty() && toolTip().isEmpty())
                 {
-                    setToolTip(QString::fromUtf8(descriptionString.data()));
+                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
                 }
 
                 // if we found a valid handler, grab its widget to add to the column layout
@@ -484,7 +484,7 @@ namespace AzToolsFramework
                     // only set the widget's tooltip if it doesn't already have its own
                     if (!descriptionString.empty() && addedWidget->toolTip().isEmpty())
                     {
-                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data()));
+                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
                     }
                     m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
                 }
@@ -705,7 +705,7 @@ namespace AzToolsFramework
                     if (changedLabel)
                     {
                         auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->setText(QString::fromUtf8(labelString.data()));
+                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
                     }
                 }
             }
