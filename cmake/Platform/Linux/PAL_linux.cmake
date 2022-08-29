@@ -62,6 +62,6 @@ include(${openssl_cmake_rel_directory}/OpenSSL_linux.cmake)
 set_property(GLOBAL APPEND_STRING PROPERTY O3DE_BUILTIN_PACKAGES_INSTALL_CODE "${openssl_install_code}")
 
 if ("${OPENSSL_VERSION}" STREQUAL "")
-    message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required ofr O3DE")
+    message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required for O3DE")
 endif()
 

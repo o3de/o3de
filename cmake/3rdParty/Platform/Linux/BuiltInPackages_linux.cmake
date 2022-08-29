@@ -52,7 +52,7 @@ ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev1-linux          
 
 # Certain packages are built against OpenSSL, so we must associate the proper ones based on their OpenSSL (Major) versions
 if ("${OPENSSL_VERSION}" STREQUAL "")
-	message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required ofr O3DE")
+	message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required for O3DE")
 elseif ("${OPENSSL_VERSION}" VERSION_LESS "3.0.0")
 	ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-linux-openssl-1          TARGETS AWSNativeSDK                PACKAGE_HASH d4489e9970dadcab52e1db17d47242c2a66478e51c5f1434f9143eeaff5c3223)
 else()
