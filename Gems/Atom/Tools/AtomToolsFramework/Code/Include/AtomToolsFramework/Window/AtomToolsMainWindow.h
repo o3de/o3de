@@ -65,6 +65,7 @@ namespace AtomToolsFramework
 
         void BuildDockingMenu();
         void BuildLayoutsMenu();
+        void BuildScriptsMenu();
 
         virtual void SetupMetrics();
         virtual void UpdateMetrics();
