@@ -79,6 +79,38 @@ QTabBar::tab:focus {
     color: #4082eb;
 }
 
+#createAGemTab #formFrame {
+    margin-left: 0px;
+}
+
+#formFrame QComboBox {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    color:red;
+    min-width:810px;
+    max-width:810px;
+    line-height: 26px;
+    font-size: 18px;
+    height: 26px;
+    padding-left:0px;
+    padding-right:0px;
+}
+
+#formFrame QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    padding-right:20px;
+    min-width: 24px;
+    max-width: 24px;
+    width:24px;
+}
+
+#formFrame QComboBox QListView::item {
+    line-height: 30px;
+    font-size: 18px;
+    height: 40px;
+}
+
 #ToastNotification {
     background-color: black;
     border-radius: 20px;
@@ -113,6 +145,15 @@ QTabBar::tab:focus {
     padding: 0px 10px 2px 6px;
     margin-top:10px;
     margin-left:50px;
+}
+
+#createAGem #formFrame {
+    max-width: 840px;
+    background-color: #444444;
+    border:1px solid #dddddd;
+    border-radius: 4px;
+    padding: 0px 10px 2px 6px;
+    margin-top:10px;
 }
 
 #formFrame[Focus="true"] {
@@ -161,7 +202,7 @@ QTabBar::tab:focus {
 }
 
 #formFrame QLineEdit:disabled {
-    color: #AAAAAA
+    color: #AAAAAA;
 }
 
 #formFrame QComboBox {
@@ -204,6 +245,33 @@ QTabBar::tab:focus {
     font-size:21px;
     color:#ffffff;
     margin: 24px 0 10px 50px;
+}
+
+#rightPaneHeader {
+    font-size:21px;
+    qproperty-indent: 0;
+}
+
+#rightPaneSubheader {
+    font-size:14px;
+    qproperty-indent: 0;
+    padding-bottom: 20px;
+}
+
+#createAGemRightPane {
+    padding-top: 25px;
+    padding-left: 60px;
+}
+
+#createAGem #QRadioButton{
+    padding-top: 15px;
+    font-size: 14px;
+}
+
+#createAGemRadioButtonSubtext {
+    padding-bottom: 20px;
+    padding-left: 23px;
+    font-size: 12;
 }
 
 /************** General (Modal windows) **************/
@@ -256,11 +324,20 @@ QTabBar::tab:focus {
 #body {
     background-color:#333333;
 }
+
+#createAGemBody {
+    background-color:#444444;
+}
+
 #footer {
     /* settings min/max lets us use a fixed size */
     min-width: 50px;
     min-height:54px;
     max-height:54px;
+}
+
+#createAGemFooter {
+    background-color: #000000;
 }
 
 #footer > QPushButton {
