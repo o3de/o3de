@@ -29,6 +29,8 @@ namespace AtomImGuiTools
     public:
         static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
+        //! Change which entity is displayed in the material shader details tool. If @autoOpenDialog is true, it will
+        //! open the dialog if it was not already visible.
         virtual void ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog) = 0;
     };
     using AtomImGuiToolsRequestBus = AZ::EBus<AtomImGuiToolsRequests>;

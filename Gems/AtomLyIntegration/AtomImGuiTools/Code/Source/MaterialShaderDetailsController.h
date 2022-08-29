@@ -13,11 +13,17 @@
 
 namespace AtomImGuiTools
 {
+    //! Provides some additional utilities for the interaction between AtomImGuiToolsSystemComponent and ImGuiMaterialDetails.
     class MaterialShaderDetailsController
     {
     public:
+        //! Sets which entity who's draw packets will be displayed in ImGuiMaterialDetails
         void SetSelectedEntityId(AZ::EntityId entityId);
+
+        //! Returns the collection of MeshDrawPackets currently used by the selected entity.
         const AZ::RPI::MeshDrawPacketLods* GetMeshDrawPackets() const;
+
+        //! Returns the name of the selected entity.
         AZStd::string GetSelectionName() const;
 
     private:
