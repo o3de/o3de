@@ -139,7 +139,6 @@ namespace AZ::Render
                 options[optionName.GetStringView()] = valueName.GetStringView();
             }
 
-
             rapidjson::Document document;
             document.SetObject();
             AZ::JsonSerialization::Store(document, document.GetAllocator(), options);
