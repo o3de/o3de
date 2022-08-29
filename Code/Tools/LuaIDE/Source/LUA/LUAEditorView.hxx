@@ -153,6 +153,7 @@ namespace LUAEditor
         void RegainFocus();
         
     private:
+        void UpdateModifyFlag();
         void keyPressEvent(QKeyEvent *ev) override;
         int CalcDocPosition(int line, int column);
         template<typename Callable> //callabe must take a const QTextCursor& as a parameter
