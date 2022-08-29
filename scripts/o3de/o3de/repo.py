@@ -18,6 +18,12 @@ from o3de import manifest, utils, validation
 logger = logging.getLogger('o3de.repo')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
+def get_cache_file_uri(uri: str):
+    parsed_uri = urllib.parse.urlparse(uri)
+    uri_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
+    cache_file = manifest.get_o3de_cache_folder() / str(uri_sha256.hexdigest() + '.json')
+    return cache_file, parsed_uri
+
 def get_repo_manifest_uri(repo_uri: str) -> str or None:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
@@ -27,9 +33,7 @@ def get_repo_manifest_uri(repo_uri: str) -> str or None:
     return url
 
 def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
-    parsed_uri = urllib.parse.urlparse(manifest_uri)
-    repo_sha256 = hashlib.sha256(manifest_uri.encode())
-    cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
+    cache_file, parsed_uri = get_cache_file_uri(manifest_uri)
 
     git_provider = utils.get_git_provider(parsed_uri)
     if git_provider:
@@ -67,9 +71,7 @@ def download_object_manifests(repo_data):
     for o3de_object_uris, manifest_json in manifest_download_list:
         for o3de_object_uri in o3de_object_uris:
             manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
-            manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
-            cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-            parsed_uri = urllib.parse.urlparse(manifest_json_uri)
+            cache_file, parsed_uri = get_cache_file_uri(manifest_json_uri)
 
             git_provider = utils.get_git_provider(parsed_uri)
             if git_provider:
@@ -167,10 +169,9 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     for repo in repo_list:
         if repo not in repo_set:
             repo_set.add(repo)
-            parsed_uri = urllib.parse.urlparse(f'{repo}/repo.json')
-            manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
-            cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-
+            repo_uri = f'{repo}/repo.json'
+            cache_file, parsed_uri = get_cache_file_uri(repo_uri)
+            
             download_file_result = utils.download_file(parsed_uri, cache_file, True)
             if download_file_result != 0:
                 return download_file_result
@@ -181,13 +182,11 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
 
 def get_object_json_paths_from_cached_repo(repo_uri: str, repo_key: str, object_manifest_filename: str) -> set:
     url = f'{repo_uri}/repo.json'
-    repo_sha256 = hashlib.sha256(url.encode())
-    cache_folder = manifest.get_o3de_cache_folder()
-    cache_filename = cache_folder / str(repo_sha256.hexdigest() + '.json')
+    cache_file, _ = get_cache_file_uri(url)
 
     o3de_object_set = set()
 
-    file_name = pathlib.Path(cache_filename).resolve()
+    file_name = pathlib.Path(cache_file).resolve()
     if not file_name.is_file():
         logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
         return o3de_object_set
@@ -209,8 +208,8 @@ def get_object_json_paths_from_cached_repo(repo_uri: str, repo_key: str, object_
         for o3de_object_uris, manifest_json in repo_objects:
             for o3de_object_uri in o3de_object_uris:
                 manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
-                manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
-                cache_object_json_filepath = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
+                cache_object_json_filepath, _ = get_cache_file_uri(manifest_json_uri)
+                
                 if cache_object_json_filepath.is_file():
                     o3de_object_set.add(cache_object_json_filepath)
                 else:
@@ -262,9 +261,8 @@ def refresh_repo(repo_uri: str,
     if not repo_set:
         repo_set = set()
 
-    parsed_uri = urllib.parse.urlparse(f'{repo_uri}/repo.json')
-    repo_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
-    cache_file = cache_folder / str(repo_sha256.hexdigest() + '.json')
+    repo_uri = f'{repo_uri}/repo.json'
+    cache_file, parsed_uri = get_cache_file_uri(repo_uri)
 
     download_file_result = utils.download_file(parsed_uri, cache_file, True)
     if download_file_result != 0:
@@ -351,9 +349,9 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
     # Search for the o3de object based on the supplied object name in the current repo
     cache_folder = manifest.get_o3de_cache_folder()
     for o3de_object_uri in o3de_object_uris:
-        parsed_uri = urllib.parse.urlparse(f'{o3de_object_uri}/{manifest_json}')
-        manifest_json_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
-        cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
+        manifest_uri = f'{o3de_object_uri}/{manifest_json}'
+        cache_file, _ = get_cache_file_uri(manifest_uri)
+        
         if cache_file.is_file():
             with cache_file.open('r') as f:
                 try:
