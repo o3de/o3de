@@ -524,6 +524,11 @@ namespace AzToolsFramework::Prefab
         // Refresh the path and notify changes in case propagation updated any container names.
         RefreshInstanceFocusPath();
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusRefreshed);
+
+        if (IsPrefabOverridesUxEnabled())
+        {
+            SwitchToEditScope();
+        }
     }
 
     void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
