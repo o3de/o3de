@@ -123,7 +123,6 @@ void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
     s_application.reset(new ModuleReflectionTest::InternalApplication);
 
     AZ::ComponentApplication::Descriptor appDescriptor;
-    appDescriptor.m_allocationRecords = true;
     appDescriptor.m_useExistingAllocator = true;
     appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
 

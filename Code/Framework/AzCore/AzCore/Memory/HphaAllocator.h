@@ -34,7 +34,7 @@ namespace AZ
 
         AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
 
-        HphaSchemaBase(const Descriptor& desc);
+        HphaSchemaBase(const Descriptor& desc = {});
         virtual ~HphaSchemaBase();
 
         pointer         allocate(size_type byteSize, size_type alignment) override;

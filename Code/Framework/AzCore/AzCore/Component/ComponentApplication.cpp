@@ -136,7 +136,6 @@ namespace AZ
     ComponentApplication::Descriptor::Descriptor()
     {
         m_useExistingAllocator = false;
-        m_allocationRecords = true;
         m_allocationRecordsSaveNames = false;
         m_allocationRecordsAttemptDecodeImmediately = false;
         m_autoIntegrityCheck = false;
@@ -144,10 +143,8 @@ namespace AZ
         m_doNotUsePools = false;
         m_enableScriptReflection = true;
 
-        m_memoryBlockAlignment = SystemAllocator::Descriptor::Heap::m_memoryBlockAlignment;
         m_memoryBlocksByteSize = 0;
         m_recordingMode = Debug::AllocationRecords::RECORD_STACK_IF_NO_FILE_LINE;
-        m_stackRecordLevels = 5;
     }
 
     bool AppDescriptorConverter(SerializeContext& serialize, SerializeContext::DataElementNode& node)
@@ -301,16 +298,13 @@ namespace AZ
             serializeContext->Class<Descriptor>(&app->GetDescriptor())
                 ->Version(2, AppDescriptorConverter)
                 ->Field("useExistingAllocator", &Descriptor::m_useExistingAllocator)
-                ->Field("allocationRecords", &Descriptor::m_allocationRecords)
                 ->Field("allocationRecordsSaveNames", &Descriptor::m_allocationRecordsSaveNames)
                 ->Field("allocationRecordsAttemptDecodeImmediately", &Descriptor::m_allocationRecordsAttemptDecodeImmediately)
                 ->Field("recordingMode", &Descriptor::m_recordingMode)
-                ->Field("stackRecordLevels", &Descriptor::m_stackRecordLevels)
                 ->Field("autoIntegrityCheck", &Descriptor::m_autoIntegrityCheck)
                 ->Field("markUnallocatedMemory", &Descriptor::m_markUnallocatedMemory)
                 ->Field("doNotUsePools", &Descriptor::m_doNotUsePools)
                 ->Field("enableScriptReflection", &Descriptor::m_enableScriptReflection)
-                ->Field("blockAlignment", &Descriptor::m_memoryBlockAlignment)
                 ->Field("blockSize", &Descriptor::m_memoryBlocksByteSize)
                 ->Field("modules", &Descriptor::m_modules)
                 ;
@@ -325,17 +319,12 @@ namespace AZ
                 ec->Class<Descriptor>("System memory settings", "Settings for managing application memory usage")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::AutoExpand, true)
-                    ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecords, "Record allocations", "Collect information on each allocation made for debugging purposes (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsSaveNames, "Record allocations with name saving", "Saves names/filenames information on each allocation made, useful for tracking down leaks in dynamic modules (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_allocationRecordsAttemptDecodeImmediately, "Record allocations and attempt immediate decode", "Decode callstacks for each allocation when they occur, used for tracking allocations that fail decoding. Very expensive. (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::ComboBox, &Descriptor::m_recordingMode, "Stack recording mode", "Stack record mode. (Ignored in final builds)")
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_stackRecordLevels, "Stack entries to record", "Number of stack levels to record for each allocation (ignored in Release builds)")
-                        ->Attribute(Edit::Attributes::Step, 1)
-                        ->Attribute(Edit::Attributes::Max, 1024)
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_autoIntegrityCheck, "Validate allocations", "Check allocations for integrity on each allocation/free (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_markUnallocatedMemory, "Mark freed memory", "Set memory to 0xcd when a block is freed for debugging (ignored in Release builds)")
                     ->DataElement(Edit::UIHandlers::CheckBox, &Descriptor::m_doNotUsePools, "Don't pool allocations", "Pipe pool allocations in system/tree heap (ignored in Release builds)")
-                    ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlockAlignment, "Block alignment", "Memory block alignment in bytes (must be multiple of the page size)")
                     ->DataElement(Edit::UIHandlers::SpinBox, &Descriptor::m_memoryBlocksByteSize, "Block size", "Memory block size in bytes (must be multiple of the page size)")
                     ;
             }
@@ -933,10 +922,7 @@ namespace AZ
         else
         {
             // Create the system allocator
-            AZ::SystemAllocator::Descriptor desc;
-            desc.m_allocationRecords = m_descriptor.m_allocationRecords;
-            desc.m_stackRecordLevels = aznumeric_caster(m_descriptor.m_stackRecordLevels);
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(desc);
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
             AZ::Debug::Trace::Instance().Init();
 
             AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();

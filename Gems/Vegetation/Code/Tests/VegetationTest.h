@@ -24,16 +24,6 @@ namespace UnitTest
         : public ScopedAllocatorSetupFixture
     {
     protected:
-        VegetationComponentTests()
-            : ScopedAllocatorSetupFixture(
-                []() {
-                    AZ::SystemAllocator::Descriptor desc;
-                    desc.m_stackRecordLevels = 20;
-                    return desc;
-                }()
-            )
-        {
-        }
 
         AZ::ComponentApplication m_app;
 

@@ -46,7 +46,6 @@ TEST(ComponentApplication, Test)
     ComponentApplication::Descriptor appDesc;
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
     appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
-    appDesc.m_stackRecordLevels = 20;
     Entity* systemEntity = app.Create(appDesc);
 
     systemEntity->CreateComponent<MemoryComponent>();

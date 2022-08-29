@@ -45,7 +45,7 @@ namespace AZ
     // ~Create
     // [9/2/2009]
     //=========================================================================
-    bool SystemAllocator::Create(const Descriptor& desc)
+    bool SystemAllocator::Create(const Descriptor&)
     {
         AZ_Assert(IsReady() == false, "System allocator was already created!");
         if (IsReady())
@@ -53,23 +53,18 @@ namespace AZ
             return false;
         }
 
-        m_desc = desc;
-
         if (!AllocatorInstance<OSAllocator>::IsReady())
         {
             m_ownsOSAllocator = true;
             AllocatorInstance<OSAllocator>::Create();
         }
         bool isReady = false;
-        m_isCustom = false;
-        HphaSchema::Descriptor heapDesc;
-        heapDesc.m_subAllocator = desc.m_heap.m_subAllocator;
         // Fix SystemAllocator from growing in small chunks
         if (&AllocatorInstance<SystemAllocator>::Get() == this) // if we are the system allocator
         {
             AZ_Assert(!g_isSystemSchemaUsed, "AZ::SystemAllocator MUST be created first! It's the source of all allocations!");
 
-            m_subAllocator = new (&g_systemSchema) HphaSchema(heapDesc);
+            m_subAllocator = new (&g_systemSchema) HphaSchema();
             g_isSystemSchemaUsed = true;
             isReady = true;
         }
@@ -80,7 +75,7 @@ namespace AZ
                 AllocatorInstance<SystemAllocator>::IsReady(),
                 "System allocator must be created before any other allocator! They allocate from it.");
 
-            m_subAllocator = azcreate(HphaSchema, (heapDesc), SystemAllocator);
+            m_subAllocator = azcreate(HphaSchema, (), SystemAllocator);
             isReady = m_subAllocator != nullptr;
         }
 
@@ -99,17 +94,14 @@ namespace AZ
             (void)dummy;
         }
 
-        if (!m_isCustom)
+        if ((void*)m_subAllocator == (void*)&g_systemSchema)
         {
-            if ((void*)m_subAllocator == (void*)&g_systemSchema)
-            {
-                static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
-                g_isSystemSchemaUsed = false;
-            }
-            else
-            {
-                azdestroy(m_subAllocator);
-            }
+            static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
+            g_isSystemSchemaUsed = false;
+        }
+        else
+        {
+            azdestroy(m_subAllocator);
         }
 
         if (m_ownsOSAllocator)
@@ -122,10 +114,10 @@ namespace AZ
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()
     {
         return AllocatorDebugConfig()
-            .StackRecordLevels(m_desc.m_stackRecordLevels)
-            .UsesMemoryGuards(!m_isCustom)
-            .MarksUnallocatedMemory(!m_isCustom)
-            .ExcludeFromDebugging(!m_desc.m_allocationRecords);
+            .StackRecordLevels(20)
+            .UsesMemoryGuards()
+            .MarksUnallocatedMemory()
+            .ExcludeFromDebugging(false);
     }
 
     //=========================================================================

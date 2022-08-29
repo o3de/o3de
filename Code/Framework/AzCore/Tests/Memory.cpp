@@ -160,9 +160,7 @@ namespace UnitTest
 #endif
             memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
-            SystemAllocator::Descriptor descriptor;
-            descriptor.m_stackRecordLevels = 20;
-            AllocatorInstance<SystemAllocator>::Create(descriptor);
+            AllocatorInstance<SystemAllocator>::Create();
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
             for (int i = 0; i < 100; ++i)
@@ -316,7 +314,6 @@ namespace UnitTest
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
             AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
             PoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
@@ -483,7 +480,6 @@ namespace UnitTest
         volatile bool           m_doneSharedAlloc;
 #endif
 
-        SystemAllocator::Descriptor m_sysAllocDesc;
         bool m_isDynamic;
         int m_numStaticPages;
 
@@ -508,8 +504,7 @@ namespace UnitTest
                 m_desc[i].m_stackSize = m_threadStackSize;
             }
 
-            m_sysAllocDesc.m_allocationRecords = true;
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
+            AllocatorInstance<SystemAllocator>::Create();
             ThreadPoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
             poolDesc.m_isDynamic = m_isDynamic;
@@ -799,15 +794,12 @@ namespace UnitTest
     class AZMallocTest
         : public MemoryTrackingFixture
     {
-        SystemAllocator::Descriptor m_sysAllocDesc;
     public:
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
-
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
+            AllocatorInstance<SystemAllocator>::Create();
             PoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);
@@ -906,15 +898,12 @@ namespace UnitTest
         public:
             MyDerivedClass() = default;
         };
-        SystemAllocator::Descriptor m_sysAllocDesc;
     public:
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            m_sysAllocDesc.m_allocationRecords = true;
-
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
+            AllocatorInstance<SystemAllocator>::Create();
             PoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);

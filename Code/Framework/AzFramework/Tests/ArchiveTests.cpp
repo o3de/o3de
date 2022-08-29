@@ -30,15 +30,6 @@ namespace UnitTest
         : public ScopedAllocatorSetupFixture
     {
     public:
-        // Use an Immediately invoked function to initlaize the m_stackRecordLevels value of the AZ::SystemAllocator::Descriptor class
-        ArchiveTestFixture()
-            : ScopedAllocatorSetupFixture(
-                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
-            )
-            , m_application{ AZStd::make_unique<AzFramework::Application>() }
-        {
-        }
-
         void SetUp() override
         {
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();

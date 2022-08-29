@@ -43,23 +43,6 @@ namespace AZ
          */
         struct Descriptor
         {
-            Descriptor()
-                : m_allocationRecords(true)
-                , m_stackRecordLevels(5)
-            {}
-
-            struct Heap
-            {
-                Heap()
-                    : m_subAllocator(nullptr)
-                {}
-                static const int        m_defaultPageSize = AZ_TRAIT_OS_DEFAULT_PAGE_SIZE;
-                static const int        m_defaultPoolPageSize = 4 * 1024;
-                static const int        m_memoryBlockAlignment = m_defaultPageSize;
-                IAllocator*       m_subAllocator;                             ///< Allocator that m_memoryBlocks memory was allocated from or should be allocated (if NULL).
-            }                           m_heap;
-            bool                        m_allocationRecords;    ///< True if we want to track memory allocations, otherwise false.
-            unsigned char               m_stackRecordLevels;    ///< If stack recording is enabled, how many stack levels to record.
         };
 
         bool Create(const Descriptor& desc);
@@ -87,8 +70,6 @@ namespace AZ
         SystemAllocator(const SystemAllocator&);
         SystemAllocator& operator=(const SystemAllocator&);
 
-        Descriptor                  m_desc;
-        bool                        m_isCustom = false;
         bool                        m_ownsOSAllocator = false;
         IAllocator* m_subAllocator;
     };

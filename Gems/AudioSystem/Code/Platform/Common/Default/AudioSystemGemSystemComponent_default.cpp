@@ -14,22 +14,14 @@ namespace Audio::Platform
 {
     void InitializeAudioAllocators()
     {
-        // Create audio system memory pool
         if (!AZ::AllocatorInstance<AudioSystemAllocator>::IsReady())
         {
-            AudioSystemAllocator::Descriptor allocDesc;
-
-            // Generic Allocator:
-            allocDesc.m_allocationRecords = true;
-            AZ::AllocatorInstance<AudioSystemAllocator>::Create(allocDesc);
+            AZ::AllocatorInstance<AudioSystemAllocator>::Create();
         }
 
-        // Create the Bank allocator...
         if (!AZ::AllocatorInstance<AudioBankAllocator>::IsReady())
         {
-            AudioBankAllocator::Descriptor allocDesc;
-            allocDesc.m_allocationRecords = true;
-            AZ::AllocatorInstance<AudioBankAllocator>::Create(allocDesc);
+            AZ::AllocatorInstance<AudioBankAllocator>::Create();
         }
     }
 
