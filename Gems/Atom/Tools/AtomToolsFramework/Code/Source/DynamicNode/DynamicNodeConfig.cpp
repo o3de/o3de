@@ -42,6 +42,7 @@ namespace AtomToolsFramework
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_settings, "Settings", "Table of strings that can be used for any context specific or user defined data for each node.")
+                        ->ElementAttribute(AZ::Edit::Attributes::Handler, AZ::Edit::UIHandlers::MultiLineEdit)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_inputSlots, "Input Slots", "Container of dynamic node input slot configurations.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_outputSlots, "Output Slots", "Container of dynamic node output slot configurations.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_propertySlots, "Property Slots", "Container hub dynamic node property slot configurations.")
