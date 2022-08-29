@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Debug/TraceContextMultiStackHandler.h>
+#include <AzQtComponents/Components/StyledDetailsTableModel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <SceneAPI/SceneUI/SceneUIConfiguration.h>
@@ -21,9 +22,7 @@
 namespace AzQtComponents
 {
     class StyledBusyLabel;
-    class StyledDetailsTableModel;
 }
-
 namespace AZ
 {
     namespace SceneAPI
@@ -34,6 +33,15 @@ namespace AZ
         }
     }
 }
+
+namespace AzToolsFramework
+{
+    namespace Logging
+    {
+        class LogEntry;
+    }
+}
+
 
 class QPushButton;
 
@@ -60,7 +68,14 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     Q_OBJECT
 public:
-    SceneSettingsCard(AZ::Uuid traceTag, QWidget* parent = nullptr);
+    enum class Layout
+    {
+        Loading,
+        Resetting,
+        Exporting
+    };
+
+    SceneSettingsCard(AZ::Uuid traceTag, Layout layout, QWidget* parent = nullptr);
     ~SceneSettingsCard();
 
     void SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler>& handler);
@@ -80,7 +95,7 @@ public:
 
     
     public slots:
-    //void AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry);
+    void AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry);
     void OnSetStatusMessage(const AZStd::string& message);
     void OnProcessingComplete();
 private:
@@ -93,9 +108,8 @@ private:
     };
 
     bool ShouldProcessMessage();
-
     void UpdateCompletionState(CompletionState newState);
-
+    void CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const;
     QString GetTimeAsString();
     
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;

@@ -296,7 +296,7 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     //ui->mainAreaLayout->addWidget(m_busyLabel);
     //m_busyLabel->SetText("Busy Message Test");
         
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, ui->m_rootWidget);
+    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, SceneSettingsCard::Layout::Loading, ui->m_rootWidget);
     //card->setTitle("Example Processing Card 1");
     card->SetState(SceneSettingsCard::SceneSettingsCardState::Loading);
 
@@ -394,7 +394,7 @@ void AssetImporterWindow::UpdateClicked()
         return;
     }
 
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, ui->m_rootWidget);
+    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, SceneSettingsCard::Layout::Exporting, ui->m_rootWidget);
     card->SetState(SceneSettingsCard::SceneSettingsCardState::Processing);
 
     m_notificationLayout->addWidget(card);

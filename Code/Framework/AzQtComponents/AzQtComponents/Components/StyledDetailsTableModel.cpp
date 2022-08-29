@@ -28,7 +28,7 @@ namespace AzQtComponents
         qDeleteAll(m_entries);
     }
 
-    void StyledDetailsTableModel::AddColumn(const QString& name, StyledDetailsTableModel::ColumnStyle style)
+    int StyledDetailsTableModel::AddColumn(const QString& name, StyledDetailsTableModel::ColumnStyle style)
     {
         const int pos = m_columns.size();
         beginInsertColumns({}, pos, pos);
@@ -37,6 +37,7 @@ namespace AzQtComponents
         col.name = name;
         col.style = style;
         endInsertColumns();
+        return pos;
     }
 
     void StyledDetailsTableModel::MoveColumn(const QString& name, int toIndex)

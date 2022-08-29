@@ -73,7 +73,7 @@ namespace AzQtComponents
         explicit StyledDetailsTableModel(QObject* parent = nullptr);
         ~StyledDetailsTableModel() override;
 
-        void AddColumn(const QString& name, ColumnStyle style = TextString);
+        int AddColumn(const QString& name, ColumnStyle style = TextString);
         void MoveColumn(const QString& name, int toIndex);
         void AddColumnAlias(const QString& aliasName, const QString& columnName);
 

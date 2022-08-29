@@ -9,14 +9,15 @@
 #include "SceneSettingsCard.h"
 
 #include <QDateTime>
+#include <QHeaderView>
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContextLogFormatter.h>
 #include <AzToolsFramework/Debug/TraceContextStack.h>
+#include <AzToolsFramework/UI/Logging/LogEntry.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
 #include <AzQtComponents/Components/StyledDetailsTableView.h>
-#include <AzQtComponents/Components/StyledDetailsTableModel.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
 
 SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */)
@@ -50,7 +51,7 @@ void SceneSettingsCardHeader::SetCanClose(bool canClose)
     m_busyLabel->setHidden(canClose);
 }
 
-SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QWidget* parent /* = nullptr */)
+SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, Layout layout, QWidget* parent /* = nullptr */)
     :
     AzQtComponents::Card(new SceneSettingsCardHeader(), parent),
     m_traceTag(traceTag)
@@ -61,12 +62,24 @@ SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QWidget* parent /* = nul
     header()->setHasContextMenu(false);
 
     m_reportModel = new AzQtComponents::StyledDetailsTableModel();
-    m_reportModel->AddColumn("Status", AzQtComponents::StyledDetailsTableModel::StatusIcon);
-    m_reportModel->AddColumn("Time");
+    int statusColumn = m_reportModel->AddColumn("Status", AzQtComponents::StyledDetailsTableModel::StatusIcon);
+    int platformColumn = -1;
+    if (layout == Layout::Exporting)
+    {
+        platformColumn = m_reportModel->AddColumn("Platform");
+    }
+    int timeColumn = m_reportModel->AddColumn("Time");
     m_reportModel->AddColumn("Message");
     m_reportModel->AddColumnAlias("message", "Message");
     AzQtComponents::StyledDetailsTableView* m_reportView = new AzQtComponents::StyledDetailsTableView();
     m_reportView->setModel(m_reportModel);
+
+    if (platformColumn > 0)
+    {
+        m_reportView->horizontalHeader()->setSectionResizeMode(platformColumn, QHeaderView::ResizeToContents);
+    }
+    m_reportView->horizontalHeader()->setSectionResizeMode(statusColumn, QHeaderView::ResizeToContents);
+    m_reportView->horizontalHeader()->setSectionResizeMode(timeColumn, QHeaderView::ResizeToContents);
     setContentWidget(m_reportView);
 
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
@@ -89,40 +102,65 @@ void SceneSettingsCard::SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ:
     m_targetHandler = handler;
 
     connect(m_targetHandler.get(), &AZ::SceneAPI::SceneUI::ProcessingHandler::StatusMessageUpdated, this, &SceneSettingsCard::OnSetStatusMessage);
-    //connect(m_targetHandler.get(), &AZ::SceneAPI::SceneUI::ProcessingHandler::AddLogEntry, this, &SceneSettingsCard::AddLogEntry);
+    connect(m_targetHandler.get(), &AZ::SceneAPI::SceneUI::ProcessingHandler::AddLogEntry, this, &SceneSettingsCard::AddLogEntry);
     connect(m_targetHandler.get(), &AZ::SceneAPI::SceneUI::ProcessingHandler::ProcessingComplete, this, &SceneSettingsCard::OnProcessingComplete);
 
     handler->BeginProcessing();
 }
 
-/* void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry)
+void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry)
 {
-    AzQtComponents::StyledDetailsTableModel::TableEntry entry;
-    entry.Add("Message", logEntry.);
-    entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
-    m_reportModel->AddEntry(entry);
-}*/
+    if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Message)
+    {
+        return;
+    }
+    AzQtComponents::StyledDetailsTableModel::TableEntry reportEntry;
+
+    bool hasStatus = false;
+    for (auto& field : logEntry.GetFields())
+    {
+        size_t offset = 0;
+        hasStatus = hasStatus || AzFramework::StringFunc::Equal("status", field.second.m_name.c_str());
+        if (AzFramework::StringFunc::Equal("message", field.second.m_name.c_str()))
+        {
+            if (field.second.m_value.length() > 2)
+            {
+                // Removing the prefixes such as "W: " and "E: ".
+                if (field.second.m_value[1] == ':' && field.second.m_value[2] == ' ')
+                {
+                    offset = 3;
+                }
+            }
+        }
+        
+        reportEntry.Add(field.second.m_name.c_str(), field.second.m_value.c_str() + offset);
+    }
+    
+    if (!hasStatus)
+    {
+        if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
+        {
+            reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
+        }
+        else if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Warning)
+        {
+            reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
+        }
+    }
+    reportEntry.Add("Time", GetTimeAsString());
+
+    m_reportModel->AddEntry(reportEntry);
+}
 
 void SceneSettingsCard::OnProcessingComplete()
 {
     AzQtComponents::StyledDetailsTableModel::TableEntry entry;
-    entry.Add("Message", "OnProcessingComplete");
+    entry.Add("Message", "Asset processing completed.");
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeAsString());
     m_reportModel->AddEntry(entry);
     
     SetState(SceneSettingsCard::SceneSettingsCardState::Done);
-    /* m_isProcessingComplete = true;
-    SetUIToCompleteState();
-
-    if (!m_encounteredIssues && m_autoCloseOnSuccess)
-    {
-        close();
-    }
-    else if (m_progressLabel != nullptr)
-    {
-        m_progressLabel->setText("Close the processing report to continue editing settings.");
-    }*/
 }
 
 void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
@@ -163,7 +201,7 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
     }
     entry.Add("Message", message);
     entry.Add("Time", GetTimeAsString());
-    //CopyTraceContext(entry);
+    CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     return false;
 }
@@ -179,7 +217,7 @@ bool SceneSettingsCard::OnError(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
     entry.Add("Time", GetTimeAsString());
-    //CopyTraceContext(entry);
+    CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     
     UpdateCompletionState(CompletionState::Error);
@@ -197,7 +235,7 @@ bool SceneSettingsCard::OnWarning(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
     entry.Add("Time", GetTimeAsString());
-    //CopyTraceContext(entry);
+    CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     
     UpdateCompletionState(CompletionState::Warning);
@@ -214,7 +252,7 @@ bool SceneSettingsCard::OnAssert(const char* message)
     entry.Add("Message", message);
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
     entry.Add("Time", GetTimeAsString());
-    //CopyTraceContext(entry);
+    CopyTraceContext(entry);
     m_reportModel->AddEntry(entry);
     UpdateCompletionState(CompletionState::Error);
     return false;
@@ -265,6 +303,24 @@ void SceneSettingsCard::UpdateCompletionState(CompletionState newState)
     m_completionState = AZStd::max(m_completionState, newState);
 }
 
+void SceneSettingsCard::CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const
+{
+    AZStd::shared_ptr<const AzToolsFramework::Debug::TraceContextStack> stack = m_traceStackHandler.GetCurrentStack();
+    if (stack)
+    {
+        AZStd::string value;
+        for (size_t i = 0; i < stack->GetStackCount(); ++i)
+        {
+            if (stack->GetType(i) != AzToolsFramework::Debug::TraceContextStackInterface::ContentType::UuidType)
+            {
+                const char* key = stack->GetKey(i);
+                AzToolsFramework::Debug::TraceContextLogFormatter::PrintValue(value, *stack, i);
+                entry.Add(key, value.c_str());
+                value.clear();
+            }
+        }
+    }
+}
 
 QString SceneSettingsCard::GetTimeAsString()
 {
