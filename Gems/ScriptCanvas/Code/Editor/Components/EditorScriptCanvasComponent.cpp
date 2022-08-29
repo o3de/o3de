@@ -70,6 +70,11 @@ namespace ScriptCanvasEditor
                     , AzToolsFramework::Refresh_EntireTree_NewContent);
             });
 
+        m_handlerSourcePropertiesChanged = m_configuration.ConnectToPropertiesChanged([this](const Configuration&)
+        {
+            this->SetDirty();
+        });
+
         m_configuration.Refresh();
         AzToolsFramework::ToolsApplicationNotificationBus::Broadcast
             ( &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
@@ -137,6 +142,9 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
+        // AzToolsFramework::ScopedUndoBatch undoBatch("update script canvas graph on component");
+        // undoBatch.MarkEntityDirty(GetEntityId());
+        SetDirty();
         m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
     }
 
