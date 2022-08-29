@@ -134,7 +134,6 @@ _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
 # this reduces compatibility concerns, etc. (there will always be other risks)
 
 # Now we should be able to just carry on with pathlib and dynaconf imports
-from dynaconf import Dynaconf
 from pathlib import Path
 
 _PATH_DCCSIG = Path(_PATH_DCCSIG).resolve()  # pathify
@@ -142,6 +141,8 @@ _PATH_DCCSI_PYTHON = Path(_PATH_DCCSIG, '3rdParty', 'Python').resolve()
 _PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB).resolve()
 # since we always strap access to our package install sandbox
 # this should be part of initializing the core of config
+
+from dynaconf import Dynaconf
 # -------------------------------------------------------------------------
 
 

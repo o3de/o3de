@@ -73,6 +73,10 @@ PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
 site.addsitedir(PATH_DCCSIG.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
 
+# < dccsi >\3rdParty bootstraooing area for installed site-packages
+# dcc tools on a different version of python will import from here.
+PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSIG, '3rdParty', 'Python').resolve()
+
 # pulling from this __init__.py module, may cause cyclical imports
 # -------------------------------------------------------------------------
 from DccScriptingInterface.globals import *

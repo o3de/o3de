@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -16,11 +14,25 @@ from __future__ import unicode_literals
 import os
 import site
 import uuid
+from pathlib import Path
 import logging as _logging
 import xml.etree.ElementTree as xml  # Qt .ui files are xml
 from io import StringIO  # for handling unicode strings
+# -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'azpy.shared.ui.utils'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-# azpy extensions
+_MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+
+_UI_FILE = Path(_MODULE_PATH.parent, 'resources', 'example.ui')
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# O3DE imports
 import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 # ^ this is effectively an import and retreive of <dccsi>\config.py
@@ -46,30 +58,9 @@ site.addsitedir(settings.DCCSI_PYSIDE2_TOOLS)
 import pyside2uic
 
 #  azpy
-import azpy.shared.ui.qt_settings as qt_settings
-import azpy.shared.ui.help_menu as help_menu
-
+#import azpy.shared.ui.settings as qt_settings
+#import azpy.shared.ui.help_menu as help_menu
 # -------------------------------------------------------------------------
-#  global space debug flag
-_DCCSI_GDEBUG = settings.DCCSI_GDEBUG
-
-#  global space debug flag
-_DCCSI_DEV_MODE = settings.DCCSI_DEV_MODE
-
-_MODULE_PATH = Path(__file__)
-
-_ORG_TAG = 'Amazon_Lumberyard'
-_APP_TAG = 'DCCsi'
-_TOOL_TAG = 'azpy.shared.ui.pyside2_ui_utils'
-_TYPE_TAG = 'test'
-
-_MODULENAME = _TOOL_TAG
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Something invoked :: {0}.'.format(_MODULENAME))
-
-_UI_FILE = Path(_MODULE_PATH.parent, 'resources', 'example.ui')
-# -------------------------------------------------------------------------
-
 
 class UiLoader(QtUiTools.QUiLoader):
     def __init__(self, base_instance):
@@ -85,7 +76,7 @@ class UiLoader(QtUiTools.QUiLoader):
         else:
             setattr(self._base_instance, name, widget)
             return widget
-# -------------------------------------------------------------------------
+
 
 
 class UiWidget(QtWidgets.QWidget):
@@ -96,7 +87,7 @@ class UiWidget(QtWidgets.QWidget):
         file.open(QFile.ReadOnly)
         loader.load(file, self)
         file.close()
-# -------------------------------------------------------------------------
+
 
 
 def from_ui_generate_form_and_base_class(filename, return_output=False):
@@ -135,10 +126,10 @@ def from_ui_generate_form_and_base_class(filename, return_output=False):
     with open(ui_file, 'r') as ui_file:
         stream = StringIO()  # create a file io stream
         frame = {}
-        
+
         _uic_compiler_path = Path(settings.DCCSI_PYSIDE2_TOOLS)
         site.addsitedir(_uic_compiler_path)
-        
+
         import pyside2uic
 
         # compile the .ui file as a .pyc represented in steam

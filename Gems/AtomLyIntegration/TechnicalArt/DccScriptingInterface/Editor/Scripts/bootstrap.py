@@ -101,8 +101,9 @@ except Exception as e:
     raise e
 #PySide2 imports
 from PySide2 import QtWidgets
+from PySide2.QtWidgets import QMenuBar, QMenu, QAction
 from PySide2 import QtGui
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Slot, QObject
 from shiboken2 import wrapInstance, getCppPointer
 
 # import additional O3DE QtForPython Gem modules
@@ -116,9 +117,6 @@ from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
 # -------------------------------------------------------------------------
 O3DE_EDITOR = Path(sys.executable).resolve() # executible
 _LOGGER.debug(f'The sys.executable is: {O3DE_EDITOR}')
-
-# ditor main window (should work with any standalone o3de editor exe)
-EDIOT_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
 
 # base paths and config
 O3DE_DEV = Path(azlmbr.paths.engroot).resolve()
@@ -139,6 +137,34 @@ dccsi_config = core_config.get_config_settings(engine_path=O3DE_DEV,
                                                enable_o3de_python=True,
                                                enable_o3de_pyside2=True,
                                                set_env=True)
+
+# ditor main window (should work with any standalone o3de editor exe)
+EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def create_menu(parent: QMenu = EDITOR_MAIN_WINDOW.menuBar(),
+                      title: str = 'StudioTools') -> QMenu:
+    """! Creates a 'Studio Tools' menu for the DCCsi functionality
+    :param parent: The parent QMenu (or QMenuBar)
+    :param : The UI text str for the submenu
+    :return: returns the created submenu
+    """
+    _LOGGER.debug(f"Creating a dccsi menu: '{title}'")
+
+    dccsi_menu = None
+
+    menu_list = parent.findChildren(QMenu)
+    for m in menu_list:
+        if m.title() == f"&{title}":
+            dccsi_menu = m
+
+    if not dccsi_menu:
+        # create our own dccsi menu
+        dccsi_menu = parent.addMenu(f"&{title}")
+
+    return dccsi_menu
 # -------------------------------------------------------------------------
 
 
@@ -147,32 +173,60 @@ dccsi_config = core_config.get_config_settings(engine_path=O3DE_DEV,
 def click_sampleui():
     _LOGGER.debug(f'Clicked click_action_sampleUI')
 
-    ui = SampleUI(parent=EDIOT_MAIN_WINDOW, title='Dccsi: SampleUI')
+    ui = SampleUI(parent=EDITOR_MAIN_WINDOW, title='Dccsi: SampleUI')
     ui.show()
     return
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def bootstrap_Editor():
-    """Put bootstrapping code here to execute in O3DE Editor.exe"""
+def add_action(parent: QMenu,
+               title: str = "SampleUI",
+               action_slot = click_sampleui) -> QAction:
+    """! adds an action to the parent QMenu
+    :param parent_menu: the parent Qmenu to add an action to
+    :param title: The UI text str for the menu action
+    :param action_slot: @Slot decorated method, see click_sampleui()
+    :return: returns the created action
+    """
+    _LOGGER.debug(f"Creating '{title}' action for menu '{parent.title()}'")
 
-    _MENU_SLUG = 'Studio Tools'
-    _LOGGER.debug(f"Creating '{_MENU_SLUG}' menus for {_DCCSI_SLUG}")
+    action = None
 
-    # create our own dccsi menuBar
-    dccsi_menu = EDIOT_MAIN_WINDOW.menuBar().addMenu(f"&{_MENU_SLUG}")
+    action_list = parent.findChildren(QAction)
+    for a in action_list:
+        if a.text() == f"&{title}":
+            action = a
+
+    if not action:
+        action = parent.addAction(f"&{title}")
+
+        # click_sampleui signal
+        action.triggered.connect(action_slot)
+
+    return action
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def bootstrap_Editor(main_window=EDITOR_MAIN_WINDOW):
+    """! Put bootstrapping code here to execute in O3DE Editor.exe"""
+
+    menubar = main_window.menuBar()
+
+    dccsi_menu = create_menu(parent=menubar)
 
     # Editor MenuBar, Studio Tools > Examples
     # nest a menu with samples (promote extensibility)
-    dccsi_examples_menu = dccsi_menu.addMenu("Examples")
+    dccsi_examples_menu = create_menu(parent=dccsi_menu,
+                                            title="Examples")
 
     # MEditor MenuBar, Studio Tools > Examples > SampleUI
-    action_start_sampleui = dccsi_examples_menu.addAction("SampleUI")
-    # click_sampleui signal
-    action_start_sampleui.triggered.connect(click_sampleui)
+    action_start_sampleui = add_action(parent=dccsi_examples_menu,
+                                       title="SampleUI",
+                                       action_slot = click_sampleui)
 
-    return None
+    return dccsi_menu
 # -------------------------------------------------------------------------
 
 
@@ -215,7 +269,7 @@ if __name__ == '__main__':
 
     if O3DE_EDITOR.stem.lower() == "editor":
         # if _DCCSI_GDEBUG then run the pyside2 test
-        _settings = bootstrap_Editor()
+        _settings = bootstrap_Editor(EDITOR_MAIN_WINDOW)
 
     elif O3DE_EDITOR.stem.lower() == "materialeditor":
         _settings = bootstrap_MaterialEditor()
