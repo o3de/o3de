@@ -180,9 +180,23 @@ namespace PhysX::Benchmarks
         }
         // PhysXBaseBenchmarkFixture Interface ---------
 
+        void SetLabel(benchmark::State& state, int rigidBodyType);
+
         Physics::System *m_system;
         EntityPtr m_terrainEntity;
     };
+
+    void PhysXRigidbodyBenchmarkFixture::SetLabel(benchmark::State& state, int rigidBodyType)
+    {
+        if (rigidBodyType == PhysX::Benchmarks::RigidBodyApiObject)
+        {
+            state.SetLabel("RigidBodyApiObject");
+        }
+        else if (rigidBodyType == PhysX::Benchmarks::RigidBodyEntity)
+        {
+            state.SetLabel("RigidBodyEntity");
+        }
+    }
 
     //! BM_RigidBody_AtRest - This test will spawn the requested number of rigid bodies and place them near the ground
     //! and the rigid bodies will go 'asleep'
@@ -258,9 +272,12 @@ namespace PhysX::Benchmarks
             },
             rigidBodies);
 
+
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
         Utils::ReportFrameStandardDeviationAndMeanCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
+
+        SetLabel(state, bodyType);
     }
 
     //! BM_RigidBody_MovingAndColliding - This test will create the physics washing machine, a cylinder with a spinning blade where
@@ -349,6 +366,8 @@ namespace PhysX::Benchmarks
         //sort the frame times and get the P50, P90, P99 percentiles
         Utils::ReportFramePercentileCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
         Utils::ReportFrameStandardDeviationAndMeanCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
+
+        SetLabel(state, bodyType);
     }
 
     //! Same as the PhysXRigidbodyBenchmarkFixture, adds a world event handler to receive collision events
@@ -548,6 +567,8 @@ namespace PhysX::Benchmarks
         state.counters["Collisions-Begin"] = static_cast<double>(m_collisionBeginCount);
         state.counters["Collisions-Persist"] = static_cast<double>(m_collisionPersistCount);
         state.counters["Collisions-End"] = static_cast<double>(m_collisionEndCount);
+
+        SetLabel(state, bodyType);
     }
 
     BENCHMARK_REGISTER_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_AtRest)
