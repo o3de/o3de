@@ -41,8 +41,12 @@ namespace AtomToolsFramework
     }
 
     AtomToolsAnyDocument::AtomToolsAnyDocument(
-        const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo, const AZ::Uuid& contentTypeIdIfNotEmbedded)
+        const AZ::Crc32& toolId,
+        const DocumentTypeInfo& documentTypeInfo,
+        const AZStd::any& defaultValue,
+        const AZ::Uuid& contentTypeIdIfNotEmbedded)
         : AtomToolsDocument(toolId, documentTypeInfo)
+        , m_content(defaultValue)
         , m_contentTypeIdIfNotEmbedded(contentTypeIdIfNotEmbedded)
     {
         AtomToolsAnyDocumentRequestBus::Handler::BusConnect(m_id);
@@ -56,14 +60,15 @@ namespace AtomToolsFramework
     DocumentTypeInfo AtomToolsAnyDocument::BuildDocumentTypeInfo(
         const AZStd::string& documentTypeName,
         const AZStd::vector<AZStd::string>& documentTypeExtensions,
+        const AZStd::any& defaultValue,
         const AZ::Uuid& contentTypeIdIfNotEmbedded)
     {
         DocumentTypeInfo documentType;
         documentType.m_documentTypeName = documentTypeName;
         documentType.m_documentFactoryCallback =
-            [contentTypeIdIfNotEmbedded](const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo)
+            [defaultValue, contentTypeIdIfNotEmbedded](const AZ::Crc32& toolId, const DocumentTypeInfo& documentTypeInfo)
         {
-            return aznew AtomToolsAnyDocument(toolId, documentTypeInfo, contentTypeIdIfNotEmbedded);
+            return aznew AtomToolsAnyDocument(toolId, documentTypeInfo, defaultValue, contentTypeIdIfNotEmbedded);
         };
 
         for (const auto& documentTypeExtension : documentTypeExtensions)
@@ -82,7 +87,13 @@ namespace AtomToolsFramework
             return {};
         }
 
-        // Register the object info for the content so that it can be made available to the inspector for editing.
+        if (m_content.empty())
+        {
+            return {};
+        }
+
+        // The reflected data stored within the document will be converted to a description of the object and its type info. This data will
+        // be used to populate the inspector and anything else concerned with RTTI.
         DocumentObjectInfoVector objects;
         DocumentObjectInfo objectInfo;
         objectInfo.m_visible = true;
@@ -92,7 +103,6 @@ namespace AtomToolsFramework
         objectInfo.m_objectType = m_content.type();
         objectInfo.m_objectPtr = AZStd::any_cast<void>(const_cast<AZStd::any*>(&m_content));
         objects.push_back(objectInfo);
-
         return objects;
     }
 
@@ -170,11 +180,6 @@ namespace AtomToolsFramework
         return SaveSucceeded();
     }
 
-    bool AtomToolsAnyDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && !m_content.empty();
-    }
-
     bool AtomToolsAnyDocument::IsModified() const
     {
         return m_modified;
@@ -213,16 +218,6 @@ namespace AtomToolsFramework
         AtomToolsDocument::Clear();
     }
 
-    bool AtomToolsAnyDocument::ReopenRecordState()
-    {
-        return AtomToolsDocument::ReopenRecordState();
-    }
-
-    bool AtomToolsAnyDocument::ReopenRestoreState()
-    {
-        return AtomToolsDocument::ReopenRestoreState();
-    }
-
     const AZStd::any& AtomToolsAnyDocument::GetContent() const
     {
         return m_content;
@@ -254,31 +249,41 @@ namespace AtomToolsFramework
     {
         m_content.clear();
 
+        // When this type ID is provided an attempt is made to load the data from the JSON file, assuming that the file only contains
+        // reflected object data.
         if (!m_contentTypeIdIfNotEmbedded.IsNull())
         {
+            // Serialized context is required to create a placeholder object using the type ID.
             AZ::SerializeContext* serializeContext = {};
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
 
-            auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(m_absolutePath);
-            if (!loadOutcome.IsSuccess())
+            m_content = serializeContext->CreateAny(m_contentTypeIdIfNotEmbedded);
+            if (m_content.empty())
             {
-                AZ_Error("AtomToolsAnyDocument", false, "%s", loadOutcome.GetError().c_str());
+                AZ_Error(
+                    "AtomToolsAnyDocument",
+                    false,
+                    "Failed to create AZStd::any from type: %s",
+                    m_contentTypeIdIfNotEmbedded.ToFixedString().c_str());
                 return false;
             }
 
-            rapidjson::Document& document = loadOutcome.GetValue();
+            // Attempt to read the JSON file data from the document breath.
+            auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(m_absolutePath);
+            if (!loadOutcome.IsSuccess())
+            {
+                AZ_Error("AtomToolsAnyDocument", false, "Failed to read JSON file: %s", loadOutcome.GetError().c_str());
+                return false;
+            }
 
+            // Read the rapid JSON document data into the object we just created.
             AZ::JsonDeserializerSettings jsonSettings;
             AZ::RPI::JsonReportingHelper reportingHelper;
             reportingHelper.Attach(jsonSettings);
 
-            m_content = serializeContext->CreateAny(m_contentTypeIdIfNotEmbedded);
-            AZ::JsonSerialization::Load(
-                AZStd::any_cast<void>(&m_content),
-                m_contentTypeIdIfNotEmbedded,
-                document,
-                jsonSettings);
+            rapidjson::Document& document = loadOutcome.GetValue();
+            AZ::JsonSerialization::Load(AZStd::any_cast<void>(&m_content), m_contentTypeIdIfNotEmbedded, document, jsonSettings);
 
             if (reportingHelper.ErrorsReported())
             {
@@ -288,9 +293,11 @@ namespace AtomToolsFramework
         }
         else
         {
+            // If no time ID was provided the serializer will attempt to parse it from the JSON file.
             auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
-            if (!loadResult && !loadResult.GetValue().empty())
+            if (!loadResult)
             {
+                AZ_Error("AtomToolsAnyDocument", false, "Failed to load object from JSON file: %s", m_absolutePath.c_str());
                 return false;
             }
             m_content = loadResult.GetValue();
@@ -308,18 +315,30 @@ namespace AtomToolsFramework
 
         if (!m_contentTypeIdIfNotEmbedded.IsNull())
         {
+            // Create a default content object of the specified type that will be used to keep the serializer from writing out unmodified
+            // values.
             AZ::SerializeContext* serializeContext = {};
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+
             AZStd::any defaultContent = serializeContext->CreateAny(m_contentTypeIdIfNotEmbedded);
+            if (defaultContent.empty())
+            {
+                AZ_Error(
+                    "AtomToolsAnyDocument",
+                    false,
+                    "Failed to create AZStd::any from type: %s",
+                    m_contentTypeIdIfNotEmbedded.ToFixedString().c_str());
+                return false;
+            }
 
-            rapidjson::Document document;
-            document.SetObject();
-
+            // Create a rapid JSON document and object to serialize the document data into.
             AZ::JsonSerializerSettings settings;
             AZ::RPI::JsonReportingHelper reportingHelper;
             reportingHelper.Attach(settings);
 
+            rapidjson::Document document;
+            document.SetObject();
             AZ::JsonSerialization::Store(
                 document,
                 document.GetAllocator(),
@@ -346,6 +365,7 @@ namespace AtomToolsFramework
             if (!AZ::JsonSerializationUtils::SaveObjectToFileByType(
                     AZStd::any_cast<void>(&m_content), m_content.type(), m_savePathNormalized))
             {
+                AZ_Error("AtomToolsAnyDocument", false, "Failed to write JSON document to file: %s", m_savePathNormalized.c_str());
                 return false;
             }
         }

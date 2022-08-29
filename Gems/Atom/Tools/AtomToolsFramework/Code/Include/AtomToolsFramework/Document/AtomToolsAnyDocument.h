@@ -35,26 +35,32 @@ namespace AtomToolsFramework
         AtomToolsAnyDocument(
             const AZ::Crc32& toolId,
             const DocumentTypeInfo& documentTypeInfo,
-            const AZ::Uuid& contentTypeIdIfNotEmbedded = AZ::Uuid::CreateNull());
+            const AZStd::any& defaultValue,
+            const AZ::Uuid& contentTypeIdIfNotEmbedded);
         virtual ~AtomToolsAnyDocument();
 
-        // AtomToolsDocument overrides...
+        // Configure the document type name and supported extensions for this document class.
+        // @documentTypeName The display name for the document and registered extensions
+        // @documentTypeExtensions The set of extensions supported by this document type
+        // @contentTypeIdIfNotEmbedded The explicit type ID that should be used for documents that do not have the type info
+        // embedded in the JSON file. If this value is not null, then the document class will use an alternate path for loading and saving
+        // the JSON data that assumes no type info exists in the file.
         static DocumentTypeInfo BuildDocumentTypeInfo(
             const AZStd::string& documentTypeName,
             const AZStd::vector<AZStd::string>& documentTypeExtensions,
-            const AZ::Uuid& contentTypeIdIfNotEmbedded = AZ::Uuid::CreateNull());
+            const AZStd::any& defaultValue,
+            const AZ::Uuid& contentTypeIdIfNotEmbedded);
+
+        // AtomToolsDocument overrides...
         DocumentObjectInfoVector GetObjectInfo() const override;
         bool Open(const AZStd::string& loadPath) override;
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
-        bool IsOpen() const override;
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
         void Clear() override;
-        bool ReopenRecordState() override;
-        bool ReopenRestoreState() override;
 
         // AtomToolsAnyDocumentRequestBus::Handler overrides...
         const AZStd::any& GetContent() const override;
