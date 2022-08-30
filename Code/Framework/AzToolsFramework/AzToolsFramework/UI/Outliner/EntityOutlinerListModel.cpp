@@ -850,6 +850,12 @@ namespace AzToolsFramework
             return false;
         }
 
+        // Disable parenting to a different owning instance
+        if (m_focusModeInterface->IsInFocusSubTree(newParentId) != m_focusModeInterface->IsInFocusSubTree(selectedEntityIds.front()))
+        {
+            return false;
+        }
+
         // Ignore entities not owned by the editor context. It is assumed that all entities belong
         // to the same context since multiple selection doesn't span across views.
         for (const AZ::EntityId& entityId : selectedEntityIds)
