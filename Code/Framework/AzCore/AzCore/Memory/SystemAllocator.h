@@ -31,21 +31,7 @@ namespace AZ
         SystemAllocator() = default;
         ~SystemAllocator() override;
 
-        /**
-         * Description - configure the system allocator. By default
-         * we will allocate system memory using system calls. You can
-         * provide arenas (spaces) with pre-allocated memory, and use the
-         * flag to specify which arena you want to allocate from.
-         * You are also allowed to supply IAllocator, but if you do
-         * so you will need to take care of all allocations, we will not use
-         * the default HphaSchema.
-         * \ref HphaSchema::Descriptor
-         */
-        struct Descriptor
-        {
-        };
-
-        bool Create(const Descriptor& desc);
+        bool Create();
 
         void Destroy() override;
 

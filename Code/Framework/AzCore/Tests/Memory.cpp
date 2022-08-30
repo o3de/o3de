@@ -300,15 +300,13 @@ namespace UnitTest
         : public MemoryTrackingFixture
     {
     protected:
-        SystemAllocator::Descriptor m_sysAllocDesc;
     public:
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
 
-            AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
-            PoolAllocator::Descriptor poolDesc;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<SystemAllocator>::Create();
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -459,8 +457,7 @@ namespace UnitTest
             }
 
             AllocatorInstance<SystemAllocator>::Create();
-            ThreadPoolAllocator::Descriptor poolDesc;
-            AllocatorInstance<ThreadPoolAllocator>::Create(poolDesc);
+            AllocatorInstance<ThreadPoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -549,11 +546,6 @@ namespace UnitTest
         public:
             AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator, 0);
             AZ_TYPE_INFO(MyThreadPoolAllocator, "{28D80F96-19B1-4465-8278-B53989C44CF1}");
-
-            struct Descriptor
-                : public ThreadPoolBase<MyThreadPoolAllocator>::Descriptor
-            {
-            };
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
         };
@@ -719,8 +711,7 @@ namespace UnitTest
             MemoryTrackingFixture::SetUp();
 
             AllocatorInstance<SystemAllocator>::Create();
-            PoolAllocator::Descriptor poolDesc;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -822,8 +813,7 @@ namespace UnitTest
             MemoryTrackingFixture::SetUp();
 
             AllocatorInstance<SystemAllocator>::Create();
-            PoolAllocator::Descriptor poolDesc;
-            AllocatorInstance<PoolAllocator>::Create(poolDesc);
+            AllocatorInstance<PoolAllocator>::Create();
         }
 
         void TearDown() override
@@ -945,8 +935,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            SystemAllocator::Descriptor desc;
-            AllocatorInstance<SystemAllocator>::Create(desc);
+            AllocatorInstance<SystemAllocator>::Create();
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
@@ -2046,14 +2035,12 @@ namespace UnitTest
             printf("\t\t\t=======================\n");
             {
                 // TODO Switch to using instance of HphaAllocator with a sub allocator of a fixed size
-                HphaSchema::Descriptor hphaDesc;
-                PoolSchema::Descriptor poolDesc;
                 {
-                    HphaSchema hpha(hphaDesc);
+                    HphaSchema hpha;
                     PoolSchema pool;
-                    pool.Create(poolDesc);
+                    pool.Create();
                     ThreadPoolSchemaHelper<nullptr_t> threadPool;
-                    threadPool.Create(poolDesc);
+                    threadPool.Create();
 
                     printf("---- Single Thread ----\n");
                     // any allocations
@@ -2082,14 +2069,11 @@ namespace UnitTest
             #if AZ_TRAIT_UNITTEST_NON_PREALLOCATED_HPHA_TEST
                       printf("\n\t\t\tNO prealocated memory!\n");
                       {
-                          HphaSchema::Descriptor hphaDesc;
-                          PoolSchema::Descriptor poolDesc;
-
-                          HphaSchema hpha(hphaDesc);
+                          HphaSchema hpha;
                           PoolSchema pool;
-                          pool.Create(poolDesc);
+                          pool.Create();
                           ThreadPoolSchemaHelper<nullptr_t> threadPool;
-                          threadPool.Create(poolDesc);
+                          threadPool.Create();
             
                           printf("---- Single Thread ----\n");
                           // any allocations

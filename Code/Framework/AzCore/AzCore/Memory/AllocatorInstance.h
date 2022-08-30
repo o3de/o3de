@@ -20,9 +20,9 @@ namespace AZ::AllocatorStorage
     class StoragePolicyBase
     {
     protected:
-        static void Create(Allocator& allocator, const typename Allocator::Descriptor& desc, bool lazilyCreated)
+        static void Create(Allocator& allocator, bool lazilyCreated)
         {
-            allocator.Create(desc);
+            allocator.Create();
             allocator.PostCreate();
             allocator.SetLazilyCreated(lazilyCreated);
         }
@@ -60,7 +60,7 @@ namespace AZ::AllocatorStorage
             return *s_allocator;
         }
 
-        static void Create(const typename Allocator::Descriptor& desc)
+        static void Create()
         {
             if (!s_allocator)
             {
@@ -75,7 +75,7 @@ namespace AZ::AllocatorStorage
                 AZ_Assert(s_allocator->IsReady(), "Allocator '%s' already created!", AzTypeInfo<Allocator>::Name());
             }
 
-            StoragePolicyBase<Allocator>::Create(*s_allocator, desc, false);
+            StoragePolicyBase<Allocator>::Create(*s_allocator, false);
         }
 
         static void Destroy()
@@ -119,8 +119,6 @@ namespace AZ::Internal
     class AllocatorInstanceBase
     {
     public:
-        using Descriptor = typename Allocator::Descriptor;
-
         // Maintained for backwards compatibility, prefer to use Get() instead.
         // Get was previously used to get the the schema, however, that bypasses what the allocators are doing.
         // If the schema is needed, call Get().GetSchema()
@@ -134,9 +132,9 @@ namespace AZ::Internal
             return StoragePolicy::GetAllocator();
         }
 
-        static void Create(const Descriptor& desc = Descriptor())
+        static void Create()
         {
-            StoragePolicy::Create(desc);
+            StoragePolicy::Create();
         }
 
         static void Destroy()

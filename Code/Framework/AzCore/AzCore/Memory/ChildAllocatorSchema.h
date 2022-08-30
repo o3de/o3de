@@ -19,14 +19,9 @@ namespace AZ
     public:
         AZ_TYPE_INFO(ChildAllocatorSchema, "{2A28BEF4-278A-4A98-AC7D-5C1D6D190A36}")
 
-        // No descriptor is necessary, as the parent allocator is expected to already
-        // be created and configured
-        struct Descriptor {
-            AZ_TYPE_INFO(Descriptor, "{EEDE559F-A2B2-40AE-8536-88A81FC1F853}")
-        };
         using Parent = ParentAllocator;
 
-        ChildAllocatorSchema(const Descriptor&) {}
+        ChildAllocatorSchema() = default;
 
         //---------------------------------------------------------------------
         // IAllocator

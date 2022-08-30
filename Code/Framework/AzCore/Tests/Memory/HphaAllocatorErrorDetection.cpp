@@ -30,7 +30,6 @@ namespace UnitTest
         AZ_TYPE_INFO(HphaSchemaErrorDetection_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
-        using Descriptor = Base::Descriptor;
     };
 
     // Another allocator to test allocating/deallocating with different allocators
@@ -41,7 +40,6 @@ namespace UnitTest
         AZ_TYPE_INFO(AnotherTestAllocator, "{83038931-010E-407F-8183-2ACBB50706C2}");
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
-        using Descriptor = Base::Descriptor;
     };
 
     // Dummy test class with configurable size

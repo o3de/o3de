@@ -19,7 +19,6 @@ namespace EMotionFX
     {
     public:
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        using Descriptor = Base::Descriptor;
 
         AZ_RTTI(PropertyWidgetAllocator, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", Base)
     };

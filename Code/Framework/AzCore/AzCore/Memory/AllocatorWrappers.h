@@ -97,7 +97,6 @@ namespace AZ
     class AllocatorGlobalWrapper : public IAllocator
     {
     public:
-        using Descriptor = typename Allocator::Descriptor;
         AllocatorGlobalWrapper() = default;
         AllocatorGlobalWrapper(const AllocatorGlobalWrapper&) {}
         AllocatorGlobalWrapper(AllocatorGlobalWrapper&&)  {}
@@ -124,7 +123,7 @@ namespace AZ
             return AllocatorInstance<Allocator>::Get().get_allocated_size(ptr, alignment);
         }
 
-        void Create(Descriptor) {}
+        void Create() {}
     };
 
     template<typename Allocator>
@@ -147,5 +146,4 @@ namespace AZ
     {                                                                                                                                      \
     public:                                                                                                                                \
         AZ_RTTI(AllocatorName, AllocatorGUID, IAllocator)                                                                                  \
-        using AZ::AllocatorGlobalWrapper<AllocatorGlobalType>::Descriptor;                                                                                             \
     };

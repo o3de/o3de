@@ -35,7 +35,7 @@ namespace UnitTest
 
         virtual ~AllocatorsBase() = default;
 
-        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
+        void SetupAllocator()
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
@@ -43,7 +43,7 @@ namespace UnitTest
             // Only create the SystemAllocator if it s not ready
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
                 m_ownsAllocator = true;
             }
         }
@@ -75,10 +75,6 @@ namespace UnitTest
         {
             SetupAllocator();
         }
-        explicit ScopedAllocatorFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc)
-        {
-            SetupAllocator(allocatorDesc);
-        }
         ~ScopedAllocatorFixture() override
         {
             TeardownAllocator();
@@ -92,7 +88,6 @@ namespace UnitTest
     {
     public:
         ScopedAllocatorSetupFixture() = default;
-        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**

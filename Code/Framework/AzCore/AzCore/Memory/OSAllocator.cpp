@@ -14,7 +14,7 @@ namespace AZ
     // Create
     // [9/2/2009]
     //=========================================================================
-    bool OSAllocator::Create(const Descriptor&)
+    bool OSAllocator::Create()
     {
         m_numAllocatedBytes = 0;
         return true;

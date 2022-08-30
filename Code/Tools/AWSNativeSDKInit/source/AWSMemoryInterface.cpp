@@ -23,8 +23,7 @@ namespace AWSNativeSDKInit
             AZ::AllocatorInstance<AZ::SystemAllocator>::Create();  
             m_systemAllocatorCreated = true;
         }
-        AWSNativeSDKAllocator::Descriptor desc;
-        m_allocator.Create(desc);
+        m_allocator.Create();
     }
 
     void MemoryManager::End() 

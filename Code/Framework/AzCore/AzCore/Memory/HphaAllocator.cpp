@@ -595,7 +595,7 @@ namespace AZ
         size_t mTotalAllocatedSizeTree = 0;
         size_t mTotalCapacitySizeTree = 0;
     public:
-        HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor desc = {});
+        HpAllocator();
         ~HpAllocator() override;
 
         pointer allocate(size_type byteSize, align_type alignment = 1) override;
@@ -1014,7 +1014,7 @@ namespace AZ
 
     //////////////////////////////////////////////////////////////////////////
     template<bool DebugAllocatorEnable>
-    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator(AZ::HphaSchemaBase<DebugAllocatorEnable>::Descriptor)
+    HphaSchemaBase<DebugAllocatorEnable>::HpAllocator::HpAllocator()
         // We will use the os for direct allocations if memoryBlock == NULL
         // If m_systemChunkSize is specified, use that size for allocating tree blocks from the OS
         // m_treePageAlignment should be OS_VIRTUAL_PAGE_SIZE in all cases with this trait as we work
@@ -2443,10 +2443,10 @@ namespace AZ
     // [2/22/2011]
     //=========================================================================
     template<bool DebugAllocator>
-    HphaSchemaBase<DebugAllocator>::HphaSchemaBase(const Descriptor& desc)
+    HphaSchemaBase<DebugAllocator>::HphaSchemaBase()
     {
         static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
-        m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(desc);
+        m_allocator = new (&m_hpAllocatorBuffer) HpAllocator();
     }
 
     //=========================================================================

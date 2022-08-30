@@ -112,7 +112,7 @@ public:
     void SetUp() override
     {
         // start application
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
         AZ::ComponentApplication::Descriptor appDescriptor;
         appDescriptor.m_useExistingAllocator = true;

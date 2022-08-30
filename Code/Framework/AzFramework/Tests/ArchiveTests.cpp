@@ -30,6 +30,12 @@ namespace UnitTest
         : public ScopedAllocatorSetupFixture
     {
     public:
+        ArchiveTestFixture()
+            : ScopedAllocatorSetupFixture()
+            , m_application{ AZStd::make_unique<AzFramework::Application>() }
+        {
+        }
+
         void SetUp() override
         {
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();

@@ -43,10 +43,10 @@ namespace AZ::Dom
 
     //! The allocator used by Value.
     //! Value heap allocates shared_ptrs for its container storage (Array / Object / Node) alongside
-    class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
+    class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, false, false>
     {
     public:
-        using Base = SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>;
+        using Base = SimpleSchemaAllocator<AZ::HphaSchema, false, false>;
 
         AZ_RTTI(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}", Base);
     };

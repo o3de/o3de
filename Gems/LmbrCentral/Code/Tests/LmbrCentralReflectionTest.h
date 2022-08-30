@@ -118,7 +118,7 @@ protected:
 template<class ApplicationT, class ModuleT>
 void ModuleReflectionTest<ApplicationT, ModuleT>::SetUpTestCase()
 {
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
     s_application.reset(new ModuleReflectionTest::InternalApplication);
 

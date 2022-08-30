@@ -26,23 +26,12 @@ namespace AZ
         : public IAllocator
     {
     public:
-        /**
-        * Pool allocator descriptor.
-        * We will create buckets for each allocation size, we will have m_maxAllocationSize / m_minAllocationSize buckets.
-        * You need to make sure that you can divide m_maxAllocationSize to m_minAllocationSize without fraction.
-        * Keep in mind that the pool allocator is a careful balance between pagesize, min and max allocations,
-        * as we can waste lots of memory with too many buckets.
-        */
-        struct Descriptor
-        {
-            AZ_TYPE_INFO(Descriptor, "{DB802BA9-33E0-4E7A-A79B-CC6EBC39DC82}")
-        };
         AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
 
-        PoolSchema(const Descriptor& desc = Descriptor());
+        PoolSchema();
         ~PoolSchema();
 
-        bool Create(const Descriptor& desc);
+        bool Create();
         void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
@@ -77,15 +66,10 @@ namespace AZ
         typedef ThreadPoolData* (* GetThreadPoolData)();
         typedef void(* SetThreadPoolData)(ThreadPoolData*);
 
-        /**
-        * Pool allocator descriptor.
-        */
-        typedef PoolSchema::Descriptor Descriptor;
-
         ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData);
         ~ThreadPoolSchema();
 
-        bool Create(const Descriptor& desc);
+        bool Create();
         void Destroy() override;
 
         pointer allocate(size_type byteSize, size_type alignment) override;
@@ -115,11 +99,9 @@ namespace AZ
         : public ThreadPoolSchema
     {
     public:
-        ThreadPoolSchemaHelper(const Descriptor& desc = Descriptor())
+        ThreadPoolSchemaHelper()
             : ThreadPoolSchema(&GetThreadPoolData, &SetThreadPoolData)
         {
-            // Descriptor is ignored here; Create() must be called directly on the schema
-            (void)desc;
         }
 
         AZ_TYPE_INFO(ThreadPoolSchemaHelper, "{43DFADCF-DE57-4056-88CB-04790A140FB3}")
@@ -155,22 +137,17 @@ namespace AZ
         */
         template<class Schema>
         class PoolAllocatorHelper
-            : public SimpleSchemaAllocator<Schema, typename Schema::Descriptor, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
+            : public SimpleSchemaAllocator<Schema, /* ProfileAllocations */ true, /* ReportOutOfMemory */ false>
         {
         public:
-            using Base = SimpleSchemaAllocator<Schema, typename Schema::Descriptor, true, false>;
+            using Base = SimpleSchemaAllocator<Schema, true, false>;
             using pointer = typename Base::pointer;
             using size_type = typename Base::size_type;
             using difference_type = typename Base::difference_type;
 
             AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base)
 
-            struct Descriptor
-                : public Schema::Descriptor
-            {
-            };
-
-            bool Create(const Descriptor& descriptor)
+            bool Create()
             {
                 AZ_Assert(this->IsReady() == false, "Allocator was already created!");
                 if (this->IsReady())
@@ -178,13 +155,11 @@ namespace AZ
                     return false;
                 }
 
-                m_desc = descriptor;
-
-                bool isReady = static_cast<Base*>(this)->Create(m_desc);
+                bool isReady = static_cast<Base*>(this)->Create();
 
                 if (isReady)
                 {
-                    isReady = static_cast<Schema*>(this->m_schema)->Create(m_desc);
+                    isReady = static_cast<Schema*>(this->m_schema)->Create();
                 }
 
                 return isReady;
@@ -219,9 +194,6 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             PoolAllocatorHelper& operator=(const PoolAllocatorHelper&) = delete;
-
-        private:
-            Descriptor m_desc;
         };
     }
 

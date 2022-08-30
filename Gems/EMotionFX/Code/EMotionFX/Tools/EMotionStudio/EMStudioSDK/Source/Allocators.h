@@ -22,7 +22,6 @@ namespace EMStudio
     {
     public:
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        using Descriptor = Base::Descriptor;
 
         AZ_RTTI(UIAllocator, "{98AED295-91AE-4598-B253-90A67FE4DABC}", Base)
     };

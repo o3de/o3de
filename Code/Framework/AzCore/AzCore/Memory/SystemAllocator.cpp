@@ -45,7 +45,7 @@ namespace AZ
     // ~Create
     // [9/2/2009]
     //=========================================================================
-    bool SystemAllocator::Create(const Descriptor&)
+    bool SystemAllocator::Create()
     {
         AZ_Assert(IsReady() == false, "System allocator was already created!");
         if (IsReady())

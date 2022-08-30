@@ -26,14 +26,9 @@ namespace AZ
         * we will allocate system memory using system calls. You can
         * provide arena (memory block) with pre-allocated memory.
         */
-        struct Descriptor
-        {
-            AZ_TYPE_INFO(Descriptor, "{FE628EB0-C24F-4A59-9CB0-44900EEE3924}")
-        };
-
         AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
 
-        HphaSchemaBase(const Descriptor& desc = {});
+        HphaSchemaBase();
         virtual ~HphaSchemaBase();
 
         pointer         allocate(size_type byteSize, size_type alignment) override;
@@ -63,7 +58,6 @@ namespace AZ
         // Up this value to 18 KiB to be safe
         static constexpr size_t hpAllocatorStructureSize = 18 * 1024;
 
-        int                 m_pad;      // pad the Descriptor to avoid C4355
         HpAllocator*        m_allocator;
         AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
     };

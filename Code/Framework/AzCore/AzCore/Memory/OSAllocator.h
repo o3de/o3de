@@ -34,14 +34,7 @@ namespace AZ
         OSAllocator& operator=(const OSAllocator&) = delete;
         OSAllocator& operator=(OSAllocator&&) = delete;
 
-        /**
-         * You can override the default allocation policy.
-         */
-        struct Descriptor
-        {
-        };
-
-        bool Create(const Descriptor&);
+        bool Create();
 
         void Destroy() override;
 

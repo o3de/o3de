@@ -110,7 +110,6 @@ namespace UnitTest
         AZ_RTTI(LeakDetection_TestAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}", AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>);
 
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        using Descriptor = Base::Descriptor;
 
         LeakDetection_TestAllocator()
         {

@@ -4340,7 +4340,7 @@ LUA_API const Node* lua_getDummyNode()
                 {
                     if (!allocator)
                     {
-                        m_luaAllocator.Create({});
+                        m_luaAllocator.Create();
                         allocator = m_luaAllocator.Get();
                     }
                     m_lua = lua_newstate(&LuaMemoryHook, allocator);

@@ -19,14 +19,13 @@ namespace AZ
     /**
     * A basic, default allocator implementation using a custom schema.
     */
-    template <class Schema, class DescriptorType=typename Schema::Descriptor, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
+    template <class Schema, bool ProfileAllocations=true, bool ReportOutOfMemory=true>
     class SimpleSchemaAllocator
         : public AllocatorBase
     {
     public:
-        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema, DescriptorType), AllocatorBase)
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema), AllocatorBase)
 
-        using Descriptor = DescriptorType;
         using pointer = typename Schema::pointer;
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
@@ -41,9 +40,9 @@ namespace AZ
             m_schema = nullptr;
         }
 
-        bool Create(const Descriptor& desc = Descriptor())
+        bool Create()
         {
-            m_schema = new (&m_schemaStorage) Schema(desc);
+            m_schema = new (&m_schemaStorage) Schema();
             return m_schema != nullptr;
         }
 

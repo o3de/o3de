@@ -70,7 +70,7 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(PoolSchemaImpl, SystemAllocator, 0)
 
-        PoolSchemaImpl(const PoolSchema::Descriptor& desc);
+        PoolSchemaImpl();
         ~PoolSchemaImpl();
 
         PoolSchema::pointer Allocate(PoolSchema::size_type byteSize, PoolSchema::size_type alignment);
@@ -208,7 +208,6 @@ namespace AZ
         };
 
         ThreadPoolSchemaImpl(
-            const ThreadPoolSchema::Descriptor& desc,
             ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
             ThreadPoolSchema::SetThreadPoolData threadPoolSetter);
         ~ThreadPoolSchemaImpl();
@@ -546,10 +545,9 @@ namespace AZ
     // PoolSchema
     // [9/15/2009]
     //=========================================================================
-    PoolSchema::PoolSchema(const Descriptor& desc)
+    PoolSchema::PoolSchema()
         : m_impl(nullptr)
     {
-        (void)desc; // ignored here, applied in Create()
     }
 
     //=========================================================================
@@ -566,12 +564,12 @@ namespace AZ
     // Create
     // [9/15/2009]
     //=========================================================================
-    bool PoolSchema::Create(const Descriptor& desc)
+    bool PoolSchema::Create()
     {
         AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
         if (m_impl == nullptr)
         {
-            m_impl = aznew PoolSchemaImpl(desc);
+            m_impl = aznew PoolSchemaImpl();
         }
         return (m_impl != nullptr);
     }
@@ -668,7 +666,7 @@ namespace AZ
     // PoolSchemaImpl
     // [9/15/2009]
     //=========================================================================
-    PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor&)
+    PoolSchemaImpl::PoolSchemaImpl()
         : m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
         , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
         , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
@@ -814,12 +812,12 @@ namespace AZ
     // Create
     // [9/15/2009]
     //=========================================================================
-    bool ThreadPoolSchema::Create(const Descriptor& desc)
+    bool ThreadPoolSchema::Create()
     {
         AZ_Assert(m_impl == nullptr, "PoolSchema already created!");
         if (m_impl == nullptr)
         {
-            m_impl = aznew ThreadPoolSchemaImpl(desc, m_threadPoolGetter, m_threadPoolSetter);
+            m_impl = aznew ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter);
         }
         return (m_impl != nullptr);
     }
@@ -909,7 +907,6 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
-        const ThreadPoolSchema::Descriptor&,
         ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
         ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
         : m_threadPoolGetter(threadPoolGetter)

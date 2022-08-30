@@ -100,7 +100,6 @@ namespace EMotionFX
     public: \
         AZ_TYPE_INFO(EMOTIONFX_ALLOCATOR_SEQ_GET_NAME(ALLOCATOR_SEQUENCE), EMOTIONFX_ALLOCATOR_SEQ_GET_UUID(ALLOCATOR_SEQUENCE)); \
         using Base = EMOTIONFX_ALLOCATOR_SEQ_GET_TYPE(ALLOCATOR_SEQUENCE); \
-        using Descriptor = Base::Descriptor; \
     };
 
     // Here we create all the classes for all the items in the above table (Step 1)
