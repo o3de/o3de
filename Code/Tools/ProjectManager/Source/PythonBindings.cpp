@@ -1558,7 +1558,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
-                    QString_To_Py_Path(path), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1598,7 +1598,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_project")(
                     QString_To_Py_String(projectName), // gem name
-                    QString_To_Py_Path(path), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
@@ -1637,7 +1637,7 @@ namespace O3DE::ProjectManager
             {
                 auto downloadResult = m_download.attr("download_template")(
                     QString_To_Py_String(templateName), // gem name
-                    QString_To_Py_Path(path), // destination path
+                    path.isEmpty() ? pybind11::none() : QString_To_Py_Path(path), // destination path
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
