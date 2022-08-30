@@ -17,25 +17,19 @@ namespace AZ
 {
     namespace RHI
     {
-        //! 
-        //! Allocates and registers tags by name, allowing the user to acquire and find tags from names.
-        //! The class is designed to map user-friendly tag names defined through content or higher level code to
-        //! low-level tags, which are simple handles.
-        //! 
-        //! Some notes about usage and design:
-        //!   - TagType need to be a Handle<Integer> type.
-        //!   - Tags are reference counted, which means multiple calls to 'Acquire' with the same name will increment 
-        //!     the internal reference count on the tag. This allows shared ownership between systems, if necessary.
-        //!   - FindTag is provided to search for a tag reference without taking ownership.
-        //!   - Names are case sensitive.
         //!
-        template<typename TagType>
+        //! A variant of TagRegistry that stores bit masks directly. The maximum number of tags is inferred from the number
+        //! of bits available in TagType. Tags will always have a single bit flipped to 1. See TagRegistry for more details.
+        //!
+        template<typename IndexType>
         class TagBitRegistry final
             : public AZStd::intrusive_base
         {
         public:
             AZ_CLASS_ALLOCATOR(TagBitRegistry, AZ::SystemAllocator, 0);
             AZ_DISABLE_COPY_MOVE(TagBitRegistry);
+
+            using TagType = Handle<IndexType>;
 
             static Ptr<TagBitRegistry> Create();
 
@@ -65,51 +59,50 @@ namespace AZ
         private:
             TagBitRegistry() = default;
             static TagType ConvertToUnderlyingType(TagType tag);
-            TagRegistry<typename TagType, sizeof(TagType) * 8> m_tagRegistry;
+            static TagType ConvertFromUnderlyingType(TagType tag);
+            TagRegistry<typename IndexType, sizeof(IndexType) * 8> m_tagRegistry;
         };
 
-        template<typename TagType>
-        Ptr<TagBitRegistry<TagType>> TagBitRegistry<TagType>::Create()
+        template<typename IndexType>
+        Ptr<TagBitRegistry<IndexType>> TagBitRegistry<IndexType>::Create()
         {
-            return aznew TagBitRegistry<TagType>();
+            return aznew TagBitRegistry<IndexType>();
         }
 
-        template<typename TagType>
-        TagType TagBitRegistry<TagType>::AcquireTag(const Name& tagName)
+        template<typename IndexType>
+        auto TagBitRegistry<IndexType>::AcquireTag(const Name& tagName) -> TagType
         {
-            if (TagType bitPos = m_tagRegistry.AcquireTag(tagName); bitPos.IsValid())
-            {
-                return TagType(1 << bitPos.GetIndex());
-            }
-            return {};
+            return ConvertFromUnderlyingType(m_tagRegistry.AcquireTag(tagName));
         }
 
-        template<typename TagType>
-        void TagBitRegistry<TagType>::ReleaseTag(TagType tag)
+        template<typename IndexType>
+        void TagBitRegistry<IndexType>::ReleaseTag(TagType tag)
         {
             m_tagRegistry.ReleaseTag(ConvertToUnderlyingType(tag));
         }
 
-        template<typename TagType>
-        TagType TagBitRegistry<TagType>::FindTag(const Name& tagName) const
+        template<typename IndexType>
+        auto TagBitRegistry<IndexType>::FindTag(const Name& tagName) const -> TagType
         {
-            if (TagType bitPos = m_tagRegistry.FindTag(tagName); bitPos.IsValid())
-            {
-                return TagType(1 << m_tagRegistry.FindTag(tagName).GetIndex());
-            }
-            return {};
+            return ConvertFromUnderlyingType(m_tagRegistry.FindTag(tagName));
         }
 
-        template<typename TagType>
-        Name TagBitRegistry<TagType>::GetName(TagType tag) const
+        template<typename IndexType>
+        Name TagBitRegistry<IndexType>::GetName(TagType tag) const
         {
             return m_tagRegistry.GetName(ConvertToUnderlyingType(tag));
         }
 
-        template<typename TagType>
-        TagType TagBitRegistry<TagType>::ConvertToUnderlyingType(TagType tag)
+        template<typename IndexType>
+        auto TagBitRegistry<IndexType>::ConvertToUnderlyingType(TagType tag) -> TagType
         {
-            return TagType(az_ctz_u64(tag.GetIndex()));
+            return tag.IsValid() ? TagType(az_ctz_u64(tag.GetIndex())) : tag;
+        }
+
+        template<typename IndexType>
+        auto TagBitRegistry<IndexType>::ConvertFromUnderlyingType(TagType tag) -> TagType
+        {
+            return tag.IsValid() ? TagType(1 << tag.GetIndex()) : tag;
         }
     }
 }

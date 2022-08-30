@@ -22,12 +22,44 @@ namespace UnitTest
         TagRegistryTest()
             : RHITestFixture()
         {}
+
+        static constexpr uint8_t Count = 4;
+        using IndexType = uint16_t;
+        using TagType = RHI::Handle<IndexType>;
+
+        // Make sure values in two arrays of tags are unique
+        void CheckUniqueness(AZStd::array<TagType, Count>& tags)
+        {
+            for (uint8_t i = 0; i < Count; ++i)
+            {
+                for (uint8_t j = i + 1; j < Count; ++j)
+                {
+                    EXPECT_NE(tags[i], tags[j]);
+                }
+            }
+        }
+
+        template <typename T>
+        void CheckNamesAndtags(AZStd::array<Name, Count>& names, AZStd::array<TagType, Count>& tags, T& registry)
+        {
+            // Check to see if they can be retrieved after acquired
+            for (uint8_t i = 0; i < Count; ++i)
+            {
+                EXPECT_EQ(tags[i], registry->FindTag(names[i]));
+            }
+
+            // Make sure getting names of the tags works correctly.
+            for (uint8_t i = 0; i < Count; ++i)
+            {
+                EXPECT_EQ(registry->GetName(tags[i]), names[i]);
+            }
+        }
     };
 
 
     TEST_F(TagRegistryTest, ConstructResetTagRegistry)
     {
-        auto tagRegistry = RHI::TagRegistry<RHI::Handle<uint16_t>, 32>::Create();
+        auto tagRegistry = RHI::TagRegistry<IndexType, 32>::Create();
         EXPECT_EQ(tagRegistry->GetAllocatedTagCount(), 0);
         auto tagA = tagRegistry->AcquireTag(Name("A"));
         EXPECT_EQ(tagRegistry->GetAllocatedTagCount(), 1);
@@ -37,49 +69,48 @@ namespace UnitTest
 
     TEST_F(TagRegistryTest, TagValues)
     {
-        auto tagRegistry = RHI::TagRegistry<RHI::Handle<uint16_t>, 32>::Create();
-        auto tagA = tagRegistry->AcquireTag(Name("A"));
-        auto tagB = tagRegistry->AcquireTag(Name("B"));
-        auto tagC = tagRegistry->AcquireTag(Name("C"));
-        auto tagD = tagRegistry->AcquireTag(Name("D"));
 
-        // Make sure values increment
-        EXPECT_EQ(tagA.GetIndex(), 0);
-        EXPECT_EQ(tagB.GetIndex(), 1);
-        EXPECT_EQ(tagC.GetIndex(), 2);
-        EXPECT_EQ(tagD.GetIndex(), 3);
+        auto tagRegistry = RHI::TagRegistry<IndexType, Count>::Create();
 
-        // Check to see if they can be retrieved after acquired
-        EXPECT_EQ(tagA, tagRegistry->FindTag(Name("A")));
-        EXPECT_EQ(tagB, tagRegistry->FindTag(Name("B")));
-        EXPECT_EQ(tagC, tagRegistry->FindTag(Name("C")));
-        EXPECT_EQ(tagD, tagRegistry->FindTag(Name("D")));
+        AZStd::array<Name, Count> names = { Name("A"), Name("B"), Name("C"), Name("D"), };
+        AZStd::array<TagType, Count> tags;
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tags[i] = tagRegistry->AcquireTag(names[i]);
+        }
 
-        // Make sure getting names of the tags works correctly.
-        EXPECT_EQ(tagRegistry->GetName(tagA), Name("A"));
-        EXPECT_EQ(tagRegistry->GetName(tagB), Name("B"));
-        EXPECT_EQ(tagRegistry->GetName(tagC), Name("C"));
-        EXPECT_EQ(tagRegistry->GetName(tagD), Name("D"));
+        CheckUniqueness(tags);
 
-        // Check to make sure releasing and acquiring fills a hole
-        tagRegistry->ReleaseTag(tagB);
-        EXPECT_EQ(tagRegistry->FindTag(Name("B")), AZ::RHI::Handle<uint16_t>::Null);
-        auto tagBNew = tagRegistry->AcquireTag(Name("B"));
-        EXPECT_EQ(tagB, tagBNew);
+        // Make sure they're less than max
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            EXPECT_LT(tags[i].GetIndex(), Count);
+        }
 
-        // Check the next after all holes are filled is the next valid integer.
-        auto tagE = tagRegistry->AcquireTag(Name("E"));
-        EXPECT_EQ(tagE.GetIndex(), 4);
+        CheckNamesAndtags(names, tags, tagRegistry);
 
+        // Check to make sure releasing frees tag
+        tagRegistry->ReleaseTag(tags[1]);
+        EXPECT_EQ(tagRegistry->FindTag(names[1]), TagType::Null);
+
+        // Check acquiring new tag after release keeps uniqueness property
+        tags[1] = tagRegistry->AcquireTag(names[1]);
+        CheckUniqueness(tags);
+
+        // Release all tags
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tagRegistry->ReleaseTag(tags[i]);
+        }
     }
 
     TEST_F(TagRegistryTest, RefCounting)
     {
-        auto tagRegistry = RHI::TagRegistry<RHI::Handle<uint16_t>, 32>::Create();
+        auto tagRegistry = RHI::TagRegistry<IndexType, Count>::Create();
 
         const uint32_t refCount = 4;
-        AZ::RHI::Handle<uint16_t> tagA;
-        AZ::RHI::Handle<uint16_t> tagB;
+        TagType tagA;
+        TagType tagB;
 
         // acquire refs
         for (uint32_t i = 0; i < refCount; ++i)
@@ -98,13 +129,13 @@ namespace UnitTest
         }
 
         // should no longer exist.
-        EXPECT_EQ(tagRegistry->FindTag(Name("A")), AZ::RHI::Handle<uint16_t>::Null);
-        EXPECT_EQ(tagRegistry->FindTag(Name("B")), AZ::RHI::Handle<uint16_t>::Null);
+        EXPECT_EQ(tagRegistry->FindTag(Name("A")), TagType::Null);
+        EXPECT_EQ(tagRegistry->FindTag(Name("B")), TagType::Null);
     }
 
     TEST_F(TagRegistryTest, ConstructResetTagBitRegistry)
     {
-        auto tagBitRegistry = RHI::TagBitRegistry<RHI::Handle<uint16_t>>::Create();
+        auto tagBitRegistry = RHI::TagBitRegistry<IndexType>::Create();
         EXPECT_EQ(tagBitRegistry->GetAllocatedTagCount(), 0);
         auto tagA = tagBitRegistry->AcquireTag(Name("A"));
         EXPECT_EQ(tagBitRegistry->GetAllocatedTagCount(), 1);
@@ -114,38 +145,37 @@ namespace UnitTest
 
     TEST_F(TagRegistryTest, TagBitValues)
     {
-        auto tagBitRegistry = RHI::TagBitRegistry<RHI::Handle<uint16_t>>::Create();
-        auto tagA = tagBitRegistry->AcquireTag(Name("A"));
-        auto tagB = tagBitRegistry->AcquireTag(Name("B"));
-        auto tagC = tagBitRegistry->AcquireTag(Name("C"));
-        auto tagD = tagBitRegistry->AcquireTag(Name("D"));
+        auto tagBitRegistry = RHI::TagBitRegistry<IndexType>::Create();
 
-        // Make sure values increment bit positions
-        EXPECT_EQ(tagA.GetIndex(), 0b0001);
-        EXPECT_EQ(tagB.GetIndex(), 0b0010);
-        EXPECT_EQ(tagC.GetIndex(), 0b0100);
-        EXPECT_EQ(tagD.GetIndex(), 0b1000);
+        AZStd::array<Name, Count> names = { Name("A"), Name("B"), Name("C"), Name("D"), };
+        AZStd::array<TagType, Count> tags;
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tags[i] = tagBitRegistry->AcquireTag(names[i]);
+        }
 
-        // Check to see if they can be retrieved after acquired
-        EXPECT_EQ(tagA, tagBitRegistry->FindTag(Name("A")));
-        EXPECT_EQ(tagB, tagBitRegistry->FindTag(Name("B")));
-        EXPECT_EQ(tagC, tagBitRegistry->FindTag(Name("C")));
-        EXPECT_EQ(tagD, tagBitRegistry->FindTag(Name("D")));
+        CheckUniqueness(tags);
 
-        // Make sure getting names of the tags works correctly.
-        EXPECT_EQ(tagBitRegistry->GetName(tagA), Name("A"));
-        EXPECT_EQ(tagBitRegistry->GetName(tagB), Name("B"));
-        EXPECT_EQ(tagBitRegistry->GetName(tagC), Name("C"));
-        EXPECT_EQ(tagBitRegistry->GetName(tagD), Name("D"));
+        // Make sure each tag is a single bit.
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            EXPECT_EQ(az_popcnt_u32(tags[i].GetIndex()), 1);
+        }
 
-        // Check to make sure releasing and acquiring fills a hole
-        tagBitRegistry->ReleaseTag(tagB);
-        EXPECT_EQ(tagBitRegistry->FindTag(Name("B")), AZ::RHI::Handle<uint16_t>::Null);
-        auto tagBNew = tagBitRegistry->AcquireTag(Name("B"));
-        EXPECT_EQ(tagB, tagBNew);
+        CheckNamesAndtags(names, tags, tagBitRegistry);
 
-        // Check the next after all holes are filled is the next valid integer.
-        auto tagE = tagBitRegistry->AcquireTag(Name("E"));
-        EXPECT_EQ(tagE.GetIndex(), 0b10000);
+        // Check to make sure releasing frees tag
+        tagBitRegistry->ReleaseTag(tags[1]);
+        EXPECT_EQ(tagBitRegistry->FindTag(names[1]), TagType::Null);
+
+        // Check acquiring new tag after release keeps uniqueness property
+        tags[1] = tagBitRegistry->AcquireTag(names[1]);
+        CheckUniqueness(tags);
+
+        // Release all tags
+        for (uint8_t i = 0; i < Count; ++i)
+        {
+            tagBitRegistry->ReleaseTag(tags[i]);
+        }
     }
 }
