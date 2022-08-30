@@ -159,9 +159,6 @@ namespace TestImpact
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list
         const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
-        // Update the enumeration caches of mutated targets regardless of the current sharding policy
-        // EnumerateMutatedTestTargets(changeDependencyList);
-
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
         for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargetList()->GetTestTargetList().GetTargets())
         {
