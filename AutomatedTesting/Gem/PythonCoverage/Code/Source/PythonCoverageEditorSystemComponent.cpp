@@ -102,14 +102,7 @@ namespace PythonCoverage
             return m_coverageState;
         }
 
-        const auto& tempConfig = configurationFile["common"]["workspace"]["temp"];
-
-        // Temp directory root path is absolute
-        const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
-
-        // Artifact directory is relative to temp directory root
-        const AZ::IO::Path artifactRelativeDir = tempConfig["relative_paths"]["artifact_dir"].GetString();
-        m_coverageDir = tempWorkspaceRootDir / artifactRelativeDir;
+        m_coverageDir = configurationFile["python"]["workspace"]["temp"]["coverage_artifact_dir"].GetString();
 
         // Everything is good to go, await the first python test case
         m_coverageState = CoverageState::Idle;
@@ -163,7 +156,8 @@ namespace PythonCoverage
                 {
                     for (const auto* moduleComponentDescriptor : moduleData.GetModule()->GetComponentDescriptors())
                     {
-                        m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
+                        m_moduleComponents[moduleComponentDescriptor->GetUuid()] =
+                            m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
                     }
                 }
     
