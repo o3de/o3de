@@ -18,5 +18,14 @@ namespace TestImpact
     {
     public:
         using CommandLineOptions::CommandLineOptions;
+
+        PythonCommandLineOptions(int argc, char** argv);
+
+        Policy::TestRunner GetTestRunnerPolicy() const;
+
+        static AZStd::string GetCommandLineUsageString();
+
+    private:
+        Policy::TestRunner m_testRunnerPolicy = Policy::TestRunner::UseNullTestRunner;
     };
 } // namespace TestImpact

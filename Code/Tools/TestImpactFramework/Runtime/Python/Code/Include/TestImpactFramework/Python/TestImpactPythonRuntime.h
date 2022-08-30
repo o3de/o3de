@@ -36,7 +36,8 @@ namespace TestImpact
             Policy::FailedTestCoverage failedTestCoveragePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::IntegrityFailure integrationFailurePolicy,
-            Policy::TargetOutputCapture targetOutputCapture);
+            Policy::TargetOutputCapture targetOutputCapture,
+            Policy::TestRunner testRunnerPolicy);
 
         ~PythonRuntime();
 
@@ -139,6 +140,7 @@ namespace TestImpact
         Policy::TestFailure m_testFailurePolicy;
         Policy::IntegrityFailure m_integrationFailurePolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
+        Policy::TestRunner m_testRunnerPolicy;
         AZStd::unique_ptr<BuildTargetList<ProductionTarget, TestTarget>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<ProductionTarget, TestTarget>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>> m_testSelectorAndPrioritizer;

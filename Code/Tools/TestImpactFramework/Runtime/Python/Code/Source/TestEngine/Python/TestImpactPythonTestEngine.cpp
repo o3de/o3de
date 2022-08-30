@@ -52,7 +52,7 @@ namespace TestImpact
         const RepoPath& repoDir,
         const RepoPath& buildDir,
         const ArtifactDir& artifactDir,
-        bool useNullTestRunner)
+        Policy::TestRunner useNullTestRunner)
         : m_testJobInfoGenerator(AZStd::make_unique<PythonTestRunJobInfoGenerator>(
               repoDir, buildDir, artifactDir))
         , m_testRunner(AZStd::make_unique<PythonTestRunner>(artifactDir))
@@ -103,7 +103,7 @@ namespace TestImpact
             return TestImpact::ProcessCallbackResult::Continue;
         };
 
-        if (m_useNullTestRunner)
+        if (m_useNullTestRunner == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
             return GenerateInstrumentedRunResult(
