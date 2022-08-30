@@ -9,6 +9,7 @@
 #pragma once
 
 #include <TestRunner/Python/TestImpactPythonNullTestRunner.h>
+#include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 
 namespace TestImpact
 {
@@ -31,6 +32,8 @@ namespace TestImpact
                 JobMeta meta;
                 meta.m_result = JobResult::ExecutedWithSuccess;
                 Job job(jobInfo, AZStd::move(meta), outcome.TakeValue());
+                // If any tests have failed, we override the return code with the correct error code for test failures, as the null test runner will not report these correctly otherwise.
+                meta.m_returnCode = outcome.GetValue().first->GetNumFailures() ? ErrorCodes::PyTest::TestFailures : 0;
                 jobs.push_back(job);
 
                 if (clientCallback.has_value())
