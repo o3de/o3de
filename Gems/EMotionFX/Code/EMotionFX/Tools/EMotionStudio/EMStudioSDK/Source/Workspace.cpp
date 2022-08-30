@@ -160,26 +160,11 @@ namespace EMStudio
                     continue;
                 }
 
-                const EMotionFX::Transform& transform = actorInstance->GetLocalSpaceTransform();
-                const AZ::Vector3&       pos     = transform.m_position;
-                const AZ::Quaternion&    rot     = transform.m_rotation;
-
-                #ifndef EMFX_SCALE_DISABLED
-                    const AZ::Vector3& scale = transform.m_scale;
-                #else
-                    const AZ::Vector3 scale = AZ::Vector3::CreateOne();
-                #endif
-
                 // We need to add it here because if we dont do the last result will be the id of the actor instance and then it won't work anymore.
                 AddFile(&commands, "ImportActor", actor->GetFileName());
                 ++commandIndex;
-                commandString = AZStd::string::format("CreateActorInstance -actorID %%LASTRESULT%% -xPos %f -yPos %f -zPos %f -xScale %f -yScale %f -zScale %f -rot %s\n",
-                        static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ()), static_cast<float>(scale.GetX()), static_cast<float>(scale.GetY()), static_cast<float>(scale.GetZ()),
-                        AZStd::to_string(rot).c_str());
-                commands += commandString;
 
                 activationIndicesByActorInstance[actorInstance].m_actorInstanceCommandIndex = commandIndex;
-                ++commandIndex;
             }
         }
 
