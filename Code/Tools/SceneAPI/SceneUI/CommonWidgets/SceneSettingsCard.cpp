@@ -35,6 +35,14 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
     m_closeButton->setMaximumSize(24, 24);
     m_closeButton->setBaseSize(24, 24);
 
+    QIcon closeButtonIcon;
+    closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIcon.png"), QIcon::Normal);
+    closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIconDisable.png"), QIcon::Disabled);
+    closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIconActive.png"), QIcon::Active);
+    closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIconActive.png"), QIcon::Selected);
+    m_closeButton->setIcon(closeButtonIcon);
+    m_closeButton->setFlat(true);
+
     m_backgroundLayout->addWidget(m_closeButton);
     
     connect(m_closeButton, &QPushButton::clicked, this, &SceneSettingsCardHeader::triggerCloseButton);
