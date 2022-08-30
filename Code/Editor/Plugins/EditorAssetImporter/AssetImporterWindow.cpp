@@ -77,6 +77,7 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
+    disconnect();
     AZ_Assert(m_processingOverlayIndex == AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex,
         "Processing overlay (and potentially background thread) still active at destruction.");
     AZ_Assert(!m_processingOverlay, "Processing overlay (and potentially background thread) still active at destruction.");
@@ -328,7 +329,8 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     SceneSettingsCard::State state)
 {
     SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
-
+    
+    card->setExpanded(false);
     if (m_logDetailsCard->isHidden())
     {
         // On first display, make sure it's not expanded
@@ -345,6 +347,10 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
 
 void AssetImporterWindow::SceneSettingsCardDestroyed()
 {
+    if (m_isClosed)
+    {
+        return;
+    }
     if (m_openSceneSettingsCards > 0)
     {
         --m_openSceneSettingsCards;
