@@ -22,7 +22,9 @@
 namespace AzQtComponents
 {
     class StyledBusyLabel;
+    class StyledDetailsTableView;
 }
+
 namespace AZ
 {
     namespace SceneAPI
@@ -75,7 +77,7 @@ public:
         Exporting
     };
 
-    SceneSettingsCard(AZ::Uuid traceTag, Layout layout, QWidget* parent = nullptr);
+    SceneSettingsCard(AZ::Uuid traceTag, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent = nullptr);
     ~SceneSettingsCard();
 
     void SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler>& handler);
@@ -85,19 +87,21 @@ public:
     bool OnWarning(const char* window, const char* message) override;
     bool OnAssert(const char* message) override;
 
-    enum class SceneSettingsCardState
+    enum class State
     {
         Loading,
         Processing,
         Done,
     };
-    void SetState(SceneSettingsCardState newState);
+    void SetState(State newState);
 
     
-    public slots:
+public Q_SLOTS:
     void AddLogEntry(const AzToolsFramework::Logging::LogEntry& logEntry);
     void OnSetStatusMessage(const AZStd::string& message);
     void OnProcessingComplete();
+    void OnLogLineSelected();
+
 private:
     enum class CompletionState
     {
@@ -111,10 +115,15 @@ private:
     void UpdateCompletionState(CompletionState newState);
     void CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const;
     QString GetTimeAsString();
+    void AddEmptyLogDetailsForRow();
+
+    QVector<QVector<QPair<QString, QString>>> m_additionalLogDetails;
+    AzQtComponents::StyledDetailsTableModel* m_logDetailsModel = nullptr;
     
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
     AZ::Uuid m_traceTag;
     AzQtComponents::StyledDetailsTableModel* m_reportModel = nullptr;
+    AzQtComponents::StyledDetailsTableView* m_reportView = nullptr;
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;

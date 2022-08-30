@@ -51,36 +51,49 @@ void SceneSettingsCardHeader::SetCanClose(bool canClose)
     m_busyLabel->setHidden(canClose);
 }
 
-SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, Layout layout, QWidget* parent /* = nullptr */)
+SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent /* = nullptr */)
     :
     AzQtComponents::Card(new SceneSettingsCardHeader(), parent),
-    m_traceTag(traceTag)
+    m_traceTag(traceTag),
+    m_logDetailsModel(logDetailsModel)
 {
     m_settingsHeader = qobject_cast<SceneSettingsCardHeader*>(header());
     // This has to be set here, instead of in the customheader,
     // because the Card constructor forces the context menu to be visible.
     header()->setHasContextMenu(false);
 
-    m_reportModel = new AzQtComponents::StyledDetailsTableModel();
+    m_reportModel = new AzQtComponents::StyledDetailsTableModel(this);
     int statusColumn = m_reportModel->AddColumn("Status", AzQtComponents::StyledDetailsTableModel::StatusIcon);
     int platformColumn = -1;
+    int windowColumn = -1;
     if (layout == Layout::Exporting)
     {
         platformColumn = m_reportModel->AddColumn("Platform");
+        windowColumn = m_reportModel->AddColumn("Window");
+        m_reportModel->AddColumnAlias("window", "Window");
     }
     int timeColumn = m_reportModel->AddColumn("Time");
     m_reportModel->AddColumn("Message");
     m_reportModel->AddColumnAlias("message", "Message");
-    AzQtComponents::StyledDetailsTableView* m_reportView = new AzQtComponents::StyledDetailsTableView();
+    m_reportView = new AzQtComponents::StyledDetailsTableView(this);
     m_reportView->setModel(m_reportModel);
 
     if (platformColumn > 0)
     {
         m_reportView->horizontalHeader()->setSectionResizeMode(platformColumn, QHeaderView::ResizeToContents);
     }
+    if (windowColumn > 0)
+    {
+        m_reportView->horizontalHeader()->setSectionResizeMode(windowColumn, QHeaderView::ResizeToContents);
+    }
+
     m_reportView->horizontalHeader()->setSectionResizeMode(statusColumn, QHeaderView::ResizeToContents);
     m_reportView->horizontalHeader()->setSectionResizeMode(timeColumn, QHeaderView::ResizeToContents);
     setContentWidget(m_reportView);
+    
+
+    connect(m_reportView->selectionModel(), &QItemSelectionModel::selectionChanged,
+        this, &SceneSettingsCard::OnLogLineSelected);
 
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
 }
@@ -116,12 +129,15 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
     }
     AzQtComponents::StyledDetailsTableModel::TableEntry reportEntry;
 
+    QVector<QPair<QString, QString>> detailsForLogLine;
+
     bool hasStatus = false;
     for (auto& field : logEntry.GetFields())
     {
         size_t offset = 0;
         hasStatus = hasStatus || AzFramework::StringFunc::Equal("status", field.second.m_name.c_str());
-        if (AzFramework::StringFunc::Equal("message", field.second.m_name.c_str()))
+        if (AzFramework::StringFunc::Equal("message", field.second.m_name.c_str()) ||
+            AzFramework::StringFunc::Equal("window", field.second.m_name.c_str()))
         {
             if (field.second.m_value.length() > 2)
             {
@@ -131,9 +147,21 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
                     offset = 3;
                 }
             }
+            reportEntry.Add(field.second.m_name.c_str(), field.second.m_value.c_str() + offset);
         }
-        
-        reportEntry.Add(field.second.m_name.c_str(), field.second.m_value.c_str() + offset);
+        else
+        {
+            detailsForLogLine.push_back(QPair<QString, QString>(field.second.m_name.c_str(), field.second.m_value.c_str()));
+        }
+    }
+
+    if (!detailsForLogLine.empty())
+    {
+        m_additionalLogDetails.push_back(detailsForLogLine);
+    }
+    else
+    {
+        AddEmptyLogDetailsForRow();
     }
     
     if (!hasStatus)
@@ -158,9 +186,10 @@ void SceneSettingsCard::OnProcessingComplete()
     entry.Add("Message", "Asset processing completed.");
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeAsString());
+    AddEmptyLogDetailsForRow();    
     m_reportModel->AddEntry(entry);
     
-    SetState(SceneSettingsCard::SceneSettingsCardState::Done);
+    SetState(SceneSettingsCard::State::Done);
 }
 
 void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
@@ -169,6 +198,7 @@ void SceneSettingsCard::OnSetStatusMessage(const AZStd::string& message)
     entry.Add("Message", message.c_str());
     entry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusSuccess);
     entry.Add("Time", GetTimeAsString());
+    AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
 }
 
@@ -202,6 +232,7 @@ bool SceneSettingsCard::OnPrintf(const char* window, const char* message)
     entry.Add("Message", message);
     entry.Add("Time", GetTimeAsString());
     CopyTraceContext(entry);
+    AddEmptyLogDetailsForRow();
     m_reportModel->AddEntry(entry);
     return false;
 }
@@ -258,19 +289,19 @@ bool SceneSettingsCard::OnAssert(const char* message)
     return false;
 }
 
-void SceneSettingsCard::SetState(SceneSettingsCardState newState)
+void SceneSettingsCard::SetState(State newState)
 {
     switch (newState)
     {
-    case SceneSettingsCardState::Loading:
+    case State::Loading:
         setTitle(tr("Loading scene settings"));
         m_settingsHeader->SetCanClose(false);
         break;
-    case SceneSettingsCardState::Processing:
+    case State::Processing:
         setTitle(tr("Saving scene settings, and reprocessing scene file"));
         m_settingsHeader->SetCanClose(false);
         break;
-    case SceneSettingsCardState::Done:
+    case State::Done:
         setTitle(tr("Processing completed at %1").arg(GetTimeAsString()));
         m_settingsHeader->SetCanClose(true);
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -325,4 +356,47 @@ void SceneSettingsCard::CopyTraceContext(AzQtComponents::StyledDetailsTableModel
 QString SceneSettingsCard::GetTimeAsString()
 {
     return QDateTime::currentDateTime().toString(tr("hh:mm:ss ap"));
+}
+
+void SceneSettingsCard::AddEmptyLogDetailsForRow()
+{
+    QVector<QPair<QString, QString>> detailsForLogLine;
+    detailsForLogLine.push_back(QPair<QString, QString>(tr("Info"), tr("No additional details available.")));
+    m_additionalLogDetails.push_back(detailsForLogLine);
+}
+
+void SceneSettingsCard::OnLogLineSelected()
+{
+    const QModelIndexList indexes = m_reportView->selectionModel()->selectedIndexes();
+    if (indexes.isEmpty())
+    {
+        // TODO: Clear the view?
+        return;
+    }
+
+    int logRow = indexes.front().row();
+    if (logRow > m_additionalLogDetails.count())
+    {
+        // TODO: Clear the view?
+        return;
+    }
+
+    if (m_logDetailsModel->rowCount() > 0)
+    {
+        bool removeRowResult = m_logDetailsModel->removeRows(0, m_logDetailsModel->rowCount());
+
+        if (!removeRowResult)
+        {
+            return;
+        }
+    }
+
+    for(const auto& logDetail : m_additionalLogDetails[logRow])
+    {
+        AzQtComponents::StyledDetailsTableModel::TableEntry entry;
+        entry.Add("Title", logDetail.first);
+        entry.Add("Message", logDetail.second);
+        m_logDetailsModel->AddEntry(entry);
+    }
+    //ui->nameLineEdit->setText(NameForIndex(indexes.first()));
 }

@@ -92,6 +92,7 @@ namespace AzQtComponents
         QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
         int columnCount(const QModelIndex& index = {}) const override;
         int rowCount(const QModelIndex& index = {}) const override;
+        bool removeRows(int row, int count, const QModelIndex& parent = {}) override;
 
         void RegisterStatusIcon(int statusType, const QPixmap& icon);
 

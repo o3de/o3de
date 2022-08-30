@@ -21,7 +21,15 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Math/Guid.h>
+#include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #endif
+
+namespace AzQtComponents
+{
+    class Card;
+    class StyledDetailsTableModel;
+    class StyledDetailsTableView;
+}
 
 namespace AZStd
 {
@@ -60,6 +68,7 @@ class QMenu;
 class QAction;
 class QVBoxLayout;
 class QScrollArea;
+class SceneSettingsCard;
 
 class AssetImporterWindow
     : public QMainWindow
@@ -89,6 +98,7 @@ public slots:
     void OnAssignScript();
     void OnOpenDocumentation();
     void OnInspect();
+    void SceneSettingsCardDestroyed();
 
 private:
     void Init();
@@ -107,6 +117,10 @@ private:
     void HandleAssetLoadingCompleted();
     void ClearProcessingOverlay();
 
+    SceneSettingsCard* CreateSceneSettingsCard(
+        SceneSettingsCard::Layout layout,
+        SceneSettingsCard::State state);
+
 private slots:
     void UpdateClicked();
     
@@ -121,8 +135,16 @@ private:
     QScopedPointer<Ui::AssetImporterWindow> ui;
     QScopedPointer<AssetImporterDocument> m_assetImporterDocument;
     QScopedPointer<AZ::SceneAPI::UI::OverlayWidget> m_overlay;
-    QVBoxLayout* m_notificationLayout = nullptr;
-    QWidget* m_notificationRootWidget = nullptr;
+    //QVBoxLayout* m_notificationLayout = nullptr;
+    //QWidget* m_notificationRootWidget = nullptr;
+    AzQtComponents::Card* m_logDetailsCard = nullptr;
+    int m_openSceneSettingsCards = 0;
+
+    // Output logs can have a lot of additional details,
+    // this table displays that information when you select
+    // a log message in one of the status cards.
+    AzQtComponents::StyledDetailsTableModel* m_logDetailsModel = nullptr;
+    AzQtComponents::StyledDetailsTableView* m_logDetailsView = nullptr;
 
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;

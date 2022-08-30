@@ -28,6 +28,8 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 
 #include <QScrollArea>
 
+#include <AzQtComponents/Components/StyledDetailsTableModel.h>
+#include <AzQtComponents/Components/StyledDetailsTableView.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -39,12 +41,8 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <Util/PathUtil.h>
 #include <ActionOutput.h>
 
-#include <AzQtComponents/Components/StyledDetailsTableView.h>
-#include <AzQtComponents/Components/StyledBusyLabel.h>
-
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.h>
-#include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
@@ -193,10 +191,25 @@ void AssetImporterWindow::Init()
 
     ResetMenuAccess(WindowState::InitialNothingLoaded);
 
-    m_notificationRootWidget = new QWidget(this);
-    m_notificationLayout = new QVBoxLayout(m_notificationRootWidget);
-    //m_notificationRootWidget->setWidgetResizable(true);
-    ui->m_cardAreaLayout->addWidget(m_notificationRootWidget);
+    //m_notificationRootWidget = new QWidget(ui->m_cardAreaLayoutWidget);
+    //m_notificationLayout = new QVBoxLayout(ui->m_cardAreaLayoutWidget);
+    //ui->m_cardAreaLayout->addWidget(m_notificationRootWidget);
+
+    m_logDetailsCard = new AzQtComponents::Card(this);
+    m_logDetailsCard->setTitle(tr("Additional Log Details"));
+    m_logDetailsCard->header()->setHasContextMenu(false);
+    ui->m_notificationAreaLayout->addWidget(m_logDetailsCard);
+    // Only show if there is at least one card up
+    m_logDetailsCard->hide();
+
+    m_logDetailsModel = new AzQtComponents::StyledDetailsTableModel(m_logDetailsCard);
+    m_logDetailsModel->AddColumn("Title");
+    m_logDetailsModel->AddColumn("Message");
+
+    m_logDetailsView = new AzQtComponents::StyledDetailsTableView(m_logDetailsCard);
+    m_logDetailsView->setModel(m_logDetailsModel);
+    m_logDetailsCard->setContentWidget(m_logDetailsView);
+    
 
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
@@ -296,23 +309,8 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     //ui->mainAreaLayout->addWidget(m_busyLabel);
     //m_busyLabel->SetText("Busy Message Test");
         
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, SceneSettingsCard::Layout::Loading, ui->m_rootWidget);
-    //card->setTitle("Example Processing Card 1");
-    card->SetState(SceneSettingsCard::SceneSettingsCardState::Loading);
-
-    m_notificationLayout->addWidget(card);
+    SceneSettingsCard* card = CreateSceneSettingsCard(SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
-        
-    /*SceneSettingsCard* card2 = new SceneSettingsCard(ui->m_rootWidget);
-    card2->setTitle("Example Processing Card 2");
-
-    m_notificationLayout->addWidget(card2);
-
-        
-    SceneSettingsCard* card3 = new SceneSettingsCard(ui->m_rootWidget);
-    card3->setTitle("Example Processing Card 3");
-
-    m_notificationLayout->addWidget(card3);*/
 
     //m_notificationRootWidget->adjustSize();
         
@@ -322,6 +320,31 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     //m_processingOverlay->SetAutoCloseOnSuccess(true);
     //connect(m_processingOverlay.data(), &AZ::SceneAPI::SceneUI::ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
     //m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
+}
+
+SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
+    SceneSettingsCard::Layout layout,
+    SceneSettingsCard::State state)
+{
+    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
+    m_logDetailsCard->show();
+    card->SetState(state);
+    ui->m_cardAreaLayout->addWidget(card);
+    ++m_openSceneSettingsCards;
+    connect(card, &QObject::destroyed, this, &AssetImporterWindow::SceneSettingsCardDestroyed);
+    return card;
+}
+
+void AssetImporterWindow::SceneSettingsCardDestroyed()
+{
+    if (m_openSceneSettingsCards > 0)
+    {
+        --m_openSceneSettingsCards;
+    }
+    if (m_openSceneSettingsCards <= 0)
+    {
+        m_logDetailsCard->hide();
+    }
 }
 
 bool AssetImporterWindow::IsAllowedToChangeSourceFile()
@@ -394,10 +417,7 @@ void AssetImporterWindow::UpdateClicked()
         return;
     }
 
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, SceneSettingsCard::Layout::Exporting, ui->m_rootWidget);
-    card->SetState(SceneSettingsCard::SceneSettingsCardState::Processing);
-
-    m_notificationLayout->addWidget(card);
+    SceneSettingsCard* card = CreateSceneSettingsCard(SceneSettingsCard::Layout::Exporting, SceneSettingsCard::State::Processing);
     
     QLabel* m_progressLabel = new QLabel("Processing...");
     m_progressLabel->setAlignment(Qt::AlignCenter);

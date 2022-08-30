@@ -321,6 +321,18 @@ namespace AzQtComponents
         return index.isValid() ? 0 : m_entries.size();
     }
 
+    bool StyledDetailsTableModel::removeRows(int row, int count, const QModelIndex& parent)
+    {
+        if (m_entries.size() == 0 || row < 0 || row >= m_entries.size() || row+count > m_entries.size())
+        {
+            return false;
+        }
+        beginRemoveRows(parent, row, row+count-1);
+        m_entries.remove(row, count);
+        endRemoveRows();
+        return true;
+    }
+
     void StyledDetailsTableModel::RegisterStatusIcon(int statusType, const QPixmap& icon)
     {
         m_statusIcons.insert(statusType, icon);
