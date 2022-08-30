@@ -61,7 +61,8 @@ namespace AZ::DocumentPropertyEditor
         void NotifyPropertyChanged(const PropertyChangeInfo& changeInfo);
 
         void* GetInstance() { return m_instance; }
-        AZ::TypeId GetTypeId() { return m_typeId; }
+        const void* GetInstance() const { return m_instance; }
+        AZ::TypeId GetTypeId() const { return m_typeId; }
 
     protected:
         Dom::Value GenerateContents() override;

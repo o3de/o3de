@@ -1059,7 +1059,7 @@ namespace AzToolsFramework
         const bool indexInRange = (rowIndex <= m_domOrderedRows.size());
         AZ_Assert(indexInRange, "rowIndex cannot be more than one past the existing end!")
 
-            if (indexInRange)
+        if (indexInRange)
         {
             auto newRow = new DPERowWidget(0, nullptr);
 
@@ -1186,11 +1186,15 @@ namespace AzToolsFramework
         // message match for QueryKey
         auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
         {
-            QDialog keyQueryDialog;
             KeyQueryDPE keyQueryUi(adapter);
             if (keyQueryUi.exec() == QDialog::Accepted)
             {
                 AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+            else
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
                     m_adapter->GetContents(), adapter, containerPath);
             }
         };
