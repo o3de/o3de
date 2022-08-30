@@ -16,9 +16,11 @@ This init allows us to treat the DCCsi Tools DCC folder as a package.
 # -------------------------------------------------------------------------
 # standard imports
 import os
+import site
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
 # global scope
@@ -33,7 +35,6 @@ __all__ = ['Blender',
           # 'Foo',
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 # -------------------------------------------------------------------------
 
 
@@ -41,17 +42,14 @@ _LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 # set up access to this DCC folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 
-from Tools import _PATH_DCCSIG
+from Tools import PATH_DCCSIG
 
-from Tools import _PATH_DCCSI_TOOLS
+# suggest to remove a lot of this boilerplate imports and debug config
+# from __init__'s in the future, there were put in an earlier version when
+# some of the scaffolding wasn't fully in place. These settings can now be
+# set in the env (*.bat files) and/or the settings.local.json to active
+# and propogate.
 
-_PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC',
-                                       _PATH_DCCSI_TOOLS_DCC.as_posix()))
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 # now we have access to the DCCsi code and azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
@@ -59,8 +57,19 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
+from azpy.config_utils import attach_debugger
 
-#  global space
+from Tools import PATH_DCCSI_TOOLS
+
+PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC',
+                                       PATH_DCCSI_TOOLS_DCC.as_posix()))
+site.addsitedir(PATH_DCCSI_TOOLS_DCC.as_posix())
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# reconfigure for debug and dev mode
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
@@ -76,18 +85,19 @@ if _DCCSI_GDEBUG:
     _LOGGER = _logging.getLogger(_PACKAGENAME)
 # -------------------------------------------------------------------------
 
-from azpy.config_utils import attach_debugger
 
 # -------------------------------------------------------------------------
 # message collection
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-_LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
-_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
+_LOGGER.debug(f'PATH_DCCSIG: {PATH_DCCSIG}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS: {PATH_DCCSI_TOOLS}')
+_LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {PATH_DCCSI_TOOLS_DCC}')
 # -------------------------------------------------------------------------
 
+
 # -------------------------------------------------------------------------
+# dev mode will enable nested import tests
 if _DCCSI_DEV_MODE:
     from azpy.shared.utils.init import test_imports
     # If in dev mode this will test imports of __all__

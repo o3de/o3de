@@ -645,7 +645,7 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
-        reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
+        reinterpret_cast<IConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
         if (m_temporaryUserIdentifier == 0)
         {
             sv_map = packet.GetMap().c_str();

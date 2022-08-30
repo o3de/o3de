@@ -95,6 +95,42 @@ namespace UnitTest
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
     }
 
+    TEST_F(ComponentModeSwitcherTestFixture, InstantaneousChangeOfEntitySelectionUpdatesSwitcherCorrectly)
+    {
+        // Given an entity with two components
+        AZStd::shared_ptr<ComponentModeSwitcher> componentModeSwitcher = AZStd::make_shared<ComponentModeSwitcher>();
+
+        AzToolsFramework::EditorTransformComponentSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(),
+            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::OverrideComponentModeSwitcher,
+            componentModeSwitcher);
+
+        AZ::Entity* entity = nullptr;
+        AZ::EntityId entityId = CreateDefaultEditorEntity("ComponentModeEntity", &entity);
+
+        AZ::Entity* entity2 = nullptr;
+        AZ::EntityId entityId2 = CreateDefaultEditorEntity("ComponentModeEntity", &entity2);
+
+        entity->Deactivate();
+        entity2->Deactivate();
+
+        entity->CreateComponent<PlaceholderEditorComponent>();
+        entity->CreateComponent<AnotherPlaceholderEditorComponent>();
+
+        entity2->CreateComponent<AnotherPlaceholderEditorComponent>();
+
+        entity->Activate();
+        entity2->Activate();
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
+
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId2 });
+
+        EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
+    }
+
     TEST_F(ComponentModeSwitcherTestFixture, AddingDuplicateComponentsDoesNotAddComponentsToSwitcher)
     {
         // Given an entity with one component
@@ -116,9 +152,6 @@ namespace UnitTest
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, entityIds);
         EXPECT_EQ(1, componentModeSwitcher->GetComponentCount());
-
-        const AzToolsFramework::EntityIdList emptyIds = {};
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, emptyIds);
 
         // Then if the user adds an identical component, there is still one component on the switcher
         entity->Deactivate();

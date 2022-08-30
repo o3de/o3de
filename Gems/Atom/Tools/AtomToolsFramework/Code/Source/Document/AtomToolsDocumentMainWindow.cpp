@@ -117,7 +117,7 @@ namespace AtomToolsFramework
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId,
-                GetSaveFilePath(documentPath.toUtf8().constData()));
+                GetSaveDocumentParams(documentPath.toUtf8().constData()));
             if (!result)
             {
                 SetStatusError(tr("Document save failed: %1").arg(documentPath));
@@ -131,7 +131,7 @@ namespace AtomToolsFramework
             bool result = false;
             AtomToolsDocumentSystemRequestBus::EventResult(
                 result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId,
-                GetSaveFilePath(documentPath.toUtf8().constData()));
+                GetSaveDocumentParams(documentPath.toUtf8().constData()));
             if (!result)
             {
                 SetStatusError(tr("Document save failed: %1").arg(documentPath));
@@ -494,7 +494,12 @@ namespace AtomToolsFramework
         })->setEnabled(m_tabWidget->tabBar()->count() > 1);
     }
 
-    bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
+    AZStd::string AtomToolsDocumentMainWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
+    {
+        return GetSaveFilePath(initialPath);
+    }
+
+    bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) const
     {
         DocumentTypeInfoVector documentTypes;
         AtomToolsDocumentSystemRequestBus::EventResult(
@@ -515,7 +520,14 @@ namespace AtomToolsFramework
             }
 
             bool result = false;
-            QString item = QInputDialog::getItem(this, tr("Select Document Type"), tr("Select document type to create"), items, 0, false, &result);
+            QString item = QInputDialog::getItem(
+                const_cast<AtomToolsDocumentMainWindow*>(this),
+                tr("Select Document Type"),
+                tr("Select document type to create"),
+                items,
+                0,
+                false,
+                &result);
             if (!result || item.isEmpty())
             {
                 return false;
@@ -525,7 +537,10 @@ namespace AtomToolsFramework
         }
 
         const auto& documentType = documentTypes[documentTypeIndex];
-        CreateDocumentDialog dialog(documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
+        CreateDocumentDialog dialog(
+            documentType,
+            AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(),
+            const_cast<AtomToolsDocumentMainWindow*>(this));
         dialog.adjustSize();
 
         if (dialog.exec() == QDialog::Accepted && !dialog.m_sourcePath.isEmpty() && !dialog.m_targetPath.isEmpty())
@@ -537,7 +552,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    AZStd::vector<AZStd::string> AtomToolsDocumentMainWindow::GetOpenDocumentParams()
+    AZStd::vector<AZStd::string> AtomToolsDocumentMainWindow::GetOpenDocumentParams() const
     {
         DocumentTypeInfoVector documentTypes;
         AtomToolsDocumentSystemRequestBus::EventResult(

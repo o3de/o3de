@@ -19,6 +19,7 @@ namespace TestImpact
         //! @return The constructed list of test enumeration suite artifacts.
         AZStd::vector<TestEnumerationSuite> TestEnumerationSuitesFactory(const AZStd::string& testEnumerationData);
     } // namespace GTest
+
     namespace Python
     {
         //! Pair containing a Python script name and a vector of the related TestEnumerationSuites

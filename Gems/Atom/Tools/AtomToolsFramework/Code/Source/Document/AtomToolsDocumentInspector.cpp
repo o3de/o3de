@@ -74,6 +74,22 @@ namespace AtomToolsFramework
         }
     }
 
+    void AtomToolsDocumentInspector::OnDocumentCleared(const AZ::Uuid& documentId)
+    {
+        if (m_documentId == documentId)
+        {
+            Reset();
+        }
+    }
+
+    void AtomToolsDocumentInspector::OnDocumentError(const AZ::Uuid& documentId)
+    {
+        if (m_documentId == documentId)
+        {
+            Reset();
+        }
+    }
+
     void AtomToolsDocumentInspector::BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
         if (!m_editInProgress)

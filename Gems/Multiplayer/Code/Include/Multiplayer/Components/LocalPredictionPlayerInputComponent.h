@@ -81,7 +81,7 @@ namespace Multiplayer
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
-        using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
+        using StateHistoryItem = AZStd::shared_ptr<AzNetworking::StringifySerializer>;
         AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
         // Implicitly sorted player input history, back() is the input that corresponds to the latest client input Id
