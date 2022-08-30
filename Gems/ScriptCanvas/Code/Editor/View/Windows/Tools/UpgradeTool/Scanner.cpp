@@ -79,9 +79,10 @@ namespace ScriptCanvasEditor
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
-        void Scanner::FilterAsset(SourceHandle asset)
+        void Scanner::FilterAsset(SourceHandle asset, bool isFromXMLSource)
         {
-            if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
+            if ((m_config.onlyIncludeLegacyXML && (!isFromXMLSource))
+            || (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude))
             {
                 VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().RelativePath().c_str());
                 m_result.m_filteredAssets.push_back(ModCurrentAsset().Describe());
@@ -100,15 +101,19 @@ namespace ScriptCanvasEditor
             return m_result;
         }
 
-        SourceHandle Scanner::LoadAsset()
+        AZStd::pair<SourceHandle, bool> Scanner::LoadSource()
         {
-            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().AbsolutePath().Native());
+            auto result = LoadFromFile
+                ( ModCurrentAsset().AbsolutePath().c_str()
+                , ScriptCanvas::MakeInternalGraphEntitiesUnique::Yes
+                , ScriptCanvas::LoadReferencedAssets::Yes);
+
             if (!result)
             {
-                return {};
+                return { {}, result.m_deserializeResult.m_fromObjectStreamXML };
             }
 
-            return result.m_handle;
+            return { result.m_handle, result.m_deserializeResult.m_fromObjectStreamXML };
         }
 
         SourceHandle& Scanner::ModCurrentAsset()
@@ -130,12 +135,16 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                if (auto asset = LoadAsset(); asset.IsGraphValid())
+                auto sourceAndIsXML = LoadSource();
+                auto asset = sourceAndIsXML.first;
+                const bool isXML = sourceAndIsXML.second;
+
+                if (asset.IsGraphValid())
                 {
                     VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().RelativePath().c_str());
-                    FilterAsset(asset);
+                    FilterAsset(asset, isXML);
                 }
-                else
+                else if (!m_config.onlyIncludeLegacyXML || isXML)
                 {
                     VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().RelativePath().c_str());
                     m_result.m_loadErrors.push_back(ModCurrentAsset().Describe());

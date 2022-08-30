@@ -179,11 +179,14 @@ namespace AzToolsFramework
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
+        void HandleDomMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value);
         void CleanupReleasedHandlers();
 
         AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
+        AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler m_domMessageHandler;
+
         QVBoxLayout* m_layout = nullptr;
 
         bool m_spawnDebugView = false;
