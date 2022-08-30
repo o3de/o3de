@@ -80,12 +80,6 @@ namespace MaterialEditor
 
     void MaterialDocument::SetPropertyValue(const AZStd::string& propertyId, const AZStd::any& value)
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return;
-        }
-
         const AZ::Name propertyName(propertyId);
 
         AtomToolsFramework::DynamicProperty* foundProperty = {};
@@ -96,20 +90,23 @@ namespace MaterialEditor
                 {
                     foundProperty = &property;
 
-                    // This first converts to an acceptable runtime type in case the value came from script
-                    const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
-
-                    property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
-
-                    const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
-                    if (!propertyIndex.IsNull())
+                    if (m_materialInstance)
                     {
-                        if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
-                        {
-                            AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+                        // This first converts to an acceptable runtime type in case the value came from script
+                        const AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(value);
 
-                            Recompile();
-                            RunEditorMaterialFunctors(dirtyFlags);
+                        property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
+
+                        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyName);
+                        if (!propertyIndex.IsNull())
+                        {
+                            if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
+                            {
+                                AZ::RPI::MaterialPropertyFlags dirtyFlags = m_materialInstance->GetPropertyDirtyFlags();
+
+                                Recompile();
+                                RunEditorMaterialFunctors(dirtyFlags);
+                            }
                         }
                     }
 
@@ -133,12 +130,6 @@ namespace MaterialEditor
 
     const AZStd::any& MaterialDocument::GetPropertyValue(const AZStd::string& propertyId) const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return m_invalidValue;
-        }
-
         auto property = FindProperty(AZ::Name(propertyId));
         if (!property)
         {
@@ -169,19 +160,12 @@ namespace MaterialEditor
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialDocument", false, "Document is not open.");
-            return {};
-        }
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+        objects.reserve(objects.size() + m_groups.size());
 
-        AtomToolsFramework::DocumentObjectInfoVector objects;
-        objects.reserve(m_groups.size());
-
-        AtomToolsFramework::DocumentObjectInfo objectInfo;
         for (const auto& group : m_groups)
         {
-            objects.push_back(GetObjectInfoFromDynamicPropertyGroup(group.get()));
+            objects.push_back(AZStd::move(GetObjectInfoFromDynamicPropertyGroup(group.get())));
         }
 
         return objects;
@@ -198,7 +182,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -234,7 +222,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
         sourceData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_parentMaterial);
         auto propertyFilter = [](const AtomToolsFramework::DynamicProperty& property) {
@@ -266,7 +258,11 @@ namespace MaterialEditor
 
         // populate sourceData with modified or overridden properties and save object
         AZ::RPI::MaterialSourceData sourceData;
-        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        if (m_materialAsset.IsReady() &&
+            m_materialAsset->GetMaterialTypeAsset().IsReady())
+        {
+            sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        }
         sourceData.m_materialType = AtomToolsFramework::GetPathToExteralReference(m_savePathNormalized, m_materialSourceData.m_materialType);
 
         // Only assign a parent path if the source was a .material
@@ -291,11 +287,6 @@ namespace MaterialEditor
         }
 
         return SaveSucceeded();
-    }
-
-    bool MaterialDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_materialAsset.IsReady() && m_materialInstance;
     }
 
     bool MaterialDocument::IsModified() const
@@ -362,7 +353,7 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            if (m_materialInstance->Compile())
+            if (m_materialInstance && m_materialInstance->Compile())
             {
                 m_compilePending = false;
                 AZ::SystemTickBus::Handler::BusDisconnect();
@@ -884,6 +875,11 @@ namespace MaterialEditor
 
     void MaterialDocument::RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags)
     {
+        if (!m_materialInstance)
+        {
+            return;
+        }
+
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
         AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
 

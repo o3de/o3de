@@ -98,8 +98,8 @@ namespace AtomToolsFramework
     CreateDocumentDialog::CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent)
         : CreateDocumentDialog(
               tr("Create %1 Document").arg(documentType.m_documentTypeName.c_str()),
-              tr("Select Type"),
-              tr("Select %1 Path").arg(documentType.m_documentTypeName.c_str()),
+              tr("Select source file, type, or template to create %1 document").arg(documentType.m_documentTypeName.c_str()),
+              tr("Select target path to save %1 document").arg(documentType.m_documentTypeName.c_str()),
               initialPath,
               { documentType.GetDefaultExtensionToSave().c_str() },
               documentType.m_defaultAssetIdToCreate,

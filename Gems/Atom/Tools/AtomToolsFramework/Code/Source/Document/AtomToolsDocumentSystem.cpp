@@ -283,20 +283,12 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocumentSystem::CloseDocument(const AZ::Uuid& documentId)
     {
-        bool isOpen = false;
-        AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
-        if (!isOpen)
-        {
-            // immediately destroy unopened documents
-            DestroyDocument(documentId);
-            return true;
-        }
-
         AZStd::string documentPath;
         AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
         bool isModified = false;
         AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
+
         if (isModified)
         {
             auto selection = QMessageBox::question(

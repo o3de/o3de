@@ -22,7 +22,8 @@
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasDocument
+    //! MaterialCanvasDocument implements support for creating, loading, saving, and manipulating graph model and canvas graphs that
+    //! represent and will be transformed into shader and material data.
     class MaterialCanvasDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialCanvasDocumentRequestBus::Handler
@@ -30,7 +31,7 @@ namespace MaterialCanvas
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_RTTI(MaterialCanvasDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
+        AZ_RTTI(MaterialCanvasDocument, "{C60CA7B2-D9FA-4E20-AD7D-D8A661902A7D}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(MaterialCanvasDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(MaterialCanvasDocument);
 
@@ -50,7 +51,6 @@ namespace MaterialCanvas
         bool Save() override;
         bool SaveAsCopy(const AZStd::string& savePath) override;
         bool SaveAsChild(const AZStd::string& savePath) override;
-        bool IsOpen() const override;
         bool IsModified() const override;
         bool BeginEdit() override;
         bool EndEdit() override;
@@ -66,8 +66,6 @@ namespace MaterialCanvas
     private:
         // AtomToolsFramework::AtomToolsDocument overrides...
         void Clear() override;
-        bool ReopenRecordState() override;
-        bool ReopenRestoreState() override;
 
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
         void OnGraphModelRequestUndoPoint() override;
