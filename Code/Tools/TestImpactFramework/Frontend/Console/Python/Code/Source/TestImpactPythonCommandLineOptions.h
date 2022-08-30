@@ -17,13 +17,13 @@ namespace TestImpact
         : public CommandLineOptions
     {
     public:
-        using CommandLineOptions::CommandLineOptions;
-
         PythonCommandLineOptions(int argc, char** argv);
 
-        Policy::TestRunner GetTestRunnerPolicy() const;
-
+        //! Compiles the python command line usage to a string.
         static AZStd::string GetCommandLineUsageString();
+
+        //! Returns the test runner policy to use
+        Policy::TestRunner GetTestRunnerPolicy() const;
 
     private:
         Policy::TestRunner m_testRunnerPolicy = Policy::TestRunner::UseNullTestRunner;
