@@ -367,4 +367,78 @@ namespace Multiplayer
         EXPECT_TRUE(m_entityReplicationManager->HandleEntityUpdateMessage(m_mockConnection.get(), header, constMessage));
     }
 
+    TEST_F(MultiplayerNetworkEntityTests, TestNetworkEntityManagerRelevancy)
+    {
+        ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+
+        EXPECT_TRUE(m_networkEntityManager->GetAlwaysRelevantToClientsSet().empty());
+        EXPECT_TRUE(m_networkEntityManager->GetAlwaysRelevantToServersSet().empty());
+
+        m_networkEntityManager->MarkAlwaysRelevantToClients(handle, true);
+        m_networkEntityManager->MarkAlwaysRelevantToServers(handle, true);
+
+        EXPECT_FALSE(m_networkEntityManager->GetAlwaysRelevantToClientsSet().empty());
+        EXPECT_FALSE(m_networkEntityManager->GetAlwaysRelevantToServersSet().empty());
+
+        m_networkEntityManager->MarkAlwaysRelevantToClients(handle, false);
+        m_networkEntityManager->MarkAlwaysRelevantToServers(handle, false);
+
+        EXPECT_TRUE(m_networkEntityManager->GetAlwaysRelevantToClientsSet().empty());
+        EXPECT_TRUE(m_networkEntityManager->GetAlwaysRelevantToServersSet().empty());
+
+        m_networkEntityManager->SetMigrateTimeoutTimeMs(AZ::TimeMs(0));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetworkEntityManagerHandleExit)
+    {
+        ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+
+        Multiplayer::NetEntityIdSet idSet({ m_root->m_netId });
+        m_networkEntityManager->HandleEntitiesExitDomain(idSet);
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetworkEntityManagerForceAssumeAuth)
+    {
+        ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_networkEntityManager->ForceAssumeAuthority(handle);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetworkEntityManagerDebugDraw)
+    {
+        m_networkEntityManager->DebugDraw();
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindGetSet)
+    {
+        ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+        EXPECT_FALSE(netBindComponent->IsProcessingInput());
+        EXPECT_FALSE(netBindComponent->IsReprocessingInput());
+        EXPECT_FALSE(netBindComponent->IsNetEntityRoleServer());
+        EXPECT_FALSE(netBindComponent->IsNetEntityRoleClient());
+        EXPECT_EQ(netBindComponent->GetAllowEntityMigration(), EntityMigration::Enabled);
+        netBindComponent->SetAllowEntityMigration(EntityMigration::Disabled);
+        EXPECT_EQ(netBindComponent->GetAllowEntityMigration(), EntityMigration::Disabled);
+        ConstNetworkEntityHandle handle2 = netBindComponent->GetEntityHandle();
+        EXPECT_EQ(handle, handle2);
+        EXPECT_TRUE(netBindComponent->GetPredictableRecord().HasChanges());
+        netBindComponent->NotifyLocalChanges();
+        AZ::Data::AssetId prefabAssetId(AZ::Uuid("Test"), 1);
+        EXPECT_NE(prefabAssetId, netBindComponent->GetPrefabAssetId());
+        netBindComponent->SetPrefabAssetId(prefabAssetId);
+        EXPECT_EQ(prefabAssetId, netBindComponent->GetPrefabAssetId());
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, TestNetBindDirty)
+    {
+        ConstNetworkEntityHandle handle(m_root->m_entity.get(), m_networkEntityManager->GetNetworkEntityTracker());
+
+        NetBindComponent* netBindComponent = handle.GetNetBindComponent();
+        netBindComponent->MarkDirty();
+        m_networkEntityManager->NotifyEntitiesDirtied();
+    }
 } // namespace Multiplayer

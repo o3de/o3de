@@ -56,7 +56,9 @@ namespace AzToolsFramework
 
             bool borderVisible = false;
             ViewportUi::ViewportUiRequestBus::EventResult(
-                borderVisible, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::ViewportBorderVisible);
+                borderVisible,
+                ViewportUi::DefaultViewportId,
+                &ViewportUi::ViewportUiRequestBus::Events::GetViewportBorderVisible);
 
             // if the border is visible, change the border title
             // else create the component mode border with the specific name for this component mode

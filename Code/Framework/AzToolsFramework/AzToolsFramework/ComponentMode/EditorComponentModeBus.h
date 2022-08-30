@@ -142,8 +142,7 @@ namespace AzToolsFramework
             /// has the same Component on it, move all Components into ComponentMode.
             virtual void AddSelectedComponentModesOfType(const AZ::Uuid& componentType) = 0;
 
-            // If the user changes component edit mode through the switcher, switch the
-            // component edit modes seamlessly.
+            /// Switches to the ComponentMode of input component type immediately.
             virtual void ChangeComponentMode(const AZ::Uuid& componentType) = 0;
 
             /// Move to the next active ComponentMode so the Actions for that mode

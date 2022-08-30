@@ -95,17 +95,13 @@ namespace AzToolsFramework::ViewportUi::Internal
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
         void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
-        void ChangeViewportBorderText(const AZStd::string& borderTitle);
+        void ChangeViewportBorderText(const char* borderTitle);
         void RemoveViewportBorder();
-        bool ViewportBorderVisible() const
-        {
-            return m_viewportBorderText.isVisible();
-        }
-
-        // ViewportImGuiNotificationsBus overrides ...
+        bool GetViewportBorderVisible() const;
+		// ViewportImGuiNotificationsBus overrides ...
         void ImGuiActive(bool active) override;
-
-    private:
+		
+		private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
