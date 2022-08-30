@@ -178,10 +178,12 @@ void SceneSettingsCard::AddLogEntry(const AzToolsFramework::Logging::LogEntry& l
         if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Error)
         {
             reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusError);
+            UpdateCompletionState(CompletionState::Error);
         }
         else if (logEntry.GetSeverity() == AzToolsFramework::Logging::LogEntry::Severity::Warning)
         {
             reportEntry.Add("Status", AzQtComponents::StyledDetailsTableModel::StatusWarning);
+            UpdateCompletionState(CompletionState::Warning);
         }
     }
     reportEntry.Add("Time", GetTimeAsString());
@@ -311,8 +313,28 @@ void SceneSettingsCard::SetState(State newState)
         m_settingsHeader->SetCanClose(false);
         break;
     case State::Done:
-        setTitle(tr("Processing completed at %1").arg(GetTimeAsString()));
+        QString errorsAndWarningsString("");
+        if (m_warningCount > 0 || m_errorCount > 0)
+        {
+            errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
+        }
+
+        setTitle(tr("Processing completed at %1%2").arg(GetTimeAsString()).arg(errorsAndWarningsString));
         m_settingsHeader->SetCanClose(true);
+        
+        switch (m_completionState)
+        {
+        case CompletionState::Error:
+        case CompletionState::Failure:
+            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_error.png"));
+            break;
+        case CompletionState::Warning:
+            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_warning.png"));
+            break;
+        default:
+            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_success.png"));
+            break;
+        }
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         break;
     }
@@ -341,6 +363,15 @@ void SceneSettingsCard::UpdateCompletionState(CompletionState newState)
 {
     // Use the highest encountered state
     m_completionState = AZStd::max(m_completionState, newState);
+    switch (newState)
+    {
+    case CompletionState::Warning:
+        ++m_warningCount;
+        break;
+    case CompletionState::Error:
+        ++m_errorCount;
+        break;
+    }
 }
 
 void SceneSettingsCard::CopyTraceContext(AzQtComponents::StyledDetailsTableModel::TableEntry& entry) const

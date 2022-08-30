@@ -128,4 +128,6 @@ private:
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;
+    int m_warningCount = 0;
+    int m_errorCount = 0;
 };
