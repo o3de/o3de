@@ -15,10 +15,10 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
-#include <MotionMatchingData.h>
-#include <MotionMatchingInstance.h>
-#include <FrameDatabase.h>
+#include <FeatureMatrixTransformer.h>
 #include <FeatureVelocity.h>
+#include <FrameDatabase.h>
+#include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
 
 namespace EMotionFX::MotionMatching
@@ -60,7 +60,7 @@ namespace EMotionFX::MotionMatching
     float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
     {
         const AZ::Vector3 queryVelocity = context.m_queryVector.GetVector3(m_featureColumnOffset);
-        const AZ::Vector3 frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
+        const AZ::Vector3 frameVelocity = context.m_featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
 
         return CalcResidual(queryVelocity, frameVelocity);
     }
@@ -84,6 +84,7 @@ namespace EMotionFX::MotionMatching
     void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
         const Pose& currentPose,
         const FeatureMatrix& featureMatrix,
+        const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex)
     {
         if (m_jointIndex == InvalidIndex)
@@ -91,7 +92,11 @@ namespace EMotionFX::MotionMatching
             return;
         }
 
-        const AZ::Vector3 velocity = GetFeatureData(featureMatrix, frameIndex);
+        AZ::Vector3 velocity = featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
+        if (featureTransformer)
+        {
+            velocity = featureTransformer->InverseTransform(velocity, m_featureColumnOffset);
+        }
         DebugDraw(debugDisplay, currentPose, velocity, m_jointIndex, m_relativeToNodeIndex, m_debugColor);
     }
 
@@ -138,10 +143,5 @@ namespace EMotionFX::MotionMatching
         }
 
         return result;
-    }
-
-    AZ::Vector3 FeatureVelocity::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const
-    {
-        return featureMatrix.GetVector3(frameIndex, m_featureColumnOffset);
     }
 } // namespace EMotionFX::MotionMatching

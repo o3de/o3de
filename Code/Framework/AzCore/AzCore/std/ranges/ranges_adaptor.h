@@ -9,6 +9,7 @@
 
 #include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/tuple.h>
 
 namespace AZStd::ranges::views::Internal
 {
@@ -61,16 +62,74 @@ namespace AZStd::ranges::views::Internal
     template<class RangeAdaptor>
     struct range_adaptor_closure;
 
-    // Return a closure new in which the outer range adaptor invokes the inner range adaptor
+    // Return a closure in which the outer range adaptor invokes the inner range adaptor
     template<class RangeAdaptorFunctor>
     struct range_adaptor_closure_forwarder
         : RangeAdaptorFunctor
-        , range_adaptor_closure_forwarder<range_adaptor_closure<RangeAdaptorFunctor>>
+        , range_adaptor_closure<range_adaptor_closure_forwarder<RangeAdaptorFunctor>>
     {
         constexpr explicit range_adaptor_closure_forwarder(RangeAdaptorFunctor&& closure)
             : RangeAdaptorFunctor{ AZStd::forward<RangeAdaptorFunctor>(closure) }
         {}
     };
+
+    // Returns a adaptor in which range_adaptor_closure in which a set of bound arguments can
+    // be forwarded to a supplied closure
+    template<class Adaptor, class... Args>
+    struct range_adaptor_argument_forwarder
+        : range_adaptor_closure<range_adaptor_argument_forwarder<Adaptor, Args...>>
+    {
+        template<class UAdaptor, class... UArgs, class = enable_if_t<
+            convertible_to<UAdaptor, Adaptor>
+            && convertible_to<tuple<UArgs...>, tuple<Args...>>
+            >>
+        range_adaptor_argument_forwarder(UAdaptor adaptor, UArgs&&... args)
+            : m_adaptor{ AZStd::forward<UAdaptor>(adaptor) }
+            , m_forwardArgs{ AZStd::forward<UArgs>(args)... }
+        {}
+
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) &
+        {
+            auto ForwardRangeAndArgs = [&adpator = m_adaptor, &range](auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), args...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) const&
+        {
+            auto ForwardRangeAndArgs = [&adpator = m_adaptor, &range](const auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), args...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        // rvalue overloads
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) &&
+        {
+            auto ForwardRangeAndArgs = [&adaptor = m_adaptor, &range](auto&... args)
+            {
+                return adaptor(AZStd::forward<Range>(range), AZStd::move(args)...);
+            };
+            return AZStd::apply(ForwardRangeAndArgs, m_forwardArgs);
+        }
+        // It doesn't make sense to move invoke a const range_adaptor_argument_forwarder
+        // that has been moved.
+        template<class Range>
+        constexpr decltype(auto) operator()(Range&& range) const&& = delete;
+    private:
+        Adaptor m_adaptor;
+        tuple<Args...> m_forwardArgs;
+    };
+
+    // deduction guide - range_adpator_argument_forwarder
+    template<class Adaptor, class... Args>
+    range_adaptor_argument_forwarder(Adaptor&&, Args&&...)
+        -> range_adaptor_argument_forwarder<AZStd::decay_t<Adaptor>, AZStd::decay_t<Args>...>;
+
 
     template<class RangeAdaptor>
     using is_range_closure_t = bool_constant<derived_from<remove_cvref_t<RangeAdaptor>,
@@ -135,6 +194,13 @@ namespace AZStd::ranges::Internal
         template<class... Args>
         explicit constexpr copyable_box(in_place_t, Args&&... args) noexcept(is_nothrow_constructible_v<T>)
             : m_copyable_wrapper{ in_place, AZStd::forward<Args>(args)... }
+        {}
+
+        explicit constexpr copyable_box(const T& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_copyable_wrapper{ rawValue }
+        {}
+        explicit constexpr copyable_box(T&& rawValue) noexcept(is_nothrow_copy_constructible_v<T>)
+            : m_copyable_wrapper{ AZStd::move(rawValue) }
         {}
 
         constexpr copyable_box(const copyable_box&) = default;

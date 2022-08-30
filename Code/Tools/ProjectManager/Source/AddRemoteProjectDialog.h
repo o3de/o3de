@@ -18,6 +18,7 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QTimer)
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +27,8 @@ namespace O3DE::ProjectManager
     class AddRemoteProjectDialog
         : public QDialog
     {
+        Q_OBJECT
+
     public:
         explicit AddRemoteProjectDialog(QWidget* parent = nullptr);
         ~AddRemoteProjectDialog() = default;
@@ -39,7 +42,14 @@ namespace O3DE::ProjectManager
     private:
         void SetDialogReady(bool isReady);
 
+    signals:
+        void StartObjectDownload(const QString& objectName);
 
+    private slots:
+        void ValidateURI();
+        void DownloadObject();
+
+    private:
         ProjectInfo m_currentProject;
 
         FormLineEditWidget* m_repoPath = nullptr;
@@ -59,5 +69,7 @@ namespace O3DE::ProjectManager
 
         QDialogButtonBox* m_dialogButtons = nullptr;
         QPushButton* m_applyButton = nullptr;
+
+        QTimer* m_inputTimer = nullptr;
     };
 } // namespace O3DE::ProjectManager

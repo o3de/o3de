@@ -13,7 +13,6 @@ set(FILES
     Source/Editor/MainWindow.cpp
     Source/Editor/MainWindow.h
     Source/Editor/Core/Core.h
-    Source/Editor/Core/DataTypes.cpp
     Source/Editor/Core/DataTypes.h
     Source/Editor/Core/GraphContext.cpp
     Source/Editor/Core/GraphContext.h
@@ -101,6 +100,8 @@ set(FILES
     Source/Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.cpp
     Source/Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.cpp
+    Source/Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h
     Source/Editor/Nodes/Shapes/BaseShapeNode.cpp
     Source/Editor/Nodes/Shapes/BaseShapeNode.h
     Source/Editor/Nodes/Shapes/BoxShapeNode.cpp
@@ -115,10 +116,18 @@ set(FILES
     Source/Editor/Nodes/Shapes/DiskShapeNode.h
     Source/Editor/Nodes/Shapes/PolygonPrismShapeNode.cpp
     Source/Editor/Nodes/Shapes/PolygonPrismShapeNode.h
+    Source/Editor/Nodes/Shapes/ReferenceShapeNode.cpp
+    Source/Editor/Nodes/Shapes/ReferenceShapeNode.h
     Source/Editor/Nodes/Shapes/SphereShapeNode.cpp
     Source/Editor/Nodes/Shapes/SphereShapeNode.h
     Source/Editor/Nodes/Shapes/TubeShapeNode.cpp
     Source/Editor/Nodes/Shapes/TubeShapeNode.h
+    Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.h
+    Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h
+    Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.cpp
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.h
 )

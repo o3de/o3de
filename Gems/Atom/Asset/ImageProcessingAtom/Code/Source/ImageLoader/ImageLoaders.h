@@ -27,9 +27,15 @@ namespace ImageProcessingAtom
         bool IsExtensionSupported(const char* extension);
         // Load a tiff file to an image object.
         IImageObject* LoadImageFromTIFF(const AZStd::string& filename);
-        // Load embedded .exportsettings string from tiff which was exported by deprecated feature of CryTif plugin.
-        const AZStd::string LoadSettingFromTIFF(const AZStd::string& filename);
     };// namespace TIFFLoader
+
+    // Tga loader. The loader support 24bits and 32bits true color or colormapped tga, uncompressed or with RLE
+    namespace TgaLoader
+    {
+        bool IsExtensionSupported(const char* extension);
+        // Load a tga file to an image object.
+        IImageObject* LoadImageFromFile(const AZStd::string& filename);
+    };// namespace TgaLoader
 
     // Image loader through Qt's QImage with image formats supported native and through plugins
     namespace QtImageLoader

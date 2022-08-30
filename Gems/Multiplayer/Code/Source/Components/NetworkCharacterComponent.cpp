@@ -99,7 +99,7 @@ namespace Multiplayer
     void NetworkCharacterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkCharacterComponentBase::GetRequiredServices(required);
-        required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
+        required.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()
@@ -156,19 +156,6 @@ namespace Multiplayer
         }
     }
 
-    bool NetworkCharacterComponent::IsOnGround() const
-    {
-        auto pxController = static_cast<physx::PxController*>(m_physicsCharacter->GetNativePointer());
-        if (!pxController)
-        {
-            return true;
-        }
-
-        physx::PxControllerState state;
-        pxController->getState(state);
-        return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
-    }
-
     void NetworkCharacterComponentController::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -213,8 +200,7 @@ namespace Multiplayer
         {
             return GetEntity()->GetTransform()->GetWorldTranslation();
         }
-        GetParent().m_physicsCharacter->AddVelocity(velocity);
-        GetParent().m_physicsCharacter->ApplyRequestedVelocity(deltaTime);
+        GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
         GetEntity()->GetTransform()->SetWorldTranslation(GetParent().m_physicsCharacter->GetBasePosition());
         AZLOG
         (

@@ -33,9 +33,9 @@
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/SettingsRegistryAdapter.h>
 #include <AzQtComponents/DPEDebugViewStandalone/ExampleAdapter.h>
-#include <AzQtComponents/DPEDebugViewStandalone/ui_DPEDebugWindow.h>
-#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
+#include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
 
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -71,6 +71,7 @@ namespace DPEDebugView
 
         int m_simpleInt = 5;
         double m_doubleSlider = 3.25;
+        AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnum;
@@ -90,6 +91,7 @@ namespace DPEDebugView
                 serializeContext->Class<TestContainer>()
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
+                    ->Field("vector", &TestContainer::m_vector)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnum)
@@ -117,11 +119,15 @@ namespace DPEDebugView
                     editContext->Class<TestContainer>("TestContainer", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button1 (no multi-edit)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 1 (should be at top)")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Simple Types")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -139,12 +145,13 @@ namespace DPEDebugView
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default, &TestContainer::m_nestedMap, "unordered_map<enum, unordered_map<int, int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityIdMap, "unordered_map<EntityId, Number>", "")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_enumValue, "enum (no multi-edit)", "")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button2 (multi-edit)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true);
                 }
             }
@@ -159,32 +166,11 @@ namespace AZ
 
 namespace DPEDebugView
 {
-    class DPEDebugWindow
-        : public QMainWindow
-        , public Ui::DPEDebugWindow
+    class DPEDebugApplication
+        : public AzToolsFramework::ToolsApplication
     {
     public:
-        DPEDebugWindow(QWidget* parentWidget)
-            : QMainWindow(parentWidget)
-        {
-            setupUi(this);
-        }
-    };
-
-    class DPEDebugApplication : public AzToolsFramework::ToolsApplication
-    {
-    public:
-        DPEDebugApplication(int* argc = nullptr, char*** argv = nullptr)
-            : AzToolsFramework::ToolsApplication(argc, argv)
-        {
-            AZ::NameDictionary::Create();
-            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
-        }
-
-        virtual ~DPEDebugApplication()
-        {
-            AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
-        }
+        using AzToolsFramework::ToolsApplication::ToolsApplication;
 
         void Reflect(AZ::ReflectContext* context) override
         {
@@ -197,6 +183,7 @@ namespace DPEDebugView
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     DPEDebugView::DPEDebugApplication app(&argc, &argv);
     AZ::IO::FixedMaxPath engineRootPath;
     {
@@ -216,40 +203,53 @@ int main(int argc, char** argv)
 
     // store a list of selectable adapters to switch between
     DPEDebugView::TestContainer testContainer;
-    AZStd::vector<AZStd::pair<QString, AZStd::shared_ptr<AZ::DocumentPropertyEditor::DocumentAdapter>>> adapters;
-    adapters.emplace_back("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
-    adapters.emplace_back("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
-    adapters.emplace_back("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
 
-    AzToolsFramework::DPEDebugModel adapterModel(nullptr);
+    testContainer.m_vector.push_back("one");
+    testContainer.m_vector.push_back("two");
+    testContainer.m_vector.push_back("the third");
 
-    QPointer<DPEDebugView::DPEDebugWindow> theWindow = new DPEDebugView::DPEDebugWindow(nullptr);
-    theWindow->m_treeView->setModel(&adapterModel);
+    testContainer.m_map["One"] = 1.f;
+    testContainer.m_map["Two"] = 2.f;
+    testContainer.m_map["million"] = 1000000.f;
 
-    for (int columnIndex = 0, maxColumns = adapterModel.GetMaxColumns(); columnIndex < maxColumns; ++columnIndex)
-    {
-        // resize the columns to accommodate the displayed data
-        theWindow->m_treeView->resizeColumnToContents(columnIndex);
-    }
+    testContainer.m_unorderedMap[{1, 2.}] = 3;
+    testContainer.m_unorderedMap[{ 4, 5. }] = 6;
 
-    // create a real DPE on the same adapter as the debug adapter for testing purposes
-    AzToolsFramework::DocumentPropertyEditor* dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1;
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2;
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10;
 
-    // add the adapters to a combo box and switch out the views on selection change
-    QObject::connect(theWindow->adapterSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), [&]()
-        {
-            auto adapter = adapters[theWindow->adapterSelector->currentIndex()].second;
-            adapterModel.SetAdapter(adapter.get());
-            theWindow->m_textView->SetAdapter(adapter);
-            dpeInstance->SetAdapter(adapter.get());
-        });
-    for (const auto& entry : adapters)
-    {
-        theWindow->adapterSelector->addItem(entry.first);
-    }
-    theWindow->adapterSelector->setCurrentIndex(0);
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1.;
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2.;
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10.;
 
-    theWindow->show();
+    testContainer.m_set.insert(1);
+    testContainer.m_set.insert(3);
+    testContainer.m_set.insert(5);
+
+    testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::Value1);
+    testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::ValueZ);
+
+    testContainer.m_multiMap.insert({1, "one"});
+    testContainer.m_multiMap.insert({ 2, "two" });
+    testContainer.m_multiMap.insert({ 1, "also one" });
+
+    QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
+
+    // create a real DPE to track the same adapter selected for the debug tool
+    QPointer<AzToolsFramework::DocumentPropertyEditor> dpeInstance = new AzToolsFramework::DocumentPropertyEditor(nullptr);
+    dpeInstance->setAttribute(Qt::WA_DeleteOnClose);
+    dpeInstance->SetSpawnDebugView(false); // don't allow this DPE to spawn debug views, as we've made our own
+    QObject::connect(
+        debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
+        &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
+
+    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
+    debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
+    debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
+    debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
+
+    debugViewer->show();
     dpeInstance->show();
 
     return qtApp.exec();

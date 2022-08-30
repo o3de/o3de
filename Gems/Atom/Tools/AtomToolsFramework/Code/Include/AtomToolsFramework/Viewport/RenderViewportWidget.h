@@ -112,6 +112,7 @@ namespace AtomToolsFramework
         void SetWindowTitle(const AZStd::string& title) override;
         AzFramework::WindowSize GetClientAreaSize() const override;
         void ResizeClientArea(AzFramework::WindowSize clientAreaSize) override;
+        bool SupportsClientAreaResize() const override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;

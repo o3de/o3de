@@ -107,6 +107,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            AZ::Uuid m_rayTracingUuid;
 
             Aabb m_aabb = Aabb::CreateNull();
 
@@ -124,7 +125,7 @@ namespace AZ
         {
         public:
 
-            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", MeshFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::MeshFeatureProcessor, "{6E3DFA1D-22C7-4738-A3AE-1E10AB88B29B}", AZ::Render::MeshFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -181,6 +182,7 @@ namespace AZ
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
             bool GetRayTracingEnabled(const MeshHandle& meshHandle) const override;
             void SetVisible(const MeshHandle& meshHandle, bool visible) override;
+            bool GetVisible(const MeshHandle& meshHandle) const override;
             void SetUseForwardPassIblSpecular(const MeshHandle& meshHandle, bool useForwardPassIblSpecular) override;
 
             // called when reflection probes are modified in the editor so that meshes can re-evaluate their probes

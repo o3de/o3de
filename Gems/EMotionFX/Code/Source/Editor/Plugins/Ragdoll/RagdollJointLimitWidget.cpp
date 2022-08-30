@@ -18,6 +18,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
+#include <EMotionFX/CommandSystem/Source/JointLimitCommands.h>
 #include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 #include <Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h>
 #include <Editor/SkeletonModel.h>
@@ -114,6 +115,7 @@ namespace EMotionFX
 
         m_commandCallbacks.emplace_back(AZStd::make_unique<DataChangedCallback>(this, false));
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAdjustRagdollJoint::s_commandName, m_commandCallbacks.back().get());
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_commandCallbacks.back().get());
 
         setContentWidget(innerWidget);
         setExpanded(true);
@@ -303,7 +305,9 @@ namespace EMotionFX
     bool RagdollJointLimitWidget::DataChangedCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         AZ_UNUSED(commandLine);
-        if (azrtti_typeid(command) == azrtti_typeid<CommandAdjustRagdollJoint>() && m_widget->m_nodeIndex.isValid())
+        if ((azrtti_typeid(command) == azrtti_typeid<CommandAdjustRagdollJoint>() ||
+             azrtti_typeid(command) == azrtti_typeid<CommandAdjustJointLimit>()) &&
+            m_widget->m_nodeIndex.isValid())
         {
             Node* node = m_widget->m_nodeIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             const auto typedCommand = static_cast<CommandAdjustRagdollJoint*>(command);

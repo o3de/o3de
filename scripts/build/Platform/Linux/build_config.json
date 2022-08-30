@@ -28,6 +28,22 @@
       "SCRIPT_PARAMETERS": "--platform=Linux --repository=${REPOSITORY_NAME} --jobname=${JOB_NAME} --jobnumber=${BUILD_NUMBER} --jobnode=${NODE_LABEL} --changelist=${CHANGE_ID}"
     }
   },
+  "validation_pipe": {
+    "TAGS": [
+      "default",
+      "snapshot"
+    ],
+    "steps": [
+      "validation"
+    ]
+  },
+  "validation": {
+    "TAGS": [],
+    "COMMAND": "python_linux.sh",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
+    }
+  },
   "debug": {
     "TAGS": [
       "periodic-incremental-daily",
@@ -364,7 +380,7 @@
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
       "CDK_VERSION": "1.154.0",
-      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
+      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   },
   "awsi_destruction": {
@@ -376,7 +392,7 @@
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
       "CDK_VERSION": "1.154.0",
-      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
+      "PYTHON_RUNTIME": "python-3.10.5-rev1-linux"
     }
   }
 }

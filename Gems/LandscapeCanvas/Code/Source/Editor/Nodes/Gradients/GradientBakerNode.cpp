@@ -57,22 +57,28 @@ namespace LandscapeCanvas
     {
         CreateEntityNameSlot();
 
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
         GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
         GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr pathDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Path);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INPUT_BOUNDS_SLOT_ID,
             INPUT_BOUNDS_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
-            boundsDataType->GetDefaultValue(),
+            { boundsDataType },
+            AZStd::any(AZ::EntityId()),
             INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
-            gradientDataType->GetDefaultValue(),
+            { gradientDataType },
+            AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+
+        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+            OUTPUT_IMAGE_SLOT_ID,
+            OUTPUT_IMAGE_SLOT_LABEL.toUtf8().constData(),
+            pathDataType,
+            OUTPUT_IMAGE_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

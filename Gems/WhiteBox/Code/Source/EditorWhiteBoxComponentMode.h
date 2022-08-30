@@ -45,10 +45,6 @@ namespace WhiteBox
         constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
         constexpr static const char* const WhiteboxModeClusterManipulatorTooltip = "Switch to Manipulator mode";
 
-        constexpr static const char* const ManipulatorModeClusterTranslateTooltip = "Switch to translate mode";
-        constexpr static const char* const ManipulatorModeClusterRotateTooltip = "Switch to rotate mode";
-        constexpr static const char* const ManipulatorModeClusterScaleTooltip = "Switch to scale mode";
-
         EditorWhiteBoxComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
         EditorWhiteBoxComponentMode& operator=(EditorWhiteBoxComponentMode&&) = delete;
@@ -59,6 +55,7 @@ namespace WhiteBox
         bool HandleMouseInteraction(
             const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
+        AZStd::string GetComponentModeName() const override;
 
         // EditorWhiteBoxComponentModeRequestBus ...
         void MarkWhiteBoxIntersectionDataDirty() override;
@@ -93,8 +90,6 @@ namespace WhiteBox
         //! Remove the Viewport UI cluster for sub mode selection.
         void RemoveSubModeSelectionCluster();
 
-        void UpdateTransformCluster();
-
         //! The current set of 'sub' modes the white box component mode can be in.
         AZStd::variant<AZStd::unique_ptr<DefaultMode>, AZStd::unique_ptr<EdgeRestoreMode>, AZStd::unique_ptr<TransformMode>> m_modes;
 
@@ -103,8 +98,7 @@ namespace WhiteBox
         //! The world transform of the entity this ComponentMode is on.
         AZ::Transform m_worldFromLocal;
         //! The function to use for querying modifier keys (while drawing).
-        KeyboardModifierQueryFn
-            m_keyboardMofifierQueryFn;
+        KeyboardModifierQueryFn m_keyboardModifierQueryFn;
 
         SubMode m_currentSubMode = SubMode::Default;
         bool m_restoreModifierHeld = false;

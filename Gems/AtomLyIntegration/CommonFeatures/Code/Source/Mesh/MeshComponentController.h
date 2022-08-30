@@ -64,7 +64,7 @@ namespace AZ
             , public AzFramework::BoundsRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
-            , private MaterialReceiverRequestBus::Handler
+            , private MaterialConsumerRequestBus::Handler
             , private MaterialComponentNotificationBus::Handler
         {
         public:
@@ -134,11 +134,11 @@ namespace AZ
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
-            // MaterialReceiverRequestBus::Handler overrides ...
+            // MaterialConsumerRequestBus::Handler overrides ...
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
-            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
-            MaterialAssignmentMap GetMaterialAssignments() const override;
+            MaterialAssignmentLabelMap GetMaterialLabels() const override;
+            MaterialAssignmentMap GetDefautMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             // MaterialComponentNotificationBus::Handler overrides ...

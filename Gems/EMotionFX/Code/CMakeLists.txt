@@ -81,7 +81,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             MysticQt/mysticqt_files.cmake
             EMotionFX/Tools/EMotionStudio/EMStudioSDK/emstudiosdk_files.cmake
             EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/standardplugins_files.cmake
-            EMotionFX/Rendering/rendering_files.cmake
             EMotionFX/Pipeline/SceneAPIExt/sceneapi_ext_files.cmake
             EMotionFX/Pipeline/RCExt/rc_ext_files.cmake
             EMotionFX/Pipeline/EMotionFXBuilder/emotionfxbuilder_files.cmake
@@ -170,6 +169,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzTestShared
                 Gem::EMotionFX.Static
                 Gem::EMotionFX.Tests.Static
     )

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Debugger/APIArguments.h>
 #include <ScriptCanvas/Debugger/API.h>
@@ -22,17 +22,13 @@ namespace ScriptCanvas
             class RequestVisitor;
 
             class Request
-                : public AzFramework::TmMsg
+                : public AzFramework::RemoteToolsMessage
             {
             public:
                 AZ_CLASS_ALLOCATOR(Request, AZ::SystemAllocator, 0);
-                AZ_RTTI(Request, "{0283335F-E3FF-4292-99BA-36A289DFED87}", AzFramework::TmMsg);
+                AZ_RTTI(Request, "{0283335F-E3FF-4292-99BA-36A289DFED87}", AzFramework::RemoteToolsMessage);
 
-                Request()
-                    : AzFramework::TmMsg(k_clientRequestsMsgSlotId)
-                {
-                    SetImmediateSelfDispatchEnabled(true);
-                }
+                Request() : AzFramework::RemoteToolsMessage(k_clientRequestsMsgSlotId) {}
 
                 virtual void Visit(RequestVisitor& visitor) = 0;
             };
@@ -43,7 +39,7 @@ namespace ScriptCanvas
             {
             public:
                 AZ_CLASS_ALLOCATOR(TaggedRequest<t_Tag>, AZ::SystemAllocator, 0);
-                AZ_RTTI(((TaggedRequest<t_Tag>), "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
+                AZ_RTTI((TaggedRequest, "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
 
                 TaggedRequest() = default;
 

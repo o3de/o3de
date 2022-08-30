@@ -16,11 +16,11 @@
 #include <EMotionStudio/EMStudioSDK/Source/MainWindowEventFilter.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/PreferencesWindow.h>
-#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
 #include <Editor/SaveDirtyFilesCallbacks.h>
+#include <MCore/Source/LogManager.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -32,9 +32,12 @@
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -52,6 +55,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -385,7 +389,7 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
@@ -2446,24 +2450,24 @@ namespace EMStudio
         // check if we dropped any files to the application
         const QMimeData* mimeData = event->mimeData();
 
-        AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
-
-        AZStd::vector<AZStd::string> fileNames;
-        for (const auto& entry : entries)
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        if (AzToolsFramework::AssetBrowser::Utils::FromMimeData(mimeData, entries))
         {
-            AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
-            entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
-            for (const auto& productEntry : productEntries)
+            AZStd::vector<AZStd::string> fileNames;
+            for (const auto& entry : entries)
             {
-                fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*> productEntries;
+                entry->GetChildrenRecursively<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>(productEntries);
+                for (const auto& productEntry : productEntries)
+                {
+                    fileNames.emplace_back(FileManager::GetAssetFilenameFromAssetId(productEntry->GetAssetId()));
+                }
             }
+            LoadFiles(fileNames, event->pos().x(), event->pos().y());
+            event->acceptProposedAction();
+
         }
-        LoadFiles(fileNames, event->pos().x(), event->pos().y());
-
-        event->acceptProposedAction();
     }
-
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {

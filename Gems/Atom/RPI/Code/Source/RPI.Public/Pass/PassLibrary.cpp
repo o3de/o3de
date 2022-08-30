@@ -342,7 +342,7 @@ namespace AZ
                     {
                         if (pass->m_pipeline)
                         {
-                            pass->m_pipeline->SetPassNeedsRecreate();
+                            pass->m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassAssetHotReloaded);
                         }
                     }
                 }

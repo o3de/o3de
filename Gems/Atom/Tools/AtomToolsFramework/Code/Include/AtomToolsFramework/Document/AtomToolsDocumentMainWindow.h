@@ -15,6 +15,9 @@
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #endif
 
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 class QMenu;
 
 namespace AtomToolsFramework
@@ -74,21 +77,23 @@ namespace AtomToolsFramework
         //! Insert items into the tab context menu for the document ID
         virtual void PopulateTabContextMenu(const AZ::Uuid& documentId, QMenu& menu);
 
-        //! Requests a source and target path for creating a new document based on another
-        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
+        //! Select the target path where a document will be saved.
+        virtual AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath) const;
+
+        //! Requests source and target paths for creating a new document based on another
+        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) const;
 
         //! Prompts the user for a selection of documents to open
-        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams();
+        virtual AZStd::vector<AZStd::string> GetOpenDocumentParams() const;
 
         // AtomToolsMainWindowRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+
     protected:
         void AddDocumentTabBar();
-
-        void AddRecentFilePath(const AZStd::string& absolutePath);
-        void ClearRecentFilePaths();
         void UpdateRecentFileMenu();
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
@@ -102,6 +107,10 @@ namespace AtomToolsFramework
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
+        void dragEnterEvent(QDragEnterEvent* event) override;
+        void dragMoveEvent(QDragMoveEvent* event) override;
+        void dragLeaveEvent(QDragLeaveEvent* event) override;
+        void dropEvent(QDropEvent* event) override;
 
         template<typename Functor>
         QAction* CreateActionAtPosition(
@@ -126,7 +135,5 @@ namespace AtomToolsFramework
         QAction* m_actionPreviousTab = {};
 
         AzQtComponents::TabWidget* m_tabWidget = {};
-
-        static constexpr const char* RecentFilePathsKey = "/O3DE/AtomToolsFramework/Document/RecentFilePaths";
     };
 } // namespace AtomToolsFramework

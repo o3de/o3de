@@ -18,6 +18,8 @@ import urllib.request
 import logging
 import zipfile
 
+from o3de import gitproviderinterface, github_utils
+
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
 logger = logging.getLogger('o3de.utils')
@@ -54,7 +56,6 @@ class VerbosityAction(argparse.Action):
             log.setLevel(logging.DEBUG)
         elif count == 1:
             log.setLevel(logging.INFO)
-
 
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
@@ -162,8 +163,15 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
+def get_git_provider(parsed_uri):
+    """
+    Returns a git provider if one exists given the passed uri
+    :param parsed_uri: uniform resource identifier of a possible git repository
+    :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
+    """
+    return github_utils.get_github_provider(parsed_uri)
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name = str, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -247,8 +255,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
     return 0
 
-
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name = str, download_progress_callback = None) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file

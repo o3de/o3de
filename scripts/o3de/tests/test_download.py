@@ -18,11 +18,11 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
 {
     "o3de_manifest_name": "testuser",
     "origin": "C:/Users/testuser/.o3de",
-    "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
+    "default_engines_folder": "C:/Users/testuser/O3DE/Engines",
     "default_projects_folder": "C:/Users/testuser/O3DE/Projects",
     "default_gems_folder": "C:/Users/testuser/O3DE/Gems",
     "default_templates_folder": "C:/Users/testuser/O3DE/Templates",
-    "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
+    "default_restricted_folder": "C:/Users/testuser/O3DE/Restricted",
     "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
     "projects": [],
     "external_subdirectories": [],
@@ -38,11 +38,11 @@ TEST_O3DE_MANIFEST_EXISTING_GEM_JSON_PAYLOAD = '''
 {
     "o3de_manifest_name": "testuser",
     "origin": "C:/Users/testuser/.o3de",
-    "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
+    "default_engines_folder": "C:/Users/testuser/O3DE/Engines",
     "default_projects_folder": "C:/Users/testuser/O3DE/Projects",
     "default_gems_folder": "C:/Users/testuser/O3DE/Gems",
     "default_templates_folder": "C:/Users/testuser/O3DE/Templates",
-    "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
+    "default_restricted_folder": "C:/Users/testuser/O3DE/Restricted",
     "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
     "projects": [],
     "external_subdirectories": ["C:/Users/testuser/O3DE/Gems/TestGem"],
@@ -74,7 +74,7 @@ TEST_O3DE_REPO_GEM_JSON_PAYLOAD = '''
     "origin": "Test Creator",
     "origin_uri": "http://o3derepo.org/TestGem/gem.zip",
     "repo_uri": "http://o3derepo.org",
-    "last_updated": "2022-01-01 11:00:00",
+    "last_updated": "2022-01-01 14:00:00",
     "type": "Tool",
     "summary": "A test downloadable gem.",
     "canonical_tags": [
@@ -324,7 +324,7 @@ class TestObjectDownload:
 
     @pytest.mark.parametrize("update_function, object_name, object_data, existing_time, update_available", [
                                  # Repo gem is newer
-                                 pytest.param(download.is_o3de_gem_update_available, 'TestGem', TEST_O3DE_REPO_GEM_JSON_PAYLOAD, "2021-12-01", True),
+                                 pytest.param(download.is_o3de_gem_update_available, 'TestGem', TEST_O3DE_REPO_GEM_JSON_PAYLOAD, "2022-01-01 13:00:00", True),
                                  # Repo engine is not newer
                                  pytest.param(download.is_o3de_engine_update_available, 'TestEngine', TEST_O3DE_REPO_ENGINE_JSON_PAYLOAD, "2021-12-01", False),
                                  # Repo project has a last_updated field, local does not

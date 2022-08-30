@@ -54,6 +54,42 @@
                     ]
                 },
                 {
+                    "base": "GetVertex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertex is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Index"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vertex"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Found"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "UpdateVertex",
                     "entry": {
                         "name": "In",
@@ -85,6 +121,28 @@
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
                                 "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetVertexCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertex Count"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertex Count is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertex Count"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Count"
                             }
                         }
                     ]
@@ -128,7 +186,7 @@
                         {
                             "typeid": "{E13859C4-1F24-5C44-A133-F17B4B050D7C}",
                             "details": {
-                                "name": "AZStd::shared_ptr"
+                                "name": "Spline"
                             }
                         }
                     ]

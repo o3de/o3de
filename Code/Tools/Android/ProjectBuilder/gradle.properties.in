@@ -24,3 +24,6 @@ org.gradle.jvmargs=
 
 # required to use Android X libraries
 android.useAndroidX=true
+
+# Show C/C++ files build progression
+android.native.buildOutput=verbose

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/function/function_template.h>
 #include <AzCore/std/string/string.h>
 
@@ -27,6 +28,8 @@ namespace AzToolsFramework
             AZStd::string description,
             AZStd::string category,
             AZStd::string iconPath,
+            bool hideFromMenusWhenDisabled,
+            bool hideFromToolBarsWhenDisabled,
             AZStd::function<void()> handler,
             AZStd::function<bool()> checkStateCallback = nullptr
         );
@@ -39,9 +42,14 @@ namespace AzToolsFramework
         void SetCategory(AZStd::string category);
         const AZStd::string& GetIconPath() const;
         void SetIconPath(AZStd::string iconPath);
+        AZStd::string GetHotKey() const;
+        void SetHotKey(const AZStd::string& hotKey);
+        bool GetHideFromMenusWhenDisabled() const;
+        bool GetHideFromToolBarsWhenDisabled() const;
 
         //! Returns the pointer to the action.
         QAction* GetAction();
+        const QAction* GetAction() const;
 
         //! Sets the enabled state callback for the action.
         void SetEnabledStateCallback(AZStd::function<bool()> enabledStateCallback);
@@ -52,14 +60,15 @@ namespace AzToolsFramework
         //! Returns true if the EditorAction is enabled, false otherwise.
         bool IsEnabled() const;
 
-        //! Calls the callback to update the action's checked and enabled state, if any.
-        void Update();
-
         //! Returns whether the action is checkable.
         bool IsCheckable();
 
+        //! Calls the callback to update the action's checked and enabled state, if any.
+        void Update();
+
     private:
         void UpdateIconFromPath();
+        void UpdateTooltipText();
 
         QAction* m_action = nullptr;
         QIcon m_icon;
@@ -73,7 +82,8 @@ namespace AzToolsFramework
         AZStd::function<bool()> m_checkStateCallback = nullptr;
         AZStd::function<bool()> m_enabledStateCallback = nullptr;
 
-        AZStd::string m_parentIdentifier;
+        bool m_hideFromMenusWhenDisabled;
+        bool m_hideFromToolBarsWhenDisabled;
     };
 
 } // namespace AzToolsFramework

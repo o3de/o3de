@@ -17,16 +17,11 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
 #include <QWidget>
-
-namespace AzToolsFramework
-{
-    class ActionManagerInterface;
-    class MenuManagerInterface;
-}
 
 namespace UnitTest
 {
@@ -38,13 +33,19 @@ namespace UnitTest
 
     public:
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
+        AzToolsFramework::HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
         AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;
 
         QWidget* m_widget = nullptr;
+        QWidget* m_defaultParentWidget = nullptr;
 
     private:
         AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
+        AZStd::unique_ptr<AzToolsFramework::HotKeyManager> m_hotKeyManager;
         AZStd::unique_ptr<AzToolsFramework::MenuManager> m_menuManager;
         AZStd::unique_ptr<AzToolsFramework::ToolBarManager> m_toolBarManager;
     };

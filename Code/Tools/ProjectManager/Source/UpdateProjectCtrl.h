@@ -21,15 +21,16 @@ namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
     QT_FORWARD_DECLARE_CLASS(UpdateProjectSettingsScreen)
-    QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+    QT_FORWARD_DECLARE_CLASS(ProjectGemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(DownloadController)
 
     class UpdateProjectCtrl
         : public ScreenWidget
     {
         Q_OBJECT
     public:
-        explicit UpdateProjectCtrl(QWidget* parent = nullptr);
+        explicit UpdateProjectCtrl(DownloadController* downloadController, QWidget* parent = nullptr);
         ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
@@ -59,7 +60,7 @@ namespace O3DE::ProjectManager
         ScreenHeader* m_header = nullptr;
         QStackedWidget* m_stack = nullptr;
         UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
-        GemCatalogScreen* m_gemCatalogScreen = nullptr;
+        ProjectGemCatalogScreen* m_projectGemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
 
         QPushButton* m_backButton = nullptr;

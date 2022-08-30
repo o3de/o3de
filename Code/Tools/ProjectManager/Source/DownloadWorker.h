@@ -11,6 +11,8 @@
 #include <AzCore/Outcome/Outcome.h>
 #endif
 
+#include <DownloadController.h>
+
 QT_FORWARD_DECLARE_CLASS(QProcess)
 
 namespace O3DE::ProjectManager
@@ -28,7 +30,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void StartDownload();
-        void SetGemToDownload(const QString& gemName, bool downloadNow = true);
+        void SetObjectToDownload(const QString& objectName, DownloadController::DownloadObjectType objectType, bool downloadNow = true);
 
     signals:
         void UpdateProgress(int bytesDownloaded, int totalBytes);
@@ -36,6 +38,7 @@ namespace O3DE::ProjectManager
 
     private:
 
-        QString m_gemName;
+        QString m_objectName;
+        DownloadController::DownloadObjectType m_downloadType;
     };
 } // namespace O3DE::ProjectManager

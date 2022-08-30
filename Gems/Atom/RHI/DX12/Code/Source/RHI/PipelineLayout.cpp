@@ -13,9 +13,6 @@ namespace AZ
 {
     namespace DX12
     {
-        static const uint32_t HLSL_RootConstantRegister = 0;
-        static const uint32_t HLSL_RootConstantRegisterSpace = RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
-
         PipelineLayout::PipelineLayout(PipelineLayoutCache& parentCache)
             : m_parentCache{&parentCache}
         {}
@@ -270,8 +267,8 @@ namespace AZ
                 const RHI::ShaderResourceGroupBindingInfo& groupBindInfo = dx12Descriptor->GetShaderResourceGroupBindingInfo(groupLayoutIndex);
                 const ShaderResourceGroupVisibility& groupVisibility = dx12Descriptor->GetShaderResourceGroupVisibility(groupLayoutIndex);
 
-                bool hasSrvUnboundedArray = false;
-                bool hasUavUnboundedArray = false;
+                [[maybe_unused]] bool hasSrvUnboundedArray = false;
+                [[maybe_unused]] bool hasUavUnboundedArray = false;
 
                 if (groupLayout.GetGroupSizeForBufferUnboundedArrays() || groupLayout.GetGroupSizeForImageUnboundedArrays())
                 {

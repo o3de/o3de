@@ -32,7 +32,7 @@ namespace AZ::DocumentPropertyEditor
         builder.Label("Row Count");
         builder.BeginPropertyEditor<IntSpinBox>(m_rowCount);
         builder.OnEditorChanged(
-            [=](const Dom::Path&, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
+            [=](const Dom::Path&, const Dom::Value& value, Nodes::ValueChangeType)
             {
                 m_rowCount = aznumeric_caster(value.GetInt64());
                 ResizeMatrix();
@@ -41,7 +41,7 @@ namespace AZ::DocumentPropertyEditor
         builder.Label("Column Count");
         builder.BeginPropertyEditor<IntSpinBox>(m_columnCount);
         builder.OnEditorChanged(
-            [=](const Dom::Path&, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
+            [=](const Dom::Path&, const Dom::Value& value, Nodes::ValueChangeType)
             {
                 m_columnCount = aznumeric_caster(value.GetInt64());
                 ResizeMatrix();
@@ -67,7 +67,7 @@ namespace AZ::DocumentPropertyEditor
             {
                 builder.BeginPropertyEditor<IntSpinBox>(GetMatrixValue(i, c));
                 builder.OnEditorChanged(
-                    [=](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
+                    [=](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                     {
                         SetMatrixValue(i, c, aznumeric_caster(value.GetInt64()));
                         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
@@ -97,7 +97,7 @@ namespace AZ::DocumentPropertyEditor
             builder.Label(entry.m_label);
             builder.BeginPropertyEditor(Nodes::Color::Name, AZ::Dom::Utils::ValueFromType(entry.m_node->m_color));
             builder.OnEditorChanged(
-                [=](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
+                [=](const Dom::Path& path, const Dom::Value& value, Nodes::ValueChangeType)
                 {
                     entry.m_node->m_color = AZ::Dom::Utils::ValueToType<AZ::Color>(value).value();
                     NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(path, value) });
@@ -106,10 +106,11 @@ namespace AZ::DocumentPropertyEditor
 
             if (entry.m_node->m_parent != nullptr)
             {
-                builder.BeginPropertyEditor<Nodes::Button>();
-                builder.Attribute(Nodes::Button::ButtonText, "-");
+                builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+                builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::RemoveElement);
                 builder.CallbackAttribute(
-                    Nodes::PropertyEditor::ChangeNotify,
+                    Nodes::ContainerActionButton::OnActivate,
                     [=]()
                     {
                         for (auto it = entry.m_node->m_parent->m_children.begin(); it != entry.m_node->m_parent->m_children.end(); ++it)
@@ -121,22 +122,21 @@ namespace AZ::DocumentPropertyEditor
                             }
                         }
                         NotifyResetDocument();
-                        return Nodes::PropertyRefreshLevel::None;
                     });
                 builder.EndPropertyEditor();
             }
 
-            builder.BeginPropertyEditor<Nodes::Button>();
-            builder.Attribute(Nodes::Button::ButtonText, "+");
+            builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
+            builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+            builder.Attribute(Nodes::ContainerActionButton::Action, Nodes::ContainerAction::AddElement);
             builder.CallbackAttribute(
-                Nodes::PropertyEditor::ChangeNotify,
+                Nodes::ContainerActionButton::OnActivate,
                 [=]()
                 {
                     ColorTreeNode child;
                     child.m_parent = entry.m_node;
                     entry.m_node->m_children.push_back(child);
                     NotifyResetDocument();
-                    return Nodes::PropertyRefreshLevel::None;
                 });
             builder.EndPropertyEditor();
 

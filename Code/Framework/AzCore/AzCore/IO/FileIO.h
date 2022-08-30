@@ -31,7 +31,7 @@ namespace AZ
         /// return true if name of file matches glob filter.
         /// glob filters are MS-DOS (or windows) findNextFile style filters
         /// like "*.bat" or "blah??.pak" or "test*.exe" and such.
-        bool NameMatchesFilter(const char* name, const char* filter);
+        bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
 
         using HandleType = AZ::u32;
         static const HandleType InvalidHandle = 0;
@@ -294,6 +294,8 @@ namespace AZ
             SizeType    Write(SizeType bytes, const void* iBuffer) override;
             SizeType    GetCurPos() const override;
             SizeType    GetLength() const override;
+
+            virtual void Flush();
 
         private:
             HandleType m_handle;    ///< Open file handle.

@@ -48,8 +48,8 @@ function(ly_add_target_dependencies)
 
     unset(ALL_GEM_DEPENDENCIES)
     foreach(dependency_file ${ly_add_gem_dependencies_DEPENDENCIES_FILES})
-    #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
-    unset(GEM_DEPENDENCIES)
+        #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
+        unset(GEM_DEPENDENCIES)
         include(${dependency_file})
         list(APPEND ALL_GEM_DEPENDENCIES ${GEM_DEPENDENCIES})
     endforeach()
@@ -62,13 +62,16 @@ function(ly_add_target_dependencies)
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
         # Add the target to the LY_DELAYED_LOAD_DEPENDENCIES if it isn't already on the list
-        get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" SET)
-        if(NOT delayed_load_target_set)
+        get_property(load_dependencies_set GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
+        if(NOT "${ly_add_gem_dependencies_PREFIX},${target}" IN_LIST load_dependencies_set)
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${ly_add_gem_dependencies_PREFIX},${target}")
         endif()
         foreach(gem_target ${ALL_GEM_DEPENDENCIES})
             # Add the list of gem dependencies to the LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX};${target} property
-            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}")
+            if(NOT "${gem_target}" IN_LIST target_load_dependencies)
+                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            endif()
         endforeach()
     endforeach()
 endfunction()
@@ -90,12 +93,12 @@ set(project_build_path_template [[
 )
 
 #! ly_generate_project_build_path_setreg: Generates a .setreg file that contains an absolute path to the ${CMAKE_BINARY_DIR}
-#  This allows locate the directory where the project it's binaries are built to be located within the engine.
+#  This allows us to locate the directory where the project binaries are built to be located within the engine.
 #  Which are the shared libraries and launcher executables
-#  When an a pre-built engine application runs from a directory other than the project build directory, it needs
+#  When a pre-built engine application runs from a directory other than the project build directory, it needs
 #  to be able to locate the project build directory to determine the list of gems that the project depends on to load
 #  as well the location of those gems.
-#  For example if the project uses an external gem not associated with the engine, that gem's dlls/so/dylib files
+#  For example, if the project uses an external gem not associated with the engine, that gem's dlls/so/dylib files
 #  would be located within the project build directory and the engine SDK binary directory would need that info
 
 # NOTE: This only needed for non-monolithic host platforms.
@@ -104,9 +107,8 @@ set(project_build_path_template [[
 #       can only run on the host platform
 # \arg:project_real_path Full path to the o3de project directory
 function(ly_generate_project_build_path_setreg project_real_path)
-    # The build path isn't needed on non-monolithic platforms
-    # Nor on any non-host platforms
-    if (LY_MONOLITHIC_GAME OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    # The build path isn't needed on any non-host platforms
+    if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
         return()
     endif()
 

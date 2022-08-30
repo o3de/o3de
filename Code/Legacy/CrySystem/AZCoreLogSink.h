@@ -121,13 +121,36 @@ public:
 
         if (window == AZ::Debug::Trace::GetDefaultSystemWindow())
         {
-            CryLogAlways("%s", message);
+            [[maybe_unused]] auto WriteToStream = [message = AZStd::string_view(message)]
+            (AZ::IO::GenericStream& stream)
+            {
+                constexpr AZStd::string_view newline = "\n";
+                stream.Write(message.size(), message.data());
+                // performs does not format the output and no newline will automatically be added
+                // Therefore an explicit invocation for a new line is supplied
+                stream.Write(newline.size(), newline.data());
+            };
+            CryOutputToCallback(ILog::eAlways, WriteToStream);
         }
         else
         {
-            CryLog("(%s) - %s", window, message);
+            [[maybe_unused]] auto WriteToStream = [window = AZStd::string_view(window), message = AZStd::string_view(message)]
+            (AZ::IO::GenericStream& stream)
+            {
+                constexpr AZStd::string_view windowMessageSeparator = " - ";
+                constexpr AZStd::string_view newline = "\n";
+                constexpr AZStd::string_view leftParenthesis = "(";
+                constexpr AZStd::string_view rightParenthesis = ")";
+                stream.Write(leftParenthesis.size(), leftParenthesis.data());
+                stream.Write(window.size(), window.data());
+                stream.Write(rightParenthesis.size(), rightParenthesis.data());
+                stream.Write(windowMessageSeparator.size(), windowMessageSeparator.data());
+                stream.Write(message.size(), message.data());
+                stream.Write(newline.size(), newline.data());
+            };
+            CryOutputToCallback(ILog::eMessage, WriteToStream);
         }
-        
+
         return m_suppressSystemOutput;
     }
 

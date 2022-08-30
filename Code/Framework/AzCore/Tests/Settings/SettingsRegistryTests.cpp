@@ -165,17 +165,17 @@ namespace SettingsRegistryTests
         void Visit(const AZStd::vector<RegistryEntry>& expected, AZStd::string_view path = "")
         {
             size_t counter = 0;
-            auto callback = [&expected, &counter](AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type)
+            auto callback = [&expected, &counter](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction action)
             {
                 EXPECT_LT(counter, expected.size());
                 if (counter < expected.size())
                 {
                     const RegistryEntry& entry = expected[counter];
-                    EXPECT_STREQ(entry.m_path.data(), path.data());
-                    EXPECT_STREQ(entry.m_valueName.data(), valueName.data());
+                    EXPECT_STREQ(entry.m_path.data(), visitArgs.m_jsonKeyPath.data());
+                    EXPECT_STREQ(entry.m_valueName.data(), visitArgs.m_fieldName.data());
                     EXPECT_EQ(entry.m_action, action);
-                    EXPECT_EQ(entry.m_type, type);
+                    EXPECT_EQ(entry.m_type, visitArgs.m_type);
                     counter++;
                     return entry.m_response;
                 }
@@ -344,15 +344,15 @@ namespace SettingsRegistryTests
     TYPED_TEST(TypedSettingsRegistryTest, Set_NotifiersCalled_ReturnsFalse)
     {
         size_t counter = 0;
-        auto callback0 = [&counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter++;
         };
-        auto callback1 = [&counter](AZStd::string_view, AZ::SettingsRegistryInterface::Type callbackType)
+        auto callback1 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             AZ::SettingsRegistryInterface::Type type = SettingsType<TypeParam>::s_type;
-            EXPECT_EQ(callbackType, type);
+            EXPECT_EQ(notifyEventArgs.m_type, type);
             counter++;
         };
         auto testNotifier1 = this->m_registry->RegisterNotifier(callback0);
@@ -368,16 +368,16 @@ namespace SettingsRegistryTests
     TYPED_TEST(TypedSettingsRegistryTest, Set_ConnectedNotifierCalledAndDisconnectedNotifierNotCalled_Success)
     {
         size_t counter1{};
-        auto callback0 = [&counter1](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter1](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter1++;
         };
 
         size_t counter2{};
-        auto callback1 = [&counter2](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback1 = [&counter2](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter2++;
         };;
 
@@ -426,10 +426,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -457,10 +457,10 @@ namespace SettingsRegistryTests
             using AZ::SettingsRegistryInterface::Visitor::Visit;
 
             using ValueType [[maybe_unused]] = typename SettingsType<TypeParam>::ValueType;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, ValueType value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, ValueType value) override
             {
                 AZ::SettingsRegistryInterface::Type expectedType = SettingsType<TypeParam>::s_type;
-                EXPECT_EQ(expectedType, type);
+                EXPECT_EQ(expectedType, visitArgs.m_type);
                 SettingsType<TypeParam>::ExpectEq(SettingsType<TypeParam>::GetStoredValue(), value);
                 m_counter++;
             }
@@ -487,9 +487,9 @@ namespace SettingsRegistryTests
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type type, AZ::s64 value) override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZ::s64 value) override
             {
-                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, type);
+                EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Integer, visitArgs.m_type);
                 AZ::u64 testValue = reinterpret_cast<AZ::u64&>(value);
                 EXPECT_EQ(expectedValue, testValue);
                 
@@ -516,17 +516,17 @@ namespace SettingsRegistryTests
 
         struct : public AZ::SettingsRegistryInterface::Visitor
         {
-            AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
-                AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type) override
+            AZ::SettingsRegistryInterface::VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs,
+                AZ::SettingsRegistryInterface::VisitAction) override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
 
             using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type , AZStd::string_view)override
+            void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view)override
             {
-                EXPECT_TRUE(path.ends_with(valueName));
+                EXPECT_TRUE(visitArgs.m_jsonKeyPath.ends_with(visitArgs.m_fieldName));
             }
         } visitor;
 
@@ -602,14 +602,14 @@ namespace SettingsRegistryTests
     TEST_F(SettingsRegistryTest, SetObject_NotifiersCalled_ReturnsFalse)
     {
         size_t counter = 0;
-        auto callback0 = [&counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback0 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_STREQ("/Object/Value", path.data());
+            EXPECT_EQ("/Object/Value", notifyEventArgs.m_jsonKeyPath);
             counter++;
         };
-        auto callback1 = [&counter](AZStd::string_view, AZ::SettingsRegistryInterface::Type callbackType)
+        auto callback1 = [&counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ(callbackType, AZ::SettingsRegistryInterface::Type::Object);
+            EXPECT_EQ(notifyEventArgs.m_type, AZ::SettingsRegistryInterface::Type::Object);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback0);
@@ -1032,8 +1032,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_InvalidPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1043,8 +1043,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_UnknownPath_ReturnsFalse)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1054,8 +1054,8 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, VisitWithCallback_WithEmptyStringViewPath_DoesNotCrash)
     {
-        auto callback = [](AZStd::string_view, AZStd::string_view,
-            AZ::SettingsRegistryInterface::VisitAction, AZ::SettingsRegistryInterface::Type)
+        auto callback = [](const AZ::SettingsRegistryInterface::VisitArgs&,
+            AZ::SettingsRegistryInterface::VisitAction)
         {
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
@@ -1316,10 +1316,10 @@ namespace SettingsRegistryTests
     {
         AZStd::string_view anchorKey = "/Anchor/Root";
         bool callbackInvoked{};
-        auto callback = [anchorKey, &callbackInvoked](AZStd::string_view path, AZ::SettingsRegistryInterface::Type type)
+        auto callback = [anchorKey, &callbackInvoked](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ(anchorKey, path);
-            EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, type);
+            EXPECT_EQ(anchorKey, notifyEventArgs.m_jsonKeyPath);
+            EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Array, notifyEventArgs.m_type);
             callbackInvoked = true;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1336,9 +1336,9 @@ namespace SettingsRegistryTests
     {
         AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        auto callback = [this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_TRUE(path.empty());
+            EXPECT_TRUE(notifyEventArgs.m_jsonKeyPath.empty());
             AZ::s64 value = -1;
             bool result = m_registry->Get(value, "/Test");
             EXPECT_TRUE(result);
@@ -1358,9 +1358,9 @@ namespace SettingsRegistryTests
     {
         AZStd::string path = CreateTestFile("test.setreg", R"({ "Test": 1 })");
 
-        auto callback = [this](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
-            EXPECT_EQ("/Path", path);
+            EXPECT_EQ("/Path", notifyEventArgs.m_jsonKeyPath);
             AZ::s64 value = -1;
             bool result = m_registry->Get(value, "/Path/Test");
             EXPECT_TRUE(result);
@@ -1529,7 +1529,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.test.setreg",            R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1539,7 +1539,7 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1569,7 +1569,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Platform/Special/Memory.editor.setreg",   R"({ "Memory": 3, "MemoryEditorSpecial": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1581,7 +1581,7 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1610,7 +1610,7 @@ namespace SettingsRegistryTests
         CreateTestFile("c.test.setreg",           R"({ "Id": 3, "cTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1620,7 +1620,7 @@ namespace SettingsRegistryTests
                 "/cTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Id", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Id", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1651,7 +1651,7 @@ namespace SettingsRegistryTests
             ])");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1661,7 +1661,7 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1687,14 +1687,14 @@ namespace SettingsRegistryTests
         CreateTestFile("Platform/Special/Memory.wrong", R"({ "Memory": 2, "SpecialWrong": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
                 "/MemoryRoot"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);
@@ -1718,7 +1718,7 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.test.setreg", R"({ "Memory": 2, "MemoryTest": true })");
 
         size_t counter = 0;
-        auto callback = [this, &counter](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+        auto callback = [this, &counter](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             const char* fileIds[] =
             {
@@ -1728,7 +1728,7 @@ namespace SettingsRegistryTests
                 "/MemoryEditorTest"
             };
 
-            MergeNotify(path, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
+            MergeNotify(notifyEventArgs.m_jsonKeyPath, counter, AZ_ARRAY_SIZE(fileIds), "/Memory", fileIds);
             counter++;
         };
         auto testNotifier1 = m_registry->RegisterNotifier(callback);

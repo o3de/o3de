@@ -9,17 +9,22 @@
 #pragma once
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/Base.h>
+
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Feature/Utils/MultiSparseVector.h>
+
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
-#include <Atom/Feature/Utils/SparseVector.h>
+#include <TerrainRenderer/Vector2i.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 
 namespace Terrain
 {
     class TerrainMacroMaterialManager
         : private TerrainMacroMaterialNotificationBus::Handler
-        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         
@@ -32,17 +37,24 @@ namespace Terrain
         void Reset();
         bool IsInitialized();
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
-        
-        void Update(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+        void SetRenderDistance(float distance);
+
+        void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         static constexpr float MacroMaterialGridSize = 64.0f;
         static constexpr uint16_t MacroMaterialsPerTile = 4;
-        static constexpr uint16_t InvalidMacroMaterialRef = AZStd::numeric_limits<uint16_t>::max();
 
-        using MacroMaterialRefs = AZStd::array<uint16_t, MacroMaterialsPerTile>;
+        using MaterialHandle = AZ::RHI::Handle<uint16_t, class Material>;
+        using TileHandle = AZ::RHI::Handle<uint32_t, class Tile>;
+        using TileMaterials = AZStd::array<MaterialHandle, MacroMaterialsPerTile>;
+
+        static constexpr TileMaterials DefaultTileMaterials
+        {
+            MaterialHandle(), MaterialHandle(), MaterialHandle(), MaterialHandle()
+        };
 
         enum MacroMaterialShaderFlags : uint32_t
         {
@@ -60,27 +72,28 @@ namespace Terrain
             // macro material bounds in world space
             AZStd::array<float, 2> m_boundsMin{ 0.0f, 0.0f };
             AZStd::array<float, 2> m_boundsMax{ 0.0f, 0.0f };
+
+            bool Overlaps(const AZ::Vector2& min, const AZ::Vector2& max) const;
+
         };
         static_assert(sizeof(MacroMaterialShaderData) % 16 == 0, "MacroMaterialShaderData must be 16 byte aligned.");
 
-        struct MacroMaterial
+        struct MacroMaterialPriority
         {
-            MacroMaterialData m_data;
-            uint16_t m_colorIndex{ InvalidImageIndex };
-            uint16_t m_normalIndex{ InvalidImageIndex };
-            uint16_t m_materialRef{ InvalidMacroMaterialRef };
+            int32_t m_priority{ 0 };
+            uint32_t m_hash{ 0 };
+
+            bool operator>(MacroMaterialPriority& other) const
+            {
+                return m_priority > other.m_priority || (m_priority == other.m_priority && m_hash > other.m_hash);
+            }
         };
 
         struct MacroMaterialGridShaderData
         {
-            uint32_t m_resolution; // How many x/y tiles in grid. x & y stored in 16 bits each. Total number of entries in m_macroMaterialData will be x * y
+            uint32_t m_tileCount1D; // How many x/y tiles along edge of grid. Grid is always square, so total number of tiles is this value squared.
             float m_tileSize; // Size of a tile in meters.
-            AZStd::array<float, 2> m_offset; // x/y offset of min x/y corner of grid.
         };
-        static_assert(sizeof(MacroMaterialGridShaderData) % 16 == 0, "MacroMaterialGridShaderData must be 16 byte aligned.");
-        
-        // AzFramework::Terrain::TerrainDataNotificationBus overrides...
-        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion [[maybe_unused]], TerrainDataChangedMask dataChangedMask) override;
 
         // TerrainMacroMaterialNotificationBus overrides...
         void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material) override;
@@ -88,25 +101,32 @@ namespace Terrain
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
         
-        void UpdateMacroMaterialShaderEntry(MacroMaterialShaderData& shaderData, const MacroMaterial& macroMaterialData);
-        void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx, MacroMaterialRefs& materialRefs);
+        void UpdateMacroMaterialShaderEntry(MaterialHandle materialHandle, const MacroMaterialData& macroMaterialData);
+        void AddMacroMaterialToTile(MaterialHandle materialHandle, TileHandle tileHandle);
+        void RemoveMacroMaterialFromTile(MaterialHandle materialHandle, TileHandle tileHandle, const AZ::Vector2& tileMin);
 
         template<typename Callback>
+        void ForMacroMaterialsInRegion(const ClipmapBoundsRegion& region, Callback callback);
+
+        template<typename Callback>
+        void ForMacroMaterialsInBounds(const AZ::Vector2& minBounds, const AZ::Vector2& maxBounds, Callback callback);
+        template<typename Callback>
         void ForMacroMaterialsInBounds(const AZ::Aabb& bounds, Callback callback);
+        template<typename Callback>
+        void ForMacroMaterialsInBounds(const AZStd::array<float, 2>& minBounds, const AZStd::array<float, 2>& maxBounds, Callback callback);
 
         void RemoveAllImages();
-        void RemoveImagesForMaterial(const MacroMaterial& macroMaterial);
-
-        AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
+        void RemoveImagesForMaterial(MaterialHandle materialHandle);
 
         // Macro materials stored in a grid of (MacroMaterialGridCount * MacroMaterialGridCount) where each tile in the grid covers
         // an area of (MacroMaterialGridSize * MacroMaterialGridSize) and each tile can hold MacroMaterialsPerTile macro materials
-        AZ::Render::SparseVector<MacroMaterialShaderData> m_materialShaderData; // Info about the macro material itself.
-        AZStd::vector<MacroMaterialRefs> m_materialRefGridShaderData; // A grid of macro material references that covers the world.
+        AZ::Render::MultiSparseVector<MacroMaterialShaderData, MacroMaterialPriority> m_materialData; // Info about the macro material itself.
+        AZStd::vector<TileMaterials> m_materialRefGridShaderData; // A grid of macro material references that covers the world.
 
-        AZStd::map<AZ::EntityId, MacroMaterial> m_macroMaterials; // Used for looking up macro materials by entity id when the data isn't provided by a bus.
-        uint16_t m_tilesX{ 0 };
-        uint16_t m_tilesY{ 0 };
+        AZStd::map<AZ::EntityId, MaterialHandle> m_entityToMaterialHandle; // Used for looking up macro materials by entity id when the data isn't provided by a bus.
+
+        int32_t m_tiles1D{ 0 };
+        ClipmapBounds m_macroMaterialTileBounds;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         AZ::Render::GpuBufferHandler m_materialDataBuffer;

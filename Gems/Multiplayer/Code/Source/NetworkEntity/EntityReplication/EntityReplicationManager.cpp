@@ -20,9 +20,6 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 #include <AzNetworking/PacketLayer/IPacketHeader.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
-#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
@@ -155,6 +152,8 @@ namespace Multiplayer
 
         m_orphanedEntityRpcs.Update();
 
+        SendEntityResets();
+
         AZLOG
         (
             NET_ReplicationInfo,
@@ -281,12 +280,19 @@ namespace Multiplayer
             }
         }
 
-        const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
-
-        // Update the sent things with the packet id
-        for (EntityReplicator* replicator : replicatorUpdatedList)
+        if (m_replicationWindow)
         {
-            replicator->FinalizeSerialization(sentId);
+            const AzNetworking::PacketId sentId = m_replicationWindow->SendEntityUpdateMessages(entityUpdates);
+
+            // Update the sent things with the packet id
+            for (EntityReplicator* replicator : replicatorUpdatedList)
+            {
+                replicator->FinalizeSerialization(sentId);
+            }
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to send entity update message, replication window does not exist");
         }
     }
 
@@ -326,8 +332,24 @@ namespace Multiplayer
                 rpcMessages.pop_front();
             }
 
-            m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            if (m_replicationWindow)
+            {
+                m_replicationWindow->SendEntityRpcs(entityRpcs, reliable);
+            }
+            else
+            {
+                AZ_Assert(false, "Failed to send entity rpc, replication window does not exist");
+            }
         }
+    }
+
+    void EntityReplicationManager::SendEntityResets()
+    {
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->SendEntityResets(m_replicatorsPendingReset);
+        }
+        m_replicatorsPendingReset.clear();
     }
 
     void EntityReplicationManager::Clear(bool forMigration)
@@ -346,6 +368,7 @@ namespace Multiplayer
         {
             m_replicatorsPendingRemoval.clear();
             m_replicatorsPendingSend.clear();
+            m_replicatorsPendingReset.clear();
         }
 
         m_entityReplicatorMap.clear();
@@ -367,7 +390,7 @@ namespace Multiplayer
     EntityReplicator* EntityReplicationManager::AddEntityReplicator(const ConstNetworkEntityHandle& entityHandle, NetEntityRole remoteNetworkRole)
     {
         EntityReplicator* entityReplicator(nullptr);
-        if (const AZ::Entity* entity = entityHandle.GetEntity())
+        if (entityHandle.GetEntity())
         {
             entityReplicator = GetEntityReplicator(entityHandle);
             if (entityReplicator)
@@ -567,7 +590,7 @@ namespace Multiplayer
             }
         }
 
-        return true;
+        return shouldDeleteEntity;
     }
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
@@ -758,7 +781,7 @@ namespace Multiplayer
                         // This can happen when Shard A migrates an entity to Shard B, then shard B migrates the entity to Shard C, and Shard A tries to delete a replicator it had to Shard C (which has already made a new replicator for Shard A)
                         result = UpdateValidationResult::DropMessage;
                     }
-                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority)// we expect to the remote role to be e_Authority
+                    else if (entityReplicator->GetRemoteNetworkRole() != NetEntityRole::Authority) // We expect the remote role to be NetEntityRole::Authority
                     {
                         // This entity has migrated previously, and we haven't heard back that the remove was successful, so we can accept the message
                         AZ_Assert(entityReplicator->IsMarkedForRemoval() && entityReplicator->GetRemoteNetworkRole() == NetEntityRole::Server, "Unexpected server message is not Authority or Server");
@@ -825,7 +848,7 @@ namespace Multiplayer
             return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
         }
 
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
+        OutputSerializer outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -842,6 +865,7 @@ namespace Multiplayer
                 // Note that we need to make sure the replicator is not marked for removal if we're server authority
                 // If a client migrates and we receive a property update message out-of-order, this would re-create a replicator which would be bad
                 AZLOG_ERROR("Unable to process NetworkEntityUpdateMessage without a prefabEntityId, our local EntityReplicator is not set up or is configured incorrectly");
+                m_replicatorsPendingReset.emplace(updateMessage.GetEntityId());
                 return true;
             }
 
@@ -856,20 +880,41 @@ namespace Multiplayer
         return handled;
     }
 
-    bool EntityReplicationManager::HandleEntityRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& message)
+    bool EntityReplicationManager::HandleEntityRpcMessages(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcVector& rpcVector)
     {
-        EntityReplicator* entityReplicator = GetEntityReplicator(message.GetEntityId());
-        const bool isReplicatorValid = (entityReplicator != nullptr) && !entityReplicator->IsMarkedForRemoval();
-        const bool isEntityActivated = isReplicatorValid && entityReplicator->GetEntityHandle() && (entityReplicator->GetEntityHandle().GetEntity()->GetState() == AZ::Entity::State::Active);
-        if (!isReplicatorValid || !isEntityActivated)
+        for (NetworkEntityRpcMessage& rpcMessage : rpcVector)
         {
-            m_orphanedEntityRpcs.AddOrphanedRpc(message.GetEntityId(), message);
-            return true;
+            EntityReplicator* entityReplicator = GetEntityReplicator(rpcMessage.GetEntityId());
+            const bool isReplicatorValid = (entityReplicator != nullptr) && !entityReplicator->IsMarkedForRemoval();
+            const bool isEntityActivated = isReplicatorValid && entityReplicator->GetEntityHandle() && (entityReplicator->GetEntityHandle().GetEntity()->GetState() == AZ::Entity::State::Active);
+            if (!isReplicatorValid || !isEntityActivated)
+            {
+                m_orphanedEntityRpcs.AddOrphanedRpc(rpcMessage.GetEntityId(), rpcMessage);
+            }
+            else
+            {
+                if (!entityReplicator->HandleRpcMessage(invokingConnection, rpcMessage))
+                {
+                    AZ_Assert(false, "Failed processing RPC messages, disconnecting");
+                    return false;
+                }
+            }
         }
-        else
+        return true;
+    }
+
+    bool EntityReplicationManager::HandleEntityResetMessages([[maybe_unused]] AzNetworking::IConnection* invokingConnection, const NetEntityIdsForReset& resetIds)
+    {
+        for (NetEntityId netEntityId : resetIds)
         {
-            return entityReplicator->HandleRpcMessage(invokingConnection, message);
+            EntityReplicator* entityReplicator = GetEntityReplicator(netEntityId);
+            if (entityReplicator != nullptr)
+            {
+                // Don't reset the remote role, we want to reset the publisher/subscriber
+                entityReplicator->Reset(entityReplicator->GetRemoteNetworkRole());
+            }
         }
+        return true;
     }
 
     bool EntityReplicationManager::DispatchOrphanedRpc(NetworkEntityRpcMessage& message, EntityReplicator* entityReplicator)
@@ -1156,7 +1201,7 @@ namespace Multiplayer
                 // Send an update packet if it needs one
                 propPublisher->GenerateRecord();
                 bool needsNetworkPropertyUpdate = propPublisher->PrepareSerialization();
-                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
+                InputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
                 if (needsNetworkPropertyUpdate)
                 {
                     // Write out entity state into the buffer
@@ -1184,7 +1229,7 @@ namespace Multiplayer
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
-                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
+                OutputSerializer outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
                     invokingConnection,
@@ -1263,12 +1308,12 @@ namespace Multiplayer
 
     void EntityReplicationManager::AddReplicatorToPendingRemoval(const EntityReplicator& replicator)
     {
-        m_replicatorsPendingRemoval.insert(replicator.GetEntityHandle().GetNetEntityId());
+        m_replicatorsPendingRemoval.emplace(replicator.GetEntityHandle().GetNetEntityId());
     }
 
     void EntityReplicationManager::AddReplicatorToPendingSend(const EntityReplicator& replicator)
     {
-        m_replicatorsPendingSend.insert(replicator.GetEntityHandle().GetNetEntityId());
+        m_replicatorsPendingSend.emplace(replicator.GetEntityHandle().GetNetEntityId());
     }
 
     bool EntityReplicationManager::IsUpdateModeToServerClient()

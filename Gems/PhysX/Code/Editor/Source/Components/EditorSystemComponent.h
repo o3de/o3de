@@ -8,15 +8,16 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Asset/AssetManager.h>
-#include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h>
+#include <EditorPhysXJointInterface.h>
 
 namespace AzPhysics
 {
@@ -73,5 +74,7 @@ namespace PhysX
 
         // Asset builder for PhysX material asset
         EditorMaterialAssetBuilder m_materialAssetBuilder;
+
+        PhysXEditorJointHelpersInterface m_editorJointHelpersInterface;
     };
 }

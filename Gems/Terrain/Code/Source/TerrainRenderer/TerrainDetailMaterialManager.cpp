@@ -277,7 +277,7 @@ namespace Terrain
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
-        desc.m_clipToWorldScale = m_detailTextureScale;
+        desc.m_clipmapToWorldScale = m_detailTextureScale;
         desc.m_size = m_detailTextureSize;
 
         // Initialize world space to a value that won't match the initial camera position.
@@ -954,7 +954,6 @@ namespace Terrain
         };
             
         AZ::Vector2 stepSize(m_detailTextureScale);
-        AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
         AZStd::binary_semaphore wait;
 
@@ -967,7 +966,7 @@ namespace Terrain
             wait.release();
         };
 
-        AzFramework::Terrain::TerrainQueryRegion queryRegion(offsetWorldAabb.GetMin(), width, height, stepSize);
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(worldUpdateAabb.GetMin(), width, height, stepSize);
         AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
             &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,
             queryRegion,

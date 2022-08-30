@@ -26,6 +26,7 @@
 #include "Controls/ConsoleSCB.h"    // for CConsoleSCB
 
 
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <stdarg.h>
 
 #if !defined(AZ_PLATFORM_WINDOWS)
@@ -39,6 +40,7 @@
 
 #include <Carbon/Carbon.h>
 #endif
+
 
 // Static member variables
 SANDBOX_API QListWidget* CLogFile::m_hWndListBox = nullptr;
@@ -478,13 +480,13 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus("%s", pszString);
+        gEnv->pLog->LogAppendWithPrevLine("%s", pszString);
     }
 }
 
-static inline QString CopyAndRemoveColorCode(const char* sText)
+static inline QString CopyAndRemoveColorCode(AZStd::string_view sText)
 {
-    QByteArray ret = sText;      // alloc and copy
+    QByteArray ret(sText.data(), static_cast<int>(sText.size()));      // alloc and copy
 
     char* s, * d;
 
@@ -509,7 +511,7 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
+void CLogFile::OnWriteToConsole(AZStd::string_view sText, bool bNewLine)
 {
     if (!gEnv)
     {
@@ -519,10 +521,8 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
     //  return;
 
     // Skip any non character.
-    if (*sText != 0 && ((uint8) * sText) < 32)
-    {
-        sText++;
-    }
+    auto searchIt = AZStd::ranges::find_if(sText, [](char element) { return element >= 32; });
+    sText = AZStd::string_view(searchIt, sText.end());
 
     // If we have a listbox attached, also output the string to this listbox
     if (m_hWndListBox)
@@ -590,7 +590,8 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 
     if (CConsoleSCB::GetCreatedInstance())
     {
-        QString sOutLine(sText);
+        const QString qtText = QString::fromUtf8(sText.data(), static_cast<int>(sText.size()));
+        QString sOutLine(qtText);
 
         if (gSettings.bShowTimeInConsole)
         {
@@ -605,7 +606,7 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 #endif
             strftime(sTime, sizeof(sTime), "<%H:%M:%S> ", &today);
             sOutLine = sTime;
-            sOutLine += sText;
+            sOutLine += qtText;
         }
 
         CConsoleSCB::GetCreatedInstance()->AddToConsole(sOutLine, bNewLine);
@@ -613,7 +614,7 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
     else
     {
         // add to intermediate messages until an instance of CConsoleSCB exists
-        CConsoleSCB::AddToPendingLines(sText, bNewLine);
+        CConsoleSCB::AddToPendingLines(QString::fromUtf8(sText.data(), static_cast<int>(sText.size())), bNewLine);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -631,6 +632,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLogFile::OnWriteToFile([[maybe_unused]] const char* sText, [[maybe_unused]] bool bNewLine)
+void CLogFile::OnWriteToFile([[maybe_unused]] AZStd::string_view sText, [[maybe_unused]] bool bNewLine)
 {
 }

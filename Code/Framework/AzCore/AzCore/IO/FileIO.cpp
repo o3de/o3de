@@ -286,7 +286,7 @@ namespace AZ::IO
         return "";
     }
 
-    bool NameMatchesFilter(const char* name, const char* filter)
+    bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter)
     {
         return AZStd::wildcard_match(filter, name);
     }
@@ -497,6 +497,15 @@ namespace AZ::IO
         }
 
         return fileLengthBytes;
+    }
+
+    void FileIOStream::Flush()
+    {
+        if (m_handle != InvalidHandle)
+        {
+            AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
+            FileIOBase::GetInstance()->Flush(m_handle);
+        }
     }
 
 } // namespace AZ::IO

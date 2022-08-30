@@ -30,7 +30,6 @@ namespace EMotionFX
     {
     public:
         JointLimitRotationManipulators(JointLimitFrame jointLimitFrame);
-        ~JointLimitRotationManipulators();
         void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;

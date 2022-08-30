@@ -9,11 +9,9 @@
 #include <Multiplayer/Components/LocalPredictionPlayerInputComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/Serialization/StringifySerializer.h>
-#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/MultiplayerDebug.h>
 
@@ -156,7 +154,12 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        ;
+        if (IsAutonomous())
+        {
+            m_autonomousUpdateEvent.RemoveFromQueue();
+            m_migrateStartHandler.Disconnect();
+            m_migrateEndHandler.Disconnect();
+        }
     }
 
     void LocalPredictionPlayerInputComponentController::HandleSendClientInput
@@ -227,12 +230,18 @@ namespace Multiplayer
                     if (cl_EnableDesyncDebugging && cl_DesyncDebugging_AuditInputs)
                     {
                         // Add to Audit Trail here (server)
-                        AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
-                        if (!inputLogs.empty())
+                        if (IMultiplayerDebug* mpDebug = AZ::Interface<IMultiplayerDebug>::Get())
                         {
-                            AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                                AuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
-                                AZStd::move(inputLogs));
+                            AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
+                            if (!inputLogs.empty())
+                            {
+                                mpDebug->AddAuditEntry(
+                                    AuditCategory::Input,
+                                    input.GetClientInputId(),
+                                    input.GetHostFrameId(),
+                                    GetEntity()->GetName(),
+                                    AZStd::move(inputLogs));
+                            }
                         }
                     }
 #endif
@@ -267,7 +276,7 @@ namespace Multiplayer
                 // Produce correction for client
                 AzNetworking::PacketEncodingBuffer correction;
                 correction.Resize(correction.GetCapacity());
-                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
+                InputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
 
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
@@ -286,15 +295,21 @@ namespace Multiplayer
  #ifndef AZ_RELEASE_BUILD
                 if (cl_EnableDesyncDebugging)
                 {
-                    MultiplayerAuditingElement detail;
-                    detail.m_name = AZStd::string::format(
-                        "Autonomous Desync - Corrected clientInputId=%hu at hostFrame=%u hostTime=%" PRId64,
-                        static_cast<uint16_t>(m_lastClientInputId),
-                        static_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
-                        static_cast<int64_t>(m_lastInputReceived[0].GetHostTimeMs()));
-                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                        AuditCategory::Desync, m_lastClientInputId, m_lastInputReceived[0].GetHostFrameId(), GetEntity()->GetName(),
-                        { AZStd::move(detail) });
+                    if (IMultiplayerDebug* mpDebug = AZ::Interface<IMultiplayerDebug>::Get())
+                    {
+                        MultiplayerAuditingElement detail;
+                        detail.m_name = AZStd::string::format(
+                            "Autonomous Desync - Corrected clientInputId=%hu at hostFrame=%u hostTime=%" PRId64,
+                            static_cast<uint16_t>(m_lastClientInputId),
+                            static_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()),
+                            static_cast<int64_t>(m_lastInputReceived[0].GetHostTimeMs()));
+                        mpDebug->AddAuditEntry(
+                            AuditCategory::Desync,
+                            m_lastClientInputId,
+                            m_lastInputReceived[0].GetHostFrameId(),
+                            GetEntity()->GetName(),
+                            { AZStd::move(detail) });
+                    }
                 }
  #endif
 
@@ -351,11 +366,12 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
-        [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
+        AzNetworking::IConnection* invokingConnection,
         const Multiplayer::ClientInputId& inputId,
         const AzNetworking::PacketEncodingBuffer& correction
     )
     {
+        AZ_Assert(invokingConnection != nullptr, "Invalid connection, cannot reprocess corrections.");
         AZ_Assert(inputId <= m_clientInputId, "Invalid correction frame id, correction is for a move the client has not yet submitted to the server");
         if (inputId > m_clientInputId)
         {
@@ -372,7 +388,7 @@ namespace Multiplayer
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
+        OutputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
         SerializeEntityCorrection(serializer);
         GetNetBindComponent()->NotifyCorrection();
 
@@ -405,9 +421,11 @@ namespace Multiplayer
                 SerializeEntityCorrection(serverValues);
                 MultiplayerAuditingElement detail;
                 PrintCorrectionDifferences(*iter->second, serverValues, &detail);
-                detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId), inputFrameId);
-                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(AuditCategory::Desync, inputId,
-                    correctedInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
+                if (IMultiplayerDebug* mpDebug = AZ::Interface<IMultiplayerDebug>::Get())
+                {
+                    detail.m_name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from host frame=%d", aznumeric_cast<int32_t>(inputId), inputFrameId);
+                    mpDebug->AddAuditEntry(AuditCategory::Desync, inputId, correctedInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
+                }
             }
             else
             {
@@ -560,23 +578,33 @@ namespace Multiplayer
 #ifndef AZ_RELEASE_BUILD
             if (cl_EnableDesyncDebugging)
             {
-                StateHistoryItem inputHistory = AZStd::make_unique<AzNetworking::StringifySerializer>();
+                StateHistoryItem inputHistory = AZStd::make_shared<AzNetworking::StringifySerializer>();
                 while (m_predictiveStateHistory.size() > cl_PredictiveStateHistorySize)
                 {
                     m_predictiveStateHistory.erase(m_predictiveStateHistory.begin());
                 }
-                SerializeEntityCorrection(*inputHistory);
-                m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
+
+                if (inputHistory != nullptr)
+                {
+                    SerializeEntityCorrection(*inputHistory);
+                    m_predictiveStateHistory.emplace(m_clientInputId, inputHistory);
+                }
 
                 if (cl_DesyncDebugging_AuditInputs)
                 {
-                    // Add to audit trail per input here (client)
-                    AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
-                    if (!inputLogs.empty())
+                    if (IMultiplayerDebug* mpDebug = AZ::Interface<IMultiplayerDebug>::Get())
                     {
-                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                            AuditCategory::Input, input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(),
-                            AZStd::move(inputLogs));
+                        // Add to audit trail per input here (client)
+                        AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
+                        if (!inputLogs.empty())
+                        {
+                            mpDebug->AddAuditEntry(
+                                AuditCategory::Input,
+                                input.GetClientInputId(),
+                                input.GetHostFrameId(),
+                                GetEntity()->GetName(),
+                                AZStd::move(inputLogs));
+                        }
                     }
                 }
 

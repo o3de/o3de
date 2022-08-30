@@ -11,6 +11,7 @@
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // Verify a project path can be found, launch the project manager and shut down otherwise
     if (AzFramework::ProjectManager::CheckProjectPathProvided(argc, argv) == AzFramework::ProjectManager::ProjectPathCheckResult::ProjectManagerLaunched)
     {
@@ -19,7 +20,6 @@ int main(int argc, char* argv[])
     using CryEditMain = int (*)(int, char*[]);
     constexpr const char CryEditMainName[] = "CryEditMain";
 
-    AZ::Environment::Attach(AZ::Environment::GetInstance());
     AZ::AllocatorInstance<AZ::OSAllocator>::Create();
 
     auto handle = AZ::DynamicModuleHandle::Create("EditorLib");
@@ -34,6 +34,5 @@ int main(int argc, char* argv[])
 
     handle = {};
     AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    AZ::Environment::Detach();
     return ret;
 }

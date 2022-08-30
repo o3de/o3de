@@ -38,6 +38,6 @@ namespace GraphCanvas
 
     private:
         PaletteIconConfiguration m_paletteConfiguration;
-        const QPixmap* m_iconPixmap;
+        const QPixmap* m_iconPixmap = nullptr;
     };
 }

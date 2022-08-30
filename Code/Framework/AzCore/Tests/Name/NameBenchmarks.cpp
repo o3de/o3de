@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -59,7 +60,7 @@ namespace AZ::NameBenchmarks
             existingNames.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -80,7 +81,7 @@ namespace AZ::NameBenchmarks
             namesToCreate.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -101,7 +102,7 @@ namespace AZ::NameBenchmarks
             existingNames.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -115,7 +116,7 @@ namespace AZ::NameBenchmarks
 
     BENCHMARK_DEFINE_F(NameBenchmarkFixture, RetrieveName_WithNameLiteral)(::benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             benchmark::DoNotOptimize(AZ::Name(NameFromCachedLiteral()));
         }
@@ -126,7 +127,7 @@ namespace AZ::NameBenchmarks
 
     BENCHMARK_DEFINE_F(NameBenchmarkFixture, RetrieveName_WithoutNameLiteral)(::benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             benchmark::DoNotOptimize(AZ::Name(NameFromUncachedLiteral()));
         }
@@ -140,7 +141,7 @@ namespace AZ::NameBenchmarks
         AZStd::vector<AZ::Name> names;
         names.resize(state.range(0));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
@@ -161,11 +162,11 @@ namespace AZ::NameBenchmarks
         AZStd::vector<AZ::Name> names;
         names.resize(state.range(0));
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name::FromStringLiteral("created as a literal"));
+                names[i] = (Name::FromStringLiteral("created as a literal", AZ::Interface<AZ::NameDictionary>::Get()));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {

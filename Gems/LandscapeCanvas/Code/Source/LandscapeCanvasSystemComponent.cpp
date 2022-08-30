@@ -21,14 +21,12 @@
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/DiskShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LmbrCentral/Shape/TubeShapeComponentBus.h>
 
 // Gradient Signal
 #include <GradientSignal/Editor/EditorGradientTypeIds.h>
-
-// Vegetation
-#include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
 
 // Graph Model
 #include <GraphModel/Integration/NodePalette/StandardNodePaletteItem.h>
@@ -70,51 +68,100 @@
 #include <Editor/Nodes/GradientModifiers/PosterizeGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/SmoothStepGradientModifierNode.h>
 #include <Editor/Nodes/GradientModifiers/ThresholdGradientModifierNode.h>
+#include <Editor/Nodes/Shapes/AxisAlignedBoxShapeNode.h>
 #include <Editor/Nodes/Shapes/BoxShapeNode.h>
 #include <Editor/Nodes/Shapes/CapsuleShapeNode.h>
 #include <Editor/Nodes/Shapes/CompoundShapeNode.h>
 #include <Editor/Nodes/Shapes/CylinderShapeNode.h>
 #include <Editor/Nodes/Shapes/DiskShapeNode.h>
 #include <Editor/Nodes/Shapes/PolygonPrismShapeNode.h>
+#include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
+#include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
+#include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
 
 namespace LandscapeCanvas
 {
+    namespace Internal
+    {
+        // The FastNoise gem is optional, so we need to keep track of its component type ID
+        // ourselves since we can't rely on the headers being there.
+        static constexpr const char* EditorFastNoiseGradientComponentTypeId = "{FD018DE5-5EB4-4219-9D0C-CB3C55DE656B}";
+
+        // The Terrain gem is optional, so we need to keep track of the component type IDs
+        // ourselves since we can't rely on the headers being there.
+        namespace Terrain
+        {
+            static constexpr const char* EditorTerrainHeightGradientListComponentTypeId = "{2D945B90-ADAB-4F9A-A113-39E714708068}";
+            static constexpr const char* EditorTerrainLayerSpawnerComponentTypeId = "{9403FC94-FA38-4387-BEFD-A728C7D850C1}";
+            static constexpr const char* EditorTerrainSurfaceGradientListComponentTypeId = "{49831E91-A11F-4EFF-A824-6D85C284B934}";
+        }
+
+        // The Vegetation gem is optional, so we need to keep track of the component type IDs
+        // ourselves since we can't rely on the headers being there.
+        namespace Vegetation
+        {
+            static constexpr const char* EditorAreaBlenderComponentTypeId = "{374A5C69-A252-4C4B-AE10-A673EF7AFE82}";
+            static constexpr const char* EditorBlockerComponentTypeId = "{9E765835-9CEB-4AEC-A913-787D3D21451D}";
+            static constexpr const char* EditorMeshBlockerComponentTypeId = "{130F5DFF-EF6F-4B37-8717-194876DE12DB}";
+            static constexpr const char* EditorSpawnerComponentTypeId = "{DD96FD51-A86B-48BC-A6AB-89183B538269}";
+            static constexpr const char* EditorDistanceBetweenFilterComponentTypeId = "{78DE1245-7023-40D6-B365-CC45EB4CE622}";
+            static constexpr const char* EditorDistributionFilterComponentTypeId = "{8EDD1DA2-B597-4BCE-9285-C68886504EC7}";
+            static constexpr const char* EditorShapeIntersectionFilterComponentTypeId = "{8BCE1190-6681-4C27-834A-AFFC8FBBDCD1}";
+            static constexpr const char* EditorSurfaceAltitudeFilterComponentTypeId = "{CD722D14-9C3B-4F89-B695-65B584279EB3}";
+            static constexpr const char* EditorSurfaceMaskDepthFilterComponentTypeId = "{A5441713-89DF-49C1-BA4E-3429FF23B43F}";
+            static constexpr const char* EditorSurfaceMaskFilterComponentTypeId = "{D2F223B4-60BE-4AC5-A1AA-260B91119918}";
+            static constexpr const char* EditorSurfaceSlopeFilterComponentTypeId = "{5130DA4B-6586-4249-9B86-6496EB2B1A78}";
+            static constexpr const char* EditorPositionModifierComponentTypeId = "{E1A2D544-B54A-437F-A40D-1FA5C5999D1C}";
+            static constexpr const char* EditorRotationModifierComponentTypeId = "{6E4B91BC-DAD7-4630-A78C-261D96EEA979}";
+            static constexpr const char* EditorScaleModifierComponentTypeId = "{D2391F8A-BB54-463E-9691-9290A802C6DE}";
+            static constexpr const char* EditorSlopeAlignmentModifierComponentTypeId = "{B0C62968-562B-4A8C-9969-E2AAB5379F66}";
+            static constexpr const char* EditorDescriptorWeightSelectorComponentTypeId = "{0FB90550-149B-4E05-B22C-2753F6526E97}";
+        }
+    }
+
     // Define all of our supported nodes with their corresponding Component TypeId
     // so we can use these mappings for registration and factory method creation
 #define LANDSCAPE_CANVAS_NODE_TABLE(VISITOR_FUNCTION, ...)    \
     /* Area nodes */    \
-    VISITOR_FUNCTION<AreaBlenderNode>(Vegetation::EditorAreaBlenderComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<BlockerAreaNode>(Vegetation::EditorBlockerComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<MeshBlockerAreaNode>(Vegetation::EditorMeshBlockerComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<SpawnerAreaNode>(Vegetation::EditorSpawnerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<AreaBlenderNode>(Internal::Vegetation::EditorAreaBlenderComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<BlockerAreaNode>(Internal::Vegetation::EditorBlockerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<MeshBlockerAreaNode>(Internal::Vegetation::EditorMeshBlockerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<SpawnerAreaNode>(Internal::Vegetation::EditorSpawnerComponentTypeId, ##__VA_ARGS__);     \
     /* Area filter nodes */ \
-    VISITOR_FUNCTION<AltitudeFilterNode>(Vegetation::EditorSurfaceAltitudeFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<DistanceBetweenFilterNode>(Vegetation::EditorDistanceBetweenFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<DistributionFilterNode>(Vegetation::EditorDistributionFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<ShapeIntersectionFilterNode>(Vegetation::EditorShapeIntersectionFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<SlopeFilterNode>(Vegetation::EditorSurfaceSlopeFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<SurfaceMaskDepthFilterNode>(Vegetation::EditorSurfaceMaskDepthFilterComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<SurfaceMaskFilterNode>(Vegetation::EditorSurfaceMaskFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<AltitudeFilterNode>(Internal::Vegetation::EditorSurfaceAltitudeFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<DistanceBetweenFilterNode>(Internal::Vegetation::EditorDistanceBetweenFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<DistributionFilterNode>(Internal::Vegetation::EditorDistributionFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<ShapeIntersectionFilterNode>(Internal::Vegetation::EditorShapeIntersectionFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<SlopeFilterNode>(Internal::Vegetation::EditorSurfaceSlopeFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<SurfaceMaskDepthFilterNode>(Internal::Vegetation::EditorSurfaceMaskDepthFilterComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<SurfaceMaskFilterNode>(Internal::Vegetation::EditorSurfaceMaskFilterComponentTypeId, ##__VA_ARGS__);     \
     /* Area modifier nodes */    \
-    VISITOR_FUNCTION<PositionModifierNode>(Vegetation::EditorPositionModifierComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<RotationModifierNode>(Vegetation::EditorRotationModifierComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<ScaleModifierNode>(Vegetation::EditorScaleModifierComponentTypeId, ##__VA_ARGS__);     \
-    VISITOR_FUNCTION<SlopeAlignmentModifierNode>(Vegetation::EditorSlopeAlignmentModifierComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<PositionModifierNode>(Internal::Vegetation::EditorPositionModifierComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<RotationModifierNode>(Internal::Vegetation::EditorRotationModifierComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<ScaleModifierNode>(Internal::Vegetation::EditorScaleModifierComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<SlopeAlignmentModifierNode>(Internal::Vegetation::EditorSlopeAlignmentModifierComponentTypeId, ##__VA_ARGS__);     \
     /* Area selector nodes */    \
-    VISITOR_FUNCTION<AssetWeightSelectorNode>(Vegetation::EditorDescriptorWeightSelectorComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<AssetWeightSelectorNode>(Internal::Vegetation::EditorDescriptorWeightSelectorComponentTypeId, ##__VA_ARGS__);     \
     /* Shape nodes */    \
+    VISITOR_FUNCTION<AxisAlignedBoxShapeNode>(LmbrCentral::EditorAxisAlignedBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<BoxShapeNode>(LmbrCentral::EditorBoxShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CapsuleShapeNode>(LmbrCentral::EditorCapsuleShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CompoundShapeNode>(LmbrCentral::EditorCompoundShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<CylinderShapeNode>(LmbrCentral::EditorCylinderShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<DiskShapeNode>(LmbrCentral::EditorDiskShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PolygonPrismShapeNode>(LmbrCentral::EditorPolygonPrismShapeComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<ReferenceShapeNode>(LmbrCentral::EditorReferenceShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<SphereShapeNode>(LmbrCentral::EditorSphereShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TubeShapeNode>(LmbrCentral::EditorTubeShapeComponentTypeId, ##__VA_ARGS__);     \
+    /* Terrain nodes */    \
+    VISITOR_FUNCTION<TerrainHeightGradientListNode>(Internal::Terrain::EditorTerrainHeightGradientListComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainLayerSpawnerNode>(Internal::Terrain::EditorTerrainLayerSpawnerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainSurfaceGradientListNode>(Internal::Terrain::EditorTerrainSurfaceGradientListComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient generator nodes */    \
-    VISITOR_FUNCTION<FastNoiseGradientNode>(EditorFastNoiseGradientComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<FastNoiseGradientNode>(Internal::EditorFastNoiseGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PerlinNoiseGradientNode>(GradientSignal::EditorPerlinGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<RandomNoiseGradientNode>(GradientSignal::EditorRandomGradientComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient nodes */    \
@@ -310,7 +357,18 @@ namespace LandscapeCanvas
             return AZ::TypeId();
         }
 
-        return it->second;
+        return it->second.first;
+    }
+
+    int LandscapeCanvasSystemComponent::GetNodeRegisteredIndex(const AZ::TypeId& nodeTypeId) const
+    {
+        auto it = m_nodeComponentTypeIds.find(nodeTypeId);
+        if (it == m_nodeComponentTypeIds.end())
+        {
+            return -1;
+        }
+
+        return it->second.second;
     }
 
     const LandscapeCanvasSerialization& LandscapeCanvasSystemComponent::GetSerializedMappings()

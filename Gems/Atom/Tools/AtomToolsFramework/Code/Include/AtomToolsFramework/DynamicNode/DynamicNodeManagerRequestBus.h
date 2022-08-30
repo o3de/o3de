@@ -12,6 +12,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <GraphModel/Model/DataType.h>
 
 namespace AtomToolsFramework
 {
@@ -25,19 +26,25 @@ namespace AtomToolsFramework
 
         virtual ~DynamicNodeManagerRequests() = default;
 
+        //! Register data types needed by the dynamic node manager and graph contexts
+        //! @param dataTypes Container of data type pointers
+        virtual void RegisterDataTypes(const GraphModel::DataTypeList& dataTypes) = 0;
+
+        //! Get a container of all data types registered with the dynamic node manager
+        virtual GraphModel::DataTypeList GetRegisteredDataTypes() = 0;
+
         //! Loads and registers all of the DynamicNodeConfig files matching given extensions
-        //! @param extensions Set of extensions used to enumerate DynamicNodeConfig files
-        virtual void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) = 0;
+        //! @param extension Extension to enumerate DynamicNodeConfig files
+        virtual void LoadConfigFiles(const AZStd::string& extension) = 0;
 
         //! Register a DynamicNodeConfig with the manager.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
         //! @param config DynamicNodeConfig to be added.
-        virtual void RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) = 0;
+        virtual bool RegisterConfig(const DynamicNodeConfig& config) = 0;
 
         //! Get a DynamicNodeConfig with a specified ID.
-        //! @param configId Path or other unique identifier used to register a DynamicNodeConfig
+        //! @param configId Unique identifier used to register a DynamicNodeConfig
         //! @returns DynamicNodeConfig matching the ID or a default.
-        virtual DynamicNodeConfig GetConfig(const AZStd::string& configId) const = 0;
+        virtual DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const = 0;
 
         //! Remove all registered DynamicNodeConfig.
         virtual void Clear() = 0;

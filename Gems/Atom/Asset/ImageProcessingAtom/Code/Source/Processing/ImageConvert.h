@@ -87,6 +87,9 @@ namespace ImageProcessingAtom
         AZ::Data::AssetId m_sourceAssetId;
         // List of output products for the job, appended to by the ImageConvertProcess
         AZStd::vector<AssetBuilderSDK::JobProduct>* m_jobProducts = nullptr;
+
+        // Should the step to save resulting file to disk be skipped. Disabling this can be useful for in-memory image processing.
+        bool m_shouldSaveFile = true;
     };
 
     /**

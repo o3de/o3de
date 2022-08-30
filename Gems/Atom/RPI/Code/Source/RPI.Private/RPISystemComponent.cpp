@@ -138,7 +138,11 @@ namespace AZ
         
         void RPISystemComponent::OnDeviceRemoved([[maybe_unused]] RHI::Device* device)
         {
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            const AZStd::string errorMessage = AZStd::string::format("GPU device was removed while working on pass %s. Check the log file for more detail.", device->GetLastExecutingScope().data());
+#else
             const AZStd::string errorMessage = "GPU device was removed. Check the log file for more detail.";
+#endif
             if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
             {
                 nativeUI->DisplayOkDialog("O3DE Fatal Error", errorMessage.c_str(), false);
@@ -149,7 +153,7 @@ namespace AZ
             }
 
             // Stop execution since we can't recover from device removal error
-            Debug::Trace::Crash();
+            Debug::Trace::Instance().Crash();
         }
 
         void RPISystemComponent::RegisterXRInterface(XRRenderingInterface* xrSystemInterface)
@@ -159,7 +163,7 @@ namespace AZ
 
         void RPISystemComponent::UnRegisterXRInterface()
         {
-            m_rpiSystem.UnRegisterXRSystem();
+            m_rpiSystem.UnregisterXRSystem();
         }
 
     } // namespace RPI

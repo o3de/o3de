@@ -140,7 +140,6 @@ namespace AZ
         void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(1);
         }
 
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -199,9 +198,14 @@ namespace AZ
             arguments.m_totalNumberOfThreadsZ = targetThreadCountZ;
         }
 
-        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup()
+        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup() const
         {
             return m_shaderResourceGroup;
+        }
+
+        Data::Instance<Shader> ComputePass::GetShader() const
+        {
+            return m_shader;
         }
 
         void ComputePass::FrameBeginInternal(FramePrepareParams params)

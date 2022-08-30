@@ -199,11 +199,11 @@ namespace AzToolsFramework
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
-            // Handles the Prefab Focus API that determines what prefab is being edited.
-            PrefabFocusHandler m_prefabFocusHandler;
-
-            // Caches entity states for undo/redo purposes
+            //! Caches entity states for undo/redo purposes.
             PrefabUndoCache m_prefabUndoCache;
+
+            //! Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             uint64_t m_newEntityCounter = 1;
         };

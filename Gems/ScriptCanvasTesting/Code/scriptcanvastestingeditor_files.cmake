@@ -17,8 +17,6 @@ set(FILES
     Source/Nodes/TestAutoGenFunctions.h
     Source/Nodes/TestAutoGenFunctions.cpp
     Source/Nodes/TestAutoGenFunctions.ScriptCanvasFunction.xml
-    Source/Nodes/Nodeables/NodeableTestingLibrary.h
-    Source/Nodes/Nodeables/NodeableTestingLibrary.cpp
     Source/Nodes/Nodeables/SharedDataSlotExample.h
     Source/Nodes/Nodeables/SharedDataSlotExample.cpp
     Source/Nodes/Nodeables/SharedDataSlotExample.ScriptCanvasNodeable.xml

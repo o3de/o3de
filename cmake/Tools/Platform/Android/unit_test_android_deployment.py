@@ -59,12 +59,13 @@ def test_Initialize(mock_resolve_adb_tool, mock_read_android_settings):
 def test_read_android_settings(tmpdir):
 
     game_name = "Foo"
-    tmpdir.ensure(f'dev_root/{game_name}/project.json')
-    game_project_json_file = tmpdir.join(f'dev_root/{game_name}/project.json')
-    game_project_json_file.write(f'{{"android_settings": {{"game_name": "{game_name.lower()}" }} }}')
+    package_name = "o3de.org.Foo"
+    tmpdir.ensure(f'dev_root/{game_name}/Platform/Android/android_project.json')
+    game_project_json_file = tmpdir.join(f'dev_root/{game_name}/Platform/Android/android_project.json')
+    game_project_json_file.write(f'{{"android_settings": {{"package_name": "{package_name}" }} }}')
 
     result = android_deployment.AndroidDeployment.read_android_settings(pathlib.Path(tmpdir.join('dev_root').realpath()), game_name)
-    assert result['game_name'] == game_name.lower()
+    assert result['package_name'] == package_name
 
 
 def test_resolve_adb_tool(tmpdir):

@@ -126,7 +126,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path ClassMethodEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorClassPath) / GetClassMethodName();
+        AZStd::string fileName = GraphCanvas::TranslationKey::Sanitize(GetClassMethodName());
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void ClassMethodEventPaletteTreeItem::GenerateTranslationData()
@@ -134,7 +135,7 @@ namespace ScriptCanvasEditor
         AZ::BehaviorContext* behaviorContext{};
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
 
-        const char* className = m_className.toUtf8().data();
+        const AZStd::string className = GetClassMethodName();
         if (behaviorContext->m_classes.contains(className))
         {
             auto behaviorClass = behaviorContext->m_classes.find(className);
@@ -209,21 +210,19 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path GlobalMethodEventPaletteTreeItem::GetTranslationDataPath() const
     {
+        AZStd::string fileName = "";
         if (m_isProperty)
         {
             AZStd::string propertyName = m_methodName;
             AZ::StringFunc::Replace(propertyName, "::Getter", "");
             AZ::StringFunc::Replace(propertyName, "::Setter", "");
-
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(propertyName);
-
-            return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorGlobalPropertyPath) / filename;
+            fileName = GraphCanvas::TranslationKey::Sanitize(propertyName);
         }
         else
         {
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(m_methodName);
-            return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorGlobalMethodPath) / filename;
+            fileName = GraphCanvas::TranslationKey::Sanitize(m_methodName);
         }
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void GlobalMethodEventPaletteTreeItem::GenerateTranslationData()
@@ -276,6 +275,7 @@ namespace ScriptCanvasEditor
     ScriptCanvasEditor::NodeIdPair CreateCustomNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
     {
         Nodes::StyleConfiguration styleConfiguration;
+        
         styleConfiguration.m_nodeSubStyle = m_styleOverride;
         styleConfiguration.m_titlePalette = m_titlePalette;
 
@@ -305,15 +305,57 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path CustomNodePaletteTreeItem::GetTranslationDataPath() const
     {
-        AZStd::string filename = AZStd::string::format("%s_%s", GetInfo().m_categoryPath.c_str(), GetName().toUtf8().data());
-        filename = GraphCanvas::TranslationKey::Sanitize(filename);
-
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::CustomNodePath) / filename;
+        AZStd::string fileName =
+            ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(GetName().toUtf8().data(), GetInfo().m_typeId);
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void CustomNodePaletteTreeItem::GenerateTranslationData()
     {
         ScriptCanvasEditorTools::TranslationGeneration translation;
         translation.TranslateNode(m_typeId);
+    }
+
+    //////////////////////////////
+    // CreateDataDrivenNodeMimeEvent
+    //////////////////////////////
+
+    void CreateDataDrivenNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData::Reflect(reflectContext);
+
+
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        if (serializeContext)
+        {
+            serializeContext->Class<CreateDataDrivenNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
+                ->Version(0)
+                ->Field("NodeData", &CreateDataDrivenNodeMimeEvent::m_nodeData);
+        }
+    }
+
+    CreateDataDrivenNodeMimeEvent::CreateDataDrivenNodeMimeEvent(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData)
+        : m_nodeData(nodeData)
+    {
+    }
+
+    ScriptCanvasEditor::NodeIdPair CreateDataDrivenNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
+    {
+        return Nodes::CreateDataDrivenNode(m_nodeData, scriptCanvasId);
+    }
+
+    //////////////////////////////
+    // DataDrivenNodePaletteTreeItem
+    //////////////////////////////
+
+    DataDrivenNodePaletteTreeItem::DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation& nodeData)
+        : DraggableNodePaletteTreeItem(nodeData.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_nodeModelInformation(nodeData)
+    {
+    }
+
+    GraphCanvas::GraphCanvasMimeEvent* DataDrivenNodePaletteTreeItem::CreateMimeEvent() const
+    {
+        return aznew CreateDataDrivenNodeMimeEvent(m_nodeModelInformation.m_nodeData);
     }
 }

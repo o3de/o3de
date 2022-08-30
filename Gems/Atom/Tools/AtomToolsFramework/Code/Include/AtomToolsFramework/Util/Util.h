@@ -24,6 +24,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 class QImage;
+class QMenu;
+class QMimeData;
 class QWidget;
 
 namespace AtomToolsFramework
@@ -38,6 +40,16 @@ namespace AtomToolsFramework
     //! Get a pointer to the application main window
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
+
+    //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
+    //! @param text Input text that will be converted into a symbol name
+    //! @returns the symbol name generated from the text
+    AZStd::string GetSymbolNameFromText(const AZStd::string& text);
+
+    //! Converts input text into a user-friendly display name, splitting words at camelcase and non-word character boundaries.
+    //! @param text Input text that will be converted into a display name
+    //! @returns the display name generated from the text
+    AZStd::string GetDisplayNameFromText(const AZStd::string& text);
 
     //! Returns a sanitized display name by removing the path, extension, and replacing special characters in a filename
     //! @param path File path that will be converted into a display name
@@ -100,7 +112,7 @@ namespace AtomToolsFramework
     //! @param exportPath absolute path of the file being saved
     //! @param referencePath absolute path of a file that will be treated as an external reference
     //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
-    AZStd::string GetExteralReferencePath(
+    AZStd::string GetPathToExteralReference(
         const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
 
     //! Traverse up the instance data hierarchy to find a node containing the corresponding type
@@ -177,8 +189,20 @@ namespace AtomToolsFramework
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters);
 
     //! Helper function to convert a path containing an alias into a full path
-    AZStd::string ConvertAliasToPath(const AZStd::string& path);
+    AZStd::string GetPathWithoutAlias(const AZStd::string& path);
 
     //! Helper function to convert a full path into one containing an alias
-    AZStd::string ConvertPathToAlias(const AZStd::string& path);
+    AZStd::string GetPathWithAlias(const AZStd::string& path);
+
+    //! Collect a set of file paths contained within asset browser entry or URL mime data
+    AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
+
+    //! Collect a set of file paths from all project safe folders matching a wild card
+    AZStd::set<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+
+    // Add menu actions for scripts specified in the settings registry
+    // @param menu The menu where the actions will be inserted
+    // @param registryKey The path to the registry setting where script categories are registered
+    // @param arguments The list of arguments passed into the script when executed
+    void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string_view>& arguments);
 } // namespace AtomToolsFramework

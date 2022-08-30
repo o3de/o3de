@@ -260,7 +260,7 @@ namespace Audio
 
         // Set up memory categories for debug tracking, do this early before initializing Wwise so they are available
         // before the any allocations through hooks occur.
-        AZLOG_INFO("Memory Categories:");
+        AZLOG_INFO("%s", "Memory Categories:");
         m_debugMemoryInfo.reserve(AkMemID_NUM + 1);
 
         for (AZ::u32 memId = 0; memId < AkMemID_NUM; ++memId)
@@ -448,7 +448,7 @@ namespace Audio
 
         if (AK::StreamMgr::Create(akStreamSettings) == nullptr)
         {
-            AZLOG_ERROR("AK::StreamMrg::Create() failed!");
+            AZLOG_ERROR("%s", "AK::StreamMrg::Create() failed!");
             ShutDown();
             return EAudioRequestStatus::Failure;
         }
@@ -676,7 +676,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_WARN("RegisterAudioObject failed, audioObjectData was null");
+            AZLOG_WARN("%s", "RegisterAudioObject failed, audioObjectData was null");
             return EAudioRequestStatus::Failure;
         }
     }
@@ -701,7 +701,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_WARN("UnregisterAudioObject failed, audioObjectData was null");
+            AZLOG_WARN("%s", "UnregisterAudioObject failed, audioObjectData was null");
             return EAudioRequestStatus::Failure;
         }
     }
@@ -720,7 +720,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_WARN("ResetAudioObject failed, audioObjectData was null");
+            AZLOG_WARN("%s", "ResetAudioObject failed, audioObjectData was null");
             return EAudioRequestStatus::Failure;
         }
     }
@@ -886,7 +886,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData, ATLTriggerData, or EventData passed to ActivateTrigger");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData, ATLTriggerData, or EventData passed to ActivateTrigger");
         }
 
         return result;
@@ -913,14 +913,14 @@ namespace Audio
                 }
                 default:
                 {
-                    AZLOG_ERROR("Stopping an event in this state is not supported yet");
+                    AZLOG_ERROR("%s", "Stopping an event in this state is not supported yet");
                     break;
                 }
             }
         }
         else
         {
-            AZLOG_ERROR("Invalid EventData passed to StopEvent");
+            AZLOG_ERROR("%s", "Invalid EventData passed to StopEvent");
         }
 
         return result;
@@ -943,7 +943,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData passed to StopAllEvents");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData passed to StopAllEvents");
         }
         return result;
     }
@@ -974,7 +974,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData passed to SetPosition");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData passed to SetPosition");
         }
 
         return result;
@@ -1018,7 +1018,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData passed to SetMultiplePositions");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData passed to SetMultiplePositions");
         }
 
         return result;
@@ -1083,7 +1083,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData or EnvironmentData passed to SetEnvironment");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData or EnvironmentData passed to SetEnvironment");
         }
 
         return result;
@@ -1117,7 +1117,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData or RtpcData passed to SetRtpc");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData or RtpcData passed to SetRtpc");
         }
 
         return result;
@@ -1204,7 +1204,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData or SwitchStateData passed to SetSwitchState");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData or SwitchStateData passed to SetSwitchState");
         }
 
         return result;
@@ -1253,7 +1253,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData passed to SetObjectObstructionAndOcclusion");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData passed to SetObjectObstructionAndOcclusion");
         }
 
         return result;
@@ -1286,7 +1286,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid ListenerData passed to SetListenerPosition");
+            AZLOG_ERROR("%s", "Invalid ListenerData passed to SetListenerPosition");
         }
 
         return result;
@@ -1315,7 +1315,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid AudioObjectData or RtpcData passed to ResetRtpc");
+            AZLOG_ERROR("%s", "Invalid AudioObjectData or RtpcData passed to ResetRtpc");
         }
 
         return result;
@@ -1352,7 +1352,7 @@ namespace Audio
             }
             else
             {
-                AZLOG_ERROR("Invalid AudioFileEntryData passed to RegisterInMemoryFile");
+                AZLOG_ERROR("%s", "Invalid AudioFileEntryData passed to RegisterInMemoryFile");
             }
         }
 
@@ -1383,7 +1383,7 @@ namespace Audio
             }
             else
             {
-                AZLOG_ERROR("Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
+                AZLOG_ERROR("%s", "Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
             }
         }
 
@@ -1910,7 +1910,7 @@ namespace Audio
         }
         else
         {
-            AZLOG_ERROR("Invalid ATLTriggerData or EventData passed to PrepUnprepTriggerSync");
+            AZLOG_ERROR("%s", "Invalid ATLTriggerData or EventData passed to PrepUnprepTriggerSync");
         }
 
         return result;

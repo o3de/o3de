@@ -8,7 +8,7 @@ import os
 from PySide2 import QtWidgets, QtTest, QtCore
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report
-import editor_python_test_tools.pyside_utils as pyside_utils
+import pyside_utils
 import azlmbr.legacy.general as general
 import azlmbr.editor as editor
 import azlmbr.bus as bus

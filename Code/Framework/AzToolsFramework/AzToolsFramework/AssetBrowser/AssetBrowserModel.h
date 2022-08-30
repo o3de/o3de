@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Component/TickBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
@@ -54,6 +55,9 @@ namespace AzToolsFramework
             explicit AssetBrowserModel(QObject* parent = nullptr);
             ~AssetBrowserModel();
 
+            void EnableTickBus();
+            void DisableTickBus();
+
             QModelIndex findIndex(const QString& absoluteAssetPath) const;
 
             //////////////////////////////////////////////////////////////////////////
@@ -63,6 +67,7 @@ namespace AzToolsFramework
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             int columnCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+            bool setData(const QModelIndex& index, const QVariant& value, int role) override;
             Qt::ItemFlags flags(const QModelIndex& index) const override;
             QMimeData* mimeData(const QModelIndexList& indexes) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -91,16 +96,25 @@ namespace AzToolsFramework
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
-            
+
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
+
+        Q_SIGNALS:
+            void RequestOpenItemForEditing(const QModelIndex& index);
+
         private:
-            //Non owning pointer 
+            //Non owning pointer
             AssetBrowserFilterModel* m_filterModel = nullptr;
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
+            bool m_isTickBusEnabled = false;
+            AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
+            AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+            void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

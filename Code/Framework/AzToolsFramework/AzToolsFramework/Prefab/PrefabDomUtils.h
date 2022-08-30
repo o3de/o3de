@@ -19,6 +19,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+
         namespace PrefabDomUtils
         {
             inline static constexpr const char* InstancesName = "Instances";
@@ -31,11 +32,13 @@ namespace AzToolsFramework
             inline static constexpr const char* ComponentsName = "Components";
             inline static constexpr const char* EntityOrderName = "Child Entity Order";
             inline static constexpr const char* TypeName = "$type";
-            inline static constexpr const char* PathMatchingEntities = "/Entities";
-            inline static constexpr const char* PathMatchingInstances = "/Instances";
+
             inline static constexpr const char* PathStartingWithEntities = "/Entities/";
             inline static constexpr const char* PathStartingWithInstances = "/Instances/";
+            inline static constexpr const char* PathMatchingEntities = "/Entities";
+            inline static constexpr const char* PathMatchingInstances = "/Instances";
             inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
+            inline static constexpr const char* PathMatchingLinkId = "/LinkId";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -183,6 +186,13 @@ namespace AzToolsFramework
                 PrefabDom::AllocatorType& allocator,
                 const PrefabDomValue& patches);
 
+             /**
+             * Gets the instances DOM value from the given prefab DOM.
+             *
+             * @return the instances DOM value or AZStd::nullopt if its instances can't be found.
+             */
+            PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
+
             //! Identifies instance members modified by inspecting the patches provided.
             //! @param patches The patches to inspect.
             //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
@@ -196,6 +206,8 @@ namespace AzToolsFramework
             void PrintPrefabDomValue(
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
+
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
 
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Utils/Utils.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/NsightAftermath.h>
@@ -194,6 +195,21 @@ namespace AZ
                 }
             }
 
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+#else
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+#endif
+            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+            {
+                // Turn on auto-breadcrumbs and page fault reporting.
+                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+#endif
+            }
+
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;
             if (FAILED(D3D12CreateDevice(physicalDevice.GetAdapter(), D3D_FEATURE_LEVEL_12_0, IID_GRAPHICS_PPV_ARGS(dx12Device.GetAddressOf()))))
             {
@@ -206,14 +222,6 @@ namespace AZ
                 EnableDebugDeviceFeatures(dx12Device);
                 EnableBreakOnD3DError(dx12Device);
                 AddDebugFilters(dx12Device, validationMode);
-            }
-
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
-            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
-            {
-                // Turn on auto-breadcrumbs and page fault reporting.
-                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
-                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
             }
 
             m_dx12Device = dx12Device.Get();
@@ -244,6 +252,74 @@ namespace AZ
                 dx12DebugDevice->Release();
             }
 #endif
+        }
+
+        const char* GetAllocationTypeString(D3D12_DRED_ALLOCATION_TYPE type)
+        {
+            switch (type)
+            {
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_QUEUE:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_QUEUE";
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_ALLOCATOR:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_ALLOCATOR";
+            case D3D12_DRED_ALLOCATION_TYPE_PIPELINE_STATE:
+                return "D3D12_DRED_ALLOCATION_TYPE_PIPELINE_STATE";
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_LIST:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_LIST";
+            case D3D12_DRED_ALLOCATION_TYPE_FENCE:
+                return "D3D12_DRED_ALLOCATION_TYPE_FENCE";
+            case D3D12_DRED_ALLOCATION_TYPE_DESCRIPTOR_HEAP:
+                return "D3D12_DRED_ALLOCATION_TYPE_DESCRIPTOR_HEAP";
+            case D3D12_DRED_ALLOCATION_TYPE_HEAP:
+                return "D3D12_DRED_ALLOCATION_TYPE_HEAP";
+            case D3D12_DRED_ALLOCATION_TYPE_QUERY_HEAP:
+                return "D3D12_DRED_ALLOCATION_TYPE_QUERY_HEAP";
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_SIGNATURE:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_SIGNATURE";
+            case D3D12_DRED_ALLOCATION_TYPE_PIPELINE_LIBRARY:
+                return "D3D12_DRED_ALLOCATION_TYPE_PIPELINE_LIBRARY";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_DECODER:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_DECODER";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_PROCESSOR:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_PROCESSOR";
+            case D3D12_DRED_ALLOCATION_TYPE_RESOURCE:
+                return "D3D12_DRED_ALLOCATION_TYPE_RESOURCE";
+            case D3D12_DRED_ALLOCATION_TYPE_PASS:
+                return "D3D12_DRED_ALLOCATION_TYPE_PASS";
+            case D3D12_DRED_ALLOCATION_TYPE_CRYPTOSESSION:
+                return "D3D12_DRED_ALLOCATION_TYPE_CRYPTOSESSION";
+            case D3D12_DRED_ALLOCATION_TYPE_CRYPTOSESSIONPOLICY:
+                return "D3D12_DRED_ALLOCATION_TYPE_CRYPTOSESSIONPOLICY";
+            case D3D12_DRED_ALLOCATION_TYPE_PROTECTEDRESOURCESESSION:
+                return "D3D12_DRED_ALLOCATION_TYPE_PROTECTEDRESOURCESESSION";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_DECODER_HEAP:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_DECODER_HEAP";
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_POOL:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_POOL";
+            case D3D12_DRED_ALLOCATION_TYPE_COMMAND_RECORDER:
+                return "D3D12_DRED_ALLOCATION_TYPE_COMMAND_RECORDER";
+            case D3D12_DRED_ALLOCATION_TYPE_STATE_OBJECT:
+                return "D3D12_DRED_ALLOCATION_TYPE_STATE_OBJECT";
+            case D3D12_DRED_ALLOCATION_TYPE_METACOMMAND:
+                return "D3D12_DRED_ALLOCATION_TYPE_METACOMMAND";
+            case D3D12_DRED_ALLOCATION_TYPE_SCHEDULINGGROUP:
+                return "D3D12_DRED_ALLOCATION_TYPE_SCHEDULINGGROUP";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_ESTIMATOR:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_ESTIMATOR";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_VECTOR_HEAP:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_VECTOR_HEAP";
+            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND:
+                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND";
+
+            // NOTE: These enums are not defined in Win10 SDKs 10.0.19041.0 and older
+            // case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER:
+            // case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP:
+
+            case D3D12_DRED_ALLOCATION_TYPE_INVALID:
+                return "D3D12_DRED_ALLOCATION_TYPE_INVALID";
+            default:
+                return "Unrecognized DRED allocation type!";
+            }
         }
 
         const char* GetBreadcrumpOpString(D3D12_AUTO_BREADCRUMB_OP op)
@@ -368,8 +444,12 @@ namespace AZ
 
             ID3D12Device* removedDevice = m_dx12Device.get();
             HRESULT removedReason = removedDevice->GetDeviceRemovedReason();
-            
+
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetLastExecutingScope().data());
+#endif
             AZ_TracePrintf("Device", "Device was removed because of the following reason:\n");
+            const char* removedReasonString;
 
             switch (removedReason)
             {
@@ -378,6 +458,7 @@ namespace AZ
                     "DX12",
                     "DXGI_ERROR_DEVICE_HUNG - The application's device failed due to badly formed commands sent by the "
                     "application. This is an design-time issue that should be investigated and fixed.\n");
+                removedReasonString = "DXGI_ERROR_DEVICE_HUNG";
                 break;
             case DXGI_ERROR_DEVICE_REMOVED:
                 AZ_TracePrintf(
@@ -385,98 +466,279 @@ namespace AZ
                     "DXGI_ERROR_DEVICE_REMOVED - The video card has been physically removed from the system, or a driver upgrade "
                     "for the video card has occurred. The application should destroy and recreate the device. For help debugging "
                     "the problem, call ID3D10Device::GetDeviceRemovedReason.\n");
+                removedReasonString = "DXGI_ERROR_DEVICE_REMOVED";
                 break;
             case DXGI_ERROR_DEVICE_RESET:
                 AZ_TracePrintf(
                     "DX12",
                     "DXGI_ERROR_DEVICE_RESET - The device failed due to a badly formed command. This is a run-time issue; The "
                     "application should destroy and recreate the device.\n");
+                removedReasonString = "DXGI_ERROR_DEVICE_RESET";
                 break;
             case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
                 AZ_TracePrintf(
                     "DX12",
                     "DXGI_ERROR_DRIVER_INTERNAL_ERROR - The driver encountered a problem and was put into the device removed "
                     "state.\n");
+                removedReasonString = "DXGI_ERROR_DRIVER_INTERNAL_ERROR";
                 break;
             case DXGI_ERROR_INVALID_CALL:
                 AZ_TracePrintf(
                     "DX12",
                     "DXGI_ERROR_INVALID_CALL - The application provided invalid parameter data; this must be debugged and fixed "
                     "before the application is released.\n");
+                removedReasonString = "DXGI_ERROR_INVALID_CALL";
                 break;
             case DXGI_ERROR_ACCESS_DENIED:
                 AZ_TracePrintf(
                     "DX12",
                     "DXGI_ERROR_ACCESS_DENIED - You tried to use a resource to which you did not have the required access "
                     "privileges. This error is most typically caused when you write to a shared resource with read-only access.\n");
+                removedReasonString = "DXGI_ERROR_ACCESS_DENIED";
                 break;
             case S_OK:
                 AZ_TracePrintf("DX12", "S_OK - The method succeeded without an error.\n");
+                removedReasonString = "S_OK (?)";
                 break;
             default:
                 AZ_TracePrintf(
                     "DX12",
                     "DXGI error code: %X\n", removedReason);
+                removedReasonString = "Unknown DXGI error";
                 break;
             }
            
             // Perform app-specific device removed operation, such as logging or inspecting DRED output
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData1> pDred;
+#else
             Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedData> pDred;
+#endif
+
             if (SUCCEEDED(removedDevice->QueryInterface(IID_PPV_ARGS(&pDred))))
             {
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT1 dredAutoBreadcrumbsOutput;
+                HRESULT hr = pDred->GetAutoBreadcrumbsOutput1(&dredAutoBreadcrumbsOutput);
+#else
                 D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT dredAutoBreadcrumbsOutput;
+                HRESULT hr = pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput);
+#endif
 
-                if (SUCCEEDED(pDred->GetAutoBreadcrumbsOutput(&dredAutoBreadcrumbsOutput)))
+                if (SUCCEEDED(hr))
                 {
+                    // Emit DRED output to a separate log file in ~/.o3de/DRED with timestamp label
+                    // We write to a file instead of writing to the debug console or stdout because in
+                    // a device removed scenario, asserts and log spew will likely occur all over the place.
+                    // Writing the breadcrumbs to a separate file gives us a pristine timeline to inspect
+                    // the source of the TDR.
+                    AZ::IO::Path path = AZ::Utils::GetO3deLogsDirectory().c_str();
+                    path /= "DRED";
+                    AZ::IO::SystemFile::CreateDir(path.c_str());
+
+                    time_t ltime;
+                    time(&ltime);
+                    tm today;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+                    localtime_s(&today, &ltime);
+#else
+                    today = *localtime(&ltime);
+#endif
+                    char sTemp[128];
+                    strftime(sTemp, sizeof(sTemp), "%Y%m%d.%H%M%S", &today);
+                    AZStd::string filename = AZStd::string::format("%s/DRED_%s.log", path.c_str(), sTemp);
+
+                    AZ::IO::SystemFile dredLog;
+                    if (!dredLog.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+                    {
+                        AZ_TracePrintf("DRED", "Failed to open file %s for writing", filename.c_str());
+                        return;
+                    }
+                    AZ_TracePrintf("DRED", "Device removed! Writing DRED log to %s", filename.c_str());
+
+                    AZStd::string line = AZStd::string::format("===BEGIN DRED LOG===\n"
+                        "\nRemoval reason: %s\n", removedReasonString);
+                    dredLog.Write(line.data(), line.size());
+
+
+                    // Walk all breakcrumb nodes, emitting the operation, context (if available), and mark
+                    // any region where an error has occurred
                     auto* currentNode = dredAutoBreadcrumbsOutput.pHeadAutoBreadcrumbNode;
+                    AZ::u32 index = 0;
                     while (currentNode)
                     {
-                        bool hasError = false;
-                        bool isWide = currentNode->pCommandListDebugNameW;
-                        uint32_t completedBreadcrumbCount = currentNode->pLastBreadcrumbValue? (*currentNode->pLastBreadcrumbValue):0;
-                        if (completedBreadcrumbCount < currentNode->BreadcrumbCount && completedBreadcrumbCount > 0)
+                        const wchar_t* cmdListName = currentNode->pCommandListDebugNameW;
+                        const wchar_t* cmdQueueName = currentNode->pCommandQueueDebugNameW;
+                        AZ::u32 expected = currentNode->BreadcrumbCount;
+                        AZ::u32 actual = *currentNode->pLastBreadcrumbValue;
+
+                        // An error is known to occur if this node executed anything and the number of
+                        // breadcrumbs reached doesn't match the expected count.
+                        bool errorOccurred = actual > 0 && actual < expected;
+
+                        line = AZStd::string::format(
+                            "Node %u on %S cmdlist (%p) submitted on %S queue (%p) "
+                            "reached %u out of %u breadcrumbs\n",
+                            index,
+                            cmdListName ? cmdListName : L"Unknown",
+                            currentNode->pCommandList,
+                            cmdQueueName ? cmdQueueName : L"Unknown",
+                            currentNode->pCommandQueue,
+                            actual, expected);
+
+                        dredLog.Write(line.data(), line.size());
+
+                        if (actual == 0)
                         {
-                            AZ_TracePrintf("Device", "[Error]");
-                            hasError = true;
-                        }
-                        AZStd::string info;
-                        if (isWide)
-                        {
-                            info = AZStd::string::format(
-                                "CommandList name: [%S] address [%p] CommandQueue name: [%S] address [%p] BreadcrumbCount: %d Completed BreadcrumbCount %d \n",
-                                currentNode->pCommandListDebugNameW, currentNode->pCommandList, currentNode->pCommandQueueDebugNameW,
-                                currentNode->pCommandQueue, currentNode->BreadcrumbCount, completedBreadcrumbCount);
-                        }
-                        else
-                        {
-                            info = AZStd::string::format(
-                                "CommandList name: [%s] address [%p] CommandQueue name: [%s] address [%p] BreadcrumbCount: %d  Completed BreadcrumbCount %d\n",
-                                currentNode->pCommandListDebugNameA, currentNode->pCommandList, currentNode->pCommandQueueDebugNameA,
-                                currentNode->pCommandQueue, currentNode->BreadcrumbCount, completedBreadcrumbCount);
+                            // Don't bother logging nodes that don't submit anything
+                            currentNode = currentNode->pNext;
+                            ++index;
+                            continue;
                         }
 
-                        AZ_TracePrintf("Device", info.c_str());
+                        // Create lookup table for breadcrumb context entries
+                        AZStd::unordered_map<AZ::u32, const wchar_t*> contextEntries;
 
-                        AZ_TracePrintf("Device", "Context\n");
-                        
-                        for (uint32_t index = 0; index < currentNode->BreadcrumbCount; index++)
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                        contextEntries.reserve(currentNode->BreadcrumbContextsCount);
+
+                        for (AZ::u32 i = 0; i != currentNode->BreadcrumbContextsCount; ++i)
                         {
-                            if (hasError && index == completedBreadcrumbCount)
-                            {
-                                // where the error happened
-                                AZ_TracePrintf("Device", " ==========================Error start==================================\n");
-                            }
-                            AZ_TracePrintf("Device", "      %d %s\n", index, GetBreadcrumpOpString(currentNode->pCommandHistory[index]));
-                            if (hasError && index == completedBreadcrumbCount)
-                            {
-                                // where the error happened
-                                AZ_TracePrintf("Device", " ==========================Error end=============================\n");
-                            }
+                            D3D12_DRED_BREADCRUMB_CONTEXT& context = currentNode->pBreadcrumbContexts[i];
+                            contextEntries[context.BreadcrumbIndex] = context.pContextString;
                         }
-                        
-                        AZ_TracePrintf("Device", " ==================================================================\n");
+#endif
+
+                        // Display all the breadcrumbs in this node, marking the region where the error
+                        // may have occurred
+                        AZ::u32 depth = 1;
+
+                        for (AZ::u32 i = 0; i != expected; ++i)
+                        {
+                            D3D12_AUTO_BREADCRUMB_OP op = currentNode->pCommandHistory[i];
+
+                            if (errorOccurred && i == actual)
+                            {
+                                // This is the first op that exceeds the number of ops that finished
+                                line = "===ERROR START===\n";
+                                dredLog.Write(line.data(), line.size());
+                            }
+
+                            if (op == D3D12_AUTO_BREADCRUMB_OP_ENDEVENT)
+                            {
+                                --depth;
+                            }
+
+                            // Check if we have an associated context for this op
+                            if (contextEntries.contains(i))
+                            {
+                                line = AZStd::string::format("    %S : %s\n", contextEntries[i], GetBreadcrumpOpString(op));
+                            }
+                            else
+                            {
+                                line = AZStd::string::format("    %s\n", GetBreadcrumpOpString(op));
+                            }
+
+                            for (AZ::u32 j = 0; j != depth; ++j)
+                            {
+                                dredLog.Write("    ", 4);
+                            }
+
+                            dredLog.Write(line.data(), line.size());
+
+                            // Encountering a begin event, add indentation for subsequent ops
+                            if (op == D3D12_AUTO_BREADCRUMB_OP_BEGINEVENT)
+                            {
+                                ++depth;
+                            }
+
+                        }
+
+                        if (errorOccurred)
+                        {
+                            line = "===ERROR END===\n";
+                            dredLog.Write(line.data(), line.size());
+                        }
 
                         currentNode = currentNode->pNext;
+                        ++index;
+                    }
+
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                    D3D12_DRED_PAGE_FAULT_OUTPUT1 pageFaultOutput;
+                    if (SUCCEEDED(pDred->GetPageFaultAllocationOutput1(&pageFaultOutput)))
+                    {
+#else
+                    D3D12_DRED_PAGE_FAULT_OUTPUT pageFaultOutput;
+                    if (SUCCEEDED(pDred->GetPageFaultAllocationOutput(&pageFaultOutput)))
+                    {
+#endif
+                        line = AZStd::string::format("Page fault occurred on address %zx\n\n"
+                            "Dumping resident objects\n",
+                            pageFaultOutput.PageFaultVA);
+
+                        dredLog.Write(line.data(), line.size());
+
+                        // Dump objects and their addresses
+                        const auto* node = pageFaultOutput.pHeadExistingAllocationNode;
+                        while (node)
+                        {
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                                node->pObject,
+#else
+                                0,
+#endif
+                                node->ObjectNameW ? node->ObjectNameW : L"Unknown",
+                                GetAllocationTypeString(node->AllocationType));
+                            dredLog.Write(line.data(), line.size());
+                            node = node->pNext;
+                        }
+
+                        line = "Emitting recently freed objects:\n";
+                        node = pageFaultOutput.pHeadRecentFreedAllocationNode;
+                        while (node)
+                        {
+                            line = AZStd::string::format("    0x%p (%S) %s\n",
+#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
+                                node->pObject,
+#else
+                                0,
+#endif
+                                node->ObjectNameW ? node->ObjectNameW : L"Unknown",
+                                GetAllocationTypeString(node->AllocationType));
+                            dredLog.Write(line.data(), line.size());
+                            node = node->pNext;
+                        }
+                    }
+                    else
+                    {
+                        line = "\nFailed to retrieve DRED page fault data\n";
+                        dredLog.Write(line.data(), line.size());
+                    }
+
+                    // We write this epilogue to detect cases where the log writing was interrupted
+                    line = "===END DRED LOG===\n";
+                    dredLog.Write(line.data(), line.size());
+                    dredLog.Close();
+                    AZ_TracePrintf("DRED", "Finished writing DRED log to %s", filename.c_str());
+                }
+                else
+                {
+                    switch (hr)
+                    {
+                    case DXGI_ERROR_NOT_CURRENTLY_AVAILABLE:
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs: DXGI_ERROR_NOT_CURRENTLY_AVAILABLE");
+                        break;
+
+                    case DXGI_ERROR_UNSUPPORTED:
+                        AZ_TracePrintf(
+                            "Device", "Could not retrieve DRED bread crumbs (auto-breadcrumbs not enabled): DXGI_ERROR_UNSUPPORTED");
+                        break;
+
+                    default:
+                        AZ_TracePrintf("Device", "Could not retrieve DRED bread crumbs (reason unknown)");
+                        break;
                     }
                 }
             }
@@ -491,6 +753,9 @@ namespace AZ
             }
 
             SetDeviceRemoved();
+
+            // Assert before continuing so users have a chance to inspect the TDR before the log output gets burried under the ensuing RHI errors
+            AZ_Assert(false, "GPU device lost!");
         }
 
         void HandleDeviceRemoved(PVOID context, BOOLEAN)
@@ -618,9 +883,10 @@ namespace AZ
             return formatsList;
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             m_commandQueueContext.Begin();
+            return RHI::ResultCode::Success;
         }
     }
 }
