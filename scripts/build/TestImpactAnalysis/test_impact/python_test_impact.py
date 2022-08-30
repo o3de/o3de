@@ -8,9 +8,8 @@
 
 from pathlib import Path
 import xml.etree.ElementTree as ET
-import itertools
 import tiaf_report_constants as constants
-from test_impact import BaseTestImpact
+from test_impact import BaseTestImpact, RuntimeArgs
 from tiaf_logger import get_logger
 
 logger = get_logger(__file__)
@@ -20,6 +19,17 @@ class PythonTestImpact(BaseTestImpact):
 
     _runtime_type = "python"
     _default_sequence_type = "regular"
+    ARG_TEST_RUNNER_POLICY = RuntimeArgs.PYTHON_TEST_RUNNER.driver_argument
+
+    def __init__(self, args: dict):
+        """
+        Initializes the test impact model with the commit, branches as runtime configuration.
+
+        @param args: The arguments to be parsed and applied to this TestImpact object.
+        """
+        self._test_runner_policy = args.get(self.ARG_TEST_RUNNER_POLICY, None)
+        super(PythonTestImpact, self).__init__(args)
+            
 
     def _cross_check_tests(self, report: dict):
         """
@@ -28,22 +38,23 @@ class PythonTestImpact(BaseTestImpact):
         @param report: Dictionary containing the report provided by TIAF binary
         @return: List of tests that failed in test runner but did not fail in TIAF or weren't selected by TIAF.
         """
-        ERRORS_KEY = 'errors'
-        FAILURES_KEY = 'failures'
-
         mismatched_test_suites = []
-        xml_report_map = self._parse_xml_report(self._test_run_artifacts_path)
-        for selected_passing_report in report[constants.SELECTED_TEST_RUN_REPORT_KEY][constants.PASSING_TEST_RUNS_KEY]:
-            try:
-                suite_name = selected_passing_report[constants.NAME_KEY]
-                xml_report = xml_report_map[suite_name]
-                if int(xml_report[ERRORS_KEY]) > 0 or int(xml_report[FAILURES_KEY]) > 0:
-                    print(f"Mismatch found between the XML report for {suite_name}, logging for reporting.")
-                    mismatched_test_suites.append(suite_name)
-            except KeyError as e:
-                logger.warning(f"Exception: {e} was not found in xml report. Maybe it wasn't executed by the other runner!")
-                continue
-        
+        if self._test_runner_policy == "on":
+            ERRORS_KEY = 'errors'
+            FAILURES_KEY = 'failures'
+
+            xml_report_map = self._parse_xml_report(self._test_run_artifacts_path)
+            for selected_passing_report in report[constants.SELECTED_TEST_RUN_REPORT_KEY][constants.PASSING_TEST_RUNS_KEY]:
+                try:
+                    suite_name = selected_passing_report[constants.NAME_KEY]
+                    xml_report = xml_report_map[suite_name]
+                    if int(xml_report[ERRORS_KEY]) > 0 or int(xml_report[FAILURES_KEY]) > 0:
+                        print(f"Mismatch found between the XML report for {suite_name}, logging for reporting.")
+                        mismatched_test_suites.append(suite_name)
+                except KeyError as e:
+                    logger.warning(f"Exception: {e} was not found in xml report. Maybe it wasn't executed by the other runner!")
+                    continue
+            
         return mismatched_test_suites
 
     def _parse_xml_report(self, path):
