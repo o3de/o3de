@@ -424,19 +424,19 @@ class MultiTestSuite(object):
                         if is_single_test:
                             # Setup step for wrap_run
                             wrap = inner_test_spec.wrap_run(
-                                self, request, workspace, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data)
                             assert isinstance(wrap, types.GeneratorType), (
                                 "wrap_run must return a generator, did you forget 'yield'?")
                             next(wrap, None)
                             # Setup step
                             inner_test_spec.setup(
-                                self, request, workspace, collected_test_data, launcher_platform)
+                                self, request, workspace)
                         # Run
                         self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
                         if is_single_test:
                             # Teardown
                             inner_test_spec.teardown(
-                                self, request, workspace, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data)
                             # Teardown step for wrap_run
                             next(wrap, None)
 

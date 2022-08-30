@@ -185,7 +185,7 @@ namespace AZ::Render
         AZ_Warning("AtomActorInstance", m_transformInterface, "Unable to attach to a TransformBus handler. This skinned mesh will always be rendered at the origin.");
 
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusConnect();
-        MaterialReceiverRequestBus::Handler::BusConnect(m_entityId);
+        MaterialConsumerRequestBus::Handler::BusConnect(m_entityId);
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusConnect(m_entityId);
 
         Create();
@@ -195,7 +195,7 @@ namespace AZ::Render
     {
         SkinnedMeshOutputStreamNotificationBus::Handler::BusDisconnect();
         LmbrCentral::SkeletalHierarchyRequestBus::Handler::BusDisconnect();
-        MaterialReceiverRequestBus::Handler::BusDisconnect();
+        MaterialConsumerRequestBus::Handler::BusDisconnect();
         SkinnedMeshFeatureProcessorNotificationBus::Handler::BusDisconnect();
 
         Destroy();
@@ -673,7 +673,7 @@ namespace AZ::Render
         m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
-            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+            MaterialConsumerNotificationBus::Event(m_entityId, &MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
 
             RegisterActor();
         }

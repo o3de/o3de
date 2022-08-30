@@ -287,10 +287,6 @@ namespace AzToolsFramework
                 componentModeCommand.release();
             }
 
-            // remove the component mode viewport border
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
-
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
             m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);

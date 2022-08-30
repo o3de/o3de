@@ -158,6 +158,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::Multiplayer.Static
+                Gem::PhysX.Static
         AUTOGEN_RULES
             *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
             *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
