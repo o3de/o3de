@@ -94,7 +94,7 @@ struct VSOutput
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
-VSOutput ForwardPassVS(VSInput IN)
+VSOutput VertexShader(VSInput IN)
 {
     VSOutput OUT;
  
@@ -527,24 +527,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     return lightingOutput;
 }
 
-ForwardPassOutputWithDepth ForwardPassPS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
-{
-    ForwardPassOutputWithDepth OUT;
-    float depth;
-
-    PbrLightingOutput lightingOutput = ForwardPassPS_Common(IN, isFrontFace, depth);
-
-    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
-    OUT.m_specularColor = lightingOutput.m_specularColor;
-    OUT.m_specularF0 = lightingOutput.m_specularF0;
-    OUT.m_albedo = lightingOutput.m_albedo;
-    OUT.m_normal = lightingOutput.m_normal;
-    OUT.m_depth = depth;
-    return OUT;
-}
-
+#if !OUTPUT_DEPTH
 [earlydepthstencil]
-ForwardPassOutput ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
+#endif
+ForwardPassOutput PixelShader(VSOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     ForwardPassOutput OUT;
     float depth;
@@ -557,6 +543,9 @@ ForwardPassOutput ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : SV_IsFrontFa
     OUT.m_albedo = lightingOutput.m_albedo;
     OUT.m_normal = lightingOutput.m_normal;
 
+#if OUTPUT_DEPTH
+    OUT.m_depth = depth;
+#endif
+
     return OUT;
 }
-

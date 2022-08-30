@@ -1,6 +1,8 @@
 {
     "Source" : "./StandardMultilayerPBR_ForwardPass.azsl",
 
+    "Definitions": ["OUTPUT_DEPTH=1"],
+
     "DepthStencilState" :
     {
         "Depth" :
@@ -35,11 +37,11 @@
       "EntryPoints":
       [
         {
-          "name": "ForwardPassVS",
+          "name": "VertexShader",
           "type": "Vertex"
         },
         {
-          "name": "ForwardPassPS",
+          "name": "PixelShader",
           "type": "Fragment"
         }
       ]
