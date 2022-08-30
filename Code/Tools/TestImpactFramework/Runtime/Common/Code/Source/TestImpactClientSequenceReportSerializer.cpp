@@ -146,12 +146,10 @@ namespace TestImpact
         {
             if (const auto testNamespace = testRun.GetTestNamespace(); !testNamespace.empty())
             {
-                AZ_Printf("Namespace found", (testNamespace + "_" + testRun.GetTargetName()).c_str());
                 return testNamespace+"_"+testRun.GetTargetName();
             }
             else
             {
-                AZ_Printf("No namespace", testRun.GetTargetName().c_str());
                 return testRun.GetTargetName();
             }
         }

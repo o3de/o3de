@@ -10,7 +10,7 @@
 
 #include <Target/Python/TestImpactPythonTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
-#include <TestEngine/Python/TestImpactPythonErrorCodeChecker.h>
+#include <TestRunner/Python/TestImpactPythonErrorCodeChecker.h>
 #include <TestEngine/Python/TestImpactPythonTestEngine.h>
 #include <TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h>
 #include <TestRunner/Python/TestImpactPythonTestRunner.h>
