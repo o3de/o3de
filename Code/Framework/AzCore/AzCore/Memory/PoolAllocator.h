@@ -168,17 +168,6 @@ namespace AZ
             struct Descriptor
                 : public Schema::Descriptor
             {
-                Descriptor()
-                    : m_allocationRecords(true)
-                    , m_isMarkUnallocatedMemory(false)
-                    , m_isMemoryGuards(false)
-                    , m_stackRecordLevels(5)
-                {}
-
-                bool m_allocationRecords; ///< True if we want to track memory allocations, otherwise false.
-                bool m_isMarkUnallocatedMemory; ///< Sets unallocated memory to default values (if m_allocationRecords is true)
-                bool m_isMemoryGuards; ///< Enables memory guards for stomp detection. Keep in mind that this will change the memory "profile" a lot as we usually double every pool allocation.
-                unsigned char m_stackRecordLevels; ///< If stack recording is enabled, how many stack levels to record. (if m_allocationRecords is true)
             };
 
             bool Create(const Descriptor& descriptor)
@@ -210,10 +199,10 @@ namespace AZ
             AllocatorDebugConfig GetDebugConfig() override
             {
                 return AllocatorDebugConfig()
-                    .ExcludeFromDebugging(!m_desc.m_allocationRecords)
-                    .StackRecordLevels(m_desc.m_stackRecordLevels)
-                    .MarksUnallocatedMemory(m_desc.m_isMarkUnallocatedMemory)
-                    .UsesMemoryGuards(m_desc.m_isMemoryGuards);
+                    .ExcludeFromDebugging(false)
+                    .StackRecordLevels(5)
+                    .MarksUnallocatedMemory(false)
+                    .UsesMemoryGuards(false);
             }
 
             //////////////////////////////////////////////////////////////////////////

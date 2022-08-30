@@ -308,7 +308,6 @@ namespace UnitTest
 
             AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
             PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);
         }
 
@@ -461,7 +460,6 @@ namespace UnitTest
 
             AllocatorInstance<SystemAllocator>::Create();
             ThreadPoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
             AllocatorInstance<ThreadPoolAllocator>::Create(poolDesc);
         }
 
@@ -722,7 +720,6 @@ namespace UnitTest
 
             AllocatorInstance<SystemAllocator>::Create();
             PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);
         }
 
@@ -826,7 +823,6 @@ namespace UnitTest
 
             AllocatorInstance<SystemAllocator>::Create();
             PoolAllocator::Descriptor poolDesc;
-            poolDesc.m_allocationRecords = true;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);
         }
 
