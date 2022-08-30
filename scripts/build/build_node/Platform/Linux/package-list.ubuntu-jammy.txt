@@ -1,4 +1,4 @@
-# Package list for Ubuntu 20.04
+# Package list for Ubuntu 22.04
 
 # Build Tools Packages
 clang                                   # For the compiler and its dependencies
@@ -17,4 +17,4 @@ libxkbcommon-dev                        # For xcb keyboard input
 libxcb-xfixes0-dev                      # For mouse input
 libxcb-xinput-dev                       # For mouse input
 libxcb-xinput0                          # For Qt plugins at runtime
-libpcre2-16-0 							# For Qt plugins at runtime
+libpcre2-16-0                           # For Qt plugins at runtime
