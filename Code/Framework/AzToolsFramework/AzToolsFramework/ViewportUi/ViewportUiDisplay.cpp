@@ -17,6 +17,9 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = ViewportUiLeftRightBottomBorderSize;
@@ -376,9 +379,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         m_viewportBorderText.hide();
         m_uiOverlay.setStyleSheet("border: none;");
-        m_uiOverlayLayout.setContentsMargins(
-            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
-            ViewportUiOverlayMargin);
+        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.hide();
     }
@@ -565,3 +566,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAutoFillBackground(false);
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()
