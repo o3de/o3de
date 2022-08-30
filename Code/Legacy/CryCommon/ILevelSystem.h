@@ -37,8 +37,6 @@ struct ILevelInfo
 struct ILevelSystemListener
 {
     virtual ~ILevelSystemListener() = default;
-    //! Gives listeners the opportunity to block the loadlevel command. Return true to stop loading.
-    virtual bool BlockLoading([[maybe_unused]] const char* levelName) { return false; }
     //! Called when loading a level fails due to it not being found.
     virtual void OnLevelNotFound([[maybe_unused]] const char* levelName) {}
     //! Called after ILevelSystem::PrepareNextLevel() completes.

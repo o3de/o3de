@@ -26,7 +26,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
-            Legacy::CryCommon
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static

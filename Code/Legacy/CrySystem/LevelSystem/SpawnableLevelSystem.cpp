@@ -236,13 +236,22 @@ namespace LegacyLevelSystem
         }
 
         // This is a valid level, find out if any systems need to stop level loading before proceeding
-        for (const auto& listener : m_listeners)
-        {
-            if (listener->BlockLoading(validLevelName.c_str()))
+        bool blockLoading = false;
+        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
             {
-                AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was blocked.\n", validLevelName.c_str());
-                return false;
-            }
+                if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
+                {
+                    blockLoading = true;
+                    return false; // Stop iterating handlers. This level should be blocked.
+                }
+                return true;
+            });
+
+        if (blockLoading)
+        {
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was blocked.\n", validLevelName.c_str());
+            return false;
         }
 
         // If a level is currently loaded, unload it before loading the next one.

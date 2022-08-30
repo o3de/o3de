@@ -188,6 +188,20 @@ namespace AzFramework
         // This is useful to unload certain resources before any entities are destroyed.
         virtual void OnApplicationAboutToStop() {}
     };
+
+    class LevelSystemLifecycleRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        // Bus Configuration
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        // Gives handlers the opportunity to block the loadlevel command.
+        // Return true to stop loading.
+        virtual bool ShouldBlockLevelLoading([[maybe_unused]]const char* levelName) { return false; }
+    };
+    using LevelSystemLifecycleRequestBus = AZ::EBus<LevelSystemLifecycleRequests>;
 } // namespace AzFramework
 
 #endif // AZFRAMEWORK_APPLICATIONAPI_H

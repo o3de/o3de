@@ -21,9 +21,8 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
-#include <CryCommon/CrySystemBus.h>
-#include <ILevelSystem.h>
 
 namespace AzFramework
 {
@@ -46,8 +45,7 @@ namespace Multiplayer
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
         , AzFramework::RootSpawnableNotificationBus::Handler
-        , CrySystemEventBus::Handler
-        , ILevelSystemListener
+        , AzFramework::LevelSystemLifecycleRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerSystemComponent, "{7C99C4C1-1103-43F9-AD62-8B91CF7C1981}");
@@ -148,15 +146,9 @@ namespace Multiplayer
         void OnRootSpawnableReady(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         //! @}
 
-        //! CrySystemEventBus::Handler overrides.
+        //! AzFramework::LevelSystemLifecycleRequestBus::Handler overrides.
         //! @{
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-        void OnCrySystemShutdown(ISystem&) override;
-        //! @}
-
-        //! ILevelSystemListener overrides.
-        //! @{
-        bool BlockLoading(const char* levelName) override;
+        bool ShouldBlockLevelLoading(const char* levelName) override;
         //! @}
 
     private:
@@ -219,7 +211,6 @@ namespace Multiplayer
 
         AZStd::vector<PlayerWaitingToBeSpawned> m_playersWaitingToBeSpawned;
         bool m_blockClientLoadLevel = true;
-        ILevelSystem* m_levelSystem = nullptr;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

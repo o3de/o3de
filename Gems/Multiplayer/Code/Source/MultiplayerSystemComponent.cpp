@@ -38,7 +38,6 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 
 #include <cmath>
-#include <ISystem.h>
 #include <AzCore/Debug/Profiler.h>
 
 AZ_DEFINE_BUDGET(MULTIPLAYER);
@@ -227,10 +226,10 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Activate()
     {
-        CrySystemEventBus::Handler::BusConnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         SessionNotificationBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusConnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(interfaceName, sv_protocol, TrustZone::ExternalClientToServer, *this);
 
@@ -256,10 +255,10 @@ namespace Multiplayer
         m_consoleCommandHandler.Disconnect();
         const AZ::Name interfaceName = AZ::Name(MpNetworkInterfaceName);
         AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(interfaceName);
+        AzFramework::LevelSystemLifecycleRequestBus::Handler::BusDisconnect();
         SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::RootSpawnableNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
 
         m_networkEntityManager.Reset();
     }
@@ -1362,19 +1361,7 @@ namespace Multiplayer
         m_playersWaitingToBeSpawned.clear();
     }
 
-    void MultiplayerSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
-    {
-        m_levelSystem = system.GetILevelSystem();
-        m_levelSystem->AddListener(this);
-    }
-
-    void MultiplayerSystemComponent::OnCrySystemShutdown([[maybe_unused]]ISystem& system)
-    {
-        m_levelSystem->RemoveListener(this);
-        m_levelSystem = nullptr;
-    }
-
-    bool MultiplayerSystemComponent::BlockLoading([[maybe_unused]]const char* levelName)
+    bool MultiplayerSystemComponent::ShouldBlockLevelLoading(const char* levelName)
     {
         switch (m_agentType)
         {
@@ -1418,7 +1405,7 @@ namespace Multiplayer
             return false;
         }
 
-        AZLOG_WARN("MultiplayerSystemComponent::BlockLoading called with unsupported agent type. Please update code to support agent type: %s.", GetEnumString(m_agentType));
+        AZLOG_WARN("MultiplayerSystemComponent::ShouldBlockLevelLoading called with unsupported agent type. Please update code to support agent type: %s.", GetEnumString(m_agentType));
         return false;
     }
 
