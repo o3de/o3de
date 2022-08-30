@@ -11,6 +11,7 @@
 
 namespace AzToolsFramework::Prefab
 {
+    static constexpr AZStd::string_view EnablePrefabOverridesUxKey = "/O3DE/Preferences/Prefabs/EnableOverridesUx";
     static constexpr AZStd::string_view HotReloadToggleKey = "/O3DE/Preferences/Prefabs/EnableHotReloading";
 
     bool IsHotReloadingEnabled()
@@ -24,4 +25,16 @@ namespace AzToolsFramework::Prefab
 
         return isHotReloadingEnabled;
     }
+
+    bool IsPrefabOverridesUxEnabled()
+    {
+        bool prefabOverridesUxEnabled = false;
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(prefabOverridesUxEnabled, EnablePrefabOverridesUxKey);
+        }
+
+        return prefabOverridesUxEnabled;
+    }
+
 } // namespace AzToolsFramework::Prefab

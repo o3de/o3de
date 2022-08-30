@@ -1,0 +1,8 @@
+{
+    "values": [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "Assets/ap_test_assets/script_reinsert.py"
+        }
+    ]
+}

@@ -35,7 +35,6 @@ namespace LandscapeCanvas
         explicit AssetWeightSelectorNode(GraphModel::GraphPtr graph);
 
         const BaseNodeType GetBaseNodeType() const override;
-        const bool ShouldShowEntityName() const override;
 
         static const QString TITLE;
         const char* GetTitle() const override;

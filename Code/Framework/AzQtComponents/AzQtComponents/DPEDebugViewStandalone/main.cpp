@@ -203,8 +203,36 @@ int main(int argc, char** argv)
 
     // store a list of selectable adapters to switch between
     DPEDebugView::TestContainer testContainer;
-    testContainer.m_map["A"] = 1.f;
-    testContainer.m_map["B"] = 2.f;
+
+    testContainer.m_vector.push_back("one");
+    testContainer.m_vector.push_back("two");
+    testContainer.m_vector.push_back("the third");
+
+    testContainer.m_map["One"] = 1.f;
+    testContainer.m_map["Two"] = 2.f;
+    testContainer.m_map["million"] = 1000000.f;
+
+    testContainer.m_unorderedMap[{1, 2.}] = 3;
+    testContainer.m_unorderedMap[{ 4, 5. }] = 6;
+
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1;
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2;
+    testContainer.m_simpleEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10;
+
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value1] = 1.;
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::Value2] = 2.;
+    testContainer.m_immutableEnum[DPEDebugView::TestContainer::EnumType::ValueZ] = 10.;
+
+    testContainer.m_set.insert(1);
+    testContainer.m_set.insert(3);
+    testContainer.m_set.insert(5);
+
+    testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::Value1);
+    testContainer.m_unorderedSet.insert(DPEDebugView::TestContainer::EnumType::ValueZ);
+
+    testContainer.m_multiMap.insert({1, "one"});
+    testContainer.m_multiMap.insert({ 2, "two" });
+    testContainer.m_multiMap.insert({ 1, "also one" });
 
     QPointer<AzToolsFramework::DPEDebugWindow> debugViewer = new AzToolsFramework::DPEDebugWindow(nullptr);
 
@@ -216,9 +244,9 @@ int main(int argc, char** argv)
         debugViewer.data(), &AzToolsFramework::DPEDebugWindow::AdapterChanged, dpeInstance,
         &AzToolsFramework::DocumentPropertyEditor::SetAdapter);
 
+    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("CVar Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::CvarAdapter>());
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
-    debugViewer->AddAdapterToList("Reflection Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
     debugViewer->show();

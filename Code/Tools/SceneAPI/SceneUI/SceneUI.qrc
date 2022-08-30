@@ -6,10 +6,11 @@
     </qresource>
     <qresource prefix="/SceneUI/Manifest">
       <file alias="TreeIcon.png">../../../../Assets/Editor/Icons/AssetImporter/tree.png</file>
-      <file alias="MeshGroupIcon.png">../../../../Assets/Editor/Icons/AssetImporter/mesh.png</file>
+      <file alias="MeshGroupIcon.svg">../../../../Assets/Editor/Icons/AssetImporter/Mesh.svg</file>
       <file alias="AnimationGroupIcon.png">../../../../Assets/Editor/Icons/AssetImporter/animation.png</file>
       <file alias="SkeletonGroupIcon.png">../../../../Assets/Editor/Icons/AssetImporter/skeleton.png</file>
       <file alias="SkinGroupIcon.png">../../../../Assets/Editor/Icons/AssetImporter/skin.png</file>
+      <file alias="show_in_explorer.svg">../../../../Assets/Editor/Icons/AssetImporter/show_in_explorer.svg</file>
     </qresource>
     <qresource prefix="/SceneUI/Common">
       <file alias="WarningIcon.png">../../../../Assets/Editor/Styles/StyleSheetImages/info_icon.png</file>
