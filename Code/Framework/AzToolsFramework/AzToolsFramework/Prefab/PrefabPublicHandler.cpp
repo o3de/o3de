@@ -741,7 +741,6 @@ namespace AzToolsFramework
 
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
-                bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
                 // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
@@ -802,7 +801,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (isInstanceContainerEntity)
+                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {

@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
         m_stack->setObjectName("body");
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
 
-        m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
+        m_newProjectSettingsScreen = new NewProjectSettingsScreen(downloadController, this);
         m_stack->addWidget(m_newProjectSettingsScreen);
 
         m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController, this);

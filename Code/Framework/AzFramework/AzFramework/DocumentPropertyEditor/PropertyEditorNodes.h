@@ -42,6 +42,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct Adapter : NodeWithVisiblityControl
     {
         static constexpr AZStd::string_view Name = "Adapter";
+        static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
+        static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
+        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("RejectContainerKey");
+
         static bool CanAddToParentNode(const Dom::Value& parentNode);
         static bool CanBeParentToValue(const Dom::Value& value);
     };
@@ -101,17 +105,20 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
 
-        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead append
-        //! to the last column in the layout. Useful for things like the "add container entry" button.
+        //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
+        //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.
+        //! Useful for things like the "add container entry" button.
         static constexpr auto SharePriorColumn = AttributeDefinition<bool>("SharePriorColumn");
 
         //! Specifies the alignment options for a PropertyEditor that has the Alignment attribute.
         enum class Align : AZ::u8
         {
             AlignLeft,
-            AlignRight
+            AlignRight,
+            AlignCenter
         };
-        //! Specifies that this PropertyEditor should have a specific alignment within its own column.
+        //! Specifies that this PropertyEditor should have a specific alignment within its own column. The alignment of ALL
+        //! PropertyEditors inside of a SharedColumn will be the alignment of the last PropertyEditor with a valid alignment attribute.
         static constexpr auto Alignment = AttributeDefinition<Align>("Alignment");
 
         static constexpr auto EnumType = TypeIdAttributeDefinition("EnumType");

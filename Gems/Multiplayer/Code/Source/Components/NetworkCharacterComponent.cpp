@@ -156,19 +156,6 @@ namespace Multiplayer
         }
     }
 
-    bool NetworkCharacterComponent::IsOnGround() const
-    {
-        auto pxController = static_cast<physx::PxController*>(m_physicsCharacter->GetNativePointer());
-        if (!pxController)
-        {
-            return true;
-        }
-
-        physx::PxControllerState state;
-        pxController->getState(state);
-        return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
-    }
-
     void NetworkCharacterComponentController::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
