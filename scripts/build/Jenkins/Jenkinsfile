@@ -256,26 +256,24 @@ def InstallAndPullGitLFS() {
 def CheckoutEngineBootstrapScripts(String branchName) {
     UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
-    withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-        checkout([$class: 'GitSCM',
-            branches: [[name: "*/${branchName}"]],
-            doGenerateSubmoduleConfigurations: false,
-            extensions: [
-                [$class: 'PruneStaleBranch'],
-                [$class: 'AuthorInChangelog'],
-                [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
-                    [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
-                    [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
-                    [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ],
-                    [ $class: 'SparseCheckoutPath', path: 'scripts/build/tools/' ]
-                ]],
-                // Shallow checkouts break changelog computation. Do not enable.
-                [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
-            ],
-            submoduleCfg: [],
-            userRemoteConfigs: [GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL)]
-        ])
-    }
+    checkout([$class: 'GitSCM',
+        branches: [[name: "*/${branchName}"]],
+        doGenerateSubmoduleConfigurations: false,
+        extensions: [
+            [$class: 'PruneStaleBranch'],
+            [$class: 'AuthorInChangelog'],
+            [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ],
+                [ $class: 'SparseCheckoutPath', path: 'scripts/build/tools/' ]
+            ]],
+            // Shallow checkouts break changelog computation. Do not enable.
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
+        ],
+        submoduleCfg: [],
+        userRemoteConfigs: [GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL)]
+    ])
 }
 
 def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules = false, boolean setEnvCommit = false) {
@@ -298,19 +296,17 @@ def CheckoutRepo(String branchName, userRemoteConfigs, boolean disableSubmodules
             sleep random.nextInt(60 * retryAttempt)  // Stagger checkouts to prevent HTTP 429 (Too Many Requests) response from CodeCommit
         }
         retryAttempt = retryAttempt + 1
-        withCredentials([usernamePassword(credentialsId: "${env.GITHUB_USER}", passwordVariable: 'accesstoken', usernameVariable: 'username')]) {
-            checkout scm: [
-                $class: 'GitSCM',
-                branches: [[name: branchName]],
-                extensions: [
-                    [$class: 'PruneStaleBranch'],
-                    [$class: 'AuthorInChangelog'],
-                    [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
-                    [$class: 'CheckoutOption', timeout: 60]
-                ],
-                userRemoteConfigs: [userRemoteConfigs]
-            ]
-        }
+        checkout scm: [
+            $class: 'GitSCM',
+            branches: [[name: branchName]],
+            extensions: [
+                [$class: 'PruneStaleBranch'],
+                [$class: 'AuthorInChangelog'],
+                [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
+                [$class: 'CheckoutOption', timeout: 60]
+            ],
+            userRemoteConfigs: [userRemoteConfigs]
+        ]
     }
 
     if (setEnvCommit) {
