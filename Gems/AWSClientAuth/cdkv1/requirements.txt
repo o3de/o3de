@@ -1,0 +1,3 @@
+aws-cdk.core>=1.91.0
+aws-cdk.aws_iam>=1.91.0
+aws-cdk.aws_cognito>=1.91.0

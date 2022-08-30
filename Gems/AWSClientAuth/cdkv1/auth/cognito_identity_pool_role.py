@@ -6,12 +6,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    CfnOutput,
-    Environment,
+    core,
     aws_iam as iam,
     aws_cognito as cognito
 )
-from constructs import Construct
 from utils import name_utils
 
 
@@ -22,7 +20,7 @@ class CognitoIdentityPoolRole:
      their custom permissions.
     """
 
-    def __init__(self, scope: Construct, feature_name: str, project_name: str, env: Environment,
+    def __init__(self, scope: core.Construct, feature_name: str, project_name: str, env: core.Environment,
                  identity_pool: cognito.CfnIdentityPool, authenticated: bool) -> None:
         """
         :param scope: Construct role scope will be attached to.
@@ -75,13 +73,13 @@ class CognitoIdentityPoolRole:
                                                                                   authenticated),
             statements=[stack_statement])
 
-        CfnOutput(
+        core.CfnOutput(
             scope,
             f'CognitoIdentityPool{authenticated_string.capitalize()}RoleArn',
             description='Cognito Identity pool Authenticated role arn',
             value=self._role.role_arn)
 
-        CfnOutput(
+        core.CfnOutput(
             scope,
             f'CognitoIdentityPool{authenticated_string.capitalize()}ManagedPolicyArn',
             description="Cognito Identity pool Unauthenticated role arn",

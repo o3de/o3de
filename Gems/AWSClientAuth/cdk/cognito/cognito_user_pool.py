@@ -5,11 +5,15 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import (core,
-                     aws_cognito as cognito,
-                     aws_iam as iam)
-from utils import name_utils
+from aws_cdk import (
+    CfnOutput,
+    Environment,
+    aws_cognito as cognito
+)
+from constructs import Construct
+
 from auth.cognito_user_pool_sms_role import CognitoUserPoolSMSRole
+from utils import name_utils
 
 
 class CognitoUserPool:
@@ -17,7 +21,7 @@ class CognitoUserPool:
     Creates User pool. Sets up MFA with text. Allows enabling MFA. Allows signing up by email and phone.
     """
 
-    def __init__(self, scope: core.Construct, feature_name: str, project_name: str, env: core.Environment,
+    def __init__(self, scope: Construct, feature_name: str, project_name: str, env: Environment,
                  sms_role: CognitoUserPoolSMSRole) -> None:
         """
         :param scope: Construct role scope will be attached to.
@@ -26,55 +30,56 @@ class CognitoUserPool:
         :param env: Environment set up by App.
         :param sms_role: SMS IAM role created using
         """
-        self._user_pool = cognito.CfnUserPool(scope, name_utils.format_aws_resource_id(feature_name, project_name, env,
-                                                                                       cognito.CfnUserPool.__name__),
-                                              user_pool_name=name_utils.format_aws_resource_name(feature_name,
-                                                                                                 project_name, env,
-                                                                                                 cognito.CfnUserPool.__name__),
-                                              admin_create_user_config=cognito.CfnUserPool.AdminCreateUserConfigProperty(
-                                                  allow_admin_create_user_only=False),
-                                              account_recovery_setting=cognito.CfnUserPool.AccountRecoverySettingProperty(
-                                                  recovery_mechanisms=[cognito.CfnUserPool.RecoveryOptionProperty(
-                                                      name='verified_email', priority=1),
-                                                      cognito.CfnUserPool.RecoveryOptionProperty(
-                                                          name='verified_phone_number', priority=2)]),
-                                              auto_verified_attributes=['email', 'phone_number'],
-                                              enabled_mfas=['SMS_MFA'],
-                                              mfa_configuration='OPTIONAL',
-                                              sms_configuration=cognito.CfnUserPool.SmsConfigurationProperty(
-                                                  external_id=name_utils.format_aws_resource_name(feature_name,
-                                                                                                  project_name, env,
-                                                                                                  cognito.CfnUserPool.__name__) + '-external',
-                                                  sns_caller_arn=sms_role.get_role().role_arn))
+        self._user_pool = \
+            cognito.CfnUserPool(scope, name_utils.format_aws_resource_id(feature_name, project_name, env,
+                                                                         cognito.CfnUserPool.__name__),
+                                user_pool_name=name_utils.format_aws_resource_name(feature_name,
+                                                                                   project_name, env,
+                                                                                   cognito.CfnUserPool.__name__),
+                                admin_create_user_config=cognito.CfnUserPool.AdminCreateUserConfigProperty(
+                                    allow_admin_create_user_only=False),
+                                account_recovery_setting=cognito.CfnUserPool.AccountRecoverySettingProperty(
+                                    recovery_mechanisms=[cognito.CfnUserPool.RecoveryOptionProperty(
+                                        name='verified_email', priority=1),
+                                        cognito.CfnUserPool.RecoveryOptionProperty(
+                                            name='verified_phone_number', priority=2)]),
+                                auto_verified_attributes=['email', 'phone_number'],
+                                enabled_mfas=['SMS_MFA'],
+                                mfa_configuration='OPTIONAL',
+                                sms_configuration=cognito.CfnUserPool.SmsConfigurationProperty(
+                                    external_id=name_utils.format_aws_resource_name(feature_name,
+                                                                                    project_name, env,
+                                                                                    cognito.CfnUserPool.__name__) + '-external',
+                                    sns_caller_arn=sms_role.get_role().role_arn))
 
         self._user_pool.node.add_dependency(sms_role.get_role())
-        self._user_pool_client = cognito.CfnUserPoolClient(scope,
-                                                           name_utils.format_aws_resource_id(feature_name, project_name,
-                                                                                             env,
-                                                                                             cognito.CfnUserPoolClient.__name__),
-                                                           client_name=name_utils.format_aws_resource_name(feature_name,
-                                                                                                           project_name,
-                                                                                                           env,
-                                                                                                           cognito.CfnUserPoolClient.__name__),
-                                                           user_pool_id=self._user_pool.ref,
-                                                           explicit_auth_flows=['ALLOW_ADMIN_USER_PASSWORD_AUTH',
-                                                                                'ALLOW_CUSTOM_AUTH',
-                                                                                'ALLOW_USER_PASSWORD_AUTH',
-                                                                                'ALLOW_USER_SRP_AUTH',
-                                                                                'ALLOW_REFRESH_TOKEN_AUTH'],
-                                                           # access_token_validity=5, # Does not work
-                                                           # id_token_validity=5,  # Does not work
-                                                           # refresh_token_validity=30,  # Does not work
-                                                           )
+        self._user_pool_client \
+            = cognito.CfnUserPoolClient(scope, name_utils.format_aws_resource_id(feature_name, project_name,
+                                                                                 env,
+                                                                                 cognito.CfnUserPoolClient.__name__),
+                                        client_name=name_utils.format_aws_resource_name(feature_name,
+                                                                                        project_name,
+                                                                                        env,
+                                                                                        cognito.CfnUserPoolClient.__name__),
+                                        user_pool_id=self._user_pool.ref,
+                                        explicit_auth_flows=['ALLOW_ADMIN_USER_PASSWORD_AUTH',
+                                                             'ALLOW_CUSTOM_AUTH',
+                                                             'ALLOW_USER_PASSWORD_AUTH',
+                                                             'ALLOW_USER_SRP_AUTH',
+                                                             'ALLOW_REFRESH_TOKEN_AUTH'],
+                                        # access_token_validity=5, # Does not work
+                                        # id_token_validity=5,  # Does not work
+                                        # refresh_token_validity=30,  # Does not work
+                                        )
         self._user_pool_client.add_depends_on(self._user_pool)
 
-        core.CfnOutput(
+        CfnOutput(
             scope,
             'CognitoUserPoolId',
             description="Cognito User pool id",
             value=self._user_pool.ref)
 
-        core.CfnOutput(
+        CfnOutput(
             scope,
             'CognitoUserPoolAppClientId',
             description="Cognito User pool App client id",

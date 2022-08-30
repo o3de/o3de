@@ -7,10 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # !/usr/bin/env python3
 
-from aws_cdk import (
-    App,
-    Environment
-)
+from aws_cdk import core
 from aws_client_auth.client_auth_stack import AWSClientAuthStack
 import os
 
@@ -21,8 +18,8 @@ ACCOUNT = os.environ.get('O3DE_AWS_DEPLOY_ACCOUNT', os.environ['CDK_DEFAULT_ACCO
 # Set the common prefix to group stacks in a project together.
 PROJECT_NAME = os.environ.get('O3DE_AWS_PROJECT_NAME', f'O3DE-AWS-PROJECT').upper()
 
-env = Environment(account=ACCOUNT, region=REGION)
-app = App()
+env = core.Environment(account=ACCOUNT, region=REGION)
+app = core.App()
 
 AWSClientAuthStack(app, PROJECT_NAME, env=env)
 

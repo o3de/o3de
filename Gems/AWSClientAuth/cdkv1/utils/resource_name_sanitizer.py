@@ -7,18 +7,19 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import hashlib
 from aws_cdk import (
-    Stack,
+    core,
     aws_cognito as cognito,
     aws_iam as iam
 )
 
 MAX_RESOURCE_NAME_LENGTH_MAPPING = {
-    Stack.__name__: 128,
+    core.Stack.__name__: 128,
     iam.Role.__name__: 64,
     iam.ManagedPolicy.__name__: 144,
     cognito.CfnUserPoolClient.__name__: 128,
     cognito.CfnUserPool.__name__: 128,
     cognito.CfnIdentityPool.__name__: 128
+
 }
 
 
