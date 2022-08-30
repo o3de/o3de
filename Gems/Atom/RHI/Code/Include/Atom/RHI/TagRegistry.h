@@ -35,6 +35,9 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator, 0);
             AZ_DISABLE_COPY_MOVE(TagRegistry);
 
+            template<typename TagType>
+            friend class TagBitRegistry;
+
             static Ptr<TagRegistry> Create();
 
             //! Resets the registry back to an empty state. All references are released.
