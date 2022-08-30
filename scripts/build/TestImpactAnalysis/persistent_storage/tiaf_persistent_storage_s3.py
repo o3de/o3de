@@ -6,10 +6,13 @@
 #
 #
 
+import os
+import shutil
+import tempfile
 import boto3
 import botocore.exceptions
 import zlib
-import logging
+import pathlib
 from io import BytesIO
 from persistent_storage import PersistentStorage
 from tiaf_logger import get_logger
@@ -115,10 +118,47 @@ class PersistentStorageS3(PersistentStorage):
         @param s3_object:  The s3 object to download, decompress and decode
         """
         logger.info(f"Attempting to decode historic data object...")
-        response = s3_object.get()
-        file_stream = response['Body']
+        file_stream = s3_object['Body']
         decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
         logger.info(f"Decoding complete.")
 
         # Decompress and unpack the zipped historic data JSON
         return decoded_data
+
+    def _store_runtime_artifacts(self, runtime_artifact_dir: str):
+        """
+        Store the runtime artifacts in the designated persistent storage location.
+
+        @param runtime_artifact_dir: The directory containing the runtime artifacts to store.
+        """
+        source_directory = pathlib.Path(runtime_artifact_dir)
+        self._zip_and_upload_directory(source_directory, self.RUNTIME_ARTIFACT_DIRECTORY)
+
+    def _store_coverage_artifacts(self, runtime_coverage_dir: str):
+        """
+        Store the coverage artifacts in the designated persistent storage location.
+
+        @param runtime_coverage_dir: The directory containing the runtime coverage artifacts to store.
+        """
+        source_directory = pathlib.Path(runtime_coverage_dir)
+        self._zip_and_upload_directory(source_directory, self.RUNTIME_COVERAGE_DIRECTORY)
+
+    def _zip_and_upload_directory(self, source_directory: pathlib.Path, object_name: str):
+        """
+        Zip the directory indicated in source_directory and store it in the s3_bucket as a folder in the historic_data_dir.
+        
+        @param source_directory: Path to the directory to zip.
+        @param target_directory: Name for the uploaded object.
+        """
+        artifact_key = f"{self._historic_data_dir}/{object_name}.zip"
+        temp_directory = tempfile.mkdtemp()
+        try:
+            compressed_directory = shutil.make_archive(f"{temp_directory}/compressed_artifacts", 'zip', source_directory)
+            self._s3.upload_file(compressed_directory, Bucket=self.s3_bucket, Key=artifact_key,ExtraArgs={
+                                'ACL': 'bucket-owner-full-control'})
+        except botocore.exceptions.BotoCoreError as e:
+            logger.error(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            logger.error(f"There was a problem with the s3 client: {e}")
+        finally:
+            os.unlink(temp_directory)

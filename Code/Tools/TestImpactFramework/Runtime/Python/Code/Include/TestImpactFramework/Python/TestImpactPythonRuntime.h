@@ -21,6 +21,7 @@ namespace TestImpact
     class PythonTestTarget;
     class PythonProductionTarget;
     class SourceCoveringTestsList;
+    class PythonTestSelectorAndPrioritizer;
 
     //! The python API exposed to the client responsible for all test runs and persistent data management.
     class PythonRuntime
@@ -141,7 +142,7 @@ namespace TestImpact
         Policy::TargetOutputCapture m_targetOutputCapture;
         AZStd::unique_ptr<BuildTargetList<ProductionTarget, TestTarget>> m_buildTargets;
         AZStd::unique_ptr<DynamicDependencyMap<ProductionTarget, TestTarget>> m_dynamicDependencyMap;
-        AZStd::unique_ptr<TestSelectorAndPrioritizer<ProductionTarget, TestTarget>> m_testSelectorAndPrioritizer;
+        AZStd::unique_ptr<PythonTestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList<TestTarget>> m_testTargetExcludeList;
         AZStd::unordered_set<const TestTarget*> m_previouslyFailingTestTargets;

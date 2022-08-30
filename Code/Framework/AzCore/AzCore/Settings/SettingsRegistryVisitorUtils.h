@@ -20,13 +20,15 @@ namespace AZ::SettingsRegistryVisitorUtils
     {
         using VisitResponse = AZ::SettingsRegistryInterface::VisitResponse;
         using VisitAction = AZ::SettingsRegistryInterface::VisitAction;
-        using Type = AZ::SettingsRegistryInterface::Type;
 
         FieldVisitor();
 
         // Bring the base class visitor functions into scope
         using AZ::SettingsRegistryInterface::Visitor::Visit;
-        virtual void Visit(AZStd::string_view path, AZStd::string_view fieldName, Type type) = 0;
+
+        //! @return VisitResponse of Done halts further iteration of sibling fields
+        //! all other VisitRepsonse values are ignored
+        virtual AZ::SettingsRegistryInterface::VisitResponse Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs) = 0;
 
     protected:
         // VisitFieldType is used for filtering the type of referenced by the root path
@@ -38,8 +40,7 @@ namespace AZ::SettingsRegistryVisitorUtils
         };
         FieldVisitor(const VisitFieldType visitFieldType);
     private:
-        VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName,
-            VisitAction action, Type type) override;
+        VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, VisitAction action) override;
 
         VisitFieldType m_visitFieldType{ VisitFieldType::ArrayOrObject };
         AZStd::optional<AZ::SettingsRegistryInterface::FixedValueString> m_rootPath;
@@ -61,9 +62,10 @@ namespace AZ::SettingsRegistryVisitorUtils
         ObjectVisitor();
     };
 
-    //! Signature of callback funcition invoked when visiting an element of an array or object
-    using VisitorCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view fieldName,
-        AZ::SettingsRegistryInterface::Type)>;
+    //! Signature of callback function invoked when visiting an element of an array or object
+    //! @return VisitResponse of Done halts further iteration of sibling fields
+    //! all other VisitRepsonse values are ignored
+    using VisitorCallback = AZStd::function<AZ::SettingsRegistryInterface::VisitResponse(const AZ::SettingsRegistryInterface::VisitArgs&)>;
 
     //! Invokes the visitor callback for each element of either the array or object at @path
     //! If @path is not an array or object, then no elements are visited

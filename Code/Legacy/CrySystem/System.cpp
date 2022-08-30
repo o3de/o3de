@@ -392,7 +392,7 @@ void CSystem::ShutDown()
 
     // Audio System Shutdown!
     // Shut down audio as late as possible but before the streaming system and console get released!
-    Audio::Gem::AudioSystemGemRequestBus::Broadcast(&Audio::Gem::AudioSystemGemRequestBus::Events::Release);
+    Audio::Gem::SystemRequestBus::Broadcast(&Audio::Gem::SystemRequestBus::Events::Release);
 
     // Shut down console as late as possible and after audio!
     SAFE_RELEASE(m_env.pConsole);

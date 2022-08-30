@@ -7,7 +7,7 @@
         "single_line": true,
         "find_all": true,
         "log_patterns": [
-          "^.*?AssetProcessor: Failed.*\.\.\.$",
+          "^.*AssetProcessor: Failed.*\\.\\.\\.$",
           "^.*?AssetProcessor: Createjobs Failed:.*$"
         ],
         "log_testcases": [

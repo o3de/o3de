@@ -213,12 +213,11 @@ namespace AZ
             }
         }
 
-        AZStd::string ScopedAutoTempDirectory::Resolve(const char* path) const
+        AZ::IO::Path ScopedAutoTempDirectory::Resolve(const char* path) const
         {
-            AZStd::string resolved = AZStd::string::format("%s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "%s", m_tempDirectory, path);
-            return resolved;
+            return AZ::IO::Path(m_tempDirectory) / path;
         }
-        
+
         const char* ScopedAutoTempDirectory::GetDirectory() const
         {
             return m_tempDirectory;

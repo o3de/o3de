@@ -134,9 +134,12 @@ namespace ScriptCanvas
             , source
             , result.m_jsonResults
             , &settings);
+
         if (!loadResult.IsSuccess())
         {
             // ...try legacy xml as a failsafe
+            result.m_fromObjectStreamXML = true;
+
             AZ::IO::MemoryStream stream(source.data(), source.length());
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( stream
