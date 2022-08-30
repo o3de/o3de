@@ -129,7 +129,7 @@ class BaseTestImpact(ABC):
                         args[ARG_INTEGRATION_POLICY] = "continue"
         # Store sequence and report into args so that our argument enum can be used to apply all relevant arguments.
         args[ARG_SEQUENCE] = args.get(ARG_SEQUENCE_OVERRIDE, sequence_type)
-        self._report_file = PurePath(self._temp_workspace).joinpath(
+        self._report_file = PurePath(self._report_path).joinpath(
             f"report.{self._instance_id}.json")
         args[ARG_REPORT] = self._report_file
         self._parse_arguments_to_runtime(
@@ -249,6 +249,7 @@ class BaseTestImpact(ABC):
         RUNTIME_BIN_KEY = "runtime_bin"
         RUNTIME_ARTIFACT_DIR_KEY = "run_artifact_dir"
         RUNTIME_COVERAGE_DIR_KEY = "coverage_artifact_dir"
+        REPORT_KEY = "reports"
 
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
@@ -273,6 +274,7 @@ class BaseTestImpact(ABC):
                 self._active_workspace = config[self.runtime_type][WORKSPACE_KEY][ACTIVE_KEY][ROOT_KEY]
                 self._historic_workspace = config[self.runtime_type][WORKSPACE_KEY][HISTORIC_KEY][ROOT_KEY]
                 self._temp_workspace = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
+                self._report_path = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][REPORT_KEY]
 
                 # Data file paths
                 self._unpacked_coverage_data_file = config[self.runtime_type][

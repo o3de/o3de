@@ -30,6 +30,7 @@ LAST_COMMIT_HASH_KEY = "last_commit_hash"
 COVERAGE_DATA_KEY = "coverage_data"
 PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
 HISTORIC_DATA_FILE_KEY = "data"
+REPORT_KEY = "reports"
 
 
 @pytest.fixture
@@ -73,7 +74,7 @@ def binary_path(config_data, runtime_type):
 
 @pytest.fixture()
 def report_path(runtime_type, config_data, mock_uuid):
-    return config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]+"\\report."+mock_uuid.hex+".json"
+    return config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][REPORT_KEY]+"\\report."+mock_uuid.hex+".json"
 
 
 @pytest.fixture
