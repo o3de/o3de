@@ -668,8 +668,8 @@ namespace AZ
     // PoolSchemaImpl
     // [9/15/2009]
     //=========================================================================
-    PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor& desc)
-        : m_pageAllocator(desc.m_pageAllocator ? desc.m_pageAllocator : &AllocatorInstance<SystemAllocator>::Get())
+    PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor&)
+        : m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
         , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
         , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
     {
@@ -909,12 +909,12 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
-        const ThreadPoolSchema::Descriptor& desc,
+        const ThreadPoolSchema::Descriptor&,
         ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
         ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
         : m_threadPoolGetter(threadPoolGetter)
         , m_threadPoolSetter(threadPoolSetter)
-        , m_pageAllocator(desc.m_pageAllocator)
+        , m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
         , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
         , m_minAllocationSize(POOL_ALLOCATION_MIN_ALLOCATION_SIZE)
         , m_maxAllocationSize(POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
@@ -924,11 +924,6 @@ namespace AZ
         // using spin lock will improve performance.
         SetCriticalSectionSpinCount(m_mutex.native_handle(), 4000);
 #endif
-
-        if (m_pageAllocator == nullptr)
-        {
-            m_pageAllocator = &AllocatorInstance<SystemAllocator>::Get(); // use the SystemAllocator if no page allocator is provided
-        }
     }
 
     //=========================================================================

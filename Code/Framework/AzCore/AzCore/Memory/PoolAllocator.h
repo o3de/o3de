@@ -36,11 +36,6 @@ namespace AZ
         struct Descriptor
         {
             AZ_TYPE_INFO(Descriptor, "{DB802BA9-33E0-4E7A-A79B-CC6EBC39DC82}")
-            Descriptor()
-                : m_pageAllocator(nullptr)
-
-            {}
-            IAllocator*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
         };
         AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
 

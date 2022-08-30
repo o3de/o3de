@@ -946,36 +946,6 @@ namespace UnitTest
             return (size_t)1 << (size_t)(MAX_ALIGNMENT_LOG2 * r);
         }
 
-        class DebugSysAllocSchema
-            : public AZ::IAllocator
-        {
-            pointer    allocate(size_type byteSize, size_type alignment) override
-            {
-                return AZ_OS_MALLOC(byteSize, alignment);
-            }
-            void                    deallocate(pointer ptr, size_type, size_type) override
-            {
-                AZ_OS_FREE(ptr);
-            }
-            pointer    reallocate(pointer ptr, size_type newSize, size_type newAlignment) override
-            {
-                (void)ptr;
-                (void)newSize;
-                (void)newAlignment;
-                AZ_Assert(false, "Not supported!");
-                return NULL;
-            }
-            /// Returns allocation size for given address. 0 if the address doesn't belong to the allocator.
-            size_type get_allocated_size(pointer, align_type) const override
-            {
-                return 0;
-            }
-
-            size_type NumAllocatedBytes() const override
-            {
-                return 0;
-            }
-        };
     public:
         void SetUp() override
         {
@@ -2078,12 +2048,10 @@ namespace UnitTest
             printf("\n\t\t\t=======================\n");
             printf("\t\t\tSchemas Benchmark Test!\n");
             printf("\t\t\t=======================\n");
-            DebugSysAllocSchema da;
             {
                 // TODO Switch to using instance of HphaAllocator with a sub allocator of a fixed size
                 HphaSchema::Descriptor hphaDesc;
                 PoolSchema::Descriptor poolDesc;
-                poolDesc.m_pageAllocator = &da;
                 {
                     HphaSchema hpha(hphaDesc);
                     PoolSchema pool;
@@ -2120,8 +2088,7 @@ namespace UnitTest
                       {
                           HphaSchema::Descriptor hphaDesc;
                           PoolSchema::Descriptor poolDesc;
-                          poolDesc.m_pageAllocator = &da;
-            
+
                           HphaSchema hpha(hphaDesc);
                           PoolSchema pool;
                           pool.Create(poolDesc);
