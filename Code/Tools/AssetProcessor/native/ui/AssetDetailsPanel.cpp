@@ -51,6 +51,21 @@ namespace AssetProcessor
         m_assetsTab = assetTab;
     }
 
+    void AssetDetailsPanel::GoToSource(AZ::Uuid source)
+    {
+        AssetDatabaseConnection assetDatabaseConnection;
+        assetDatabaseConnection.OpenDatabase();
+
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+        assetDatabaseConnection.QuerySourceBySourceGuid(source, [&sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+        {
+            sourceEntry = entry;
+            return false;
+        });
+
+        GoToSource(sourceEntry.m_sourceName);
+    }
+
     void AssetDetailsPanel::GoToSource(const AZStd::string& source)
     {
         if (!m_sourceTreeModel || !m_sourceTreeView || !m_assetsTab || !m_sourceFilterModel ||
@@ -58,10 +73,10 @@ namespace AssetProcessor
         {
             return;
         }
-        
+
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
-        
+
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceDetails;
         assetDatabaseConnection.QuerySourceBySourceName(
             source.c_str(),

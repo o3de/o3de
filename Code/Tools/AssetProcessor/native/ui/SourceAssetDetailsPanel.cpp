@@ -147,7 +147,7 @@ namespace AssetProcessor
                             intermediateAssetSourcePath = sourceEntry.m_sourceName;
                             return true;
                         });
-                    
+
                     AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
 
                     // Qt handles cleanup automatically, setting this as the parent means
@@ -211,7 +211,7 @@ namespace AssetProcessor
 
                 // Some outgoing source dependencies are wildcard, or unresolved paths.
                 // Only add a button to link to rows that actually exist.
-                
+
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
                 assetDatabaseConnection.QuerySourceBySourceName(
                     sourceFileDependencyEntry.m_dependsOnSource.c_str(),
@@ -256,7 +256,6 @@ namespace AssetProcessor
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QuerySourceDependencyByDependsOnSource(
             sourceItemData->m_sourceInfo.m_sourceName.c_str(),
-            nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
             {
@@ -270,11 +269,12 @@ namespace AssetProcessor
                     &QPushButton::clicked,
                     [=]
                     {
-                        GoToSource(sourceFileDependencyEntry.m_source);
+                        GoToSource(sourceFileDependencyEntry.m_sourceGuid);
                     });
                 m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_source.c_str());
+                // TODO: Replace with source name lookup
+                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_sourceGuid.ToFixedString().c_str());
                 m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
 
                 ++sourceDependencyCount;
