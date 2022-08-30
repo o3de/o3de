@@ -318,6 +318,7 @@ namespace RecastNavigation
 
                 AZStd::shared_ptr<TileGeometry> geometryData = AZStd::make_unique<TileGeometry>();
                 geometryData->m_worldBounds = tileVolume;
+                geometryData->m_scanBounds = scanVolume;
                 AppendColliderGeometry(*geometryData, results);
 
                 geometryData->m_tileX = x;

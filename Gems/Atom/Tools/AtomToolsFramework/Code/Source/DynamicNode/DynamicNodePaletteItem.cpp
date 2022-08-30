@@ -27,7 +27,7 @@ namespace AtomToolsFramework
     }
 
     CreateDynamicNodeMimeEvent::CreateDynamicNodeMimeEvent(
-        const AZ::Crc32& toolId, const AZStd::string& configId)
+        const AZ::Crc32& toolId, const AZ::Uuid& configId)
         : m_toolId(toolId)
         , m_configId(configId)
     {
@@ -54,10 +54,10 @@ namespace AtomToolsFramework
     }
 
     DynamicNodePaletteItem::DynamicNodePaletteItem(
-        const AZ::Crc32& toolId, const AZStd::string& configId, const DynamicNodeConfig& config)
+        const AZ::Crc32& toolId, const DynamicNodeConfig& config)
         : DraggableNodePaletteTreeItem(config.m_title.c_str(), toolId)
         , m_toolId(toolId)
-        , m_configId(configId)
+        , m_configId(config.m_id)
     {
     }
 

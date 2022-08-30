@@ -902,7 +902,14 @@ namespace ScriptCanvasEditor
 
             if (shouldSaveResults == UnsavedChangesOptions::SAVE)
             {
-                SaveAssetImpl(assetId, Save::InPlace);
+                if (fileState == Tracker::ScriptCanvasFileState::NEW)
+                {
+                    SaveAssetImpl(assetId, Save::As);
+                }
+                else
+                {
+                    SaveAssetImpl(assetId, Save::InPlace);
+                }
                 event->ignore();
                 return;
             }

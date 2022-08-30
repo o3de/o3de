@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -31,17 +32,17 @@ namespace AtomToolsFramework
         void RegisterDataTypes(const GraphModel::DataTypeList& dataTypes) override;
         GraphModel::DataTypeList GetRegisteredDataTypes() override;
         void LoadConfigFiles(const AZStd::string& extension) override;
-        bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) override;
-        DynamicNodeConfig GetConfig(const AZStd::string& configId) const override;
+        bool RegisterConfig(const DynamicNodeConfig& config) override;
+        DynamicNodeConfig GetConfigById(const AZ::Uuid& configId) const override;
         void Clear() override;
         GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const override;
 
     private:
-        bool ValidateSlotConfig(const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const;
-        bool ValidateSlotConfigVec(const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
+        bool ValidateSlotConfig(const AZ::Uuid& configId, const DynamicNodeSlotConfig& slotConfig) const;
+        bool ValidateSlotConfigVec(const AZ::Uuid& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
 
         const AZ::Crc32 m_toolId = {};
         GraphModel::DataTypeList m_registeredDataTypes;
-        AZStd::unordered_map<AZStd::string, DynamicNodeConfig> m_nodeConfigMap;
+        AZStd::unordered_map<AZ::Uuid, DynamicNodeConfig> m_nodeConfigMap;
     };
 } // namespace AtomToolsFramework

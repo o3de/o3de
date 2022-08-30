@@ -27,18 +27,26 @@ namespace AzToolsFramework
             AZ_RTTI(InstanceDomGenerator, "{07E23525-1D91-41AA-B85F-136360BD1938}", InstanceDomGeneratorInterface);
             AZ_CLASS_ALLOCATOR(InstanceDomGenerator, AZ::SystemAllocator, 0);
 
-            bool GenerateInstanceDom(const Instance* instance, PrefabDom& instanceDom) override;
-
             void RegisterInstanceDomGeneratorInterface();
             void UnregisterInstanceDomGeneratorInterface();
 
+            //! Generates an instance DOM for a given instance object based on the currently focused instance.
+            //! If the given instance is descendant of the focused instance, instance DOM stored in focused
+            //! template DOM is used; otherwise, the instance DOM stored in the root template DOM is used.
+            //! In addition, container entity is updated depending on the above relationship with the focused instance.
+            //! Note: Link id would be valid in the generated DOM only if the given instance is a proper descendant
+            //! of the focused or root instance.
+            //! @param[out] instanceDom The output instance DOM that will be modified.
+            //! @param instance The given instance object.
+            //! @return bool on whether the operation succeeds.
+            bool GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const override;
+
         private:
-            /**
-             * Update the container entity's transform from focused instance and its dom according to the root.
-             * @param instance The pointer to the focused instance.
-             * @param instanceDom The dom of the instance that will be edited by this function.
-             */
-            void ReplaceFocusedContainerTransformAccordingToRoot(const Instance* instance, PrefabDom& instanceDom) const;
+            //! Given an instance and its DOM, updates the container entity in the DOM with the one seen
+            //! from the root template DOM.
+            //! @param[out] instanceDom The DOM of the instance that will be modified.
+            //! @param instance The given instance object.
+            void UpdateContainerEntityInDomFromRoot(PrefabDom& instanceDom, const Instance& instance) const;
 
             static AzFramework::EntityContextId s_editorEntityContextId;
 
