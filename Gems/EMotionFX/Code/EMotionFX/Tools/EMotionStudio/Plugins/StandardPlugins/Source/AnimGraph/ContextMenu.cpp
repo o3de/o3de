@@ -32,7 +32,7 @@ namespace EMStudio
 {
     // Fill the node palette tree view with the anim graph objects that can be created inside the current given object and category.
     void BlendGraphWidget::AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
-                               EMotionFX::AnimGraphObject* focusedGraphObject)
+        EMotionFX::AnimGraphObject* focusedGraphObject)
     {
         const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = m_plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
         // If the category is empty, don't add a node for it
