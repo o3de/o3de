@@ -60,7 +60,7 @@ class BatchProcessing:
             function_name=events_processing_lambda_name,
             log_retention=logs.RetentionDays.ONE_MONTH,
             memory_size=aws_metrics_constants.LAMBDA_MEMORY_SIZE_IN_MB,
-            runtime=lambda_.Runtime.PYTHON_3_9(),
+            runtime=lambda_.Runtime.PYTHON_3_9,
             timeout=Duration.minutes(aws_metrics_constants.LAMBDA_TIMEOUT_IN_MINUTES),
             handler='events_processing.lambda_handler',
             code=lambda_.Code.from_asset(
