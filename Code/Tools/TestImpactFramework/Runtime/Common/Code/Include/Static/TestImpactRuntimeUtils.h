@@ -73,7 +73,8 @@ namespace TestImpact
                     testJob.GetCommandString(),
                     testJob.GetStartTime(),
                     testJob.GetDuration(),
-                    testJob.GetTestResult());
+                    testJob.GetTestResult(),
+                    testJob.GetTestTarget()->GetNamespace());
 
                 (*m_testCompleteCallback)(testRun, ++m_numTestsCompleted, m_totalTests);
             }
@@ -367,7 +368,7 @@ namespace TestImpact
 
             Client::TestRunBase clientTestRun(
                 testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
-                testJob.GetTestResult());
+                testJob.GetTestResult(), testJob.GetTestTarget()->GetNamespace());
 
             switch (testJob.GetTestResult())
             {
