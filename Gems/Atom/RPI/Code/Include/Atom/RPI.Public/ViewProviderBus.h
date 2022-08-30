@@ -30,6 +30,7 @@ namespace AZ
             using BusIdType = AZ::EntityId;
 
             virtual ViewPtr GetView() const = 0;
+            virtual ViewPtr GetStereoscopicView(uint32_t viewIndex) const = 0;
         };
 
         using ViewProviderBus = AZ::EBus<ViewProvider>;

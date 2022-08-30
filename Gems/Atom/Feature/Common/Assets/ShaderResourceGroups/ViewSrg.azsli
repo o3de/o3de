@@ -25,6 +25,7 @@ partial ShaderResourceGroup ViewSrg
     float3 m_worldPosition;
 
     float4 m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ;
+    float4 m_linearizeDepthConstants;
 
     // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)
     // See the GetViewSpacePosition( ) function below
@@ -40,22 +41,22 @@ partial ShaderResourceGroup ViewSrg
 
     float GetNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.x;
+        return m_linearizeDepthConstants.x;
     }
 
     float GetFarZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.y;
+        return ViewSrg::m_linearizeDepthConstants.y;
     }
 
     float GetFarZTimesNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.z;
+        return ViewSrg::m_linearizeDepthConstants.z;
     }
 
     float GetFarZMinusNearZ()
     {
-        return ViewSrg::m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ.w;
+        return ViewSrg::m_linearizeDepthConstants.w;
     }
 
     // Uses linearDepth value at screenUV to reconstruct view-space position (Z-forward & Y-up)

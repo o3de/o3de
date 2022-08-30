@@ -390,6 +390,11 @@ namespace Camera
         UpdateCamera();
     }
 
+    void CameraComponentController::SetStereoscopicView([[maybe_unused]] const AZ::Quaternion& viewQuat, [[maybe_unused]] uint32_t xrViewIndex)
+    {
+        // todo:: Needs implementation
+    }
+
     void CameraComponentController::MakeActiveView()
     {
         if (IsActiveView())
@@ -506,6 +511,12 @@ namespace Camera
     AZ::RPI::ViewPtr CameraComponentController::GetView() const
     {
         return m_atomCamera;
+    }
+
+    AZ::RPI::ViewPtr CameraComponentController::GetStereoscopicView([[maybe_unused]] uint32_t viewIndex) const
+    {
+        //todo:: Needs implementation
+        return nullptr;
     }
 
     void CameraComponentController::UpdateCamera()

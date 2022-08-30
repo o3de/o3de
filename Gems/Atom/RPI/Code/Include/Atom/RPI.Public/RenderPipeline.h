@@ -113,6 +113,10 @@ namespace AZ
             //! It's the same as SetPersistentView(GetMainViewTag(), view)
             void SetDefaultView(ViewPtr view);
 
+            //! Set a stereoscopic view to the default view tag.
+            //! It's the same as SetPersistentView(GetMainViewTag(), view)
+            void SetDefaultStereoscopicViewFromEntity(EntityId entityId, uint32_t viewIndex);
+
             //! Get the view for the default view tag. 
             //! It's the same as GetViews(GetMainViewTag()) and using first element.
             ViewPtr GetDefaultView();
