@@ -283,14 +283,30 @@ namespace AzToolsFramework::ComponentModeFramework
     {
         if (mode == ViewportEditorMode::Component)
         {
-            // always want to return to the default transform button upon exiting component mode
-            ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId,
-                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
-                m_switcherId,
-                m_transformButtonId);
+            // when component mode ends, change the active button to transform
+            // this waits one frame incase component mode is switching to another component
+            // instead of ending
+            QTimer::singleShot(
+                1,
+                nullptr,
+                [this]()
+                {
+                    bool inComponentMode = false;
+                    AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+                        inComponentMode, &ComponentModeSystemRequests::InComponentMode);
 
-            m_activeSwitcherComponent = nullptr;
+                    if (!inComponentMode)
+                    {
+                        ViewportUi::ViewportUiRequestBus::Event(
+                            ViewportUi::DefaultViewportId,
+                            &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+                            m_switcherId,
+                            m_transformButtonId);
+
+                        m_activeSwitcherComponent = nullptr;
+                    }
+                });
+            
         }
     }
 

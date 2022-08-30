@@ -309,7 +309,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         if (m_imGuiActive)
         {
-            if (ViewportBorderVisible())
+            if (GetViewportBorderVisible())
             {
                 return ViewportUiOverlayImGuiBorderMargin;
             }
@@ -320,7 +320,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
         else
         {
-            if (ViewportBorderVisible())
+            if (GetViewportBorderVisible())
             {
                 return ViewportUiOverlayBorderMargin;
             }
@@ -339,13 +339,11 @@ namespace AzToolsFramework::ViewportUi::Internal
                                           QString::number(HighlightBorderSize), HighlightBorderColor,
                                           QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
 
-        m_viewportBorderText.show();
-        m_viewportBorderText.setText(borderTitle.c_str());
-
-        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
-
-        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
         m_viewportBorderText.setAlignment(Qt::AlignCenter);
+
+        m_viewportBorderText.show();
+        m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
+        ChangeViewportBorderText(borderTitle.c_str());
 
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
@@ -367,7 +365,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         
     };
     void ViewportUiDisplay::ChangeViewportBorderText(
-        const char* borderTitle)
     {
         // when the text changes if the width is different it will flicker as it changes,
         // this sets the width to the entire overlay to avoid that

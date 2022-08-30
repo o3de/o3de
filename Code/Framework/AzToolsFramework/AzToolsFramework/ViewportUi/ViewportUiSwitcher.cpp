@@ -18,7 +18,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         setOrientation(Qt::Orientation::Horizontal);
         setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-        setStyleSheet("border: none;");
         setStyleSheet(QString("QToolBar {background-color: none; border: none; spacing: 3px;}"
                               "QToolButton {background-color: black; border: outset; border-color: white; border-radius: 7px; "
                               "border-width: 2px; padding: 7px; color: white;}"));
@@ -141,7 +140,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // Check if it is the first active mode to be set
         bool initialActiveMode = (m_activeButtonId == ButtonId(0));
-        
+
         // Change the tool button's name and icon to that button
         const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
         auto found = [buttonId](Button* button)
