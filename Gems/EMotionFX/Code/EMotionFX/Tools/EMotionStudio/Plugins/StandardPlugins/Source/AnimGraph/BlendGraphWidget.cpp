@@ -43,7 +43,6 @@
 #include <QMouseEvent>
 #include <QToolTip>
 #include <QWidget>
-#include <QDebug>
 
 namespace EMStudio
 {
