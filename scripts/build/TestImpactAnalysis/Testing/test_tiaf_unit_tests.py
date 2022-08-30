@@ -120,7 +120,7 @@ class TestTiafInitialiseStorage():
         # PersistentStorageLocal should be called with suite, commit and config data as arguments.
         assert_list_content_equal(self.to_list(mock_local.call_args[0]).pop(), self.to_list(expected_storage_args).pop())
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\native")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir/native")])
     def test_create_TestImpact_s3_bucket_name_supplied(self, caplog, tiaf_args, mocker, bucket_name, top_level_dir, config_data, expected_top_level_dir, storage_config):
         # given:
         # Default arguments + s3_bucket and s3_top_level_dir being set to the above parameters,
@@ -212,7 +212,7 @@ class TestTIAFNativeUnitTests():
         assert_list_content_equal(
             tiaf.runtime_args, cpp_default_runtime_args.values())
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\native")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir/native")])
     def test_create_NativeTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, cpp_default_runtime_args, mocker, bucket_name, storage_config, top_level_dir, expected_top_level_dir):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set
@@ -242,7 +242,7 @@ class TestTIAFPythonUnitTests():
         return "python"
 
     #@pytest.mark.skip(reason="To fix before PR")
-    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir\\python")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir,expected_top_level_dir", [("test_bucket", "test_dir", "test_dir/python")])
     def test_create_PythonTestImpact_correct_s3_dir_runtime_type(self, config_data, caplog, tiaf_args, mock_runtime, mocker, bucket_name, top_level_dir, expected_top_level_dir, storage_config):
         # given:
         # Default args + s3_bucket and s3_top_level_dir set

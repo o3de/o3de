@@ -21,7 +21,7 @@ class TestAutomation(EditorTestSuite):
         from .tests import UserDefinedProperties_Works as test_module
 
         @classmethod
-        def setup(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
+        def setup(cls, instance, request, workspace, editor_test_results, launcher_platform):
             # close out any previous O3DE active tool instances
             editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
 
@@ -36,7 +36,7 @@ class TestAutomation(EditorTestSuite):
             workspace.asset_processor.batch_process(extra_params="--debugOutput")
 
         @classmethod
-        def teardown(cls, instance, request, workspace, editor, editor_test_results, launcher_platform):
+        def teardown(cls, instance, request, workspace, editor_test_results, launcher_platform):
             if os.path.exists(instance.default_mat_dst):
                 os.remove(instance.default_mat_dst)
 

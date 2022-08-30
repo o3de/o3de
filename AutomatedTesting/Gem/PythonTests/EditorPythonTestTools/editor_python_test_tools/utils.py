@@ -13,7 +13,10 @@ import traceback
 from typing import Callable, Tuple
 
 import azlmbr
-import azlmbr.legacy.general as general
+try:
+    import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
+except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
+    import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter
@@ -160,24 +163,20 @@ class TestHelper:
         """
         Report.info("Entering game mode")
 
-        with Tracer() as section_tracer:
+        with MultiplayerHelper() as multiplayer_helper:
             # enter game-mode. 
             # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
-            # make sure the server launcher binary exists
-            TestHelper.fail_if_log_line_found("MultiplayerEditor", "LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
-
             # make sure the server launcher is running
-            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
+            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
 
-            TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor has connected to the editor-server.", section_tracer.prints, 120.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
 
-            TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 10.0)
 
-            TestHelper.succeed_if_log_line_found("EditorServer", "System: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
-
-            TestHelper.succeed_if_log_line_found("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+            TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 10.0)
 
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
@@ -307,7 +306,7 @@ class Report:
             Report._exception = traceback.format_exc()
 
         success, report_str = Report.get_report(test_function)
-        # Print on the o3de console, for debugging purpuses
+        # Print on the o3de console, for debugging purposes
         print(report_str)
         # Print the report on the piped stdout of the application
         general.test_output(report_str)
@@ -572,6 +571,53 @@ class AngleHelper:
         """
         return AngleHelper.is_angle_close(math.radians(x_deg), math.radians(y_deg), tolerance)
 
+'''
+Utility for receiving Multiplayer Editor notifications.
+Usage:
+
+    ...
+    with MultiplayerHelper() as multiplayer_helper:
+        # section were we are interested in capturing multiplayer editor notifications
+        TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
+        ...
+'''
+class MultiplayerHelper:
+    def __init__(self):
+        self.handler = None
+        self.serverLaunched = False
+        self.editorConnectionAttemptCount = 0
+        self.editorSendingLevelData = False
+        self.connectToSimulationSuccess = False
+
+    def __enter__(self):
+        self.handler = azlmbr.multiplayer.MultiplayerEditorServerNotificationBusHandler()
+        self.handler.connect()
+        self.handler.add_callback("OnServerLaunched", self._on_server_launched)
+        self.handler.add_callback("OnEditorConnectionAttempt", self._on_editor_connection_attempt)
+        self.handler.add_callback("OnEditorSendingLevelData", self._on_editor_sending_level_data)
+        self.handler.add_callback("OnConnectToSimulationSuccess", self._on_connect_to_simulation_success)
+        return self
+        
+    def __exit__(self, type, value, traceback):
+        self.handler.disconnect()
+        self.handler = None
+        return False
+
+    def _on_server_launched(self, args):
+        self.serverLaunched = True
+        return False
+    
+    def _on_editor_connection_attempt(self, args):
+        self.editorConnectionAttemptCount = args[0]
+        return False
+    
+    def _on_editor_sending_level_data(self, args):
+        self.editorSendingLevelData = True
+        return False
+
+    def _on_connect_to_simulation_success(self, args):
+        self.connectToSimulationSuccess = True
+        return False
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)

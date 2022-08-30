@@ -19,130 +19,6 @@
 
 namespace AssetProcessor
 {
-    void SettingsRegistryBuilder::SettingsExporter::WriteName(AZStd::string_view name)
-    {
-        if (m_includeName)
-        {
-            m_writer.Key(name.data(), aznumeric_caster(name.length()));
-        }
-    }
-
-    SettingsRegistryBuilder::SettingsExporter::SettingsExporter(
-        rapidjson::StringBuffer& buffer, const AZStd::vector<AZStd::string>& excludes)
-        : m_writer(rapidjson::Writer<rapidjson::StringBuffer>(buffer))
-        , m_excludes(excludes)
-    {
-    }
-
-    AZ::SettingsRegistryInterface::VisitResponse SettingsRegistryBuilder::SettingsExporter::Traverse(
-        AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::VisitAction action,
-        AZ::SettingsRegistryInterface::Type type)
-    {
-        for (const AZStd::string& exclude : m_excludes)
-        {
-            if (exclude == path)
-            {
-                return AZ::SettingsRegistryInterface::VisitResponse::Skip;
-            }
-        }
-
-        if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
-        {
-            AZ_Assert(type == AZ::SettingsRegistryInterface::Type::Object || type == AZ::SettingsRegistryInterface::Type::Array,
-                "Unexpected type visited: %i.", type);
-            WriteName(valueName);
-            if (type == AZ::SettingsRegistryInterface::Type::Object)
-            {
-                m_result = m_result && m_writer.StartObject();
-                m_includeNameStack.push(true);
-                m_includeName = true;
-            }
-            else
-            {
-                m_result = m_result && m_writer.StartArray();
-                m_includeNameStack.push(false);
-                m_includeName = false;
-            }
-        }
-        else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
-        {
-            if (type == AZ::SettingsRegistryInterface::Type::Object)
-            {
-                m_result = m_result && m_writer.EndObject();
-            }
-            else
-            {
-                m_result = m_result && m_writer.EndArray();
-            }
-            AZ_Assert(!m_includeNameStack.empty(), "Attempting to close a json array or object that wasn't started.");
-            m_includeNameStack.pop();
-            m_includeName = !m_includeNameStack.empty() ? m_includeNameStack.top() : true;
-        }
-        else if (type == AZ::SettingsRegistryInterface::Type::Null)
-        {
-            WriteName(valueName);
-            m_result = m_result && m_writer.Null();
-        }
-
-        return m_result ?
-            AZ::SettingsRegistryInterface::VisitResponse::Continue :
-            AZ::SettingsRegistryInterface::VisitResponse::Done;
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Bool(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Int64(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::u64 value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Uint64(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, double value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.Double(value);
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Visit(
-        AZStd::string_view, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        WriteName(valueName);
-        m_result = m_result && m_writer.String(value.data(), aznumeric_caster(value.length()));
-    }
-
-    bool SettingsRegistryBuilder::SettingsExporter::Finalize()
-    {
-        if (!m_includeNameStack.empty())
-        {
-            AZ_Assert(false, "m_includeNameStack is expected to be empty. This means that there was an object or array what wasn't closed.");
-            return false;
-        }
-        return m_result;
-    }
-
-    void SettingsRegistryBuilder::SettingsExporter::Reset(rapidjson::StringBuffer& buffer)
-    {
-        m_writer.Reset(buffer);
-        m_includeName = false;
-        m_result = true;
-    }
-
-
-
     SettingsRegistryBuilder::SettingsRegistryBuilder()
         : m_builderId("{1BB18B28-2953-4922-A80B-E7375FCD7FC1}")
         , m_assetType("{FEBB3C7B-9C8B-46C3-8AAF-3D132D811087}")
@@ -291,16 +167,25 @@ namespace AssetProcessor
             }
         }
 
-        AZStd::string outputPath;
-        AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), "bootstrap.game.", outputPath);
-        size_t extensionOffset = outputPath.length();
-
-        rapidjson::StringBuffer outputBuffer;
-        outputBuffer.Reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
-        SettingsExporter exporter(outputBuffer, excludes);
+        AZ::IO::Path outputPath = AZ::IO::Path(request.m_tempDirPath) / "bootstrap.game";
+        size_t extensionOffset = outputPath.Native().size();
 
         if (!platformCodes.empty())
         {
+            // Setting up the Dumper settings for exporting the settings registry to a file
+            AZStd::string outputBuffer;
+            outputBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
+            AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
+            dumperSettings.m_includeFilter = [&excludes](AZStd::string_view jsonKeyPath)
+            {
+                auto ExcludeField = [&jsonKeyPath](AZStd::string_view excludePath)
+                {
+                    return AZ::SettingsRegistryMergeUtils::IsPathDescendantOrEqual(excludePath, jsonKeyPath);
+                };
+                // Include a path only if it is not equal or a suffix of any paths of the exclude vector
+                return AZStd::ranges::find_if(excludes, ExcludeField) == AZStd::ranges::end(excludes);
+            };
+
             AZStd::string_view platform = platformCodes.front();
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
@@ -391,17 +276,12 @@ namespace AssetProcessor
                     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
                 }
 
-
-                if (registry.Visit(exporter, ""))
+                if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);
+                    AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(registry, "", outputStream, dumperSettings))
                 {
-                    if (!exporter.Finalize())
-                    {
-                        return;
-                    }
-
                     AZStd::string_view specializationString(specialization.GetSpecialization(0));
-                    outputPath += specializationString; // Append configuration
-                    outputPath += ".setreg";
+                    outputPath.Native() += specializationString; // Append configuration
+                    outputPath.Native() += ".setreg";
 
                     AZ::IO::SystemFile file;
                     if (!file.Open(outputPath.c_str(),
@@ -410,7 +290,7 @@ namespace AssetProcessor
                         AZ_Error("Settings Registry Builder", false, R"(Failed to open file "%s" for writing.)", outputPath.c_str());
                         return;
                     }
-                    if (file.Write(outputBuffer.GetString(), outputBuffer.GetSize()) != outputBuffer.GetSize())
+                    if (file.Write(outputBuffer.data(), outputBuffer.size()) != outputBuffer.size())
                     {
                         AZ_Error("Settings Registry Builder", false, R"(Failed to write settings registry to file "%s".)", outputPath.c_str());
                         return;
@@ -421,14 +301,14 @@ namespace AssetProcessor
                     AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
                         " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));
-                    response.m_outputProducts.emplace_back(outputPath, m_assetType, hashedSpecialization);
+                    response.m_outputProducts.emplace_back(outputPath.Native(), m_assetType, hashedSpecialization);
                     response.m_outputProducts.back().m_dependenciesHandled = true;
 
-                    outputPath.erase(extensionOffset);
+                    outputPath.Native().erase(extensionOffset);
                 }
 
-                outputBuffer.Clear();
-                exporter.Reset(outputBuffer);
+                // Clear the output buffer, to make sure previous loop iterations settings are not being appended
+                outputBuffer.clear();
             }
         }
 

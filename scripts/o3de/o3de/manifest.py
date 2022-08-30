@@ -13,9 +13,8 @@ import json
 import logging
 import os
 import pathlib
-import hashlib
 
-from o3de import validation, utils
+from o3de import validation, utils, repo
 
 logger = logging.getLogger('o3de.manifest')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -537,7 +536,6 @@ def get_project_json_data(project_name: str = None,
 
     if project_name and not project_path:
         project_path = get_registered(project_name=project_name)
-
     if pathlib.Path(project_path).is_file():
         return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
     else:
@@ -553,6 +551,7 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
+    # Call get_json_data_file if the path is an existing file as get_json_data appends gem.json
     if pathlib.Path(gem_path).is_file():
         return get_json_data_file(gem_path, 'gem', validation.valid_o3de_gem_json)
     else:
@@ -568,7 +567,11 @@ def get_template_json_data(template_name: str = None, template_path: str or path
     if template_name and not template_path:
         template_path = get_registered(template_name=template_name, project_path=project_path)
 
-    return get_json_data('template', template_path, validation.valid_o3de_template_json)
+    # Call get_json_data_file if the path is an existing file as get_json_data appends template.json
+    if pathlib.Path(template_path).is_file():
+        return get_json_data_file(template_path, 'template', validation.valid_o3de_template_json)
+    else:
+        return get_json_data('template', template_path, validation.valid_o3de_template_json)
 
 
 def get_restricted_json_data(restricted_name: str = None, restricted_path: str or pathlib.Path = None,
@@ -594,12 +597,9 @@ def get_repo_json_data(repo_uri: str) -> dict or None:
 
 
 def get_repo_path(repo_uri: str, cache_folder: str or pathlib.Path = None) -> pathlib.Path:
-    if not cache_folder:
-        cache_folder = get_o3de_cache_folder()
-
     repo_manifest = f'{repo_uri}/repo.json'
-    repo_sha256 = hashlib.sha256(repo_manifest.encode())
-    return cache_folder / str(repo_sha256.hexdigest() + '.json')
+    cache_file, _ = repo.get_cache_file_uri(repo_manifest)
+    return cache_file
 
 
 def get_registered(engine_name: str = None,

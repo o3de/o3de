@@ -655,6 +655,9 @@ namespace AzToolsFramework
                 AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform);
             }
 
+            m_prefabUndoCache.UpdateCache(entityId);
+            m_prefabUndoCache.UpdateCache(parentId);
+
             // Get the alias of the parent entity in the owning template's DOM.
             AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentId);
             PrefabDomPath entityPathInOwningTemplate(parentEntityAliasPath.c_str());
@@ -738,7 +741,6 @@ namespace AzToolsFramework
 
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
-                bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
                 bool isNewParentOwnedByDifferentInstance = false;
 
                 // Reparenting of entities happens before they are associated with their owning instances. So the owning instance
@@ -799,7 +801,7 @@ namespace AzToolsFramework
                     }
                 }
 
-                if (isInstanceContainerEntity)
+                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {

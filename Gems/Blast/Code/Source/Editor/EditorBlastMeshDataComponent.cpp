@@ -169,8 +169,8 @@ namespace Blast
             AZ::Render::MeshComponentNotificationBus::Event(
                 GetEntityId(), &AZ::Render::MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(),
                 model);
-            AZ::Render::MaterialReceiverNotificationBus::Event(
-                GetEntityId(), &AZ::Render::MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
+            AZ::Render::MaterialConsumerNotificationBus::Event(
+                GetEntityId(), &AZ::Render::MaterialConsumerNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
         }
     }
 
