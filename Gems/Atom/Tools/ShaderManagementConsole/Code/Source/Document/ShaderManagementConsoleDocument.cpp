@@ -444,7 +444,7 @@ namespace ShaderManagementConsole
         {
             AZ_Error(
                 "ShaderManagementConsoleDocument", false, "Failed to load material asset from asset id: %s",
-                materialAssetId.ToString<AZStd::string>().c_str());
+                materialAssetId.ToFixedString().c_str());
             return AZStd::vector<AZ::RPI::ShaderCollection::Item>();
         }
 

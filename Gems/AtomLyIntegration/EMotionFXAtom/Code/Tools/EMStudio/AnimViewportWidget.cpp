@@ -305,6 +305,7 @@ namespace EMStudio
     void AnimViewportWidget::UpdateRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
     {
         m_renderer->UpdateActorRenderFlag(renderFlags);
+        m_plugin->UpdatePickingRenderFlags(renderFlags);
     }
 
     AZ::s32 AnimViewportWidget::GetViewportId() const

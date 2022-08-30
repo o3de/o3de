@@ -44,7 +44,7 @@ namespace O3DE::ProjectManager
         m_stack->setObjectName("body");
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
 
-        m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
+        m_newProjectSettingsScreen = new NewProjectSettingsScreen(downloadController, this);
         m_stack->addWidget(m_newProjectSettingsScreen);
 
         m_projectGemCatalogScreen = new ProjectGemCatalogScreen(downloadController, this);
@@ -167,7 +167,7 @@ namespace O3DE::ProjectManager
         }
         else if (m_stack->currentWidget() == m_gemRepoScreen)
         {
-            m_header->setSubTitle(tr("Gem Repositories"));
+            m_header->setSubTitle(tr("Remote Sources"));
             m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Back"));
             m_primaryButton->setVisible(false);

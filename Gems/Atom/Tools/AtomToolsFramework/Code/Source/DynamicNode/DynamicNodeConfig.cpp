@@ -21,6 +21,7 @@ namespace AtomToolsFramework
         {
             serializeContext->Class<DynamicNodeConfig>()
                 ->Version(0)
+                ->Field("id", &DynamicNodeConfig::m_id)
                 ->Field("category", &DynamicNodeConfig::m_category)
                 ->Field("title", &DynamicNodeConfig::m_title)
                 ->Field("subTitle", &DynamicNodeConfig::m_subTitle)
@@ -35,6 +36,8 @@ namespace AtomToolsFramework
                 editContext->Class<DynamicNodeConfig>("DynamicNodeConfig", "Configuration settings defining the slots and UI of a dynamic node.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_id, "Id", "UUID for identifying this node configuration regardless of file location.")
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_category, "Category", "Name of the category where this node will appear in the node palette.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_title, "Title", "Title that will appear at the top of the node UI in a graph.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &DynamicNodeConfig::m_subTitle, "Sub Title", "Secondary title that will appear below the main title on the node UI in a graph.")
@@ -54,6 +57,7 @@ namespace AtomToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "atomtools")
                 ->Constructor()
                 ->Constructor<const DynamicNodeConfig&>()
+                ->Property("id", BehaviorValueProperty(&DynamicNodeConfig::m_id))
                 ->Property("category", BehaviorValueProperty(&DynamicNodeConfig::m_category))
                 ->Property("title", BehaviorValueProperty(&DynamicNodeConfig::m_title))
                 ->Property("subTitle", BehaviorValueProperty(&DynamicNodeConfig::m_subTitle))
@@ -85,17 +89,32 @@ namespace AtomToolsFramework
 
     bool DynamicNodeConfig::Save(const AZStd::string& path) const
     {
-        return AZ::JsonSerializationUtils::SaveObjectToFile(this, GetPathWithoutAlias(path)).IsSuccess();
+        auto saveResult = AZ::JsonSerializationUtils::SaveObjectToFile(this, GetPathWithoutAlias(path));
+        if (!saveResult)
+        {
+            AZ_Error("DynamicNodeConfig", false, "Failed to save (%s). %s", path.c_str(), saveResult.GetError().c_str());
+            return false;
+        }
+
+        return true;
     }
 
     bool DynamicNodeConfig::Load(const AZStd::string& path)
     {
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(GetPathWithoutAlias(path));
-        if (loadResult && loadResult.GetValue().is<DynamicNodeConfig>())
+        if (!loadResult)
         {
-            *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());
-            return true;
+            AZ_Error("DynamicNodeConfig", false, "Failed to load (%s). %s", path.c_str(), loadResult.GetError().c_str());
+            return false;
         }
-        return false;
+
+        if (!loadResult.GetValue().is<DynamicNodeConfig>())
+        {
+            AZ_Error("DynamicNodeConfig", false, "Failed to load (%s). Doesn't contain correct type", path.c_str());
+            return false;
+        }
+
+        *this = AZStd::any_cast<DynamicNodeConfig>(loadResult.GetValue());
+        return true;
     }
 } // namespace AtomToolsFramework

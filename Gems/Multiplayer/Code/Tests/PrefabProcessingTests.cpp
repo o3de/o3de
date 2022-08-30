@@ -29,7 +29,7 @@ namespace UnitTest
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext);
 
         explicit TestPrefabProcessorContext(const AZ::Uuid& sourceUuid)
-            : AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext(sourceUuid)
+            : PrefabProcessorContext(sourceUuid)
         {
         }
 
@@ -53,7 +53,13 @@ namespace UnitTest
             entities.emplace_back(CreateSourceEntity(m_netEntityName.c_str(), true, AZ::Transform::CreateIdentity()));
 
             // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
-            ConvertEntitiesToPrefab(entities, m_prefabDom, "test/path");
+            ConvertEntitiesToPrefab(entities, m_networkPrefabDom, "test/path");
+
+            // Create a non-networked prefab
+            AZStd::vector<AZ::Entity*> nonNetworkEntities;
+            nonNetworkEntities.emplace_back(CreateSourceEntity("NonNetEntity_1", false, AZ::Transform::CreateIdentity()));
+            nonNetworkEntities.emplace_back(CreateSourceEntity("NonNetEntity_2", false, AZ::Transform::CreateIdentity()));
+            ConvertEntitiesToPrefab(nonNetworkEntities, m_nonNetworkPrefabDom, "test/path_non_networked");
         }
 
         void TearDown() override
@@ -115,10 +121,24 @@ namespace UnitTest
             return childIndex > parentIndex;
         }
 
+        static bool ContainsEntity(const AzFramework::Spawnable::EntityList& entityList, const AZStd::string& name)
+        {
+            for (const auto& entity : entityList)
+            {
+                if (entity->GetName() == name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         const AZStd::string m_staticEntityName = "static_floor";
         const AZStd::string m_netEntityName = "networked_entity";
 
-        AzToolsFramework::Prefab::PrefabDom m_prefabDom;
+        AzToolsFramework::Prefab::PrefabDom m_networkPrefabDom;
+        AzToolsFramework::Prefab::PrefabDom m_nonNetworkPrefabDom;
     };
 
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NetEntityGoesToNetSpawnable)
@@ -127,7 +147,7 @@ namespace UnitTest
         const AZStd::string prefabName = "testPrefab";
         TestPrefabProcessorContext prefabProcessorContext{AZ::Uuid::CreateRandom()};
         AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument document(prefabName);
-        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_prefabDom)));
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_networkPrefabDom)));
         prefabProcessorContext.AddPrefab(AZStd::move(document));
 
         // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
@@ -150,17 +170,39 @@ namespace UnitTest
 
         // Verify we have only the networked entity in the network spawnable and not the static one
         const AzFramework::Spawnable* netSpawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
-        const AzFramework::Spawnable::EntityList& entityList = netSpawnable->GetEntities();
-        auto countEntityCallback = [](const auto& name)
-        {
-            return [name](const auto& entity)
-            {
-                return entity->GetName() == name;
-            };
-        };
+        const AzFramework::Spawnable::EntityList& networkSpawnableEntityList = netSpawnable->GetEntities();
 
-        EXPECT_EQ(0, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_staticEntityName)));
-        EXPECT_EQ(1, AZStd::count_if(entityList.begin(), entityList.end(), countEntityCallback(m_netEntityName)));
+        EXPECT_FALSE(ContainsEntity(networkSpawnableEntityList, m_staticEntityName));
+        EXPECT_TRUE(ContainsEntity(networkSpawnableEntityList, m_netEntityName));
+    }
+
+    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_NonNetEntityDoesNotProduceNetSpawnable)
+    {
+        // Add the prefab into the Prefab Processor Context
+        const AZStd::string prefabName = "testPrefab";
+        TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument document(prefabName);
+
+        ASSERT_TRUE(document.SetPrefabDom(AZStd::move(m_nonNetworkPrefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(document));
+
+        // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
+        Multiplayer::NetworkPrefabProcessor processor;
+        processor.Process(prefabProcessorContext);
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor prefabCatchmentProcessor;
+        prefabCatchmentProcessor.Process(prefabProcessorContext);
+
+        // Validate results
+        EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
+
+        // Should be 1 spawnable and no networked spawnable
+        const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
+        EXPECT_EQ(processedObjects.size(), 1);
+
+        // Verify the name and the type of the spawnable asset
+        const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
+        EXPECT_EQ(prefabName + AzFramework::Spawnable::DotFileExtension, processedObjects[0].GetId());
+        EXPECT_EQ(spawnableAsset.GetType(), azrtti_typeid<AzFramework::Spawnable>());
     }
 
     TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabTwoEntities_AliasesInsertedIntoContext)
@@ -171,7 +213,7 @@ namespace UnitTest
         // Add the prefab into the Prefab Processor Context
         TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
         PrefabDocument prefabDocument("testPrefab");
-        prefabDocument.SetPrefabDom(AZStd::move(m_prefabDom));
+        prefabDocument.SetPrefabDom(AZStd::move(m_networkPrefabDom));
 
         prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
 
@@ -245,6 +287,71 @@ namespace UnitTest
             const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
 
             EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+            EXPECT_FALSE(ContainsEntity(entityList, parentName));
+        }
+    }
+
+    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabEntityHierarchy_GrandchildNetworkEntityProducesNetworkSpawnable)
+    {
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
+
+        const AZStd::string parentName = "static_parent";
+        const AZStd::string childName = "static_child";
+        const AZStd::string childOfChildName = "networked_childOfChild";
+
+        // Create test entities with the following hierarchy:
+        // static parent
+        // + static child
+        //   + networked child
+        AZStd::vector<AZ::Entity*> entities;
+        AZ::Entity* parent = entities.emplace_back(CreateSourceEntity(parentName.c_str(), false, AZ::Transform::CreateIdentity()));
+        AZ::Entity* child = entities.emplace_back(CreateSourceEntity(childName.c_str(), false, AZ::Transform::CreateIdentity(), parent));
+        entities.emplace_back(CreateSourceEntity(childOfChildName.c_str(), true, AZ::Transform::CreateIdentity(), child));
+
+        // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        ConvertEntitiesToPrefab(entities, prefabDom, "test_entities_sorted/path");
+
+        // Add the prefab into the Prefab Processor Context
+        const AZStd::string prefabName = "testPrefab";
+        TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefabDocument(prefabName);
+        ASSERT_TRUE(prefabDocument.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
+
+        // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
+        Multiplayer::NetworkPrefabProcessor processor;
+        processor.Process(prefabProcessorContext);
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor prefabCatchmentProcessor;
+        prefabCatchmentProcessor.Process(prefabProcessorContext);
+        EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
+
+        // Verify entities are ordered by parent/child hierarchy
+        const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
+
+        // Verify that the nested network entity was discovered by the network prefab processor (NetworkPrefabProcessor::ProcessPrefab)
+        // and 2 processed objects (spawnable and network.spawnable) were produced.
+        EXPECT_EQ(processedObjects.size(), 2);
+
+        // Static spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_TRUE(IsChildAfterParent(childName, parentName, entityList));
+            EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+        }
+
+        // Network spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[1].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_FALSE(ContainsEntity(entityList, parentName));
+            EXPECT_FALSE(ContainsEntity(entityList, childName));
+            EXPECT_TRUE(ContainsEntity(entityList, childOfChildName));
         }
     }
 } // namespace UnitTest

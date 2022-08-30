@@ -1,21 +1,41 @@
-"""!
-Copyright (c) Contributors to the Open 3D Engine Project.
-For complete copyright and license terms please see the LICENSE at the root of this distribution.
-
-SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
 # -------------------------------------------------------------------------
 
-"""! @brief
-<DCCsi>/config.py
-Generate dynamic and synthetic environment context and settings.
-This module uses dynaconf (a dynamic configuration and settings package)
+"""! The dccsi Core configuration module
+
+:file: < DCCsi >/config.py
+:Status: Prototype
+:Version: 0.0.1, first significant refactor
+
+This module handles core configuration of the dccsi
+-   It initializes and generates a dynamic, and synthetic, environment context,
+    and settings.
+-   ConfigCore class, inherets from azpy.config_class.ConfigClass (not yet)
+-   This module uses dynaconf (a dynamic configuration and settings package)
 
 This config.py synthetic env can be overridden or extended with a local .env
-"C:/Depot/o3de-dev/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/.env"
-^ this is only appropriate to a developer making local settings changes,
-primarily to outside of this module. See: example.env.tmp (copy and rename to .env)
-and want those settings to persist across the dccsi modules which use config.py
+Example, create such as file:
+    "< o3de >/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/.env"
+
+    ^ this is only appropriate to a developer making local settings changes,
+    primarily to outside of this module, and want those settings to persist
+    across the dccsi modules which draw from this core config.py
+    See: example.env.tmp (copy and rename to .env)
+
+    This file should not be commited
+
+The second way to locally override or persist settings, is to make changes in
+the file:
+    DccScriptingInterface/settings.local.json
+
+    ^ this file can be generated via the core config.py cli
+    or from
 
 If you only want to make transient envar settings changes that only persist to
 an IDE session, you can create and modify this file:
@@ -186,6 +206,9 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
     @param envar: add paths to this ENVAR
     """
 
+    # this method is called a lot and has become verbose,
+    # it's suggested to clean this up when the config is next refactored
+
     _LOGGER.info('checking envar: {}'.format(envar))
 
     # get or default to empty
@@ -207,9 +230,10 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
         for p in path_list:
             p = Path(p)
             if (p.exists() and p.as_posix() not in known_pathlist):
-                os.environ[envar] = p.as_posix() + os.pathsep + os.environ[envar]
-                # adding directly to sys.path apparently doesn't work for .dll locations like Qt
+                # adding directly to sys.path apparently doesn't work
+                # for .dll locations like Qt
                 # this pattern by extending the ENVAR seems to work correctly
+                os.environ[envar] = p.as_posix() + os.pathsep + os.environ[envar]
 
     return os.environ[envar]
 # -------------------------------------------------------------------------
@@ -227,6 +251,9 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
     @param path_list: a list() of paths
     @param envar: add paths to this ENVAR (and site.addsitedir)
     """
+
+    # this method is called a lot and has become verbose,
+    # it's suggested to clean this up when the config is next refactored
 
     _LOGGER.info('checking envar: {}'.format(envar))
 
@@ -380,7 +407,7 @@ def validate_o3de_pyside2():
 
 
 # -------------------------------------------------------------------------
-def test_pyside2():
+def test_pyside2(exit=True):
     """Convenience method to test Qt / PySide2 access"""
     # now test
     _LOGGER.info('~   Testing Qt / PySide2')
@@ -396,7 +423,9 @@ def test_pyside2():
         raise(e)
 
     _LOGGER.info('~   SUCCESS: .test_pyside2()')
-    sys.exit(app.exec_())
+
+    if exit:
+        sys.exit(app.exec_())
 # -------------------------------------------------------------------------
 
 
@@ -442,6 +471,10 @@ def init_o3de_core(engine_path=_O3DE_DEV,
                         ## the following will also load settings.local.json
                         #settings_files=['settings.json',
                                         #'.secrets.json'])
+
+    # for validation of this core config module
+    # as we may layer and fold config's together.
+    os.environ['DYNACONF_DCCSI_CONFIG_CORE'] = "True"
 
     # global settings
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
@@ -495,9 +528,19 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # There are numerous ways to build, e.g. project-centric or engine-centric
 
     # when using the installer with pre-built engine (CMakeCache doesn't exist)
-    _PATH_O3DE_BUILD = Path(azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
-                                                                  'CMakeCache.txt'))
-    os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
+    # conundrum, if not built yet this retrusn None and no fallback
+    # suggestion, we should default to a known good (installer bin)
+    # that should work for majority of end users but maybe not devs
+    # need to trap error for devs ... egine needs to be built
+    try:
+        # if this fails, can't find a build / bin path
+        _PATH_O3DE_BUILD = azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
+                                                                'CMakeCache.txt')
+        _PATH_O3DE_BUILD = Path(_PATH_O3DE_BUILD)
+        os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
+    except EnvironmentError as e:
+        _LOGGER.warning(f'No o3de build path, PATH_O3DE_BUILD is: {_PATH_O3DE_BUILD}')
+        _LOGGER.error(f'error: {e}')
 
     _PATH_O3DE_BIN = Path(STR_PATH_O3DE_BIN.format(_PATH_O3DE_BUILD))
     os.environ["DYNACONF_PATH_O3DE_BIN"] = str(_PATH_O3DE_BIN.as_posix())

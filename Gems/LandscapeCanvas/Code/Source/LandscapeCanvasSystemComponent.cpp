@@ -78,6 +78,9 @@
 #include <Editor/Nodes/Shapes/ReferenceShapeNode.h>
 #include <Editor/Nodes/Shapes/SphereShapeNode.h>
 #include <Editor/Nodes/Shapes/TubeShapeNode.h>
+#include <Editor/Nodes/Terrain/TerrainHeightGradientListNode.h>
+#include <Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h>
+#include <Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h>
 
 namespace LandscapeCanvas
 {
@@ -86,6 +89,15 @@ namespace LandscapeCanvas
         // The FastNoise gem is optional, so we need to keep track of its component type ID
         // ourselves since we can't rely on the headers being there.
         static constexpr const char* EditorFastNoiseGradientComponentTypeId = "{FD018DE5-5EB4-4219-9D0C-CB3C55DE656B}";
+
+        // The Terrain gem is optional, so we need to keep track of the component type IDs
+        // ourselves since we can't rely on the headers being there.
+        namespace Terrain
+        {
+            static constexpr const char* EditorTerrainHeightGradientListComponentTypeId = "{2D945B90-ADAB-4F9A-A113-39E714708068}";
+            static constexpr const char* EditorTerrainLayerSpawnerComponentTypeId = "{9403FC94-FA38-4387-BEFD-A728C7D850C1}";
+            static constexpr const char* EditorTerrainSurfaceGradientListComponentTypeId = "{49831E91-A11F-4EFF-A824-6D85C284B934}";
+        }
 
         // The Vegetation gem is optional, so we need to keep track of the component type IDs
         // ourselves since we can't rely on the headers being there.
@@ -144,6 +156,10 @@ namespace LandscapeCanvas
     VISITOR_FUNCTION<ReferenceShapeNode>(LmbrCentral::EditorReferenceShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<SphereShapeNode>(LmbrCentral::EditorSphereShapeComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<TubeShapeNode>(LmbrCentral::EditorTubeShapeComponentTypeId, ##__VA_ARGS__);     \
+    /* Terrain nodes */    \
+    VISITOR_FUNCTION<TerrainHeightGradientListNode>(Internal::Terrain::EditorTerrainHeightGradientListComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainLayerSpawnerNode>(Internal::Terrain::EditorTerrainLayerSpawnerComponentTypeId, ##__VA_ARGS__);     \
+    VISITOR_FUNCTION<TerrainSurfaceGradientListNode>(Internal::Terrain::EditorTerrainSurfaceGradientListComponentTypeId, ##__VA_ARGS__);     \
     /* Gradient generator nodes */    \
     VISITOR_FUNCTION<FastNoiseGradientNode>(Internal::EditorFastNoiseGradientComponentTypeId, ##__VA_ARGS__);     \
     VISITOR_FUNCTION<PerlinNoiseGradientNode>(GradientSignal::EditorPerlinGradientComponentTypeId, ##__VA_ARGS__);     \

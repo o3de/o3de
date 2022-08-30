@@ -42,7 +42,6 @@ set(FILES
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
-    Source/ProjectTemplateInfo.cpp
     Source/ProjectGemCatalogScreen.h
     Source/ProjectGemCatalogScreen.cpp
     Source/PythonBindings.h
@@ -85,12 +84,18 @@ set(FILES
     Source/TagWidget.cpp
     Source/TemplateButtonWidget.h
     Source/TemplateButtonWidget.cpp
+    Source/TemplateInfo.cpp
+    Source/TemplateInfo.h
     Source/ExternalLinkDialog.h
     Source/ExternalLinkDialog.cpp
     Source/AdjustableHeaderWidget.h
     Source/AdjustableHeaderWidget.cpp
     Source/AddRemoteProjectDialog.h
     Source/AddRemoteProjectDialog.cpp
+    Source/AddRemoteTemplateDialog.h
+    Source/AddRemoteTemplateDialog.cpp
+    Source/DownloadRemoteTemplateDialog.h
+    Source/DownloadRemoteTemplateDialog.cpp
     Source/TextOverflowWidget.h
     Source/TextOverflowWidget.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
