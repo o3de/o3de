@@ -39,6 +39,8 @@ class PythonTestImpact(BaseTestImpact):
         @return: List of tests that failed in test runner but did not fail in TIAF or weren't selected by TIAF.
         """
         mismatched_test_suites = []
+        
+        # If test runner policy is any other setting or not set, we will not have Pytest xml files to consume and comparison is not possible.
         if self._test_runner_policy == "on":
             ERRORS_KEY = 'errors'
             FAILURES_KEY = 'failures'
@@ -58,6 +60,11 @@ class PythonTestImpact(BaseTestImpact):
         return mismatched_test_suites
 
     def _parse_xml_report(self, path):
+        """
+        Parse JUnit xml reports at the specified path and return a dictionary mapping the test suite name to the xml properties of that test suite.
+        @param path: Path to the folder containing Pytest JUnit artifacts.
+        @return test_results: A dictionary mapping each test suite name to the corresponding properties(tests passed, failed etc) of that test suite.
+        """
         test_results = {}
         path_to_report_dir = Path(path)
         for report in path_to_report_dir.iterdir():
