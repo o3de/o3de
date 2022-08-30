@@ -115,24 +115,8 @@ namespace AZ
         AZ_INLINE Page* PopFreePage();
         AZ_INLINE void PushFreePage(Page* page);
         void GarbageCollect();
-        inline bool IsInStaticBlock(Page* page)
-        {
-            const char* staticBlockStart = reinterpret_cast<const char*>(m_staticDataBlock);
-            const char* staticBlockEnd = staticBlockStart + m_numStaticPages * m_pageSize;
-            const char* pageAddress = reinterpret_cast<const char*>(page);
-            // all pages are the same size so we either in or out, no need to check the pageAddressEnd
-            if (pageAddress >= staticBlockStart && pageAddress < staticBlockEnd)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
         inline Page* ConstructPage(size_t elementSize)
         {
-            AZ_Assert(m_isDynamic, "We run out of static pages (%d) and this is a static allocator!", m_numStaticPages);
             // We store the page struct at the end of the block
             char* memBlock;
             memBlock = reinterpret_cast<char*>(
@@ -170,9 +154,6 @@ namespace AZ
         using AllocatorType = PoolAllocation<PoolSchemaImpl>;
         IAllocator*                   m_pageAllocator;
         AllocatorType m_allocator;
-        void* m_staticDataBlock;
-        unsigned int m_numStaticPages;
-        bool m_isDynamic;
         size_t m_pageSize;
         Bucket::PageListType m_freePages;
     };
@@ -242,24 +223,8 @@ namespace AZ
         // Functions used by PoolAllocation template
         AZ_INLINE Page* PopFreePage();
         AZ_INLINE void PushFreePage(Page* page);
-        inline bool IsInStaticBlock(Page* page)
-        {
-            const char* staticBlockStart = reinterpret_cast<const char*>(m_staticDataBlock);
-            const char* staticBlockEnd = staticBlockStart + m_numStaticPages * m_pageSize;
-            const char* pageAddress = reinterpret_cast<const char*>(page);
-            // all pages are the same size so we either in or out, no need to check the pageAddressEnd
-            if (pageAddress > staticBlockStart && pageAddress < staticBlockEnd)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
         inline Page* ConstructPage(size_t elementSize)
         {
-            AZ_Assert(m_isDynamic, "We run out of static pages (%d) and this is a static allocator!", m_numStaticPages);
             // We store the page struct at the end of the block
             char* memBlock;
             memBlock = reinterpret_cast<char*>(
@@ -307,12 +272,9 @@ namespace AZ
         AZStd::vector<ThreadPoolData*> m_threads; ///< Array with all separate thread data. Used to traverse end free elements.
 
         IAllocator*           m_pageAllocator;
-        void* m_staticDataBlock;
-        size_t m_numStaticPages;
         size_t m_pageSize;
         size_t m_minAllocationSize;
         size_t m_maxAllocationSize;
-        bool m_isDynamic;
         // TODO rbbaklov Changed to recursive_mutex from mutex for Linux support.
         AZStd::recursive_mutex m_mutex;
     };
@@ -568,14 +530,7 @@ namespace AZ
                 pages.pop_front();
                 if (page.m_freeList.size() == maxElementsPerBucket || isForceFreeAllPages)
                 {
-                    if (!m_allocator->IsInStaticBlock(&page))
-                    {
-                        m_allocator->FreePage(&page);
-                    }
-                    else
-                    {
-                        m_allocator->PushFreePage(&page);
-                    }
+                    m_allocator->FreePage(&page);
                 }
             }
         }
@@ -716,28 +671,8 @@ namespace AZ
     PoolSchemaImpl::PoolSchemaImpl(const PoolSchema::Descriptor& desc)
         : m_pageAllocator(desc.m_pageAllocator ? desc.m_pageAllocator : &AllocatorInstance<SystemAllocator>::Get())
         , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
-        , m_staticDataBlock(nullptr)
-        , m_numStaticPages(desc.m_numStaticPages)
-        , m_isDynamic(desc.m_isDynamic)
         , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
     {
-        if (m_numStaticPages)
-        {
-            // We store the page struct at the end of the block
-            char* memBlock = reinterpret_cast<char*>(m_pageAllocator->Allocate(
-                m_pageSize * m_numStaticPages, m_pageSize));
-            m_staticDataBlock = memBlock;
-            size_t pageDataSize = m_pageSize - sizeof(Page);
-            for (unsigned int i = 0; i < m_numStaticPages; ++i)
-            {
-                Page* page = new (memBlock + pageDataSize) Page();
-                page->m_bin = 0xffffffff;
-                page->m_elementSize = 0;
-                page->m_maxNumElements = 0;
-                PushFreePage(page);
-                memBlock += m_pageSize;
-            }
-        }
     }
 
     //=========================================================================
@@ -751,27 +686,6 @@ namespace AZ
 
         // Free all unused memory
         GarbageCollect();
-
-        if (m_staticDataBlock)
-        {
-            while (!m_freePages.empty())
-            {
-                Page* page = &m_freePages.front();
-                (void)page;
-                m_freePages.pop_front();
-                AZ_Assert(IsInStaticBlock(page), "All dynamic pages should be deleted by now!");
-            };
-
-            char* memBlock = reinterpret_cast<char*>(m_staticDataBlock);
-            size_t pageDataSize = m_pageSize - sizeof(Page);
-            for (unsigned int i = 0; i < m_numStaticPages; ++i)
-            {
-                Page* page = reinterpret_cast<Page*>(memBlock + pageDataSize);
-                page->~Page();
-                memBlock += m_pageSize;
-            }
-            m_pageAllocator->DeAllocate(m_staticDataBlock);
-        }
     }
 
     //=========================================================================
@@ -840,31 +754,13 @@ namespace AZ
     {
         // if( m_ownerThread == AZStd::this_thread::get_id() )
         {
-            if (m_isDynamic)
+            m_allocator.GarbageCollect();
+
+            while (!m_freePages.empty())
             {
-                m_allocator.GarbageCollect();
-
-                Bucket::PageListType staticPages;
-                while (!m_freePages.empty())
-                {
-                    Page* page = &m_freePages.front();
-                    m_freePages.pop_front();
-                    if (IsInStaticBlock(page))
-                    {
-                        staticPages.push_front(*page);
-                    }
-                    else
-                    {
-                        FreePage(page);
-                    }
-                }
-
-                while (!staticPages.empty())
-                {
-                    Page* page = &staticPages.front();
-                    staticPages.pop_front();
-                    m_freePages.push_front(*page);
-                }
+                Page* page = &m_freePages.front();
+                m_freePages.pop_front();
+                FreePage(page);
             }
         }
     }
@@ -1019,12 +915,9 @@ namespace AZ
         : m_threadPoolGetter(threadPoolGetter)
         , m_threadPoolSetter(threadPoolSetter)
         , m_pageAllocator(desc.m_pageAllocator)
-        , m_staticDataBlock(nullptr)
-        , m_numStaticPages(desc.m_numStaticPages)
         , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
         , m_minAllocationSize(POOL_ALLOCATION_MIN_ALLOCATION_SIZE)
         , m_maxAllocationSize(POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
-        , m_isDynamic(desc.m_isDynamic)
     {
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
         // In memory allocation case (usually tools) we might have high contention,
@@ -1035,21 +928,6 @@ namespace AZ
         if (m_pageAllocator == nullptr)
         {
             m_pageAllocator = &AllocatorInstance<SystemAllocator>::Get(); // use the SystemAllocator if no page allocator is provided
-        }
-        if (m_numStaticPages)
-        {
-            // We store the page struct at the end of the block
-            char* memBlock = reinterpret_cast<char*>(m_pageAllocator->Allocate(
-                m_pageSize * m_numStaticPages, m_pageSize));
-            m_staticDataBlock = memBlock;
-            size_t pageDataSize = m_pageSize - sizeof(Page);
-            for (unsigned int i = 0; i < m_numStaticPages; ++i)
-            {
-                Page* page = new (memBlock + pageDataSize) Page(m_threadPoolGetter());
-                page->m_bin = 0xffffffff;
-                PushFreePage(page);
-                memBlock += m_pageSize;
-            }
         }
     }
 
@@ -1082,30 +960,6 @@ namespace AZ
         }
 
         GarbageCollect();
-
-        if (m_staticDataBlock)
-        {
-            Page* page;
-            {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-                while (!m_freePages.empty())
-                {
-                    page = &m_freePages.front();
-                    m_freePages.pop_front();
-                    AZ_Assert(IsInStaticBlock(page), "All dynamic pages should be free by now!");
-                }
-            }
-
-            char* memBlock = reinterpret_cast<char*>(m_staticDataBlock);
-            size_t pageDataSize = m_pageSize - sizeof(Page);
-            for (unsigned int i = 0; i < m_numStaticPages; ++i)
-            {
-                page = reinterpret_cast<Page*>(memBlock + pageDataSize);
-                page->~Page();
-                memBlock += m_pageSize;
-            }
-            m_pageAllocator->DeAllocate(m_staticDataBlock);
-        }
     }
 
     //=========================================================================
@@ -1238,31 +1092,12 @@ namespace AZ
     //=========================================================================
     void ThreadPoolSchemaImpl::GarbageCollect()
     {
-        if (!m_isDynamic)
-        {
-            return; // we have the memory statically allocated, can't collect garbage.
-        }
-
-        FreePagesType staticPages;
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
         while (!m_freePages.empty())
         {
             Page* page = &m_freePages.front();
             m_freePages.pop_front();
-            if (IsInStaticBlock(page))
-            {
-                staticPages.push_front(*page);
-            }
-            else
-            {
-                FreePage(page);
-            }
-        }
-        while (!staticPages.empty())
-        {
-            Page* page = &staticPages.front();
-            staticPages.pop_front();
-            m_freePages.push_front(*page);
+            FreePage(page);
         }
     }
 

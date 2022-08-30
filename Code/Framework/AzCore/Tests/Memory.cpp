@@ -301,15 +301,7 @@ namespace UnitTest
     {
     protected:
         SystemAllocator::Descriptor m_sysAllocDesc;
-        bool m_isDynamic;
-        int m_numStaticPages;
     public:
-        PoolAllocatorTest(bool isDynamic = true, int numStaticPages = 0)
-            : m_isDynamic(isDynamic)
-            , m_numStaticPages(numStaticPages)
-        {
-        }
-
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
@@ -317,8 +309,6 @@ namespace UnitTest
             AllocatorInstance<SystemAllocator>::Create(m_sysAllocDesc);
             PoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
-            poolDesc.m_isDynamic = m_isDynamic;
-            poolDesc.m_numStaticPages = m_numStaticPages;
             AllocatorInstance<PoolAllocator>::Create(poolDesc);
         }
 
@@ -423,32 +413,6 @@ namespace UnitTest
         run();
     }
 
-    class PoolAllocatorDynamicWithStaticPagesTest
-        : public PoolAllocatorTest
-    {
-    public:
-        PoolAllocatorDynamicWithStaticPagesTest()
-            : PoolAllocatorTest(true, 10) {}                                      // just create 10 pages we will allocate more than
-    };
-
-    TEST_F(PoolAllocatorDynamicWithStaticPagesTest, Test)
-    {
-        run();
-    }
-
-    class PoolAllocatorStaticPagesTest
-        : public PoolAllocatorTest
-    {
-    public:
-        PoolAllocatorStaticPagesTest()
-            : PoolAllocatorTest(false, 50) {}
-    };
-
-    TEST_F(PoolAllocatorStaticPagesTest, Test)
-    {
-        run();
-    }
-
     /**
      * Tests ThreadPoolAllocator
      */
@@ -480,16 +444,7 @@ namespace UnitTest
         volatile bool           m_doneSharedAlloc;
 #endif
 
-        bool m_isDynamic;
-        int m_numStaticPages;
-
     public:
-        ThreadPoolAllocatorTest(bool isDynamic = true, int numStaticPages = 0)
-            : m_isDynamic(isDynamic)
-            , m_numStaticPages(numStaticPages)
-        {
-        }
-
         void SetUp() override
         {
             MemoryTrackingFixture::SetUp();
@@ -507,8 +462,6 @@ namespace UnitTest
             AllocatorInstance<SystemAllocator>::Create();
             ThreadPoolAllocator::Descriptor poolDesc;
             poolDesc.m_allocationRecords = true;
-            poolDesc.m_isDynamic = m_isDynamic;
-            poolDesc.m_numStaticPages = m_numStaticPages;
             AllocatorInstance<ThreadPoolAllocator>::Create(poolDesc);
         }
 
@@ -752,32 +705,6 @@ namespace UnitTest
     };
 
     TEST_F(ThreadPoolAllocatorTest, Test)
-    {
-        run();
-    }
-
-    class ThreadPoolAllocatorDynamicWithStaticPagesTest
-        : public ThreadPoolAllocatorTest
-    {
-    public:
-        ThreadPoolAllocatorDynamicWithStaticPagesTest()
-            : ThreadPoolAllocatorTest(true, 10) {}                                            // just create 10 pages we will allocate more than
-    };
-
-    TEST_F(ThreadPoolAllocatorDynamicWithStaticPagesTest, Test)
-    {
-        run();
-    }
-
-    class ThreadPoolAllocatorStaticPagesTest
-        : public ThreadPoolAllocatorTest
-    {
-    public:
-        ThreadPoolAllocatorStaticPagesTest()
-            : ThreadPoolAllocatorTest(false, 10000) {}
-    };
-
-    TEST_F(ThreadPoolAllocatorStaticPagesTest, Test)
     {
         run();
     }
@@ -2157,7 +2084,6 @@ namespace UnitTest
                 HphaSchema::Descriptor hphaDesc;
                 PoolSchema::Descriptor poolDesc;
                 poolDesc.m_pageAllocator = &da;
-                poolDesc.m_numStaticPages = 100;
                 {
                     HphaSchema hpha(hphaDesc);
                     PoolSchema pool;

@@ -37,17 +37,9 @@ namespace AZ
         {
             AZ_TYPE_INFO(Descriptor, "{DB802BA9-33E0-4E7A-A79B-CC6EBC39DC82}")
             Descriptor()
-                : m_isDynamic(true)
-                , m_numStaticPages(0)
-                , m_pageAllocator(nullptr)
+                : m_pageAllocator(nullptr)
 
             {}
-            bool                m_isDynamic;            ///< True if we allocate pages at runtime, false if we allocate at create.
-            /**
-             * Number of static pages defined how many pages will be allocated at the start. If the m_isDynamic is true
-             * this is the minimum number of pages we will have allocated at all times, otherwise the total number of pages supported.
-             */
-            unsigned int        m_numStaticPages;
             IAllocator*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
         };
         AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
