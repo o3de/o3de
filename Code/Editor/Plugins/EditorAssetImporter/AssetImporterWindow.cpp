@@ -342,6 +342,10 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     ui->m_cardAreaLayout->addWidget(card);
     ++m_openSceneSettingsCards;
     connect(card, &QObject::destroyed, this, &AssetImporterWindow::SceneSettingsCardDestroyed);
+
+    connect(card, &SceneSettingsCard::ProcessingCompleted, this, &AssetImporterWindow::SceneSettingsCardProcessingCompleted);
+    
+    m_sceneSettingsCardOverlay = m_overlay->PushLayer(nullptr, nullptr, "Waiting for file to finish processing", AzQtComponents::OverlayWidgetButtonList());
     return card;
 }
 
@@ -364,6 +368,16 @@ void AssetImporterWindow::SceneSettingsCardDestroyed()
         m_logDetailsCard->hide();
         ui->m_notificationAreaLayoutWidget->hide();
     }
+}
+
+void AssetImporterWindow::SceneSettingsCardProcessingCompleted()
+{
+    if (m_isClosed)
+    {
+        return;
+    }
+    m_overlay->PopLayer(m_sceneSettingsCardOverlay);
+    m_sceneSettingsCardOverlay = -1;
 }
 
 bool AssetImporterWindow::IsAllowedToChangeSourceFile()

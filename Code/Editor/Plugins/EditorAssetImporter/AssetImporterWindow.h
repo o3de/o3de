@@ -100,6 +100,7 @@ public slots:
     void OnOpenDocumentation();
     void OnInspect();
     void SceneSettingsCardDestroyed();
+    void SceneSettingsCardProcessingCompleted();
 
 private:
     void Init();
@@ -140,6 +141,7 @@ private:
     //QWidget* m_notificationRootWidget = nullptr;
     AzQtComponents::Card* m_logDetailsCard = nullptr;
     int m_openSceneSettingsCards = 0;
+    int m_sceneSettingsCardOverlay = -1;
 
     // Output logs can have a lot of additional details,
     // this table displays that information when you select

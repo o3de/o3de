@@ -102,6 +102,9 @@ public Q_SLOTS:
     void OnSetStatusMessage(const AZStd::string& message);
     void OnProcessingComplete();
     void OnLogLineSelected();
+    
+signals:
+    void ProcessingCompleted();
 
 private:
     enum class CompletionState

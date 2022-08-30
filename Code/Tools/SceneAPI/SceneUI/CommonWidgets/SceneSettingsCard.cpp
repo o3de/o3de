@@ -313,29 +313,32 @@ void SceneSettingsCard::SetState(State newState)
         m_settingsHeader->SetCanClose(false);
         break;
     case State::Done:
-        QString errorsAndWarningsString("");
-        if (m_warningCount > 0 || m_errorCount > 0)
         {
-            errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
-        }
+            QString errorsAndWarningsString("");
+            if (m_warningCount > 0 || m_errorCount > 0)
+            {
+                errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
+            }
 
-        setTitle(tr("Processing completed at %1%2").arg(GetTimeAsString()).arg(errorsAndWarningsString));
-        m_settingsHeader->SetCanClose(true);
-        
-        switch (m_completionState)
-        {
-        case CompletionState::Error:
-        case CompletionState::Failure:
-            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_error.png"));
-            break;
-        case CompletionState::Warning:
-            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_warning.png"));
-            break;
-        default:
-            m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_success.png"));
-            break;
+            setTitle(tr("Processing completed at %1%2").arg(GetTimeAsString()).arg(errorsAndWarningsString));
+            m_settingsHeader->SetCanClose(true);
+
+            switch (m_completionState)
+            {
+            case CompletionState::Error:
+            case CompletionState::Failure:
+                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_error.png"));
+                break;
+            case CompletionState::Warning:
+                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_warning.png"));
+                break;
+            default:
+                m_settingsHeader->setIcon(QIcon(":/stylesheet/img/table_success.png"));
+                break;
+            }
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+            emit ProcessingCompleted();
         }
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
         break;
     }
 }
