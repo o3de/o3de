@@ -80,6 +80,11 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
     });
 }
 
+QString ImporterRootDisplay::GetHeaderFileName() const
+{
+    return ui->m_filePathText->text();
+}
+
 void ImporterRootDisplay::SetSceneDisplay(const QString& headerText, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene)
 {
     AZ_PROFILE_FUNCTION(Editor);

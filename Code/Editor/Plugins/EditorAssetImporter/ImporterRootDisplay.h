@@ -68,6 +68,7 @@ public:
     void HandleSaveWasSuccessful();
     bool HasUnsavedChanges() const;
 
+    QString GetHeaderFileName() const;
 
 signals:
     void UpdateClicked();

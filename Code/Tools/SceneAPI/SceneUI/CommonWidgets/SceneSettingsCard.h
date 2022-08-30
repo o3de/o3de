@@ -78,7 +78,7 @@ public:
         Exporting
     };
 
-    SceneSettingsCard(AZ::Uuid traceTag, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent = nullptr);
+    SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent = nullptr);
     ~SceneSettingsCard();
 
     void SetAndStartProcessingHandler(const AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler>& handler);
@@ -131,6 +131,7 @@ private:
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;
+    QString m_fileTracked;
     int m_warningCount = 0;
     int m_errorCount = 0;
 };

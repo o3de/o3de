@@ -120,6 +120,7 @@ private:
     void ClearProcessingOverlay();
 
     SceneSettingsCard* CreateSceneSettingsCard(
+        QString fileName,
         SceneSettingsCard::Layout layout,
         SceneSettingsCard::State state);
 

@@ -60,11 +60,12 @@ void SceneSettingsCardHeader::SetCanClose(bool canClose)
     m_busyLabel->setHidden(canClose);
 }
 
-SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent /* = nullptr */)
+SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, QString fileTracked, Layout layout, AzQtComponents::StyledDetailsTableModel* logDetailsModel, QWidget* parent /* = nullptr */)
     :
     AzQtComponents::Card(new SceneSettingsCardHeader(), parent),
     m_traceTag(traceTag),
-    m_logDetailsModel(logDetailsModel)
+    m_logDetailsModel(logDetailsModel),
+    m_fileTracked(fileTracked)
 {
     m_settingsHeader = qobject_cast<SceneSettingsCardHeader*>(header());
     // This has to be set here, instead of in the customheader,
@@ -320,7 +321,7 @@ void SceneSettingsCard::SetState(State newState)
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
             }
 
-            setTitle(tr("Processing completed at %1%2").arg(GetTimeAsString()).arg(errorsAndWarningsString));
+            setTitle(tr("Processing %1 completed at %2%3").arg(m_fileTracked).arg(GetTimeAsString()).arg(errorsAndWarningsString));
             m_settingsHeader->SetCanClose(true);
 
             switch (m_completionState)

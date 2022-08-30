@@ -311,7 +311,8 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     //ui->mainAreaLayout->addWidget(m_busyLabel);
     //m_busyLabel->SetText("Busy Message Test");
         
-    SceneSettingsCard* card = CreateSceneSettingsCard(SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
+    QFileInfo fileInfo(filePath.c_str());
+    SceneSettingsCard* card = CreateSceneSettingsCard(fileInfo.fileName(), SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
 
     //m_notificationRootWidget->adjustSize();
@@ -325,10 +326,11 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
 }
 
 SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
+    QString fileName,
     SceneSettingsCard::Layout layout,
     SceneSettingsCard::State state)
 {
-    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
+    SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, fileName, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
     
     card->setExpanded(false);
     if (m_logDetailsCard->isHidden())
@@ -450,11 +452,8 @@ void AssetImporterWindow::UpdateClicked()
         return;
     }
 
-    SceneSettingsCard* card = CreateSceneSettingsCard(SceneSettingsCard::Layout::Exporting, SceneSettingsCard::State::Processing);
+    SceneSettingsCard* card = CreateSceneSettingsCard(m_rootDisplay->GetHeaderFileName(), SceneSettingsCard::Layout::Exporting, SceneSettingsCard::State::Processing);
     
-    QLabel* m_progressLabel = new QLabel("Processing...");
-    m_progressLabel->setAlignment(Qt::AlignCenter);
-    AzQtComponents::OverlayWidgetButtonList buttons;
     //m_processingOverlayIndex = m_overlay->PushLayer(m_progressLabel, nullptr, "File progress", buttons);
     //card->SetAndStartProcessingHandler(asyncLoadHandler);
 
