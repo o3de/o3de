@@ -24,14 +24,14 @@ namespace TestImpact
 
         constexpr const char* OptionKeys[] = {
             // Options
-            "testrunner",
+            "usenulltestrunner",
         };
 
         Policy::TestRunner ParseNullTestRunnerPolicy(const AZ::CommandLine& cmd)
         {
-            const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseNullTestRunner, Policy::TestRunner::UseTestRunner };
+            const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseTestRunner, Policy::TestRunner::UseNullTestRunner };
 
-            return ParseOnOffOption(OptionKeys[NullTestRunnerPolicyKey], states, cmd).value_or(Policy::TestRunner::UseNullTestRunner);
+            return ParseOnOffOption(OptionKeys[NullTestRunnerPolicyKey], states, cmd).value_or(Policy::TestRunner::UseTestRunner);
         }
     } // namespace
 
@@ -53,8 +53,8 @@ namespace TestImpact
     {
         AZStd::string help = CommandLineOptions::GetCommandLineUsageString();
         help +=
-            "    -testrunner=<on,off>                                   Whether to use the test runner (on) or the nulltestrunner(off). \n"
-            "                                                           If not set, defaults to null test runner                        \n";
+            "    -testrunner=<on,off>                                   Whether to use the null test runner (on) or run the tests(off). \n"
+            "                                                           If not set, defaults to running tests.                          \n";
 
         return help;
     }

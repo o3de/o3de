@@ -39,7 +39,7 @@ class RuntimeArgs(Enum):
     NATIVE_SAFEMODE = ("safe_mode", "--safemode=", "Safe mode set to: ")
 
     # Python arguments
-    PYTHON_TEST_RUNNER = ("testrunner_policy", "--testrunner=", "Test runner policy is set to: ")
+    PYTHON_TEST_RUNNER = ("nulltestrunner_policy", "--usenulltestrunner=", "Test runner policy is set to: ")
 
     def __init__(self, driver_argument, runtime_arg, message):
         self.driver_argument = driver_argument
