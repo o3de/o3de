@@ -249,6 +249,7 @@ class BaseTestImpact(ABC):
         JENKINS_KEY = "jenkins"
         USE_TIAF_KEY = "use_test_impact_analysis"
         RUNTIME_BIN_KEY = "runtime_bin"
+        TEST_RUN_ARTIFACT_KEY = "run_artifact_dir"
 
         logger.info(
             f"Attempting to parse configuration file '{config_file}'...")
@@ -279,6 +280,7 @@ class BaseTestImpact(ABC):
                     ACTIVE_KEY][RELATIVE_PATHS_KEY][PREVIOUS_TEST_RUN_DATA_FILE_KEY]
                 self._historic_data_file = config[self.runtime_type][WORKSPACE_KEY][
                     HISTORIC_KEY][RELATIVE_PATHS_KEY][HISTORIC_DATA_FILE_KEY]
+                self._test_run_artifacts_path = config[self.runtime_type][WORKSPACE_KEY][TEMP_KEY][TEST_RUN_ARTIFACT_KEY]
                 logger.info("The configuration file was parsed successfully.")
                 return config
         except KeyError as e:
@@ -403,7 +405,20 @@ class BaseTestImpact(ABC):
         result[constants.REPORT_KEY] = report
         result[constants.CHANGE_LIST_KEY] = self._change_list
         result[constants.RUNTIME_TYPE_KEY] = self.runtime_type
+        mismatched_tests = self._cross_check_tests(report)
+        result[constants.MISMATCHED_TESTS_KEY] = mismatched_tests
+        result[constants.MISMATCHED_TESTS_COUNT_KEY] = len(mismatched_tests)
         return result
+
+    def _cross_check_tests(self, report: dict):
+        """
+        Function to compare our report with the report provided by another test runner. Will perform a comparison and return a list of any tests that failed in the other test runner that did not fail in TIAF, or were not selected.
+        Returns an empty list if not overloaded by a specialised test impact class.
+        @param report: Dictionary containing the report provided by TIAF binary
+        @return: List of tests that failed in test runner but did not fail in TIAF or weren't selected by TIAF.
+        """
+        return []
+        
 
     def _compile_s3_top_level_dir_name(self, dir_name: str):
         """

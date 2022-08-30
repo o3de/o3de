@@ -6,6 +6,10 @@
 #
 #
 
+from pathlib import Path
+import xml.etree.ElementTree as ET
+import itertools
+import tiaf_report_constants as constants
 from test_impact import BaseTestImpact
 from tiaf_logger import get_logger
 
@@ -16,6 +20,42 @@ class PythonTestImpact(BaseTestImpact):
 
     _runtime_type = "python"
     _default_sequence_type = "regular"
+
+    def _cross_check_tests(self, report: dict):
+        """
+        Function to compare our report with the report provided by another test runner. Will perform a comparison and return a list of any tests that failed in the other test runner that did not fail in TIAF, or were not selected.
+        Returns an empty list if not overloaded by a specialised test impact class.
+        @param report: Dictionary containing the report provided by TIAF binary
+        @return: List of tests that failed in test runner but did not fail in TIAF or weren't selected by TIAF.
+        """
+        ERRORS_KEY = 'errors'
+        FAILURES_KEY = 'failures'
+
+        mismatched_test_suites = []
+        xml_report_map = self._parse_xml_report(self._test_run_artifacts_path)
+        for selected_passing_report in report[constants.SELECTED_TEST_RUN_REPORT_KEY][constants.PASSING_TEST_RUNS_KEY]:
+            try:
+                suite_name = selected_passing_report[constants.NAME_KEY]
+                xml_report = xml_report_map[suite_name]
+                if int(xml_report[ERRORS_KEY]) > 0 or int(xml_report[FAILURES_KEY]) > 0:
+                    print(f"Mismatch found between the XML report for {suite_name}, logging for reporting.")
+                    mismatched_test_suites.append(suite_name)
+            except KeyError as e:
+                logger.warning(f"Exception: {e} was not found in xml report. Maybe it wasn't executed by the other runner!")
+                continue
+        
+        return mismatched_test_suites
+
+    def _parse_xml_report(self, path):
+        test_results = {}
+        path_to_report_dir = Path(path)
+        for report in path_to_report_dir.iterdir():
+            tree = ET.parse(report)
+            root = tree.getroot()
+            for child in root:
+                test_results[report.stem] = child.attrib
+        
+        return test_results
 
     @property
     def default_sequence_type(self):
