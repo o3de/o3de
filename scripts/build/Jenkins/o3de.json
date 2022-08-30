@@ -15,6 +15,12 @@
             "ORGANIZATION_NAME": "aws-lumberyard-dev",
             "URL": "https://github.com/aws-lumberyard-dev/o3de-extras.git",
             "DEVELOPMENT_BRANCH": "development"
+        },
+        {
+            "REPOSITORY_NAME": "aws-external-test-gem",
+            "ORGANIZATION_NAME": "aws-lumberyard-dev",
+            "URL": "https://github.com/aws-lumberyard/aws-external-test-gem.git",
+            "DEVELOPMENT_BRANCH": "main"
         }
     ]
 }
