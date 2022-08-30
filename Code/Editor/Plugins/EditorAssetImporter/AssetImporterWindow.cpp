@@ -196,7 +196,7 @@ void AssetImporterWindow::Init()
     m_notificationRootWidget = new QWidget(this);
     m_notificationLayout = new QVBoxLayout(m_notificationRootWidget);
     //m_notificationRootWidget->setWidgetResizable(true);
-    ui->m_mainArea->layout()->addWidget(m_notificationRootWidget);
+    ui->m_cardAreaLayout->addWidget(m_notificationRootWidget);
 
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
@@ -208,7 +208,7 @@ void AssetImporterWindow::Init()
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
 
     m_overlay->SetRoot(m_rootDisplay.data());
-    ui->m_mainArea->layout()->addWidget(m_overlay.data());
+    ui->m_settingsAreaLayout->addWidget(m_overlay.data());
 
     //ui->m_sceneDetailsCard->setTitle("Scene Details");
     
