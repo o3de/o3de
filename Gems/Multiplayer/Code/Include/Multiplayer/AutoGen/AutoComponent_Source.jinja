@@ -336,7 +336,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParam
     if (!IsNetEntityRoleClient())
 {% endif %}
     {
-        const char* currentRoleString = GetNetBindComponent() ? GetEnumString(GetNetBindComponent()->GetNetEntityRole()) : "Undetermined role, NetBindComponent is nullptr";
+        const char* currentRoleString = GetNetBindComponent() ? GetEnumString(GetNetBindComponent()->GetNetEntityRole()) : "an undetermined role, NetBindComponent is nullptr";
         AZLOG_INFO("RPC %s invoked from wrong network role, expected %s but invoked from %s", "{{ UpperFirst(Property.attrib['Name']) }}", "{{ InvokeFrom }}", currentRoleString);
         return;
     }
