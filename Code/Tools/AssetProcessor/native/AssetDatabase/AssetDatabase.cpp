@@ -789,7 +789,7 @@ namespace AssetProcessor
 
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
-            "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (SourceGuid);";
+            "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
 
         static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::DropIndexBuilderGuid_Source_SourceDependency";
         static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
@@ -810,16 +810,9 @@ namespace AssetProcessor
             "ALTER TABLE Products "
             "ADD Flags INTEGER NOT NULL DEFAULT 1;";
 
-        static const char* DROP_COLUMN_SOURCE = "AssetProcessor::DropColumnSource";
-        static const char* DROP_COLUMN_SOURCE_STATEMENT =
-            "ALTER TABLE SourceDependency "
-            "DROP COLUMN Source;";
-
-        static const char* INSERT_COLUMN_SOURCEPK = "AssertProcessor::InsertColumnSourcePK";
-        static const char* INSERT_COLUMN_SOURCEPK_STATEMENT =
-            "ALTER TABLE SourceDependency "
-            "ADD SourceGuid BLOB NOT NULL DEFAULT 0;";
-
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID = "AssetProcessor::CreateIndexSourceGuidSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS SourceGuid_SourceDependency ON SourceDependency (SourceGuid);";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -1133,15 +1126,10 @@ namespace AssetProcessor
 
         if(foundVersion == DatabaseVersion::AddedStatsTable)
         {
-            // Invalidate the source fingerprints to force all jobs to re-run CreateJobs
-            // This update invalidated the source dependency table, so it CreateJobs needs to run to repopulate it
-            InvalidateSourceAnalysisFingerprints();
-
-            if(m_databaseConnection->ExecuteOneOffStatement(DROP_COLUMN_SOURCE) && m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_SOURCEPK))
-            {
-                foundVersion = DatabaseVersion::ChangedSourceDependencySourceColumn;
-                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (ChangedSourceDependencySourceColumn)\n", foundVersion);
-            }
+            // Version update - change SourceDependency Source to SourceGuid column
+            // Do nothing so the whole database is dropped.
+            // Unfortunately we have to reprocess all assets because of the way the fingerprinting algorithm works,
+            // changing from storing the path to the UUID changes the fingerprint, resulting in all assets reprocessing anyway
         }
 
         if (foundVersion == CurrentDatabaseVersion())
@@ -1430,10 +1418,12 @@ namespace AssetProcessor
         m_createStatements.push_back(CREATEINDEX_SCANFOLDERS_FILES);
 
         m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE, CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT);
-        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCE);
 
         m_databaseConnection->AddStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY, DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT);
         m_createStatements.push_back(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY);
+
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID, CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID);
 
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
     }
