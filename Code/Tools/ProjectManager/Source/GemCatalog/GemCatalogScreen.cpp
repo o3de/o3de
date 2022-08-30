@@ -337,7 +337,7 @@ namespace O3DE::ProjectManager
                 if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
                     (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                 {
-                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), DownloadController::DownloadObjectType::Gem);
+                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "", DownloadController::DownloadObjectType::Gem);
                     GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
@@ -367,7 +367,7 @@ namespace O3DE::ProjectManager
         if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
             (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
         {
-            m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), DownloadController::DownloadObjectType::Gem);
+            m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "" , DownloadController::DownloadObjectType::Gem);
             GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
         }
     }
@@ -433,7 +433,7 @@ namespace O3DE::ProjectManager
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddObjectDownload(selectedGemName, DownloadController::DownloadObjectType::Gem);
+            m_downloadController->AddObjectDownload(selectedGemName, "" , DownloadController::DownloadObjectType::Gem);
         }
     }
 
