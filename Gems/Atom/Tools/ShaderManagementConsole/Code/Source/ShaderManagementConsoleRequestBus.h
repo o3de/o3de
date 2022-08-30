@@ -27,7 +27,6 @@ namespace ShaderManagementConsole
         //! Returns a shader file's asset id and relative filepath
         virtual AZ::Data::AssetInfo GetSourceAssetInfo(const AZStd::string& sourceAssetFileName) = 0;
 
-        // [GFX TODO][ATOM-14857] Generalize this API 
         //! Returns a list of material AssetIds that use the shader file.
         virtual AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader (const AZStd::string& shaderFilePath) = 0;
 
