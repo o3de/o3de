@@ -17,9 +17,6 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = ViewportUiLeftRightBottomBorderSize;
@@ -353,6 +350,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
     }
 
+    void ViewportUiDisplay::ChangeViewportBorderText(const char* borderTitle)
+    {
+        // when the text changes if the width is different it will flicker as it changes,
+        // this sets the width to the entire overlay to avoid that
+        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
+        m_viewportBorderText.setText(borderTitle);
+    }
+
     void ViewportUiDisplay::ImGuiActive(bool active)
     {
         if (active)
@@ -365,15 +370,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         m_uiOverlayLayout.setContentsMargins(CalculateViewportElementMargins());
-        
     };
-    void ViewportUiDisplay::ChangeViewportBorderText(
-    {
-        // when the text changes if the width is different it will flicker as it changes,
-        // this sets the width to the entire overlay to avoid that
-        m_viewportBorderText.setFixedWidth(m_uiOverlay.width());
-        m_viewportBorderText.setText(borderTitle);
-    }
+
 
     void ViewportUiDisplay::RemoveViewportBorder()
     {
@@ -566,5 +564,3 @@ namespace AzToolsFramework::ViewportUi::Internal
         widget->setAutoFillBackground(false);
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
-#pragma optimize("", on)
-#pragma inline_depth()
