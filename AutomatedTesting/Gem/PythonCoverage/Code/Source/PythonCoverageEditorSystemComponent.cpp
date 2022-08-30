@@ -156,8 +156,7 @@ namespace PythonCoverage
                 {
                     for (const auto* moduleComponentDescriptor : moduleData.GetModule()->GetComponentDescriptors())
                     {
-                        m_moduleComponents[moduleComponentDescriptor->GetUuid()] =
-                            m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
+                        m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
                     }
                 }
     
