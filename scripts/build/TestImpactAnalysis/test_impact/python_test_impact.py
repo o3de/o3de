@@ -33,7 +33,7 @@ class PythonTestImpact(BaseTestImpact):
 
     def _cross_check_tests(self, report: dict):
         """
-        Function to compare our report with the report provided by another test runner. Will perform a comparison and return a list of any tests that failed in the other test runner that did not fail in TIAF, or were not selected.
+        Function to compare our report with the report provided by another test runner. Will perform a comparison and return a list of any tests that were selected by TIAF that .
         Returns an empty list if not overloaded by a specialised test impact class.
         @param report: Dictionary containing the report provided by TIAF binary
         @return: List of tests that failed in test runner but did not fail in TIAF or weren't selected by TIAF.
@@ -46,16 +46,18 @@ class PythonTestImpact(BaseTestImpact):
             FAILURES_KEY = 'failures'
 
             xml_report_map = self._parse_xml_report(self._test_run_artifacts_path)
-            for selected_passing_report in report[constants.SELECTED_TEST_RUN_REPORT_KEY][constants.PASSING_TEST_RUNS_KEY]:
+
+            for not_selected_test_name in report[constants.SELECTED_TEST_RUNS_KEY][constants.EXCLUDED_TEST_RUNS_KEY]:
                 try:
-                    suite_name = selected_passing_report[constants.NAME_KEY]
-                    xml_report = xml_report_map[suite_name]
+                    xml_report = xml_report_map[not_selected_test_name]
+                    # If either of these are greater than zero, then a test failed or errored out, and thus this test shouldn't have passed.
                     if int(xml_report[ERRORS_KEY]) > 0 or int(xml_report[FAILURES_KEY]) > 0:
-                        print(f"Mismatch found between the XML report for {suite_name}, logging for reporting.")
-                        mismatched_test_suites.append(suite_name)
+                        logger.info(f"Mismatch found between the XML report for {not_selected_test_name}, logging for reporting.")
+                        mismatched_test_suites.append(not_selected_test_name)
                 except KeyError as e:
-                    logger.warning(f"Exception: {e} was not found in xml report. Maybe it wasn't executed by the other runner!")
+                    logger.warning(f"Error, {e} not found in our xml_reports. Maybe it wasn't run by the other test runner.")
                     continue
+                
             
         return mismatched_test_suites
 
