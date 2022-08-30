@@ -1956,14 +1956,13 @@ namespace AssetProcessor
         for (SourceFileDependencyEntry& existingEntry : results)
         {
             // this row is [Source] --> [Depends on Source].
-            SourceDatabaseEntry sourceEntry;
-            m_stateData->GetSourceBySourceGuid(existingEntry.m_sourceGuid, sourceEntry);
-            ScanFolderDatabaseEntry scanFolderEntry;
-            m_stateData->GetScanFolderByScanFolderID(sourceEntry.m_scanFolderPK, scanFolderEntry);
 
-            QString absolutePath = QDir(scanFolderEntry.m_scanFolder.c_str()).absoluteFilePath(sourceEntry.m_sourceName.c_str());
-            if (!absolutePath.isEmpty())
+            SourceInfo sourceInfo;
+
+            if (SearchSourceInfoBySourceUUID(existingEntry.m_sourceGuid, sourceInfo))
             {
+                QString absolutePath = QDir(sourceInfo.m_watchFolder).absoluteFilePath(sourceInfo.m_sourceRelativeToWatchFolder);
+
                 AssessFileInternal(absolutePath, false);
             }
             // also, update it in the database to be missing, ie, add the "missing file" prefix:
