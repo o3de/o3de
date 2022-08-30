@@ -309,77 +309,6 @@ namespace AzToolsFramework
             return true;
         }
 
-        void AssetEditorWidget::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
-        {
-                // Check that all tabs are clean.
-                for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
-                {
-                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
-                    if (tab->IsDirty() && !tab->UserRefusedSave())
-                    {
-                        return;
-                    }
-                }
-
-                // Close them.
-                for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
-                {
-                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
-                    m_tabs->removeTab(tabIndex);
-                    delete tab;
-                }
-
-
-                CloseOnNextTick();
-            };
-
-        void AssetEditorWidget::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            m_dirty = false;
-            m_saveAssetAction->setEnabled(false);
-
-            if (!m_useDPE)
-            {
-                m_propertyEditor->ClearInstances();
-            }
-
-
-            // Ensure the UserRefusedSave flag is reset so that if this gets called twice, dirty tabs aren't ignored.
-            for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
-            {
-                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
-                tab->ClearUserRefusedSaveFlag();
-            }
-
-            if (!m_tabs->count())
-            {
-                parentWidget()->parentWidget()->close();
-                return true;
-            }
-
-            for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
-            {
-                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
-                if (!tab)
-                {
-                    continue;
-                }
-
-                if (!tab->IsDirty())
-                {
-                    continue;
-                }
-
-                if (!tab->TrySaveAsset(saveCompleteCallback))
-                {
-                    // Action has been canceled.
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
         {
             QString newAssetName = QString(tr("New Asset %1").arg(m_nextNewAssetIndex++));
@@ -512,7 +441,7 @@ namespace AzToolsFramework
             tab->SaveAsset();
 
         }
-
+        
         void AssetEditorWidget::SaveAssetAs()
         {
             if (!m_tabs->count())

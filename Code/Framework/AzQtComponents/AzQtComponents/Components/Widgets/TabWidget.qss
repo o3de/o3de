@@ -10,7 +10,7 @@
 QTabWidget,
 QTabBar
 {
-    background-color: #ff0000;
+    background-color: #444444;
 }
 
 QTabBar::tab

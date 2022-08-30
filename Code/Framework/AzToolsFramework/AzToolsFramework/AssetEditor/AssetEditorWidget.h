@@ -115,9 +115,6 @@ namespace AzToolsFramework
             void currentTabChanged(int newCurrentIndex);
             void onTabCloseButtonPressed(int tabIndexToClose);
 
-            // For subscribing to document property editor adapter property specific changes
-            void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
-
         Q_SIGNALS:
             void OnAssetSaveFailedSignal(const AZStd::string& error);
             void OnAssetOpenedSignal(const AZ::Data::Asset<AZ::Data::AssetData>& asset);

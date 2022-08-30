@@ -32,7 +32,7 @@ namespace AzQtComponents
     class TabWidgetActionToolBarContainer;
     class ToolButton;
 
-     //! A container for other widgets that provides a tab bar to switch between them.
+    //! A container for other widgets that provides a tab bar to switch between them.
     class AZ_QT_COMPONENTS_API TabWidget
         : public QTabWidget
     {
@@ -148,12 +148,13 @@ namespace AzQtComponents
         //! Returns true if the action toolbar is visible.
         bool isActionToolBarVisible() const;
 
-        ToolButton* getAddItemButton() { return m_addItemButton; }
-        ToolButton* getOverflowButton() { return m_overflowButton; }
+        ToolButton* getAddItemButton();
+        ToolButton* getOverflowButton();
+
     private:
         ToolButton* m_overflowButton = nullptr;
-        QSpacerItem* m_overflowSpacer = nullptr;
         ToolButton* m_addItemButton = nullptr;
+        QSpacerItem* m_overflowSpacer = nullptr;
         TabWidgetActionToolBar* m_actionToolBar = nullptr;
 
         void fixTabOrder();
@@ -203,7 +204,6 @@ namespace AzQtComponents
         bool m_handleOverflow = true;
         bool m_useMaxWidth = false;
         bool m_expandTabsToFill = false;
-
         Overflow m_overflowing = OverflowUnchecked;
         int m_hoveredTab = -1;
         bool m_movingTab = false;
@@ -221,7 +221,6 @@ namespace AzQtComponents
         static bool unpolish(Style* style, QWidget* widget, const TabWidget::Config& config);
         static int closeButtonSize(const Style* style, const QStyleOption* option, const QWidget* widget, const TabWidget::Config& config);
         static bool drawTabBarTabLabel(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const TabWidget::Config& config);
-        static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config, bool expandTabsToFillBar);
         static QSize sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config);
     };
 

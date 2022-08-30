@@ -50,7 +50,7 @@
          */
          class AssetEditorTab
              : public QWidget
-             , private AZ::Data::AssetBus::Handler
+             , private AZ::Data::AssetBus::MultiHandler
              , private AzFramework::AssetCatalogEventBus::Handler
              , private AzToolsFramework::IPropertyEditorNotify
              , private AZ::SystemTickBus::Handler
@@ -88,7 +88,9 @@
              bool SaveAssetToPath(AZStd::string_view assetPath);
              void ExpandAll();
              void CollapseAll();
- 
+
+             // For subscribing to document property editor adapter property specific changes
+             void OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo);
          Q_SIGNALS:
              void OnAssetSavedSignal();
              void OnAssetSaveFailedSignal(const AZStd::string& error);
@@ -150,6 +152,8 @@
              bool m_closeTabAfterSave = false;
              bool m_closeParentAfterSave = false;
              bool m_waitingToSave = false;
+
+             AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
  
              void CreateAssetImpl(AZ::Data::AssetType assetType, const QString& assetName);
              bool SaveImpl(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const QString& saveAsPath);

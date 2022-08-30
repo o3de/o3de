@@ -159,7 +159,7 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            m_useDPE = ed_enableDPE;
+            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
@@ -171,10 +171,17 @@ namespace AzToolsFramework
                 m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
                 m_dpe = new DocumentPropertyEditor(this);
                 propertyEditor = m_dpe;
+                m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(
+                    [this](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+                    {
+                        this->OnDocumentPropertyChanged(changeInfo);
+                    });
+                m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
             }
 
-            m_propertyEditor->setObjectName("AssetEditorTabPropertyEditor");
-            m_propertyEditor->show();
+            propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
+            propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            propertyEditor->show();
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
             mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -320,8 +327,12 @@ namespace AzToolsFramework
                         if (saveSuccessful)
                         {
                             Q_EMIT OnAssetSavedSignal();
+                                            
                             m_parentEditorWidget->AddRecentPath(assetFullPath);
-                            m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
+                            if (!m_useDPE)
+                            {
+                                m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
+                            }
                             SetStatusText(Status::assetSaved);
 
                             if (savedCallback)
@@ -356,7 +367,7 @@ namespace AzToolsFramework
             {
                 return;
             }
-
+            
             SaveAssetImpl(nullptr);
         }
 
@@ -366,12 +377,15 @@ namespace AzToolsFramework
             {
                 AZStd::string targetFilePath(saveAsPath.toUtf8().constData());
 
-                m_propertyEditor->ForceQueuedInvalidation();
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->ForceQueuedInvalidation();
+                }
 
                 AZStd::vector<char> byteBuffer;
                 AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
 
-                auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(asset.GetType());
+                auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(asset.GetType()));
                 if (assetHandler->SaveAssetData(asset, &byteStream))
                 {
                     AZ::IO::FileIOStream fileStream(targetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
@@ -382,7 +396,7 @@ namespace AzToolsFramework
                         return false;
                     }
 
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, targetFilePath);
+                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, targetFilePath);
                     m_expectedAddedAssetPath = targetFilePath;
 
                     SourceControlCommandBus::Broadcast(
@@ -473,7 +487,7 @@ namespace AzToolsFramework
         {
             m_dirty = false;
 
-            AZ::Data::AssetBus::Handler::BusDisconnect(asset.GetId());
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
             // Clone the asset
             AZ::Data::AssetId newAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
@@ -503,10 +517,13 @@ namespace AzToolsFramework
 
         void AssetEditorTab::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            // TODO
-            /* m_dirty = false;
-            m_saveAssetAction->setEnabled(false);
-            m_propertyEditor->ClearInstances();
+            m_dirty = false;
+            //m_saveAssetAction->setEnabled(false);
+
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ClearInstances();
+            }
 
             if (AZ::Data::AssetBus::MultiHandler::BusIsConnectedId(asset.GetId()))
             {
@@ -514,24 +531,24 @@ namespace AzToolsFramework
             }
             QString errString = tr("Failed to load %1!").arg(asset.GetHint().c_str());
             AZ_Error("Asset Editor", false, errString.toUtf8());
-            QMessageBox::warning(this, tr("Error!"), errString);*/
+            QMessageBox::warning(this, tr("Error!"), errString);
         }
 
 
         void AssetEditorTab::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
         {
+            AZ::Crc32 saveStateKey;
+            saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
+            
             if (m_useDPE)
             {
                 m_adapter->SetValue(asset.Get(), asset.GetType());
                 m_dpe->SetAdapter(m_adapter);
+                m_dpe->setEnabled(true);
             }
             else
             {
                 m_propertyEditor->ClearInstances();
-
-                AZ::Crc32 saveStateKey;
-                saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
-
                 m_propertyEditor->SetSavedStateKey(saveStateKey);
                 m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
 
@@ -606,6 +623,8 @@ namespace AzToolsFramework
 
             auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
+            asset.BlockUntilLoadComplete();
+            
             if (asset.IsReady())
             {
                 OnAssetReady(asset);
@@ -614,13 +633,20 @@ namespace AzToolsFramework
             {
                 if (m_inMemoryAsset)
                 {
-                    AZ::Data::AssetBus::Handler::BusDisconnect(m_inMemoryAsset.GetId());
+                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_inMemoryAsset.GetId());
                 }
 
-                AZ::Data::AssetBus::Handler::BusConnect(asset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
 
                 // Need to disable editing until OnAssetReady.
-                m_propertyEditor->setEnabled(false);
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->setEnabled(false);
+                }
+                else
+                {
+                    m_dpe->setEnabled(false);
+                }
             }
         }
 
@@ -677,7 +703,15 @@ namespace AzToolsFramework
                 // given a chance to fix the errors and try again.
                 m_sourceAssetId.SetInvalid();
                 m_currentAsset = "New Asset";
-                m_propertyEditor->setEnabled(true);
+                
+                if (!m_useDPE)
+                {
+                    m_propertyEditor->setEnabled(true);
+                }
+                else
+                {
+                    m_dpe->setEnabled(true);
+                }
 
                 DirtyAsset();
             }
@@ -692,7 +726,10 @@ namespace AzToolsFramework
 
             DirtyAsset();
 
-            m_propertyEditor->ClearInstances();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ClearInstances();
+            }
             m_currentAsset = assetName;
 
             UpdatePropertyEditor(m_inMemoryAsset);
@@ -708,6 +745,14 @@ namespace AzToolsFramework
         void AssetEditorTab::AfterPropertyModified(InstanceDataNode* /*node*/)
         {
             DirtyAsset();
+        }
+        
+        void AssetEditorTab::OnDocumentPropertyChanged(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
+        {
+            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+            {
+                DirtyAsset();
+            }
         }
 
         void AssetEditorTab::RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& point)
@@ -727,13 +772,16 @@ namespace AzToolsFramework
                         {
                             InstanceDataHierarchy::CopyInstanceData(orig, node, m_serializeContext);
 
-                            PropertyRowWidget* widget = m_propertyEditor->GetWidgetFromNode(node);
-                            if (widget)
+                            if (!m_useDPE)
                             {
-                                widget->DoPropertyNotify();
-                            }
+                                PropertyRowWidget* widget = m_propertyEditor->GetWidgetFromNode(node);
+                               if (widget)
+                               {
+                                   widget->DoPropertyNotify();
+                               }
 
-                            m_propertyEditor->QueueInvalidation(Refresh_Values);
+                               m_propertyEditor->QueueInvalidation(Refresh_Values);
+                            }
                         }
                     });
                 menu.exec(point);
@@ -748,12 +796,26 @@ namespace AzToolsFramework
 
         void AssetEditorTab::ExpandAll()
         {
-            m_propertyEditor->ExpandAll();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->ExpandAll();
+            }
+            else
+            {
+                m_dpe->ExpandAll();
+            }
         }
 
         void AssetEditorTab::CollapseAll()
         {
-            m_propertyEditor->CollapseAll();
+            if (!m_useDPE)
+            {
+                m_propertyEditor->CollapseAll();
+            }
+            else
+            {
+                m_dpe->CollapseAll();
+            }
         }
 
         void AssetEditorTab::DirtyAsset()

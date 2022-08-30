@@ -9,9 +9,9 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 
+#include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzQtComponents/Components/Widgets/TabWidgetActionToolBar.h>
 #include <AzQtComponents/Components/Widgets/ToolButton.h>
@@ -182,6 +182,10 @@ namespace AzQtComponents
         }
 
         QTabWidget::resizeEvent(resizeEvent);
+
+        // HACK: implicitly reset QTabWidgetPrivate::layoutDirty
+        // Force recomputing tab width with new overflow settings
+        tabBar()->setIconSize(tabBar()->iconSize());
     }
 
     void TabWidget::setExpandTabsToFillTabBar(bool expand)
@@ -245,6 +249,11 @@ namespace AzQtComponents
     void TabWidget::resetOverflowMenu()
     {
         m_overFlowMenuDirty = true;
+
+        // HACK: implicitly reset QTabWidgetPrivate::layoutDirty
+        // Force recomputing tab width with new overflow settings
+        tabBar()->setIconSize(tabBar()->iconSize());
+
     }
 
     void TabWidget::populateMenu()
@@ -317,8 +326,8 @@ namespace AzQtComponents
     TabWidgetActionToolBarContainer::TabWidgetActionToolBarContainer(QWidget* parent)
         : QFrame(parent)
         , m_overflowButton(new ToolButton(this))
-        , m_overflowSpacer(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed))
         , m_addItemButton(new ToolButton(this))
+        , m_overflowSpacer(new QSpacerItem(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed))
     {
         m_overflowButton->setObjectName(QStringLiteral("tabWidgetOverflowButton"));
         m_overflowButton->setPopupMode(QToolButton::InstantPopup);
@@ -333,11 +342,10 @@ namespace AzQtComponents
         m_addItemButton->setIcon(QIcon(QStringLiteral(":/stylesheet/img/UI20/add-16-dull.svg")));
         m_addItemButton->setFixedSize(this->height(), this->height());
         m_addItemButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        m_addItemButton->setStyleSheet("background-color: #ff0000");
 
         auto layout = new QHBoxLayout(this);
         layout->setContentsMargins({}); // Defaults to 0
-        
+
         layout->addWidget(m_overflowButton);
         layout->addWidget(m_addItemButton);
 
@@ -443,6 +451,16 @@ namespace AzQtComponents
         return (m_actionToolBar && m_actionToolBar->isVisible());
     }
 
+    ToolButton* TabWidgetActionToolBarContainer::getAddItemButton()
+    {
+        return m_addItemButton;
+    }
+
+    ToolButton* TabWidgetActionToolBarContainer::getOverflowButton()
+    {
+        return m_overflowButton;
+    }
+
     TabBar::TabBar(QWidget* parent)
         : QTabBar(parent)
     {
@@ -459,7 +477,7 @@ namespace AzQtComponents
         icon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
         m_dragCursor = QCursor(icon.pixmap(16), 5, 2);
 
-        this->setCursor(m_hoverCursor);                                  
+        this->setCursor(m_hoverCursor);
     }
 
     void TabBar::setHandleOverflow(bool handleOverflow)
@@ -562,8 +580,6 @@ namespace AzQtComponents
         showCloseButtonAt(m_hoveredTab);
         setToolTipIfNeeded(m_hoveredTab);
 
-        setIconSize(iconSize());
-
         QTabBar::paintEvent(paintEvent);
     }
 
@@ -615,7 +631,7 @@ namespace AzQtComponents
         for (int i = 0; i < count(); i++)
         {
             QWidget* tabBtn = tabButton(i, closeSide);
-            
+
             if (tabBtn)
             {
                 bool shouldShow = (i == index);
@@ -761,8 +777,13 @@ namespace AzQtComponents
         return true;
     }
 
-
-    QSize TabBar::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config, bool expandTabsToFillBar)
+    QSize TabBar::sizeFromContents(
+        const Style* style,
+        QStyle::ContentsType type,
+        const QStyleOption* option,
+        const QSize& contentsSize,
+        const QWidget* widget,
+        const TabWidget::Config& config)
     {
         const QStyleOptionTab* tabOption = qstyleoption_cast<const QStyleOptionTab*>(option);
 
@@ -814,13 +835,18 @@ namespace AzQtComponents
             minButtonWidth -= config.closeButtonSize + 1;
         }
 
-        bool overflowing = minButtonWidth * tabBar->count() > availableWidth - overflowButtonWidth;
+        bool overflowing = minButtonWidth * tabBar->count() > availableWidth;
+
+        if (overflowing)
+        {
+            availableWidth -= overflowButtonWidth;
+        }
 
         tabWidget->setOverflowMenuVisible(overflowing);
 
         if (!overflowing || (tabOption->state & QStyle::State_Selected))
         {
-            if (expandTabsToFillBar)
+            if (tabBar->m_expandTabsToFill)
             {
                 size.setWidth(AZStd::max<int>(minButtonWidth, availableWidth / tabBar->count()));
             }
@@ -842,17 +868,6 @@ namespace AzQtComponents
         }
 
         return size;
-    }
-
-    QSize TabBar::sizeFromContents(const Style* style, QStyle::ContentsType type, const QStyleOption* option, const QSize& contentsSize, const QWidget* widget, const TabWidget::Config& config)
-    {
-        const TabBar* tabBar = qobject_cast<const TabBar*>(widget);
-        if (!tabBar)
-        {
-            return QSize();
-        }
-
-        return sizeFromContents(style, type, option, contentsSize, widget, config, tabBar->m_expandTabsToFill);
     }
 
 } // namespace AzQtComponents
