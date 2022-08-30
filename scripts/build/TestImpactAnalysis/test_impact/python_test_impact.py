@@ -45,7 +45,7 @@ class PythonTestImpact(BaseTestImpact):
             FAILURES_KEY = 'failures'
 
             xml_report_map = self._parse_xml_report(
-                self._test_run_artifacts_path)
+                self._runtime_artifact_directory)
 
             for not_selected_test_name in report[constants.SELECTED_TEST_RUNS_KEY][constants.EXCLUDED_TEST_RUNS_KEY]:
                 try:
