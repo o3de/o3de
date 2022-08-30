@@ -25,7 +25,7 @@ namespace AtomToolsFramework
         , public AtomToolsAnyDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(AtomToolsAnyDocument, "{7DD73C7D-06BB-4AF1-907A-0F87AFDA54AF}", AtomToolsDocument);
+        AZ_RTTI(AtomToolsAnyDocument, "{EB339BF7-CC6B-4BC5-BD6C-7B5CAAFEE012}", AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(AtomToolsAnyDocument, AZ::SystemAllocator, 0);
         AZ_DISABLE_COPY_MOVE(AtomToolsAnyDocument);
 

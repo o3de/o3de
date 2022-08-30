@@ -573,8 +573,6 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
-        bool isOpen = false;
-        AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
         AZStd::string absolutePath;
         AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
 
@@ -585,7 +583,7 @@ namespace AtomToolsFramework
         // Whenever a document is opened or selected select the corresponding tab
         m_tabWidget->setCurrentIndex(GetDocumentTabIndex(documentId));
 
-        if (isOpen && !absolutePath.empty())
+        if (!absolutePath.empty())
         {
             // Find and select the file path in the asset browser
             m_assetBrowser->SelectEntries(absolutePath);

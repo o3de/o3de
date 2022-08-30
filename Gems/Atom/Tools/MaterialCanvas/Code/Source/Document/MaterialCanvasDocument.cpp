@@ -69,16 +69,22 @@ namespace MaterialCanvas
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
         , m_graphContext(graphContext)
     {
+        AZ_Assert(m_graphContext, "Graph context must be valid in order to create a graph document.");
+
         // Creating the scene entity and graph for this document. This may end up moving to the view if we can have the document only store
         // minimal material graph specific data that can be transformed into a graph canvas graph in the view and back. That abstraction
         // would help maintain a separation between the serialized data and the UI for rendering and interacting with the graph. This would
         // also help establish a mediator pattern for other node based tools that want to visualize their data or documents as a graph. My
         // understanding is that graph model will help with this.
         m_graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
+        AZ_Assert(m_graph, "Failed to create graph object.");
 
         GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
             m_sceneEntity, &GraphModelIntegration::GraphManagerRequests::CreateScene, m_graph, m_toolId);
+        AZ_Assert(m_sceneEntity, "Failed to create graph scene entity.");
+
         m_graphId = m_sceneEntity->GetId();
+        AZ_Assert(m_graphId.IsValid(), "Graph scene entity ID is not valid.");
 
         RecordGraphState();
 
@@ -150,14 +156,8 @@ namespace MaterialCanvas
 
     AtomToolsFramework::DocumentObjectInfoVector MaterialCanvasDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
-        {
-            AZ_Error("MaterialCanvasDocument", false, "Document is not open.");
-            return {};
-        }
-
-        AtomToolsFramework::DocumentObjectInfoVector objects;
-        objects.reserve(m_groups.size());
+        AtomToolsFramework::DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+        objects.reserve(objects.size() + m_groups.size());
 
         for (const auto& group : m_groups)
         {
@@ -175,7 +175,7 @@ namespace MaterialCanvas
                     // There are currently no indicators for material canvas nodes.
                     return nullptr;
                 };
-                objects.push_back(objectInfo);
+                objects.push_back(AZStd::move(objectInfo));
             }
         }
 
@@ -219,7 +219,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph objeTt. ");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -239,7 +240,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph objeTt. ");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -259,7 +261,8 @@ namespace MaterialCanvas
             return false;
         }
 
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
+        AZ_Error("MaterialCanvasDocument", m_graph, "Attempting to save invalid graph object. ");
+        if (!m_graph || !AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
@@ -268,11 +271,6 @@ namespace MaterialCanvas
         m_absolutePath = m_savePathNormalized;
         QueueCompileGraph();
         return SaveSucceeded();
-    }
-
-    bool MaterialCanvasDocument::IsOpen() const
-    {
-        return AtomToolsDocument::IsOpen() && m_graph && m_graphId.IsValid();
     }
 
     bool MaterialCanvasDocument::IsModified() const
@@ -326,16 +324,6 @@ namespace MaterialCanvas
         m_modified = false;
 
         AtomToolsFramework::AtomToolsDocument::Clear();
-    }
-
-    bool MaterialCanvasDocument::ReopenRecordState()
-    {
-        return AtomToolsDocument::ReopenRecordState();
-    }
-
-    bool MaterialCanvasDocument::ReopenRestoreState()
-    {
-        return AtomToolsDocument::ReopenRestoreState();
     }
 
     void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
@@ -411,14 +399,18 @@ namespace MaterialCanvas
     {
         DestroyGraph();
 
-        m_graph = graph;
-        m_graph->PostLoadSetup(m_graphContext);
-        BuildEditablePropertyGroups();
-        RecordGraphState();
+        if (graph)
+        {
+            m_graph = graph;
+            m_graph->PostLoadSetup(m_graphContext);
 
-        // The graph controller will create all of the scene items on construction.
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+            BuildEditablePropertyGroups();
+            RecordGraphState();
+
+            // The graph controller will create all of the scene items on construction.
+            GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+                &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+        }
     }
 
     void MaterialCanvasDocument::DestroyGraph()
@@ -656,6 +648,8 @@ namespace MaterialCanvas
     AZStd::vector<GraphModel::ConstNodePtr> MaterialCanvasDocument::GetInstructionNodesInExecutionOrder(
         GraphModel::ConstNodePtr outputNode, const AZStd::vector<AZStd::string>& inputSlotNames) const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+
         AZStd::vector<GraphModel::ConstNodePtr> sortedNodes;
         sortedNodes.reserve(m_graph->GetNodes().size());
 
@@ -772,6 +766,8 @@ namespace MaterialCanvas
 
     AZStd::vector<AZStd::string> MaterialCanvasDocument::GetMaterialInputsFromNodes() const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+
         AZStd::vector<AZStd::string> materialInputs;
 
         for (const auto& inputNodePair : m_graph->GetNodes())
@@ -869,6 +865,9 @@ namespace MaterialCanvas
     bool MaterialCanvasDocument::BuildMaterialTypeFromTemplate(
         GraphModel::ConstNodePtr templateNode, const AZStd::string& templateInputPath, const AZStd::string& templateOutputPath) const
     {
+        AZ_Assert(m_graph, "Attempting to generate data from invalid graph object.");
+        AZ_Assert(templateNode, "Attempting to generate data from invalid template node.");
+
         // Load the material type template file, which is the same format as MaterialTypeSourceData with a different extension
         auto materialTypeOutcome = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(templateInputPath);
         if (!materialTypeOutcome.IsSuccess())
@@ -969,7 +968,7 @@ namespace MaterialCanvas
         m_compileGraphQueued = false;
         m_generatedFiles.clear();
 
-        if (!IsOpen())
+        if (!m_graph)
         {
             return false;
         }
@@ -1127,7 +1126,7 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::QueueCompileGraph() const
     {
-        if (IsOpen() && !m_compileGraphQueued)
+        if (m_graph && !m_compileGraphQueued)
         {
             m_compileGraphQueued = true;
             AZ::SystemTickBus::QueueFunction([id = m_id](){

@@ -81,28 +81,22 @@ namespace AtomToolsFramework
 
     DocumentObjectInfoVector AtomToolsAnyDocument::GetObjectInfo() const
     {
-        if (!IsOpen())
+        DocumentObjectInfoVector objects = AtomToolsDocument::GetObjectInfo();
+
+        if (!m_content.empty())
         {
-            AZ_Error("AtomToolsAnyDocument", false, "Document is not open.");
-            return {};
+            // The reflected data stored within the document will be converted to a description of the object and its type info. This data
+            // will be used to populate the inspector.
+            DocumentObjectInfo objectInfo;
+            objectInfo.m_visible = true;
+            objectInfo.m_name = GetDocumentTypeInfo().m_documentTypeName;
+            objectInfo.m_displayName = GetDocumentTypeInfo().m_documentTypeName;
+            objectInfo.m_description = GetDocumentTypeInfo().m_documentTypeName;
+            objectInfo.m_objectType = m_content.type();
+            objectInfo.m_objectPtr = AZStd::any_cast<void>(const_cast<AZStd::any*>(&m_content));
+            objects.push_back(AZStd::move(objectInfo));
         }
 
-        if (m_content.empty())
-        {
-            return {};
-        }
-
-        // The reflected data stored within the document will be converted to a description of the object and its type info. This data will
-        // be used to populate the inspector and anything else concerned with RTTI.
-        DocumentObjectInfoVector objects;
-        DocumentObjectInfo objectInfo;
-        objectInfo.m_visible = true;
-        objectInfo.m_name = GetDocumentTypeInfo().m_documentTypeName;
-        objectInfo.m_displayName = GetDocumentTypeInfo().m_documentTypeName;
-        objectInfo.m_description = GetDocumentTypeInfo().m_documentTypeName;
-        objectInfo.m_objectType = m_content.type();
-        objectInfo.m_objectPtr = AZStd::any_cast<void>(const_cast<AZStd::any*>(&m_content));
-        objects.push_back(objectInfo);
         return objects;
     }
 
