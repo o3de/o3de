@@ -65,7 +65,7 @@ namespace EMStudio
     class TimeViewPlugin;
     class NavigationHistory;
 
-    static constexpr GraphCanvas::EditorId AnimGraphEditorId = AZ_CRC("AnimGraphEditor",  0xf44fce98);
+    static constexpr GraphCanvas::EditorId AnimGraphEditorId = AZ_CRC_CE("AnimGraphEditor");
 
     // our anim graph event handler
     class AnimGraphEventHandler
