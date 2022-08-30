@@ -202,7 +202,7 @@ namespace AssetProcessor
         m_ui->outgoingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
         assetDatabaseConnection.QueryDependsOnSourceBySourceDependency(
-            sourceItemData->m_sourceInfo.m_sourceName.c_str(),
+            sourceItemData->m_sourceInfo.m_sourceGuid,
             nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
@@ -261,20 +261,29 @@ namespace AssetProcessor
             {
                 m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
 
+                AZStd::string sourceName;
+                assetDatabaseConnection.QuerySourceBySourceGuid(
+                    sourceFileDependencyEntry.m_sourceGuid,
+                    [&sourceName](const auto& entry)
+                    {
+                        sourceName = entry.m_sourceName;
+                        return false;
+                    });
+
                 // Qt handles cleanup automatically, setting this as the parent means
                 // when this panel is torn down, these widgets will be destroyed.
                 GoToButton* rowGoToButton = new GoToButton(this);
                 connect(
                     rowGoToButton->m_ui->goToPushButton,
                     &QPushButton::clicked,
-                    [=]
+                    [this, sourceName]
                     {
-                        GoToSource(sourceFileDependencyEntry.m_sourceGuid);
+                        GoToSource(sourceName);
                     });
                 m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
 
                 // TODO: Replace with source name lookup
-                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_sourceGuid.ToFixedString().c_str());
+                QTableWidgetItem* rowName = new QTableWidgetItem(QString(sourceName.c_str()));
                 m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
 
                 ++sourceDependencyCount;

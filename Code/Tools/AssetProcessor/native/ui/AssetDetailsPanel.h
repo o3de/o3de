@@ -46,7 +46,6 @@ namespace AssetProcessor
             AssetTreeFilterModel* productFilterModel,
             QTabWidget* assetTab);
 
-        void GoToSource(AZ::Uuid source);
         void GoToSource(const AZStd::string& source);
         void GoToProduct(const AZStd::string& product);
 
