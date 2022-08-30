@@ -31,6 +31,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzQtComponents/Components/StyledDetailsTableModel.h>
 #include <AzQtComponents/Components/StyledDetailsTableView.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
+#include <AzQtComponents/Components/Widgets/TableView.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
@@ -206,7 +207,7 @@ void AssetImporterWindow::Init()
     m_logDetailsModel->AddColumn("Title");
     m_logDetailsModel->AddColumn("Message");
 
-    m_logDetailsView = new AzQtComponents::StyledDetailsTableView(m_logDetailsCard);
+    m_logDetailsView = new AzQtComponents::TableView(m_logDetailsCard);
     m_logDetailsView->setModel(m_logDetailsModel);
     m_logDetailsCard->setContentWidget(m_logDetailsView);
     
@@ -327,6 +328,13 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     SceneSettingsCard::State state)
 {
     SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, layout, m_logDetailsModel, ui->m_cardAreaLayoutWidget);
+
+    if (m_logDetailsCard->isHidden())
+    {
+        // On first display, make sure it's not expanded
+        m_logDetailsCard->setExpanded(false);
+    }
+    ui->m_notificationAreaLayoutWidget->show();
     m_logDetailsCard->show();
     card->SetState(state);
     ui->m_cardAreaLayout->addWidget(card);
@@ -343,7 +351,12 @@ void AssetImporterWindow::SceneSettingsCardDestroyed()
     }
     if (m_openSceneSettingsCards <= 0)
     {
+        if (m_logDetailsModel->rowCount() > 0)
+        {
+            m_logDetailsModel->removeRows(0, m_logDetailsModel->rowCount());
+        }
         m_logDetailsCard->hide();
+        ui->m_notificationAreaLayoutWidget->hide();
     }
 }
 

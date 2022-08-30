@@ -18,6 +18,7 @@
 #include <AzToolsFramework/UI/Logging/LogEntry.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
 #include <AzQtComponents/Components/StyledDetailsTableView.h>
+#include <AzQtComponents/Components/Widgets/TableView.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ProcessingHandler.h>
 
 SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */)
@@ -75,20 +76,20 @@ SceneSettingsCard::SceneSettingsCard(AZ::Uuid traceTag, Layout layout, AzQtCompo
     int timeColumn = m_reportModel->AddColumn("Time");
     m_reportModel->AddColumn("Message");
     m_reportModel->AddColumnAlias("message", "Message");
-    m_reportView = new AzQtComponents::StyledDetailsTableView(this);
+    m_reportView = new AzQtComponents::TableView(this);
     m_reportView->setModel(m_reportModel);
 
     if (platformColumn > 0)
     {
-        m_reportView->horizontalHeader()->setSectionResizeMode(platformColumn, QHeaderView::ResizeToContents);
+        m_reportView->header()->setSectionResizeMode(platformColumn, QHeaderView::ResizeToContents);
     }
     if (windowColumn > 0)
     {
-        m_reportView->horizontalHeader()->setSectionResizeMode(windowColumn, QHeaderView::ResizeToContents);
+        m_reportView->header()->setSectionResizeMode(windowColumn, QHeaderView::ResizeToContents);
     }
 
-    m_reportView->horizontalHeader()->setSectionResizeMode(statusColumn, QHeaderView::ResizeToContents);
-    m_reportView->horizontalHeader()->setSectionResizeMode(timeColumn, QHeaderView::ResizeToContents);
+    m_reportView->header()->setSectionResizeMode(statusColumn, QHeaderView::ResizeToContents);
+    m_reportView->header()->setSectionResizeMode(timeColumn, QHeaderView::ResizeToContents);
     setContentWidget(m_reportView);
     
 

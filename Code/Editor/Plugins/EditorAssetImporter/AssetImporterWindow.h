@@ -29,6 +29,7 @@ namespace AzQtComponents
     class Card;
     class StyledDetailsTableModel;
     class StyledDetailsTableView;
+    class TableView;
 }
 
 namespace AZStd
@@ -144,7 +145,7 @@ private:
     // this table displays that information when you select
     // a log message in one of the status cards.
     AzQtComponents::StyledDetailsTableModel* m_logDetailsModel = nullptr;
-    AzQtComponents::StyledDetailsTableView* m_logDetailsView = nullptr;
+    AzQtComponents::TableView* m_logDetailsView = nullptr;
 
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;

@@ -23,6 +23,7 @@ namespace AzQtComponents
 {
     class StyledBusyLabel;
     class StyledDetailsTableView;
+    class TableView;
 }
 
 namespace AZ
@@ -123,7 +124,7 @@ private:
     AzToolsFramework::Debug::TraceContextMultiStackHandler m_traceStackHandler;
     AZ::Uuid m_traceTag;
     AzQtComponents::StyledDetailsTableModel* m_reportModel = nullptr;
-    AzQtComponents::StyledDetailsTableView* m_reportView = nullptr;
+    AzQtComponents::TableView* m_reportView = nullptr;
     AZStd::shared_ptr<AZ::SceneAPI::SceneUI::ProcessingHandler> m_targetHandler;
     SceneSettingsCardHeader* m_settingsHeader = nullptr;
     CompletionState m_completionState = CompletionState::Success;

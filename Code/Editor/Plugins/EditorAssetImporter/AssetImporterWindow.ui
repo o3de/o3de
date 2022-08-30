@@ -83,9 +83,18 @@
                   <widget class="QWidget" name="m_notificationAreaLayoutWidget">
                     <layout class="QVBoxLayout" name="m_notificationAreaLayout">
                       <item>
-                        <widget class="QWidget" name="m_cardAreaLayoutWidget">
-                          <layout class="QVBoxLayout" name="m_cardAreaLayout">
-                          </layout>
+                        <widget class="QSplitter" name="m_notificationAreaSplitter">
+                          <property name="orientation">
+                            <enum>Qt::Vertical</enum>
+                          </property>
+                          <widget class="QWidget" name="m_cardAreaLayoutWidget">
+                            <layout class="QVBoxLayout" name="m_cardAreaLayout">
+                            </layout>
+                          </widget>
+                          <widget class="QWidget" name="m_logDetailsLayoutWidget">
+                            <layout class="QVBoxLayout" name="m_logDetailsLayout">
+                            </layout>
+                          </widget>
                         </widget>
                       </item>
                     </layout>
