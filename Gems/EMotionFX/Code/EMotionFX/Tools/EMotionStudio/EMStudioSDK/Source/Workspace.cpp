@@ -120,7 +120,6 @@ namespace EMStudio
 
     struct ActivationIndices
     {
-        int32 m_actorInstanceCommandIndex = -1;
         int32 m_animGraphCommandIndex = -1;
         int32 m_motionSetCommandIndex = -1;
     };
@@ -133,8 +132,7 @@ namespace EMStudio
         AZStd::string commands;
 
         // For each actor we are going to set a different activation command. We need to store the command indices
-        // that will produce the results for the actorInstanceIndex, animGraphIndex and motionSetIndex that are
-        // currently selected
+        // that will produce the results for animGraphIndex and motionSetIndex that are currently selected
         typedef AZStd::unordered_map<EMotionFX::ActorInstance*, ActivationIndices> ActivationIndicesByActorInstance;
         ActivationIndicesByActorInstance activationIndicesByActorInstance;
         int32 commandIndex = 0;
@@ -164,7 +162,7 @@ namespace EMStudio
                 AddFile(&commands, "ImportActor", actor->GetFileName());
                 ++commandIndex;
 
-                activationIndicesByActorInstance[actorInstance].m_actorInstanceCommandIndex = commandIndex;
+                activationIndicesByActorInstance.try_emplace(actorInstance, ActivationIndices());
             }
         }
 
