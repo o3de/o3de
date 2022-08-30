@@ -399,7 +399,10 @@ namespace EMStudio
         m_nodeGroupWindow = new NodeGroupWindow(this);
         m_nodeGroupDock->setWidget(m_nodeGroupWindow);
 
-        // create the node palette dock
+        // create the node palette dock.
+        // By default, it's hidden in AnimGraph.layout. Users should mostly use
+        // the context menu to add nodes, but we let them show the palette dock
+        // if needed
         m_nodePaletteDock = new AzQtComponents::StyledDockWidget("Anim Graph Palette", mainWindow);
         mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodePaletteDock);
         features = QDockWidget::NoDockWidgetFeatures;

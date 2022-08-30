@@ -34,7 +34,8 @@
 #include <MCore/Source/StandardHeaders.h>
 #include <MysticQt/Source/KeyboardShortcutManager.h>
 #include <MCore/Source/LogManager.h>
-
+#include <GraphCanvas/Widgets/GraphCanvasTreeItem.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
 // qt includes
 #include <QDropEvent>
 #include <QMessageBox>
@@ -43,11 +44,55 @@
 #include <QToolTip>
 #include <QWidget>
 
-
-
-
 namespace EMStudio
 {
+    BlendGraphMimeEvent::BlendGraphMimeEvent(QString typeString, QString namePrefix)
+        : GraphCanvas::GraphCanvasMimeEvent(), m_typeString(typeString), m_namePrefix(namePrefix)
+    {
+    }
+
+    bool BlendGraphMimeEvent::ExecuteEvent(
+        const AZ::Vector2& sceneMousePosition, AZ::Vector2& sceneDropPosition, const AZ::EntityId& sceneId)
+    {
+        // We don't do anything here because BlendGraph isn't yet a proper GraphCanvas so we need
+        // to handle node creation externally
+        Q_UNUSED(sceneMousePosition);
+        Q_UNUSED(sceneDropPosition);
+        Q_UNUSED(sceneId);
+        return false;
+    }
+
+    QString BlendGraphMimeEvent::GetTypeString() const
+    {
+        return m_typeString;
+    }
+
+    QString BlendGraphMimeEvent::GetNamePrefix() const
+    {
+        return m_namePrefix;
+    }
+
+    BlendGraphNodePaletteTreeItem::BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString,
+        GraphCanvas::EditorId editorId)
+        : GraphCanvas::IconDecoratedNodePaletteTreeItem(name, editorId), m_typeString(typeString)
+    {
+    }
+
+    void BlendGraphNodePaletteTreeItem::SetTypeString(const QString& typeString)
+    {
+        m_typeString = typeString;
+    }
+
+    QString BlendGraphNodePaletteTreeItem::GetTypeString() const
+    {
+        return m_typeString;
+    }
+
+    BlendGraphMimeEvent* BlendGraphNodePaletteTreeItem::CreateMimeEvent() const
+    {
+        return IsEnabled() ? new BlendGraphMimeEvent(m_typeString, GetName()) : nullptr;
+    }
+
     // constructor
     BlendGraphWidget::BlendGraphWidget(AnimGraphPlugin* plugin, QWidget* parent)
         : NodeGraphWidget(plugin, nullptr, parent)
@@ -427,24 +472,23 @@ namespace EMStudio
         // MCore::LogDebug("BlendGraphWidget::dragMove");
     }
 
-
-    void BlendGraphWidget::OnContextMenuCreateNode()
+    void BlendGraphWidget::OnContextMenuCreateNode(const BlendGraphMimeEvent* event)
     {
         NodeGraph* nodeGraph = GetActiveGraph();
-        if (!nodeGraph)
+        if (!nodeGraph || !event)
         {
             return;
         }
 
-        AZ_Assert(sender()->inherits("QAction"), "Expected being called from a QAction");
-        QAction* action = qobject_cast<QAction*>(sender());
-
         // calculate the position
         const QPoint offset = SnapLocalToGrid(LocalToGlobal(m_contextMenuEventMousePos));
 
-        // build the name prefix and create the node
-        const AZStd::string typeString = FromQtString(action->whatsThis());
-        AZStd::string namePrefix = FromQtString(action->data().toString());
+        const AZStd::string typeString = FromQtString(event->GetTypeString());
+        if(typeString.empty())
+        {
+            return;
+        }
+        AZStd::string namePrefix = FromQtString(event->GetNamePrefix());
         AzFramework::StringFunc::Strip(namePrefix, MCore::CharacterConstants::space, true /* case sensitive */);
         const AZ::TypeId typeId = AZ::TypeId::CreateString(typeString.c_str(), typeString.size());
 
@@ -452,7 +496,6 @@ namespace EMStudio
         EMotionFX::AnimGraphNode* currentNode = modelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
         CommandSystem::CreateAnimGraphNode(/*commandGroup=*/nullptr, currentNode->GetAnimGraph(), typeId, namePrefix, currentNode, offset.x(), offset.y());
     }
-
 
     bool BlendGraphWidget::CheckIfIsStateMachine()
     {
