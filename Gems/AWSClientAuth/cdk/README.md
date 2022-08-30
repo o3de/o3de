@@ -1,11 +1,19 @@
-
 # Welcome to AWSClientAuth CDK Python project!
 
+> This is the long term supported CDK v2 version of this template. If you have preexisting versions of this template
+see the [CDK guidance](https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html) about upgrading to CDK v2.
+
+This is an optional CDKv2 application to use as a starting point when working with the ClientAuth gem. It will create 
+a stack with Cognito Identity and Client pools.
+
+> If you are working with pre-existing CDKv1 stacks please use the CDKv1 version of this application.
+
 ## Install prerequisites for CDK
-https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_prerequisites
+https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_prerequisites for information about how to set up
+the prerequisites for CDK development.
 
 ## Install cdk
-https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_install
+https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
@@ -16,7 +24,7 @@ Optional set up python path to LY Python
 set PATH="..\..\..\python\runtime\python-3.10.5-rev1-windows\python\";%PATH%
 ```
 
-This project is set up like a standard Python project.  Use python interpreter from Open3d to setup python dependencies
+This project is set up like a standard Python project. Use python interpreter from O3DE to setup python dependencies
 Once the python and pip are set up, you can install the required dependencies.
 
 ```
@@ -47,9 +55,7 @@ Deploy stacks. Note passed parameters. Deploy will throw error for non-optional 
 cdk deploy <stackname> --profile <profile-name>
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your requirements.txt file and rerun the `..\..\..\Lumberyard\python\pip.cmd install -r .\Gems\AWSClientAuth\cdk\requirements.txt`
-command.
+To add additional dependencies, for example other CDK libraries, just add them to your requirements.txt file and rerun the `..\..\..\python\pip.cmd install -r .\Gems\AWSClientAuth\cdk\requirements.txt` command.
 
 
 ## Update Authorization Permissions

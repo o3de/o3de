@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
+    CfnOutput,
     aws_iam as iam
 )
 
@@ -63,7 +63,7 @@ class AuthPolicy:
                 f'{self._stack.stack_name}-{role_name}Policy', 'iam_managed_policy'),
             statements=policy_statements)
 
-        policy_output = core.CfnOutput(
+        CfnOutput(
             self._stack,
             id=f'{policy_id}Output',
             description=f'{role_name} policy arn to call service',

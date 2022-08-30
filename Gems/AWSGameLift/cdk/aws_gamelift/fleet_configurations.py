@@ -72,6 +72,7 @@ FLEET_CONFIGURATIONS = [
             },
             {
                 # Open the debug port for remote into a Windows fleet.
+                # Note: Remove this if fleet is Linux based, otherwise you will encounter restricted port failures
                 'from_port': 3389,
                 'ip_range': '<external ip range>',
                 'protocol': 'TCP',
@@ -79,6 +80,7 @@ FLEET_CONFIGURATIONS = [
             },
             {
                 # Open the debug port for remote into a Linux fleet.
+                # Note: Remove this if fleet is Windows based, otherwise you will encounter restricted port failures
                 'from_port': 22,
                 'ip_range': '<external ip range>',
                 'protocol': 'TCP',

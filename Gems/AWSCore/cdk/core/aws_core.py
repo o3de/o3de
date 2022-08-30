@@ -5,13 +5,15 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import core
+from constructs import Construct
+
+from aws_cdk import Environment
 
 from .core_stack import CoreStack
 from constants import Constants
 
 
-class AWSCore(core.Construct):
+class AWSCore(Construct):
     """
     Orchestrates setting up the AWS Core Stack(s)
 
@@ -20,11 +22,11 @@ class AWSCore(core.Construct):
     """
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id_: str,
                  project_name: str,
                  feature_name: str,
-                 env: core.Environment) -> None:
+                 env: Environment) -> None:
         super().__init__(scope, id_)
         # Expectation is that you will only deploy this stack once and that the stack has regionless resources only
         stack_name = f'{project_name}-{feature_name}'

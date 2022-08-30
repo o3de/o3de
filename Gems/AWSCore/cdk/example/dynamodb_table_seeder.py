@@ -27,12 +27,12 @@ logger.setLevel(logging.INFO)
 DEFAULT_ENTRIES = 10
 
 
-def _write_table_data(table: boto3.dynamodb.table.TableResource, table_data: List):
+def _write_table_data(table: boto3.dynamodb.table.TableResource, table_name: str, table_data: List):
     """
     Write a list of items to a DynamoDB table using the batch_writer.
 
     Each item must contain at least the keys required by the schema, which for the example
-    is just 'id'
+    is just 'id'.
 
     :param table: The table to fill
     :param table_data: The data to put in the table.
@@ -41,9 +41,9 @@ def _write_table_data(table: boto3.dynamodb.table.TableResource, table_data: Lis
         with table.batch_writer() as writer:
             for item in table_data:
                 writer.put_item(Item=item)
-        logger.info(f'Loaded data into table {table.name}')
+        logger.info(f'Loaded data into table: {table_name}')
     except ClientError:
-        logger.exception(f'Failed to load data into table {table.name}')
+        logger.exception(f'Failed to load data into table: {table_name}')
         raise
 
 
@@ -72,7 +72,7 @@ def generate_entries(table_name: str, num_entries: int, session: boto3.Session) 
         logger.info(f'Generated {item}')
         items.append(item)
 
-    _write_table_data(table, items)
+    _write_table_data(table=table, table_name=table_name, table_data=items)
     logger.info(f'Wrote {num_entries} values to {table_name}')
 
 

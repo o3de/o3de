@@ -5,8 +5,10 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Fn,
     aws_apigateway as apigateway,
     aws_iam as iam,
     aws_kinesis as kinesis
@@ -23,7 +25,7 @@ class DataIngestion:
     Create the service API via APIGateway and Kinesis data stream to ingest metrics events.
     """
 
-    def __init__(self, stack: core.Construct, application_name: str) -> None:
+    def __init__(self, stack: Construct, application_name: str) -> None:
         self._stack = stack
 
         # create the input Kinesis stream
@@ -69,14 +71,14 @@ class DataIngestion:
         cfn_rest_api.add_property_deletion_override("BodyS3Location")
         cfn_rest_api.add_property_override("FailOnWarnings", True)
 
-        core.CfnOutput(
+        CfnOutput(
             self._stack,
             id='RESTApiId',
             description='Service API Id for the analytics pipeline',
             export_name=f"{application_name}:RestApiId",
             value=self._rest_api.rest_api_id)
 
-        core.CfnOutput(
+        CfnOutput(
             self._stack,
             id='RESTApiStage',
             description='Stage for the REST API deployment',
@@ -98,7 +100,7 @@ class DataIngestion:
                     ],
                     effect=iam.Effect.ALLOW,
                     resources=[
-                        core.Fn.sub(
+                        Fn.sub(
                             body="arn:${AWS::Partition}:kinesis:${AWS::Region}:${AWS::AccountId}:stream/${EventsStream}",
                             variables={
                                 "EventsStream": self._input_stream.stream_name

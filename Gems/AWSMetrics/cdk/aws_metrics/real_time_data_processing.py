@@ -5,8 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Duration,
+    Fn,
     aws_iam as iam,
     aws_kinesisanalytics as analytics,
     aws_lambda as lambda_,
@@ -24,7 +27,7 @@ class RealTimeDataProcessing:
     Create the AWS resources used for real time data processing
     """
 
-    def __init__(self, stack: core.Construct, input_stream_arn: str, application_name: str) -> None:
+    def __init__(self, stack: Construct, input_stream_arn: str, application_name: str) -> None:
         self._stack = stack
         self._input_stream_arn = input_stream_arn
         self._application_name = application_name
@@ -113,7 +116,7 @@ class RealTimeDataProcessing:
             ),
         )
 
-        core.CfnOutput(
+        CfnOutput(
             self._stack,
             id='AnalyticsApplicationName',
             description='Kinesis Data Analytics application to process the real-time metrics data',
@@ -192,14 +195,15 @@ class RealTimeDataProcessing:
             function_name=analytics_processing_function_name,
             log_retention=logs.RetentionDays.ONE_MONTH,
             memory_size=aws_metrics_constants.LAMBDA_MEMORY_SIZE_IN_MB,
-            runtime=lambda_.Runtime.PYTHON_3_7,
-            timeout=core.Duration.minutes(aws_metrics_constants.LAMBDA_TIMEOUT_IN_MINUTES),
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            timeout=Duration.minutes(aws_metrics_constants.LAMBDA_TIMEOUT_IN_MINUTES),
             handler='analytics_processing.lambda_handler',
             code=lambda_.Code.from_asset(
                 os.path.join(os.path.dirname(__file__), 'lambdas', 'analytics_processing_lambda')),
             role=self._analytics_processing_lambda_role
         )
-        core.CfnOutput(
+
+        CfnOutput(
             self._stack,
             id='AnalyticsProcessingLambdaName',
             description='Lambda function for sending processed data to CloudWatch.',
@@ -241,7 +245,7 @@ class RealTimeDataProcessing:
                     ],
                     effect=iam.Effect.ALLOW,
                     resources=[
-                        core.Fn.sub(
+                        Fn.sub(
                             'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                             '/aws/lambda/${FunctionName}*',
                             variables={
@@ -287,5 +291,3 @@ class RealTimeDataProcessing:
     @property
     def analytics_application_role_arn(self) -> iam.Role.role_arn:
         return self._analytics_application_role.role_arn
-
-
