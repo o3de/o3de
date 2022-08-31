@@ -112,6 +112,10 @@ void ImporterRootDisplay::HandleSceneWasReset(const AZStd::shared_ptr<AZ::SceneA
     BusDisconnect();
     m_manifestWidget->BuildFromScene(scene);
     BusConnect();
+
+    // Reseting the scene doesn't immediately save the changes, so mark this as having unsaved changes.
+    m_hasUnsavedChanges = true;
+    ui->m_updateButton->setEnabled(true);
 }
 
 void ImporterRootDisplay::HandleSaveWasSuccessful()

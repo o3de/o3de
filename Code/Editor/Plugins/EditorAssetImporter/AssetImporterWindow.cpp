@@ -560,13 +560,15 @@ void AssetImporterWindow::OnSceneResetRequested()
             file.remove();
         }
     }
-    UpdateSceneDisplay({});
+    //UpdateSceneDisplay({});
 
-    m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Resetting, s_browseTag));
+    /* m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Resetting, s_browseTag));
     m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
     m_processingOverlay->SetAutoCloseOnSuccess(true);
     connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
+    m_processingOverlayIndex = m_processingOverlay->PushToOverlay();*/
+    SceneSettingsCard* card = CreateSceneSettingsCard(m_rootDisplay->GetHeaderFileName(), SceneSettingsCard::Layout::Resetting, SceneSettingsCard::State::Loading);
+    card->SetAndStartProcessingHandler(asyncLoadHandler);
 }
 
 void AssetImporterWindow::OnAssignScript()
