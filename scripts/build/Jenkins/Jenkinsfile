@@ -55,8 +55,8 @@ else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
     extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
     engineUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 }
-echo "Engine URL: ${engineUrl}"
-echo "Extras URL: ${extrasUrl}"
+//echo "Engine URL: ${engineUrl}"
+//echo "Extras URL: ${extrasUrl}"
 
 //use the urls to fill out the engine and extras configs
 def engineRemoteConfigs = [
