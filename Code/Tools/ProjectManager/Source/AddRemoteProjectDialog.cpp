@@ -48,15 +48,13 @@ namespace O3DE::ProjectManager
 
         m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
         m_repoPath->setMinimumSize(QSize(600, 0));
-        m_repoPath->lineEdit()->setPlaceholderText("http://github.com/example.git");
+        m_repoPath->lineEdit()->setPlaceholderText("http://github.com/o3de/example.git");
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(10);
 
-        QHBoxLayout* warningHLayout = new QHBoxLayout(this);
-
-        QLabel* warningIcon = new QLabel(this);
-        //warningIcon->setObjectName("projectWarningIconOverlay");
+        QHBoxLayout* warningHLayout = new QHBoxLayout();
+        QLabel* warningIcon = new QLabel();
         warningIcon->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
         warningIcon->setAlignment(Qt::AlignCenter);
         warningIcon->setFixedSize(32, 32);
