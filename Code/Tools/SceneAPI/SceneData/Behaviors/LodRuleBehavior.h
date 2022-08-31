@@ -54,6 +54,8 @@ namespace AZ
             private:
                 size_t SelectLodMeshes(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection, size_t lodLevel) const;
                 void UpdateLodRules(Containers::Scene& scene) const;
+                AZStd::shared_ptr<LodRule> CreateLodRuleUsingCustomProperty(const Containers::Scene& scene) const;
+                void SelectLodMeshesUsingCustomProperty(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection, size_t lodLevel) const;
             };
         } // namespace SceneData
     } // namespace SceneAPI

@@ -176,11 +176,11 @@ namespace EMotionFX
 
             void LodRuleBehavior::GetVirtualTypeName(AZStd::string& name, AZ::Crc32 type)
             {
-                if (type == AZ_CRC("LODMesh1", 0xcbea988c)) { name = "LODMesh1"; }
-                else if (type == AZ_CRC("LODMesh2", 0x52e3c936)) { name = "LODMesh2"; }
-                else if (type == AZ_CRC("LODMesh3", 0x25e4f9a0)) { name = "LODMesh3"; }
-                else if (type == AZ_CRC("LODMesh4", 0xbb806c03)) { name = "LODMesh4"; }
-                else if (type == AZ_CRC("LODMesh5", 0xcc875c95)) { name = "LODMesh5"; }
+                if (type == AZ_CRC_CE("LODMesh1")) { name = "LODMesh1"; }
+                else if (type == AZ_CRC_CE("LODMesh2")) { name = "LODMesh2"; }
+                else if (type == AZ_CRC_CE("LODMesh3")) { name = "LODMesh3"; }
+                else if (type == AZ_CRC_CE("LODMesh4")) { name = "LODMesh4"; }
+                else if (type == AZ_CRC_CE("LODMesh5")) { name = "LODMesh5"; }
             }
         }
     }
