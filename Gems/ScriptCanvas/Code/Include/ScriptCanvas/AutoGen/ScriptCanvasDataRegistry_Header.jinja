@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 // This code was produced with AzAutoGen, any modifications made will not be preserved.
 // If you need to modify this code see:
 //
-// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasGrammarRegistry_Header.jinja
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasDataRegistry_Header.jinja
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,19 +22,19 @@ namespace ScriptCanvas
 {
     struct NodeRegistry;
 
-    //! {{autogenTargetName}}GrammarRegistry
-    //! AutoGen registry to register grammar required metadata into system
-    class {{autogenTargetName}}GrammarRegistry
+    //! {{autogenTargetName}}DataRegistry
+    //! AutoGen registry to register custom data metadata into system
+    class {{autogenTargetName}}DataRegistry
         : public ScriptCanvasRegistry
     {
     public:
-        {{autogenTargetName}}GrammarRegistry();
-        virtual ~{{autogenTargetName}}GrammarRegistry();
+        {{autogenTargetName}}DataRegistry();
+        virtual ~{{autogenTargetName}}DataRegistry();
  
-        //! IScriptCanvasRegistry
-        void Init(NodeRegistry* nodeRegistry) override;
+        //! ScriptCanvasRegistry
         void Reflect(AZ::ReflectContext* context) override;
-        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() override;
+        void Init([[maybe_unused]] NodeRegistry* nodeRegistry) override {}
+        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() override { return {}; }
 
         //! Get AutoGen registry name
         static const char* GetRegistryName();

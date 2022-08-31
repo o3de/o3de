@@ -34,10 +34,12 @@
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
 
+#include <AutoGenDataRegistry.generated.h>
 #include <AutoGenFunctionRegistry.generated.h>
 #include <AutoGenNodeableRegistry.generated.h>
 #include <AutoGenGrammarRegistry.generated.h>
 
+REGISTER_SCRIPTCANVAS_AUTOGEN_DATA(ScriptCanvasStatic);
 REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
 REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasStatic);
 REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(ScriptCanvasStatic);
