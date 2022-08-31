@@ -70,8 +70,8 @@ def extrasRemoteConfigs = [
     url: extrasUrl,
     credentialsId: scm.userRemoteConfigs.credentialsId[0]
 ]
-echo "engineRemoteConfigs: ${engineRemoteConfigs}"
-echo "extrasRemoteConfigs: ${extrasRemoteConfigs}"
+//echo "engineRemoteConfigs: ${engineRemoteConfigs}"
+//echo "extrasRemoteConfigs: ${extrasRemoteConfigs}"
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
