@@ -25,7 +25,8 @@ ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
-def matcher = scm.userRemoteConfigs.url[0] =~ /https://(.+)/(.+)/(.+).git/
+def httpsPattern = Pattern.compile('https://(.+)/(.+)/(.+).git')
+def matcher = scm.userRemoteConfigs.url[0] =~ httpsPattern
 COMMIT_DOMAIN_NAME = matcher.group(1)
 echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
 COMMIT_ORGANIZATION_NAME = matcher.group(2)
