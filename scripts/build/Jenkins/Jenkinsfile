@@ -55,8 +55,7 @@ else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
     extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
     engineUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 }
-//echo "Engine URL: ${engineUrl}"
-//echo "Extras URL: ${extrasUrl}"
+
 
 //use the urls to fill out the engine and extras configs
 def engineRemoteConfigs = [
@@ -70,8 +69,7 @@ def extrasRemoteConfigs = [
     url: extrasUrl,
     credentialsId: scm.userRemoteConfigs.credentialsId[0]
 ]
-//echo "engineRemoteConfigs: ${engineRemoteConfigs}"
-//echo "extrasRemoteConfigs: ${extrasRemoteConfigs}"
+
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
@@ -320,7 +318,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [engineRemoteConfigs]
+        userRemoteConfigs: scm.userRemoteConfigs
     ])
 }
 
@@ -1164,7 +1162,7 @@ try {
                         }
                         pipelineProperties.add(disableConcurrentBuilds())
 
-                        //echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
+                        echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
                         CheckoutEngineBootstrapScripts(branchName)
 
