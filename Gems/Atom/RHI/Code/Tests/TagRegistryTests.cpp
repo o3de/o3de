@@ -69,7 +69,6 @@ namespace UnitTest
 
     TEST_F(TagRegistryTest, TagValues)
     {
-
         auto tagRegistry = RHI::TagRegistry<IndexType, Count>::Create();
 
         AZStd::array<Name, Count> names = { Name("A"), Name("B"), Name("C"), Name("D"), };
