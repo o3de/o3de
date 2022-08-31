@@ -42,8 +42,6 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <Util/PathUtil.h>
 #include <ActionOutput.h>
 
-#include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
-#include <SceneAPI/SceneUI/CommonWidgets/ProcessingOverlayWidget.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/AsyncOperationProcessingHandler.h>
 #include <SceneAPI/SceneUI/Handlers/ProcessingHandlers/ExportJobProcessingHandler.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
@@ -70,7 +68,6 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
     , m_rootDisplay(nullptr)
     , m_overlay(nullptr)
     , m_isClosed(false)
-    , m_processingOverlayIndex(AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
 {
     Init();
 }
@@ -78,14 +75,11 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 AssetImporterWindow::~AssetImporterWindow()
 {
     disconnect();
-    AZ_Assert(m_processingOverlayIndex == AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex,
-        "Processing overlay (and potentially background thread) still active at destruction.");
-    AZ_Assert(!m_processingOverlay, "Processing overlay (and potentially background thread) still active at destruction.");
 }
 
 void AssetImporterWindow::OpenFile(const AZStd::string& filePath)
 {
-    if (m_processingOverlay)
+    if (m_sceneSettingsCardOverlay != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
     {
         QMessageBox::warning(this, "In progress", "Please wait for the previous task to complete before opening a new file.");
         return;
@@ -120,32 +114,12 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
         return;
     }
 
-    if (m_processingOverlay)
+    if (m_sceneSettingsCardOverlay != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
     {
-        AZ_Assert(m_processingOverlayIndex != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex,
-            "Processing overlay present, but not the index in the overlay for it.");
-        if (m_processingOverlay->HasProcessingCompleted())
-        {
-            if (m_overlay->PopLayer(m_processingOverlayIndex))
-            {
-                m_processingOverlayIndex = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
-                m_processingOverlay.reset(nullptr);
-            }
-            else
-            {
-                QMessageBox::critical(this, "Processing In Progress", "Unable to close the result window at this time.",
-                    QMessageBox::Ok, QMessageBox::Ok);
-                ev->ignore();
-                return;
-            }
-        }
-        else
-        {
-            QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.",
-                QMessageBox::Ok, QMessageBox::Ok);
-            ev->ignore();
-            return;
-        }
+        QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.",
+            QMessageBox::Ok, QMessageBox::Ok);
+        ev->ignore();
+        return;
     }
 
     if (!m_overlay->CanClose())
@@ -304,25 +278,10 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
         {
             HandleAssetLoadingCompleted();
         }, this);
-    
-    //AzQtComponents::StyledBusyLabel* m_busyLabel = new AzQtComponents::StyledBusyLabel(ui->m_rootWidget);
-    //m_busyLabel->SetIsBusy(true);
-    //m_busyLabel->SetBusyIconSize(14);
-    //ui->mainAreaLayout->addWidget(m_busyLabel);
-    //m_busyLabel->SetText("Busy Message Test");
         
     QFileInfo fileInfo(filePath.c_str());
     SceneSettingsCard* card = CreateSceneSettingsCard(fileInfo.fileName(), SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
-
-    //m_notificationRootWidget->adjustSize();
-        
-
-    //m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Loading, s_browseTag));
-    //m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
-    //m_processingOverlay->SetAutoCloseOnSuccess(true);
-    //connect(m_processingOverlay.data(), &AZ::SceneAPI::SceneUI::ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    //m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
 }
 
 SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
@@ -379,7 +338,7 @@ void AssetImporterWindow::SceneSettingsCardProcessingCompleted()
         return;
     }
     m_overlay->PopLayer(m_sceneSettingsCardOverlay);
-    m_sceneSettingsCardOverlay = -1;
+    m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
 }
 
 bool AssetImporterWindow::IsAllowedToChangeSourceFile()
@@ -441,9 +400,8 @@ void AssetImporterWindow::UpdateClicked()
     using namespace AZ::SceneAPI::SceneUI;
 
     // There are specific measures in place to block re-entry, applying asserts to be safe
-    if (m_processingOverlay)
+    if (m_sceneSettingsCardOverlay != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
     {
-        AZ_Assert(!m_processingOverlay, "Attempted to update asset while processing is in progress.");
         return;
     }
     else if (!m_scriptProcessorRuleFilename.empty())
@@ -453,18 +411,7 @@ void AssetImporterWindow::UpdateClicked()
     }
 
     SceneSettingsCard* card = CreateSceneSettingsCard(m_rootDisplay->GetHeaderFileName(), SceneSettingsCard::Layout::Exporting, SceneSettingsCard::State::Processing);
-    
-    //m_processingOverlayIndex = m_overlay->PushLayer(m_progressLabel, nullptr, "File progress", buttons);
-    //card->SetAndStartProcessingHandler(asyncLoadHandler);
 
-    //m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Exporting, s_browseTag));
-    //connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    //m_processingOverlayIndex = m_processingOverlay->PushToOverlay();
-
-    // We need to block closing of the overlay until source control operations are complete
-    //m_processingOverlay->BlockClosing();
-
-    //m_processingOverlay->OnSetStatusMessage("Saving settings...");
     bool isSourceControlActive = false;
     {
         using SCRequestBus = AzToolsFramework::SourceControlConnectionRequestBus;
@@ -498,20 +445,8 @@ void AssetImporterWindow::UpdateClicked()
                 m_rootDisplay->HandleSaveWasSuccessful();
 
                 // Don't attach the job processor until all files are saved.
-                //m_processingOverlay->SetAndStartProcessingHandler(AZStd::make_shared<ExportJobProcessingHandler>(s_browseTag, m_fullSourcePath));
                 card->SetAndStartProcessingHandler(AZStd::make_shared<ExportJobProcessingHandler>(s_browseTag, m_fullSourcePath));
             }
-            else
-            {
-                // This kind of failure means that it's possible the jobs will never actually start,
-                //  so we act like the processing is complete to make it so the user won't be stuck
-                //  in the processing UI in that case.
-                //m_processingOverlay->OnProcessingComplete();
-            }
-
-            // Blocking is only used for the period saving is happening. The ExportJobProcessingHandler will inform
-            // the overlay widget when the AP is done with processing, which will also block closing until done.
-            //m_processingOverlay->UnblockClosing();
         }
     );
 }
@@ -560,13 +495,7 @@ void AssetImporterWindow::OnSceneResetRequested()
             file.remove();
         }
     }
-    //UpdateSceneDisplay({});
 
-    /* m_processingOverlay.reset(new ProcessingOverlayWidget(m_overlay.data(), ProcessingOverlayWidget::Layout::Resetting, s_browseTag));
-    m_processingOverlay->SetAndStartProcessingHandler(asyncLoadHandler);
-    m_processingOverlay->SetAutoCloseOnSuccess(true);
-    connect(m_processingOverlay.data(), &ProcessingOverlayWidget::Closing, this, &AssetImporterWindow::ClearProcessingOverlay);
-    m_processingOverlayIndex = m_processingOverlay->PushToOverlay();*/
     SceneSettingsCard* card = CreateSceneSettingsCard(m_rootDisplay->GetHeaderFileName(), SceneSettingsCard::Layout::Resetting, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
 }
@@ -774,12 +703,6 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     //  show the main area where all the actual work takes place
     ui->m_initialBrowseContainer->hide();
     m_rootDisplay->show();
-}
-
-void AssetImporterWindow::ClearProcessingOverlay()
-{
-    m_processingOverlayIndex = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
-    m_processingOverlay.reset(nullptr);
 }
 
 #include <moc_AssetImporterWindow.cpp>

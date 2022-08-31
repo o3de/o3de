@@ -21,6 +21,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Math/Guid.h>
+#include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/CommonWidgets/SceneSettingsCard.h>
 #endif
 
@@ -48,14 +49,6 @@ namespace AZ
 
     namespace SceneAPI
     {
-        namespace UI
-        {
-            class OverlayWidget;
-        }
-        namespace SceneUI
-        {
-            class ProcessingOverlayWidget;
-        }
         namespace DataTypes
         {
             class IScriptProcessorRule;
@@ -92,7 +85,7 @@ public:
     
     void OpenFile(const AZStd::string& filePath);
     
-    void closeEvent(QCloseEvent* ev);
+    void closeEvent(QCloseEvent* ev) override;
 
 public slots:
     void OnSceneResetRequested();
@@ -117,7 +110,6 @@ private:
     void ResetMenuAccess(WindowState state);
     void SetTitle(const char* filePath);
     void HandleAssetLoadingCompleted();
-    void ClearProcessingOverlay();
 
     SceneSettingsCard* CreateSceneSettingsCard(
         QString fileName,
@@ -138,11 +130,9 @@ private:
     QScopedPointer<Ui::AssetImporterWindow> ui;
     QScopedPointer<AssetImporterDocument> m_assetImporterDocument;
     QScopedPointer<AZ::SceneAPI::UI::OverlayWidget> m_overlay;
-    //QVBoxLayout* m_notificationLayout = nullptr;
-    //QWidget* m_notificationRootWidget = nullptr;
     AzQtComponents::Card* m_logDetailsCard = nullptr;
     int m_openSceneSettingsCards = 0;
-    int m_sceneSettingsCardOverlay = -1;
+    int m_sceneSettingsCardOverlay = AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex;
 
     // Output logs can have a lot of additional details,
     // this table displays that information when you select
@@ -157,7 +147,6 @@ private:
     bool m_isClosed;
 
     int m_processingOverlayIndex;
-    QSharedPointer<AZ::SceneAPI::SceneUI::ProcessingOverlayWidget> m_processingOverlay;
 
     AZStd::string m_scriptProcessorRuleFilename;
 };
