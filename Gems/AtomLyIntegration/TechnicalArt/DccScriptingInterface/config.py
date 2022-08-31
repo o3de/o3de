@@ -309,7 +309,7 @@ def initialize_blender_settings():
 
 
 def initialize_substance_settings():
-    if settings.get('BLENDER_EXE'):
+    if settings.get('SUBSTANCE_EXE'):
         pass
 
 

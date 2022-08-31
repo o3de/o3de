@@ -76,6 +76,7 @@ class LauncherModel:
         ]
         self.tools_headers = [
             'toolId',
+            'toolSection',
             'toolPlacement',
             'toolName',
             'toolDescription',
@@ -113,8 +114,13 @@ class LauncherModel:
     def extract_db_values(self):
         database_values = helpers.get_database_values(self.cursor, [*self.tables])
         for key, values in database_values.items():
-            for value in values:
-                self.tables[key].update({value[0]: value[1]})
+            categories = self.tools_categories if key == 'tools' else self.projects_categories
+            self.tables[key] = {item: {} for item in categories}
+            for entry in values:
+                temp_dict = {}
+                for index, attribute_value in enumerate(entry):
+                    temp_dict[self.tools_headers[index]] = attribute_value
+                self.tables[key][temp_dict['toolSection']][temp_dict['toolName']] = temp_dict
         self.close_database()
 
     def convert_markdown(self, markdown_file):
@@ -123,7 +129,8 @@ class LauncherModel:
 
     def create_tool_table(self):
         table_data = [
-            'toolId integer PRIMARY KEY',
+            'toolId integer PRIMARY KEY AUTOINCREMENT NOT NULL',
+            'toolSection text NOT NULL',
             'toolPlacement text NOT NULL',
             'toolName text NOT NULL',
             'toolDescription varchar(20)',
@@ -155,9 +162,6 @@ class LauncherModel:
                 self.tools[tool_type] = self.tables['tools'][tool_type]
             except box.exceptions.BoxKeyError:
                 self.tools[tool_type] = {}
-
-    def get_tool_id(self):
-        return len(self.tools)
 
     def get_applications(self):
         application_list = {
@@ -192,6 +196,9 @@ class LauncherModel:
     
     def get_table_names(self) -> list:
         return [*self.tables]
+
+    def get_tools_categories(self) -> list:
+        return self.tools_categories
 
     def get_stored_values(self, target_table) -> dict:
         stored_tables = helpers.get_tables(self.db)

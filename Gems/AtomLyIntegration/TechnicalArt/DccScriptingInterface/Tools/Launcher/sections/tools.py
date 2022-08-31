@@ -39,9 +39,42 @@ class Tools(QtWidgets.QWidget):
         self.desktop_location = (Path.home() / 'Desktop').as_posix()
         self.current_section = None
         self.content_layout = QtWidgets.QVBoxLayout(self)
-        self.content_layout.setContentsMargins(10, 3, 10, 10)
+        self.content_layout.setContentsMargins(5, 0, 5, 5)
         self.content_frame = QtWidgets.QFrame(self)
         self.content_frame.setGeometry(0, 0, 5000, 5000)
+        self.section_tabs = QtWidgets.QTabBar()
+        self.section_tabs.setShape(QtWidgets.QTabBar.RoundedNorth)
+        self.section_tabs.currentChanged.connect(self.section_button_clicked)
+        self.section_tabs.setStyleSheet(
+            'QTabBar::tab { '
+            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, '
+            'stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, '
+            'stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3); '
+            'border: 2px solid #C4C4C3; '
+            'border-bottom-color: #C2C7CB;'
+            'border-top-left-radius: 4px; '
+            'border-top-right-radius: 4px; '
+            'min-width: 8ex; '
+            'padding: 2px;'
+            'color: rgb(135, 135, 135);'
+            '}'
+            'QTabBar::tab:selected, QTabBar::tab:hover {'
+            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,'
+            'stop: 0  #fafafa, stop: 0.4 #f4f4f4,'
+            'stop: 0.5  #e7e7e7, stop: 1.0 #fafafa);'
+            'color: #FF00FF;'
+            '}'
+            'QTabBar::tab:selected {'
+            'border-color: #9B9B9B;'
+            'border-bottom-color:  #C2C7CB;'
+            '}'
+            'QTabBar::tab:!selected {'
+            'margin - top: 2px;'
+            '}'
+        )
+        self.section_tabs.setFont(constants.BOLD_FONT_LARGE)
+        self.content_layout.addWidget(self.section_tabs)
+        self.content_layout.addSpacing(-5)
 
         self.add_button_group = QtWidgets.QButtonGroup()
         self.add_button_group.idClicked.connect(self.add_button_clicked)
@@ -59,35 +92,35 @@ class Tools(QtWidgets.QWidget):
         # LEFT COLUMN WIDGETS +---->>>
         # +++++++++++++++++++++--->>>
 
-        self.left_column_widget = QtWidgets.QWidget()
-        self.left_column_widget.setMaximumWidth(100)
-        self.left_column_container = QtWidgets.QVBoxLayout()
-        self.left_column_container.setContentsMargins(0, 0, 0, 0)
-        self.left_column_widget.setLayout(self.left_column_container)
-        self.page_splitter.addWidget(self.left_column_widget)
-
-        # Tool Category Selection Panel ########################################
-        self.tool_category_layout = QtWidgets.QVBoxLayout()
-        self.tool_category_layout.setAlignment(QtCore.Qt.AlignTop)
-        self.tool_category_panel = QtWidgets.QWidget()
-        self.tool_category_panel.setLayout(self.tool_category_layout)
-        self.tool_category_layout.setContentsMargins(0, 7, 0, 0)
-        self.panel_frame = QtWidgets.QFrame(self.tool_category_panel)
-        self.panel_frame.setStyleSheet('background-color: rgb(135, 135, 135);')
-        self.panel_frame.setGeometry(0, 0, 150, 5000)
-        self.left_column_container.addWidget(self.tool_category_panel)
-
-        # --> Tool Category Button Layout
-        self.category_button_container = QtWidgets.QVBoxLayout()
-        self.category_button_container.setContentsMargins(10, 3, 10, 10)
-        self.tool_category_layout.addLayout(self.category_button_container)
-
-        self.section_buttons = {}
-        self.section_button = None
-        self.active_section_button = None
-        for tool_type in self.model.tools:
-            self.section_buttons.update({tool_type: self.add_section_button(tool_type)})
-            self.category_button_container.addWidget(self.section_buttons[tool_type])
+        # self.left_column_widget = QtWidgets.QWidget()
+        # self.left_column_widget.setMaximumWidth(100)
+        # self.left_column_container = QtWidgets.QVBoxLayout()
+        # self.left_column_container.setContentsMargins(0, 0, 0, 0)
+        # self.left_column_widget.setLayout(self.left_column_container)
+        # self.page_splitter.addWidget(self.left_column_widget)
+        #
+        # # Tool Category Selection Panel ########################################
+        # self.tool_category_layout = QtWidgets.QVBoxLayout()
+        # self.tool_category_layout.setAlignment(QtCore.Qt.AlignTop)
+        # self.tool_category_panel = QtWidgets.QWidget()
+        # self.tool_category_panel.setLayout(self.tool_category_layout)
+        # self.tool_category_layout.setContentsMargins(0, 7, 0, 0)
+        # self.panel_frame = QtWidgets.QFrame(self.tool_category_panel)
+        # self.panel_frame.setStyleSheet('background-color: rgb(135, 135, 135);')
+        # self.panel_frame.setGeometry(0, 0, 150, 5000)
+        # self.left_column_container.addWidget(self.tool_category_panel)
+        #
+        # # --> Tool Category Button Layout
+        # self.category_button_container = QtWidgets.QVBoxLayout()
+        # self.category_button_container.setContentsMargins(10, 3, 10, 10)
+        # self.tool_category_layout.addLayout(self.category_button_container)
+        #
+        # self.section_buttons = {}
+        # self.section_button = None
+        # self.active_section_button = None
+        # for tool_type in self.model.tools:
+        #     self.section_buttons.update({tool_type: self.add_section_button(tool_type)})
+        #     self.category_button_container.addWidget(self.section_buttons[tool_type])
 
         # +++++++++++++++++++++++--->>>
         # CENTER COLUMN WIDGETS +---->>>
@@ -175,16 +208,33 @@ class Tools(QtWidgets.QWidget):
         # Tool Listings Panel #
         #######################
 
-        self.tool_listings_layout = QtWidgets.QVBoxLayout()
-        self.tool_listings_layout.setAlignment(QtCore.Qt.AlignTop)
-        self.tool_listings_panel = QtWidgets.QWidget()
-        self.tool_listings_panel.setLayout(self.tool_listings_layout)
-        self.tool_listings_layout.setContentsMargins(0, 0, 0, 0)
-        self.tool_listings_layout.setSpacing(0)
-        self.panel_frame = QtWidgets.QFrame(self.tool_listings_panel)
-        self.panel_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
-        self.panel_frame.setGeometry(0, 0, 200, 5000)
-        self.center_column_container.addWidget(self.tool_listings_panel)
+        # Add Top Bracket
+        self.top_bracket_layout = QtWidgets.QVBoxLayout()
+        self.top_bracket_layout.setContentsMargins(0, 5, 0, 0)
+        self.top_bracket_widget = QtWidgets.QWidget()
+        self.top_bracket_widget.setLayout(self.top_bracket_layout)
+        self.top_bracket_frame = QtWidgets.QFrame(self.top_bracket_widget)
+        self.top_bracket_frame.setGeometry(0, 0, 200, 100)
+        self.top_bracket_frame.setStyleSheet("QFrame { background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, "
+                                             "y2:1, stop:0 rgba(55, 55, 55, 255), stop:1 rgba(15, 15, 15, 255));}")
+        self.center_column_container.addWidget(self.top_bracket_widget)
+        self.center_column_container.setCurrentIndex(2)
+
+        # self.tool_listings_layout = QtWidgets.QVBoxLayout()
+        # self.tool_listings_layout.setAlignment(QtCore.Qt.AlignTop)
+        # self.tool_listings_panel = QtWidgets.QWidget()
+        # self.tool_listings_panel.setLayout(self.tool_listings_layout)
+        # self.tool_listings_layout.setContentsMargins(0, 0, 0, 0)
+        # self.tool_listings_layout.setSpacing(0)
+        # self.panel_frame = QtWidgets.QFrame(self.tool_listings_panel)
+        # self.panel_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
+        # self.panel_frame.setGeometry(0, 0, 200, 5000)
+        # self.center_column_container.addWidget(self.tool_listings_panel)
+
+
+
+
+
 
         # +++++++++++++++++++++++--->>>
         # RIGHT COLUMN WIDGETS +---->>>
@@ -195,8 +245,36 @@ class Tools(QtWidgets.QWidget):
         self.stacked_widget.setLayout(self.stacked_layout)
         self.page_splitter.addWidget(self.stacked_widget)
 
+        ###############
+        # SPLASH PAGE #
+        ###############
+
+        self.splash_page_layout = QtWidgets.QVBoxLayout()
+        self.splash_page_widget = QtWidgets.QWidget()
+        self.splash_page_widget.setLayout(self.splash_page_layout)
+        self.panel_frame = QtWidgets.QFrame(self.splash_page_widget)
+        self.panel_frame.setStyleSheet('background-color: #0095F2;')
+        self.panel_frame.setGeometry(0, 0, 5000, 5000)
+        self.stacked_layout.addWidget(self.splash_page_widget)
+        self.label_layout = QtWidgets.QHBoxLayout()
+        self.label_layout.setAlignment(QtCore.Qt.AlignCenter)
+        self.splash_section_label = QtWidgets.QLabel()
+        self.splash_section_label.setFont(constants.BOLD_FONT_SPLASH)
+        self.splash_section_label.setStyleSheet('color: white')
+        self.label_layout.addWidget(self.splash_section_label)
+        self.splash_page_layout.addLayout(self.label_layout)
+
+        ####################
+        # MARKDOWN DISPLAY #
+        ####################
+
+        self.markdown_display_layout = QtWidgets.QVBoxLayout()
+        self.markdown_display_layout.setContentsMargins(0, 5, 0, 0)
+        self.markdown_display_widget = QtWidgets.QWidget()
+        self.markdown_display_widget.setLayout(self.markdown_display_layout)
         self.markdown_display = QtWidgets.QTextEdit()
-        self.stacked_layout.addWidget(self.markdown_display)
+        self.markdown_display_layout.addWidget(self.markdown_display)
+        self.stacked_layout.addWidget(self.markdown_display_widget)
 
         # Add Tool Layer
         self.add_tool_layout = QtWidgets.QVBoxLayout()
@@ -328,39 +406,21 @@ class Tools(QtWidgets.QWidget):
         self.remove_tool_button.clicked.connect(self.remove_tool_clicked)
         self.add_remove_button_layout.addWidget(self.remove_tool_button)
 
-        # ++++++++++++++++++++++++--->>>
-        # BOTTOM CONTROL WIDGETS +---->>>
-        # ++++++++++++++++++++++++--->>>
-
-        self.bottom_control_widget = QtWidgets.QWidget()
-        self.bottom_control_widget.setFixedHeight(100)
-        self.bottom_control_layout = QtWidgets.QVBoxLayout()
-        self.bottom_control_layout.setContentsMargins(0, 0, 0, 0)
-        self.bottom_control_widget.setLayout(self.bottom_control_layout)
-        self.panel_frame = QtWidgets.QFrame(self.bottom_control_widget)
-        self.panel_frame.setStyleSheet('background-color: rgb(50, 50, 50);')
-        self.panel_frame.setGeometry(0, 0, 5000, 100)
-        self.content_layout.addWidget(self.bottom_control_widget)
-        self.open_section()
-
     def open_section(self):
         """ Initializes Tools Window """
+        _LOGGER.info('Open section firing')
+        # Add tabs once needed container layouts have been established
+        self.tool_categories = []
+        for tab_name in self.model.get_tools_categories():
+            self.tool_categories.append(tab_name)
+            self.section_tabs.addTab(tab_name)
+
         self.set_list_widget()
-        self.set_markdown_window(self.markdown)
+        # self.set_markdown_window(self.markdown)
 
     def close_section(self):
-        if self.active_section_button:
-            self.active_section_button.setEnabled(True)
-
-    def add_section_button(self, section_name):
-        _LOGGER.info(f'sectionName: {section_name}')
-        self.section_button = QtWidgets.QPushButton(section_name)
-        self.section_button.setFont(constants.BOLD_FONT)
-        self.section_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.section_button.setFixedHeight(50)
-        self.section_button.setObjectName('Primary')
-        self.section_button.clicked.connect(self.section_button_clicked)
-        return self.section_button
+        # Every section has open and close functions- just add cleanup here
+        pass
 
     def reset_tool_form(self):
         self.tool_name_field.setText('')
@@ -430,16 +490,14 @@ class Tools(QtWidgets.QWidget):
             self.throw_validation_message(failed_validation)
 
     def get_db_formatting(self, tool_settings):
-        _LOGGER.info(f'ToolSettings: {tool_settings}')
         entry_list = []
-        tool_settings['toolId'] = self.model.get_tool_id()
+        tool_settings['toolSection'] = self.current_section
         tool_settings['toolPlacement'] = self.window_radio_button_group.checkedButton().text()
+
         for attribute in self.model.tools_headers:
-            _LOGGER.info(f'++++ Attribute: {attribute}')
             target_value = None
             for key, value in tool_settings.items():
                 if key == attribute:
-                    _LOGGER.info(f'TargetKey: {key} -----> {value}')
                     target_value = value
                     break
             entry_list.append(target_value)
@@ -469,20 +527,21 @@ class Tools(QtWidgets.QWidget):
         self.separator_layout.addWidget(self.line)
         return self.separator_layout
 
-    def set_section(self, button_name, target_button):
-        self.close_section()
-        target_button.setEnabled(False)
-        self.active_section_button = target_button
+    def set_section(self, button_name):
         self.current_section = button_name
-        self.set_tools(button_name)
+        self.set_splash_page(button_name)
+        # self.set_tools(button_name)
 
     def set_tools(self, section_name):
+        # Clear existing section buttons
         if self.tool_listings_layout.count():
             for i in reversed(range(self.tool_listings_layout.count())):
                 self.tool_listings_layout.itemAt(i).widget().setParent(None)
+
+        # Add selected section buttons
         if len(self.tools_listings[section_name].values()):
-            for i in range(len(self.tools_listings[section_name])):
-                btn = self.get_tool_button(self.tools_listings[section_name][i])
+            for key, value in self.tools_listings[section_name].items():
+                btn = self.get_tool_button(key)
                 self.tool_listings_layout.addWidget(btn)
 
     def set_list_widget(self):
@@ -498,6 +557,9 @@ class Tools(QtWidgets.QWidget):
         formatted_text = self.model.convert_markdown(markdown_file)
         self.markdown_display.setText(formatted_text)
 
+    def set_splash_page(self, section_name):
+        self.splash_section_label.setText(section_name)
+
     # ++++++++++++++++--->>>
     # BUTTON ACTIONS +---->>>
     # ++++++++++++++++--->>>
@@ -507,9 +569,8 @@ class Tools(QtWidgets.QWidget):
         self.stacked_layout.setCurrentIndex(1)
 
     def section_button_clicked(self):
-        signal_sender = self.sender()
-        button_name = signal_sender.text()
-        self.set_section(button_name, self.section_buttons[button_name])
+        button_name = self.model.get_tools_categories()[self.section_tabs.currentIndex()]
+        self.set_section(button_name)
         self.set_list_widget()
 
     def add_tool_clicked(self):
@@ -536,6 +597,7 @@ class Tools(QtWidgets.QWidget):
         signal_sender = self.sender()
         button_name = signal_sender.text()
         _LOGGER.info(f'CurrentSection: {self.current_section}  SelectedScript: {button_name}')
+        _LOGGER.info(f'ToolValues: {self.tools_listings[self.current_section][button_name]}')
 
     def cancel_tool_clicked(self):
         _LOGGER.info('Cancel Tool Button Clicked')
