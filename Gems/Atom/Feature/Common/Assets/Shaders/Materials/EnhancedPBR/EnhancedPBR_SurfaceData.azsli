@@ -37,9 +37,7 @@
     {
         ClearCoatSurfaceData clearCoat;
         AnisotropicSurfaceData anisotropy;
-#if ENABLE_TRANSMISSION
         TransmissionSurfaceData transmission;
-#endif
 
         // ------- BasePbrSurfaceData -------
     

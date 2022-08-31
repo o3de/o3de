@@ -12,7 +12,7 @@
 // ------- Options -------
 
 #define ENABLE_CLEAR_COAT       1
-#define ENABLE_TRANSMISSION     0
+#define ENABLE_TRANSMISSION     1
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
