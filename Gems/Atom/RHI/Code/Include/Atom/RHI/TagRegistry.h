@@ -35,7 +35,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator, 0);
             AZ_DISABLE_COPY_MOVE(TagRegistry);
 
-            template<typename IndexType>
+            template<typename>
             friend class TagBitRegistry;
 
             using TagType = Handle<IndexType>;
