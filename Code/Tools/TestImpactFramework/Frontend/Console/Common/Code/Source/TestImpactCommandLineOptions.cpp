@@ -189,11 +189,11 @@ namespace TestImpact
             return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
         }
 
-        Policy::TestRunner ParseNullTestRunnerPolicy(const AZ::CommandLine& cmd)
+        Policy::TestRunner ParseTestRunnerPolicy(const AZ::CommandLine& cmd)
         {
             const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseLiveTestRunner, Policy::TestRunner::UseNullTestRunner };
 
-            return ParseOnOffOption(OptionKeys[TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
+            return ParseLiveNullOption(OptionKeys[TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
         }
 
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
@@ -313,6 +313,7 @@ namespace TestImpact
         m_excludedTests = ParseExcludedTestsFile(cmd);
         m_safeMode = ParseSafeMode(cmd);
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
+        m_testRunnerPolicy = ParseTestRunnerPolicy(cmd);
     }
 
     bool CommandLineOptions::HasSafeMode() const

@@ -45,7 +45,7 @@ namespace TestImpact
             const RepoPath& repoDir,
             const RepoPath& buildDir,
             const ArtifactDir& artifactDir,
-            Policy::TestRunner useNullTestRunner);
+            Policy::TestRunner testRunnerPolicy);
 
         ~PythonTestEngine();
 
@@ -80,6 +80,6 @@ namespace TestImpact
         AZStd::unique_ptr<PythonTestRunner> m_testRunner;
         AZStd::unique_ptr<PythonNullTestRunner> m_nullTestRunner;
         ArtifactDir m_artifactDir;
-        Policy::TestRunner m_useNullTestRunner;
+        Policy::TestRunner m_testRunnerPolicy;
     };
 } // namespace TestImpact
