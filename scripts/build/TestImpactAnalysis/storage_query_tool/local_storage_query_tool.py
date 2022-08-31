@@ -109,22 +109,19 @@ class LocalStorageQueryTool(StorageQueryTool):
             try:
                 json_obj = json.loads(file)
                 if not self._check_object_exists(str(storage_location)):
-                    with open(f"{storage_location}", "w", encoding="UTF-8") as raw_output_file:
-                        json.dump(json_obj, raw_output_file,
-                                ensure_ascii=False, indent=4)
+                    self._write_json_file(json_obj, storage_location)
                 else:
                     logger.info("Cancelling create, as file exists already")
             except json.JSONDecodeError:
                 logger.error("The historic data does not contain valid json")
-        if self._file_type == self.FileType.ZIP:
-            try:
-                if not self._check_object_exists(str(storage_location)):
-                    with open(f"{storage_location}", "wb") as raw_output_file:
-                        raw_output_file.write(file)
-                else:
-                    logger.info("Cancelling create, as file exists already")
-            except OSError as e:
-                logger.error(e)
+        elif self._file_type == self.FileType.ZIP:
+            if not self._check_object_exists(str(storage_location)):
+                self._write_zip_file(file, storage_location)
+            else:
+                logger.info("Cancelling create, as file exists already")
+        else:
+            raise SystemError(
+                "File type not specified or otherwise not passed through to SQT")
 
     def _update(self, file: str, storage_location: str):
         """
@@ -137,19 +134,41 @@ class LocalStorageQueryTool(StorageQueryTool):
             try:
                 json_obj = json.loads(file)
                 if self._check_object_exists(storage_location):
-                    with open(f"{storage_location}", "w", encoding="UTF-8") as raw_output_file:
-                        json.dump(json_obj, raw_output_file,
-                                ensure_ascii=False, indent=4)
+                    self._write_json_file(json_obj, storage_location)
                 else:
                     logger.info("Cancelling update, as file does not exist")
             except json.JSONDecodeError:
                 logger.error("The historic data does not contain valid json")
-        if self._file_type == self.FileType.ZIP:
+        elif self._file_type == self.FileType.ZIP:
             try:
                 if self._check_object_exists(str(storage_location)):
-                    with open(f"{storage_location}", "wb") as raw_output_file:
-                        raw_output_file.write(file)
+                    self._write_zip_file(file, storage_location)
                 else:
                     logger.info("Cancelling create, as file exists already")
             except OSError as e:
                 logger.error(e)
+
+    def _write_json_file(self, json_obj, storage_location):
+        """
+        Writes the provided json.dump compatible object to the specified location with formatting and UTF-8 encoding.
+        @param json_obj: Object compatible with json.dump to store
+        @param storage_location: Location to store the object.
+        """
+        try:
+            with open(f"{storage_location}", "w", encoding="UTF-8") as raw_output_file:
+                json.dump(json_obj, raw_output_file,
+                          ensure_ascii=False, indent=4)
+        except OSError as e:
+            logger.error(e)
+
+    def _write_zip_file(self, zip_file, storage_location):
+        """
+        Writes the provided zip file to the provided storage location using open in "write binary" mode.
+        @param zip_file: File to store
+        @param storage_location: Location to store file in.
+        """
+        try:
+            with open(f"{storage_location}", "wb") as raw_output_file:
+                raw_output_file.write(zip_file)
+        except OSError as e:
+            logger.error(e)

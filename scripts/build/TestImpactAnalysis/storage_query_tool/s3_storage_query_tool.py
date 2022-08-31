@@ -128,8 +128,10 @@ class S3StorageQueryTool(StorageQueryTool):
                 raise e
             if self._file_type == self.FileType.JSON:
                 self._save_as_json_file(file_stream, destination)
-            if self._file_type == self.FileType.ZIP:
+            elif self._file_type == self.FileType.ZIP:
                 self._save_as_zip_file(file_stream, destination)
+            else:
+                raise SystemError("File type not specified or otherwise not passed through to SQT")
 
     def _save_as_zip_file(self, file_stream, destination: str):
         """

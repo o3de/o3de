@@ -74,13 +74,12 @@ def parse_args():
 
     parser.add_argument(
         "--file-type",
-        choices=["json","zip"],
+        choices=["json", "zip"],
         help="What file type SQT should expect to be interacting with. Current options are zip and json.",
         required=True
     )
 
     return parser.parse_args()
-
 
 def run(args: dict):
     try:
