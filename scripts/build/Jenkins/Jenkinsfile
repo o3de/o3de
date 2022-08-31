@@ -23,7 +23,7 @@ ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
-def matcher = scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+)\."
+def matcher = scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+)."
 assert matcher.find()
 assert matcher.size() == 3
 
