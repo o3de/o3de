@@ -522,6 +522,15 @@ namespace UnitTest
         EXPECT_EQ(expectedString, accumString);
     }
 
+    TEST_F(RangesViewTestFixture, JoinWithView_IsConstexpr_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "Hello, World, Moon, Sun";
+        constexpr AZStd::array<AZStd::string_view, 4> rope{ "Hello", "World", "Moon", "Sun" };
+        using namespace AZStd::literals::string_view_literals;
+        constexpr AZStd::fixed_string<128> accumString(AZStd::from_range, rope | AZStd::views::join_with(", "_sv));
+        static_assert(accumString == expectedString);
+    }
+
     // elements_view
     TEST_F(RangesViewTestFixture, ElementsView_CanIterateVectorOfTuple_Succeeds)
     {

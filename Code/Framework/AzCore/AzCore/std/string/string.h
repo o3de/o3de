@@ -17,6 +17,7 @@
 #include <AzCore/std/base.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
@@ -463,8 +464,16 @@ namespace AZStd
         template<class R>
         auto assign_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_string&>
         {
-            auto rangeView = rg | views::common;
-            return assign(ranges::begin(rangeView), ranges::end(rangeView));
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                return assign(ranges::begin(rangeView), ranges::end(rangeView));
+            }
+            else
+            {
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                return assign(ranges::begin(rangeView), ranges::end(rangeView));
+            }
         }
 
         basic_string& assign(initializer_list<Element> iList)

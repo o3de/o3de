@@ -275,12 +275,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 assign_iter(ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
         }
@@ -469,12 +469,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 return insert_iter(insertPos, ranges::begin(rangeView), ranges::end(rangeView), false_type{});
             }
         }

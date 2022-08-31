@@ -83,7 +83,7 @@ namespace AZStd::ranges::views::Internal
             convertible_to<UAdaptor, Adaptor>
             && convertible_to<tuple<UArgs...>, tuple<Args...>>
             >>
-        range_adaptor_argument_forwarder(UAdaptor adaptor, UArgs&&... args)
+        constexpr explicit range_adaptor_argument_forwarder(UAdaptor adaptor, UArgs&&... args)
             : m_adaptor{ AZStd::forward<UAdaptor>(adaptor) }
             , m_forwardArgs{ AZStd::forward<UArgs>(args)... }
         {}

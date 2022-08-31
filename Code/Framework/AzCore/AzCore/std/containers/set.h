@@ -89,12 +89,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
@@ -157,12 +157,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 m_tree.insert_unique(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
@@ -439,12 +439,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
@@ -507,12 +507,12 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                auto rangeView = rg | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
                 m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                auto rangeView = rg | views::as_rvalue | views::common;
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
                 m_tree.insert_equal(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }

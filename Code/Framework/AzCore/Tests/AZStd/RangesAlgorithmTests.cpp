@@ -279,7 +279,7 @@ namespace UnitTest
         EXPECT_FALSE(AZStd::ranges::any_of(numbers, [](int i) { return i == 6; })) << "No number should equal 6";
     }
 
-    TEST_F(RangesAlgorithmTestFixture, RangesAnyOf_ReturnsTrueForNoMatchingViews)
+    TEST_F(RangesAlgorithmTestFixture, RangesNoneOf_ReturnsTrueForNoMatchingViews)
     {
         constexpr AZStd::array numbers{ 0, 1, 2, 3, 4, 5 };
         EXPECT_TRUE(AZStd::ranges::none_of(numbers, [](int i) { return i == 10; })) << "No number should equal 10";

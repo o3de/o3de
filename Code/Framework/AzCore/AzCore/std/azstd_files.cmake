@@ -263,4 +263,5 @@ set(FILES
     utility/as_const.h
     utility/declval.h
     utility/move.h
+    utility/to_underlying.h
 )

@@ -13,7 +13,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/ranges/common_view.h>
-
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/string/fixed_string_Platform.inl>
 
 namespace AZStd
@@ -523,8 +523,16 @@ namespace AZStd
     inline constexpr auto basic_fixed_string<Element, MaxElementCount, Traits>::assign_range(R&& rg)
         -> enable_if_t<Internal::container_compatible_range<R, value_type>, basic_fixed_string&>
     {
-        auto rangeView = rg | views::common;
-        return assign(ranges::begin(rangeView), ranges::end(rangeView));
+        if constexpr (is_lvalue_reference_v<R>)
+        {
+            auto rangeView = AZStd::forward<R>(rg) | views::common;
+            return assign(ranges::begin(rangeView), ranges::end(rangeView));
+        }
+        else
+        {
+            auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+            return assign(ranges::begin(rangeView), ranges::end(rangeView));
+        }
     }
 
     template<class Element, size_t MaxElementCount, class Traits>

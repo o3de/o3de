@@ -13,11 +13,8 @@
 
 namespace AZStd
 {
-    template<class S, class = void>
-    class move_sentinel;
-
-    template<class S>
-    class move_sentinel<S, enable_if_t<semiregular<S>>>
+    template<class S, class = enable_if_t<semiregular<S>>>
+    class move_sentinel
     {
     public:
         template<bool Enable = default_initializable<S>, class = enable_if<Enable>>
