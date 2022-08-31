@@ -29,8 +29,6 @@ COMMIT_REPOSITORY_NAME = ''
 @NonCPS
 def DetermineCommit() {
     def matcher = (scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+).")
-    assert matcher.find()
-    assert matcher.size() == 3
     COMMIT_DOMAIN_NAME = matcher[0]
     echo "matcher[0] = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
     COMMIT_ORGANIZATION_NAME = matcher[1]
