@@ -271,7 +271,7 @@ namespace ScriptCanvas
         result.m_isSuccess = result.m_deserializeResult;
         if (!result.m_deserializeResult.m_isSuccessful)
         {
-            result.m_fileReadErrors = "Script Canvas Graph Deserialization Failed.\n" + result.m_deserializeResult.m_errors + "\n";
+            result.m_fileReadErrors = "Script Canvas Graph Deserialization Failed - " + result.m_deserializeResult.m_errors + "\n";
         }
 
         result.m_handle = SourceHandle::FromRelativePath(result.m_deserializeResult.m_graphDataPtr, path);
