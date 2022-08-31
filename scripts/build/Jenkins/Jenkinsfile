@@ -17,11 +17,43 @@ PIPELINE_TIMEOUT = 60
 
 EMPTY_JSON = readJSON text: '{}'
 
+DEFAULT_ORGANIZATION_NAME = 'o3de'
 ENGINE_REPOSITORY_NAME = 'o3de'
-ENGINE_ORGANIZATION_NAME = 'aws-lumberyard-dev'
-ENGINE_ORG_REPO = ENGINE_ORGANIZATION_NAME + '/' + ENGINE_REPOSITORY_NAME
-ENGINE_URL = 'https://github.com/' + ENGINE_ORG_REPO + '.git'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
+EXTRAS_REPOSITORY_NAME = 'o3de-extras'
+EXTRAS_DEVELOPMENT_BRANCH = 'development'
+
+def matcher = scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+)\."
+assert matcher.find()
+assert matcher.size() == 3
+
+COMMIT_DOMAIN_NAME = matcher[0]
+echo "matcher[0] = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
+COMMIT_ORGANIZATION_NAME = matcher[1]
+echo "matcher[1] = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
+COMMIT_REPOSITORY_NAME = matcher[2]
+echo "matcher[2] = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
+
+def engineRemoteConfigs = scm.userRemoteConfigs
+def extrasRemoteConfigs = scm.userRemoteConfigs
+def isEngineCommit = false
+def isExtrasCommit = false
+if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME){
+    isEngineCommit = true
+    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+}
+else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
+    isExtrasCommit = true
+    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+} else {
+    echo "Default Organization"
+    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+}
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
@@ -272,7 +304,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL)]
+        userRemoteConfigs: [engineRemoteConfigs]
     ])
 }
 
@@ -387,7 +419,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         dir(ENGINE_REPOSITORY_NAME) {
             def setEnvCommit = false
             def the_branch = branchName
-            if(repositoryName == "${ENGINE_ORG_REPO}") {
+            if(isEngineCommit) {
                 //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
                 setEnvCommit = true
             } else {
@@ -398,7 +430,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetRemoteConfig(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, ENGINE_URL), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, engineRemoteConfigs, disableSubmodules, setEnvCommit)
 
             // Get python
             dir(pipelineConfig.PYTHON_DIR) {
@@ -415,13 +447,31 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
             InstallAndPullGitLFS()
         }
-        //get the external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
+        dir(EXTRAS_REPOSITORY_NAME) {
+            def setEnvCommit = false
+            def the_branch = branchName
+            if(isExtrasCommit) {
+                //the pr is for the engine repo, so we want to use the passed in branch name and record the change id and change date
+                setEnvCommit = true
+            } else {
+                //this pr is for another repo so we want to use the development branch for the engine and do not set the commit id or change date
+                the_branch = EXTRAS_DEVELOPMENT_BRANCH
+            }
+
+            UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
+            //checkout the engine branch
+            CheckoutRepo(the_branch, engineRemoteConfigs, disableSubmodules, setEnvCommit)
+
+            InstallAndPullGitLFS()
+        }
+        //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         pipelineConfig.EXTERNAL_REPOS.each { repo ->
             dir(repo.REPOSITORY_NAME) {
-                def THIS_ORG_REPO = repo.ORGANIZATION_NAME + '/' + repo.REPOSITORY_NAME
+                def thisRemoteConfigs = scm.userRemoteConfigs
                 def setEnvCommit = false
                 def the_branch = branchName
-                if(repositoryName == "${THIS_ORG_REPO}") {
+                if(!isEngineCommit && !isExtrasCommit) {
                     //the pr is for the this repo, so we want to use the passed in branch name and record the change id and change date
                     setEnvCommit = true
                 } else {
@@ -455,6 +505,30 @@ def Build(Map pipelineConfig, String platform, String type, String workspace) {
             dir(ENGINE_REPOSITORY_NAME) {
                 //register the engine
                 PlatformSh("scripts/o3de${ext} register --this-engine", "Registering this engine, will generate the o3de_manifest")
+            }
+            dir(EXTRAS_REPOSITORY_NAME) {
+                automatedTestingControlFile = readJSON file: '.automatedtesting.json'
+
+                //register all the objects specified in this repos .automatedtesting.json
+                automatedTestingControlFile.REGISTER_ENGINES.each { engineName ->
+                    PlatformSh("scripts/o3de${ext} register --engine-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${engineName} || ver>nul", "Registering engine in ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${engineName}")
+                }
+                automatedTestingControlFile.REGISTER_PROJECTS.each { projectName ->
+                    PlatformSh("scripts/o3de${ext} register --project-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${projectName} || ver>nul", "Registering project in ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${projectName}")
+                }
+                automatedTestingControlFile.REGISTER_GEMS.each { gemName ->
+                    PlatformSh("scripts/o3de${ext} register --gem-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${gemName} || ver>nul", "Registering gem in ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${gemName}")
+                }
+                automatedTestingControlFile.REGISTER_TEMPLATES.each { templateName ->
+                    PlatformSh("scripts/o3de${ext} register --template-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${templateName} || ver>nul", "Registering template in ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${templateName}")
+                }
+                automatedTestingControlFile.REGISTER_RESTRICTED.each { restrictedName ->
+                    PlatformSh("scripts/o3de${ext} register --restricted-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${restrictedName} || ver>nul", "Registering restricted in ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${restrictedName}")
+                }
+                //enable all gems specified in the control file
+                automatedTestingControlFile.ENABLE_GEMS.each { gemName ->
+                    PlatformSh("scripts/o3de${ext} enable-gem --gem-path ${workspace}/${repo.EXTRAS_REPOSITORY_NAME}/${gemName} --project-name AutomatedTesting || ver>nul", "Enabling ${gemName} in AutomatedTesting")
+                }
             }
             pipelineConfig.EXTERNAL_REPOS.each { repo ->
                 //now each of these repos could be either a composite repo or a singular repo

@@ -11,16 +11,8 @@
     "PYTHON_DIR": "python",
     "EXTERNAL_REPOS": [
         {
-            "REPOSITORY_NAME": "o3de-extras",
-            "ORGANIZATION_NAME": "aws-lumberyard-dev",
-            "URL": "https://github.com/aws-lumberyard-dev/o3de-extras.git",
+            "REPOSITORY_NAME": "Planet_Storm",
             "DEVELOPMENT_BRANCH": "development"
-        },
-        {
-            "REPOSITORY_NAME": "aws-external-test-gem",
-            "ORGANIZATION_NAME": "aws-lumberyard-dev",
-            "URL": "https://github.com/aws-lumberyard/aws-external-test-gem.git",
-            "DEVELOPMENT_BRANCH": "main"
         }
     ]
 }
