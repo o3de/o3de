@@ -111,14 +111,14 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::Activate()
     {
-        CrySystemEventBus::Handler::BusConnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::Deactivate()
     {
         AudioSystemComponentRequestBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -283,22 +283,6 @@ namespace LmbrCentral
             // same flags as above
             audioSystem->PushRequestBlocking(AZStd::move(unloadControls));
         }
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
-    {
-        if (IsAudioSystemInitialized())
-        {
-            AudioSystemComponentRequestBus::Handler::BusConnect();
-        }
-        system.GetILevelSystem()->AddListener(this);
-    }
-
-    ////////////////////////////////////////////////////////////////////////
-    void AudioSystemComponent::OnCrySystemShutdown(ISystem& system)
-    {
-        system.GetILevelSystem()->RemoveListener(this);
     }
 
     ////////////////////////////////////////////////////////////////////////

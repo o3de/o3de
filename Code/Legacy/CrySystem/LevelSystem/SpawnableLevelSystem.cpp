@@ -404,6 +404,9 @@ namespace LegacyLevelSystem
         {
             listener->OnPrepareNextLevel(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnPrepareNextLevel, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -415,6 +418,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLevelNotFound(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLevelNotFound, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -436,6 +442,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingStart(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingStart, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -447,6 +456,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingError(levelName, error);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingError, levelName, error);
     }
 
     //------------------------------------------------------------------------
@@ -469,6 +481,9 @@ namespace LegacyLevelSystem
             listener->OnLoadingComplete(levelName);
         }
 
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
+
     #if AZ_LOADSCREENCOMPONENT_ENABLED
         EBUS_EVENT(LoadScreenBus, Stop);
     #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -483,6 +498,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingProgress(levelName, progressAmount);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
     }
 
     //------------------------------------------------------------------------
@@ -492,6 +510,9 @@ namespace LegacyLevelSystem
         {
             listener->OnUnloadComplete(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnUnloadComplete, levelName);
 
         AZ_TracePrintf("LevelSystem", "Level unload complete: '%s'\n", levelName);
     }
