@@ -62,7 +62,7 @@ namespace AtomToolsFramework
         m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 
         connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AtomToolsAssetBrowser::UpdateFilter);
-        connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::activated, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
+        connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::doubleClickedSignal, this, &AtomToolsAssetBrowser::OpenSelectedEntries);
         connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this, &AtomToolsAssetBrowser::UpdatePreview);
         connect(m_ui->m_viewOptionButton, &QPushButton::clicked, this, &AtomToolsAssetBrowser::OpenOptionsMenu);
         connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel, &AssetBrowserFilterModel::filterUpdatedSlot);
