@@ -32,6 +32,7 @@ struct ILevelInfo
 
 
 /*!
+ * @deprecated. Deprecated, use AzFramework::LevelSystemLifecycleNotificationBus instead
  * Extend this class and call ILevelSystem::AddListener() to receive level system related events.
  */
 struct ILevelSystemListener
