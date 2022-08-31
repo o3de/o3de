@@ -9,6 +9,9 @@ Small library of functions to support autotests for asset processor
 """
 
 # Import builtin libraries
+import pytest
+import binascii
+import hashlib
 import os
 import re
 import hashlib
@@ -16,6 +19,7 @@ import shutil
 import logging
 import subprocess
 import psutil
+from configparser import ConfigParser
 from typing import Dict, List, Tuple, Optional, Callable
 
 # Import LyTestTools
