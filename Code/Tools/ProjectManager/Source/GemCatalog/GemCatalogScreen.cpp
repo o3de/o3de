@@ -611,9 +611,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::HandleCreateAGem()
     {
-#ifdef CREATE_A_GAME_ACTIVE
         emit ChangeScreenRequest(ProjectManagerScreen::CreateAGem);
-#endif
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)

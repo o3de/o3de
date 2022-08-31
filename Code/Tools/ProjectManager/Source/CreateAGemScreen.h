@@ -31,8 +31,6 @@
 #include <QVBoxLayout>
 #endif
 
-//#define CREATE_A_GAME_ACTIVE
-
 namespace O3DE::ProjectManager
 {
     class TabBar : public QTabBar
