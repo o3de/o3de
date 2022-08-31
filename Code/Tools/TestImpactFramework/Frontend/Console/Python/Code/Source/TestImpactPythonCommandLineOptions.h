@@ -16,16 +16,6 @@ namespace TestImpact
     class PythonCommandLineOptions
         : public CommandLineOptions
     {
-    public:
-        PythonCommandLineOptions(int argc, char** argv);
-
-        //! Compiles the python command line usage to a string.
-        static AZStd::string GetCommandLineUsageString();
-
-        //! Returns the test runner policy to use
-        Policy::TestRunner GetTestRunnerPolicy() const;
-
-    private:
-        Policy::TestRunner m_testRunnerPolicy = Policy::TestRunner::UseNullTestRunner;
+        using CommandLineOptions::CommandLineOptions;
     };
 } // namespace TestImpact

@@ -29,7 +29,7 @@ namespace TestImpact
         enum class TestRunner : AZ::u8
         {
             UseNullTestRunner, //!< Use the Null Test Runner that consumes JUnit XML artifacts and carries out selection then returns those results without actually running the tests.
-            UseTestRunner //!< Use the normal Test Runner that executes the Python tests.
+            UseLiveTestRunner //!< Use the normal Test Runner that executes the Python tests.
         };
 
         //! Policy for handling the coverage data of failed tests targets (both tests that failed to execute and tests that ran but failed).

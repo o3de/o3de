@@ -37,17 +37,20 @@ namespace TestImpact
             //! @param duration The duration that this test run took to complete.
             //! @param result The result of the run.
             TestRunBase(
+                const AZStd::string& test_namespace,
                 const AZStd::string& name,
                 const AZStd::string& commandString,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
-                TestRunResult result,
-                const AZStd::string& test_namespace);
+                TestRunResult result);
 
             virtual ~TestRunBase() = default;
 
             //! Returns the test target name.
             const AZStd::string& GetTargetName() const;
+
+            //! Returns the test target name space.
+            const AZStd::string& GetTestNamespace() const;
 
             //! Returns the test run result.
             TestRunResult GetResult() const;
@@ -64,15 +67,13 @@ namespace TestImpact
             //! Returns the command string used to execute this test target.
             const AZStd::string& GetCommandString() const;
 
-            const AZStd::string& GetTestNamespace() const;
-
         private:
             AZStd::string m_targetName;
             AZStd::string m_commandString;
+            AZStd::string m_testNamespace;
             TestRunResult m_result;
             AZStd::chrono::high_resolution_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration;
-            AZStd::string m_testNamespace;
         };
 
         //! Representation of a test run that failed to execute.

@@ -15,12 +15,12 @@ namespace TestImpact
     namespace Client
     {
         TestRunBase::TestRunBase(
+            const AZStd::string& testNamespace,
             const AZStd::string& name,
             const AZStd::string& commandString,
             AZStd::chrono::high_resolution_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
-            TestRunResult result,
-            const AZStd::string& testNamespace)
+            TestRunResult result)
             : m_targetName(name)
             , m_commandString(commandString)
             , m_startTime(startTime)
@@ -129,7 +129,7 @@ namespace TestImpact
             TestRunResult result,
             AZStd::vector<Test>&& tests,
             const AZStd::string& test_namespace)
-            : TestRunBase(name, commandString, startTime, duration, result, test_namespace)
+            : TestRunBase(test_namespace, name, commandString, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
             AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateTestCaseMetrics(m_tests);

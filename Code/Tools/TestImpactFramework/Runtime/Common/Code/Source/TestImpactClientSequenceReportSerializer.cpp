@@ -146,7 +146,7 @@ namespace TestImpact
         {
             if (const auto testNamespace = testRun.GetTestNamespace(); !testNamespace.empty())
             {
-                return testNamespace+"_"+testRun.GetTargetName();
+                return testNamespace + "_" + testRun.GetTargetName();
             }
             else
             {
@@ -638,12 +638,12 @@ namespace TestImpact
     Client::TestRunBase DeserializeTestRunBase(const rapidjson::Value& serialTestRun)
     {
         return Client::TestRunBase(
+            "",
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Name]].GetString(),
             serialTestRun[SequenceReportFields::Keys[SequenceReportFields::CommandArgs]].GetString(),
             TimePointFromMsInt64(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::StartTime]].GetInt64()),
             AZStd::chrono::milliseconds(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Duration]].GetInt64()),
-            TestRunResultFromString(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()),
-            "");
+            TestRunResultFromString(serialTestRun[SequenceReportFields::Keys[SequenceReportFields::Result]].GetString()));
     }
 
     template<typename TestRunType>

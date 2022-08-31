@@ -38,6 +38,7 @@ namespace TestImpact
             DraftFailingTestsKey,
             ExcludedTestsKey,
             SafeModeKey,
+            TestRunnerPolicy,
             // Values
             None,
             Seed,
@@ -75,6 +76,7 @@ namespace TestImpact
             "draftfailingtests",
             "excluded",
             "safemode",
+            "testrunner",
             // Values
             "none",
             "seed",
@@ -185,6 +187,13 @@ namespace TestImpact
             };
 
             return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
+        }
+
+        Policy::TestRunner ParseNullTestRunnerPolicy(const AZ::CommandLine& cmd)
+        {
+            const BinaryStateValue<Policy::TestRunner> states = { Policy::TestRunner::UseLiveTestRunner, Policy::TestRunner::UseNullTestRunner };
+
+            return ParseOnOffOption(OptionKeys[TestRunnerPolicy], states, cmd).value_or(Policy::TestRunner::UseLiveTestRunner);
         }
 
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
@@ -396,6 +405,11 @@ namespace TestImpact
         return m_targetOutputCapture;
     }
 
+    Policy::TestRunner CommandLineOptions::GetTestRunnerPolicy() const
+    {
+        return m_testRunnerPolicy;
+    }
+
     const AZStd::optional<AZStd::chrono::milliseconds>& CommandLineOptions::GetTestTargetTimeout() const
     {
         return m_testTargetTimeout;
@@ -495,6 +509,8 @@ namespace TestImpact
             "                                                                production targets in the dependency graph(if no dependency graph data \n"
             "                                                                available, no prioritization will occur).\n"
             "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
+            "    -testrunner=<live,null>                                     Whether to use the null test runner (on) or run the tests(off). \n"
+            "                                                                If not set, defaults to running tests.                          \n"
             "    -suite=<main, periodic, sandbox, awsi>                      The test suite to select from for this test sequence.";
 
         return help;

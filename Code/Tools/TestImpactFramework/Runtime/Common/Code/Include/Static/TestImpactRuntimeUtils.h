@@ -69,12 +69,12 @@ namespace TestImpact
             if (m_testCompleteCallback.has_value())
             {
                 Client::TestRunBase testRun(
+                    testJob.GetTestTarget()->GetNamespace(),
                     testJob.GetTestTarget()->GetName(),
                     testJob.GetCommandString(),
                     testJob.GetStartTime(),
                     testJob.GetDuration(),
-                    testJob.GetTestResult(),
-                    testJob.GetTestTarget()->GetNamespace());
+                    testJob.GetTestResult());
 
                 (*m_testCompleteCallback)(testRun, ++m_numTestsCompleted, m_totalTests);
             }
