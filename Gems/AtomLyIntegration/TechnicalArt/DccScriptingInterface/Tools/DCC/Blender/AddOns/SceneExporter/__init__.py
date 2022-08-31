@@ -66,11 +66,12 @@ def register():
     bpy.utils.register_class(ui.O3deTools)
     bpy.utils.register_class(ui.MessageBox)
     bpy.utils.register_class(ui.MessageBoxConfirm)
+    bpy.utils.register_class(ui.ReportCard)
+    bpy.utils.register_class(ui.ReportCardButton)
     bpy.utils.register_class(ui.WikiButton)
     bpy.utils.register_class(ui.CustomProjectPath)
     bpy.utils.register_class(ui.AddColliderMesh)
     bpy.utils.register_class(ui.AddLODMesh)
-    bpy.utils.register_class(ui.ExportFiles)
     bpy.utils.register_class(ui.ProjectsListDropDown)
     bpy.utils.register_class(ui.SceneExporterFileMenu)
     bpy.utils.register_class(ui.ExportOptionsListDropDown)
@@ -86,6 +87,7 @@ def register():
     bpy.types.Scene.pop_up_confirm_label = ''
     bpy.types.Scene.pop_up_question_label = ''
     bpy.types.Scene.pop_up_question_bool = False
+    bpy.types.Scene.pop_up_type = ''
     bpy.types.Scene.udp_type = ''
     bpy.types.Scene.export_textures_folder = True
     bpy.types.Scene.animation_export = constants.NO_ANIMATION
@@ -108,11 +110,12 @@ def unregister():
     bpy.utils.unregister_class(ui.O3deTools)
     bpy.utils.unregister_class(ui.MessageBox)
     bpy.utils.unregister_class(ui.MessageBoxConfirm)
+    bpy.utils.unregister_class(ui.ReportCard)
+    bpy.utils.unregister_class(ui.ReportCardButton)
     bpy.utils.unregister_class(ui.WikiButton)
     bpy.utils.unregister_class(ui.CustomProjectPath)
     bpy.utils.unregister_class(ui.AddColliderMesh)
     bpy.utils.unregister_class(ui.AddLODMesh)
-    bpy.utils.unregister_class(ui.ExportFiles)
     bpy.utils.unregister_class(ui.ProjectsListDropDown)
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
     bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
@@ -123,6 +126,7 @@ def unregister():
     del bpy.types.Scene.pop_up_confirm_label
     del bpy.types.Scene.pop_up_question_label
     del bpy.types.Scene.pop_up_question_bool
+    del bpy.types.Scene.pop_up_type
     del bpy.types.Scene.udp_type
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list

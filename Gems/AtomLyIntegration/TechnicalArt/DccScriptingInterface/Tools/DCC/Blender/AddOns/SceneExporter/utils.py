@@ -18,6 +18,14 @@ from . import constants
 from . import ui
 from . import o3de_utils
 
+def select_object(obj):
+    """!
+    This function will select just one object
+    """
+    bpy.ops.object.select_all(action='DESELECT')
+    bpy.context.view_layer.objects.active = obj
+    obj.select_set(True)
+
 def check_selected():
     """!
     This function will check to see if the user has selected a object
@@ -324,6 +332,29 @@ def check_for_blender_int_ext(duplicated_node_name):
         name = duplicated_node_name
     return name
 
+def check_for_udp():
+    """!
+    This function will check if selected has and custom properties 
+    Example: print( f"Value: {obj_upd_keys} Key: {bpy.data.objects[selected_obj.name][obj_upd_keys] } ")
+    """
+    context = bpy.context
+    # Create list to store selected meshs udps
+    lod_list = []
+    colliders_list = []
+
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                for obj_upd_keys in bpy.data.objects[selected_obj.name].keys():
+                    if obj_upd_keys not in '_RNA_UI':
+                        if obj_upd_keys == "o3de_atom_lod":
+                            lod_list.append(True)
+                        if obj_upd_keys == "o3de_atom_phys":
+                            colliders_list.append(True)
+    lods = any(lod_list)
+    colliders = any(colliders_list)      
+    return lods, colliders
+
 def create_udp():
     """!
     This function will create a copy of a selected mesh and create an o3de PhysX collider PhysX Mesh that will
@@ -354,11 +385,11 @@ def create_udp():
         if bpy.types.Scene.udp_type == "_phys":
             duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_phys")
             duplicate_object["o3de_atom_phys"] = "_phys"
-        # Set the copy active
-        bpy.context.view_layer.objects.active = duplicate_object
-        # Add the Decimate Modifier on for user.
+        # Select the duplicated object only
+        select_object(duplicate_object)
+        # Add the Decimate Modifier on for user. Since both _lod and _phys will need this modifier
+        #  for now we will have it as a default.
         add_remove_modifier("DECIMATE", True)
-        bpy.context.object.modifiers["Decimate"].ratio = 0.5
     else:
         if bpy.types.Scene.udp_type == "_lod":
                 selected_objects['o3de_atom_lod'] = "_lod0"
@@ -380,7 +411,7 @@ def add_remove_modifier(modifier_name, add):
     """!
     This function will add or remove a modifier to selected
     @param modifier_name is the name of the modifier you wish to add or remove
-    @param add if Bool True will add the modifier, if False will remove
+    @param add if Bool True will add the modifier, if False will remove 
     """
     context = bpy.context
 
@@ -397,6 +428,70 @@ def add_remove_modifier(modifier_name, add):
                     bpy.context.view_layer.objects.active = selected_obj
                     # Remove Modifier
                     bpy.ops.object.modifier_remove(modifier=modifier_name)
+
+def check_selected_stats_count():
+    """!
+    This function will check selected and get poly counts
+    """
+    # We will make list for each selection
+    mesh_vertices_list = []
+    mesh_edges_list = []
+    mesh_polygons_list = []
+    mesh_material_list = []
+    
+    context = bpy.context
+    
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                mesh_stats = selected_obj.data
+                # Vert, Edge, Poly Counts
+                mesh_vertices = len(mesh_stats.vertices)
+                mesh_edges = len(mesh_stats.edges)
+                mesh_polygons = len(mesh_stats.polygons)
+                mesh_materials = len(mesh_stats.materials)
+                mesh_vertices_list.append(mesh_vertices)
+                mesh_edges_list.append(mesh_edges)
+                mesh_polygons_list.append(mesh_polygons)
+                # Material Count
+                mesh_material_list.append(mesh_materials)
+
+    vert_count = sum(mesh_vertices_list)
+    edge_count = sum(mesh_edges_list)
+    polygon_count = sum(mesh_polygons_list)
+    material_count = sum(mesh_material_list)
+    # Reset the list
+    mesh_vertices_list = []
+    mesh_edges_list = []
+    mesh_polygons_list = []
+    mesh_material_list = []
+    return vert_count, edge_count, polygon_count, material_count
+
+def check_selected_uvs():
+    """!
+    This function will check to see if there are UVs
+    """
+    context = bpy.context
+    # We will make list for each selection and compair if there are UVs.
+    mesh_uv_list = []
+    
+    for selected_obj in context.selected_objects:
+        if selected_obj is not []:
+            if selected_obj.type == "MESH":
+                if selected_obj.data.uv_layers:
+                    mesh_uv_list.append(True)
+                else:
+                    mesh_uv_list.append(False)
+    object_uv_list = all(mesh_uv_list)
+    # If all objects have UVs
+    if object_uv_list:
+        # Clear UV List
+        mesh_uv_list = []
+        return True
+    else:
+        # Clear UV List
+        mesh_uv_list = []
+        return False
 
 def check_selected_transforms():
     """!
@@ -446,9 +541,9 @@ def check_selected_transforms():
             # Check if all are true or false
             check_transfroms_bools = [location_good, rotation_good, scale_good]
             if all(check_transfroms_bools):
-                return True
+                return True, location_list
             else:
-                return False
+                return False, location_list
         # Reset the list
         location_list = []
         rotation_list = []

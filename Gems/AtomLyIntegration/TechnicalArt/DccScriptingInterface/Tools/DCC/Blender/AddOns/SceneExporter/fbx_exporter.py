@@ -167,10 +167,8 @@ def fbx_file_exporter(fbx_file_path, file_name):
         # If we added a Triangulate modifier, lets remove it now.
         if bpy.types.Scene.convert_mesh_to_triangles:
             utils.add_remove_modifier("Triangulate", False)
-        # Check Transforms Status
-        transforms_status = utils.check_selected_transforms()
         # Show export status
-        bpy.types.Scene.pop_up_notes = f'{file_name} Exported! Freeze Transforms: {transforms_status}'
+        bpy.types.Scene.pop_up_notes = f'{file_name} Exported!'
         bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
             utils.replace_stored_paths()
