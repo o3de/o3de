@@ -18,8 +18,6 @@
 #include <AzCore/IO/Path/Path.h>
 
 #include <IAudioSystem.h>
-#include <ISystem.h>
-
 using namespace Audio;
 
 namespace LmbrCentral
@@ -112,6 +110,10 @@ namespace LmbrCentral
     void AudioSystemComponent::Activate()
     {
         AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
+        if (IsAudioSystemInitialized())
+        {
+            AudioSystemComponentRequestBus::Handler::BusConnect();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
