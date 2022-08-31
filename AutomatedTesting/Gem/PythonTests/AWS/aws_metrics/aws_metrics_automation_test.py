@@ -89,7 +89,7 @@ def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: 
         resource_mappings.get_resource_name_id('AWSMetrics.EventsCrawlerName'))
 
     # Remove the events_json table if exists so that the sample query can create a table with the same name.
-    aws_metrics_utils.delete_table(resource_mappings.get_resource_name_id('AWSMetrics.EventDatabaseName'), 'events_json')
+    aws_metrics_utils.try_delete_table(resource_mappings.get_resource_name_id('AWSMetrics.EventDatabaseName'), 'events_json')
     aws_metrics_utils.run_named_queries(resource_mappings.get_resource_name_id('AWSMetrics.AthenaWorkGroupName'))
     logger.info('Query metrics from S3 successfully.')
 
@@ -133,6 +133,7 @@ def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixtur
     else:
         aws_metrics_utils.stop_kinesis_data_analytics_application(
             resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
+
 
 @pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('automatic_process_killer')
@@ -203,13 +204,13 @@ class TestAWSMetricsWindows(object):
 
     @pytest.mark.parametrize('level', ['levels/aws/metrics/metrics.spawnable'])
     def test_realtime_and_batch_analytics_no_global_accountid(self,
-                                                            level: str,
-                                                            launcher: pytest.fixture,
-                                                            asset_processor: pytest.fixture,
-                                                            workspace: pytest.fixture,
-                                                            aws_utils: pytest.fixture,
-                                                            resource_mappings: pytest.fixture,
-                                                            aws_metrics_utils: pytest.fixture):
+                                                              level: str,
+                                                              launcher: pytest.fixture,
+                                                              asset_processor: pytest.fixture,
+                                                              workspace: pytest.fixture,
+                                                              aws_utils: pytest.fixture,
+                                                              resource_mappings: pytest.fixture,
+                                                              aws_metrics_utils: pytest.fixture):
         """
         Verify that the metrics events are sent to CloudWatch and S3 for analytics.
         """
