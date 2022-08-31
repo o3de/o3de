@@ -158,8 +158,8 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--nulltestrunner-policy",
-        choices=["on","off"],
+        "--testrunner-policy",
+        choices=["live","null"],
         help="Flag to turn the null test runner on for Python tests. Leave empty or 'off' to use the run the tests instead. Will only effect Python TIAF runs.",
         required=False
     )
