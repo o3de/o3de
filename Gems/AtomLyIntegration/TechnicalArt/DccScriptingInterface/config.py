@@ -16,7 +16,7 @@
 This module handles core configuration of the dccsi
 -   It initializes and generates a dynamic, and synthetic, environment context,
     and settings.
--   ConfigCore class, inherets from azpy.config_class.ConfigClass (not yet)
+-   ConfigCore class, inherets from DccScriptingInterface.azpy.config_class.ConfigClass (not yet)
 -   This module uses dynaconf (a dynamic configuration and settings package)
 
 This config.py synthetic env can be overridden or extended with a local .env
@@ -72,56 +72,80 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-# global scope, set up module logging, etc.
+# module global scope, set up module logging, etc.
 from DccScriptingInterface import _PACKAGENAME
 _MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}.')
 _MODULE_PATH = Path(__file__)  # what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# ensure site access to dccsi
+# dccsi global scope, ensure site access to dccsi
 from DccScriptingInterface.globals import *
 # couple debug prints to verify paths
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
 # this is the bootstrap to installed pkgs for dcc tool
 _LOGGER.debug(f'PATH_DCCSI_PYTHON_LIB: {PATH_DCCSI_PYTHON_LIB}')
 
-from azpy.config_utils import attach_debugger
+import DccScriptingInterface.azpy.config_utils
+from DccScriptingInterface.azpy.config_utils import attach_debugger
 
 if DCCSI_DEV_MODE:
     # if dev mode, this will attemp to auto-attach the debugger
     # at the earliest possible point in this module
     attach_debugger(debugger_type=DCCSI_GDEBUGGER)
-# -------------------------------------------------------------------------6
 
-
-# -------------------------------------------------------------------------
-# this will give us import access to additional modules we provide with DCCsi
-_PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
-# this will strap access and put this pattern on the PYTHONPATH
-# '{_PATH_DCCSIG}\\3rdParty\\Python\\Lib\\{sys.version_info[0]}.x\\{sys.version_info[0]}.{sys.version_info[1]}.x\\site-packages'
-# we want this location to always procedurally bootstrap
-# we won't append it to _DCCSI_PYTHONPATH = list() to be managed
-# because we do not want to cache this value, so it remains transient (never stored)
-# this will always allow any DCC tool (with python), any IDE, or any python
-# interpreter to strap it correctly based on tht sessions python version
-# this reduces compatibility concerns, etc. (there will always be other risks)
-
-_PATH_DCCSIG = Path(_PATH_DCCSIG).resolve()  # pathify
-_PATH_DCCSI_PYTHON = Path(_PATH_DCCSIG, '3rdParty', 'Python').resolve()
-_PATH_DCCSI_PYTHON_LIB = Path(_PATH_DCCSI_PYTHON_LIB).resolve()
-# since we always strap access to our package install sandbox
-# this should be part of initializing the core of config
-
+# we should be able to import dccsi pkg dependancies now
 from dynaconf import Dynaconf
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# global scope
+# going to optimize config to speed things up
+
+# the fastest way to know the engine root is to ...
+# see if the engine is runnint (azlmbr.paths.engroot)
+# or check if dev set in env, both those things happen here
+from DccScriptingInterface import ENVAR_O3DE_DEV
+from DccScriptingInterface import O3DE_DEV
+# O3DE_DEV could be set in .env or settings.local.json to override config
+
+# this call with search fallback will be deprecated
+#O3DE_DEV = DccScriptingInterface.azpy.config_utils.get_o3de_engine_root()
+
+
+
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# refactor this module into a class object, other configs can inherit
+from DccScriptingInterface.azpy.config_class import ConfigClass
+
+# it is suggested that the core <dccsi>\config.py is re-written
+class CoreConfig(ConfigClass):
+    """A class representing the DCCsi core config"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _LOGGER.info(f'Initializing: {self.get_classname()}')
+
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# build the config
+core_config = CoreConfig(config_name='dccsi_core', auto_set=True)
+
+# add settings to config here
+# foo
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# local global scope
 # start locally prepping known default values for dynamic environment settings
 # these global variables are passed as defaults into methods within the module
 
@@ -141,48 +165,29 @@ _DCCSI_PYTHONPATH_EXCLUDE = list()
 global _DCCSI_LOCAL_SETTINGS
 _DCCSI_LOCAL_SETTINGS = {}
 
-# this will retrieve the O3DE engine root
-# Note: this may result in a search IF:
-#     O3DE_DEV=< path to engine root > is not set IN:
-#         the .env or settings.local.json
-_O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
-
 # This needs to be further improved
 #     this doesn't perform properly on installer pre-built engine
 #     this is a search and having it here will force it to always run (boot speed impact)
 #     need to replace with better pattern (hmm... discovery.py?)
-_PATH_O3DE_BUILD = azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
+_PATH_O3DE_BUILD = DccScriptingInterface.azpy.config_utils.get_o3de_build_path(O3DE_DEV,
                                                          'CMakeCache.txt')
 
 # this is not great either, may not perform properly on installer pre-built engine
-from azpy.constants import STR_PATH_O3DE_BIN
+from DccScriptingInterface.azpy.constants import STR_PATH_O3DE_BIN
 _PATH_O3DE_BIN = Path(STR_PATH_O3DE_BIN.format(_PATH_O3DE_BUILD))
 
 # this in most cases will return the project folder
 # if it returns a matching engine folder then we don't know the project folder
 # To Do: this is a search and having it here will force it to always run
-_PATH_O3DE_PROJECT = azpy.config_utils.get_o3de_project_path()
+_PATH_O3DE_PROJECT = DccScriptingInterface.azpy.config_utils.get_o3de_project_path()
 
 # access the the o3de scripts so we can utilize things like o3de.py
-_PATH_O3DE_PYTHON_SCRIPTS = Path(_O3DE_DEV, 'scripts').resolve()
+_PATH_O3DE_PYTHON_SCRIPTS = Path(O3DE_DEV, 'scripts').resolve()
 site.addsitedir(_PATH_O3DE_PYTHON_SCRIPTS.as_posix())
 # -------------------------------------------------------------------------
 
 
-# -------------------------------------------------------------------------
-# refactor this module into a class object, other configs can inherit
-from DccScriptingInterface.azpy.config_class import ConfigClass
 
-# it is suggested that the core <dccsi>\config.py is re-written
-class CoreConfig(ConfigClass):
-    """A class representing the DCCsi core config"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        _LOGGER.info(f'Initializing: {self.get_classname()}')
-
-# build the config
-core_config = CoreConfig(config_name='dccsi_core', auto_set=True)
-# -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
@@ -280,7 +285,7 @@ def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
 
 
 # -------------------------------------------------------------------------
-def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
+def init_o3de_pyside2(dccsi_path=PATH_DCCSIG,
                       engine_bin_path=_PATH_O3DE_BIN,
                       dccsi_sys_path=_DCCSI_SYS_PATH):
     """!
@@ -305,7 +310,7 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
         pass
 
     # # allows to retrieve from settings.QTFORPYTHON_PATH
-    # from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
+    # from DccScriptingInterface.azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
     # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(O3DE_DEV)).as_posix()
     # os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
     # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
@@ -342,7 +347,7 @@ def init_o3de_pyside2(dccsi_path=_PATH_DCCSIG,
 def init_o3de_pyside2_tools():
     global _DCCSI_PYTHONPATH
     # set up the pyside2-tools (pyside2uic)
-    _DCCSI_PYSIDE2_TOOLS = Path(_PATH_DCCSI_PYTHON, 'pyside2-tools').resolve()
+    _DCCSI_PYSIDE2_TOOLS = Path(PATH_DCCSI_PYTHON, 'pyside2-tools').resolve()
     if _DCCSI_PYSIDE2_TOOLS.exists():
         os.environ["DYNACONF_DCCSI_PYSIDE2_TOOLS"] = _DCCSI_PYSIDE2_TOOLS.as_posix()
         os.environ['PATH'] = _DCCSI_PYSIDE2_TOOLS.as_posix() + os.pathsep + os.environ['PATH']
@@ -421,11 +426,11 @@ def test_pyside2(exit=True):
 
 
 # -------------------------------------------------------------------------
-def init_o3de_core(engine_path=_O3DE_DEV,
+def init_o3de_core(engine_path=O3DE_DEV,
                    engine_bin_path=_PATH_O3DE_BIN,
                    project_name=None,
                    project_path=_PATH_O3DE_PROJECT,
-                   dccsi_path=_PATH_DCCSIG,
+                   dccsi_path=PATH_DCCSIG,
                    dccsi_sys_path=_DCCSI_SYS_PATH,
                    dccsi_pythonpath=_DCCSI_PYTHONPATH):
     """Initialize the DCCsi Core dynamic env and settings."""
@@ -449,7 +454,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
 
     # this will bootstrap access to the dccsi managed package dependencies
     # <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
-    dccsi_python_lib = azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
+    dccsi_python_lib = DccScriptingInterface.azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
     # dont' append it to _DCCSI_PYTHONPATH = list() to be managed
 
     # `envar_prefix` = export envars with `export DYNACONF_FOO=bar`.
@@ -479,10 +484,10 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     dccsi_sys_path.append(dccsi_path)
 
     # we already defaulted to discovering these two early because of importance
-    os.environ["DYNACONF_O3DE_DEV"] = _O3DE_DEV.as_posix()
+    os.environ["DYNACONF_O3DE_DEV"] = O3DE_DEV.as_posix()
 
     # ensure access to o3de python scripts
-    _PATH_O3DE_PYTHON_SCRIPTS = Path(_O3DE_DEV, 'scripts').resolve()
+    _PATH_O3DE_PYTHON_SCRIPTS = Path(O3DE_DEV, 'scripts').resolve()
     os.environ["DYNACONF_PATH_O3DE_PYTHON_SCRIPTS"] = _PATH_O3DE_PYTHON_SCRIPTS.as_posix()
     dccsi_pythonpath.append(_PATH_O3DE_PYTHON_SCRIPTS)
 
@@ -498,7 +503,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
             _LOGGER.error('~   The project path specified does not appear to exist!')
             _LOGGER.warning('~   project_path: {}'.format(project_path))
             _LOGGER.warning('~   fallback to engine root: {}'.format())
-            _PATH_O3DE_PROJECT = _O3DE_DEV
+            _PATH_O3DE_PROJECT = O3DE_DEV
 
         os.environ['PATH_O3DE_PROJECT'] = str(_PATH_O3DE_PROJECT.as_posix())
         _DCCSI_LOCAL_SETTINGS['PATH_O3DE_PROJECT'] = str(_PATH_O3DE_PROJECT.as_posix())
@@ -525,7 +530,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # need to trap error for devs ... egine needs to be built
     try:
         # if this fails, can't find a build / bin path
-        _PATH_O3DE_BUILD = azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
+        _PATH_O3DE_BUILD = DccScriptingInterface.azpy.config_utils.get_o3de_build_path(O3DE_DEV,
                                                                 'CMakeCache.txt')
         _PATH_O3DE_BUILD = Path(_PATH_O3DE_BUILD)
         os.environ["DYNACONF_PATH_O3DE_BUILD"] = str(_PATH_O3DE_BUILD.as_posix())
@@ -543,21 +548,21 @@ def init_o3de_core(engine_path=_O3DE_DEV,
         dccsi_sys_path.append(_PATH_O3DE_BIN)
     # --
 
-    from azpy.constants import TAG_DIR_DCCSI_TOOLS
+    from DccScriptingInterface.azpy.constants import TAG_DIR_DCCSI_TOOLS
     _PATH_DCCSI_TOOLS = Path(dccsi_path, TAG_DIR_DCCSI_TOOLS)
     os.environ["DYNACONF_PATH_DCCSI_TOOLS"] = str(_PATH_DCCSI_TOOLS.as_posix())
 
-    from azpy.constants import TAG_DCCSI_NICKNAME
-    from azpy.constants import PATH_DCCSI_LOG_PATH
+    from DccScriptingInterface.azpy.constants import TAG_DCCSI_NICKNAME
+    from DccScriptingInterface.azpy.constants import PATH_DCCSI_LOG_PATH
     _DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(PATH_O3DE_PROJECT=project_path,
                                                       TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
     os.environ["DYNACONF_DCCSI_LOG_PATH"] = str(_DCCSI_LOG_PATH.as_posix())
 
-    from azpy.constants import TAG_DIR_REGISTRY, TAG_DCCSI_CONFIG
+    from DccScriptingInterface.azpy.constants import TAG_DIR_REGISTRY, TAG_DCCSI_CONFIG
     _PATH_DCCSI_CONFIG = Path(project_path, TAG_DIR_REGISTRY, TAG_DCCSI_CONFIG)
     os.environ["DYNACONF_PATH_DCCSI_CONFIG"] = str(_PATH_DCCSI_CONFIG.as_posix())
 
-    from azpy.constants import TAG_DIR_DCCSI_TOOLS
+    from DccScriptingInterface.azpy.constants import TAG_DIR_DCCSI_TOOLS
     _DCCSIG_TOOLS_PATH = Path.joinpath(dccsi_path, TAG_DIR_DCCSI_TOOLS)
     os.environ["DYNACONF_DCCSIG_TOOLS_PATH"] = str(_DCCSIG_TOOLS_PATH.as_posix())
 
@@ -578,9 +583,9 @@ def init_o3de_core(engine_path=_O3DE_DEV,
 
 
 # -------------------------------------------------------------------------
-def init_o3de_python(engine_path=_O3DE_DEV,
+def init_o3de_python(engine_path=O3DE_DEV,
                      engine_bin_path=_PATH_O3DE_BIN,
-                     dccsi_path=_PATH_DCCSIG,
+                     dccsi_path=PATH_DCCSIG,
                      dccsi_sys_path=_DCCSI_SYS_PATH,
                      dccsi_pythonpath=_DCCSI_PYTHONPATH):
     """Initialize the O3DE dynamic Python env and settings.
@@ -600,7 +605,7 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     _PATH_DCCSI_PYTHON = Path(_PATH_DCCSIG,'3rdParty','Python')
     os.environ["DYNACONF_PATH_DCCSI_PYTHON"] = str(_PATH_DCCSI_PYTHON.as_posix())
 
-    _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
+    _PATH_DCCSI_PYTHON_LIB = DccScriptingInterface.azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
     os.environ["PATH_DCCSI_PYTHON_LIB"] = str(_PATH_DCCSI_PYTHON_LIB.as_posix())
     _DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB']= str(_PATH_DCCSI_PYTHON_LIB.as_posix())
     #dccsi_pythonpath.append(_PATH_DCCSI_PYTHON_LIB)
@@ -647,7 +652,7 @@ def init_o3de_python(engine_path=_O3DE_DEV,
 
 # -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
-def get_config_settings(engine_path=_O3DE_DEV,
+def get_config_settings(engine_path=O3DE_DEV,
                         engine_bin_path=None,
                         project_name=None,
                         project_path=_PATH_O3DE_PROJECT,
@@ -655,7 +660,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
                         enable_o3de_pyside2=False,
                         enable_o3de_pyside2_tools=False,
                         set_env=True,
-                        dccsi_path=_PATH_DCCSIG,
+                        dccsi_path=PATH_DCCSIG,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH):
     """Convenience method to initialize and retrieve settings directly from module."""
@@ -665,7 +670,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
     dccsi_path = Path(dccsi_path)
 
     # ensures dccsi python extension lib sandbox is bootstrapped
-    dccsi_python_lib = azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
+    dccsi_python_lib = DccScriptingInterface.azpy.config_utils.bootstrap_dccsi_py_libs(dccsi_path)
     # dont' append it to _DCCSI_PYTHONPATH = list() to be managed
 
     # always init the core
@@ -714,7 +719,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
 
 # -------------------------------------------------------------------------
 # get file name slug for exporting/caching local setting
-from azpy.constants import TAG_DCCSI_LOCAL_SETTINGS_SLUG
+from DccScriptingInterface.azpy.constants import TAG_DCCSI_LOCAL_SETTINGS_SLUG
 
 def export_settings(settings,
                     dccsi_sys_path=_DCCSI_SYS_PATH,
@@ -820,18 +825,18 @@ def export_settings(settings,
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
 
-    from azpy.env_bool import env_bool
+    from DccScriptingInterface.azpy.env_bool import env_bool
     # temp internal debug flag, toggle values for manual testing
     DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
     DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
     DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
     DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
-    from azpy.shared.utils.arg_bool import arg_bool
+    from DccScriptingInterface.azpy.shared.utils.arg_bool import arg_bool
     # Suggestion for next iteration, args set to anything but None will
     # evaluate as True
 
-    from azpy.constants import STR_CROSSBAR
+    from DccScriptingInterface.azpy.constants import STR_CROSSBAR
 
     _MODULENAME = 'DCCsi.config.cli'
 
@@ -849,7 +854,7 @@ if __name__ == '__main__':
 
     _LOGGER = _logging.getLogger(_MODULENAME)
     _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
-    _LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
+    _LOGGER.debug('site.addsitedir({})'.format(PATH_DCCSIG))
     _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(DCCSI_GDEBUG))
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(DCCSI_DEV_MODE))
     _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(DCCSI_LOGLEVEL))
@@ -973,18 +978,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    from azpy.shared.utils.arg_bool import arg_bool
+    from DccScriptingInterface.azpy.shared.utils.arg_bool import arg_bool
 
     # easy overrides
     if arg_bool(args.global_debug, desc="args.global_debug"):
-        from azpy.constants import ENVAR_DCCSI_GDEBUG
+        from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_GDEBUG
         DCCSI_GDEBUG = True
         _LOGGER.setLevel(_logging.DEBUG)
         _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={DCCSI_GDEBUG}')
 
     if arg_bool(args.developer_mode, desc="args.developer_mode"):
         DCCSI_DEV_MODE = True
-        azpy.config_utils.attach_debugger()  # attempts to start debugger
+        DccScriptingInterface.azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
@@ -992,10 +997,10 @@ if __name__ == '__main__':
 
     # need to do a little plumbing
     if not args.engine_path:
-        args.engine_path=_O3DE_DEV
+        args.engine_path=O3DE_DEV
 
     if not args.build_folder:
-        from azpy.constants import TAG_DIR_O3DE_BUILD_FOLDER
+        from DccScriptingInterface.azpy.constants import TAG_DIR_O3DE_BUILD_FOLDER
         args.build_folder = TAG_DIR_O3DE_BUILD_FOLDER
 
     if not args.engine_bin_path:

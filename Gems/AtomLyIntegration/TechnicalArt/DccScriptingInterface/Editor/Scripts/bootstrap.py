@@ -127,25 +127,11 @@ PATH_O3DE_PROJECT = Path(azlmbr.paths.projectroot).resolve()
 # from DccScriptingInterface.config import ConfigClass
 # # build config for this module
 # dccsi_config = ConfigClass(config_name='dccsi', auto_set=True)
-
-# for now, use the legacy code
-import DccScriptingInterface.config as core_config
-
-dccsi_config = core_config.get_config_settings(engine_path=O3DE_DEV,
-                                               engine_bin_path=PATH_O3DE_BIN,
-                                               project_path=PATH_O3DE_PROJECT,
-                                               enable_o3de_python=True,
-                                               enable_o3de_pyside2=True,
-                                               set_env=True)
-
-# ditor main window (should work with any standalone o3de editor exe)
-EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def create_menu(parent: QMenu = EDITOR_MAIN_WINDOW.menuBar(),
-                      title: str = 'StudioTools') -> QMenu:
+def create_menu(parent: QMenu, title: str = 'StudioTools') -> QMenu:
     """! Creates a 'Studio Tools' menu for the DCCsi functionality
     :param parent: The parent QMenu (or QMenuBar)
     :param : The UI text str for the submenu
@@ -173,7 +159,8 @@ def create_menu(parent: QMenu = EDITOR_MAIN_WINDOW.menuBar(),
 def click_sampleui():
     _LOGGER.debug(f'Clicked click_action_sampleUI')
 
-    ui = SampleUI(parent=EDITOR_MAIN_WINDOW, title='Dccsi: SampleUI')
+    ui = SampleUI(parent=az_qt_helpers.get_editor_main_window(),
+                  title='Dccsi: SampleUI')
     ui.show()
     return
 # -------------------------------------------------------------------------
@@ -209,10 +196,23 @@ def add_action(parent: QMenu,
 
 
 # -------------------------------------------------------------------------
-def bootstrap_Editor(main_window=EDITOR_MAIN_WINDOW):
+def bootstrap_Editor():
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
 
-    menubar = main_window.menuBar()
+    # for now, use the legacy code
+    import DccScriptingInterface.config as core_config
+
+    dccsi_config = core_config.get_config_settings(engine_path=O3DE_DEV,
+                                                   engine_bin_path=PATH_O3DE_BIN,
+                                                   project_path=PATH_O3DE_PROJECT,
+                                                   enable_o3de_python=True,
+                                                   enable_o3de_pyside2=True,
+                                                   set_env=True)
+
+    # ditor main window (should work with any standalone o3de editor exe)
+    EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
+
+    menubar = EDITOR_MAIN_WINDOW.menuBar()
 
     dccsi_menu = create_menu(parent=menubar)
 
@@ -269,7 +269,7 @@ if __name__ == '__main__':
 
     if O3DE_EDITOR.stem.lower() == "editor":
         # if _DCCSI_GDEBUG then run the pyside2 test
-        _settings = bootstrap_Editor(EDITOR_MAIN_WINDOW)
+        _settings = bootstrap_Editor()
 
     elif O3DE_EDITOR.stem.lower() == "materialeditor":
         _settings = bootstrap_MaterialEditor()

@@ -104,8 +104,8 @@ ENVAR_DCCSI_DEV_MODE = 'DCCSI_DEV_MODE'
 # envar to get/set the ide debugger str/slug (only 'WING' implemented)
 ENVAR_DCCSI_GDEBUGGER = 'DCCSI_GDEBUGGER'
 
-# envar to get/set int for global logging level
-ENVAR_DCCSI_LOGLEVEL = 'DCCSI_LOGLEVEL'
+# refactored to DccScriptingInterface.__init__
+from DccScriptingInterface import ENVAR_DCCSI_LOGLEVEL
 
 # envar to get/set bool for running extra local tests
 ENVAR_DCCSI_TESTS = 'DCCSI_TESTS'
@@ -117,12 +117,14 @@ DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
 DCCSI_SETTINGS_LOCAL_FILENAME = 'setting.local.json'
 
 # utility: constants, like pretty print strings
-STR_CROSSBAR = str('{0}'.format('-' * 74))
-STR_CROSSBAR_RL = str('{0}\r'.format(STR_CROSSBAR))
-STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
+from DccScriptingInterface import STR_CROSSBAR
+STR_CROSSBAR_RL = f'{STR_CROSSBAR}\r'
+STR_CROSSBAR_NL = f'{STR_CROSSBAR}\n'
 
 # Log formating
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+# refactored into DccScriptingInterface.__init__
+from DccScriptingInterface import FRMT_LOG_LONG
+
 FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 # -------------------------------------------------------------------------
 

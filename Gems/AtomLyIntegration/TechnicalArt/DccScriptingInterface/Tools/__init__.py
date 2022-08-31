@@ -27,7 +27,8 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'DCCsi.Tools'
+from DccScriptingInterface import _PACKAGENAME, STR_CROSSBAR
+_PACKAGENAME = f'{_PACKAGENAME}.Tools'
 
 __all__ = ['DCC',
            'IDE',
@@ -59,20 +60,14 @@ PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
                                    PATH_DCCSI_TOOLS.as_posix()))
 site.addsitedir(PATH_DCCSI_TOOLS.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS}: {PATH_DCCSI_TOOLS}')
+_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-from azpy.config_utils import attach_debugger
-from azpy import test_imports
-
 # suggestion would be to turn this into a method to reduce boilerplate
 # but where to put it that makes sense?
 if DCCSI_DEV_MODE:
-    # if dev mode, this will attemp to auto-attach the debugger
-    # at the earliest possible point in this module
-    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
-
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
 
     # If in dev mode and test is flagged this will force imports of __all__
@@ -81,6 +76,7 @@ if DCCSI_DEV_MODE:
 
     # the DCCSI_TESTS flag needs to be properly added in .bat env
     if DCCSI_TESTS:
+        from DccScriptingInterface.azpy import test_imports
         test_imports(_all=__all__,
                      _pkg=_PACKAGENAME,
                      _logger=_LOGGER)

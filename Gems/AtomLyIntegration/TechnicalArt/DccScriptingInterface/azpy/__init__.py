@@ -26,10 +26,10 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-from DccScriptingInterface import _PACKAGENAME
-_MODULENAME = f'{_PACKAGENAME}.azpy'
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface import _PACKAGENAME, STR_CROSSBAR
+_PACKAGENAME = f'{_PACKAGENAME}.azpy'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
 
 __all__ = ['constants',
@@ -50,6 +50,7 @@ from DccScriptingInterface.globals import *
 _LOGGER.debug(f'This MODULE_PATH: {_MODULE_PATH}')
 _LOGGER.debug(f'Default {ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
 _LOGGER.debug(f'Default {ENVAR_O3DE_DEV}: {O3DE_DEV}')
+_LOGGER.debug(STR_CROSSBAR)
 # -------------------------------------------------------------------------
 
 

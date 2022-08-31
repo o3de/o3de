@@ -33,7 +33,8 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'azpy.constants'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 # -------------------------------------------------------------------------

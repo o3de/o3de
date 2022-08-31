@@ -31,20 +31,19 @@ from typing import Union
 
 
 # -------------------------------------------------------------------------
-import DccScriptingInterface
-
 # global scope
+from DccScriptingInterface.azpy import _PACKAGENAME
 # we should update pkg, module and logging names to start with dccsi
-_MODULENAME = 'azpy.config_class'
+_MODULENAME = f'{_PACKAGENAME}.config_class'
 
 __all__ = ['ConfigCore']
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
-from azpy import _PATH_DCCSIG  # root DCCsi path
+from DccScriptingInterface.azpy import PATH_DCCSIG  # root DCCsi path
 # DCCsi imports
-from azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.env_bool import env_bool
 # -------------------------------------------------------------------------
 
 
@@ -52,9 +51,9 @@ from azpy.env_bool import env_bool
 # global constants here
 from DccScriptingInterface.constants import DCCSI_DYNAMIC_PREFIX
 
-from azpy.constants import ENVAR_PATH_DCCSIG
-from azpy.constants import ENVAR_DCCSI_SYS_PATH
-from azpy.constants import ENVAR_DCCSI_PYTHONPATH
+from DccScriptingInterface.azpy.constants import ENVAR_PATH_DCCSIG
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_SYS_PATH
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_PYTHONPATH
 
 _default_settings_filepath = Path('setting.local.json')
 # -------------------------------------------------------------------------
@@ -543,7 +542,7 @@ class ConfigClass(object):
 if __name__ == '__main__':
     """Run in debug perform local tests from IDE or CLI"""
 
-    from azpy.constants import STR_CROSSBAR
+    from DccScriptingInterface.azpy.constants import STR_CROSSBAR
 
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME}.py ... Running script as __main__')
@@ -606,7 +605,7 @@ if __name__ == '__main__':
 
     _LOGGER.info(f'settings: {_foo_test.settings}')
 
-    _export_filepath = Path(_PATH_DCCSIG, '__tmp__', 'settings_export.json').resolve()
+    _export_filepath = Path(PATH_DCCSIG, '__tmp__', 'settings_export.json').resolve()
 
     _foo_test.export_settings(settings_filepath = _export_filepath,
                               log_settings = True)

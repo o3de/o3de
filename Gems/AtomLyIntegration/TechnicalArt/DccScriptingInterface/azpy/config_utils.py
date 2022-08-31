@@ -54,7 +54,8 @@ import importlib.util
 
 # --------------------------------------------------------------------------
 # Global Scope
-_MODULENAME = 'azpy.config_utils'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config_utils'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 
@@ -319,6 +320,8 @@ def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
     '''Discovers the engine root
     Input:  a file name stub, default engine.json
     Output: engine root path (if found)
+
+    Notice: This method will be deprecated
     '''
     # get the O3DE engine root folder
     # if we are running within O3DE we can ensure which engine is running
