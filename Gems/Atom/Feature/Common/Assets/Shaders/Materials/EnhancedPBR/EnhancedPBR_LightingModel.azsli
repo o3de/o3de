@@ -8,17 +8,21 @@
 
 #pragma once
 
-// Include options first
-#include <Atom/Features/PBR/LightingOptions.azsli>
+// This #define magic lets you use the GetDiffuseLighting & GetSpecularLighting functions in this file without making them the final functions
+// used in your shader. Simply #define GetDiffuseLighting & GetSpecularLighting to your custom definition before including this file
+//
+#ifndef GetDiffuseLighting
+#define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_EnhancedPBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
 
-// Then include custom surface and lighting data types
-#include <Atom/Features/PBR/Lighting/LightingData.azsli>
+#ifndef GetSpecularLighting
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_EnhancedPBR(surface, lightingData, lightIntensity, dirToLight)
+#endif
 
-#include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
 
 // Then define the Diffuse and Specular lighting functions
-float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
+float3 GetDiffuseLighting_EnhancedPBR(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
     float3 diffuse;
     if(o_enableSubsurfaceScattering)
@@ -42,7 +46,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
     return diffuse;
 }
 
-float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+float3 GetSpecularLighting_EnhancedPBR(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
     float3 specular;
     if (o_enableAnisotropy)
@@ -65,46 +69,12 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
         // HdotV = HdotL due to the definition of half vector
         float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surface.clearCoat.factor;
         float clearCoatRoughness = max(surface.clearCoat.roughness * surface.clearCoat.roughness, 0.0005f);
-        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF );
+        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF);
 
-        specular = specular * (1.0 - clearCoatF) * (1.0 - clearCoatF) + clearCoatSpecular;
+        specular = specular * (1.0 - clearCoatF) + clearCoatSpecular;
     }
     
     specular *= lightIntensity;
     
     return specular;
-}
-
-
-// Then include everything else
-#include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
-
-
-struct PbrLightingOutput
-{
-    float4 m_diffuseColor;
-    float4 m_specularColor;
-    float4 m_albedo;
-    float4 m_specularF0;
-    float4 m_normal;
-    float3 m_scatterDistance;
-};
-
-
-PbrLightingOutput GetPbrLightingOutput(Surface surface, LightingData lightingData, float alpha)
-{
-    PbrLightingOutput lightingOutput;
-
-    lightingOutput.m_diffuseColor = float4(lightingData.diffuseLighting, alpha);
-    lightingOutput.m_specularColor = float4(lightingData.specularLighting, 1.0);
-
-    // albedo, specularF0, roughness, and normals for later passes (specular IBL, Diffuse GI, SSR, AO, etc)
-    lightingOutput.m_specularF0 = float4(surface.specularF0, surface.roughnessLinear);
-    lightingOutput.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
-    lightingOutput.m_albedo.a = lightingData.specularOcclusion;
-    lightingOutput.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
-    lightingOutput.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
-    
-    return lightingOutput;
 }

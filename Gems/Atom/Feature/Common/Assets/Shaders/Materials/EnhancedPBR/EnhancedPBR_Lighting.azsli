@@ -79,6 +79,11 @@ void HandleOpacity(Surface surface, inout LightingData lightingData)
             // This means that m_specularColor.rgb (source 1) is multiplied against the destination, then
             // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
 
+            // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+            float3 specular = lightingData.specularLighting.rgb;
+            specular = lerp(specular, specular * surface.alpha, surface.opacityAffectsSpecularFactor);
+            lightingData.diffuseLighting.rgb += specular;
+
             lightingData.specularLighting.rgb = surface.baseColor * (1.0 - alpha); 
         }
     }

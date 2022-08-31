@@ -250,10 +250,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/EnhancedSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/EyeSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli
     ShaderLib/Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli
@@ -357,14 +355,23 @@ set(FILES
     Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli
     Shaders/Materials/BasePBR/BasePBR_Vertex.azsli
     Shaders/Materials/BasePBR/BasePBR_VertexData.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Common.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_DepthPass_WithPS.azsl
     Shaders/Materials/EnhancedPBR/EnhancedPBR_DepthPass_WithPS.shader
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass.azsl
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass.shader
     Shaders/Materials/EnhancedPBR/EnhancedPBR_ForwardPass_EDS.shader
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_Lighting.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingModel.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometry.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Shadowmap_WithPS.azsl
     Shaders/Materials/EnhancedPBR/EnhancedPBR_Shadowmap_WithPS.shader
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_Surface.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_Vertex.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli
     Shaders/Materials/EnhancedPBR/EnhancedSurface_ForwardPass.azsli
     Shaders/Materials/Eye/Eye.azsl
     Shaders/Materials/Eye/Eye.shader

@@ -37,5 +37,5 @@
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depth, depthCS, isClipped);
 
     // Apply second part of the offset to the detail UV (see comment above)
-    detailUv[MaterialSrg::m_parallaxUvIndex] -= uvs[MaterialSrg::m_parallaxUvIndex];
+    detailUv[MaterialSrg::m_parallaxUvIndex] += uvs[MaterialSrg::m_parallaxUvIndex];
 }

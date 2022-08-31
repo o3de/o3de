@@ -49,6 +49,10 @@ class LightingData_BasePBR
     // Normal . View
     float NdotV;
 
+#if ENABLE_TRANSMISSION
+    float3 translucentBackLighting;
+#endif
+
     // Occlusion factors (0 = dark, 1 = light)
     float diffuseAmbientOcclusion;
     float specularOcclusion;
@@ -64,6 +68,9 @@ void LightingData_BasePBR::Init(float3 positionWS, float3 normal, float roughnes
     specularLighting = float3(0.0, 0.0, 0.0);
     multiScatterCompensation = float3(1.0f, 1.0f, 1.0f);
     emissiveLighting = float3(0.0f, 0.0f, 0.0f);
+#if ENABLE_TRANSMISSION
+    translucentBackLighting = float3(0.0f, 0.0f, 0.0f);
+#endif
     diffuseAmbientOcclusion = 1.0f;
     specularOcclusion = 1.0f;
 

@@ -17,15 +17,16 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-void EvaluateVertexGeometry_BasePBR(
+VsOutput EvaluateVertexGeometry_BasePBR(
     float3 position,
     float3 normal,
     float4 tangent,
     float3 bitangent,
     float2 uv0,
-    float2 uv1,
-    out VsOutput output)
+    float2 uv1)
 {
+    VsOutput output;
+
     float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.m_worldPosition = worldPosition.xyz;
@@ -37,20 +38,17 @@ void EvaluateVertexGeometry_BasePBR(
 
     float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
     ConstructTBN(normal, tangent, bitangent, objectToWorld, objectToWorldIT, output.m_normal, output.m_tangent, output.m_bitangent);
+
+    return output;
 }
 
 VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
 {
-    VsOutput output;
-
-    EvaluateVertexGeometry_BasePBR(
+    return EvaluateVertexGeometry_BasePBR(
         IN.m_position,
         IN.m_normal,
         IN.m_tangent,
         IN.m_bitangent,
         IN.m_uv0,
-        IN.m_uv1,
-        output);
-
-    return output;
+        IN.m_uv1);
 }

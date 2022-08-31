@@ -6,38 +6,14 @@
  *
  */
 
-#include "EnhancedPBR_Common.azsli"
 
-// SRGs
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
-
-// ---------- Material Parameters ----------
-
-COMMON_OPTIONS_BASE_COLOR()
-COMMON_OPTIONS_ROUGHNESS()
-COMMON_OPTIONS_METALLIC()
-COMMON_OPTIONS_SPECULAR_F0()
-COMMON_OPTIONS_NORMAL()
-COMMON_OPTIONS_CLEAR_COAT()
-COMMON_OPTIONS_OCCLUSION()
-COMMON_OPTIONS_EMISSIVE()
-COMMON_OPTIONS_DETAIL_MAPS()
-// Note COMMON_OPTIONS_PARALLAX is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
-
-// Alpha
-#include "../MaterialInputs/AlphaInput.azsli"
-
-// Subsurface
-#include "../MaterialInputs/SubsurfaceInput.azsli"
-
-// Transmission
-#include "../MaterialInputs/TransmissionInput.azsli"
+ // --- Pass SRG ---
+#include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 
-#include "../MaterialFunctions/EvaluateEnhancedSurface.azsli"
-#include "../MaterialFunctions/EvaluateTangentFrame.azsli"
-#include "../MaterialFunctions/EnhancedParallaxDepth.azsli"
-#include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
-#include "../MaterialFunctions/StandardTransformDetailUvs.azsli"
+// --- Material ---
+#include "EnhancedPBR.azsli"
 
-#include "EnhancedSurface_ForwardPass.azsli"
+
+// --- Vertex + Pixel Shader ---
+#include <Atom/Features/Pipeline/Forward/ForwardPassVertexAndPixel.azsli>

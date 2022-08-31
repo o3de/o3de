@@ -15,6 +15,11 @@
 #define OUTPUT_DEPTH 0
 #endif
 
+#ifndef OUTPUT_SUBSURFACE
+#define OUTPUT_SUBSURFACE 0
+#endif
+
+
 #ifdef UNIFIED_FORWARD_OUTPUT
 
 struct ForwardPassOutput
@@ -35,6 +40,10 @@ struct ForwardPassOutput
     float4 m_albedo : SV_Target2;            //!< RGB = Surface albedo pre-multiplied by other factors that will be multiplied later by diffuse GI, A = specularOcclusion
     float4 m_specularF0 : SV_Target3;        //!< RGB = Specular F0, A = roughness
     float4 m_normal : SV_Target4;            //!< RGB10 = EncodeNormalSignedOctahedron(worldNormal), A2 = Flags (IBL/Multiscatter enabled)
+
+#if OUTPUT_SUBSURFACE
+    float3 m_scatterDistance : SV_Target5;
+#endif
 
 #if OUTPUT_DEPTH
     float m_depth : SV_Depth;

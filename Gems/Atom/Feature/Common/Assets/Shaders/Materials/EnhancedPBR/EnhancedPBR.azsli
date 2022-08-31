@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+
+// ------- Options -------
+
+#define ENABLE_CLEAR_COAT       1
+#define ENABLE_TRANSMISSION     0
+
+#include <Atom/Features/ShaderQualityOptions.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+
+// ------- Object SRG -------
+
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+
+// ------- Material SRG -------
+
+#include "EnhancedPBR_Common.azsli"
+
+// Alpha
+#include "../MaterialInputs/AlphaInput.azsli"
+
+// Subsurface
+#include "../MaterialInputs/SubsurfaceInput.azsli"
+
+// Transmission
+#include "../MaterialInputs/TransmissionInput.azsli"
+
+
+// ------- Material Options -------
+
+COMMON_OPTIONS_BASE_COLOR()
+COMMON_OPTIONS_ROUGHNESS()
+COMMON_OPTIONS_METALLIC()
+COMMON_OPTIONS_SPECULAR_F0()
+COMMON_OPTIONS_NORMAL()
+COMMON_OPTIONS_CLEAR_COAT()
+COMMON_OPTIONS_OCCLUSION()
+COMMON_OPTIONS_EMISSIVE()
+COMMON_OPTIONS_DETAIL_MAPS()
+// COMMON_OPTIONS_PARALLAX() is in StandardPBR_Common.azsli because it's needed by all StandardPBR shaders.
+
+
+// ------- Shader Stitching -------
+
+#include "EnhancedPBR_VertexData.azsli"
+#include "EnhancedPBR_Vertex.azsli"
+
+#include "EnhancedPBR_PixelGeometryData.azsli"
+#include "EnhancedPBR_PixelGeometry.azsli"
+
+#include "EnhancedPBR_SurfaceData.azsli"
+#include "EnhancedPBR_Surface.azsli"
+
+#include "../BasePBR/BasePBR_LightingData.azsli"
+#include "EnhancedPBR_LightingModel.azsli"
+#include "../StandardPBR/StandardPBR_Lighting.azsli"

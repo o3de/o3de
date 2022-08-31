@@ -6,6 +6,8 @@
  *
  */
 
+ #pragma once
+
 #include "../MaterialInputs/AlphaInput.azsli"
 
 float GetAlphaAndClip(float2 uvs[UvSetCount])

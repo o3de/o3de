@@ -12,25 +12,29 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_StandardPBR(IN, isFrontFace)
+#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace)
 #endif
 
-#include "../BasePBR/BasePBR_PixelGeometry.azsli"
-#include "../MaterialFunctions/ParallaxDepth.azsli"
+#include "../StandardPBR/StandardPBR_PixelGeometry.azsli"
 
 #include <Atom/Features/Debug.azsli>
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     inout float4 positionSV,
     float3 positionWS,
     float3 normal,
     float3 tangent,
     float3 bitangent,
     float2 uv[UvSetCount],
+    float2 detailUv[UvSetCount],
     bool isFrontFace)
 {
-    bool evaluateTangentFrame = ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture);
+    bool evaluateTangentFrame = ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
     PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uv, isFrontFace, evaluateTangentFrame);
+
+    // ------- Detail UVs -------
+
+    geoData.detailUv = detailUv;
 
     // ------- Parallax -------
 
@@ -39,20 +43,21 @@ PixelGeometryData EvaluatePixelGeometry_StandardPBR(
     if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uv, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                      geoData.uv, geoData.detailUv, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 
     return geoData;
 }
 
-PixelGeometryData EvaluatePixelGeometry_StandardPBR(inout VsOutput IN, bool isFrontFace)
+PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
 {
-    return EvaluatePixelGeometry_StandardPBR(
+    return EvaluatePixelGeometry_EnhancedPBR(
         IN.m_position,
         IN.m_worldPosition,
         IN.m_normal,
         IN.m_tangent,
         IN.m_bitangent,
         IN.m_uv,
+        IN.m_detailUv,
         isFrontFace);
 }

@@ -32,17 +32,17 @@
 
     "ProgramSettings":
     {
-      "EntryPoints":
-      [
-        {
-          "name": "EnhancedPbr_ForwardPassVS",
-          "type": "Vertex"
-        },
-        {
-          "name": "EnhancedPbr_ForwardPassPS_EDS",
-          "type": "Fragment"
-        }
-      ]
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            },
+            {
+                "name": "PixelShader",
+                "type": "Fragment"
+            }
+        ]
     },
 
     "DrawList" : "forwardWithSubsurfaceOutput"

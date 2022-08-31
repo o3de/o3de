@@ -25,6 +25,7 @@ VsOutput VertexShader(VsInput IN)
 #if !OUTPUT_DEPTH
     [earlydepthstencil]
 #endif
+
 ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     // ------- Geometry -> Surface -> Lighting -------
@@ -39,6 +40,8 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     ForwardPassOutput OUT;
 
+    // --- Diffuse Lighting ---
+
     OUT.m_diffuseColor.rgb = lightingData.diffuseLighting;
     OUT.m_diffuseColor.a = -1;  // Disable Subsurface Scattering
 
@@ -51,24 +54,39 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
 #endif
 
+    // --- Specular Lighting ---
+
     OUT.m_specularColor.rgb = lightingData.specularLighting;
     OUT.m_specularColor.a = 1.0;
+
+    // --- Roughness and Specular ---
 
     OUT.m_specularF0.rgb = surface.specularF0;
     OUT.m_specularF0.a = surface.roughnessLinear;
 
+    // --- Albedo ---
+
     OUT.m_albedo.rgb = surface.albedo * lightingData.diffuseResponse * lightingData.diffuseAmbientOcclusion;
     OUT.m_albedo.a = lightingData.specularOcclusion;
+
+    // --- Normal ---
 
     OUT.m_normal.rgb = EncodeNormalSignedOctahedron(surface.normal);
     OUT.m_normal.a = EncodeUnorm2BitFlags(o_enableIBL, o_specularF0_enableMultiScatterCompensation);
 
+    // --- Subsurface ---
+#if OUTPUT_SUBSURFACE
+    OUT.m_diffuseColor.a = surface.GetSubsurfaceScatteringFactorAndQuality();
+    OUT.m_scatterDistance = surface.scatterDistance;
+#endif
+
+    // --- Depth ---
 #if OUTPUT_DEPTH
-    
     // Can be modified in Parallax calculations in EvaluatePixelGeometry
     OUT.m_depth = IN.m_position.z;
-
 #endif
+
+    // --- Debug Output ---
 
     DebugModifyOutput(OUT.m_diffuseColor, OUT.m_specularColor, OUT.m_albedo, OUT.m_specularF0, surface.normal,
                     geoData.tangents[MaterialSrg::m_normalMapUvIndex], geoData.bitangents[MaterialSrg::m_normalMapUvIndex],
