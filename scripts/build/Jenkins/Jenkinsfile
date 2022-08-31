@@ -28,6 +28,7 @@ COMMIT_REPOSITORY_NAME = ''
 
 @NonCPS
 def DetermineCommit() {
+    echo "matching ${scm.userRemoteConfigs.url} =~ 'https://(.+)/(.+)/(.+).git'"
     def matcher = (scm.userRemoteConfigs.url =~ 'https://(.+)/(.+)/(.+).git')
     COMMIT_DOMAIN_NAME = matcher.group(1)
     echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
