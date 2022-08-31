@@ -481,7 +481,6 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         pipelineConfig.EXTERNAL_REPOS.each { repo ->
             dir(repo.REPOSITORY_NAME) {
-                def thisRemoteConfigs = scm.userRemoteConfigs
                 def setEnvCommit = false
                 def the_branch = branchName
                 if(!isEngineCommit && !isExtrasCommit) {
