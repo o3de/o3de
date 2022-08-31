@@ -13,6 +13,7 @@
 
 #define ENABLE_CLEAR_COAT       1
 #define ENABLE_TRANSMISSION     1
+#define OUTPUT_SUBSURFACE       1
 
 #include <Atom/Features/ShaderQualityOptions.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
