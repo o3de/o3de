@@ -25,40 +25,48 @@ ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
+//see what the commit url is
 def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
 def commitUrl = scm.userRemoteConfigs.url[0]
 def matcher = commitUrl =~ httpsPattern
-echo "matcher ${commitUrl} =~ ${httpsPattern}"
 matcher.find()
 COMMIT_DOMAIN_NAME = matcher.group(1)
-echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
 COMMIT_ORGANIZATION_NAME = matcher.group(2)
-echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
 COMMIT_REPOSITORY_NAME = matcher.group(3)
-echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
 
-def engineRemoteConfigs = scm.userRemoteConfigs
-engineRemoteConfigs.name = ENGINE_REPOSITORY_NAME
-def extrasRemoteConfigs = scm.userRemoteConfigs
-extrasRemoteConfigs.name = EXTRAS_REPOSITORY_NAME
+//if this is an engine commit
 def isEngineCommit = false
 def isExtrasCommit = false
+def engineUrl = ''
+def extrasUrl = ''
 if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME){
+    echo "Engine Commit"
     isEngineCommit = true
-    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+    engineUrl = scm.userRemoteConfigs.url[0]
+    extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
 }
 else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
+    echo "Extras Commit"
     isExtrasCommit = true
-    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
-    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+    extrasUrl = scm.userRemoteConfigs.url[0]
+    engineUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 } else {
-    echo "Default Organization"
-    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
-    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
-    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+    echo "External - Default Organization"
+    extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+    engineUrl = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
 }
+
+def engineRemoteConfigs = [
+    name: ENGINE_REPOSITORY_NAME,
+    url: engineUrl,
+    credentialsId: scm.userRemoteConfigs.credentialsId[0]
+]
+
+def extrasRemoteConfigs = [
+    name: EXTRAS_REPOSITORY_NAME,
+    url: extrasUrl,
+    credentialsId: scm.userRemoteConfigs.credentialsId[0]
+]
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
