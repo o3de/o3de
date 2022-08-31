@@ -30,10 +30,16 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
         filepath = '/'.join(components[2:len(components)])
         api_url = f'http://api.github.com/repos/{user}/{repository}/contents/{filepath}'
 
-        with urllib.request.urlopen(api_url) as url:
-            json_data = json.loads(url.read().decode())
-            download_url = json_data['download_url']
-            parsed_uri = urllib.parse.urlparse(download_url)
+        try:
+            with urllib.request.urlopen(api_url) as url:
+                json_data = json.loads(url.read().decode())
+                download_url = json_data['download_url']
+                parsed_uri = urllib.parse.urlparse(download_url)
+        except urllib.error.HTTPError as e:
+            logger.error(f'HTTP Error {e.code} opening {api_url.geturl()}')
+        except urllib.error.URLError as e:
+            logger.error(f'URL Error {e.reason} opening {api_url.geturl()}')
+
         return parsed_uri
 
     def clone_from_git(uri, download_path: pathlib.Path) -> int:

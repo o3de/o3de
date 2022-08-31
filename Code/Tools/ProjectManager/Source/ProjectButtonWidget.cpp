@@ -445,6 +445,7 @@ namespace O3DE::ProjectManager
         case ProjectButtonState::NotDownloaded:
             ShowNotDownloadedState();
             break;
+        case ProjectButtonState::DownloadingBuildQueued:
         case ProjectButtonState::Downloading:
             ShowDownloadingState();
             break;

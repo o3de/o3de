@@ -670,7 +670,7 @@ namespace O3DE::ProjectManager
         ResetProjectsContent();
     }
 
-    void ProjectsScreen::StartProjectDownload(const QString& projectName)
+    void ProjectsScreen::StartProjectDownload(const QString& projectName, bool queueBuild)
     {
         m_downloadController->AddObjectDownload(projectName, DownloadController::DownloadObjectType::Project);
 
@@ -682,13 +682,54 @@ namespace O3DE::ProjectManager
 
         if (foundButton != m_projectButtons.end())
         {
-            (*foundButton).second->SetState(ProjectButtonState::Downloading);
+            (*foundButton).second->SetState(queueBuild ? ProjectButtonState::DownloadingBuildQueued : ProjectButtonState::Downloading);
         }
     }
 
-    void ProjectsScreen::HandleDownloadResult(const QString& /*projectName*/, bool /*succeeded*/)
+    void ProjectsScreen::HandleDownloadResult(const QString& projectName, bool succeeded)
     {
-        ResetProjectsContent();
+        auto foundButton = AZStd::ranges::find_if(
+            m_projectButtons,
+            [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
+            {
+                return (value.second->GetProjectInfo().m_projectName == projectName);
+            });
+
+        if (foundButton != m_projectButtons.end())
+        {
+            if (succeeded)
+            {
+                // Find the project info since it should now be local
+                auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+                if (projectsResult.IsSuccess() && !projectsResult.GetValue().isEmpty())
+                {
+                    for (const ProjectInfo& projectInfo : projectsResult.GetValue())
+                    {
+                        if (projectInfo.m_projectName == projectName)
+                        {
+                            (*foundButton).second->SetProject(projectInfo);
+
+                            if ((*foundButton).second->GetState() == ProjectButtonState::DownloadingBuildQueued)
+                            {
+                                QueueBuildProject(projectInfo);
+                            }
+                            else
+                            {
+                                (*foundButton).second->SetState(ProjectButtonState::NeedsToBuild);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                (*foundButton).second->SetState(ProjectButtonState::NotDownloaded);
+            }
+        }
+        else
+        {
+            ResetProjectsContent();
+        }
     }
 
     void ProjectsScreen::HandleDownloadProgress(const QString& projectName, DownloadController::DownloadObjectType objectType, int bytesDownloaded, int totalBytes)

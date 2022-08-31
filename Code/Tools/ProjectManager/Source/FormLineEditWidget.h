@@ -15,6 +15,7 @@
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QMovie)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 
@@ -31,6 +32,15 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
+
+        enum class ValidationState
+        {
+            NotValidating,
+            Validating,
+            ValidationFailed,
+            ValidationSuccess
+        };
+
         explicit FormLineEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormLineEditWidget() = default;
 
@@ -43,11 +53,20 @@ namespace O3DE::ProjectManager
 
         virtual void setText(const QString& text);
 
+        void SetValidationState(ValidationState validationState);
+
     protected:
         QLabel* m_errorLabel = nullptr;
         QFrame* m_frame = nullptr;
         QHBoxLayout* m_frameLayout = nullptr;
         AzQtComponents::StyledLineEdit* m_lineEdit = nullptr;
+
+        //Validation icons
+        QMovie* m_processingSpinnerMovie = nullptr;
+        QLabel* m_processingSpinner = nullptr;
+        QLabel* m_validationErrorIcon = nullptr;
+        QLabel* m_validationSuccessIcon = nullptr;
+        ValidationState m_validationState;
 
     private slots:
         void flavorChanged();

@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
 
         m_repoPath = new FormLineEditWidget(tr("Remote URL"), "", this);
         m_repoPath->setMinimumSize(QSize(600, 0));
+        m_repoPath->setErrorLabelText(tr("Not a valid remote source."));
         vLayout->addWidget(m_repoPath);
 
         vLayout->addSpacing(10);
@@ -171,7 +172,7 @@ namespace O3DE::ProjectManager
             {
                 // wait for a second before attempting to validate so we're less likely to do it per keypress
                 m_inputTimer->start(1000);
-                
+                m_repoPath->SetValidationState(FormLineEditWidget::ValidationState::Validating);
             });
 
         SetDialogReady(false);
@@ -200,6 +201,10 @@ namespace O3DE::ProjectManager
             }
         }
 
+        m_repoPath->SetValidationState(
+            (validRepository && containsProjects) ? FormLineEditWidget::ValidationState::ValidationSuccess
+                                                  : FormLineEditWidget::ValidationState::ValidationFailed);
+        m_repoPath->setErrorLabelVisible(!(validRepository && containsProjects));
         SetDialogReady(validRepository && containsProjects);
     }
 
@@ -211,7 +216,7 @@ namespace O3DE::ProjectManager
         if (addGemRepoResult.IsSuccess())
         {
             // Send download to project screen to initiate download
-            emit StartObjectDownload(m_currentProject.m_projectName);
+            emit StartObjectDownload(m_currentProject.m_projectName, ShouldBuild());
             emit QDialog::accept();
         }
         else

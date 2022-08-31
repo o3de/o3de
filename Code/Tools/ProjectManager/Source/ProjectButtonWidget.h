@@ -98,6 +98,7 @@ namespace O3DE::ProjectManager
         BuildFailed,
         NotDownloaded,
         Downloading,
+        DownloadingBuildQueued,
         DownloadFailed
     };
 
@@ -115,6 +116,10 @@ namespace O3DE::ProjectManager
         void SetEngine(const EngineInfo& engine);
         void SetProject(const ProjectInfo& project);
         void SetState(enum ProjectButtonState state);
+        const ProjectButtonState& GetState() const
+        {
+            return m_currentState;
+         }
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetBuildLogsLink(const QUrl& logUrl);
