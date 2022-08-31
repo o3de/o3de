@@ -24,8 +24,8 @@ _MODULENAME = 'DCCsi.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
-_PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
-sys.path.append(_PATH_DCCSIG)
+PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
+sys.path.append(PATH_DCCSIG)
 # -------------------------------------------------------------------------
 
 # global constants here
@@ -71,11 +71,10 @@ PATH_DCCSI_LOG_PATH = (f'{PATH_USER_O3DE}\\Cache\\log' +
 # a dccsi nested location, to a location in user home o3de
 
 # path string constructor
-PATH_DCCSI_PYTHON_LIB = (f'{_PATH_DCCSIG.as_posix()}' +
-                         f'\\3rdParty\\Python\\Lib' +
-                         f'\\{sys.version_info[0]}.x' +
-                         f'\\{sys.version_info[0]}.{sys.version_info[1]}.x' +
-                         f'\\site-packages')
+# refactored so __init__ is not pulling from constants module
+from DccScriptingInterface import ENVAR_O3DE_DEV
+from DccScriptingInterface import ENVAR_PATH_DCCSIG
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 
 # Note: some constants may simply define and implicit part of a default
 # all of the logic, such as dynamic configuration and settings (config.py)
@@ -86,7 +85,6 @@ PATH_DCCSI_PYTHON_LIB = (f'{_PATH_DCCSIG.as_posix()}' +
 # the envars for init paths are all here
 # we aware that other constants are nested within folder structure
 # envar to get/set the path for the DccScriptingInterface Gem (DCCSI)
-ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
 
 # enavar to get/set the < dccsi>/tools folder
 ENVAR_PATH_DCCSI_TOOLS = 'PATH_DCCSI_TOOLS'
@@ -127,4 +125,13 @@ STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
 # -------------------------------------------------------------------------
+
+
+###########################################################################
+# Main Code Block, runs this script as main (testing)
+# -------------------------------------------------------------------------
+if __name__ == '__main__':
+    """Run as main, perform additional debug and module tests"""
+
+    pass
 

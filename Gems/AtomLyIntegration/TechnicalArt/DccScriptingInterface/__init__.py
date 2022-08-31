@@ -62,43 +62,78 @@ site.addsitedir(PATH_O3DE_TECHART_GEMS)
 
 # there may be other TechArt gems in the future
 # or the dccsi maybe split up
+ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
 
-from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
-
-#  < o3de >\Gems\AtomLyIntegration\TechnicalArt\< dccsi >
+# < o3de >\Gems\AtomLyIntegration\TechnicalArt\< dccsi >
+# the default location
 PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
+
 # this allows the dccsi gem location to be overridden in the external env
 PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG,
                               PATH_DCCSIG.as_posix()))
-site.addsitedir(PATH_DCCSIG.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
 
 # < dccsi >\3rdParty bootstraooing area for installed site-packages
 # dcc tools on a different version of python will import from here.
-PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSIG, '3rdParty', 'Python').resolve()
+# path string constructor
+PATH_DCCSI_PYTHON_LIB = (f'{PATH_DCCSIG.as_posix()}' +
+                         f'\\3rdParty\\Python\\Lib' +
+                         f'\\{sys.version_info[0]}.x' +
+                         f'\\{sys.version_info[0]}.{sys.version_info[1]}.x' +
+                         f'\\site-packages')
+PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).resolve()
+
+# default o3de engine location
+# a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
+# dev is a legacy Lumberyard concept, as the engine snadbox was /dev
+ENVAR_O3DE_DEV = 'O3DE_DEV'
+O3DE_DEV = None
+try:
+    O3DE_DEV = PATH_DCCSIG.parents[3].resolve(strict=True)
+    _LOGGER.debug(f'{ENVAR_O3DE_DEV} is: {O3DE_DEV.as_posix()}')
+except NotADirectoryError as e:
+    _LOGGER.error(f'{ENVAR_O3DE_DEV} engine root is not found!')
+    raise e
+
+# use the dccsi as the default fallback project during development
+ENVAR_PATH_O3DE_PROJECT = 'PATH_O3DE_PROJECT' # project path
+ENVAR_O3DE_PROJECT = 'O3DE_PROJECT' # project name
+
+# use dccsi as the default project location
+PATH_O3DE_PROJECT = Path(os.getenv(ENVAR_PATH_O3DE_PROJECT,
+                                   PATH_DCCSIG)).resolve()
+_LOGGER.debug(f'Default {ENVAR_PATH_O3DE_PROJECT}: {PATH_O3DE_PROJECT.as_posix()}')
+
+# use dccsi as the default project name
+O3DE_PROJECT = str(os.getenv(ENVAR_O3DE_PROJECT,
+                             PATH_O3DE_PROJECT.name))
+_LOGGER.debug(f'Default {ENVAR_PATH_O3DE_PROJECT}: {O3DE_PROJECT}')
 
 # pulling from this __init__.py module, may cause cyclical imports
 # -------------------------------------------------------------------------
-from DccScriptingInterface.globals import *
-from azpy.config_utils import attach_debugger
-from azpy import test_imports
+# will probably deprecate this whole block to avoid cyclical imports
+# this doesn't need to be an entrypoint or debugged from cli
 
-# suggestion would be to turn this into a method to reduce boilerplate
-# but where to put it that makes sense?
-if DCCSI_DEV_MODE:
-    # if dev mode, this will attemp to auto-attach the debugger
-    # at the earliest possible point in this module
-    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
+# from DccScriptingInterface.globals import *
+# from azpy.config_utils import attach_debugger
+# from azpy import test_imports
 
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-
-    # If in dev mode and test is flagged this will force imports of __all__
-    # although slower and verbose, this can help detect cyclical import
-    # failure and other issues
-
-    # the DCCSI_TESTS flag needs to be properly added in .bat env
-    if DCCSI_TESTS:
-        test_imports(_all=__all__,
-                     _pkg=_PACKAGENAME,
-                     _logger=_LOGGER)
+# # suggestion would be to turn this into a method to reduce boilerplate
+# # but where to put it that makes sense?
+# if DCCSI_DEV_MODE:
+#     # if dev mode, this will attemp to auto-attach the debugger
+#     # at the earliest possible point in this module
+#     attach_debugger(debugger_type=DCCSI_GDEBUGGER)
+#
+#     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
+#
+#     # If in dev mode and test is flagged this will force imports of __all__
+#     # although slower and verbose, this can help detect cyclical import
+#     # failure and other issues
+#
+#     # the DCCSI_TESTS flag needs to be properly added in .bat env
+#     if DCCSI_TESTS:
+#         test_imports(_all=__all__,
+#                      _pkg=_PACKAGENAME,
+#                      _logger=_LOGGER)
 # -------------------------------------------------------------------------

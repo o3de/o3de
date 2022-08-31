@@ -25,12 +25,25 @@ __all__ = ['utils', 'samples']
 from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
 from DccScriptingInterface import PATH_DCCSIG
 
-import azpy.config_utils
-PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(PATH_DCCSIG)
-site.addsitedir(PATH_DCCSI_PYTHON_LIB.as_posix())
+import DccScriptingInterface.config as dccsi_core_config
+
+settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
+                                                       enable_o3de_pyside2=True,
+                                                       set_env=True)
+
+try:
+    import PySide2  # this triggers the PySide2 init
+    from PySide2 import QtWidgets  # this requires DLLs to be built
+except ImportError as e:
+    _LOGGER.error(f'Qt exception: {e}')
+    _LOGGER.warning(f'Something is wrong with Qt/PySide imports')
+    _LOGGER.warning(f'Make sure the O3DE engine is built')
+    raise e
+
+from DccScriptingInterface.config import _DCCSI_LOCAL_SETTINGS
 
 # see if the pyside2tools are installed, if so add modules
-PYSIDE2_TOOLS = Path(PATH_DCCSI_PYTHON_LIB, 'pyside2tools')
+PYSIDE2_TOOLS = Path(_DCCSI_LOCAL_SETTINGS['PATH_DCCSI_PYTHON_LIB'], 'pyside2tools')
 try:
     PYSIDE2_TOOLS = PYSIDE2_TOOLS.resolve(strict=True)
     site.addsitedir(PYSIDE2_TOOLS.as_posix())
@@ -45,6 +58,7 @@ if PYSIDE2_TOOLS:
     __all__.append('puic_utils')
 
 # # -------------------------------------------------------------------------
+# might re-enable this later, or may deprecate these checks in a future PR
 # if _DCCSI_DEV_MODE:
 #     # If in dev mode this will test imports of __all__
 #     from azpy import test_imports

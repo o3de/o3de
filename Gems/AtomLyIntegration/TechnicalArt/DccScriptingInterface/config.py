@@ -73,51 +73,28 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope, set up module logging, etc.
-_MODULENAME = 'config'
+from DccScriptingInterface import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}.')
-
-# if we know we are running in O3DE, there are assumptions we can make,
-# or things we can inspect/discover and thus perform optimizations
-_O3DE_RUNNING=None
-try:
-    import azlmbr
-    _O3DE_RUNNING=True
-except:
-    _O3DE_RUNNING=False
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
 _MODULE_PATH = Path(__file__)  # what if frozen?
+# -------------------------------------------------------------------------
 
-# we don't have access yet to the DCCsi Lib\site-packages
-# (1) this will give us import access to dccsi.azpy (always?)
-# (2) this allows it to be set as ENVAR
-_ENVAR_PATH_DCCSIG = 'PATH_DCCSIG'
-_PATH_DCCSIG = os.getenv(_ENVAR_PATH_DCCSIG,
-                         Path(_MODULE_PATH.parent.as_posix()))
-os.environ[_ENVAR_PATH_DCCSIG] = _PATH_DCCSIG
-# ^ we assume this config is in the root of the DCCsi
-# if it's not, be sure to set envar 'PATH_DCCSIG' to ensure it
-site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
 
-# now we have dccsi azpy api access
-import azpy.config_utils
+# -------------------------------------------------------------------------
+# ensure site access to dccsi
+from DccScriptingInterface.globals import *
+# couple debug prints to verify paths
+_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}')
+# this is the bootstrap to installed pkgs for dcc tool
+_LOGGER.debug(f'PATH_DCCSI_PYTHON_LIB: {PATH_DCCSI_PYTHON_LIB}')
+
 from azpy.config_utils import attach_debugger
 
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import ENVAR_DCCSI_GDEBUGGER
-from azpy.constants import FRMT_LOG_LONG
-
-# defaults, can be overridden/forced here for development
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-_DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+if DCCSI_DEV_MODE:
+    # if dev mode, this will attemp to auto-attach the debugger
+    # at the earliest possible point in this module
+    attach_debugger(debugger_type=DCCSI_GDEBUGGER)
 # -------------------------------------------------------------------------6
 
 
@@ -132,9 +109,6 @@ _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs(_PATH_DCCSIG)
 # this will always allow any DCC tool (with python), any IDE, or any python
 # interpreter to strap it correctly based on tht sessions python version
 # this reduces compatibility concerns, etc. (there will always be other risks)
-
-# Now we should be able to just carry on with pathlib and dynaconf imports
-from pathlib import Path
 
 _PATH_DCCSIG = Path(_PATH_DCCSIG).resolve()  # pathify
 _PATH_DCCSI_PYTHON = Path(_PATH_DCCSIG, '3rdParty', 'Python').resolve()
@@ -494,9 +468,9 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     os.environ['DYNACONF_DCCSI_CONFIG_CORE'] = "True"
 
     # global settings
-    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
-    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-    os.environ['DYNACONF_DCCSI_LOGLEVEL'] = str(_DCCSI_LOGLEVEL)
+    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(DCCSI_GDEBUG)  # cast bools
+    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(DCCSI_DEV_MODE)
+    os.environ['DYNACONF_DCCSI_LOGLEVEL'] = str(DCCSI_LOGLEVEL)
 
     dccsi_path = Path(dccsi_path)
     os.environ["DYNACONF_PATH_DCCSIG"] = dccsi_path.as_posix()
@@ -848,10 +822,10 @@ if __name__ == '__main__':
 
     from azpy.env_bool import env_bool
     # temp internal debug flag, toggle values for manual testing
-    _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-    _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-    _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
-    _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+    DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+    DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+    DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
+    DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 
     from azpy.shared.utils.arg_bool import arg_bool
     # Suggestion for next iteration, args set to anything but None will
@@ -862,23 +836,23 @@ if __name__ == '__main__':
     _MODULENAME = 'DCCsi.config.cli'
 
     # default loglevel to info unless set
-    _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
-    if _DCCSI_GDEBUG:
+    DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
+    if DCCSI_GDEBUG:
         # override loglevel if running debug
-        _DCCSI_LOGLEVEL = _logging.DEBUG
+        DCCSI_LOGLEVEL = _logging.DEBUG
 
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
-    _logging.basicConfig(level=_DCCSI_LOGLEVEL,
+    _logging.basicConfig(level=DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
 
     _LOGGER = _logging.getLogger(_MODULENAME)
     _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
     _LOGGER.debug('site.addsitedir({})'.format(_PATH_DCCSIG))
-    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
-    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
-    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
+    _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(DCCSI_GDEBUG))
+    _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(DCCSI_DEV_MODE))
+    _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(DCCSI_LOGLEVEL))
 
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME} ... Running module as __main__')
@@ -1004,12 +978,12 @@ if __name__ == '__main__':
     # easy overrides
     if arg_bool(args.global_debug, desc="args.global_debug"):
         from azpy.constants import ENVAR_DCCSI_GDEBUG
-        _DCCSI_GDEBUG = True
+        DCCSI_GDEBUG = True
         _LOGGER.setLevel(_logging.DEBUG)
-        _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={_DCCSI_GDEBUG}')
+        _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={DCCSI_GDEBUG}')
 
     if arg_bool(args.developer_mode, desc="args.developer_mode"):
-        _DCCSI_DEV_MODE = True
+        DCCSI_DEV_MODE = True
         azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if args.set_debugger:
@@ -1030,7 +1004,7 @@ if __name__ == '__main__':
     if not args.project_path:
         args.project_path=_PATH_O3DE_PROJECT
 
-    if _DCCSI_GDEBUG:
+    if DCCSI_GDEBUG:
         args.enable_python = True
         args.enable_qt = True
 
@@ -1107,7 +1081,7 @@ if __name__ == '__main__':
     # add_path_list_to_envar(settings.DCCSI_SYS_PATH)
     # add_path_list_to_addsitedir(settings.DCCSI_PYTHONPATH)
 
-    if _DCCSI_GDEBUG or args.cache_local_settings:
+    if DCCSI_GDEBUG or args.cache_local_settings:
         if args.log_print_settings:
             log_settings = True
         else:
@@ -1129,7 +1103,7 @@ if __name__ == '__main__':
     _MODULE_END = timeit.default_timer() - _MODULE_START
     _LOGGER.info(f'CLI {_MODULENAME} took: {_MODULE_END} sec')
 
-    if _DCCSI_GDEBUG or args.test_pyside2:
+    if DCCSI_GDEBUG or args.test_pyside2:
         test_pyside2()  # test PySide2 access with a pop-up button
         try:
             import pyside2uic

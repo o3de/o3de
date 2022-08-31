@@ -135,8 +135,8 @@ TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
 # python related
 #python and site-dir
 TAG_DCCSI_PY_VERSION_MAJOR = str(3)
-TAG_DCCSI_PY_VERSION_MINOR = str(7)
-TAG_DCCSI_PY_VERSION_RELEASE = str(10)
+TAG_DCCSI_PY_VERSION_MINOR = str(10)
+TAG_DCCSI_PY_VERSION_RELEASE = str(5)
 TAG_PYTHON_EXE = str('python.exe')
 TAG_TOOLS_DIR = str('Tools\\Python')
 TAG_PLATFORM = str('windows')
@@ -194,13 +194,15 @@ FLAG_PATH_BLOCKROOT = str('blockRoot')
 # O3DE
 # base env var key as str
 ENVAR_COMPANY = str('COMPANY')
-ENVAR_O3DE_PROJECT = str('O3DE_PROJECT') # project name
-ENVAR_PATH_O3DE_PROJECT = str('PATH_O3DE_PROJECT') # path to project
-ENVAR_O3DE_DEV = str('O3DE_DEV')
 ENVAR_O3DE_BUILD_DIR_NAME = str('O3DE_BUILD_DIR_NAME')
 ENVAR_PATH_O3DE_BUILD = str('PATH_O3DE_BUILD')
 ENVAR_PATH_O3DE_BIN = str('PATH_O3DE_BIN')
 ENVAR_PATH_O3DE_PYTHON_INSTALL = str('PATH_O3DE_PYTHON_INSTALL')
+
+# MOVED to DccScriptingInterface __init__
+ENVAR_O3DE_PROJECT = str('O3DE_PROJECT') # project name
+ENVAR_PATH_O3DE_PROJECT = str('PATH_O3DE_PROJECT') # path to project
+ENVAR_O3DE_DEV = str('O3DE_DEV')
 
 # DCCSI
 ENVAR_PATH_DCCSIG = str('PATH_DCCSIG')

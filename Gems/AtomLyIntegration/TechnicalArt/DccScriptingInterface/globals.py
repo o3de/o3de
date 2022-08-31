@@ -20,27 +20,41 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'DCCsi.globals'
-
+from DccScriptingInterface import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.globals'
 _LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__) # thos module should not be used as an entry
 # -------------------------------------------------------------------------
 # global state to be shared
-from DccScriptingInterface.constants import ENVAR_PATH_DCCSIG
+from DccScriptingInterface import ENVAR_PATH_DCCSIG
+
 # the default folder path location for the dccsi gem
-PATH_DCCSIG = _MODULE_PATH.parents[0].resolve()
-# allows env to override the folder path location externally
+# pull the default path
+from DccScriptingInterface import PATH_DCCSIG
+
+# this allows env to override the folder path location externally
 PATH_DCCSIG = Path(os.getenv(ENVAR_PATH_DCCSIG, PATH_DCCSIG)).resolve()
 sys.path.append(PATH_DCCSIG.as_posix())
 site.addsitedir(PATH_DCCSIG.as_posix())
 _LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG.as_posix()}') # debug tracking
 
+# propogate the lib bootstrap folder path
 # ensure package dependancies are accessible, by python sys version
 # other pkgs and modules may depend on them
-from DccScriptingInterface.constants import PATH_DCCSI_PYTHON_LIB
+# this is transient (per-session) so we don't override in env
+from DccScriptingInterface import PATH_DCCSI_PYTHON_LIB
 PATH_DCCSI_PYTHON_LIB = Path(PATH_DCCSI_PYTHON_LIB).resolve()
 site.addsitedir(PATH_DCCSI_PYTHON_LIB.as_posix())
+
+# propogate the o3de engine root
+from DccScriptingInterface import ENVAR_O3DE_DEV
+from DccScriptingInterface import O3DE_DEV
+# this allows env to override the folder path location externally
+O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV, O3DE_DEV)).resolve()
+sys.path.append(O3DE_DEV.as_posix())
+site.addsitedir(O3DE_DEV.as_posix())
+_LOGGER.debug(f'{ENVAR_O3DE_DEV}: {O3DE_DEV.as_posix()}') # debug tracking
 
 from DccScriptingInterface.constants import ENVAR_DCCSI_GDEBUG
 from DccScriptingInterface.constants import ENVAR_DCCSI_DEV_MODE
@@ -102,20 +116,17 @@ _logging.basicConfig(level=DCCSI_LOGLEVEL,
 
 _LOGGER = _logging.getLogger(_MODULENAME)
 
-# resolve the O3DE root
-# a suggestion would be for us to refactor from _O3DE_DEV to _O3DE_ROOT
-# dev is a legacy Lumberyard concept, as the engine snadbox was /dev
-O3DE_DEV = PATH_DCCSIG.parents[4].resolve()
-
 # default settings file path
 DCCSI_SETTIBGS_LOCAL_PATH = Path(DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
 
 # default / temp log path
-DCCSI_O3DE_USER_HOM_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
+DCCSI_O3DE_USER_HOME_LOG = Path(PATH_DCCSI_LOG_PATH).resolve()
 
 # putting these here, allows us to pull them from globals
 # and reduce boilerplate in other modules
-_LOGGER.debug(f'{ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
+_LOGGER.debug(f'This MODULE_PATH: {_MODULE_PATH}')
+_LOGGER.debug(f'Default {ENVAR_PATH_DCCSIG}: {PATH_DCCSIG}') # debug tracking
+_LOGGER.debug(f'Default {ENVAR_O3DE_DEV}: {O3DE_DEV}')
 _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUG}: {DCCSI_GDEBUG}')
 _LOGGER.debug(f'{ENVAR_DCCSI_DEV_MODE}: {DCCSI_DEV_MODE}')
 _LOGGER.debug(f'{ENVAR_DCCSI_GDEBUGGER}: {DCCSI_GDEBUGGER}')
@@ -127,5 +138,11 @@ _LOGGER.debug(f'{ENVAR_DCCSI_TESTS}: {DCCSI_TESTS}')
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run as main, perform additional debug and module tests"""
+
+    # some simple logger tests
+    # evoke the filehandlers and test writting to the log file
+    if _DCCSI_GDEBUG:
+        _LOGGER.info('Forced Info! for {0}.'.format({_PACKAGENAME}))
+        _LOGGER.error('Forced ERROR! for {0}.'.format({_PACKAGENAME}))
 
     pass
