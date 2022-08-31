@@ -8,10 +8,13 @@
 
 #include <Configuration/AWSCoreConfiguration.h>
 #include <Credential/AWSDefaultCredentialHandler.h>
+#include <aws/core/platform/Environment.h>
+#include <aws/core/utils/StringUtils.h>
 
 namespace AWSCore
 {
     static constexpr char AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG[] = "AWSDefaultCredentialHandler";
+    static constexpr char AWS_EC2_METADATA_DISABLED[] = "AWS_EC2_METADATA_DISABLED";
 
     AWSDefaultCredentialHandler::AWSDefaultCredentialHandler()
         : m_profileName("")
@@ -65,11 +68,15 @@ namespace AWSCore
         }
 
         {
-            AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
-            auto credentials = m_instanceProfileCredentailsProvider->GetAWSCredentials();
-            if (!credentials.IsEmpty())
+            const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
+            if (Aws::Utils::StringUtils::ToLower(ec2MetadataDisabled.c_str()) != "true") 
             {
-                return m_instanceProfileCredentailsProvider;
+                AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
+                auto credentials = m_instanceProfileCredentailsProvider->GetAWSCredentials();
+                if (!credentials.IsEmpty())
+                {
+                    return m_instanceProfileCredentailsProvider;
+                }
             }
         }
 

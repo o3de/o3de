@@ -9,10 +9,13 @@
 #include <AWSCoreInternalBus.h>
 #include <Credential/AWSDefaultCredentialHandler.h>
 #include <TestFramework/AWSCoreFixture.h>
+#include <AzCore/Utils/Utils.h>
+#include <aws/core/platform/Environment.h>
 
 using namespace AWSCore;
 
 static constexpr char AWSDEFAULTCREDENTIALHANDLERTEST_ALLOC_TAG[] = "AWSDefaultCredentialHandlerTest";
+static constexpr char AWS_EC2_METADATA_DISABLED[] = "AWS_EC2_METADATA_DISABLED";
 static constexpr const char* AWS_ACCESS_KEY = "AWSACCESSKEY";
 static constexpr const char* AWS_SECRET_KEY = "AWSSECRETKEY";
 
@@ -138,6 +141,21 @@ TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_InstanceProfileCr
     EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(nonEmptyCredential));
     auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
     EXPECT_TRUE(credentialProvider == m_instanceProfileCredentialsProviderMock);
+}
+
+TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_InstanceMetadataDisabled_GetDifferentCredentialProvider)
+{
+    // save current value so we can restore it after the test
+    const auto currentEc2MetadataDisabledValue = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
+    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, "truE", 1);
+    Aws::Auth::AWSCredentials emptyCredential;
+    EXPECT_CALL(*m_environmentCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
+    EXPECT_CALL(*m_profileCredentialsProviderMock, GetAWSCredentials()).Times(1).WillOnce(::testing::Return(emptyCredential));
+    EXPECT_CALL(*m_instanceProfileCredentialsProviderMock, GetAWSCredentials()).Times(0);
+    auto credentialProvider = m_credentialHandler->GetCredentialsProvider();
+    EXPECT_TRUE(credentialProvider != m_instanceProfileCredentialsProviderMock);
+    // restore previous value
+    AZ::Utils::SetEnv(AWS_EC2_METADATA_DISABLED, currentEc2MetadataDisabledValue.c_str(), 1);
 }
 
 TEST_F(AWSDefaultCredentialHandlerTest, GetCredentialsProvider_NoCredentialFoundInChain_GetNullPointer)
