@@ -47,29 +47,41 @@ namespace PhysX
     struct EditorProxyAssetShapeConfig
     {
         AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
+        AZ_TYPE_INFO(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
         static void Reflect(AZ::ReflectContext* context);
-        virtual ~EditorProxyAssetShapeConfig() = default;
 
         AZ::Data::Asset<Pipeline::MeshAsset> m_pxAsset{ AZ::Data::AssetLoadBehavior::QueueLoad };
         Physics::PhysicsAssetShapeConfiguration m_configuration;
+    };
+
+    struct EditorProxyCylinderShapeConfig
+    {
+        AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{2394B3D0-E7A1-4B66-8C42-0FFDC1FCAA26}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::u8 m_subdivisionCount = 16;
+        float m_height = 1.0f; //!< Caches height for capsule, cylinder and polygon prism shapes.
+        float m_radius = 1.0f; //!< Caches radius for capsule, cylinder and sphere shapes.
+
+        Physics::CookedMeshShapeConfiguration m_configuration;
     };
 
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
         AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_TYPE_INFO(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorProxyShapeConfig() = default;
         EditorProxyShapeConfig(const Physics::ShapeConfiguration& shapeConfiguration);
-        virtual ~EditorProxyShapeConfig() = default;
 
         Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
         Physics::SphereShapeConfiguration m_sphere;
         Physics::BoxShapeConfiguration m_box;
         Physics::CapsuleShapeConfiguration m_capsule;
+        EditorProxyCylinderShapeConfig m_cylinder;
         EditorProxyAssetShapeConfig m_physicsAsset;
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
@@ -78,6 +90,7 @@ namespace PhysX
         bool IsSphereConfig() const;
         bool IsBoxConfig() const;
         bool IsCapsuleConfig() const;
+        bool IsCylinderConfig() const;
         bool IsAssetConfig() const;
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;

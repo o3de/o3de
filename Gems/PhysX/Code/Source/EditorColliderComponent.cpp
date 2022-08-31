@@ -40,6 +40,38 @@
 
 namespace PhysX
 {
+    void EditorProxyCylinderShapeConfig::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<EditorProxyCylinderShapeConfig>()
+                ->Version(1)
+                ->Field("Configuration", &EditorProxyCylinderShapeConfig::m_configuration)
+                ->Field("Height", &EditorProxyCylinderShapeConfig::m_height)
+                ->Field("Radius", &EditorProxyCylinderShapeConfig::m_radius)
+            ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<EditorProxyCylinderShapeConfig>("EditorProxyCylinderShapeConfig", "Proxy structure to wrap cylinder data")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorProxyCylinderShapeConfig::m_configuration,
+                        "Configuration",
+                        "PhysX cylinder collider configuration.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_height, "Height", "Cylinder height.")
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyCylinderShapeConfig::m_radius, "Height", "Cylinder height.")
+
+                    ;
+            }
+        }
+    }
+
     void EditorProxyAssetShapeConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -92,6 +124,7 @@ namespace PhysX
                         ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
+                        ->EnumAttribute(Physics::ShapeType::Cylinder, "Cylinder")
                         ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
@@ -273,6 +306,9 @@ namespace PhysX
         case Physics::ShapeType::Capsule:
             m_capsule = static_cast<const Physics::CapsuleShapeConfiguration&>(shapeConfiguration);
             break;
+        case Physics::ShapeType::Cylinder:
+            AZ_Warning("EditorProxyShapeConfig", false, "Cylinder shape configuration isn't implemented!");
+            break;
         case Physics::ShapeType::PhysicsAsset:
             m_physicsAsset.m_configuration = static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
             break;
@@ -299,6 +335,11 @@ namespace PhysX
         return m_shapeType == Physics::ShapeType::Capsule;
     }
 
+    bool EditorProxyShapeConfig::IsCylinderConfig() const
+    {
+        return m_shapeType == Physics::ShapeType::Cylinder;
+    }
+
     bool EditorProxyShapeConfig::IsAssetConfig() const
     {
         return m_shapeType == Physics::ShapeType::PhysicsAsset;
@@ -319,6 +360,8 @@ namespace PhysX
             return m_box;
         case Physics::ShapeType::Capsule:
             return m_capsule;
+        case Physics::ShapeType::Cylinder:
+            return m_cylinder.m_configuration;
         case Physics::ShapeType::PhysicsAsset:
             return m_physicsAsset.m_configuration;
         case Physics::ShapeType::CookedMesh:
@@ -554,6 +597,11 @@ namespace PhysX
             AZ_Warning("PhysX", m_shapeConfiguration.m_physicsAsset.m_pxAsset.GetId().IsValid(),
                 "EditorColliderComponent::BuildGameEntity. No asset assigned to Collider Component. Entity: %s",
                 GetEntity()->GetName().c_str());
+            break;
+        case Physics::ShapeType::Cylinder:
+            colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
+            colliderComponent->SetShapeConfigurationList({ AZStd::make_pair(
+                sharedColliderConfig, AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_shapeConfiguration.m_cookedMesh)) });
             break;
         case Physics::ShapeType::CookedMesh:
             colliderComponent = gameEntity->CreateComponent<BaseColliderComponent>();
