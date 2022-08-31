@@ -24,7 +24,7 @@ namespace AzToolsFramework
             const Instance* m_reachedInstance = nullptr;
             //! Instance list that contains instances that are climbed up from bottom to top.
             //! The list does not include the reached instance.
-            AZStd::vector<InstanceOptionalConstReference> m_climbedInstances;
+            AZStd::vector<const Instance*> m_climbedInstances;
         };
 
         namespace PrefabInstanceUtils
@@ -45,7 +45,7 @@ namespace AzToolsFramework
             //! Generates a relative path from a list of climbed instances.
             //! @param climbedInstances The list of climbed instances from bottom to top.
             //! @return The relative path string.
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<InstanceOptionalConstReference>& climbedInstances);
+            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
 
             //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.

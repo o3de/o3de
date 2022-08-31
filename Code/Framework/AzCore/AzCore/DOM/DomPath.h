@@ -68,6 +68,8 @@ namespace AZ::Dom
     class Path final
     {
     public:
+        AZ_TYPE_INFO(AZ::Dom::Path, "{C0081C45-F15D-4F46-9680-19535D33C312}")
+
         using ContainerType = AZStd::vector<PathEntry>;
         static constexpr char PathSeparator = '/';
         static constexpr char EscapeCharacter = '~';

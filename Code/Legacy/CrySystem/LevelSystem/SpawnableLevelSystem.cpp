@@ -195,7 +195,7 @@ namespace LegacyLevelSystem
     {
         if (gEnv->IsEditor())
         {
-            AZ_TracePrintf("CrySystem::CLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
             return false;
         }
 
@@ -232,6 +232,25 @@ namespace LegacyLevelSystem
         if (validLevelName.empty())
         {
             OnLevelNotFound(levelName);
+            return false;
+        }
+
+        // This is a valid level, find out if any systems need to stop level loading before proceeding
+        bool blockLoading = false;
+        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
+            {
+                if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
+                {
+                    blockLoading = true;
+                    return false; // Stop iterating handlers. This level should be blocked.
+                }
+                return true;
+            });
+
+        if (blockLoading)
+        {
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was blocked.\n", validLevelName.c_str());
             return false;
         }
 
