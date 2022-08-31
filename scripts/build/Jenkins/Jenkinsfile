@@ -22,22 +22,16 @@ ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
-COMMIT_DOMAIN_NAME = ''
-COMMIT_ORGANIZATION_NAME = ''
-COMMIT_REPOSITORY_NAME = ''
 
-@NonCPS
-def DetermineCommit() {
-    echo "matching ${scm.userRemoteConfigs.url[0]} =~ 'https://(.+)/(.+)/(.+).git'"
-    def matcher = (scm.userRemoteConfigs.url[0] =~ 'https://(.+)/(.+)/(.+).git')
-    COMMIT_DOMAIN_NAME = matcher.group(1)
-    echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
-    COMMIT_ORGANIZATION_NAME = matcher.group(2)
-    echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
-    COMMIT_REPOSITORY_NAME = matcher.group(3)
-    echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
-}
-DetermineCommit()
+def httpsPattern = ~"https://(.+)/(.+)/(.+).git"
+def matcher = (scm.userRemoteConfigs.url[0] =~ httpsPattern)
+COMMIT_DOMAIN_NAME = matcher.group(1)
+echo "matcher.group(1) = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
+COMMIT_ORGANIZATION_NAME = matcher.group(2)
+echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
+COMMIT_REPOSITORY_NAME = matcher.group(3)
+echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
+
 
 def engineRemoteConfigs = scm.userRemoteConfigs
 def extrasRemoteConfigs = scm.userRemoteConfigs
