@@ -22,17 +22,23 @@ ENGINE_REPOSITORY_NAME = 'o3de'
 ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
+COMMIT_DOMAIN_NAME = ''
+COMMIT_ORGANIZATION_NAME = ''
+COMMIT_REPOSITORY_NAME = ''
 
-def matcher = scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+)."
-assert matcher.find()
-assert matcher.size() == 3
-
-COMMIT_DOMAIN_NAME = matcher[0]
-echo "matcher[0] = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
-COMMIT_ORGANIZATION_NAME = matcher[1]
-echo "matcher[1] = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
-COMMIT_REPOSITORY_NAME = matcher[2]
-echo "matcher[2] = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
+@NonCPS
+def DetermineCommit() {
+    def matcher = (scm.userRemoteConfigs.url =~ "https://(.+)/(.+)/(.+).")
+    assert matcher.find()
+    assert matcher.size() == 3
+    COMMIT_DOMAIN_NAME = matcher[0]
+    echo "matcher[0] = COMMIT_DOMAIN_NAME = ${COMMIT_DOMAIN_NAME}"
+    COMMIT_ORGANIZATION_NAME = matcher[1]
+    echo "matcher[1] = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
+    COMMIT_REPOSITORY_NAME = matcher[2]
+    echo "matcher[2] = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
+}
+DetermineCommit()
 
 def engineRemoteConfigs = scm.userRemoteConfigs
 def extrasRemoteConfigs = scm.userRemoteConfigs
