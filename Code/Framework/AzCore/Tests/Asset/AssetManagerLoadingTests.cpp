@@ -3195,7 +3195,7 @@ namespace UnitTest
         EXPECT_TRUE(nestedDependentAsset.IsReady());
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest_SUITE_sandbox)
     {
         // Regression test - there was a bug where rapid reloads could get stuck due to the owning container being invalidated
         // Note that for this bug to occur, the loaded asset needs to have dependencies
@@ -3307,7 +3307,7 @@ namespace UnitTest
         AssetManager::Instance().DispatchEvents();
     }
 
-    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer)
+    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer_SUITE_sandbox)
     {
         // Regression test very similar to the above test but this time it occurs when releasing an old asset reference while *loading* (not reloading) the same asset
         // Order of events to reproduce:
@@ -3502,7 +3502,7 @@ namespace UnitTest
         SignallingAssetManager* m_assetManager{};
     };
 
-    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock)
+    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock_SUITE_sandbox)
     {
         // Regression test
         // Steps to repro:

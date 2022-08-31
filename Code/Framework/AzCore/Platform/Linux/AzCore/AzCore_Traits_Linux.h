@@ -102,7 +102,6 @@
 #define AZ_TRAIT_USE_WINDOWS_FILE_API 0
 #define AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION 1
 #define AZ_TRAIT_USE_ERRNO_T_TYPEDEF 1
-#define AZ_TRAIT_USE_POSIX_TEMP_FOLDER 1
 
 // wchar_t/char formatting
 // Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160

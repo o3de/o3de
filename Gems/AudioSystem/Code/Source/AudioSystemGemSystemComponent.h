@@ -28,7 +28,7 @@ namespace AudioSystemGem
         : public AZ::Component
         , public ISystemEventListener
         , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
-        , protected Audio::Gem::AudioSystemGemRequestBus::Handler
+        , protected Audio::Gem::SystemRequestBus::Handler
     #if defined(AUDIO_SYSTEM_EDITOR)
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , public AZ::RPI::ViewportContextNotificationBus::Handler
@@ -55,8 +55,8 @@ namespace AudioSystemGem
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // Audio::Gem::AudioSystemGemRequestBus interface implementation
-        bool Initialize(const SSystemInitParams* initParams) override;
+        // Audio::Gem::SystemRequestBus interface implementation
+        bool Initialize() override;
         void Release() override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -86,8 +86,7 @@ namespace AudioSystemGem
 
     private:
         ////////////////////////////////////////////////////////////////////////
-        bool CreateAudioSystem();
-        bool CreateNullAudioSystem();
+        void CreateAudioSystem();
         void PrepareAudioSystem();
 
         /// This is here to express ownership

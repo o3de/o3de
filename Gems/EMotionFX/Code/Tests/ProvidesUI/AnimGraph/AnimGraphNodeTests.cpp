@@ -8,11 +8,11 @@
 
 #include <gtest/gtest.h>
 
-#include <QAction>
 #include <QtTest>
 #include <qtoolbar.h>
 #include <QWidget>
 #include <QComboBox>
+#include <QModelIndex>
 #include <qrect.h>
 
 #include <Tests/UI/UIFixture.h>
@@ -29,6 +29,7 @@
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 
 namespace EMotionFX
 {
@@ -77,10 +78,15 @@ namespace EMotionFX
             const QRect graphRect = graphWidget->rect();
             graphWidget->OnContextMenuEvent(graphWidget, graphRect.center(), graphWidget->LocalToGlobal(graphRect.center()), animGraphPlugin, selectedAnimGraphNodes, true, false, animGraphPlugin->GetActionFilter());
 
-            // Grab the add node action from the graphWidget context menu
-            QAction* addNodeAction = UIFixture::GetNamedAction(graphWidget, nodeName);
-            ASSERT_TRUE(addNodeAction) << "Add  node action not found.";
-            addNodeAction->trigger();
+            // Grab the node index from the tree view in the graphWidget context menu
+            auto* tree = UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>(graphWidget);
+            ASSERT_TRUE(tree);
+
+            const QModelIndex idx = UIFixture::GetIndexFromName(tree, nodeName);
+            ASSERT_TRUE(idx.isValid());
+
+            // Selection should spawn the node
+            tree->setCurrentIndex(idx);
         }
 
         // Make sure animgraph node was created

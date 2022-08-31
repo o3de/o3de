@@ -9,6 +9,7 @@
 
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <QCheckBox>
+#include <QDialog>
 #include <QLineEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -18,9 +19,10 @@
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorSystem.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugModel.h>
 #include <AzToolsFramework/UI/DPEDebugViewer/DPEDebugWindow.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/KeyQueryDPE.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 
 AZ_CVAR(
     bool,
@@ -32,7 +34,6 @@ AZ_CVAR(
 
 namespace AzToolsFramework
 {
-
     DPELayout::DPELayout(int depth, QWidget* parentWidget)
         : QHBoxLayout(parentWidget)
         , m_depth(depth)
@@ -122,7 +123,6 @@ namespace AzToolsFramework
             return m_cachedMinLayoutSize;
         }
 
-
         int cumulativeWidth = 0;
         int minimumHeight = 0;
 
@@ -153,7 +153,10 @@ namespace AzToolsFramework
 
         // todo: implement QSplitter-like functionality to allow the user to resize columns within a DPE
 
-        const int itemCount = count();
+        //! Treat all widgets in a shared column as one item.
+        //! Sum all the widgets, but remove all shared widgets other than the first widget of each shared column.
+        int itemCount = count() - SharedWidgetCount() + (int)m_sharePriorColumn.size();
+
         if (itemCount > 0)
         {
             // divide evenly, unless there are 2 columns, in which case follow the 2/5ths rule here:
@@ -179,14 +182,105 @@ namespace AzToolsFramework
             // space to leave for expander, whether it's there or not
             constexpr int expanderSpace = 16;
             itemGeometry.setLeft(itemGeometry.left() + expanderSpace);
-            itemAt(0)->setGeometry(itemGeometry);
 
-            // iterate over the remaining items, laying them left to right
-            for (int layoutIndex = 1; layoutIndex < itemCount; ++layoutIndex)
+            // used to iterate through the vector containing a shared column's first widget and size
+            int sharedVectorIndex = 0;
+            // iterate over each item, laying them left to right
+            int layoutIndex = 0;
+            const int itemCountActual = count();
+            while (layoutIndex  < itemCountActual)
             {
-                itemGeometry.setLeft(itemGeometry.right() + 1);
-                itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                itemAt(layoutIndex)->setGeometry(itemGeometry);
+                QWidget* currentWidget = itemAt(layoutIndex)->widget();
+
+                //! If the current widget is the first widget of a shared column, create the shared column layout and add widgets to it
+                if (sharedVectorIndex < m_sharePriorColumn.size() && currentWidget == m_sharePriorColumn[sharedVectorIndex].first)
+                {
+                    QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
+                    int numItems = m_sharePriorColumn[sharedVectorIndex].second;
+                    int sharedWidgetIndex = 0;
+                    // values used to remember the alignment of each widget
+                    bool startSpacer = false, endSpacer = false, stretchWidget = false;
+
+                    // Iterate over each item in the current shared column, adding them to a single layout
+                    while (sharedWidgetIndex < numItems)
+                    {
+                        currentWidget = itemAt(layoutIndex + sharedWidgetIndex)->widget();
+
+                        // Save the alignment of the last widget in the shared column with an alignment attribute
+                        if (m_widgetAlignment.contains(currentWidget))
+                        {
+                            switch (m_widgetAlignment[currentWidget])
+                            {
+                            case Qt::AlignLeft:
+                                startSpacer = false;
+                                endSpacer = true;
+                                break;
+                            case Qt::AlignCenter:
+                                startSpacer = true;
+                                endSpacer = true;
+                                break;
+                            case Qt::AlignRight:
+                                startSpacer = true;
+                                endSpacer = false;
+                                break;
+                            }
+                        }
+                        sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
+
+                        // If a widget should be expanded, stretch it
+                        if (itemAt(layoutIndex + sharedWidgetIndex)->minimumSize().width() > 18)
+                        {
+                            sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
+                            stretchWidget = true;
+                        }
+                        sharedWidgetIndex++;
+                    }
+                    // If all widgets in a column should be right aligned or center aligned
+                    if (startSpacer && !stretchWidget)
+                    {
+                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                        sharedColumnLayout->insertSpacerItem(0, spacer);
+                    }
+                    // If all widgets in a column should be left aligned or center aligned
+                    if (endSpacer && !stretchWidget)
+                    {
+                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                        sharedColumnLayout->addSpacerItem(spacer);
+                    }
+                    // Special case if this is the first column in a row
+                    if (layoutIndex == 0)
+                    {
+                        sharedColumnLayout->setGeometry(itemGeometry);
+                    }
+                    else
+                    {
+                        itemGeometry.setLeft(itemGeometry.right() + 1);
+                        itemGeometry.setRight(itemGeometry.left() + perItemWidth);
+                        sharedColumnLayout->setGeometry(itemGeometry);
+                    }
+                    sharedVectorIndex++;
+                    // Increase the layout index by the amount of widgets in the shared column we have iterated over
+                    layoutIndex = layoutIndex + sharedWidgetIndex;
+                }
+                // Widget is not in a shared column, lay it individually with its appropriate alignment
+                else
+                {
+                    if (layoutIndex == 0)
+                    {
+                        itemAt(layoutIndex)->setGeometry(itemGeometry);
+                    }
+                    else
+                    {
+                        itemGeometry.setLeft(itemGeometry.right() + 1);
+                        itemGeometry.setRight(itemGeometry.left() + perItemWidth);
+                        if (m_widgetAlignment.contains(currentWidget))
+                        {
+                            itemAt(layoutIndex)->setAlignment(m_widgetAlignment[currentWidget]);
+                        }
+                        itemAt(layoutIndex)->setGeometry(itemGeometry);
+                    }
+                    layoutIndex++;
+                }
             }
         }
     }
@@ -221,6 +315,49 @@ namespace AzToolsFramework
         connect(m_expanderWidget, &QCheckBox::stateChanged, this, &DPELayout::onCheckstateChanged);
     }
 
+    //! If we are currently adding to an existing shared column group, increase the number of elements in the pair by 1,
+    //! otherwise create a new pair of the first widget in the shared column, with size of 2 elements.
+    void DPELayout::SharePriorColumn(QWidget* headWidget)
+    {
+        if (ShouldSharePrior())
+        {
+            int newWidgetCount = m_sharePriorColumn.back().second + 1;
+            m_sharePriorColumn[m_sharePriorColumn.size() - 1].second = newWidgetCount;
+        }
+        else
+        {
+            auto widgetColumnPair = AZStd::pair<QWidget*, int>(headWidget, 2);
+            m_sharePriorColumn.push_back(widgetColumnPair);
+        }
+    }
+
+    void DPELayout::SetSharePrior(bool sharePrior)
+    {
+        m_shouldSharePrior = sharePrior;
+    }
+
+    bool DPELayout::ShouldSharePrior()
+    {
+        return m_shouldSharePrior;
+    }
+
+    // Returns the total number of widgets in shared columns.
+    int DPELayout::SharedWidgetCount()
+    {
+        int numWidgets = 0;
+        for (int index = 0; index < m_sharePriorColumn.size(); index++)
+        {
+            numWidgets = numWidgets + m_sharePriorColumn[index].second;
+        }
+        return numWidgets;
+    }
+
+    // Add the widget with its appropriate alignment to the widget alignment map
+    void DPELayout::WidgetAlignment(QWidget* alignedWidget, Qt::Alignment widgetAlignment)
+    {
+        m_widgetAlignment[alignedWidget] = widgetAlignment;
+    }
+
     DPERowWidget::DPERowWidget(int depth, DPERowWidget* parentRow)
         : QWidget(nullptr) // parent will be set when the row is added to its layout
         , m_parentRow(parentRow)
@@ -244,7 +381,8 @@ namespace AzToolsFramework
             DocumentPropertyEditor* dpe = GetDPE();
             // propertyHandlers own their widgets, so don't destroy them here. Set them free!
             for (auto propertyWidgetIter = m_widgetToPropertyHandler.begin(), endIter = m_widgetToPropertyHandler.end();
-                 propertyWidgetIter != endIter; ++propertyWidgetIter)
+                 propertyWidgetIter != endIter;
+                 ++propertyWidgetIter)
             {
                 QWidget* propertyWidget = propertyWidgetIter->first;
                 auto toRemove = AZStd::remove(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), propertyWidget);
@@ -332,7 +470,7 @@ namespace AzToolsFramework
                 // tooltip from a child PropertyEditor (like the RPE)
                 if (!descriptionString.empty() && toolTip().isEmpty())
                 {
-                    setToolTip(QString::fromUtf8(descriptionString.data()));
+                    setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
                 }
 
                 // if we found a valid handler, grab its widget to add to the column layout
@@ -347,7 +485,7 @@ namespace AzToolsFramework
                     // only set the widget's tooltip if it doesn't already have its own
                     if (!descriptionString.empty() && addedWidget->toolTip().isEmpty())
                     {
-                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data()));
+                        addedWidget->setToolTip(QString::fromUtf8(descriptionString.data(), aznumeric_cast<int>(descriptionString.size())));
                     }
                     m_widgetToPropertyHandler[addedWidget] = AZStd::move(handler);
                 }
@@ -369,7 +507,7 @@ namespace AzToolsFramework
                     priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
                 }
 
-                // if the alignment attribute is present, insert the widget with the appropriate alignment
+                // if the alignment attribute is present, add the widget with its appropriate alignment to the column layout
                 auto alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(childValue);
                 if (alignment.has_value())
                 {
@@ -379,20 +517,32 @@ namespace AzToolsFramework
                     case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
                         widgetAlignment = Qt::AlignLeft;
                         break;
+                    case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                        widgetAlignment = Qt::AlignCenter;
+                        break;
                     case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
                         widgetAlignment = Qt::AlignRight;
                         break;
                     }
-
-                    m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget, 0, widgetAlignment);
+                    m_columnLayout->WidgetAlignment(addedWidget, widgetAlignment);
                 }
 
-                // insert after the found index; even if nothing were found and priorIndex is still -1,
-                // still insert one after it, at position 0
+                //! If the sharePrior attribute is present, add the previous widget to the column layout.
+                //! Set the SharePrior boolean so we know to create a new shared column layout, or add to an existing one
+                auto sharePrior = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(childValue);
+                if (sharePrior.has_value() && sharePrior.value())
+                {
+                    m_columnLayout->SharePriorColumn(m_columnLayout->itemAt(priorColumnIndex)->widget());
+                    m_columnLayout->SetSharePrior(true);
+                }
                 else
                 {
-                    m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
+                    m_columnLayout->SetSharePrior(false);
                 }
+
+                m_columnLayout->insertWidget(priorColumnIndex + 1, addedWidget);
+                // insert after the found index; even if nothing were found and priorIndex is still -1,
+                // still insert one after it, at position 0
             }
             AddDomChildWidget(domIndex, addedWidget);
         }
@@ -556,7 +706,7 @@ namespace AzToolsFramework
                     if (changedLabel)
                     {
                         auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->setText(QString::fromUtf8(labelString.data()));
+                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
                     }
                 }
             }
@@ -720,6 +870,13 @@ namespace AzToolsFramework
                 this->HandleDomChange(patch);
             });
         m_adapter->ConnectChangedHandler(m_changedHandler);
+
+        m_domMessageHandler = AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler(
+            [this](const AZ::DocumentPropertyEditor::AdapterMessage& message, AZ::Dom::Value& value)
+            {
+                this->HandleDomMessage(message, value);
+            });
+        m_adapter->ConnectMessageHandler(m_domMessageHandler);
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1021,6 +1178,28 @@ namespace AzToolsFramework
                 rowWidget->HandleOperationAtPath(*operationIterator, pathDepth);
             }
         }
+    }
+
+    void DocumentPropertyEditor::HandleDomMessage(
+        const AZ::DocumentPropertyEditor::AdapterMessage& message, [[maybe_unused]] AZ::Dom::Value& value)
+    {
+        // message match for QueryKey
+        auto showKeyQueryDialog = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
+        {
+            KeyQueryDPE keyQueryUi(adapter);
+            if (keyQueryUi.exec() == QDialog::Accepted)
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::AddContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+            else
+            {
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
+                    m_adapter->GetContents(), adapter, containerPath);
+            }
+        };
+
+        message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 
     void DocumentPropertyEditor::CleanupReleasedHandlers()

@@ -45,7 +45,7 @@ namespace AZ
         void SetContext(SerializeContext* context);
         void SetContext(JsonRegistrationContext* context);
         
-        SettingsType GetType(AZStd::string_view path) const override;
+        [[nodiscard]] SettingsType GetType(AZStd::string_view path) const override;
         bool Visit(Visitor& visitor, AZStd::string_view path) const override;
         bool Visit(const VisitorCallback& callback, AZStd::string_view path) const override;
         [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback callback) override;
@@ -100,6 +100,8 @@ namespace AZ
         };
         using RegistryFileList = AZStd::fixed_vector<RegistryFile, MaxRegistryFolderEntries>;
 
+        [[nodiscard]] SettingsType GetTypeNoLock(AZStd::string_view path) const;
+
         template<typename T>
         bool SetValueInternal(AZStd::string_view path, T value);
         template<typename T>
@@ -113,7 +115,7 @@ namespace AZ
         bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
 
-        void SignalNotifier(AZStd::string_view jsonPath, Type type);
+        void SignalNotifier(AZStd::string_view jsonPath, SettingsType type);
 
         
         mutable AZStd::recursive_mutex m_settingMutex;
@@ -130,7 +132,7 @@ namespace AZ
         struct SignalNotifierArgs
         {
             FixedValueString m_jsonPath;
-            Type m_type;
+            SettingsType m_type;
             AZ::IO::FixedMaxPath m_mergeFilePath;
         };
         AZStd::deque<SignalNotifierArgs> m_signalNotifierQueue;
