@@ -122,6 +122,14 @@ namespace TestImpact
         using ProductionTarget = PythonProductionTarget;
         using TestTarget = PythonTestTarget;
 
+        //! Selects the test targets covering a given change list and updates the enumeration cache of the test targets with sources
+        //! modified in that change list.
+        //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
+        //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
+        //! @returns The pair of selected test targets and discarded test targets.
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargets(
+            const ChangeList& changeList, Policy::TestPrioritization testPrioritizationPolicy);
+
         //! Prepares the dynamic dependency map for a seed update by clearing all existing data and deleting the file that will be
         //! serialized.
         void ClearDynamicDependencyMapAndRemoveExistingFile();
@@ -131,6 +139,14 @@ namespace TestImpact
 
         //! Generates a regular/seed sequence policy state for the current runtime policy runtime configuration.
         SequencePolicyState GenerateSequencePolicyState() const;
+
+        //! Generates a safe impact analysis sequence policy state for the current runtime policy runtime configuration.
+        SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(
+            Policy::TestPrioritization testPrioritizationPolicy) const;
+
+        //! Generates an impact analysis sequence policy state for the current runtime policy runtime configuration.
+        ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
+            Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const;
 
         PythonRuntimeConfig m_config;
         RepoPath m_sparTiaFile;
