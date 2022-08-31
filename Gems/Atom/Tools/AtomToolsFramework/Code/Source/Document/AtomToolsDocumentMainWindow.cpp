@@ -90,40 +90,62 @@ namespace AtomToolsFramework
 
         m_actionSave = CreateActionAtPosition(m_menuFile, insertPostion, "&Save", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
-            bool result = false;
-            AtomToolsDocumentSystemRequestBus::EventResult(
-                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
-            if (!result)
+            const QString documentPath = GetDocumentPath(documentId);
+
+            // If the file already has a path then it can be saved without user selecting a new one.
+            if (!documentPath.isEmpty())
             {
-                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
+                bool result = false;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
+                if (!result)
+                {
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                }
+                return;
+            }
+
+            // If the file does not have a path, meaning it was not previously saved, then we have to do a save as operation.
+            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
+            {
+                bool result = false;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
+                if (!result)
+                {
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                }
+                return;
             }
         }, QKeySequence::Save);
 
         m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
-
-            bool result = false;
-            AtomToolsDocumentSystemRequestBus::EventResult(
-                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId,
-                GetSaveDocumentParams(documentPath.toUtf8().constData()));
-            if (!result)
+            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                bool result = false;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
+                if (!result)
+                {
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                }
             }
         }, QKeySequence::SaveAs);
 
         m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
-
-            bool result = false;
-            AtomToolsDocumentSystemRequestBus::EventResult(
-                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId,
-                GetSaveDocumentParams(documentPath.toUtf8().constData()));
-            if (!result)
+            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
             {
-                SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                bool result = false;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId, savePath);
+                if (!result)
+                {
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                }
             }
         });
 
