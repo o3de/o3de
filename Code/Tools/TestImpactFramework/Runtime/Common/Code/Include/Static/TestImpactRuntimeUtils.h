@@ -367,8 +367,12 @@ namespace TestImpact
                 AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
 
             Client::TestRunBase clientTestRun(
-                testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
-                testJob.GetTestResult(), testJob.GetTestTarget()->GetNamespace());
+                testJob.GetTestTarget()->GetNamespace(),
+                testJob.GetTestTarget()->GetName(),
+                testJob.GetCommandString(),
+                relativeStartTime,
+                testJob.GetDuration(),
+                testJob.GetTestResult());
 
             switch (testJob.GetTestResult())
             {
