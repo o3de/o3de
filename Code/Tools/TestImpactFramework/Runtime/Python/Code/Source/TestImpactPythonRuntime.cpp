@@ -270,9 +270,7 @@ namespace TestImpact
                                              TestRunCompleteCallbackHandler<TestTarget>& testRunCompleteHandler,
                                              AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
         {
-            return DiscoverDependencyCoverage(
-                m_dynamicDependencyMap.get(),
-                m_testEngine->InstrumentedRun(
+            return m_testEngine->InstrumentedRun(
                 testsTargets,
                 m_executionFailurePolicy,
                 m_integrationFailurePolicy,
@@ -280,7 +278,7 @@ namespace TestImpact
                 m_targetOutputCapture,
                 testTargetTimeout,
                 globalTimeout,
-                AZStd::ref(testRunCompleteHandler)));
+                AZStd::ref(testRunCompleteHandler));
         };
         
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
