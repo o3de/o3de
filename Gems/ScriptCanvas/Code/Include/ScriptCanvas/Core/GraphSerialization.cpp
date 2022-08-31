@@ -145,7 +145,9 @@ namespace ScriptCanvas
                 , AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
             {
                 result.m_isSuccessful = false;
-                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.";
+                result.m_errors = "JSON (and failsafe XML) deserialize attempt failed.\n";
+                result.m_errors += "The error might be caused by deprecated Spawnable Nodes in your target scriptcanvas file.\n";
+                result.m_errors += "If so, please run UpdateSpawnableNodes python script for the scriptcanvas file to see if the error is resolved.";
                 return result;
             }
         }
