@@ -14,6 +14,8 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
+#include <GraphCanvas/Widgets/NodePalette/TreeItems/IconDecoratedNodePaletteTreeItem.h>
+#include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
 #include <MCore/Source/CommandGroup.h>
 #endif
 
@@ -32,6 +34,30 @@ namespace EMStudio
     // forward declarations
     class AnimGraphPlugin;
 
+    class BlendGraphMimeEvent : public GraphCanvas::GraphCanvasMimeEvent
+    {
+    public:
+        explicit BlendGraphMimeEvent(QString typeString, QString namePrefix);
+        bool ExecuteEvent(const AZ::Vector2& sceneMousePosition, AZ::Vector2& sceneDropPosition, const AZ::EntityId& sceneId) override;
+
+        QString GetTypeString() const;
+        QString GetNamePrefix() const;
+    private:
+        QString m_typeString;
+        QString m_namePrefix;
+    };
+
+    class BlendGraphNodePaletteTreeItem : public GraphCanvas::IconDecoratedNodePaletteTreeItem
+    {
+    public:
+        BlendGraphNodePaletteTreeItem(AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId);
+        BlendGraphMimeEvent* CreateMimeEvent() const override;
+
+        void SetTypeString(const QString& typeString);
+        QString GetTypeString() const;
+    private:
+        QString m_typeString;
+    };
 
     class BlendGraphWidget
         : public NodeGraphWidget
@@ -74,6 +100,8 @@ namespace EMStudio
         void AddPreviewMotionSubmenu(QMenu* menu, AnimGraphActionManager* actionManager, const EMotionFX::AnimGraphNode* selectedNode);
         void AddAnimGraphObjectCategoryMenu(AnimGraphPlugin* plugin, QMenu* parentMenu,
             EMotionFX::AnimGraphObject::ECategory category, EMotionFX::AnimGraphObject* focusedGraphObject);
+        void AddCategoryToNodePalette(EMotionFX::AnimGraphNode::ECategory category, GraphCanvas::NodePaletteTreeItem* rootNode,
+            EMotionFX::AnimGraphObject* focusedGraphObject);
 
         void OnContextMenuEvent(QWidget* parentWidget, QPoint localMousePos, QPoint globalMousePos, AnimGraphPlugin* plugin,
             const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedNodes, bool graphWidgetOnlyMenusEnabled, bool selectingAnyReferenceNodeFromNavigation,
@@ -103,7 +131,7 @@ namespace EMStudio
 
     public slots:
         void DeleteSelectedItems();
-        void OnContextMenuCreateNode();
+        void OnContextMenuCreateNode(const BlendGraphMimeEvent* event);
         void OnNodeGroupSelected();
         void EnableSelectedTransitions()                    { SetSelectedTransitionsEnabled(true); }
         void DisableSelectedTransitions()                   { SetSelectedTransitionsEnabled(false); }
