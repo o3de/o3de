@@ -597,6 +597,11 @@ namespace GraphModelIntegration
             m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeUnwrapped, wrapperNode, node);
     }
 
+    bool GraphController::IsNodeWrapped(GraphModel::NodePtr node) const
+    {
+        return m_graph->IsNodeWrapped(node);
+    }
+
     void GraphController::WrapNodeUi(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder)
     {
         AZ::EntityId wrapperNodeUiId = m_elementMap.Find(wrapperNode);
