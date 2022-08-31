@@ -52,7 +52,16 @@ namespace AZ
             void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
             void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
 
-            bool CompareScreenshots(const AZStd::string& testCase, float* diffScore, float* filteredDiffScore, float minDiffFilter) override;
+            AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName) override;
+            AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName) override;
+            AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName) override;
+
+            bool CompareScreenshots(
+                const AZStd::string& filePathA,
+                const AZStd::string& filePathB,
+                float* diffScore,
+                float* filteredDiffScore,
+                float minDiffFilter) override;
 
         private:
             // Wrap the state necessary for 1 capture

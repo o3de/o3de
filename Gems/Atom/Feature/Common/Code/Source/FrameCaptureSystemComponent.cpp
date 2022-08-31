@@ -311,6 +311,10 @@ namespace AZ
                     ->Event("SetTestEnvPath", &FrameCaptureRequestBus::Events::SetTestEnvPath)
                     ->Event("SetOfficialBaselineImageFolder", &FrameCaptureRequestBus::Events::SetOfficialBaselineImageFolder)
                     ->Event("SetLocalBaselineImageFolder", &FrameCaptureRequestBus::Events::SetLocalBaselineImageFolder)
+                    ->Event("BuildScreenshotFilePath", &FrameCaptureRequestBus::Events::BuildScreenshotFilePath)
+                    ->Event("BuildOfficialBaselineFilePath", &FrameCaptureRequestBus::Events::BuildOfficialBaselineFilePath)
+                    ->Event("BuildLocalBaselineFilePath", &FrameCaptureRequestBus::Events::BuildLocalBaselineFilePath)
+                    ->Event("CompareScreenshots", &FrameCaptureRequestBus::Events::CompareScreenshots)
                     ;
 
                 FrameCaptureNotificationBusHandler::Reflect(context);
@@ -562,10 +566,11 @@ namespace AZ
             return CaptureHandle::Null();
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy,
-                                                                    const AZStd::string& slot,
-                                                                    const AZStd::string& outputFilePath, 
-                                                                    RPI::PassAttachmentReadbackOption option)
+        uint32_t FrameCaptureSystemComponent::CapturePassAttachment(
+            const AZStd::vector<AZStd::string>& passHierarchy,
+            const AZStd::string& slot,
+            const AZStd::string& outputFilePath,
+            RPI::PassAttachmentReadbackOption option)
         {
             CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slot, outputFilePath, option, AZStd::bind(&FrameCaptureSystemComponent::CaptureAttachmentCallback, this, AZStd::placeholders::_1));
             if (captureHandle.IsValid())
@@ -582,10 +587,11 @@ namespace AZ
             return FrameCaptureRequests::s_InvalidFrameCaptureId;
         }
 
-        uint32_t FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, 
-                                                                            const AZStd::string& slotName, 
-                                                                            RPI::AttachmentReadback::CallbackFunction callback, 
-                                                                            RPI::PassAttachmentReadbackOption option)
+        uint32_t FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(
+            const AZStd::vector<AZStd::string>& passHierarchy,
+            const AZStd::string& slotName,
+            RPI::AttachmentReadback::CallbackFunction callback,
+            RPI::PassAttachmentReadbackOption option)
         {
 
             CaptureHandle captureHandle = InternalCapturePassAttachment(passHierarchy, slotName, "", option, [this, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -835,7 +841,7 @@ namespace AZ
 
         void FrameCaptureSystemComponent::SetTestEnvPath(const AZStd::string& envPath)
         {
-            m_testEnvPath = ResolvePath(envPath);
+            m_testEnvPath = envPath;
         }
 
         void FrameCaptureSystemComponent::SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder)
@@ -848,51 +854,79 @@ namespace AZ
             m_localBaselineImageFolder = ResolvePath(baselineFolder);
         }
 
-        bool FrameCaptureSystemComponent::CompareScreenshots(
-            const AZStd::string& testCase, float* diffScore, float* filteredDiffScore, float minDiffFilter)
+        AZStd::string FrameCaptureSystemComponent::BuildScreenshotFilePath(const AZStd::string& imageName)
         {
-            char screenshotPath[AZ_MAX_PATH_LEN];
-            azscprintf("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), testCase.c_str());
+            return ResolvePath(AZStd::string::format("%s/%s/%s", m_screenshotFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+        }
 
-            char baselineImagePath[AZ_MAX_PATH_LEN];
-            azscprintf("%s/%s", m_officialBaselineImageFolder.c_str(), testCase.c_str());
+        AZStd::string FrameCaptureSystemComponent::BuildOfficialBaselineFilePath(const AZStd::string& imageName)
+        {
+            return ResolvePath(AZStd::string::format("%s/%s", m_officialBaselineImageFolder.c_str(), imageName.c_str()));
+        }
 
-            Utils::PngFile localImage = Utils::PngFile::Load(screenshotPath);
+        AZStd::string FrameCaptureSystemComponent::BuildLocalBaselineFilePath(const AZStd::string& imageName)
+        {
+            return ResolvePath(AZStd::string::format("%s/%s/%s", m_localBaselineImageFolder.c_str(), m_testEnvPath.c_str(), imageName.c_str()));
+        }
 
-            if (!localImage.IsValid())
+        bool FrameCaptureSystemComponent::CompareScreenshots(
+            const AZStd::string& filePathA, const AZStd::string& filePathB, float* diffScore, float* filteredDiffScore, float minDiffFilter)
+        {
+            if (!filePathA.ends_with(".png") || !filePathB.ends_with(".png"))
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load screenshot image at: %s.", screenshotPath);
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports png files for now.");
                 return false;
             }
 
-            Utils::PngFile baselineImage = Utils::PngFile::Load(baselineImagePath);
+            // Load image A
+            Utils::PngFile imageA = Utils::PngFile::Load(filePathA.c_str());
 
-            if (!baselineImage.IsValid())
+            if (!imageA.IsValid())
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load baseline image at: %s.", baselineImagePath);
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", filePathA.c_str());
+                return false;
+            }
+            else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", filePathA.c_str());
                 return false;
             }
 
+            // Load image B
+            Utils::PngFile imageB = Utils::PngFile::Load(filePathB.c_str());
+
+            if (!imageB.IsValid())
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Failed to load image file: %s.", filePathB.c_str());
+                return false;
+            }
+            else if (imageA.GetBufferFormat() != Utils::PngFile::Format::RGBA)
+            {
+                AZ_Error("FrameCaptureSystemComponent", false, "Image comparison only supports 8-bit RGBA png.", filePathB.c_str());
+                return false;
+            }
+
+            // Compare
             Utils::ImageDiffResultCode rmsResult = Utils::CalcImageDiffRms(
-                localImage.GetBuffer(), RHI::Size(localImage.GetWidth(), localImage.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
-                baselineImage.GetBuffer(), RHI::Size(baselineImage.GetWidth(), baselineImage.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                imageA.GetBuffer(), RHI::Size(imageA.GetWidth(), imageA.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
+                imageB.GetBuffer(), RHI::Size(imageB.GetWidth(), imageB.GetHeight(), 1), AZ::RHI::Format::R8G8B8A8_UNORM,
                 diffScore, filteredDiffScore,
                 minDiffFilter
             );
 
             if (rmsResult == Utils::ImageDiffResultCode::SizeMismatch)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", screenshotPath, baselineImagePath);
+                AZ_Error("FrameCaptureSystemComponent", false, "Size mismatch at: %s and %s.", filePathA.c_str(), filePathB.c_str());
                 return false;
             }
 
             if (rmsResult == Utils::ImageDiffResultCode::UnsupportedFormat || rmsResult == Utils::ImageDiffResultCode::FormatMismatch)
             {
-                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", screenshotPath, baselineImagePath);
+                AZ_Error("FrameCaptureSystemComponent", false, "Format unsupported or format mistmatch: %s and %s.", filePathA.c_str(), filePathB.c_str());
                 return false;
             }
 
-            return true;
+            return rmsResult == Utils::ImageDiffResultCode::Success;
         }
     }
 }
