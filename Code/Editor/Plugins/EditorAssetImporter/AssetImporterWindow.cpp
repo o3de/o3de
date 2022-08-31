@@ -652,12 +652,6 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     {
         sceneHeaderText = QString::fromUtf8(scene->GetManifestFilename().c_str(), static_cast<int>(scene->GetManifestFilename().size()));
     }
-    if (!m_scriptProcessorRuleFilename.empty())
-    {
-        sceneHeaderText.append("\n Assigned Python builder script (")
-            .append(m_scriptProcessorRuleFilename.c_str())
-            .append(")");
-    }
 
     if (scene)
     {
@@ -667,6 +661,8 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     {
         m_rootDisplay->SetSceneHeaderText(sceneHeaderText);
     }
+    
+    m_rootDisplay->SetPythonBuilderText(m_scriptProcessorRuleFilename.c_str());
 }
 
 void AssetImporterWindow::HandleAssetLoadingCompleted()

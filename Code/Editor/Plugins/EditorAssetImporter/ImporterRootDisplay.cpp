@@ -39,6 +39,8 @@ ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext,
 
     ui->headerFrame->setVisible(false);
 
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(false);
+
     ui->m_fullPathText->SetElideMode(Qt::TextElideMode::ElideMiddle);
 
     AzQtComponents::Text::addTitleStyle(ui->m_filePathText);
@@ -78,6 +80,12 @@ void ImporterRootDisplay::SetSceneHeaderText(const QString& headerText)
     {
         QDesktopServices::openUrl(QUrl::fromLocalFile(fullPath));
     });
+}
+
+void ImporterRootDisplay::SetPythonBuilderText(QString pythonBuilderText)
+{
+    ui->m_pythonBuilderScript->setText(pythonBuilderText);
+    ui->HeaderPythonBuilderLayoutWidget->setVisible(!pythonBuilderText.isEmpty());
 }
 
 QString ImporterRootDisplay::GetHeaderFileName() const
