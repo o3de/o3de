@@ -163,7 +163,7 @@ namespace EditorPythonBindings
                     ConvertPythonFromEnumClass<AZ::s64>(underlyingTypeId, behaviorValue, outboundPythonValue);
 
                 AZ_Error("python", converted, "Enumeration backed by a non-numeric integer type.");
-                return converted ? AZStd::make_optional(pybind11::cast<AZ::s64>(outboundPythonValue)) : AZStd::nullopt;
+                return converted ? AZStd::make_optional(pybind11::cast<AZ::s64>(AZStd::move(outboundPythonValue))) : AZStd::nullopt;
             }
             return AZStd::nullopt;
         }

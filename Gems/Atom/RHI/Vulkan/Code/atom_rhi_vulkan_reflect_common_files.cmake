@@ -18,4 +18,7 @@ set(FILES
     Source/RHI.Reflect/PlatformLimitsDescriptor.cpp
     Include/Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h
     Include/Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h
+    Source/RHI.Reflect/Conversion.cpp
+    Source/RHI.Reflect/Formats.inl
+    Include/Atom/RHI.Reflect/Vulkan/Conversion.h
 )

@@ -26,7 +26,8 @@ namespace EMotionFX
         if (!physicsSetupManipulatorData.m_actor || !physicsSetupManipulatorData.m_node ||
             !physicsSetupManipulatorData.m_jointConfiguration)
         {
-            AZ_Warning("Joint Limit Optimizer", false, "Cannot optimize joint limit due to invalid physics setup manipulator data.");
+            EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
+                EMStudio::NotificationWindow::TYPE_ERROR, "Joint limit optimization <font color=red>failed</font>");
             return;
         }
 
@@ -34,7 +35,9 @@ namespace EMotionFX
         auto* editorJointHelpersInterface = AZ::Interface<AzPhysics::EditorJointHelpersInterface>::Get();
         if (!jointHelpersInterface || !editorJointHelpersInterface)
         {
-            AZ_Warning("Joint Limit Optimizer", false, "Cannot optimize joint limit as joint interfaces are unavailable.");
+            EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
+                EMStudio::NotificationWindow::TYPE_ERROR,
+                "Joint limit optimization <font color=red>failed</font> due to missing physics joint interface");
             return;
         }
 
@@ -58,7 +61,9 @@ namespace EMotionFX
 
         if (!jointInitialConfiguration)
         {
-            AZ_Warning("Joint Limit Optimizer", false, "Cannot optimize joint limit as computing initial configuration failed.");
+            EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
+                EMStudio::NotificationWindow::TYPE_ERROR,
+                "Computing initial configuration for joint limit optimization <font color=red>failed</font>");
             return;
         }
 
@@ -87,7 +92,9 @@ namespace EMotionFX
 
         if (numMotions == 0)
         {
-            AZ_Warning("Joint Limit Optimizer", false, "Cannot optimize joint limit because no motions were found.");
+            EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
+                EMStudio::NotificationWindow::TYPE_WARNING,
+                "Please ensure a motion set is loaded in order to perform joint limit optimization");
             return;
         }
 
@@ -130,7 +137,8 @@ namespace EMotionFX
 
         if (!optimizedJointLimit)
         {
-            AZ_Warning("Joint Limit Optimizer", false, "Optimization failed.");
+            EMStudio::GetNotificationWindowManager()->CreateNotificationWindow(
+                EMStudio::NotificationWindow::TYPE_ERROR, "Joint limit optimization <font color=red>failed</font>");
             return;
         }
 

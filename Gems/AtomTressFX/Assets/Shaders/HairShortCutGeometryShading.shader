@@ -17,7 +17,7 @@
         }
     },
 
-    "BlendState" : 
+    "GlobalTargetBlendState" : 
     {
         "Enable" : true,
         "BlendSource" : "One",

@@ -87,21 +87,6 @@ namespace GraphSerializationCpp
 
 namespace ScriptCanvas
 {
-    SourceTree* SourceTree::ModRoot()
-    {
-        if (!m_parent)
-        {
-            return this;
-        }
-
-        return m_parent->ModRoot();
-    }
-
-    void SourceTree::SetParent(SourceTree& parent)
-    {
-        m_parent = &parent;
-    }
-
     AZStd::string SourceTree::ToString(size_t depth) const
     {
         AZStd::string result;
@@ -149,9 +134,12 @@ namespace ScriptCanvas
             , source
             , result.m_jsonResults
             , &settings);
+
         if (!loadResult.IsSuccess())
         {
             // ...try legacy xml as a failsafe
+            result.m_fromObjectStreamXML = true;
+
             AZ::IO::MemoryStream stream(source.data(), source.length());
             if (!AZ::Utils::LoadObjectFromStreamInPlace
                 ( stream

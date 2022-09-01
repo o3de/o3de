@@ -60,6 +60,20 @@ namespace AZ
         return 2.0f * AZStd::atan(1.0f / m.GetElement(1, 1));
     }
 
+    void SetPerspectiveMatrixNearFar(Matrix4x4& out, float nearDist, float farDist, bool reverseDepth)
+    {
+        AZ_Assert(nearDist > FloatEpsilon, "Near distance should be greater than zero (float epsilon) in a perspective matrix");
+        AZ_Assert(farDist > nearDist, "Far should be greater than near in a perspective matrix");
+
+        if (reverseDepth)
+        {
+            AZStd::swap(nearDist, farDist);
+        }
+
+        out.SetElement(2, 2, farDist / (nearDist - farDist));
+        out.SetElement(2, 3, nearDist * farDist / (nearDist - farDist));
+    }
+
     Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)
     {
         AZ_Assert(right > left, "right should be greater than left");

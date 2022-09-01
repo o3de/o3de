@@ -34,6 +34,9 @@ set(FILES
     Include/AtomToolsFramework/Debug/TraceRecorder.h
     Source/Debug/TraceRecorder.cpp
 
+    Include/AtomToolsFramework/Document/AtomToolsAnyDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsAnyDocumentNotificationBus.h
+    Include/AtomToolsFramework/Document/AtomToolsAnyDocumentRequestBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocument.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentApplication.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentInspector.h
@@ -45,6 +48,7 @@ set(FILES
     Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
     Include/AtomToolsFramework/Document/AtomToolsDocumentTypeInfo.h
     Include/AtomToolsFramework/Document/CreateDocumentDialog.h
+    Source/Document/AtomToolsAnyDocument.cpp
     Source/Document/AtomToolsDocument.cpp
     Source/Document/AtomToolsDocumentApplication.cpp
     Source/Document/AtomToolsDocumentInspector.cpp
@@ -65,8 +69,6 @@ set(FILES
     Source/DynamicNode/DynamicNodeManager.cpp
     Source/DynamicNode/DynamicNodePaletteItem.cpp
     Source/DynamicNode/DynamicNodeSlotConfig.cpp
-    Source/DynamicNode/DynamicNodeSlotConfigSerializer.cpp
-    Source/DynamicNode/DynamicNodeSlotConfigSerializer.h
     Source/DynamicNode/DynamicNodeUtil.cpp
 
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h

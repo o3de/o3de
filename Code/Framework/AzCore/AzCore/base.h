@@ -13,6 +13,8 @@
 
 #include <AzCore/AzCore_Traits_Platform.h>
 
+#include <cstdio>
+
 /// Return an array size for static arrays.
 namespace AZ::Internal
 {

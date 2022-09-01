@@ -154,7 +154,7 @@ namespace AZ
 
             static const char* s_debugTraceName;
 
-            Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
+            Data::Asset<MaterialTypeAsset> m_materialTypeAsset = { AZ::Data::AssetLoadBehavior::PreLoad };
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
