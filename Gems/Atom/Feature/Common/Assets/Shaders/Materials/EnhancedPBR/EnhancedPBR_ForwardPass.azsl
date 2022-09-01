@@ -7,7 +7,7 @@
  */
 
 
- // --- Pass SRG ---
+// --- Pass SRG ---
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 
