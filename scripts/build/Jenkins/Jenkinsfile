@@ -433,6 +433,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
         //get the engine repo first and get python, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the engine repo
         dir(ENGINE_REPOSITORY_NAME) {
+            echo "Checkout Engine: ${ENGINE_URL}"
             def setEnvCommit = false
             def the_branch = branchName
             if(ENGINE_COMMIT) {
@@ -464,6 +465,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             InstallAndPullGitLFS()
         }
         dir(EXTRAS_REPOSITORY_NAME) {
+            echo "Checkout Extras: ${EXTRAS_URL}"
             def setEnvCommit = false
             def the_branch = branchName
             if(EXTRAS_COMMIT) {
@@ -484,6 +486,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         //get any other external repos next, set the env.CHANGE_ID and env.CHANGE_DATE only if the repo is the pr repo
         pipelineConfig.EXTERNAL_REPOS.each { repo ->
             dir(repo.REPOSITORY_NAME) {
+                echo "Checkout External Repo: ${repo.URL}"
                 def setEnvCommit = false
                 def the_branch = branchName
                 if(!ENGINE_COMMIT && !EXTRAS_COMMIT) {
