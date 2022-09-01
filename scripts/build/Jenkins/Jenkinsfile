@@ -286,7 +286,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [scm.userRemoteConfigs]
+        userRemoteConfigs: scm.userRemoteConfigs
     ])
 }
 
