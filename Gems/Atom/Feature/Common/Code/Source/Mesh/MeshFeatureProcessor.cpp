@@ -688,7 +688,7 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_descriptor.m_isRayTracingEnabled)
+            if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
@@ -1180,6 +1180,16 @@ namespace AZ
             {
                 subMesh.m_irradianceColor *= material->GetPropertyValue<float>(propertyIndex);
             }
+
+            // set the raytracing transparency from the material opacity factor
+            float opacity = 1.0f;
+            propertyIndex = material->FindPropertyIndex(AZ::Name("opacity.factor"));
+            if (propertyIndex.IsValid())
+            {
+                opacity = material->GetPropertyValue<float>(propertyIndex);
+            }
+
+            subMesh.m_irradianceColor.SetA(opacity);
         }
 
         void ModelDataInstance::RemoveRayTracingData()

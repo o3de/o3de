@@ -76,8 +76,9 @@ namespace AZ
                     device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
                     geometry.m_indexBuffer.GetByteOffset();
                 geometryDesc.geometry.triangles.indexType = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
-
                 geometryDesc.geometry.triangles.transformData = {}; // [GFX-TODO][ATOM-4989] Add BLAS Transform Buffer
+
+                // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
                 geometryDesc.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
                 buffers.m_geometryDescs.push_back(geometryDesc);
 
