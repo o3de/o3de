@@ -170,5 +170,8 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraDefaultFarPlaneDistance(float distance);
 
     SANDBOX_API float CameraDefaultFovRadians();
-    SANDBOX_API void SetCameraDefaultFovRadians(float fov);
+    SANDBOX_API void SetCameraDefaultFovRadians(float fovRadians);
+
+    SANDBOX_API float CameraDefaultFovDegrees();
+    SANDBOX_API void SetCameraDefaultFovDegrees(float fovDegrees);
 } // namespace SandboxEditor

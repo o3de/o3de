@@ -8,6 +8,7 @@
 
 #include <EditorViewportSettings.h>
 
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -61,7 +62,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
     constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
     constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
-    constexpr AZStd::string_view CameraFovSetting = "/Amazon/Preferences/Editor/Camera/DefaultFOV";
+    constexpr AZStd::string_view CameraFovSetting = "/Amazon/Preferences/Editor/Camera/FovRadians";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -608,12 +609,22 @@ namespace SandboxEditor
 
     float CameraDefaultFovRadians()
     {
-        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, 90.0));
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovSetting, aznumeric_cast<double>(AZ::DegToRad(60.0))));
     }
 
-    void SetCameraDefaultFovRadians(float fov)
+    void SetCameraDefaultFovRadians(float fovRadians)
     {
-        AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fov));
+        AzToolsFramework::SetRegistry(CameraFovSetting, aznumeric_cast<double>(fovRadians));
+    }
+
+    float CameraDefaultFovDegrees()
+    {
+        return AZ::RadToDeg(CameraDefaultFovRadians());
+    }
+
+    void SetCameraDefaultFovDegrees(float fovDegrees)
+    {
+        SetCameraDefaultFovRadians(AZ::DegToRad(fovDegrees));
     }
 
 } // namespace SandboxEditor

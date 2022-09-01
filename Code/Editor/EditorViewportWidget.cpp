@@ -952,12 +952,12 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             if (m_viewSourceType == ViewSourceType::None)
             {
-                const float fov = SandboxEditor::CameraDefaultFovRadians();
+                const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
                 if (m_viewPane)
                 {
-                    m_viewPane->OnFOVChanged(fov);
+                    m_viewPane->OnFOVChanged(fovRadians);
                 }
-                SetFOV(fov);
+                SetFOV(fovRadians);
             }
         });
     m_editorViewportSettingsCallbacks->SetPerspectiveChangedEvent(m_perspectiveChangeHandler);
@@ -1953,9 +1953,9 @@ void EditorViewportWidget::SetDefaultCamera()
     // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = SandboxEditor::CameraDefaultFovRadians();
-        m_viewPane->OnFOVChanged(fov);
-        SetFOV(fov);
+        const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
+        m_viewPane->OnFOVChanged(fovRadians);
+        SetFOV(fovRadians);
     }
 
     // Update camera matrix according to near / far values
