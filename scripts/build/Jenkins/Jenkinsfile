@@ -46,25 +46,26 @@ def doit()
     echo "EXTRAS_URL = ${EXTRAS_URL}"
 }
 doit()
-def engineRemoteConfigs = scm.userRemoteConfigs
-engineRemoteConfigs.name = ENGINE_REPOSITORY_NAME
-def extrasRemoteConfigs = scm.userRemoteConfigs
-extrasRemoteConfigs.name = EXTRAS_REPOSITORY_NAME
+
 def isEngineCommit = false
 def isExtrasCommit = false
+def engineUrl = ''
+def extrasUrl = ''
 if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME){
     isEngineCommit = true
-    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+    engineUrl = commitUrl
+    extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
 }
 else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
     isExtrasCommit = true
-    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
-    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+    engineUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    extrasUrl = commitUrl
 } else {
     //Error unknown repo
     assert false : "Unknown repo"
 }
+echo "engineUrl = ${engineUrl}"
+echo "extrasUrl = ${extrasUrl}"
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
@@ -439,7 +440,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, [[url: scm.userRemoteConfigs.url[0], name: ENGINE_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, [[url: engineUrl, name: ENGINE_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
 
             // Get python
             dir(pipelineConfig.PYTHON_DIR) {
@@ -470,7 +471,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, [[url: EXTRAS_URL, name: EXTRAS_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, [[url: extrasUrl, name: EXTRAS_REPOSITORY_NAME, credentialsId: scm.userRemoteConfigs.credentialsId[0]]], disableSubmodules, setEnvCommit)
 
             InstallAndPullGitLFS()
         }
