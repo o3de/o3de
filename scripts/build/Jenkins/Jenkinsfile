@@ -27,12 +27,12 @@ EXTRAS_DEVELOPMENT_BRANCH = 'development'
 COMMIT_DOMAIN_NAME = ''
 COMMIT_ORGANIZATION_NAME = ''
 COMMIT_REPOSITORY_NAME = ''
-def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
-def commitUrl = scm.userRemoteConfigs.url[0]
+
 @NonCPS
 def doit()
 {
-
+    def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
+    def commitUrl = scm.userRemoteConfigs.url[0]
     def matcher = commitUrl =~ httpsPattern
     echo "matcher ${commitUrl} =~ ${httpsPattern}"
     matcher.find()
@@ -51,13 +51,13 @@ def engineUrl = ''
 def extrasUrl = ''
 if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME){
     isEngineCommit = true
-    engineUrl = commitUrl
+    engineUrl = scm.userRemoteConfigs.url[0]
     extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
 }
 else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
     isExtrasCommit = true
     engineUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
-    extrasUrl = commitUrl
+    extrasUrl = scm.userRemoteConfigs.url[0]
 } else {
     //Error unknown repo
     assert false : "Unknown repo"
