@@ -25,7 +25,6 @@ ENGINE_DEVELOPMENT_BRANCH = 'development'
 EXTRAS_REPOSITORY_NAME = 'o3de-extras'
 EXTRAS_DEVELOPMENT_BRANCH = 'development'
 
-//see what the commit url is
 def httpsPattern = ~'https://(.+)/(.+)/(.+).git'
 def commitUrl = scm.userRemoteConfigs.url[0]
 def matcher = commitUrl =~ httpsPattern
@@ -37,8 +36,29 @@ COMMIT_ORGANIZATION_NAME = matcher.group(2)
 echo "matcher.group(2) = COMMIT_ORGANIZATION_NAME = ${COMMIT_ORGANIZATION_NAME}"
 COMMIT_REPOSITORY_NAME = matcher.group(3)
 echo "matcher.group(3) = COMMIT_REPOSITORY_NAME = ${COMMIT_REPOSITORY_NAME}"
-extrasUrl = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
-echo "extrasUrl: ${extrasUrl}"
+
+def engineRemoteConfigs = scm.userRemoteConfigs
+engineRemoteConfigs.name = ENGINE_REPOSITORY_NAME
+def extrasRemoteConfigs = scm.userRemoteConfigs
+extrasRemoteConfigs.name = EXTRAS_REPOSITORY_NAME
+def isEngineCommit = false
+def isExtrasCommit = false
+if(COMMIT_REPOSITORY_NAME == ENGINE_REPOSITORY_NAME){
+    isEngineCommit = true
+    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+}
+else if(COMMIT_REPOSITORY_NAME == EXTRAS_REPOSITORY_NAME){
+    isExtrasCommit = true
+    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${COMMIT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+} else {
+    echo "Default Organization"
+    extrasRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${EXTRAS_REPOSITORY_NAME}.git"
+    echo "extrasRemoteConfigs.url = ${extrasRemoteConfigs.url}"
+    engineRemoteConfigs.url = "https://${COMMIT_DOMAIN_NAME}/${DEFAULT_ORGANIZATION_NAME}/${ENGINE_REPOSITORY_NAME}.git"
+    echo "engineRemoteConfigs.url = ${engineRemoteConfigs.url}"
+}
 
 // Branches with build snapshots
 BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
@@ -243,13 +263,13 @@ def GetCrashArtifactDir() {
     }
 }
 
-def GetRemoteConfigs(remoteConfigs, repositoryName, repositoryUrl) {
-    def theRemoteConfigs = [
+def GetRemoteConfig(remoteConfigs, repositoryName, repositoryUrl) {
+    def theRemoteConfig = [
         name: repositoryName,
         url: repositoryUrl,
         credentialsId: remoteConfigs.credentialsId[0]
     ]
-    return theRemoteConfigs
+    return theRemoteConfig
 }
 
 def UnInstallGitLFS() {
@@ -271,6 +291,8 @@ def InstallAndPullGitLFS() {
 }
 
 def CheckoutEngineBootstrapScripts(String branchName) {
+    UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
+
     checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
@@ -287,7 +309,7 @@ def CheckoutEngineBootstrapScripts(String branchName) {
             [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
-        userRemoteConfigs: [GetRemoteConfigs(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, scm.userRemoteConfigs.url[0])]
+        userRemoteConfigs: [engineRemoteConfigs]
     ])
 }
 
@@ -413,7 +435,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetRemoteConfigs(scm.userRemoteConfigs, ENGINE_REPOSITORY_NAME, scm.userRemoteConfigs.url[0]), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, engineRemoteConfigs, disableSubmodules, setEnvCommit)
 
             // Get python
             dir(pipelineConfig.PYTHON_DIR) {
@@ -444,7 +466,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
             UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
             //checkout the engine branch
-            CheckoutRepo(the_branch, GetRemoteConfigs(scm.userRemoteConfigs, EXTRAS_REPOSITORY_NAME, extrasUrl), disableSubmodules, setEnvCommit)
+            CheckoutRepo(the_branch, engineRemoteConfigs, disableSubmodules, setEnvCommit)
 
             InstallAndPullGitLFS()
         }
@@ -465,7 +487,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
                 UnInstallGitLFS() // Prevent git from pulling lfs objects during checkout
 
                 //checkout the branch
-                CheckoutRepo(the_branch, GetRemoteConfigs(scm.userRemoteConfigs, repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
+                CheckoutRepo(the_branch, GetRemoteConfig(scm.userRemoteConfigs, repo.REPOSITORY_NAME, repo.URL), disableSubmodules, setEnvCommit)
 
                 InstallAndPullGitLFS()
             }
